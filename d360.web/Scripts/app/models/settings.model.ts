@@ -11,8 +11,6 @@ export class CompanySettings {
     DisableCommunityPosting: boolean;
     DisableIssuePosting: boolean;
     DisableIssueManagement: boolean;
-    ArtifactType_TaxonomyTypeID: string;
-    ArtifactType_TaxonomyTypeIDNodes: string;
     SubjectAreaNodeName: string;
     IpRestrictions = new Array<IpRestriction>();
     SiteNav = new Array<SiteNav>();

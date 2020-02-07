@@ -862,9 +862,7 @@ namespace d360.web.Controllers
                     model.IpRestrictions.AddRange(ips);
                 }
             }
-            model.ArtifactType_TaxonomyTypeID = (settings.Any(i => i.SettingID == 7) ? settings.Single(i => i.SettingID == 7).Value : "");
-            model.ArtifactType_TaxonomyTypeIDNodes = (settings.Any(i => i.SettingID == 8) ? settings.Single(i => i.SettingID == 8).Value : "");
-
+            
             model.DefaultSearchTypes = (settings.Any(i => i.SettingID == 13) ? settings.Single(i => i.SettingID == 13).Value : "");
 
             model.FusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
@@ -1007,9 +1005,7 @@ namespace d360.web.Controllers
                 #endregion
 
                 #region Global Fields
-                
-                updateCompanySetting(settings, 7, formModel.ArtifactType_TaxonomyTypeID);
-                updateCompanySetting(settings, 8, formModel.ArtifactType_TaxonomyTypeIDNodes);
+                                
                 updateCompanySetting(settings, 17, formModel.DisableIssueManagement.ToString().ToLower());
                 updateCompanySetting(settings, 20, formModel.EnableShoppingCart.ToString().ToLower());
                 updateCompanySetting(settings, 22, (formModel.DefaultRoute ?? "").Trim());

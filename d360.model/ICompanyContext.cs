@@ -226,12 +226,10 @@ namespace d360.model
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         Dictionary<string, object> GetFusionAsDictionary(int id);
-        List<FusionOwnerOption> GetFusionOwnerOptions();        
-        IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy);
+        List<FusionOwnerOption> GetFusionOwnerOptions();                
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
         List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
-        Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         IEnumerable<dynamic> GetLoadColumnDetails(int id);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, string type, int id, bool includeLookupValues);
         BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues);

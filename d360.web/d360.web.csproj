@@ -1672,7 +1672,6 @@
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
