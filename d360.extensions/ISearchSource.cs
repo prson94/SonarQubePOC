@@ -31,13 +31,31 @@ namespace d360.extensions
 
     public class QueryRequest
     {
+        public const int SEARCH_TERM_MAX_LENGTH = 255;
         public QueryRequest()
         {
             AggregationFilters = new List<AggregationFilter>();
             FieldFilters = new List<FieldFilter>();
             Aggregations = new List<string>();
         }
-        public string Term { get; set; }
+        private string _term;
+        public string Term {
+            get
+            {
+                return _term;
+            }
+            set
+            {
+                if (value.Length > SEARCH_TERM_MAX_LENGTH)
+                {
+                    _term = value.Substring(0, SEARCH_TERM_MAX_LENGTH);
+                }
+                else
+                {
+                    _term = value;
+                }
+            }
+        }
         public int Size { get; set; } = 100;
         public int From { get; set; } = 0;
         public List<AggregationFilter> AggregationFilters { get; set; }

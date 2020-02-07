@@ -115,6 +115,21 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
             }
 
+            List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
+            //backward compatibility
+            if (!allowedScoreTypes.Contains(model.ScoreType))
+            {
+                model.ScoreType = ScoreType.Governance;
+            }
+
+            var allocation = MetricsRepository.GetAllocationByMetricModel(model);
+
+            if(allocation == null)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
+            }
+
+            
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
 

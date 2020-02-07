@@ -9,6 +9,7 @@
                         (completeMethod)="search($event)"
                         [placeholder]="autocompletePlaceholder"
                         [minLength]="1"
+                        maxlength="255"
                         (onBlur)="clearValue()"
                         (onSelect)="selectItem(ac)"
                         (onKeyUp)="syncSearchText($event)">

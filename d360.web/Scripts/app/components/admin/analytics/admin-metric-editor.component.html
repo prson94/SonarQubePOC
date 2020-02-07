@@ -7,9 +7,9 @@
                 <div class="col l6 m12 s12">
                     <div class="FieldNameRequired">Name</div>
                     <input type="text" [(ngModel)]="model.Name" style="width: 100%" #name="ngModel" name="name" maxlength="250" required />
-                    <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>                   
+                    <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                 </div>
-                <div class="col l6 m12 s12">
+                <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
                     <ng-container *ngIf="!parentUid && !model.ParentUid">
                         <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?" name="IsGroup"></p-checkbox>
                     </ng-container>
@@ -26,14 +26,14 @@
                             <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" name="effectiveDate"></p-calendar>
                         </div>
                     </div>
-                    <div class="col l6 m12 s12">
+                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
                         <div class="FieldNameRequired">
                             Weight
                         </div>
                         <div class="directions">Weight must be a value between 0 and 1</div>
                         <div>
                             <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="model.Weight = clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner>
-                        </div>                        
+                        </div>
                     </div>
                 </div>
             </div>
@@ -49,7 +49,7 @@
             </div>
         </div>
     </div>
-    <div class="row" *ngIf="!isLoading">
+    <div class="row" *ngIf="!isLoading && !isExternallyCalculated">
         <div class="col s12">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
                 <div class="row">

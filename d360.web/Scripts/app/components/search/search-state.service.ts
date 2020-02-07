@@ -284,7 +284,7 @@ export class SearchStateService extends BaseObservableService {
      */
     search(term: string) {
         if (term != this._query.Term) {
-            this._query.Term = term;
+            this._query.Term = term.substring(0,255);
             this._query.From = 0;
             this._needAggregation = true;
         }

@@ -25,5 +25,8 @@ namespace d360.core.entities.Scoring
         [DataMember]
         public State State { get; set; } = State.Active;
 
+        [DataMember]
+        public bool IsExternallyCalculated { get; set; }
+
     }
 }

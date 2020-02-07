@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -24,6 +25,8 @@ namespace d360.core.entities.Metric
         public string Name { get; set; }
 
         public string Description { get; set; }
+
+        public ScoreType ScoreType { get; set; }
 
         #endregion
 
