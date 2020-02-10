@@ -27,10 +27,6 @@ namespace d360.core.entities
         [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportObjectType_Name", Description = "ReportObjectType_Description")]
         public int ObjectID { get; set; }
 
-        [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportLayout_Name", Description = "ReportLayout_Description")]
-        public int ReportLayoutID { get; set; }
-
         private const string DEFAULT_REPORT_TYPE = "legacy";
         private string _reportType = DEFAULT_REPORT_TYPE;
         [DataMember]        
@@ -70,13 +66,6 @@ namespace d360.core.entities
 
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
-
-        [IgnoreDataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "ReportLayout_Name", Description = "ReportLayout_Description")]
-        public virtual ReportLayout ReportLayout { get; set; }
-
-        [IgnoreDataMember]
-        public virtual ICollection<ReportTile> ReportTiles { get; set; }
 
         [IgnoreDataMember, ForeignKey("ReportID")]
         public virtual ICollection<ReportResponsibility> Responsibilities { get; set; }
