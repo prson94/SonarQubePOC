@@ -28,6 +28,16 @@
 			alter table [metrics].[ScoreItem] add EndDate date null
 		END
 		
+		IF COL_LENGTH('[metrics].[Score]', 'ScoreType') IS NULL
+		BEGIN
+			alter table [metrics].[Score] add ScoreType int null;			
+		END
+		
+		IF COL_LENGTH('[metrics].[StagingScoreItem]', 'ScoreType') IS NULL
+		BEGIN
+			alter table [metrics].[StagingScoreItem] add ScoreType int null;
+		END
+		
 		]]>
     </sql>
 	<rollback>
@@ -46,6 +56,16 @@
 	IF COL_LENGTH('[metrics].[ScoreItem]', 'EndDate') IS NOT NULL
 	BEGIN
 		alter table [metrics].[ScoreItem] drop column EndDate
+	END
+		
+	IF COL_LENGTH('[metrics].[Score]', 'ScoreType') IS NOT NULL
+	BEGIN
+		alter table [metrics].[Score] drop column ScoreType
+	END
+			
+	IF COL_LENGTH('[metrics].[StagingScoreItem]', 'ScoreType') IS NOT NULL
+	BEGIN
+		alter table [metrics].[StagingScoreItem] drop column ScoreType
 	END
 	
 ]]>
@@ -76,6 +96,11 @@
 			and R.EffectiveDate > M.EffectiveDate
 			order by EffectiveDate asc
 		) R
+		
+		update [metrics].[StagingScoreItem] set ScoreType = 1
+		update [metrics].[Score] set ScoreType = 1
+		
+		alter table [metrics].[Score] alter column ScoreType int not null
 		]]>
     </sql>
 	<rollback>
@@ -133,14 +158,18 @@ begin
 		CREATE CLUSTERED INDEX CIX_TempMaxEffectiveMetric ON #maxEffectiveMetrics (MetricAssetUid, EffectiveDate);
 
 		drop table if exists #step1;
-		create table #step1 ( AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null, [Weight] decimal(5,3) not null, [Value] bit not null );
+		create table #step1 ( 
+			AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null, 
+			[Weight] decimal(5,3) not null, [Value] bit not null, ScoreType int not null 
+			);
 		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_Metric_EffectiveDate ON #step1 (AssetUid, MetricAssetUid);
 		CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_ParentMetric_EffectiveDate ON #step1 (AssetUid, ParentUid);
 
 		drop table if exists #step2;
 		create table #step2 (
 			AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null,
-			IsRelevant bit, [Weight] decimal(5,3) not null, [Value] bit not null, [Level] int null, AdjustedWeight decimal(5,3) null, Score decimal(5,3) null 
+			IsRelevant bit, [Weight] decimal(5,3) not null, [Value] bit not null, [Level] int null, AdjustedWeight decimal(5,3) null, Score decimal(5,3) null,
+			ScoreType int not null
 		);
 		CREATE NONCLUSTERED INDEX IX_TempStep2_Metric_IsGroup_Level ON #step2 (MetricAssetUid, IsGroup, [Level]);
 		CREATE NONCLUSTERED INDEX IX_TempStep2_Parent_Level_IsRelevant ON #step2 (ParentUid, [Level], IsRelevant);
@@ -248,7 +277,8 @@ begin
 						A.ParentUid,
 						A.IsGroup,
 						V.Weight,
-						coalesce(S.Result, P.Value, 0) as Value
+						coalesce(S.Result, P.Value, 0) as Value,
+						S.ScoreType
 				from	metrics.AssetVersion V
 						inner join metrics.Asset A on A.[Uid] = V.[Uid]
 						inner join #assets E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
@@ -270,7 +300,8 @@ begin
 						IsGroup,
 						Weight,
 						Value,
-						1 as [Level]
+						1 as [Level],
+						ScoreType
 				from	#step1
 				where	ParentUid is null
 				union all
@@ -280,12 +311,13 @@ begin
 						c.IsGroup,
 						c.Weight,
 						c.Value,
-						h.[Level] + 1 as [Level]
+						h.[Level] + 1 as [Level],
+						ScoreType
 				from	#step1 c
 						inner join MetricHierarchy h on h.AssetUid = c.AssetUid and h.MetricAssetUid = c.[ParentUid]
 			)
 
-			insert into #step2 (AssetUid, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level])
+			insert into #step2 (AssetUid, MetricAssetUid, ParentUid, IsGroup, Weight, [Value], [Level], ScoreType)
 				select * from MetricHierarchy order by [Level];
 
 			update	#step2
@@ -380,16 +412,32 @@ begin
 				update	set
 						T.Value = S.Value
 			when		not matched by target then
-				insert	(AssetUid, EffectiveDate, Value)
-				values	(S.AssetUid, @current_date, S.Value);
+				insert	(AssetUid, EffectiveDate, Value, ScoreType)
+				values	(S.AssetUid, @current_date, S.Value, S.ScoreType);
 		
+			--set end date for previous score items
+			update	M
+			set		M.EndDate = R.EffectiveDate
+			from	[metrics].[Score] M
+					cross apply (
+						select	top 1 EffectiveDate from #step2 R
+						where	R.EffectiveDate <> M.EffectiveDate 
+								and R.AssetUid = M.AssetUid
+								and R.EffectiveDate > M.EffectiveDate
+								and R.[Level] = 1
+								and R.Score is not null
+								and R.IsRelevant = 1
+						order by EffectiveDate asc
+					) R;
+
 			merge		metrics.ScoreItem as T
 			using		(
 						select		distinct
 									AssetUid,
 									MetricAssetUid,
 									Value,
-									AdjustedWeight
+									AdjustedWeight,
+									ScoreType
 						from		#step2
 						where		IsGroup = 0
 						) S
@@ -404,15 +452,18 @@ begin
 				values	(S.AssetUid, S.MetricAssetUid, @current_date, getutcdate(), S.Value, S.AdjustedWeight);
 	
 			--set end date for previous score items
-			update M
-			set M.EndDate = R.EffectiveDate
-			from [metrics].[ScoreItem] M
-			cross apply (
-				select top 1 EffectiveDate from #step2 R
-				where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
-				and R.EffectiveDate > M.EffectiveDate
-				order by EffectiveDate asc
-			) R;
+			update	M
+			set		M.EndDate = R.EffectiveDate
+			from	[metrics].[ScoreItem] M
+					cross apply (
+						select	top 1 EffectiveDate 
+						from	#step2 R
+						where	R.EffectiveDate <> M.EffectiveDate 
+								and R.AssetUid = M.AssetUid
+								and R.EffectiveDate > M.EffectiveDate
+								and R.IsGroup = 0
+						order by EffectiveDate asc
+					) R;
 
 			delete	T
 			from	metrics.StagingScoreItem T
