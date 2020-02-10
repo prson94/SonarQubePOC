@@ -1350,7 +1350,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-tile-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
@@ -1635,7 +1634,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />

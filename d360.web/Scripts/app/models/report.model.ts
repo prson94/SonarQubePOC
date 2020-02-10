@@ -1,9 +1,4 @@
-﻿export enum ReportType {
-    legacy,
-    powerbi
-}
-
-export class Report {
+﻿export class Report {
     ID: number;
     Name: string;
     Description: string;

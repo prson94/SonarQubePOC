@@ -291,62 +291,6 @@ namespace d360.web.Controllers
             }
             return new JsonNetResult { Data = report, Formatting = Newtonsoft.Json.Formatting.None };
         }
-
-        [Route("{reportID:int}/layout")]
-        public JsonNetResult GetReportLayout(int reportID)
-        {
-            var model = Company.GetById<Report>(reportID, r => r.ReportLayout);
-            var tiles = Company.Filter<ReportTile>(i => i.ReportID == reportID).ToList();
-
-            if (model != null)
-            {
-                var json = JArray.Parse(model.ReportLayout.Template);
-                foreach (dynamic r in json)
-                {
-                    foreach (dynamic c in r.cells)
-                    {
-                        foreach (dynamic a in c.areas)
-                        {
-                            var tileList = tiles.Where(i => i.ContentAreaNumber == (int)a.id).ToList();                            
-                            var tileArray = new JArray();
-                            foreach (var t in tileList)
-                            {
-                                var tileObject = new JObject();
-                                tileObject.Add("ID", t.ID);
-                                tileObject.Add("Name", t.Name);
-                                tileObject.Add("ReportTileType", (int)t.ReportTileType);
-                                tileObject.Add("Icon", t.ReportTileType.GetReportTileTypeIcon());
-
-                                var settingsObject = new JObject();
-                                var settingsXml = XElement.Parse(string.IsNullOrEmpty(t.Settings) ? "<settings/>" : t.Settings);
-
-                                foreach (var s in settingsXml.Elements())
-                                {
-                                    settingsObject.Add(s.Name.LocalName, s.Value);
-                                }
-                                tileObject.Add("Settings", settingsObject);
-
-                                tileArray.Add(tileObject);
-                            }
-
-                            (a as JObject).Add("tiles", tileArray);
-                        }
-                    }
-                }
-                return new JsonNetResult { Data = json, Formatting = Newtonsoft.Json.Formatting.None };
-            }
-            else 
-            {
-                return new JsonNetResult { Data = null, Formatting = Newtonsoft.Json.Formatting.None };
-            }
-        }
-        
-        [Route("{reportID:int}/tiles")]
-        public JsonNetResult GetReportTiles(int reportID)
-        {
-            var models = Company.Filter<ReportTile>(i => i.ReportID == reportID);
-            return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };
-        }
                 
         [Route("home"), ValidateContracts(Ignore = true), HttpGet]
         public JsonNetResult GetHomePageReports()

@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { ReportsService} from '../../../services/reports.service';
-import { Report, ReportType } from '../../../models/report.model';
+import { Report } from '../../../models/report.model';
 import { DropdownOption } from '../../../models/dropdown.model';
 
 import * as _ from 'lodash';
@@ -52,15 +52,6 @@ declare var CompanySettings;
                                 <input name="showOnHomePage" type="checkbox" [(ngModel)]="editedReport.ShowOnHomePage" #name="ngModel" />
                             </div>
                         </div>
-                        <div class="col s12" *ngIf="editedReport.ReportType == 'legacy'">
-                            <div class="FieldName">Report Layout</div>
-                            <div>                                
-                                <select required [(ngModel)]="editedReport.ReportLayoutID" name="ReportLayout" #reportLayout="ngModel" style="width:100%;">
-                                  <option *ngFor="let p of reportLayouts" [value]="p.value">{{p.title}}</option>
-                                </select>                                
-                            </div>       
-                            <div [hidden]="reportLayout.valid || reportLayout.pristine">A report layout is required</div>                                                                        
-                        </div>
                         <div class="col s12" *ngIf="editedReport.ReportType == 'powerbi'">
                             <div class="FieldName">File</div>
                             <div><input type="file" (change)="changeFile($event);" accept=".pbix" style="width: 99%" name="File" formenctype="multipart/form-data" /></div>
@@ -92,11 +83,9 @@ export class AdminDashboardsEditor {
     action: string = "Edit";
     error: any;
     editedReport: Report;
-    isLayoutsLoading: boolean = false;
     isTargetsLoading: boolean = false;
     reportTypes: DropdownOption[] = [];
     targetTypes: DropdownOption[] = [];
-    reportLayouts: DropdownOption[] = [];
     responsibilities: SelectItem[] = [];
     file: File;
 
@@ -104,7 +93,6 @@ export class AdminDashboardsEditor {
         private reportsService: ReportsService,
         private responsibilityTypeService: ResponsibilityTypeService
     ) {
-        this.reportTypes.push({ value:"legacy", title:"Default" });
         this.reportTypes.push({ value:"powerbi", title:"PowerBI" });
     }
 
@@ -120,7 +108,6 @@ export class AdminDashboardsEditor {
             this.action = "New";
         }
         this.getReportTargets();
-        this.getReportLayouts();
     }
 
     reportTypeChange() {
@@ -140,17 +127,8 @@ export class AdminDashboardsEditor {
             });
     }
 
-    getReportLayouts() {
-        this.isLayoutsLoading = true;
-        this.reportsService.getReportLayouts()
-            .subscribe(result => {
-                this.reportLayouts = result;
-                this.isLayoutsLoading = false;
-            });
-    }
-
     isLoading() {
-        return this.isTargetsLoading || this.isLayoutsLoading;
+        return this.isTargetsLoading;
     }
 
     private changeFile(e) {

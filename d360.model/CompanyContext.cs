@@ -196,14 +196,10 @@ namespace d360.model
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
 
-
-        public DbSet<ReportLayout> ReportLayouts { get; set; }
-
         public DbSet<Report> Reports { get; set; }
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
-        public DbSet<ReportTile> ReportTiles { get; set; }
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
@@ -2896,29 +2892,8 @@ select @err";
                         case EntityState.Added:
                             if (Any<Report>(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        case EntityState.Deleted:
-                            var any = Any<ReportTile>(i => i.ReportID == o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Report"), Messages.Error_List_FieldReferences);
-                            break;
                         case EntityState.Modified:
                             if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : ReportTile
-                if (entry.Entity is ReportTile)
-                {
-                    var o = entry.Entity as ReportTile;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
