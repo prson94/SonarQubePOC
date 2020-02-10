@@ -4608,18 +4608,6 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 
         #region Reports
 
-
-        [Route("reports/layouts")]
-        public IEnumerable<dynamic> GetReportLayouts()
-        {
-            return Company.Query<dynamic>(@"
-                select      cast(ID as varchar(15)) as value,
-                            Name as title
-                from        ReportLayout
-                order by    title
-                ");
-        }
-
         [Route("reports/targets")]
         public IEnumerable<dynamic> GetReportTargetAreas()
         {
@@ -6337,7 +6325,7 @@ where    A.RuleID = @id", new { id });
                 #endregion
                 case SystemObjects.Report:
                     #region Fields
-                    var report = Company.GetById<Report>(id, i => i.ReportLayout, i => i.Responsibilities);
+                    var report = Company.GetById<Report>(id, i => i.Responsibilities);
                     if (report == null)
                         report = Company.GetById<Report>(id);
 
@@ -6424,19 +6412,6 @@ where    A.RuleID = @id", new { id });
                                     }
                                 });
                             }
-                        }
-
-
-                        if (report.ReportLayout != null)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = report.GetName(i => i.ReportLayout), FieldName = "ReportReportLayout", FieldDescription = report.GetDescription(i => i.ReportLayout), Value = report.ReportLayout.Name }
-                            }
-                            });
                         }
 
                         var sql = "";

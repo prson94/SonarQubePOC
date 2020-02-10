@@ -129,10 +129,8 @@ namespace d360.model
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
         DbSet<QuestionType> QuestionTypes { get; set; }
-        DbSet<ReportLayout> ReportLayouts { get; set; }
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
         DbSet<Report> Reports { get; set; }
-        DbSet<ReportTile> ReportTiles { get; set; }
         DbSet<ResourceGroup> ResourceGroups { get; set; }
         DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
         DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }

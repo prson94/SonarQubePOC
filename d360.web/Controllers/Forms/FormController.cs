@@ -512,8 +512,6 @@ namespace d360.web.Controllers
 
                 case "REPORT":
                     return await EditReport(form);
-                case "REPORTTILE":
-                    return EditReportTile(form, true);
                 case "RESOURCE":
                     return EditResource(form);
                 case "RESOURCESELF":
@@ -584,9 +582,7 @@ namespace d360.web.Controllers
                 case "ORGANIZATIONINVITATION":
                     return DeleteOrganizationInvitation(objectID);
                 case "REPORT":
-                    return await DeleteReport(form);
-                case "REPORTTILE":
-                    return DeleteReportTile(form);                
+                    return await DeleteReport(form);               
                 case "RULETYPE":
                     return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
@@ -670,8 +666,6 @@ namespace d360.web.Controllers
 
                 case "REPORT":
                     return await AddReport(form);
-                case "REPORTTILE":
-                    return AddReportTile(form, true);
                 case "RESOURCE":
                     return AddResource(form);
                 case "RULEIMPLEMENTATION":
