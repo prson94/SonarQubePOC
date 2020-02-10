@@ -80,6 +80,7 @@ namespace d360.core.entities
         public string UrlPrefix { get; set; }
         public EnvironmentLevel EnvironmentLevel { get; set; }
         public int Priority { get; set; }
+        public bool IsFusionEnabled { get; set; }
     }
 
     public class FieldsObjectModel

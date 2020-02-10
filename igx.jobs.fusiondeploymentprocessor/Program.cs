@@ -110,9 +110,9 @@ from	plugin.FusionAttributeType A
                 community.Dispose();
 
 #if DEBUG
-                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings();
+                var companies = CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(x => x.IsFusionEnabled).ToList();
 #else
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot(true);
 #endif
                 var environment = CoreFunction.GetConfigValueByKey("Environment");
 

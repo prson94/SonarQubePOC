@@ -31,7 +31,7 @@ namespace igx.jobs.fusionscheduleprocessor
         {
             try
             {
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot(true);
 
                 #region Sql
 
