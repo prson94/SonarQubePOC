@@ -1641,20 +1641,4 @@ end
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-9601-FullRefresh-GraphTables">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-<![CDATA[
-exec [graph].[SynchronizeTables] 1
-]]>
-    </sql>
-	<rollback>
-<![CDATA[
-
-]]>
-	</rollback>
- </changeSet>
-
 </databaseChangeLog>
