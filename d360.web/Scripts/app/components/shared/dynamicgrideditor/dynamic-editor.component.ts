@@ -199,15 +199,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         else {
             this.isInErrorMessage = '';
             this.isInError = false;
-            let previousCategory = null;
             let currentCategory = null;
-            let rows = [];
-            let firstRow = true;
 
             this.isLoading = false;
             this.categories = [];
 
-            result = _.orderBy(result, [field => field.Category ? field.Category.toLowerCase() : ''], ['asc']);
+            result = _.orderBy(result, [field => field.Row ? field.Row : 0], ['asc']);
             this.fields = result;
 
             this.fields.forEach(f => {
@@ -215,21 +212,32 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     f.Value = "";
                 }
 
-                currentCategory = f.Category;
-
-                if (firstRow) {
-                    previousCategory = f.Category;
-                    firstRow = false;
+                if (f.Category == null)
+                {
+                    currentCategory = "";
                 }
+                else
+                {
+                    currentCategory = f.Category;
+                }
+                
 
-                if (previousCategory != currentCategory) {
+                if (this.categories.findIndex(dc => dc.name == currentCategory) == -1)
+                {
                     let category = new EditorCategory();
-                    category.name = previousCategory;
-                    category.rows = rows;
-                    this.categories.push(category);
-                    previousCategory = currentCategory;
-                    rows = [];
+                    category.name = currentCategory;
+                    category.rows = [];
+                    if (currentCategory == "")
+                    {
+                        this.categories.unshift(category);
+                    }
+                    else
+                    {
+                        this.categories.push(category);
+                    }
+                        
                 }
+
                
                 if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                     if (f.Value) {
@@ -241,22 +249,22 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
                 }
 
-                let r = rows.find(r => r.Row == (f.Row || 0));
-                if (r) {
+                 let curCategory = this.categories.find(dc => dc.name == currentCategory);
+
+                let r = curCategory.rows.find(r => r.Row == (f.Row || 0));
+                if (r)
+                {
                     r.Fields.push(f);
-                } else {
+                } else
+                {
                     let n = new EditorRow();
 
                     n.Row = f.Row;
                     n.Fields.push(f);
-                    rows.push(n);
+                    curCategory.rows.push(n);
                 }
             });
 
-            let category = new EditorCategory();
-            category.name = currentCategory;
-            category.rows = rows;
-            this.categories.push(category);
 
             this.fore = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconForeColor');
             this.back = this.fields.find(f => f.FieldType == 'Color' && f.FieldName == 'IconBackColor');
