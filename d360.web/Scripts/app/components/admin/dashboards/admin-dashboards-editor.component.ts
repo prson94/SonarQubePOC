@@ -83,11 +83,9 @@ export class AdminDashboardsEditor {
     action: string = "Edit";
     error: any;
     editedReport: Report;
-    isLayoutsLoading: boolean = false;
     isTargetsLoading: boolean = false;
     reportTypes: DropdownOption[] = [];
     targetTypes: DropdownOption[] = [];
-    reportLayouts: DropdownOption[] = [];
     responsibilities: SelectItem[] = [];
     file: File;
 
@@ -110,7 +108,6 @@ export class AdminDashboardsEditor {
             this.action = "New";
         }
         this.getReportTargets();
-        this.getReportLayouts();
     }
 
     reportTypeChange() {
@@ -130,17 +127,8 @@ export class AdminDashboardsEditor {
             });
     }
 
-    getReportLayouts() {
-        this.isLayoutsLoading = true;
-        this.reportsService.getReportLayouts()
-            .subscribe(result => {
-                this.reportLayouts = result;
-                this.isLayoutsLoading = false;
-            });
-    }
-
     isLoading() {
-        return this.isTargetsLoading || this.isLayoutsLoading;
+        return this.isTargetsLoading;
     }
 
     private changeFile(e) {
