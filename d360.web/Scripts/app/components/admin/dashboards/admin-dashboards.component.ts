@@ -4,7 +4,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 import { ReportsService } from '../../../services/reports.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { Report, ReportType } from '../../../models/report.model';
+import { Report } from '../../../models/report.model';
 import { Title } from '@angular/platform-browser';
 import { StateService } from '../../../services/state.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -103,14 +103,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                     <object-detail [objectType]="'Report'" [objectID]="selected?.ID"></object-detail>
                                 </div>
                             </div>
-                        </div>                        
-                        <div class="row" *ngIf="isBasicReport(selected)">
-                            <div class="col s12">
-                                <div class="tile tile-detail">                                              
-                                    <d3s-admin-report-item [report]="selected"></d3s-admin-report-item>
-                                </div>
-                            </div>
-                        </div>                        
+                        </div>                                     
                     <div>
                 </div>  
                 `
@@ -132,7 +125,8 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
     }
     
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
+        if (this.selected)
+            this.buildSecondaryNavigationForObject(this.selected.ID, 'Report');
     }
 
     ngOnInit() {
@@ -226,10 +220,6 @@ export class AdminDashboardsComponent extends AdminBaseComponent implements OnDe
         this.showEditor = true;
         this.selected = null;
         this.selectedItemChange();
-    }
-
-    private isBasicReport(report: Report): boolean {        
-        return (report != null && ReportType[report.ReportType] == ReportType.legacy);
     }
 
     private onSubmitPowerCreds() {

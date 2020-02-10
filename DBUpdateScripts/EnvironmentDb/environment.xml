@@ -435,4 +435,6 @@
   <include file="scripts/GOV-9486.xml"/> <!-- update delete object proc and remove orphaned metric.asset rows -->
   <include file="scripts/GOV-9594.xml"/> <!-- bulkload.GetLoadColumns - added Level column to returing resultset -->
   <include file="scripts/GOV-9652.xml"/> <!-- modify [dbo].[GetDynamicAssets] fix issue with json for multiple items causing issues on single select items -->
+  <include file="scripts/GOV-9601.xml"/> <!-- Multiple updates to graph functions and procedures, and a full refresh of graph tables -->
+  <include file="scripts/GOV-9628.xml"/> <!-- dbo.reports - remove report ID column and rename the ReportLayout and ReportTile tables -->
 </databaseChangeLog>

@@ -34,50 +34,13 @@ export class ReportsService extends BaseObservableService {
         return this.putDynamic(this.http, 'report', report, file);
     }
 
-    getReportTiles(report: Report): Observable<ReportTile[]> {
-        return this.http.get(`reports/${report.ID}/tiles`)
-            .pipe(
-                map(response => <ReportTile[]>response),
-                catchError(err=> this.handleError(err))
-            );
-    }
-
-    deleteReportTile(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'reporttile', id);
-    }
-
-    saveReportTile(reportTile: ReportTile, powerBIFile?: File): Observable<JsonResult> {
-        
-        if (reportTile.ID == undefined || !reportTile.ID) {
-            return this.postDynamic(this.http, 'reporttile', reportTile, powerBIFile);
-        }
-        return this.putDynamic(this.http, 'reporttile', reportTile, powerBIFile);
-    }
-
-
-    getReportLayout(report: Report): Observable<ReportLayout> {
-        return this.http.get(`reports/${report.ID}/layout`)
-            .pipe(
-            map(response => <ReportLayout>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getReportTargetTypes(): Observable<DropdownOption[]> {        
         return this.http.get('api/reports/targets')
             .pipe(
             map(response => <DropdownOption[]>response),
                 catchError(err=>this.handleError(err))
             );
-    }
-
-    getReportLayouts(): Observable<DropdownOption[]> {
-        return this.http.get('api/reports/layouts')
-            .pipe(
-                map(response => <DropdownOption[]>response),
-                catchError(err=> this.handleError(err))
-            );
-    }    
+    }  
 
     setPowerBICredentials(user: string, password: string): Observable<JsonResult> {
         let headers = new HttpHeaders({
@@ -90,12 +53,5 @@ export class ReportsService extends BaseObservableService {
             map(response => response),
                catchError(err=>this.handleError(err))
             );
-    }
-
-    saveTile(tile: ReportTile): Observable<JsonResult> {
-        if (tile.ID == undefined || !tile.ID) {
-            return this.postDynamic(this.http, 'reporttile', tile);
-        }
-        return this.putDynamic(this.http, 'reporttile', tile);
     }
 }
