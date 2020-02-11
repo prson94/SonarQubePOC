@@ -135,6 +135,7 @@
                             </p-tree>
                         </div>
                     </div>
+
                     <div class="asset-browser-tab">
                         <d3s-diagram-relationships *ngIf="isAddRelationshipWindowVisible"
                                                    [assetBrowserData]="responseModel"
@@ -142,15 +143,44 @@
                     </div>
 
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-header">
-                        <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue">
+                        <div class="asset-browser-window-header-name" *ngIf="isAlertTabEnabled">Alerts</div>
+                        <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue" *ngIf="!isAlertTabEnabled">
                             <a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a>
                         </div>
-                        <div class="asset-browser-window-header-class">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
+                        <div class="asset-browser-window-header-class" *ngIf="!isAlertTabEnabled">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
                         <div class="clearfix"></div>
                     </div>
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-content">
                         <p-tabView>
-                            <p-tabPanel header="Details">
+                            <p-tabPanel header="Alerts" [disabled]="!isAlertTabEnabled">
+                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
+                                <p-contextMenu [target]="alertPanelContent" [model]="alertContextItems"></p-contextMenu>
+                                <div #alertPanelContent [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                    <div *ngIf="alerts.length == 0" class="error-msg">
+                                        No alerts displayed.
+                                    </div>
+                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts">
+                                        <div class="asset">
+                                            <span [className]="'icon fa ' + alert.asset.icon"></span>
+                                            <span>{{alert.asset.displayValue}}</span>
+                                        </div>
+                                        <div class="action" *ngIf="alert.action">
+                                            <div>
+                                                <span class="label">Action Alert:</span>
+                                                <span class="type">{{alert.action.name}}</span>
+                                            </div>
+                                            <div class="content" [innerHTML]="alert.action.description"></div>
+                                        </div>
+                                        <div class="score" *ngIf="alert.score">
+                                            <div>
+                                                <span class="label">Quality Alert:</span>
+                                                <span class="type">{{alert.score.name}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                            <p-tabPanel header="Details" [disabled]="!isInfoWindowVisible">
                                 <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
                                 <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
                                     <div class="asset-browser-window-tabs-content-field">
@@ -244,42 +274,6 @@
                                             </tr>
                                         </ng-template>
                                     </p-table>
-                                </div>
-                            </p-tabPanel>
-                        </p-tabView>
-                    </div>
-
-                    <div *ngIf="isAlertWindowVisible" class="asset-browser-window-header">
-                        <div class="asset-browser-window-header-name">Alerts</div>
-                        <div class="clearfix"></div>
-                    </div>
-                    <div *ngIf="isAlertWindowVisible" class="asset-browser-window-content">
-                        <p-tabView>
-                            <p-tabPanel header="Alerts">
-                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
-                                <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
-                                    <div *ngIf="alerts.length == 0" class="error-msg">
-                                        No alerts displayed.
-                                    </div>
-                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts">
-                                        <div class="asset">
-                                            <span [className]="'icon fa ' + alert.asset.icon"></span>
-                                            <span>{{alert.asset.displayValue}}</span>
-                                        </div>
-                                        <div class="action" *ngIf="alert.action">
-                                            <div>
-                                                <span class="label">Action Alert:</span>
-                                                <span class="type">{{alert.action.name}}</span>
-                                            </div>
-                                            <div class="content" [innerHTML]="alert.action.description"></div>
-                                        </div>
-                                        <div class="score" *ngIf="alert.score">
-                                            <div>
-                                                <span class="label">Quality Alert:</span>
-                                                <span class="type">{{alert.score.name}}</span>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </p-tabPanel>
                         </p-tabView>

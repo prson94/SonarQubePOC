@@ -66,8 +66,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
 
-    private isAlertWindowVisible: boolean = false;
-    private isAlertTabDisabled: boolean = true;
+    private alertContextItems: MenuItem[] = [
+        { label: 'Show Details', command: function (e) { alert(e); } },
+        { label: 'Open in New Tab', command: function (e) { alert(e); } }
+    ];
+    private selectedAlert: AssetBrowserAlert;
+    private isAlertTabEnabled: boolean = true;
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
     private totalAlertCount: number = 0;
@@ -259,25 +263,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         switch (name) {
             case 'add':
                 this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
-                this.isAlertWindowVisible = false;
-                this.isFilterWindowVisible = false;
-                this.isInfoWindowVisible = false;
-                break;
-            case 'alert':
-                this.isAddRelationshipWindowVisible = false;
-                this.isAlertWindowVisible = !this.isAlertWindowVisible;
                 this.isFilterWindowVisible = false;
                 this.isInfoWindowVisible = false;
                 break;
             case 'filter':
                 this.isAddRelationshipWindowVisible = false;
-                this.isAlertWindowVisible = false;
                 this.isFilterWindowVisible = !this.isFilterWindowVisible;
                 this.isInfoWindowVisible = false;
                 break;
-            case 'info':
+            case 'alert':
+                this.isAlertTabEnabled = true;
                 this.isAddRelationshipWindowVisible = false;
-                this.isAlertWindowVisible = false;
+                this.isFilterWindowVisible = false;
+                this.isInfoWindowVisible = !this.isInfoWindowVisible;
+                break;
+            case 'info':
+                this.isAlertTabEnabled = false;
+                this.isAddRelationshipWindowVisible = false;
                 this.isFilterWindowVisible = false;
                 this.isInfoWindowVisible = !this.isInfoWindowVisible;
                 break;
@@ -439,10 +441,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private alertButtonClass() {
         let classes: string = "";
 
-        if (this.isAlertWindowVisible) {
+        if (this.isInfoWindowVisible) {
             classes += "selected";
         }
-        if (this.isAlertTabDisabled) {
+        if (!this.isAlertTabEnabled) {
             classes += "disabled";
         }
 
@@ -1448,8 +1450,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.isInfoWindowVisible) {
                                 this.showDetails(uid);
-                            }
-                            else if (this.isAlertWindowVisible) {
                                 this.showAlertsByAsset(uid);
                             }
                             else {
@@ -1465,8 +1465,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                         this.selectedDiagramAsset = null;
                         this.isInfoTabDisabled = true;
-                        this.isInfoWindowVisible = false;
-                        if (this.isAlertWindowVisible) {
+                        //this.isInfoWindowVisible = false;
+                        if (this.isInfoWindowVisible) {
                             this.showAlertsByDisplayedAssets();
                         }
                         this.cdRef.markForCheck();
@@ -1478,8 +1478,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     });
                     this.selectedDiagramAsset = null;
                     this.isInfoTabDisabled = true;
-                    this.isInfoWindowVisible = false;
-                    if (this.isAlertWindowVisible) {
+                    //this.isInfoWindowVisible = false;
+                    if (this.isInfoWindowVisible) {
                         this.showAlertsByDisplayedAssets();
                     }
                     this.cdRef.markForCheck();
@@ -1600,11 +1600,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.browserService.getAlertsByAsset(model).subscribe(alerts => {
                 if (alerts) {
                     this.alerts = alerts;
-                    this.isAlertTabDisabled = (alerts.length > 0);
+                    this.isAlertTabEnabled = (alerts.length > 0);
                 }
                 else {
                     this.alerts = [];
-                    this.isAlertTabDisabled = true;
+                    this.isAlertTabEnabled = false;
                 }
                 this.isWindowLoading = false;
                 this.cdRef.markForCheck();
@@ -1620,11 +1620,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.browserService.getAlertsByAsset(model).subscribe(alerts => {
             if (alerts) {
                 this.alerts = alerts;
-                this.isAlertTabDisabled = (alerts.length > 0);
+                this.isAlertTabEnabled = (alerts.length > 0);
             }
             else {
                 this.alerts = [];
-                this.isAlertTabDisabled = true;
+                this.isAlertTabEnabled = false;
             }
             this.isWindowLoading = false;
             this.cdRef.markForCheck();

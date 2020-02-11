@@ -544,7 +544,7 @@ for json path";
                 
                 var reader = await Company.QueryAsync<string>(sql, 
                     new {
-                        uids = model.assets.Select(i => i.uid).AsTableValuedParameter(
+                        uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
                             "dbo.UidTable",
                             new List<string>() { "Uid" }
                             )
