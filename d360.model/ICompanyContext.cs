@@ -129,10 +129,8 @@ namespace d360.model
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
         DbSet<QuestionType> QuestionTypes { get; set; }
-        DbSet<ReportLayout> ReportLayouts { get; set; }
         DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
         DbSet<Report> Reports { get; set; }
-        DbSet<ReportTile> ReportTiles { get; set; }
         DbSet<ResourceGroup> ResourceGroups { get; set; }
         DbSet<ResourcePasswordReset> ResourcePasswordResets { get; set; }
         DbSet<ResponsibilityDetail> ResponsibilityDetails { get; set; }
@@ -254,7 +252,6 @@ namespace d360.model
         Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true, bool useAssetUrl = false);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
-        IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id);
         List<PermissionInfo> GetTypePermissions(string type, int typeID);        
         string GetUserHomePage();
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);

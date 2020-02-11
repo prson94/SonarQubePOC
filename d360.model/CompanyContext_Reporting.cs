@@ -9,17 +9,7 @@ using System.Collections.Generic;
 namespace d360.model
 {
     partial class CompanyContext: BaseContext
-    {        
-        public IEnumerable<dynamic> GetReportQueryResults(int reportTileID, SystemObjects type, int id)
-        {
-            return Query<dynamic>(@"
-declare @commandText nvarchar(max)
-select @commandText = CommandText from ReportTile where ID = @id
-set  @commandText = REPLACE(@commandText, '[TYPE]', @t)
-set  @commandText = REPLACE(@commandText, '[ID]', @i)
-exec sp_executesql @commandText", new { id = reportTileID, t = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, i = id }, 180);
-        }
-        
+    {           
         public bool IsValidReportingQuery(string statement)
         {
             bool isValid = false;

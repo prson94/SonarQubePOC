@@ -63,6 +63,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     private searchOption = new AssetSearchFilter();
     private searchresults: CommonComponentAssetResultExt[] = [];
     private searchResultsCount: number;
+    private isSearchPhraseValid: boolean = true;
 
     private isFullPathVisible: boolean = false;
 
@@ -153,7 +154,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
         Object.keys(groups).forEach((key) => {
             var assets = groups[key].map(x => x.uid);
-            var params = { _assetUid: assets.join(','), includeSegments: true  };
+            var params = { _assetUid: assets.join(','), includeSegments: true };
             this.assetService.getAssets(key, params).subscribe(res => {
                 var items = res.items;
                 if (items) {
@@ -215,6 +216,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
 
     private closeSearch() {
         this.isSearchWindowOpened = false;
+        this.isSearchPhraseValid = true;
         this.currentSearchNavigationIndex = 0;
         if (this.clearResultsAfterSelection)
             this.searchresults = [];
@@ -225,6 +227,12 @@ export class AssetSearchComponent implements OnInit, OnChanges {
     paginate($event, el) {
         this.pageNum = $event.page + 1;
         this.search(null);
+    }
+
+
+    private isValidPhrase(phrase: string): boolean {
+        if (!phrase || phrase.length == 0) return false;
+        return phrase.split('').some(character => '0123456789abcdefghijklmnopqrstuvwxyzABCEDEFGHIJKLMNOPQRSTUVWXYZ'.includes(character));
     }
 
 
@@ -241,7 +249,9 @@ export class AssetSearchComponent implements OnInit, OnChanges {
             this.searchOption.SearchPhrase = $event.target.value;
         }
 
-        if (this.searchOption.SearchPhrase == '')
+        this.isSearchPhraseValid = this.isValidPhrase(this.searchOption.SearchPhrase);
+
+        if (!this.isSearchPhraseValid)
             return;
 
         this.searchOption.PageSize = this.pageSize;

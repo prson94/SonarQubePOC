@@ -5064,6 +5064,34 @@ a.mid-blue {
         width: 103%;
         display: none;
 
+        .search-field {
+            .feedback {
+                display: none;
+            }
+
+            &.error {
+                margin: 0px;
+
+                input {
+                    border: 1px solid #b21a3e;
+                }
+
+                .feedback {
+                    background: #b21a3e;
+                    padding: 2px 7px;
+                    font-size: 12px;
+                    color: white;
+                    border-bottom-left-radius: 3px;
+                    border-bottom-right-radius: 3px;
+                    width: 95%;
+                    margin-left: 5px;
+                    position: relative;
+                    top: -1px;
+                    display: block;
+                }
+            }
+        }
+
         &.visible {
             display: block;
         }
