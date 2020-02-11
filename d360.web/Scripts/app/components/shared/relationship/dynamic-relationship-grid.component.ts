@@ -1,15 +1,12 @@
 ﻿import { Component, Input, Output, OnChanges, SimpleChange, EventEmitter, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
-import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { GridDefinition, GridColumn, GridField } from '../../../models/grid-definition.model';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
 import { GridDefinitionService } from '../../../services/grid-definition.service';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { BaseComponent } from '../base.component';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { HttpErrorResponse } from '@angular/common/http';
 
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-dynamic-relationship-grid',
@@ -46,10 +43,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
-    }
-
-    get taxonomyName() {
-        return CompanySettings.ArtifactType_TaxonomyTypeID || '';
     }
 
     relations: any[] = [];
@@ -99,17 +92,7 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 this.columns = result.Columns;
                 this.fields = result.Fields;
                 this.readOnly = result.IsReadOnly;
-                this.readOnlyChange.emit(this.readOnly);
-                if (result.Fields.findIndex(x => x.name == 'TaxonomyType') >= 0) {
-                    this.columns.unshift({
-                        text: this.taxonomyName,
-                        cellsformat: '',
-                        datafield: 'TaxonomyType',
-                        type: 'string',
-                        description: null,
-                        columnWidth: null
-                    });
-                }
+                this.readOnlyChange.emit(this.readOnly);                
             }
         );
     }
@@ -179,13 +162,6 @@ export class DynamicRelationshipGridComponent extends BaseComponent implements O
                 newRel = { ObjectAssetUid: this.objectUid, SubjectAssetUid: this.selected.ObjectUid, Fields: fields };
 
             model.push(newRel);
-        }
-
-        if (event.item.id != undefined && event.item.id == 0) {
-            let count = 1;
-            if (event.values && event.values.Items) {
-                count = event.values.Items.split(',').length;
-            }
         }
 
         this.relationshipsService.saveRelationships(this.intersectTypeID, model)

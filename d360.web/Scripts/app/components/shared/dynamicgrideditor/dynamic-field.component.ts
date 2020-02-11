@@ -24,9 +24,6 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
-import { map } from 'rxjs/operators';
-
-declare var CompanySettings;
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -75,8 +72,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private filterException: string = '';
     private fieldChangeSub;
     private editorChangeSub;
-
-    private isTaxonomyType: boolean = false; // taxonomy type requires its name be mapped to whatever the setting is set to.
+        
     private hasCascadeLoaded: boolean = false;
 
     //For a drop down search option
@@ -84,8 +80,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private suggestionResultsArray: any[] = [];
     @Output() autoCompleteSelected = new EventEmitter();
     private doesAssetExists: boolean = false;
-
-
+    
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -285,9 +280,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             this.fieldTooltip = this.field.FieldDescription ? String(this.field.FieldDescription).replace(/<[^>]+>/gm, '') : '';
         }
 
-        if (this.field && this.field.FieldName == 'TaxonomyTypeID') {
-            this.isTaxonomyType = true;
-        }
 
         if (this.field.FieldType == 'Color') {
             this.colorValue = this.field.Value;
@@ -461,13 +453,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 return this.fieldMessage(this.field.FieldName);
         }
     }
-
-    get taxonomyName() {
-        return CompanySettings.ArtifactType_TaxonomyTypeID || '';
-    }
-
-    get currentFieldName() {
-        if (this.isTaxonomyType) return this.taxonomyName;
+    
+    get currentFieldName() {        
         return this.field ? this.field.Name : '';
     }
 
