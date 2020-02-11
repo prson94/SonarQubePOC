@@ -56,13 +56,6 @@ namespace d360.core.entities.Scoring
         public string assetTypePath { get; set; }
     }
 
-    //[JsonArray]
-    //[DataContract(Name = "scores")]
-    //public class ScoreResultsApiPostModel : List<ScoreResultApiPostModel>
-    //{
-
-    //}
-
     public class ScoreResultApiPostModel
     {
         [DataMember]

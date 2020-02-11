@@ -31,8 +31,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
-        Authorize,
-        ApiExplorerSettings(IgnoreApi = false)
+        Authorize
     ]
     public class ScoringController : BaseV2ApiController
     {
@@ -57,6 +56,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
@@ -96,6 +96,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPost,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -160,6 +161,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -235,6 +237,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The metric.</returns>
         [
             HttpDelete,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(ConfirmResponse)),
@@ -348,6 +351,7 @@ namespace d360.web.Controllers.V2
         /// <returns>List of asset types that have not been allocated to the provided score type.</returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("unallocatedAssetTypes/{scoreType}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns a list of asset types that are not yet allocated to the score type provided.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
@@ -384,30 +388,30 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("{scoreType}/results"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.Created, "Returns scores.", typeof(List<ScoreResultApiPostModel>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request model was invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostScoreResults(string scoreType, List<ScoreResultApiPostModel> model)
+        public IHttpActionResult PostScoreResults(string scoreType, List<ScoreResultApiPostModel> model)
         {
             try
             {
                 if (!Company.CurrentResourceIsAdmin)
-                {
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
-                }
                 
                 ScoreType scoreTypeEnum;
+                
                 if (!Enum.TryParse(scoreType, true, out scoreTypeEnum))
-                {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
-                }
+
+                if (model == null || model.Count < 1)
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty data set. Please check your request and submit again."));
+
 
                 var execution = getApiExecution(model.Count);
-
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
             }
             catch
@@ -415,8 +419,6 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
         }
-
-
     }
 
 
