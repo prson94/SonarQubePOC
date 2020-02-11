@@ -518,7 +518,8 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             try
             {
                 var sql = @"
-select	A.uid as 'asset.uid',
+select	I.uid as 'uid', 
+        A.uid as 'asset.uid',
 		coalesce(A.icon, 'fa-book') as 'asset.icon',
 		A.TypeName + ' > ' + A.DisplayValue as 'asset.displayValue',
 		IT.name as 'action.name', 

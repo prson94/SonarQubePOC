@@ -143,23 +143,23 @@
                     </div>
 
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-header">
-                        <div class="asset-browser-window-header-name" *ngIf="isAlertTabEnabled">Alerts</div>
-                        <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue" *ngIf="!isAlertTabEnabled">
+                        <div class="asset-browser-window-header-name" *ngIf="panelTabIndex==0">Alerts</div>
+                        <div class="asset-browser-window-header-name" [title]="selectedDiagramAsset?.DisplayValue" *ngIf="panelTabIndex!==0">
                             <a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a>
                         </div>
-                        <div class="asset-browser-window-header-class" *ngIf="!isAlertTabEnabled">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
+                        <div class="asset-browser-window-header-class" *ngIf="panelTabIndex!==0">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</div>
                         <div class="clearfix"></div>
                     </div>
                     <div *ngIf="isInfoWindowVisible" class="asset-browser-window-content">
-                        <p-tabView>
+                        <p-tabView [(activeIndex)]="panelTabIndex">
                             <p-tabPanel header="Alerts" [disabled]="!isAlertTabEnabled">
-                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
-                                <p-contextMenu [target]="alertPanelContent" [model]="alertContextItems"></p-contextMenu>
-                                <div #alertPanelContent [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
+                                <d3s-loading [(isLoading)]="isAlertPanelLoading"></d3s-loading>
+                                <!--<p-contextMenu [target]="alertPanelContent" [model]="alertContextItems"></p-contextMenu>-->
+                                <div #alertPanelContent [(hidden)]="isAlertPanelLoading" class="asset-browser-window-tabs-content">
                                     <div *ngIf="alerts.length == 0" class="error-msg">
                                         No alerts displayed.
                                     </div>
-                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts">
+                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts" (click)="selectAlert(alert)" [ngClass]="alert.selected ? 'alert-selected' : ''">
                                         <div class="asset">
                                             <span [className]="'icon fa ' + alert.asset.icon"></span>
                                             <span>{{alert.asset.displayValue}}</span>
@@ -180,7 +180,7 @@
                                     </div>
                                 </div>
                             </p-tabPanel>
-                            <p-tabPanel header="Details" [disabled]="!isInfoWindowVisible">
+                            <p-tabPanel header="Details" [disabled]="this.selectedDiagramAsset == null">
                                 <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
                                 <div [(hidden)]="isWindowLoading" class="asset-browser-window-tabs-content">
                                     <div class="asset-browser-window-tabs-content-field">

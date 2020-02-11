@@ -19,6 +19,7 @@ namespace d360.web.Models
 
     internal class AssetBrowserAlert
     {
+        public Guid uid { get; set; }
         public AssetBrowserAlertAsset asset { get; set; }
         public AssetBrowserAlertAction action { get; set; }
         public AssetBrowserAlertScore score { get; set; }

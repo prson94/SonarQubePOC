@@ -659,9 +659,11 @@ export class AssetBrowserAlertAssetRequest {
 }
 
 export class AssetBrowserAlert {
+    uid: string;
     asset: AssetBrowserAlertAsset;
     action: AssetBrowserAlertAction;
     score: AssetBrowserAlertScore;
+    selected: boolean = false;
 }
 
 export class AssetBrowserAlertAction {

@@ -75,10 +75,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
     private totalAlertCount: number = 0;
-
+    private panelTabIndex: number = 0;
     private isInfoWindowVisible: boolean = false;
     private isInfoTabDisabled: boolean = true;
     private isWindowLoading = false;
+    private isAlertPanelLoading: boolean = false;
     private isAddRelationshipWindowVisible: boolean = false;
     private tab: string = "info";
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
@@ -251,12 +252,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private alertButtonClick(e) {
         this.panelButtonClick('alert');
+        this.panelTabIndex = 0;
         if (this.selectedDiagramAsset) {
             this.showAlertsByAsset(this.selectedDiagramAsset.Uid);
         }
         else {
             this.showAlertsByDisplayedAssets();
         }
+    }
+
+    private selectAlert(alert: AssetBrowserAlert) {
+        this.alerts.forEach(a => {
+            if (a.uid !== alert.uid) {
+                a.selected = false;
+            }
+        });
+        alert.selected = true;
+        this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
+        this.selectedDiagramAsset.Uid = alert.asset.uid;
+        this.selectedDiagramAsset.DisplayValue = alert.asset.displayValue;
+        this.selectedDiagramAsset.Url = `/asset/${alert.asset.uid}`;
+        this.showDetails(this.selectedDiagramAsset.Uid);
+        this.panelTabIndex = 1;
     }
 
     private panelButtonClick(name: string) {
@@ -291,6 +308,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (this.isInfoWindowVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
             this.showDetails(this.selectedDiagramAsset.Uid);
+            this.panelTabIndex = 1;
         }
     }
 
@@ -1478,6 +1496,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     });
                     this.selectedDiagramAsset = null;
                     this.isInfoTabDisabled = true;
+                    this.panelTabIndex = 0;
                     //this.isInfoWindowVisible = false;
                     if (this.isInfoWindowVisible) {
                         this.showAlertsByDisplayedAssets();
@@ -1588,7 +1607,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Context menu actions
 
     private showAlertsByDisplayedAssets() {
-        this.isWindowLoading = true;
+        this.isAlertPanelLoading = true;
 
         if (this.assetsWithAlerts.length > 0) {
             let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
@@ -1606,14 +1625,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.alerts = [];
                     this.isAlertTabEnabled = false;
                 }
-                this.isWindowLoading = false;
+                this.isAlertPanelLoading = false;
                 this.cdRef.markForCheck();
             });
         }
     }
 
     private showAlertsByAsset(assetUid: string) {
-        this.isWindowLoading = true;
+        this.isAlertPanelLoading = true;
         let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
         model.assets.push({ uid: assetUid });
 
@@ -1626,7 +1645,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.alerts = [];
                 this.isAlertTabEnabled = false;
             }
-            this.isWindowLoading = false;
+            this.isAlertPanelLoading = false;
             this.cdRef.markForCheck();
         });
     }
