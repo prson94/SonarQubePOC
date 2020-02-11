@@ -95,17 +95,7 @@ export class RulesService extends BaseObservableService {
                 count++;
             }
 
-            //related filter fields
-            let rellFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Relation);
-            count = 0;
-
-            uri += '&relfilterscount=' + rellFilters.length;
-
-            for (let filter of rellFilters) {
-                uri += `&relfilterdatafield${count}=${filter.field.replace("Field", "")}&relfiltercondition${count}=${filter.condition}&relfiltervalue${count}=${filter.value}`;
-                count++;
-            }
-
+            
             //hiden filter fields
             let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
             count = 0;
