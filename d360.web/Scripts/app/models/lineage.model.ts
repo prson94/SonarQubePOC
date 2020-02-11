@@ -1,5 +1,6 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { SelectItem, TreeNode } from "primeng/api";
+import { ScoreType } from "./metrics.model";
 
 //#region Legacy: V2
 
@@ -494,6 +495,7 @@ export class AssetBrowserTranslationNode {
     hasAssetReadAccess: boolean;
     showIcon: boolean;
     showReveal: AssetBrowserApiHopDirection;
+    actionCount: number;
     owners: AssetBrowserTranslationOwnerCount[] = new Array();
     relations: AssetBrowserTranslationRelationCount[] = new Array();
     ignoredPredicates: string[] = new Array();
@@ -614,6 +616,7 @@ export class AssetBrowserAssetModel {
     class: AssetTypeClass;
     reveal: AssetBrowserApiHopDirection;
     items: AssetBrowserAssetModel[];
+    actionCount: number;
     ownerCounts: AssetBrowserOwnerCountModel[];
     relationCounts: AssetBrowserAssetRelationCountModel[];
 }
@@ -644,6 +647,42 @@ export class AssetBrowserAssetRelationModel {
 }
 
 // #endregion Response
+
+//#region Asset Browser : AlertPanel Data
+
+export class AssetBrowserAlertRequest {
+    assets: AssetBrowserAlertAssetRequest[] = new Array<AssetBrowserAlertAssetRequest>();
+}
+
+export class AssetBrowserAlertAssetRequest {
+    uid: string;
+}
+
+export class AssetBrowserAlert {
+    uid: string;
+    asset: AssetBrowserAlertAsset;
+    action: AssetBrowserAlertAction;
+    score: AssetBrowserAlertScore;
+    selected: boolean = false;
+}
+
+export class AssetBrowserAlertAction {
+    name: string;
+    description: string;
+}
+export class AssetBrowserAlertAsset {
+    uid: string;
+    icon: string;
+    displayValue: string;
+}
+export class AssetBrowserAlertScore {
+    type: ScoreType;
+    name: string;
+    value: number;
+    backColor: string;
+}
+
+//#endregion
 
 //#region Asset Browser : InfoPanel Data
 
