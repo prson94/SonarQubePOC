@@ -1,6 +1,8 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
+using d360.core.entities.Scoring;
+using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using Dapper;
@@ -30,7 +32,24 @@ namespace d360.model
 
         #region Engine Methods
 
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
+        //public List<BulkMetricTemporaryTableModel> BulkMetricsImport(List<ScoreResultApiPostModel> model, ApiExecution execution, ScoreType scoreType)
+        //{
+        //    BulkMetricsImport bulkModel = new BulkMetricsImport();
+        //    bulkModel.AddRange(model.Select(m =>
+        //        new BulkMetricImport()
+        //        {
+        //            AssetUid = m.assetUid,
+        //            MetricAssetUid = m.metricAssetUid,
+        //            EffectiveDate = m.effectiveDate,
+        //            Result = m.result
+        //        }
+        //    ).ToList());
+
+        //    return BulkMetricsImport(bulkModel, execution, scoreType, true);
+
+        //}
+
+        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool validateAllocation = false)
         {
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -167,6 +186,19 @@ where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
     update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
 
+                if (validateAllocation)
+                {
+                    Connection.Execute(@"
+                    update  M
+                    set     M.Success = 0,
+                            M.Message = coalesce(Message + '; ', '') + 'Metric allocation not found; '
+                    from    api.ExecutionMetric M
+                            left join AssetWithType A on A.uid = M.assetUid
+                            left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
+                    where   M.Success = 1 and L.Uid is null
+                ", new { execution.ExecutionID, scoreType });
+                }
+
                 #endregion
 
                 List<BulkMetricTemporaryTableModel> results = new List<BulkMetricTemporaryTableModel>();
@@ -208,9 +240,9 @@ when matched and T.Result <> S.Result then
             T.Result = S.Result,
             T.Archived = 0
 when not matched by target then
-    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived)
-    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0);", 
-                                new { execution.ExecutionID }, 
+    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
+    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);", 
+                                new { execution.ExecutionID, scoreType }, 
                                 transaction: trans);
 
                                 #endregion

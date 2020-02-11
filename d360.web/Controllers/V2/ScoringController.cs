@@ -32,7 +32,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        ApiExplorerSettings(IgnoreApi = false)
     ]
     public class ScoringController : BaseV2ApiController
     {
@@ -148,7 +148,7 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
             }
-            catch
+            catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
@@ -376,7 +376,47 @@ namespace d360.web.Controllers.V2
             }
         }
 
-     
+
+        /// <summary>
+        /// Loads score results for the associated allocations.
+        /// </summary>
+        /// <returns>The results.</returns>
+        [
+            HttpPost,
+            Route("{scoreType}/results"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Created, "Returns scores.", typeof(List<ScoreResultApiPostModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostScoreResults(string scoreType, List<ScoreResultApiPostModel> model)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
+                }
+                
+                ScoreType scoreTypeEnum;
+                if (!Enum.TryParse(scoreType, true, out scoreTypeEnum))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                }
+
+                var execution = getApiExecution(model.Count);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
+        }
+
+
     }
 
 
