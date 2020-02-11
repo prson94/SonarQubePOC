@@ -36,7 +36,8 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             this.resourceId = +params['resourceID']; // (+) converts string 'id' to a number
-            this.buildSecondaryNavigationForObject(this.resourceId, 'Resource');
+            
+            this.checkSecondaryNavLocalStorage();
         });
     }
 
