@@ -1,5 +1,5 @@
 ﻿import {NgModule, LOCALE_ID} from '@angular/core';
-import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
+import {CommonModule} from '@angular/common';
 import {HTTP_INTERCEPTORS, HttpClientModule} from '@angular/common/http';
 import {BrowserModule, Title} from '@angular/platform-browser';
 import {AppComponent} from './app.component';
@@ -43,9 +43,7 @@ export function getLocale() {
         AppComponent,
     ],
     imports: [
-        CommonModule,
-        // import deprecated module after
-        DeprecatedI18NPipesModule,
+        CommonModule,        
         BrowserModule,
         HttpClientModule,
         AppRoutingModule,

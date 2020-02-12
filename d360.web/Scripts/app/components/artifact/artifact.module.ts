@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
@@ -51,16 +51,13 @@ import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
-
-import {GovernRequestInterceptor} from "../../http-interceptors/govern-request.interceptor";
+import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-//import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 
 
 @NgModule({
     imports: [
         CommonModule,
-        DeprecatedI18NPipesModule,
         FormsModule,
         HttpClientModule,
         RouterModule,
@@ -92,7 +89,6 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedDynamicGridEditorModule,   
         SharedObjectGovernanceModule,
         SharedAssetEditorsModule,
-        //TagViewModule,
         TilesModule,
         WorkflowModule,        
     ],

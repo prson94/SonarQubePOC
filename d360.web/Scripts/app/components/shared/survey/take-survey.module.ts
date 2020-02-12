@@ -1,5 +1,5 @@
-﻿import { NgModule, Component } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -11,8 +11,8 @@ import { TakeSurveyComponent } from './take-survey.component';
 import { SiteModalModule } from '../modal/gov-modal.module';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         RouterModule,
         
