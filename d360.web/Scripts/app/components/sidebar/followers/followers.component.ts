@@ -98,7 +98,7 @@ export class FollowersComponent extends BaseComponent implements OnInit, OnDestr
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
-
+            
             this.load();
             this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
         });

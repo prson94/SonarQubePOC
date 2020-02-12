@@ -68,19 +68,17 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
     valid() {
         let valid = true;
-
-        //if (this.model == null || this.model.Map == null) {
-        //    valid = false;
-        //} else {
-        //    if (this.model.Map.AssetTypeID == null)
-        //        valid = false;
-        //    if (this.model.Map.ItemID == null || this.model.Map.ItemID < 1)
-        //        valid = false;
-        //    if ((<any>this.model.Map).Weight == "" || this.model.Map.Weight == null || this.model.Map.Weight < 0 || this.model.Map.Weight > 1)
-        //        valid = false;
-        //    if (this.model.Map.EffectiveDate == null)
-        //        valid = false;
-        //}
+        
+        if (this.model == null) {
+            valid = false;
+        } else {
+            if (this.model.Name == null || this.model.Name.trim().length > 250 || this.model.Name.trim().length==0)
+                valid = false;
+            if (this.model.EffectiveDate == null)
+                valid = false;
+            if (!this.isExternallyCalculated && (this.model.Weight == null || parseFloat(this.model.Weight.toFixed(2)) == 0))
+                valid = false;
+        }
 
         return valid;
     }

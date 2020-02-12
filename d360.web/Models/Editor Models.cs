@@ -101,10 +101,7 @@ namespace d360.web.Models
         public bool EnableShoppingCart { get; set; }
         public string DefaultRoute { get; set; }
         public bool EnableSearchExactMatch { get; set; }
-
-        public string ArtifactType_TaxonomyTypeID { get; set; }
-        public string ArtifactType_TaxonomyTypeIDNodes { get; set; }
-
+        
         public string HeaderBackgroundColor { get; set; }
 
         public List<CompanySettingsIpRestrictionEditorModel> IpRestrictions { get; set; }

@@ -196,14 +196,10 @@ namespace d360.model
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
 
-
-        public DbSet<ReportLayout> ReportLayouts { get; set; }
-
         public DbSet<Report> Reports { get; set; }
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
-        public DbSet<ReportTile> ReportTiles { get; set; }
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
@@ -411,86 +407,7 @@ namespace d360.model
             }
             return result;
         }
-
-
-        public async Task<List<IntersectTypeApiViewModel>> GetIntersectTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
-        {
-            var dbArgs = new DynamicParameters();
-
-            if (queryParams != null)
-            {
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "predicateuid"))
-                {
-                    Guid predicateUid;
-                    var predicateUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "predicateuid").Value;
-                    if (Guid.TryParse(predicateUidString, out predicateUid))
-                    {
-                        dbArgs.Add("@predicateUid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" P.[UID] = @predicateUid";
-                    }
-                }
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "assettypeuid"))
-                {
-                    Guid assetTypeUid;
-                    var assetTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "assettypeuid").Value;
-                    if (Guid.TryParse(assetTypeUidString, out assetTypeUid))
-                    {
-                        dbArgs.Add("@assettypeuid", assetTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (S.Uid = @assettypeuid OR O.Uid = @assettypeuid)";
-                    }
-                }
-                if (queryParams.ToList().Any(q => q.Key.ToLower() == "state"))
-                {
-                    State state;
-                    var stateString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "state").Value;
-                    if (Enum.TryParse(stateString, out state))
-                    {
-                        dbArgs.Add("@state", state);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" I.State = @state";
-                    }
-                }
-            }
-
-            var sql = $@"
-select	I.Id,
-        I.Uid,
-		I.State as State,
-        coalesce(I.IsSystem, 0) as IsSystem,
-		P.UID as 'Predicate.Uid',
-		coalesce(P.[Type],0) as 'Predicate.Type',
-		coalesce(P.Name,'') as 'Predicate.Name',
-		coalesce(P.Inverse,'') as 'Predicate.Inverse',
-		coalesce(SI.Uid, S.Uid) as 'Subject.Uid',
-		case 
-			when I.Subject = 'IntersectType' then SI.SubjectName + ' ' + SI.PredicateName + ' ' + SI.ObjectName + ' relationship'
-			else coalesce(SFT.Name + ' / ','') + coalesce(SP.[Path], S.Name)
-		end as 'Subject.Name',
-		coalesce(S.Class, 0) as 'Subject.Class',
-		I.SubjectCardinality as 'Subject.Cardinality',
-		O.Uid as 'Object.Uid',
-		coalesce(OFT.Name + ' / ','') + coalesce(OP.[Path], O.Name)  as 'Object.Name',
-		coalesce(O.Class, 0) as 'Object.Class',
-		I.ObjectCardinality as 'Object.Cardinality'
-from	IntersectType I
-		left join [Predicate] P on P.ID = I.PredicateID
-
-		left join AssetType S on (S.uid = I.SubjectUid OR (S.Object = I.Subject and S.ObjectID = I.SubjectID))
-        left join FusionAttributeType SFAT on I.Subject = 'FusionAttributeType' and SFAT.ID = I.SubjectID 
-        left join FusionType SFT on SFT.ID = SFAT.FusionTypeID 
-        outer apply dbo.GetAssetTypeTextPathById(S.ID, '/') SP
-
-		left join IntersectTypeDetail SI on I.Subject = 'IntersectType' and SI.ID = I.SubjectID
-		left join AssetType O on (O.uid = I.ObjectUid OR (O.Object = I.Object and O.ObjectID = I.ObjectID))
-        left join FusionAttributeType OFAT on I.Object = 'FusionAttributeType' and OFAT.ID = I.ObjectID 
-        left join FusionType OFT on OFT.ID = OFAT.FusionTypeID 
-        outer apply dbo.GetAssetTypeTextPathById(O.ID, '/') OP
-{whereClause} for json path";
-
-            var models = await GetDatabaseJsonAsObjectAsync<List<IntersectTypeApiViewModel>>(sql, dbArgs);
-
-            return models;
-        }
-
+        
         public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
             return GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
@@ -1218,17 +1135,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             }
 
             return true;
-        }
-
-        public IntersectType GetHierarchyIntersectType(SystemObjects objectType, int subjectId, int objectId, PredicateType predicateType = PredicateType.InterTypeHierarchy)
-        {
-            var @sql = @"select I.* from IntersectType I
-                inner join Predicate P on P.ID = I.PredicateID
-                where I.Subject = @objectType and I.SubjectID = @subjectId and I.Object = @objectType and I.ObjectID = @objectId and P.PredicateType = @type";
-
-            var intersectType = Query<IntersectType>(sql, new { objectType, subjectId, objectId, type = (int)predicateType }).FirstOrDefault();
-
-            return intersectType;
         }
 
         public string GetIntersectTypeName(IntersectType intersectType)
@@ -2168,7 +2074,7 @@ where	I.ID is null";
         {
             var settings = Community.GetCompanySettings();
 
-            string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, settings["ArtifactType_TaxonomyTypeID"], CurrentResourceID);
+            string query = string.Format("GetRenderedTemplateBodyNg '{0}', '{1}', {2}, '{3}', '{4}', {5}", templateType, type.ToString(), id, action, string.Empty, CurrentResourceID);
             var model = Database.SqlQuery<RenderTemplateModel>(query).SingleOrDefault();
             var html = "";
             if (model != null) html = model.Body;
@@ -2896,29 +2802,8 @@ select @err";
                         case EntityState.Added:
                             if (Any<Report>(i => i.Name == o.Name)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
-                        case EntityState.Deleted:
-                            var any = Any<ReportTile>(i => i.ReportID == o.ID);
-                            if (any) throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, "Report"), Messages.Error_List_FieldReferences);
-                            break;
                         case EntityState.Modified:
                             if (Any<Report>(i => i.Name == o.Name && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : ReportTile
-                if (entry.Entity is ReportTile)
-                {
-                    var o = entry.Entity as ReportTile;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID)) throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<ReportTile>(i => i.Name == o.Name && i.ReportID == o.ReportID && i.ID != o.ID)) throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }

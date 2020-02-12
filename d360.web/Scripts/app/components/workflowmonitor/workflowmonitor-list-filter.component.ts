@@ -3,7 +3,6 @@ import { BaseComponent } from "../shared/base.component";
 import { WorkflowService } from "../../services/workflow.service";
 import { GridFilterColumn, GridFilterExpression, GridFilterFieldType } from '../../models/grid-definition.model';
 import { WorkflowMonitorService } from '../../services/workflowmonitor.service';
-import { FilterFieldType } from '../../models/filter-field.model';
 import * as _ from 'lodash';
 import { StringHelpers } from '../../static/string-helpers';
 import { State } from '../../models/asset.model';

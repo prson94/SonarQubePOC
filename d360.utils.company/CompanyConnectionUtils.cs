@@ -64,10 +64,12 @@ select  c.ID as CompanyID,
         ds.IsDevelopment,
         c.EnvironmentLevel,
         CDS.UrlPrefix,
-        c.Priority
+        c.Priority,
+		CASE Lower(cs.Value) WHEN 'true' THEN 1 ELSE 0 END AS  'IsFusionEnabled'
 from    company c 
         inner join databaseserver ds on c.databaseserverid = ds.id and c.Status = 'Active' 
-        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1").ToList();
+        inner join CompanyDomainSetting CDS on CDS.CompanyID = c.ID and CDS.IsPrimary = 1
+		left outer Join CompanySetting CS ON settingID = 70 and CS.companyId = c.Id").ToList();
             cnn.Close();
             cnn.Dispose();
 

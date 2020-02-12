@@ -1,10 +1,7 @@
-import { Input, Output, Component, OnChanges, SimpleChange } from '@angular/core';
-import { DetailRow, DetailField, DetailModel, DetailFieldType } from '../../../models/object-detail.model';
+import { Input, Component, OnChanges, SimpleChange } from '@angular/core';
+import { DetailRow, DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
-import { LookupGrid } from '../../../models/grid-definition.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-
-declare var CompanySettings;'object-detail'
 
 @Component({
     selector: 'object-detail',
@@ -19,10 +16,7 @@ export class ObjectDetailComponent implements OnChanges {
     private assetUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
-
-    private TaxonomyTypeName = 'ArtifactTaxonomyType';
-    private TaxonomyTypeNodeName = 'ArtifactTaxonomyTypeNodes';
-
+        
     private categories: Category[] = new Array<Category>();
 
     rows = new Array<DetailRow>();
@@ -61,12 +55,7 @@ export class ObjectDetailComponent implements OnChanges {
 
                         r.FirstColumnFields.forEach(f => {
                             this.setDetailFieldType(f);
-                            if (f.FieldName == this.TaxonomyTypeName) {
-                                f.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
-                            }
-                            if (f.FieldName == this.TaxonomyTypeNodeName) {
-                                f.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
-                            }
+                                                        
                             if (f.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(f.LookupGridUrl)
                                     .subscribe(i => {
@@ -86,12 +75,7 @@ export class ObjectDetailComponent implements OnChanges {
 
                         r.SecondColumnFields.forEach(s => {
                             this.setDetailFieldType(s);
-                            if (s.FieldName == this.TaxonomyTypeName) {
-                                s.Name = CompanySettings.ArtifactType_TaxonomyTypeID;
-                            }
-                            if (s.FieldName == this.TaxonomyTypeNodeName) {
-                                s.Name = CompanySettings.ArtifactType_TaxonomyTypeIDNodes;
-                            }
+                                                        
                             if (s.Type == DetailFieldType.Lookup) {
                                 this.objectDetailService.getLookupGrid(s.LookupGridUrl)
                                     .subscribe(i => {
@@ -109,13 +93,9 @@ export class ObjectDetailComponent implements OnChanges {
 
                         r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                     });
-
-
-
+                                       
                     let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
-
-
-
+                                       
                     for (let i = 0; i < this.categories.length; i++) {
                         let items = this.rows.filter(r => r.Category == this.categories[i].name);
                         this.categories[i].rows = [];
@@ -131,8 +111,7 @@ export class ObjectDetailComponent implements OnChanges {
                 });
         }
     }
-
-
+    
     private setDetailFieldType(field: DetailField) {
         field.Type = DetailFieldType.Field;
         if ((field.Value == null || field.Value == '') && field.ShowIfEmpty == false)
