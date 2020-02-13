@@ -2,11 +2,12 @@
     <div class="value-box">
         <d3s-segments-tooltip *ngIf="item.IsSelected == undefined" [item]="item"></d3s-segments-tooltip>
         <div class="segments">
+            <span class="icon fa {{item.AssetTypeIcon}}" title="{{item.AssetTypeName}}"></span>
             <span class="segment" *ngFor="let segment of item.Segments;">
                 <span class="value">{{segment.Value}}</span>
                 <i *ngIf="item.Segments.indexOf(segment) != item.Segments.length-1" class="arrow-right fa fa-chevron-right"></i>
                 <span *ngIf="item.Segments.length > 2 && item.Segments.indexOf(segment) == 0" class="partial-path-elipsis">
-                    ...<i class="arrow-right fa fa-chevron-right"></i>
+                    ...<i class="arrow-right fa fa-chevron-right"></i> 
                 </span>
             </span>
         </div>
@@ -26,7 +27,6 @@
                             </div>
                         </i>
                     </div>
-
 
                     <ng-template *ngTemplateOutlet="segmentedItem; context: {$implicit: item}"></ng-template>
 
