@@ -5,7 +5,7 @@ import { StateService } from '../../../services/state.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem } from '../../../models/site-menu.model';
+import { SiteMenu, SiteMenuItem, SiteMenuModel, NavigationState } from '../../../models/site-menu.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import * as _ from 'lodash';
 import { isString, isArray } from 'util';
@@ -123,82 +123,103 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     loadMenu() {
-        this.siteMenuService.getMenu().subscribe(
-            result => {
+        
+            let navigationState: NavigationState[] = JSON.parse(localStorage.getItem("NavigationMenu")) ? JSON.parse(localStorage.getItem("NavigationMenu")) : [];        
 
-                // used to enable guard that allows access to administrative routes                                
-                this.authenticationService.isAdmin = result.IsAdmin;
-                this.isAdmin = result.IsAdmin;
+            this.siteMenuService.getMenu().subscribe(
+                result => {                                        
 
-                result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
+                        // used to enable guard that allows access to administrative routes                                
+                        this.authenticationService.isAdmin = result.IsAdmin;
+                        this.isAdmin = result.IsAdmin;
 
-                // add properties we need to add to the burned in menus
-                for (let menu of result.MenuItems) {
-                    menu.ShouldDisplay = true;
+                        result.MenuItems = result.MenuItems.filter(x => (x.MenuID != '#Admin')); //remove admin menu it will get built later.
 
-                    switch (menu.MenuID) {
-                        case '#Business':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
-                            break;
-                        case '#Technical':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
-                            break;
-                        case '#Models':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
-                            break;
-                        case '#Policy':
-                            menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`;
-                            break;
-                        case '#Data Quality':
-                            break;
-                        case '#Monitor':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
-                            menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
-                            break;
-                        case '#Reference':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
-                            break;
-                        case '#Fusion':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
-                            break;
-                        case '#Community':
-                            menu.NavigationItems = [];
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
-                            break;
-                        case '#Dashboards':
-                            menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
-                            break;
-                        default:
-                            //is it a custom menu?
-                            if (menu.MenuID.startsWith('~')) {
-                                if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+                        // add properties we need to add to the burned in menus
+                        for (let menu of result.MenuItems) {
+                            menu.ShouldDisplay = true;
+
+                            switch (menu.MenuID) {
+                                case '#Business':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/BusinessAsset`;
+                                    break;
+                                case '#Technical':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/assets/TechnicalAsset`;
+                                    break;
+                                case '#Models':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`;
+                                    break;
+                                case '#Policy':
+                                    menu.ngUrl = `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`;
+                                    break;
+                                case '#Data Quality':
+                                    break;
+                                case '#Monitor':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_MONITOR_ROOT;
+                                    menu.ShouldDisplay = (CompanySettings.DisableIssueManagement != 'true');
+                                    break;
+                                case '#Reference':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_REFERENCE_ROOT;
+                                    break;
+                                case '#Fusion':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_FUSION_ROOT;
+                                    break;
+                                case '#Community':
+                                    menu.NavigationItems = [];
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_COMMUNITY_ROOT;
+                                    break;
+                                case '#Dashboards':
+                                    menu.ngUrl = SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT;
+                                    break;
+                                default:
+                                    //is it a custom menu?
+                                    if (menu.MenuID.startsWith('~')) {
+                                        if (!menu.Title) menu.Title = menu.MenuID.replace('~', '');
+                                    }
+                                    break;
                             }
-                            break;
-                    }
-                    if (!menu.Icon && !menu.FullURL) {
-                        menu.Icon = 'fa-folder';
-                    }
+                            if (!menu.Icon && !menu.FullURL) {
+                                menu.Icon = 'fa-folder';
+                            }
 
-                }
-               
-                this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order
+                        }
+                        
+                        this.siteMenu = _.sortBy(result.MenuItems, 'SortOrder'); // sort the menu's by display order                                                
+                        
+                    if (result.IsAdmin) {
+                        this.buildConfigMenu();
+                        this.buildAdminMenu();
 
-                if (result.IsAdmin) {
-                    this.buildConfigMenu();
-                    this.buildAdminMenu();
-                }
-
-                this.ref.markForCheck();
-            }).add(() => {
-                this.siteMenuService.getCounts().subscribe((res) => {
-                    this.siteMenu.forEach(menu => {
-                        this.loadCounts(menu, res);
+                        //add logic around the admin menus starting as expanded
+                        //only add if it doesn't already exist.
+                        if (!navigationState.some(x => x.SiteMenuID == this.adminMenu.MenuID)) {
+                            navigationState.push(
+                                {
+                                    SiteMenuID: this.adminMenu.MenuID,
+                                    DisplayElements: [
+                                        { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Integration").Name },
+                                        { ParentUrl: null, Url: this.adminMenu.NavigationItems.find(item => item.Name == "Security").Name }
+                                    ]
+                                });
+                        }
+                    }                    
+                   
+                    localStorage.setItem("NavigationMenu", JSON.stringify(navigationState));
+                    this.ref.markForCheck();
+                }).add(() => {
+                    //set the nav state for each of the siteMenu elements
+                    this.siteMenuService.getCounts().subscribe((res) => {                        
+                        this.siteMenu.forEach(menu => {
+                            this.setNavState(navigationState, menu.NavigationItems, menu.MenuID, menu.ngUrl);
+                            this.loadCounts(menu, res);
+                        });
+                    //set the nav state for the admin menu elements
+                    this.setNavState(navigationState, this.adminMenu.NavigationItems, this.adminMenu.MenuID, this.adminMenu.ngUrl);
                     });
                 });
-            });
     }
 
 
@@ -270,7 +291,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu = new SiteMenu();
         this.adminMenu.MenuID = '-Admin';
         this.adminMenu.NavigationItems = [];
-
+        
         let integrationMenu = new SiteMenuItem();
         integrationMenu.Name = "Integration";
         integrationMenu.Items = [];
@@ -310,4 +331,16 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.adminMenu.NavigationItems.push({ Name: 'Tags', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`, IsLink: false, IsHomePage: false, count: null });
 
     }
+
+    private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {
+    for (let menuItem of menuItems) {
+        if (!menuItem.ShowChildren) {
+            menuItem.ShowChildren = currentNavState.some(y => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex(element => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
+
+            if (menuItem.Items && menuItem.Items.length > 0) {
+                this.setNavState(currentNavState, menuItem.Items, siteMenuID, menuItem.Url);
+            }
+        }
+    }
+}
 };

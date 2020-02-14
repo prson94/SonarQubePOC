@@ -216,6 +216,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         public string Url { get; set; }
         public string MenuID { get; set; }
+        public bool ShowChildren { get; set; }
         public List<NavigationItem> Items { get; set; }
     }
 
