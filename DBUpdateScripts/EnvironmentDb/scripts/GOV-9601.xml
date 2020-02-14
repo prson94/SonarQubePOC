@@ -525,7 +525,7 @@ end
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-9601-GetHop">
+ <changeSet author="Pappas" id="GOV-9601-GetHop-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -936,38 +936,41 @@ begin
 						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
 						) ATO(Cnt);
 
-	-- Calculate reveal.
-	if @direction = 'B'
+	if @hopType <> 3 -- No REVEALS on Impact.
 	begin
-		update	R
-		set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
-		from	#nodes R
-				cross apply (
-							select	count(1) as [Count]
-							from	graph.AssetNode S,
-									graph.AssetEdge E,
-									graph.AssetNode T
-							where	MATCH(S-(E)->T)
-									and E.PredicateType in (12,13)
-									and T.ID = R.AssetID
-							) S;
-	end
+		-- Calculate reveal.
+		if @direction = 'B'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and T.ID = R.AssetID
+								) S;
+		end
 
-	if @direction = 'F'
-	begin
-		update	R
-		set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
-		from	#nodes R
-				cross apply (
-							select	count(1) as [Count]
-							from	graph.AssetNode S,
-									graph.AssetEdge E,
-									graph.AssetNode T
-							where	MATCH(S-(E)->T)
-									and E.PredicateType in (12,13)
-									and S.ID = R.AssetID
-							) S;
-	end
+		if @direction = 'F'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and S.ID = R.AssetID
+								) S;
+		end
+	end;
 
 	-- Get action counts
 	update	R
