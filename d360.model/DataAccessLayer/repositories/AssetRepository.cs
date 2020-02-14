@@ -674,8 +674,12 @@ where	CONTAINS(N.[Path], @phrase) {prefilterSql}
             sql = $@"
 select	N.Uid,
 		N.AssetTypeUid,
+        T.Name as AssetTypeName,
+        coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
 		N.Segments as SegmentsXml
 from	graph.AssetNode N
+        inner join AssetType T on T.ID = N.AssetTypeID
+        left join AssetTypeStyle S on S.ID = T.ID
 where	CONTAINS(N.[Path], @phrase) {prefilterSql}
 order by N.[Path] asc
 OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY

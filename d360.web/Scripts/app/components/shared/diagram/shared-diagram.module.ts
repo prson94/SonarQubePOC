@@ -11,6 +11,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
+import { ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { SharedModule } from 'primeng/shared';
 import { TableModule } from 'primeng/table';
@@ -79,6 +80,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         AssetTypeModalEditorModule,
         //prime        
         CheckboxModule,
+        ContextMenuModule,
         EditorModule,     
         InputSwitchModule, 
         SharedModule,

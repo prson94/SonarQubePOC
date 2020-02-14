@@ -1,4 +1,3 @@
-
 import {debounceTime} from 'rxjs/operators';
 import { Component, Input, ElementRef, OnChanges, SimpleChange, Output, EventEmitter, OnInit,OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { Router }       from '@angular/router';
@@ -15,7 +14,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
         '(window:resize)': 'setMaxHeight()'
     },  
     template: ` <div #hovertarget class="hover-container" (mouseenter)="in(treePanel,searchPanel,$event)" (mouseleave)="out(treePanel,searchPanel,$event)" >
-                    <a id="breadlink" (click)="navigateToLink(breadcrumb.link)" 
+                    <a (click)="navigateToLink(breadcrumb.link)" 
                             class="breadcrumb" 
                             [ngClass]="{'breadcrumb-link' : hasLink(breadcrumb.link)}"
                             [ngStyle]="{'max-width.px': setLastBreadcrumbWidth()}">

@@ -46,7 +46,6 @@ export class GridFilterColumn {
     datafield: string;
     columntype: string;
     filteritems: string[];
-    relatedfield: boolean;
     hiddenfield: boolean;
     id: string;
     type: string;

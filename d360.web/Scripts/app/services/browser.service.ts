@@ -23,7 +23,9 @@ import {
     AssetBrowserAssetsModel,
     AssetBrowserAssetModel,
     AssetBrowserOwnersModel,
-    AssetBrowserAssetRelationModel
+    AssetBrowserAssetRelationModel,
+    AssetBrowserAlert,
+    AssetBrowserAlertRequest
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -51,7 +53,23 @@ export class BrowserService extends BaseObservableService {
     * Retrieve results from the Govern API for lineage regarding a specific asset.
     * @returns A deep models with hierarchical assets and relationships between them.
     */
-    public getAssetBrowserDiagramAsset(
+    public getAlertsByAsset(
+        model: AssetBrowserAlertRequest
+
+    ): Observable<AssetBrowserAlert[]> {
+        const url = `api/v2/browser/actions`;
+
+        return this.http.post(url, model).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieve results from the Govern API for lineage regarding a specific asset.
+    * @returns A deep models with hierarchical assets and relationships between them.
+    */
+    public getDetailByAsset(
         uid: string
         
     ): Observable<AssetBrowserDiagramAsset> {
@@ -438,6 +456,7 @@ export class BrowserService extends BaseObservableService {
             n.relations.push(assetBrowserTranslationRelationCount);
         });
 
+        n.actionCount = a.actionCount;
         n.showReveal = AssetBrowserApiHopDirection[a.reveal] as any; //convert string from API to enum value
         n.assetUid = a.assetUid;
         n.assetTypeId = a.assetTypeId;
