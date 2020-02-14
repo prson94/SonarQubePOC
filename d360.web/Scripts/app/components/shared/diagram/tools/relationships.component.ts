@@ -6,6 +6,7 @@ import { Observable, forkJoin } from 'rxjs';
 import { Predicate } from '../../../../models/predicate.model';
 import { delay, take } from 'rxjs/operators';
 import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
+import { AssetBrowserModel, AssetBrowserAssetModel } from '../../../../models/lineage.model';
 
 export enum RelationshipEditorType {
     Lineage = 'Lineage',
@@ -31,7 +32,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
 
-    @Input() assetBrowserData: any;
+    @Input() assetBrowserData: AssetBrowserModel;
 
     private browserAssets: CommonComponentAssetResult[] = [];
     private editorType: RelationshipEditorType = RelationshipEditorType.Lineage;
@@ -117,10 +118,12 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
 
     }
 
-    private populateAssets(group) {
+    private populateAssets(group: AssetBrowserAssetModel) {
         if (!group.items) {
             var item = new CommonComponentAssetResult();
             item.AssetTypeUid = group.assetTypeUid;
+            item.AssetTypeIcon = group.icon;
+            item.AssetTypeName = group.class.toString();
             item.Uid = group.assetUid;
             if (group.useAsTransformation == false && !this.browserAssets.find(x => x.Uid == item.Uid && x.AssetTypeUid == item.AssetTypeUid)) {
                 item["isSubjectInTransformation"] = group.isSubjectInTransformation;

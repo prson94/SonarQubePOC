@@ -603,6 +603,9 @@ export class AssetBrowserAssetModel {
     //hop: number;
     assetUid: string;
     assetTypeId: number;
+    assetTypeUid: string;
+    useAsTransformation: boolean;
+    isSubjectInTransformation: boolean;
     key: string;
     parentKey: string;
     salt: string;
