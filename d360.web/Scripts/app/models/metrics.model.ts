@@ -140,6 +140,3 @@ export enum ScoreType {
     DataQuality = 2,
     Perceptional = 3
 }
-
-
-

@@ -1000,7 +1000,7 @@ from	IntersectType I
                                 newFieldType.LookupObjectType = "TaxonomyType";
                                 newFieldType.LookupObjectID = 0;
                             }
-                            else if (f.Type.Lookup.List.Class.Value == AssetTypeClass.Model)
+                            else if (f.Type.Lookup.List.Class.Value == AssetTypeClass.ReferenceItemType)
                             {
                                 newFieldType.LookupObjectType = "ReferenceItemType";
                                 newFieldType.LookupObjectID = 0;

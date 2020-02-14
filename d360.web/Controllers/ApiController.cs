@@ -786,14 +786,13 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             });
         }
 
-        void parseDynamicFilterFields(List<FieldType> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool relatedField, bool hiddenField)
+        void parseDynamicFilterFields(List<FieldType> items, List<GridFilterColumn> columns, decimal dynamicFieldWidth, bool hiddenField)
         {
             items.ForEach(i =>
             {
                 GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true, false));
 
-                col.id = i.ID.ToString();
-                col.relatedfield = relatedField;
+                col.id = i.ID.ToString();                
                 col.hiddenfield = hiddenField;
                 col.parentFieldTypeID = i.ParentFieldTypeID;
 
@@ -891,23 +890,8 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     }
 
                     var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-                    parseDynamicFilterFields(hiddenItems, filterColumns, 0, false, true);
-
-                    //Load any fields that are displayed on relationships so we can show them as 
-                    // filters in the grid
-                    IEnumerable<int> intersectTypeIDs = Company.Query<int>("select ID from [IntersectType] where (Subject = 'ArtifactType' and SubjectID = @objectid) OR (Object = 'ArtifactType' and ObjectID = @objectid)", new { objectid = id });
-
-                    if (intersectTypeIDs.Any())
-                    {
-                        var totalRelItems = Company.Filter<FieldType>(i => i.Object == "IntersectType" && intersectTypeIDs.Contains(i.ObjectID)).ToList();
-                        var relItems = totalRelItems.Where(i => i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
-
-                        if (relItems.Any())
-                        {
-                            parseDynamicFilterFields(relItems, filterColumns, 0, true, false);
-                        }
-                    }
-
+                    parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
+                    
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
 
                     //Load any field types that are top level filter fields
@@ -917,8 +901,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     {
                         GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
 
-                        col.id = i.ID.ToString();
-                        col.relatedfield = false;
+                        col.id = i.ID.ToString();                        
                         col.hiddenfield = !i.IsListable;
 
                         topLevelFilterFields.Add(col);
@@ -1184,8 +1167,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
 
-                        col.id = i.ID.ToString();
-                        col.relatedfield = false;
+                        col.id = i.ID.ToString();                        
                         col.hiddenfield = false;
 
                         filterColumns.Add(col);
@@ -1209,8 +1191,7 @@ where   h.ID <> @t order by h.[Level] desc;
                     {
                         GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, dynamicFieldWidth, true));
 
-                        col.id = i.ID.ToString();
-                        col.relatedfield = false;
+                        col.id = i.ID.ToString();                        
                         col.hiddenfield = false;
 
                         filterColumns.Add(col);

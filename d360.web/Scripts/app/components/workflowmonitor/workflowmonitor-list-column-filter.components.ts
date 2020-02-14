@@ -164,8 +164,6 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
             //determine the field type
             if (target.Data.hiddenfield)
                 filter.Data.fieldtype = GridFilterFieldType.Hidden;
-            else if (target.Data.relatedfield)
-                filter.Data.fieldtype = GridFilterFieldType.Relation;
             else
                 filter.Data.fieldtype = GridFilterFieldType.Normal;
         }

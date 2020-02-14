@@ -22,6 +22,8 @@ export enum CommonComponentAssetTypeFilterRelationshipSide {
 export class CommonComponentAssetResult {
     Uid: string;
     AssetTypeUid: string;
+    AssetTypeIcon: string;
+    AssetTypeName: string;
     Segments: CommonComponentAssetResultSegment[];
 }
 
@@ -32,6 +34,8 @@ export class CommonComponentAssetResultExt extends CommonComponentAssetResult {
 export class CommonComponentAssetSelection {
     Uid: string;
     AssetTypeUid: string;
+    AssetTypeIcon: string;
+    AssetTypeName: string;
     Segments: CommonComponentAssetResultSegment[];
     Predicate: Predicate;
     Warnings: string[] = [];
