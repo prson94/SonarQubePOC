@@ -525,7 +525,7 @@ end
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-9601-GetHop-2">
+ <changeSet author="Pappas" id="GOV-9601-GetHop-3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -564,7 +564,7 @@ begin
 		Back varchar(25), Fore varchar(25), Icon varchar(50), 
 		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
 		DisplayValue nvarchar(500), 
-		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		Reveal int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
 		IsLeaf bit, 
 		IsSubjectInTransformation bit null,
 		HasAssetReadAccess bit null);
@@ -602,11 +602,12 @@ begin
 		-- Backward-facing hop
 		if @direction = 'B'
 			begin
-				insert into #links ([Uid], Direction, ProvidedKey, ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 					select	E.[Uid],
 							@direction,
 							A.[Key],
 						
+							utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 							S.ID as ToID,
 							S.Uid as ToUid, 
 							S.[Path] as ToPath,
@@ -628,11 +629,12 @@ begin
 			end
 		else if @direction = 'F' -- Forward-facing hop
 			begin
-				insert into #links ([Uid], Direction, ProvidedKey, ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 					select	E.[Uid],
 							@direction,
 							A.[Key],
 					
+							utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 							T.ID as ToID,
 							T.Uid as ToUid, 
 							T.[Path] as ToPath,
@@ -657,11 +659,12 @@ begin
 	begin
 		if @direction = 'B'
 		begin
-			insert into #links ([Uid], Direction, ProvidedKey, ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 				select	E.[Uid],
 						@direction,
 						A.[Key],
 					
+						utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 						S.ID as ToID,
 						S.Uid as ToUid, 
 						S.[Path] as ToPath,
@@ -683,11 +686,12 @@ begin
 		end
 		else 
 		begin 
-			insert into #links ([Uid], Direction, ProvidedKey, ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 				select	E.[Uid],
 						@direction,
 						A.[Key],
 					
+						utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 						T.ID as ToID,
 						T.Uid as ToUid, 
 						T.[Path] as ToPath,
@@ -716,12 +720,9 @@ begin
 					for $x in $segments
 					return 
 					 <segment>
-						<position>{data($x/@position)}</position>
 						<level>{data($x/@level)}</level>
 						<assetTypeId>{data($x/@assetTypeId)}</assetTypeId>
 						<assetId>{data($x/@assetId)}</assetId>
-						<parentLevel>{data(/path/segment[. << $x][last()]/@level)}</parentLevel>
-						<parentPosition>{data(/path/segment[. << $x][last()]/@position)}</parentPosition>
 						<parentAssetId>{data(/path/segment[. << $x][last()]/@assetId)}</parentAssetId>
 						<value>{data($x)}</value>
 						<leaf>{$x is $segments[last()]}</leaf>
@@ -734,21 +735,17 @@ begin
 		from	#links
 	)
 
-	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
 		select	distinct
 				doc.c.value('(level/text())[1]', 'int') as [Level]
 				,A.Uid as AssetUid
 				,doc.c.value('(assetId/text())[1]', 'bigint') as AssetID
 				,case 
-					when T.[Key] is not null and A.Uid = T.AssetUid and doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then T.[Key]
-					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) + '|' + cast( doc.c.value('(level/text())[1]', 'int') * doc.c.value('(position/text())[1]', 'int') as varchar ) )
+					when T.[Key] is not null and A.Uid = T.AssetUid then T.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)))
 				 end as [Key]
 				,doc.c.value('(parentAssetId/text())[1]', 'bigint') as ParentID
-				,utility.GetHash(
-					@hopSalt + '|' + 
-					doc.c.value('(parentAssetId/text())[1]', 'varchar(50)') + '|' + 
-					cast( doc.c.value('(parentLevel/text())[1]', 'int') * doc.c.value('(parentPosition/text())[1]', 'int') as varchar ) 
-				) as [ParentKey]
+				,utility.GetHash(@hopSalt + '|' + doc.c.value('(parentAssetId/text())[1]', 'varchar(50)')) as [ParentKey]
 				,A.BackColor as Back
 				,A.ForeColor as Fore
 				,A.Icon
@@ -757,7 +754,6 @@ begin
 				,A.AssetTypeClass as Class
 				,doc.c.value('(value/text())[1]', 'nvarchar(250)') as DisplayValue
 				,0 as Reveal
-				,0 as ActionCount
 				,'[]' as RelationCounts
 				,0 as UseAsTransformation
 				,case when doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then cast(1 as bit) else cast(0 as bit) end as IsLeaf
@@ -768,14 +764,7 @@ begin
 				end as HasReadAccess
 		from	cte T
 				cross apply T.Segment.nodes('/path/segment') doc(c)
-				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint')
-
-	-- Update links with proper key based on key recalculation above.
-	update	L
-	set		[Key] = N.[Key]
-	from	#links L
-			inner join #nodes N on N.AssetID = L.ID and N.IsLeaf = 1;
-
+				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint');
 
 	if @hopType = 1			-- SELF
 	begin
@@ -811,7 +800,7 @@ begin
 					and S.ID = p.AssetID
 		)
 
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
 			select	distinct
 					d.[Level]
 					,d.AssetUid
@@ -827,7 +816,6 @@ begin
 					,A.AssetTypeClass as Class
 					,coalesce(V.DisplayValue, '{Unknown}') as DisplayValue
 					,0 as Reveal
-					,0 as ActionCount
 					,'[]' as RelationCounts
 					,0 as UseAsTransformation
 					,cast(0 as bit) as IsLeaf
@@ -842,15 +830,13 @@ begin
 
 		declare @maxLevel int = 1
 		select @maxLevel = max([Level]) from #nodes
-		update	#nodes 
-		set		isLeaf = case [level] when @maxLevel then 1 else 0 end
-		where	not exists(select count(1) from #nodes where [Level] = @maxLevel group by [Level] having count(1) > 1);
+		update	#nodes set isLeaf = case [level] when @maxLevel then 1 else 0 end;
 	end
 
 	-- Get type-based parent for single-level asset hierarchies above.
 	if @hopType = 2		-- LINEAGE
 	begin
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, HasAssetReadAccess)
 			select	1 as [Level],
 					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
 					0 as AssetID,
@@ -865,7 +851,6 @@ begin
 					n.Class,
 					t.Name as DisplayValue,
 					n.Reveal,
-					0 as ActionCount,
 					n.RelationCounts,
 					t.UseAsTransformation,
 					0 as HasAssetReadAccess -- 0 as this is AssetType
@@ -886,7 +871,7 @@ begin
 	end
 	else
 	begin
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, HasAssetReadAccess)
 			select	1 as [Level],
 					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
 					0 as AssetID,
@@ -901,7 +886,6 @@ begin
 					n.Class,
 					t.Name as DisplayValue,
 					n.Reveal,
-					0 as ActionCount,
 					n.RelationCounts,
 					t.UseAsTransformation,
 					0 as HasAssetReadAccess -- 0 as this is AssetType
@@ -936,6 +920,7 @@ begin
 						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
 						) ATO(Cnt);
 
+	
 	if @hopType <> 3 -- No REVEALS on Impact.
 	begin
 		-- Calculate reveal.
@@ -970,20 +955,7 @@ begin
 										and S.ID = R.AssetID
 								) S;
 		end
-	end;
-
-	-- Get action counts
-	update	R
-	set		R.ActionCount =	(
-								select	count(1) as ActionCount
-								from	Issue I
-										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-										left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
-								where	I.CompletedOn is null and W.CompletedOn is null
-										and A.ID = R.AssetID
-								group by A.Uid
-								)
-	from	#nodes R;
+	end
 
 	-- Get impact badges
 	update	R
@@ -1062,7 +1034,6 @@ begin
 				class,
 				displayValue,
 				reveal,
-				actionCount,
 				relationCounts,
 				ownerCounts,
 				useAsTransformation,
