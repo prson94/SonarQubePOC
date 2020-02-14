@@ -2,9 +2,10 @@
     Name: string;
     Url: string;
     Items: SiteMenuItem[];
+    ShowChildren?: boolean = false;
     IsLink: boolean;
     IsHomePage: boolean = false;
-    count: number;
+    count: number;    
 }
 
 export class SiteMenu {
@@ -53,5 +54,15 @@ export class SiteNavPermission {
     ObjectID: number;
 
     Name: string;
+}
+
+export class NavigationState {
+    SiteMenuID: string;
+    DisplayElements: DisplayElement[]; 
+}
+
+export class DisplayElement {
+    ParentUrl: string;
+    Url: string;
 }
 
