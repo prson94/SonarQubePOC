@@ -332,15 +332,15 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
     }
 
-    private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {
-    for (let menuItem of menuItems) {
-        if (!menuItem.ShowChildren) {
-            menuItem.ShowChildren = currentNavState.some(y => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex(element => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
+    private setNavState(currentNavState: NavigationState[], menuItems: SiteMenuItem[], siteMenuID: string, parentUrl: string) {        
+        menuItems.forEach(menuItem => {
+            if (!menuItem.ShowChildren) {
+                menuItem.ShowChildren = currentNavState.some(y => y.SiteMenuID == siteMenuID && y.DisplayElements.findIndex(element => (element.Url == menuItem.Url) || (!element.ParentUrl && element.Url == menuItem.Name)) >= 0);
 
-            if (menuItem.Items && menuItem.Items.length > 0) {
-                this.setNavState(currentNavState, menuItem.Items, siteMenuID, menuItem.Url);
+                if (menuItem.Items && menuItem.Items.length > 0) {
+                    this.setNavState(currentNavState, menuItem.Items, siteMenuID, menuItem.Url);
+                }
             }
-        }
+        });
     }
-}
 };
