@@ -261,7 +261,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private selectAlert(alert: AssetBrowserAlert) {
+    private onAlertOpenDetails(alert: AssetBrowserAlert) {
         this.alerts.forEach(a => {
             if (a.uid !== alert.uid) {
                 a.selected = false;
@@ -274,6 +274,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.selectedDiagramAsset.Url = `/asset/${alert.asset.uid}`;
         this.showDetails(this.selectedDiagramAsset.Uid);
         this.panelTabIndex = 1;
+    }
+
+    private onAlertOpenInNewTab(alert: AssetBrowserAlert) {
+        window.open(`/asset/${alert.asset.uid}`, "_blank");
     }
 
     private panelButtonClick(name: string) {
@@ -289,12 +293,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.isInfoWindowVisible = false;
                 break;
             case 'alert':
+                this.panelTabIndex = 0;
                 this.isAlertTabEnabled = true;
                 this.isAddRelationshipWindowVisible = false;
                 this.isFilterWindowVisible = false;
                 this.isInfoWindowVisible = !this.isInfoWindowVisible;
                 break;
             case 'info':
+                this.panelTabIndex = 1;
                 this.isAlertTabEnabled = false;
                 this.isAddRelationshipWindowVisible = false;
                 this.isFilterWindowVisible = false;
@@ -459,7 +465,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private alertButtonClass() {
         let classes: string = "";
 
-        if (this.isInfoWindowVisible) {
+        if (this.isInfoWindowVisible && this.panelTabIndex == 0) {
             classes += "selected";
         }
         if (!this.isAlertTabEnabled) {
@@ -545,7 +551,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private infoButtonSelectedClass() {
-        return this.isInfoWindowVisible ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
+        return (this.isInfoWindowVisible &&  this.panelTabIndex == 1) ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
     }
 
     private ownerRowClass(icon: string) {
@@ -1657,6 +1663,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.selectedDiagramAsset.Loaded = true;
             this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
             this.isWindowLoading = false;
+            this.panelTabIndex = 1;
             this.cdRef.markForCheck();
         });
     }
