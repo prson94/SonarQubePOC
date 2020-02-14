@@ -384,6 +384,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Loads score results for the associated allocations.
         /// </summary>
+        /// <param name="scoreType">The score type of the score results.</param>
         /// <returns>The results.</returns>
         [
             HttpPost,
@@ -402,9 +403,7 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
                 
-                ScoreType scoreTypeEnum;
-                
-                if (!Enum.TryParse(scoreType, true, out scoreTypeEnum))
+                if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
 
                 if (model == null || model.Count < 1)
