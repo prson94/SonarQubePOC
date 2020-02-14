@@ -525,7 +525,7 @@ end
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-9601-GetHop-3">
+ <changeSet author="Pappas" id="GOV-9601-GetHop-4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -956,6 +956,19 @@ begin
 								) S;
 		end
 	end
+
+	-- Get action counts
+	update	R
+	set		R.ActionCount =	(
+								select	count(1) as ActionCount
+								from	Issue I
+										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+										left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
+								where	I.CompletedOn is null and W.CompletedOn is null
+										and A.ID = R.AssetID
+								group by A.Uid
+								)
+	from	#nodes R;
 
 	-- Get impact badges
 	update	R
