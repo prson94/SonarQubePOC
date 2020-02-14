@@ -525,7 +525,7 @@ end
 	</rollback>
  </changeSet>
 
- <changeSet author="Pappas" id="GOV-9601-GetHop-4">
+ <changeSet author="Pappas" id="GOV-9601-GetHop-5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -564,7 +564,7 @@ begin
 		Back varchar(25), Fore varchar(25), Icon varchar(50), 
 		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
 		DisplayValue nvarchar(500), 
-		Reveal int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
 		IsLeaf bit, 
 		IsSubjectInTransformation bit null,
 		HasAssetReadAccess bit null);
@@ -735,7 +735,7 @@ begin
 		from	#links
 	)
 
-	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
 		select	distinct
 				doc.c.value('(level/text())[1]', 'int') as [Level]
 				,A.Uid as AssetUid
@@ -754,6 +754,7 @@ begin
 				,A.AssetTypeClass as Class
 				,doc.c.value('(value/text())[1]', 'nvarchar(250)') as DisplayValue
 				,0 as Reveal
+				,0 as ActionCount
 				,'[]' as RelationCounts
 				,0 as UseAsTransformation
 				,case when doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then cast(1 as bit) else cast(0 as bit) end as IsLeaf
@@ -800,7 +801,7 @@ begin
 					and S.ID = p.AssetID
 		)
 
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
 			select	distinct
 					d.[Level]
 					,d.AssetUid
@@ -816,6 +817,7 @@ begin
 					,A.AssetTypeClass as Class
 					,coalesce(V.DisplayValue, '{Unknown}') as DisplayValue
 					,0 as Reveal
+					,0 as ActionCount
 					,'[]' as RelationCounts
 					,0 as UseAsTransformation
 					,cast(0 as bit) as IsLeaf
@@ -836,7 +838,7 @@ begin
 	-- Get type-based parent for single-level asset hierarchies above.
 	if @hopType = 2		-- LINEAGE
 	begin
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
 			select	1 as [Level],
 					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
 					0 as AssetID,
@@ -851,6 +853,7 @@ begin
 					n.Class,
 					t.Name as DisplayValue,
 					n.Reveal,
+					0 as ActionCount,
 					n.RelationCounts,
 					t.UseAsTransformation,
 					0 as HasAssetReadAccess -- 0 as this is AssetType
@@ -871,7 +874,7 @@ begin
 	end
 	else
 	begin
-		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
 			select	1 as [Level],
 					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
 					0 as AssetID,
@@ -886,6 +889,7 @@ begin
 					n.Class,
 					t.Name as DisplayValue,
 					n.Reveal,
+					0 as ActionCount,
 					n.RelationCounts,
 					t.UseAsTransformation,
 					0 as HasAssetReadAccess -- 0 as this is AssetType
@@ -1047,6 +1051,7 @@ begin
 				class,
 				displayValue,
 				reveal,
+				actionCount,
 				relationCounts,
 				ownerCounts,
 				useAsTransformation,
