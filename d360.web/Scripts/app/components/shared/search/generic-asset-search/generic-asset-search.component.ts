@@ -4,6 +4,7 @@ import { AssetSearchFilter, CommonComponentAssetTypeFilterRelationshipSide, Comm
 import { PredicateType, Predicate } from '../../../../models/predicate.model';
 import { RelationshipsService } from '../../../../services/relationships.service';
 import { ToolTipService } from '../../../../services/tooltip.service';
+import { debounceTime } from 'rxjs/operators';
 
 declare var CompanySettings;
 
@@ -176,7 +177,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         if (this.prepopulatedResults && this.prepopulatedResults.length > 0) {
             this.searchresults = [];
             this.prepopulatedResults.forEach(pr => {
-                this.searchresults.push({ AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
+                this.searchresults.push({ AssetTypeName: pr.AssetTypeName, AssetTypeIcon: pr.AssetTypeIcon, AssetTypeUid: pr.AssetTypeUid, Uid: pr.Uid, Segments: pr.Segments, IsSelected: false });
                 this.ref.markForCheck();
             })
 
@@ -261,6 +262,7 @@ export class AssetSearchComponent implements OnInit, OnChanges {
         this.isLoading = true;
 
         this.assetService.searchAssetPath(this.searchOption)
+            .pipe(debounceTime(400))
             .subscribe(result => {
                 this.searchresults = JSON.parse(JSON.stringify(result.items));
 

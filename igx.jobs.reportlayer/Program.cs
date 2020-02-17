@@ -227,13 +227,7 @@ select  A.ObjectID as ID,
         dbo.GenerateAssetUrl(A.ID) as Url, 
         cast(S.Value * 100 as int) as CurrentScore 
 from    AssetDetail A 
-        outer apply (
-					select	max(EffectiveDate) as EffectiveDate
-					from	[metrics].[Score] 
-					where	[AssetUid] = A.[Uid] 
-							and EffectiveDate <= getutcdate()
-					) MS
-		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
+		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EndDate is null and S.ScoreType = 1
         {joins} 
         {parentSqlJoin} 
 where   A.Type = '{o.Object}' and A.TypeID = {o.ObjectID}";
@@ -283,13 +277,7 @@ select  A.[Uid],
         cast(S.Value * 100 as int) as CurrentScore
 from    h as A  
         {joins} 
-        outer apply (
-					select	max(EffectiveDate) as EffectiveDate
-					from	[metrics].[Score] 
-					where	[AssetUid] = A.[Uid] 
-							and EffectiveDate <= getutcdate()
-					) MS
-		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EffectiveDate = MS.EffectiveDate
+		left join metrics.Score S on S.AssetUid = A.[Uid] and S.EndDate is null and S.ScoreType = 1
         left join AssetTypeLevel L on L.AssetTypeID = A.AssetTypeID and L.[Level] = A.[Level]";
 
                                     #endregion Model/Policy

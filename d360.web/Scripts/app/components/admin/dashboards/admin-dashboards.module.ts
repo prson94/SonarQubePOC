@@ -15,8 +15,6 @@ import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-obj
 
 import { AdminDashboardsComponent } from './admin-dashboards.component';
 import { AdminDashboardsEditor } from './admin-dashboards-editor.component';
-import { AdminReportItemsComponent } from './admin-report-items.component';
-import { AdminReportTileEditorComponent } from './admin-report-tile-editor.component';
 
 import { AdminDashboardsRoutingModule } from './admin-dashboards.routes';
 
@@ -61,8 +59,6 @@ import { InputTextModule } from 'primeng/inputtext';
     declarations: [
         AdminDashboardsComponent,
         AdminDashboardsEditor,
-        AdminReportItemsComponent,
-        AdminReportTileEditorComponent,
         
     ],
     providers: [

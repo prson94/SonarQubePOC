@@ -73,7 +73,6 @@ namespace d360.web.Controllers
                         Description = parseTextField(form, "Description"),
                         ObjectType = objectType[0],
                         ObjectID = int.Parse(objectType[1]),
-                        ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1),
                         ReportType = parseTextField(form, "ReportType"),
                         PowerBIReportID = string.IsNullOrEmpty(powerBIID) ? null : powerBIID,
                         PowerBIDatasetID = string.IsNullOrEmpty(datasetID) ? null : datasetID,
@@ -327,7 +326,6 @@ namespace d360.web.Controllers
                     model.Description = parseTextField(form, "Description");
                     model.ObjectType = objectType[0];
                     model.ObjectID = int.Parse(objectType[1]);
-                    model.ReportLayoutID = parseNullableIntField(form, "ReportLayoutID", -1).GetValueOrDefault(-1);
                     model.ReportType = reportType;
                     model.Url = url;
                     model.ShowOnHomePage = showOnHomePage;
@@ -426,160 +424,5 @@ namespace d360.web.Controllers
 
         #endregion
 
-        #region ReportTile
-
-        #region Form Get/Post
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddReportTile")]
-        public JsonResult AddReportTile(FormCollection form, bool isNg = false)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-
-                var model = new ReportTile
-                {
-                    Name = parseTextField(form, "Name"),
-                    CommandText = parseTextField(form, isNg ? "CommandText" : "SqlStatement"),
-                    ReportID = parseIntField(form, "ReportID"),
-                    ContentAreaNumber = parseIntField(form, "ContentAreaNumber"),
-                    ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"])
-                };
-
-                var sXml = XElement.Parse("<settings/>");
-                switch (model.ReportTileType)
-                {
-                    case ReportTileType.Area:
-                    case ReportTileType.Bar:
-                    case ReportTileType.Line:
-                        sXml.Add(new XElement("data", form["data"]));
-                        sXml.Add(new XElement("display", form["display"]));
-                        sXml.Add(new XElement("xaxis", form["xaxis"]));
-                        break;
-                    case ReportTileType.Pie:
-                        sXml.Add(new XElement("data", form["data"]));
-                        sXml.Add(new XElement("display", form["display"]));
-                        break;
-                }
-                model.Settings = sXml.ToString();
-
-                var valid = Company.IsValidReportingQuery(model.CommandText);
-                if (valid)
-                {
-                    Company.Add(model);
-                }
-                else
-                {
-                    throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
-                }
-
-                return jsonSuccess(FormInfo.Add_ReportTile_Confirmation, model.ID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteReportTile")]
-        public JsonResult DeleteReportTile(FormCollection form)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-
-                var id = parseIntField(form, "ID");
-                var model = Company.GetById<ReportTile>(id);
-                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
-                Company.Delete(model);
-
-                return jsonSuccess(FormInfo.Delete_ReportTile_Confirmation, id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpPut, ValidateInput(false), Route("EditReportTile")]
-        public JsonResult EditReportTile(FormCollection form, bool isNg = false)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-
-                if (!form.HasKeys()) throw new NoFormDataException(FormInfo.NoFormData_FieldType);
-
-                var id = parseIntField(form, isNg ? "ID" : "TileID");
-                var model = Company.GetById<ReportTile>(id);
-
-                if (model == null) throw new NotFoundException(FormInfo.NoFormData_FieldType);
-
-                // Static fields
-                model.Name = parseTextField(form, "Name");
-                model.CommandText = parseTextField(form, isNg ? "CommandText" : "SqlStatement");
-                model.ContentAreaNumber = parseIntField(form, "ContentAreaNumber");
-                model.ReportTileType = (ReportTileType)Enum.Parse(typeof(ReportTileType), form["ReportTileType"]);
-
-                var sXml = XElement.Parse("<settings/>");
-                switch (model.ReportTileType)
-                {
-                    case ReportTileType.Area:
-                    case ReportTileType.Bar:
-                    case ReportTileType.Line:
-                        sXml.Add(new XElement("data", form["data"]));
-                        sXml.Add(new XElement("display", form["display"]));
-                        sXml.Add(new XElement("xaxis", form["xaxis"]));
-                        break;
-                    case ReportTileType.Pie:
-                        sXml.Add(new XElement("data", form["data"]));
-                        sXml.Add(new XElement("display", form["display"]));
-                        break;
-                }
-                model.Settings = sXml.ToString();
-
-                var valid = Company.IsValidReportingQuery(model.CommandText);
-                if (valid)
-                {
-                    Company.Update(model);
-                }
-                else
-                {
-                    throw new InvalidFieldException("Command Text", "not a SELECT statement or recognized query.");
-                }
-
-                return jsonSuccess(FormInfo.Edit_ReportTile_Confirmation, id.ToString(), "edit", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        #endregion
-
-        #endregion
     }
 }

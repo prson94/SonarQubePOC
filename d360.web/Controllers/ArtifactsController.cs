@@ -641,7 +641,7 @@ where   A.Type = 'ArtifactType'
                     }
                     index++;
                 }
-                catch (Exception e)
+                catch
                 {
                     document.SetColumnWidth(index, 10);
                     index++;

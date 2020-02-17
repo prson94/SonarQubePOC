@@ -211,7 +211,7 @@ namespace d360.web.Controllers.V2
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update a score with measures defined.");
                 }
 
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
@@ -288,7 +288,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> ExportAllocationsToExcel()
+        public IHttpActionResult ExportAllocationsToExcel()
         {
             var queryParams = Request.GetQueryNameValuePairs();
             queryParams = queryParams.Union(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>("_state", "1") });

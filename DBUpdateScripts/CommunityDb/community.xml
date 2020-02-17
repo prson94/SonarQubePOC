@@ -51,4 +51,5 @@
   <include file="scripts/GOV-8871.xml"/> <!-- Removing unused Govern Settings-->
   <include file="scripts/GOV-9473.xml"/> <!-- Change default value for fusion to false-->
   <include file="scripts/GOV-9405.xml"/> <!-- Add LifecycleEndDate column to Company table-->
+  <include file="scripts/GOV-9413.xml"/> <!-- Add ShowNavigationChildren Config to setting and CompanySetting table-->
 </databaseChangeLog>

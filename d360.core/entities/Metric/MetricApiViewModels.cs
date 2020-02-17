@@ -26,7 +26,7 @@ namespace d360.core.entities.Metric
 
         public string Description { get; set; }
 
-        public ScoreType ScoreType { get; set; }
+        public ScoreType? ScoreType { get; set; }
 
         #endregion
 

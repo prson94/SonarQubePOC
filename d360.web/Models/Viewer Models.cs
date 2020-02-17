@@ -388,8 +388,7 @@ namespace d360.web.Models
 
         }
         public GridFilterColumn(GridColumn val)
-        {
-            relatedfield = false;
+        {            
             cellsformat = val.cellsformat;
             datafield = val.datafield;
             text = val.text;
@@ -401,9 +400,7 @@ namespace d360.web.Models
             parentFieldTypeID = val.parentFieldTypeID;
             canHaveMultipleFilters = val.canHaveMultipleFilters;
         }
-        [DataMember]
-        public bool relatedfield { get; set; }
-
+        
         [DataMember]
         public bool hiddenfield { get; set; }
 

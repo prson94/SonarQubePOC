@@ -622,7 +622,7 @@ namespace d360.web.Controllers.V2
                     }
                     index++;
                 }
-                catch (Exception e)
+                catch
                 {
                     document.SetColumnWidth(index, 10);
                     index++;

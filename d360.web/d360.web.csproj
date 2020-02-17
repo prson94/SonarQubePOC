@@ -389,6 +389,7 @@
     <Compile Include="Handlers\MethodOverrideHandler.cs" />
     <Compile Include="Handlers\HeadHandler.cs" />
     <Compile Include="Models\ApiResponses.cs" />
+    <Compile Include="Models\AssetBrowserModels.cs" />
     <Compile Include="Models\Attributes\NoCacheAttribute.cs" />
     <Compile Include="Models\Attributes\ValidateContractsAttribute.cs" />
     <Compile Include="Filters\ValidateHttpAntiForgeryTokenAttribute.cs" />
@@ -946,6 +947,7 @@
     <None Include="Content\redactor\redactor.min.css.gzip">
       <DependentUpon>redactor.min.css</DependentUpon>
     </None>
+    <Content Include="Content\styles\AssetBrowser.less" />
     <None Include="Content\styles\ContentFormatting.less" />
     <None Include="Content\styles\Diagrams.less" />
     <Content Include="Content\styles\img\alpha-horizontal.png" />
@@ -1353,7 +1355,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationship-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-tile-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
@@ -1638,7 +1639,6 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\group-members.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationship\object-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-report-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\surveys\admin-survey-questions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\synonyms.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tiles\tile-actions.component.ts" />
@@ -1675,7 +1675,6 @@
     <TypeScriptCompile Include="Scripts\app\models\statistic.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifact-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\breadcrumb.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\company-settings.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\editor-field.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\fields.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />

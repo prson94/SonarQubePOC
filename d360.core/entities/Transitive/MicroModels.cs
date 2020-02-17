@@ -80,6 +80,7 @@ namespace d360.core.entities
         public string UrlPrefix { get; set; }
         public EnvironmentLevel EnvironmentLevel { get; set; }
         public int Priority { get; set; }
+        public bool IsFusionEnabled { get; set; }
     }
 
     public class FieldsObjectModel
@@ -215,6 +216,7 @@ namespace d360.core.entities
         public string Name { get; set; }
         public string Url { get; set; }
         public string MenuID { get; set; }
+        public bool ShowChildren { get; set; }
         public List<NavigationItem> Items { get; set; }
     }
 

@@ -31,7 +31,7 @@ import * as _ from 'lodash';
                                 <div class="row megamenu-items"[ngStyle]="{'max-height': getMaxHeight()}">
                                     <div class="col s12 megamenu-items-container" *ngFor="let item of menu.NavigationItems | simpleSearch: searchText">
                                         <ul class="menu-group">                                        
-                                            <d3s-site-menu-mega-item [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
+                                            <d3s-site-menu-mega-item [category] = "menu.MenuID" [item]="item" [level]="0" [searchText]="searchText" [(active)]="menu.isActiveItem" [count]="item.count"></d3s-site-menu-mega-item>
                                         </ul>
                                     </div> 
                                 </div>

@@ -141,6 +141,12 @@ namespace d360.core.entities
         public Guid Uid { get; set; }
 
         [DataMember]
+        public string AssetTypeIcon { get; set; }
+
+        [DataMember]
+        public string AssetTypeName { get; set; }
+
+        [DataMember]
         public Guid AssetTypeUid { get; set; }
 
         [IgnoreDataMember]

@@ -957,7 +957,7 @@ SELECT count(ATT.[Object]) as count,
                 }
                 if (shouldParse)
                 {
-                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value };
+                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren") };
                     if (el.Element("items") != null)
                     {
                         item.Items = parseXmlNavigationDocument(el.Element("items"), features);

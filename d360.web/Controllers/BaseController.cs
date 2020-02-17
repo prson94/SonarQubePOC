@@ -1867,24 +1867,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                     }
                 }
             }
-
-            if (int.TryParse(query["relfilterscount"], out  relfilterscount) && relfilterscount > 0)
-            {
-                for (var i = 0; i < relfilterscount; i++)
-                {
-
-                    if (int.TryParse(query["relfilterdatafield" + i], out int fieldTypeId))
-                    {
-                        filters.Add(new UiRequestRelationshipFieldFilterValue
-                        {
-                            FieldTypeID = fieldTypeId,
-                            Condition = query.AllKeys.Any(k => k == $"relfiltercondition{i}") ? query[$"relfiltercondition{i}"] : "",
-                            Value = query.AllKeys.Any(k => k == $"relfiltervalue{i}")  ? query[$"relfiltervalue{i}"] : ""
-                        });
-                    }
-                }
-            }
-
+            
             #endregion
             
             #region Ownership Filters
