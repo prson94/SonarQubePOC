@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer
                     "Error adding metric",
                     (model.ParentUid.HasValue) ?
                     "You may not add a metric with the same name under the same grouping." :
-                    "You may not add a metric with the same name at the root of the hierarchy.");
+                    $"Measure with name '{model.Name}' already exists.");
             }
 
 

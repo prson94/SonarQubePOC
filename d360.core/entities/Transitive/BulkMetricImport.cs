@@ -40,6 +40,7 @@ namespace d360.core.entities
         public bool IsValidAsset { get; set; }
         public bool IsValidMetric { get; set; }
         public bool IsValidMetricDate { get; set; }
+        public bool IsValidAllocation { get; set; }
 
         [DataMember]
         public bool IsSuccess { get; set; }

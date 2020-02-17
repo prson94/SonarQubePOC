@@ -55,4 +55,19 @@ namespace d360.core.entities.Scoring
         [DataMember]
         public string assetTypePath { get; set; }
     }
+
+    public class ScoreResultApiPostModel
+    {
+        [DataMember]
+        public Guid metricAssetUid { get; set; }
+
+        [DataMember]
+        public Guid assetUid { get; set; }
+
+        [DataMember]
+        public DateTime effectiveDate { get; set; }
+
+        [DataMember]
+        public bool result{ get; set; }
+    }
 }
