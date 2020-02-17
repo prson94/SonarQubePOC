@@ -53,7 +53,7 @@
 ]]>
 	</rollback>
   </changeSet>
-  <changeSet author="MDonato" id="GOV-9434-proc">
+  <changeSet author="MDonato" id="GOV-9434-proc2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -222,7 +222,7 @@ begin
 						A.IsGroup,
 						V.Weight,
 						coalesce(S.Result, P.Value, 0) as Value,
-						S.ScoreType
+						coalesce(S.ScoreType, 1) as ScoreType
 				from	metrics.AssetVersion V
 						inner join metrics.Asset A on A.[Uid] = V.[Uid]
 						inner join #assets E on E.AssetTypeUid = A.AssetTypeUid and A.State = 1
