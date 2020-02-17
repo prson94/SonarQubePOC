@@ -67,6 +67,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
         this.fusionAttributeService.getFusionAttributeDetails(this.type, this.id).subscribe(
             item => {
                 this.fusionAttributeDetail = item;
+                this.uid = item.Uid;
                 //get the fusion details for initial breadcrumb
                 this.getFusionConfiguration = this.fusionService.getFusionConfiguration(item.FusionID).subscribe(
                     result => {
@@ -75,8 +76,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
                         this.isLoading = false;
                     }
                 );
-                this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID);
-                
+                this.setObjectInfo(this.type, this.id, undefined, this.fusionAttributeDetail.AssetID, undefined, item.Uid);
             }
         );
     }
