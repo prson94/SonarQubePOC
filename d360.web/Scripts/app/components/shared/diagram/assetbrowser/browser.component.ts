@@ -66,11 +66,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
 
-    private alertContextItems: MenuItem[] = [
-        { label: 'Show Details', command: function (e) { alert(e); } },
-        { label: 'Open in New Tab', command: function (e) { alert(e); } }
-    ];
-    private selectedAlert: AssetBrowserAlert;
     private isAlertTabEnabled: boolean = true;
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
@@ -967,7 +962,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     data = this.browserService.convertResponseModel(data, this.filterModel.AncestryMode);
 
                     let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(data.assets);
+                    trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, data.assets);
                     trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
 
                     this.parseData(trans);
@@ -1033,6 +1028,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
 
         //#endregion
+
+        this.diagram.nodes.each(n => {
+            n.isHighlighted = false;
+        });
 
         //#region process dynamic elements like reveal nodes and relation badges
 
@@ -1161,7 +1160,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     */
     private getFullResponseModelAsTranslationNodes(): AssetBrowserTranslationNode[] {
         let existingAssets = this.browserService.convertResponseModel(this.responseModel.assets, this.filterModel.AncestryMode);
-        return this.browserService.translateAssetNodes(existingAssets.assets);
+        return this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, existingAssets.assets);
     }
 
     /**
@@ -1267,7 +1266,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
 
                     let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(response.assets);
+                    trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
                     trans.links = this.browserService.translateAssetLinks(this.getFullResponseModelAsTranslationNodes(), response.assetRelations);
 
                     let modelsToSetReveal: AssetBrowserAssetModel[] = [];
@@ -1617,14 +1616,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private filterAncestryModeChange(): void {
+    private filterTriggerVisualizationUpdate(): void {
         this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
         let assetData = this.browserService.convertResponseModel(this.responseModel.assets, this.filterModel.AncestryMode);
 
         let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-        trans.nodes = this.browserService.translateAssetNodes(assetData.assets);
+        trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, assetData.assets);
         trans.links = this.browserService.translateAssetLinks(trans.nodes, assetData.assetRelations);
 
         this.parseData(trans);
@@ -1881,8 +1880,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 let n = node;
                 if (n.isGroup) {
+                    // Add the root node's asset information.
+                    if (this.filterModel.IncludeNonLeaf) {
+                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
+                    }
+                    
+
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                        if (g.data.isGroup == undefined || g.data.isGroup == false) {
+                        let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
+                        if (shouldInclude) {
                             let asset = new AssetBrowserApiHopAssetRequestModel();
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key
@@ -1946,8 +1952,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 let n = node;
                 if (n.isGroup) {
+
+                    // Add the root node's asset information.
+                    if (this.filterModel.IncludeNonLeaf) {
+                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
+                    }
+                    
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                        if (g.data.isGroup == undefined || g.data.isGroup == false) {
+                        let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
+                        if (shouldInclude) {
 
                             // Get existing ignored predicates so we can continue to skip these along the impact chain.
                             if (g.data.ignoredPredicates !== undefined) {
@@ -1957,7 +1970,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     }
                                 });
                             }
-
+                         
                             let asset = new AssetBrowserApiHopAssetRequestModel();
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key
@@ -1984,7 +1997,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
 
                         let keysToBeConcernedWith: string[] = [];
-                        let nodes = this.browserService.translateAssetNodes(response.assets);
+                        let nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
                         nodes.forEach(n => {
 
                             keysToBeConcernedWith.push(n.key);
@@ -2310,14 +2323,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         dg.toolManager.linkingTool.isEnabled = !this.readonly;
         dg.model.isReadOnly = this.readonly;
 
-        //TODO: Get this to work so when you click onywhere else on diagram, the selected node highlights go away.
-        //dg.addDiagramListener("BackgroundSingleClicked", function (e) {
-        //    //Set all to not highlighted.
-        //    this.diagram.nodes.each(n => {
-        //        n.isHighlighted = false;
-        //    });
-        //});
-
         return dg;
     }
 
@@ -2328,6 +2333,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             {
                 background: "transparent",
                 contextMenu: this.createContextMenu(),
+                click: (e, obj) => this.highlightPath(e, obj as any), 
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 layout:
@@ -2358,8 +2364,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 ),
                 this.g(
                     go.Shape,  // the "top" port
-                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }//,
-                    //new go.Binding("stroke", "back")
+                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }
                 ),
                 this.g(go.Panel, "Auto",
                     this.g(
@@ -2375,7 +2380,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             "Horizontal",
                             // button next to TextBlock
                             { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                            //new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                            new go.Binding("background", "", v => (v.isHighlighted) ?
+                                go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                                go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                            ).ofObject(),
                             this.g(
                                 "SubGraphExpanderButton",
                                 { alignment: go.Spot.Right, margin: 5 }
@@ -2388,8 +2397,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     margin: 0,
                                     alignment: go.Spot.Center,
                                     editable: false,
-                                    font: this.fontLabelIcon,
-                                    //stroke: this.fontLabelColor
+                                    font: this.fontLabelIcon
                                 },
                                 new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                                 new go.Binding("text", "icon"),
@@ -2402,7 +2410,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     editable: false,
                                     margin: 5,
                                     font: this.fontLabel,
-                                    //stroke: this.fontLabelColor,
                                     maxLines: this.textMaxLines,
                                     maxSize: this.textMaxSize,
                                     overflow: this.textOverflowStyle,
@@ -2449,6 +2456,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             {
                 background: "transparent",
                 contextMenu: this.createContextMenu(),
+                click: (e, obj) => this.highlightPath(e, obj as any),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 stretch: go.GraphObject.Horizontal,
@@ -2478,6 +2486,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     // button next to TextBlock
                     { stretch: go.GraphObject.Horizontal },
                     new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
+                    new go.Binding("background", "", v => (v.isHighlighted) ?
+                        go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                        go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                    ).ofObject(),
                     this.g(
                         "SubGraphExpanderButton",
                         { alignment: go.Spot.Right, margin: 5 }
@@ -2490,8 +2502,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             margin: 0,
                             alignment: go.Spot.Center,
                             editable: false,
-                            font: this.fontLabelIcon//,
-                            //stroke: this.fontLabelColor
+                            font: this.fontLabelIcon
                         },
                         new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "icon"),
@@ -2504,7 +2515,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             margin: 5,
                             font: this.fontLabel,
-                            //stroke: this.fontLabelColor,
                             maxLines: this.textMaxLines,
                             maxSize: this.textMaxSize,
                             overflow: this.textOverflowStyle,
