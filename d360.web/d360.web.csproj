@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -719,6 +719,8 @@
     <Content Include="Scripts\app\components\shared\objectdetails\dynamic-lookup-grid.component.html" />
     <Content Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.html" />
     <Content Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.html" />
+    <Content Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.html" />
     <Content Include="Scripts\app\components\shared\preview-tooltip.component.html" />
     <Content Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.html" />
     <Content Include="Scripts\app\components\shared\search\generic-asset-search\generic-asset-search.component.html" />
@@ -1153,6 +1155,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-mini-menu-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\artifact-status.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-board.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-health-details.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\object-issues.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectgovernance\shared-object-governance.module.ts" />

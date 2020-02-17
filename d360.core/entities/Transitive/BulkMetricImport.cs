@@ -109,6 +109,9 @@ namespace d360.core.entities
         [DataMember]
         public decimal Weight { get; set; }
 
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+
         public string ConditionsJson { get; set; }
 
 

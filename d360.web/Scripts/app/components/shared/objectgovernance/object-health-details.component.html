@@ -1,0 +1,25 @@
+﻿<div class="scoring">
+    <div class="score-breakdown">
+        <div class="row">
+            <div class="col s12">
+                <div class="heading">
+                    <button *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'selected': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" class="button ng-star-inserted"><span>Governance Score</span></button>
+                    <button *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'selected': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality)" class="button ng-star-inserted"><span>Data Quality Score</span></button>
+                </div>
+                <div class="scorecards-container">
+                    <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [isloading]="isloading" ></d3s-object-health-details-item>
+                </div>
+            </div>
+        </div>
+        <div class="row">&nbsp;</div>
+    </div>
+    <div class="score-chart-container">
+        <div class="heading">
+            <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
+        </div>
+        <div class="score-chart">
+            <div class="chart-header">Governance Score History</div>
+            <chart [options]="scoreHistory"></chart>
+        </div>
+    </div>
+</div>

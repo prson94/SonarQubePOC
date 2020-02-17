@@ -7,6 +7,7 @@
     Description: string;
     Weight: number;
     Value: boolean;
+    EffectiveDate: string;
 }
 
 export class ScorePoint {
