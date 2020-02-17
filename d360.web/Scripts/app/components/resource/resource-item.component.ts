@@ -81,7 +81,6 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
             this.resourceId = resourceId;
 
-            this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
             this.resourcesService.getResource(this.resourceId)
                 .subscribe(r => {
                     this.resource = r;
@@ -141,6 +140,8 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         `/sidebar/comments/Resource/${resourceId}`, null, 25
                     );
                     this.secondaryNavService.showItem(this.comments);
+                    this.secondaryNavService.clearCurrentObject();
+                    this.headerBreadcrumbService.setCurrentObjectInfo('Resource', resourceId);
                 });
 
             this.pageMode = PageMode.Default;
