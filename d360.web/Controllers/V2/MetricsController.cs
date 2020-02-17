@@ -116,8 +116,13 @@ namespace d360.web.Controllers.V2
             }
 
             List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
-            //backward compatibility
-            if (!allowedScoreTypes.Contains(model.ScoreType))
+
+            if (model.ScoreType != null && !allowedScoreTypes.Contains(model.ScoreType.Value))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You have not provided valid Score Type.");
+            }
+
+            if(model.ScoreType == null)
             {
                 model.ScoreType = ScoreType.Governance;
             }

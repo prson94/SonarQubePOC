@@ -1,4 +1,5 @@
-﻿using d360.core.entities.Scoring;
+﻿using d360.core.entities;
+using d360.core.entities.Scoring;
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
@@ -18,5 +19,7 @@ namespace d360.model.DataAccessLayer
         AllocationApiGetModel UpdateAllocation(AllocationApiUpsertModel model, ScoreTypeAllocation alloc);
         Task<List<AllocationApiGetUnallocatedAssetTypeModel>> GetUnallocatedAssetTypes(ScoreType scoreType);
         List<AssetTypeClass> AllowedClassesForScoreType();
+        List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results);
+
     }
 }

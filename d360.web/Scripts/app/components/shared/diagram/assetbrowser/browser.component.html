@@ -159,10 +159,19 @@
                                     <div *ngIf="alerts.length == 0" class="error-msg">
                                         No alerts displayed.
                                     </div>
-                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts" (click)="selectAlert(alert)" [ngClass]="alert.selected ? 'alert-selected' : ''">
+                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts" [ngClass]="alert.selected ? 'alert-selected' : ''">
                                         <div class="asset">
                                             <span [className]="'icon fa ' + alert.asset.icon"></span>
                                             <span>{{alert.asset.displayValue}}</span>
+                                            <div class="settings-menu">
+                                                <i style="opacity: 1" class="fa fa-ellipsis-v"></i>
+                                                <div class="popup-menu place-right">
+                                                    <ul>
+                                                        <li (click)="onAlertOpenDetails(alert)"><span style="font-weight: 700;">Show Details</span></li>
+                                                        <li (click)="onAlertOpenInNewTab(alert)"><span>Open in New Tab</span></li>
+                                                    </ul>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="action" *ngIf="alert.action">
                                             <div>

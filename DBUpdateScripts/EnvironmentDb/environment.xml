@@ -439,6 +439,8 @@
   <include file="scripts/GOV-9652.xml"/> <!-- modify [dbo].[GetDynamicAssets] fix issue with json for multiple items causing issues on single select items -->
   <include file="scripts/GOV-9601.xml"/> <!-- Multiple updates to graph functions and procedures, and a full refresh of graph tables -->
   <include file="scripts/GOV-9628.xml"/> <!-- dbo.reports - remove report ID column and rename the ReportLayout and ReportTile tables -->
+  <include file="scripts/GOV-9435.xml"/> <!-- sdd IsValidAllocation to api.ExecutionMetrics table -->
   <include file="scripts/GOV-9684.xml"/> <!-- fixes to metrics.LoadFromStaging after adding new columns -->
   <include file="scripts/GOV-9694.xml"/> <!-- Remove ReportLayoutID from [utility].[AddAuditEntry] -->
+  <include file="scripts/GOV-9712.xml"/> <!-- update primary key on metrics.Score to include ScoreType -->
 </databaseChangeLog>

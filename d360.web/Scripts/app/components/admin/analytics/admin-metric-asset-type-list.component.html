@@ -6,7 +6,7 @@
 <div *ngIf="!isLoading">
 
     <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
-    <p-table #dt class="gov-table" [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
+    <p-table #dt [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'assetClassName'" style="width: 200px">
@@ -38,10 +38,12 @@
                 <td (click)="openMeasures(item)">{{item.assetTypePath}}</td>
                 <td (click)="openMeasures(item)">{{item.scoreType}}</td>
                 <td (click)="openMeasures(item)">{{item.isExternallyCalculated ? 'Yes' : 'No'}}</td>
-                <td class="RowTools">
-                    <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
-                    <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
-                    <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
+                <td>
+                    <div class="RowTools">
+                        <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
+                        <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
+                        <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
+                    </div>
                 </td>
             </tr>
         </ng-template>
