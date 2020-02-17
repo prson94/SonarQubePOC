@@ -271,5 +271,10 @@ namespace d360.model.DataAccessLayer
             return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
 
         }
+
+        public List<ExternalScoreResultsApiResultsModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultsApiPostModel> model, ApiExecution execution)
+        {
+            return companyContext.BulkExternalResultsImport(model, execution, scoreType);
+        }
     }
 }
