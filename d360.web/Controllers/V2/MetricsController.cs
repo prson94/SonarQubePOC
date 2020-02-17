@@ -255,13 +255,13 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
-            Route("{assetUid:Guid}/pointbreakdown"),
+            Route("{scoreType}/{assetUid:Guid}/pointbreakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(Guid assetUid, DateTime? effectiveDate = null)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(ScoreType scoreType, Guid assetUid, DateTime? effectiveDate = null)
         {
             /*
                          declare @effectiveDate date = '10/3/2018',
@@ -492,7 +492,52 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Gets a administrative hierarchical structure of metrics associated with the asset Uid provided.
+        /// </summary>
+        /// <param name="uid">The Uid of the asset.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{uid}/definitionFromAsset"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
+        {
+            var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+            if(asset == null)
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {asset.uid.ToString()} not found.");
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+            if(assetType == null)
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
+            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid);
+        }
 
+
+        /// <summary>
+        /// Get the score history.
+        /// </summary>
+        /// <param name="assetUid">The public identifier for the asset.</param>
+        /// <param name="scoreType">The type of score to return.</param>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpGet,
+            Route("history/{scoreType}/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "Rerturns the history given an asset type Uid and score type .", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this metric."));
+
+            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid", new { assetUid });
+
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model ));
+        }
 
     }
 }

@@ -21,6 +21,8 @@ import { ObjectBoardComponent } from './object-board.component';
 import { ObjectHealthDetailsComponent } from './object-health-details.component';
 import { ObjectIssuesComponent } from './object-issues.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 
 declare var require: any;
 export function highchartsFactory() {
@@ -41,6 +43,7 @@ export function highchartsFactory() {
         SocialModule,
         TilesModule,
         WorkflowModule,
+        PipesModule,
         //prime        
         ButtonModule,
         SharedModule,  
@@ -54,6 +57,7 @@ export function highchartsFactory() {
         ObjectBoardComponent,
         ObjectHealthDetailsComponent,        
         ObjectIssuesComponent,
+        ObjectHealthDetailsItemComponent,
     ],
     exports: [
         ObjectBoardComponent,                

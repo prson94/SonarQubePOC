@@ -1,0 +1,84 @@
+﻿<div class="scorecard-item">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <div *ngIf="!isLoading" class="scorecard-heading">
+        <div class="expander-gutter" (click)="toggleDetails()">
+            <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
+        </div>
+        <div class="heading-content">
+            <div class="heading-item large">
+                <div class="heading-title">Measure</div>
+                <div class="heading-value">{{item?.data?.Name}}</div>
+            </div>
+            <div class="heading-item med-lg">
+                <div class="heading-title">Measure effective dates</div>
+                <div class="heading-value">{{currentItemDetails?.EffectiveDate | utcDate | date:'shortDate'}}</div>
+            </div>
+            <div class="heading-item med">
+                <div class="heading-title">Defined weight</div>
+                <div class="heading-value">{{currentItemDetails?.Weight}}</div>
+            </div>
+            <div class="heading-item med">
+                <div class="heading-title">Adjusted weight</div>
+                <div class="heading-value">{{item?.data?.Weight}}</div>
+            </div>
+            <div class="heading-item sm badge">
+                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+            </div>
+        </div>
+    </div>
+    <div class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': isCollapsed}">
+        <div class="description-line">
+            <div class="expander-gutter">
+            </div>
+            <div class="heading-content">
+                <div class="heading-item desc">
+                    <div class="heading-title">Description</div>
+                    <div class="heading-value block-with-text">{{item?.data?.Description}}</div>
+                </div>
+            </div>
+        </div>
+        
+        <div *ngIf="item?.data?.IsGroup" class="card-groupings">
+            <div *ngFor="let child of item?.children" class="groups">
+                <div class="group-container">
+                    <div class="separator"></div>
+                    <div class="heading-content group">
+                        <div class="expander-gutter no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
+                            <i class="fa fa-caret-down expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
+                        </div>
+                        <div class="scorecard-heading" [ngClass]="{'collapsed': isCollapsed}">
+                            <div class="heading-item large">
+                                <div class="heading-value">{{child?.data?.Name}}</div>
+                            </div>
+                            <div class="heading-item med-lg">
+                                <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'EffectiveDate') | utcDate | date:'shortDate'}}</div>
+                            </div>
+                            <div class="heading-item med">
+                                <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'Weight')}}</div>
+                            </div>
+                            <div class="heading-item med">
+                                <div class="heading-value">{{child?.data?.Weight}}</div>
+                            </div>
+                            <div class="heading-item sm badge">
+                                <span *ngIf="item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': child.data.IsCollapsed}">
+                        <div class="description-line">
+                            <div class="expander-gutter">
+                            </div>
+                            <div class="heading-content">
+                                <div class="heading-item desc">
+                                    <div class="heading-title">Description</div>
+                                    <div class="heading-value block-with-text">{{child?.data?.Description}}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="separator"></div>
+        </div>
+    </div>
+</div>

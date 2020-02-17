@@ -358,7 +358,7 @@ namespace d360.model.DataAccessLayer
 
             var sql = @"
                     drop table if exists #tbl
-                    create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
+                    create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date, Description nvarchar(500))
                     
                     insert into #tbl 
                     	select	A.[Uid],
@@ -366,7 +366,9 @@ namespace d360.model.DataAccessLayer
                     			A.ParentUid,
                     			A.IsGroup,
                     			V.Weight,
-                    			V.EffectiveDate
+                    			V.EffectiveDate,
+                    			A.Description
+
                     	from	metrics.AssetVersion V
                     			inner join (
                     					select		IA.[Uid],
@@ -398,6 +400,8 @@ namespace d360.model.DataAccessLayer
                     		Name,
                     		IsGroup,
                     		Weight,
+                            EffectiveDate,
+                            Description,
                     		(
                     			select	F.Name as FieldName,
                     					C.Operator,
