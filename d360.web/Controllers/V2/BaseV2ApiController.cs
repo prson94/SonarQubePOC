@@ -203,6 +203,33 @@ namespace d360.web.Controllers.V2
             return true;
         }
 
+        public bool isPageSizeAndNumValidParma(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var parameters = queryParams.ToList();
+            int pageSize = 0;
+            int pageNum = 0;
+
+            if (parameters.Any(q => q.Key == "_pageSize"))
+            {
+                var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
+                if (int.TryParse(_pageSize, out pageSize))
+                {
+                    if (pageSize > 200000) return false;
+                }
+            }
+
+            if (parameters.Any(q => q.Key == "_pageNum"))
+            {
+                var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
+                if (int.TryParse(_pageNum, out pageNum))
+                {
+                    if (pageNum > 10000) return false;
+                }
+            }
+
+            return true;
+        }
+
         protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)
         {
             string json = "";

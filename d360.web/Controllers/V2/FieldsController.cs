@@ -85,6 +85,12 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+                bool isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (isValid == false)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+                }
                 var results = await FieldsRepository.GetFieldTypes(queryParams);
                 if(results.Item2.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(results.Item2.StatusCode, results.Item2.Error, results.Item2.Message);
