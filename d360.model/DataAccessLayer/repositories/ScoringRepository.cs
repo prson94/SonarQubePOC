@@ -276,5 +276,23 @@ namespace d360.model.DataAccessLayer
         {
             return companyContext.BulkExternalResultsImport(model, execution, scoreType);
         }
+
+        public List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results)
+        {
+
+            BulkMetricsImport bulkModel = new BulkMetricsImport();
+            bulkModel.AddRange(results.Select(m =>
+                new BulkMetricImport()
+                {
+                    AssetUid = m.assetUid,
+                    MetricAssetUid = m.metricAssetUid,
+                    EffectiveDate = m.effectiveDate,
+                    Result = m.result
+                }
+            ).ToList());
+
+            return companyContext.BulkMetricsImport(bulkModel, execution, scoreType, true);
+
+        }
     }
 }

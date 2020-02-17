@@ -32,7 +32,7 @@ namespace d360.model
 
         #region Engine Methods
 
-        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
+        public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool useAllocation = false)
         {
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -135,11 +135,38 @@ namespace d360.model
 
                 // Resolve Metric Group/Item Effective Date
                 Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
-left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
-outer apply (
-            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
-            ) M_M
-where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
+                left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
+                outer apply (
+                            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
+                            ) M_M
+                where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
+
+                
+                if (useAllocation)
+                {
+                    Connection.Execute(@"
+                    update  M
+                    set     M.IsValidAllocation = 0,
+                            M.Message = coalesce(Message + '; ', '') + 'This asset does not have this score type allocated; '
+                    from    api.ExecutionMetric M
+                            left join AssetWithType A on A.uid = M.assetUid
+                            left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
+                    where   L.Uid is null
+                ", new { execution.ExecutionID, scoreType });
+
+
+                    Connection.Execute(@"
+                    update  M
+                    set     M.IsValidAllocation = 0,
+                            M.Message = coalesce(Message + '; ', '') + 'This asset does not have this score type allocated for internal scores; '
+                    from    api.ExecutionMetric M
+                            left join AssetWithType A on A.uid = M.assetUid
+                            left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 0
+                    where   L.Uid is null
+                ", new { execution.ExecutionID, scoreType });
+
+                }
+
 
                 // Log errors
                 Connection.Execute(@"
@@ -148,6 +175,7 @@ where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
                         when IsValidAsset = 0 then 0
                         when IsValidMetric = 0 then 0
                         when IsValidMetricDate = 0 then 0
+                        when IsValidAllocation = 0 then 0
                         else 1
                       end 
     where   ExecutionID = @ExecutionID;
@@ -167,7 +195,13 @@ where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
     where   ExecutionID = @ExecutionID 
             and IsValidMetricDate = 0;
 
+    update  api.ExecutionMetric
+    set     Success = 0,
+            Message = coalesce(Message + '; ', '') + 'Effective date cannot be in the future; '
+    where   ExecutionID = @ExecutionID and EffectiveDate > getutcdate();
+
     update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
+
 
                 #endregion
 
@@ -210,9 +244,9 @@ when matched and T.Result <> S.Result then
             T.Result = S.Result,
             T.Archived = 0
 when not matched by target then
-    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived)
-    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0);", 
-                                new { execution.ExecutionID }, 
+    insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
+    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);", 
+                                new { execution.ExecutionID, scoreType }, 
                                 transaction: trans);
 
                                 #endregion
