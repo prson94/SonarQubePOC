@@ -211,7 +211,7 @@ namespace d360.web.Controllers.V2
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
                 if (hasActiveMeasures)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update a score with measures defined.");
                 }
 
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
