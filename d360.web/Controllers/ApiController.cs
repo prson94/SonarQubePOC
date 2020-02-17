@@ -7254,10 +7254,7 @@ where   (
 
             var colIndex = 0;
 
-            document.SetCellValue(1, ++colIndex, "Uid");
             document.SetCellValue(1, ++colIndex, "Name");
-            document.SetCellValue(1, ++colIndex, "Critical");
-
 
             //add fields for this relation
             foreach (var field in fields)
@@ -7265,6 +7262,7 @@ where   (
                 document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
             }
 
+            document.SetCellValue(1, ++colIndex, "Relationship UID");
 
             #endregion
 
@@ -7273,10 +7271,8 @@ where   (
             {
                 var dataColIndex = 0;
                 rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
+                
                 document.SetCellValue(rowIndex, ++dataColIndex, row.Name ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Critical == 1 ? "Critical" : "Normal");
 
                 var rowDict = ((IDictionary<string, object>)row);
                 foreach (var field in fields)
@@ -7289,6 +7285,8 @@ where   (
                             document.SetCellValue(rowIndex, ++dataColIndex, rowDict[fieldKey].ToString());
                     }
                 }
+
+                document.SetCellValue(rowIndex, ++dataColIndex, (row.Uid ?? "").ToString());
 
             }
 
