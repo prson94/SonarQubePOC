@@ -38,7 +38,8 @@ namespace d360.model
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             //Set effective date for any results that do not have a date set.
-            model.ForEach(m => {
+            model.ForEach(m =>
+            {
                 if (!m.EffectiveDate.HasValue)
                 {
                     m.EffectiveDate = DateTime.UtcNow.Date;
@@ -63,12 +64,12 @@ namespace d360.model
                 Update(execution);
                 throw new GenericException(
                     System.Net.HttpStatusCode.BadRequest,
-                    "Duplicate items found in request", 
+                    "Duplicate items found in request",
                     message);
             }
             else
             {
-                
+
                 Add(execution);
 
                 var table = new DataTable();
@@ -92,7 +93,7 @@ namespace d360.model
                     row["MetricAssetUid"] = item.MetricAssetUid;
                     row["EffectiveDate"] = item.EffectiveDate ?? DateTime.UtcNow.Date;
                     row["Result"] = item.Result;
-                
+
                     table.Rows.Add(row);
 
                     itemNumber++;
@@ -126,7 +127,7 @@ namespace d360.model
                 #endregion
 
                 #region Validation
-            
+
                 // Resolve Asset
                 Connection.Execute(@"update T set T.IsValidAsset = IIF(S.ID is not null, 1, 0) from api.ExecutionMetric T left join Asset S on S.[uid] = T.AssetUid where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
@@ -141,7 +142,7 @@ namespace d360.model
                             ) M_M
                 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
-                
+
                 if (useAllocation)
                 {
                     Connection.Execute(@"
@@ -245,16 +246,16 @@ when matched and T.Result <> S.Result then
             T.Archived = 0
 when not matched by target then
     insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
-    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);", 
-                                new { execution.ExecutionID, scoreType }, 
+    values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);",
+                                new { execution.ExecutionID, scoreType },
                                 transaction: trans);
 
                                 #endregion
 
                                 results.AddRange(
                                     Connection.Query<BulkMetricTemporaryTableModel>(
-                                    $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage, IsValidAsset, IsValidMetric, IsValidMetricDate from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}", 
-                                    new { execution.ExecutionID }, 
+                                    $"select AssetUid, MetricAssetUid, EffectiveDate, Result, Success as IsSuccess, Message as ErrorMessage, IsValidAsset, IsValidMetric, IsValidMetricDate from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
+                                    new { execution.ExecutionID },
                                     transaction: trans)
                                 );
 
@@ -262,7 +263,7 @@ when not matched by target then
 
                                 runCompleted = true;
                             }
-                            catch(Exception ex)
+                            catch (Exception ex)
                             {
                                 trans.Rollback();
 
@@ -326,10 +327,10 @@ when not matched by target then
             metricTable.Columns.Add("RunDate", typeof(DateTime));
 
 
-            metricTable.Columns.Add("ExecutionID", typeof(Guid));
-            metricTable.Columns.Add("ItemNumber", typeof(int));
-            metricTable.Columns.Add("MeasureUid", typeof(Guid));
-            metricTable.Columns.Add("Passed", typeof(bool));
+            measureTable.Columns.Add("ExecutionID", typeof(Guid));
+            measureTable.Columns.Add("ItemNumber", typeof(int));
+            measureTable.Columns.Add("MeasureUid", typeof(Guid));
+            measureTable.Columns.Add("Passed", typeof(bool));
 
             int itemNumber = 1;
             foreach (var item in model)
@@ -349,7 +350,7 @@ when not matched by target then
 
                 if (item.measures != null && item.measures.Any())
                 {
-                    foreach(var measure in item.measures)
+                    foreach (var measure in item.measures)
                     {
                         var measureRow = measureTable.NewRow();
                         measureRow["ExecutionID"] = execution.ExecutionID;
@@ -398,7 +399,7 @@ when not matched by target then
 
             bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
             bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
-            bulkCopy.ColumnMappings.Add("MeasureUid", "MesaureUid");
+            bulkCopy.ColumnMappings.Add("MeasureUid", "MeasureUid");
             bulkCopy.ColumnMappings.Add("Passed", "Passed");
 
             bulkCopy.WriteToServer(measureTable);
@@ -426,14 +427,14 @@ from api.ExecutionMetric T
 left join Asset S on S.[uid] = T.AssetUid 
 left join AssetType AT on AT.ID = S.AssetTypeId
 left join metrics.Allocation A on A.AssetTypeUid = AT.[uid] 
-where T.ExecutionID = @executionID and A.ScoreType = @scoreType and A.IsExternallyCalculated = 1 and T.IsValidAsset = 1", new { execution.ExecutionID, scoreType = (int)scoreType});
+where T.ExecutionID = @executionID and A.ScoreType = @scoreType and A.IsExternallyCalculated = 1 and T.IsValidAsset = 1", new { execution.ExecutionID, scoreType = (int)scoreType });
 
             //resolve measures
             Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'All measures must be provided for this metric; '
 from api.ExecutionMetric T
 left join Asset S on S.[uid] = T.AssetUid 
 left join AssetType AT on AT.ID = S.AssetTypeId
-left join metrics.Asset A on A.assetTypeUid = AT.uid and A.[State] = 1 and scoreType = @scoreType
+inner join metrics.Asset A on A.assetTypeUid = AT.uid and A.[State] = 1 and scoreType = @scoreType
 where T.ExecutionID = @executionID 
 and T.IsValidAsset = 1
 and A.uid not in (select measureuid from api.ExecutionMetricMeasure where ExecutionID = @executionID and ItemNumber = T.ItemNumber)
@@ -443,17 +444,17 @@ and A.uid not in (select measureuid from api.ExecutionMetricMeasure where Execut
 from api.ExecutionMetric T
 left join Asset S on S.[uid] = T.AssetUid 
 left join AssetType AT on AT.ID = S.AssetTypeId
-left join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID and M.ItemNUmber = T.ItemNumber
+inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID and M.ItemNUmber = T.ItemNumber
 where T.ExecutionID = @executionID 
 and T.IsValidAsset = 1
-and M.MeasureUid not in (select uid from metrics.Asset where AssetTypeUid = At.uid and A.State = 1 and scoreType = @scoreType)
+and M.MeasureUid not in (select uid from metrics.Asset where AssetTypeUid = At.uid and [State] = 1 and scoreType = @scoreType)
 
 ", new { execution.ExecutionID, scoreType = (int)scoreType });
 
             //validate score
             Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Score must be between 0 and 1; '
 from api.ExecutionMetric T 
-where T.ExecutionID = @executionID and T.Score is null or T.Score < 0 or T.Score > 1", new { execution.ExecutionID });
+where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[Value] > 1", new { execution.ExecutionID });
 
 
             //update success status
@@ -524,17 +525,17 @@ where T.ExecutionID = @executionID and T.Score is null or T.Score < 0 or T.Score
                         ) S
             on          (
                             S.AssetUid = T.AssetUid and 
-                            S.ScoreType = T.ScoreType
+                            T.ScoreType = @scoreType and 
                             S.EffectiveDate = T.EffectiveDate
                         )
-            when matched and T.Result <> S.Result then
+            when matched and T.Value <> S.Value then
                 update set
                         T.Value = S.Value,
                         T.RunDate = S.RunDate
             when not matched by target then
                 insert  (AssetUid, EffectiveDate, RunDate, Value, EndDate, ScoreType)
                 values  (S.AssetUid, S.EffectiveDate, S.RunDate, S.Value, null, @scoreType);",
-                            new { execution.ExecutionID },
+                            new { execution.ExecutionID, scoreType = (int)scoreType },
                             transaction: trans);
 
                             Connection.Execute($@"
@@ -552,19 +553,19 @@ where T.ExecutionID = @executionID and T.Score is null or T.Score < 0 or T.Score
                                             S.MetricAssetUid = T.MetricAssetUid and 
                                             S.EffectiveDate = T.EffectiveDate
                                         )
-                            when matched and T.Result <> S.Result then
+                            when matched and T.Result <> S.Passed then
                                 update set
-                                        T.Result = S.Result,
+                                        T.Result = S.Passed,
                                         T.Archived = 0
                             when not matched by target then
-                                insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived)
-                                values  (S.AssetUid, S.MeasureUid, S.EffectiveDate, S.Passed, 0, 0);",
-                            new { execution.ExecutionID },
+                                insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
+                                values  (S.AssetUid, S.MeasureUid, S.EffectiveDate, S.Passed, 0, 0, @scoreType);",
+                            new { execution.ExecutionID, scoreType = (int)scoreType },
                             transaction: trans);
 
                             results.AddRange(
      Connection.Query<ExternalScoreResultsApiResultsModel>(
-     $"select AssetUid, EffectiveDate, Success as IsSuccess, Message as ErrorMessage,  from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
+     $"select AssetUid, EffectiveDate, Success as IsSuccess, Message as ErrorMessage  from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
      new { execution.ExecutionID },
      transaction: trans)
  );
@@ -596,6 +597,21 @@ where T.ExecutionID = @executionID and T.Score is null or T.Score < 0 or T.Score
             #endregion
             try
             {
+                //update EndDate of previous scores
+                Connection.Execute(@"
+		update M
+		set M.EndDate = R.EffectiveDate
+		from [metrics].[Score] M
+        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and M.AssetUid = E.AssetUid and E.Success = 1
+		cross apply (
+			select top 1 EffectiveDate from metrics.Score R
+			where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
+			and R.EffectiveDate > M.EffectiveDate
+			order by EffectiveDate asc
+		) R
+        where M.EndDate is null and M.ScoreType = @scoreType", new { execution.ExecutionID, scoreType = (int)scoreType });
+
+
                 execution.Error = results.Count(i => !i.IsSuccess);
                 execution.Processed = results.Count(i => i.IsSuccess);
                 execution.CompletedOn = DateTime.UtcNow;
@@ -615,8 +631,8 @@ where T.ExecutionID = @executionID and T.Score is null or T.Score < 0 or T.Score
             Connection.Close();
 
             return results;
-        
-    }
+
+        }
 
         public ObjectStatisticTileModel GetObjectStatistics(SystemObjects type, int id)
         {

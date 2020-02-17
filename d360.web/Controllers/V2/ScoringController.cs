@@ -383,10 +383,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Post a list of externally calculated score results
         /// </summary>
+        /// <param name="model">The externally calculated score results to load.</param>
         /// <param name="scoreType">The score type of the score results.</param>
         /// <returns>List of results.</returns>
         [
-            HttpGet,
+            HttpPost,
             Route("{scoreType}/externalresults"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultsApiResultsModel>)),
@@ -421,6 +422,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Loads score results for the associated allocations.
         /// </summary>
+        /// <param name="model">The score results to load.</param>
         /// <param name="scoreType">The score type of the score results.</param>
         /// <returns>The results.</returns>
         [
