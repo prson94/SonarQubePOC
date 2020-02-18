@@ -24,7 +24,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                              [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3"
                              [paginator]="true"
                              [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-                             [(selection)]="selected" (sortFunction)="customSort($event)">
+                             [(selection)]="selected" (sortFunction)="customSort($event)" [customSort]="true">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th *ngFor="let column of columns"
