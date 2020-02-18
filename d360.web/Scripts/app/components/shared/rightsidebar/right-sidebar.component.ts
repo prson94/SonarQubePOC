@@ -347,10 +347,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         }
     }
 
-    getCertificationStatusColor(status: string) {
-        return this.objectStatisticsService.getCertificationStatusColor(status);
-    }
-
     private requestCertification() {
         this.showCertifyModal = true;
         this.showCertify = false;
