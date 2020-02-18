@@ -34,19 +34,20 @@ export function localeIdFactory() {
     return navigator.language;
 }
 
-export function localeInitializer(localeId: string) {    
-    return (): Promise<any> => {              
-        return new Promise((resolve,reject) => {
-            import(`@angular/common/locales/${localeId}.js`)
+export function localeInitializer(localeId: string) {                  
+    return (): Promise<any> => {
+        if (localeId && localeId.toLowerCase() != 'en-us') {
+            return new Promise((resolve, reject) => {
+                import(`@angular/common/locales/${localeId}.js`)
                     .then(module => {
-                        console.log(`Govern Locale is [${localeId}]`);
+                        console.log(`Govern locale is set to [${localeId}]`);
                         registerLocaleData(module.default);
                         resolve();
                     }).catch(() => {
                         if (localeId.indexOf('-') !== -1) {
                             import(`@angular/common/locales/${localeId.split('-')[0]}.js`)
                                 .then(module => {
-                                    console.log(`Govern Locale is [${localeId.split('-')[0]}]`);
+                                    console.log(`Govern locale is set to [${localeId.split('-')[0]}]`);
                                     registerLocaleData(module.default);
                                     resolve();
                                 }, reject);
@@ -56,8 +57,13 @@ export function localeInitializer(localeId: string) {
                             reject;
                         }
                     });
-        });                    
-    };    
+
+            });
+        }
+        else {
+            console.log('Govern locale defaulting to [en-US]');
+        }
+    };        
 }
 
 @NgModule({
