@@ -3,7 +3,8 @@ import {HttpClient} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 
-import {ObjectStatistics} from '../models/object-statistics.model';
+import { ObjectStatistics } from '../models/object-statistics.model';
+import { SearchDetail } from '../models/search-result.model';
 
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
@@ -37,7 +38,7 @@ export class ObjectStatisticsService extends BaseObservableService {
         );
     }
 
-    getSearchDetails(Uid: string): Observable<string> {
+    getSearchDetails(Uid: string): Observable<SearchDetail> {
         return this.http.get(`api/v2/assets/searchDetails/${Uid}`).pipe(
             map(response => <any>response),
             catchError(err => this.handleError(err))

@@ -102,3 +102,21 @@ export class AdvancedSearchFilter {
     exact: boolean = false;
     connector: string = 'and';
 }
+
+export class SearchAssetDetail {
+    uid: string;
+    Status: string;
+    Path: string;
+}
+
+export class AssetScore {
+    AssetUid: string;
+    EffectiveDate: string;
+    Value: number;
+    ScoreType: string;
+}
+
+export class SearchDetail {
+    AssetDetail: SearchAssetDetail;
+    Scores: AssetScore[];
+}
