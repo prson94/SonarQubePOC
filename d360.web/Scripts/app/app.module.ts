@@ -30,43 +30,34 @@ import { DialogModule } from 'primeng/dialog';
 import { D3SModal } from './components/shared/modal/gov-modal.component';
 import { AssetStyleService } from './services/asset-style.service';
 
-declare var System;
-
-export class LocaleService {
-    getLocale(): string {
-        if (typeof window === 'undefined' || typeof window.navigator === 'undefined') {
-            return undefined;
-        }
-
-        let browserLang: any = window.navigator['languages'] ? window.navigator['languages'][0] : null;
-        browserLang = browserLang || window.navigator.language || window.navigator['browserLanguage'] || window.navigator['userLanguage'];
-
-        if (browserLang.indexOf('-') !== -1) {
-            browserLang = browserLang.split('-')[0];
-        }
-
-        if (browserLang.indexOf('_') !== -1) {
-            browserLang = browserLang.split('_')[0];
-        }
-
-        return browserLang;
-    }
+export function localeIdFactory() {
+    return navigator.language;
 }
 
-export function localeIdFactory(localeService: LocaleService) {
-    return window.navigator.language;
-}
+export function localeInitializer(localeId: string) {    
+    return (): Promise<any> => {              
+        return new Promise((resolve,reject) => {
+            import(`@angular/common/locales/${localeId}.js`)
+                    .then(module => {
+                        console.log(`Govern Locale is [${localeId}]`);
+                        registerLocaleData(module.default);
+                        resolve();
+                    }).catch(() => {
+                        if (localeId.indexOf('-') !== -1) {
+                            import(`@angular/common/locales/${localeId.split('-')[0]}.js`)
+                                .then(module => {
+                                    console.log(`Govern Locale is [${localeId.split('-')[0]}]`);
+                                    registerLocaleData(module.default);
+                                    resolve();
+                                }, reject);
 
-export function localeInitializer(localeId: string) {
-    return (): Promise<any> => {
-        return new Promise((resolve, reject) => {
-            import(/* webpackInclude: /(de|en|ca|no|fi|sv|tr|en-GB|en-US)\.js$/ */`@angular/common/locales/${localeId}.js`)
-                .then(module => {
-                    registerLocaleData(module.default);
-                    resolve();
-                }, reject);
-        });
-    };
+                        }
+                        else {
+                            reject;
+                        }
+                    });
+        });                    
+    };    
 }
 
 @NgModule({
@@ -108,15 +99,8 @@ export function localeInitializer(localeId: string) {
         TooltipSingletonService,
         StateService,
         CookieService,
-        SiteMenuService,
-        /*{
-            provide: LOCALE_ID,
-            useFactory: () => {
-                navigator.language
-            }*/
-        //},
-        LocaleService,
-        { provide: LOCALE_ID, useFactory: localeIdFactory, deps: [LocaleService] },
+        SiteMenuService,        
+        { provide: LOCALE_ID, useFactory: localeIdFactory },
         {
             provide: APP_INITIALIZER,
             multi: true,
