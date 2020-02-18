@@ -475,13 +475,12 @@ namespace d360.model.DataAccessLayer
                     	from	metrics.ScoreItem I
                     			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     			inner join (
-                    				select	max(EndDate) as EndDate
+                    				select	max(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
-                    						and EffectiveDate <= @effectiveDate
-                                            and EndDate is not null
-                    			) MI on MI.EndDate = I.EffectiveDate
+                    						and EndDate is null
+                    			) MI on MI.EffectiveDate = I.EffectiveDate
                     	where	AssetUid = @assetUid
                     	union all
                     	select	A.[Uid],
