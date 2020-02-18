@@ -1,14 +1,12 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 
 import { RouterModule } from '@angular/router';
 
-import {    
-    SharedModule,
-} from 'primeng/shared';
+import { SharedModule } from 'primeng/shared';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedRelationshipModule } from '../../shared/relationship/shared-relationship.module';
@@ -19,8 +17,8 @@ import { RelationshipsRoutingModule } from './relationships.routes';
 import { RelationshipsComponent } from './relationships.component';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
         RouterModule,

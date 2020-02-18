@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
@@ -57,7 +57,6 @@ import { TableModule } from 'primeng/table';
     imports: [
         //angular
         CommonModule,
-        DeprecatedI18NPipesModule,
         FormsModule,
         HttpClientModule,
         RouterModule,        
@@ -73,8 +72,7 @@ import { TableModule } from 'primeng/table';
         TooltipModule,
         SharedModule,
         TableModule,
-
-
+        
         //d3s
         D3SSharedModule,          
         CoreModule,   

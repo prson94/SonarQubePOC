@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
@@ -40,8 +40,8 @@ import { DialogModule } from 'primeng/dialog';
     exports: [
         AdminAllocationComponent,        
     ],
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
         RouterModule,

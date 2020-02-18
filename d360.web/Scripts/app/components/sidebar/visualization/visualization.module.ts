@@ -1,17 +1,15 @@
-﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
-import { FormsModule }    from '@angular/forms';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 
-import {    
-    SharedModule,
-} from 'primeng/shared';
+import { SharedModule } from 'primeng/shared';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedDiagramModule } from '../../shared/diagram/shared-diagram.module';
-import { TilesModule  } from '../../shared/tiles/tiles.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
 
 import { VisualizationRoutingModule } from './visualization.routes';
 
@@ -21,8 +19,8 @@ import { ImpactComponent } from './impact.component';
 import { DiagramComponent } from './diagram.component';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
         RouterModule,
