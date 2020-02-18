@@ -17,6 +17,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                 <div class="tile tile-detail">
                     <d3s-field-definition-tile [objectID]="objectID"
                                                [objectType]="objectType"
+                                               [assetTypeID]="assetTypeID"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>
             </div>
@@ -30,6 +31,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
     objectID: number;
     objectType: string;
     objectName: string;
+    assetTypeID: number;
 
     constructor(
         private objectDetailService: ObjectDetailService,
@@ -48,6 +50,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
             params => {
                 this.objectID = +params['objectId']; // (+) converts string 'id' to a number
                 this.objectType = params['objectType'];
+                this.assetTypeID = params['assetTypeID'];
 
                 this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
                     res => {
