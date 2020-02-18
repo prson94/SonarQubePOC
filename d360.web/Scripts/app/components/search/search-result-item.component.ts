@@ -30,10 +30,11 @@ declare var CompanySettings;
 			                <d3s-dynamic-percentage [percentage]="searchDetails?.Score"></d3s-dynamic-percentage>
 			                <span class="text">{{searchDetails?.Score}}%</span>
 		                </span>
-		                <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-			                <i class="fa fa-certificate"></i>
-			                <span class="text">{{status}}</span>
-		                </span>
+                        <d3s-status-badge
+                            *ngIf="showStatus"
+                            [status]="status"
+                        >
+                        </d3s-status-badge>
                         <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </button>
@@ -157,10 +158,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (this.searchDetails && this.searchDetails.Score) {
             return this.searchDetails.Score >= start && this.searchDetails.Score <= end;
         }
-    }
-
-    getCertificationStatusColor(status: string) {
-        return this.objectStatisticsService.getCertificationStatusColor(status);
     }
 
     private lastCalculatedMessage() {

@@ -727,6 +727,7 @@
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
@@ -1284,6 +1285,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\tags\tags-usage-info.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\paginator\paginator-bar-module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\survey\take-survey.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tags\d3s-tag-view.ts" />
