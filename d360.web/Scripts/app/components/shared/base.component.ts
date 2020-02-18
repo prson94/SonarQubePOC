@@ -743,7 +743,7 @@ export class BaseComponent {
         if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
             //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
             data.PreloadData = true;
-        }
+        } 
 
         if (assetUid == null && !assetId && !assetTypeUid && !objectId) {
             return;
@@ -762,6 +762,10 @@ export class BaseComponent {
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
+
+            if (this.objectType == 'FusionAttribute') {
+                return;
+            }
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
