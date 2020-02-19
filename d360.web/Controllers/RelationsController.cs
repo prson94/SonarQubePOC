@@ -1,16 +1,9 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.enums;
 using d360.model;
-using d360.web.Models;
 using d360.web.Models.Attributes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using SpreadsheetLight;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 using System.Web.Mvc;
 
 namespace d360.web.Controllers
@@ -27,14 +20,7 @@ namespace d360.web.Controllers
         #endregion
                 
         #region Json
-
-        [HttpGet, Route("GetPredicates")]
-        public JsonNetResult GetPredicates()
-        {
-            var list = Company.Query<dynamic>(@"select ID as [value], Name as [text] from Predicate order by Name");
-            return new JsonNetResult { Data = list, Formatting = Formatting.None };
-        }
-
+        
         [HttpGet, Route("GetPossibleRelationshipsObjectByIntersect"), NonNullableParameters]
         public JsonNetResult GetPossibleRelationshipsObjectByIntersect(int id)
         {
@@ -68,8 +54,7 @@ from[Intersect] O
 
             return new JsonNetResult { Data = Company.Query<dynamic>(sql, new { s = new Dapper.DbString { Value = sType, IsAnsi = true, IsFixedLength = true, Length = 50 }, sid = sID, o = new Dapper.DbString { Value = tType.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 }, oid = tID }).OrderBy(i => i.ObjectTypeName).ThenBy(i => i.ObjectName), Formatting = Formatting.None };
         }
-
-
+        
         #endregion
     }
 }

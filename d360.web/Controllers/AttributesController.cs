@@ -6,7 +6,6 @@ using d360.core.entities;
 using d360.web.Models;
 using d360.core.enums;
 using d360.model;
-using d360.web.Models.Attributes;
 using System.Net;
 
 namespace d360.web.Controllers
@@ -158,17 +157,7 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        [Route("types")]
-        public JsonNetResult GetTypes()
-        {
-            return new JsonNetResult
-            {
-                Data = Company.Table<AttributeType>().OrderBy(i => i.Parent.Name).ThenBy(i => i.Name).Select(i => new { i.ID, i.Name, i.ParentID, expanded = true }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
+        
         #endregion
 
         #region Private Methods
