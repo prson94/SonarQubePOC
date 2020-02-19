@@ -446,5 +446,6 @@
   <include file="scripts/GOV-9736.xml"/> <!-- tile.GetObjectStatistics show RunDate on score badge -->
   <include file="scripts/GOV-9735.xml"/> <!-- bulkload.GetLoadColumns - fix lookups and columns incorrectly set to Required -->
   <include file="scripts/GOV-9711.xml"/> <!-- Update [graph].[GetHop] return non-leaf asset impacts and owners to asset browser -->
+  <include file="scripts/GOV-9601B.xml"/> <!-- Update [graph].[GetHop] to add back the position logic to account for composite keys on an asset -->
   <include file="scripts/GOV-9434.xml"/> <!-- api table updates for external scoring endpoint and small fix to LoadFromStaging -->
 </databaseChangeLog>
