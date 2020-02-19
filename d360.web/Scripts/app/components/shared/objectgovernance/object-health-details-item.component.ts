@@ -63,6 +63,38 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     public setCollapsed(val: boolean) {
         this.isCollapsed = val;
     }
+    private getReadableValue(value: string) {
+        switch (value.toLowerCase()) {
+            case 'eq':
+                return 'Equals';
+            case 'neq':
+                return 'Not Equals';
+            case 'lt':
+                return 'Less Than';
+            case 'lte':
+                return 'Less Than or Equals';
+            case 'gt':
+                return 'Greater Than';
+            case 'gte':
+                return 'Greater Than or Equals';
+            default: return '';
+        }
+    }
+
+    getAsPrecentage(val: number) {
+        if (!val)
+            return;
+        if (val == 1)
+            return '100%'
+        let s = val + '0000';
+        s = s.replace('0.', '');
+        if (s.length > 6)
+            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+        else
+            s = (s.substr(0, 2)) + "%";
+        return s;
+        
+    }
 
     GetChildPropertValue(parent, child, property) {
         if (this.definition && parent && child) {

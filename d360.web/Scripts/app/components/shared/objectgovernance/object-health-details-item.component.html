@@ -15,11 +15,11 @@
             </div>
             <div class="heading-item med">
                 <div class="heading-title">Defined weight</div>
-                <div class="heading-value">{{currentItemDetails?.Weight}}</div>
+                <div class="heading-value">{{getAsPrecentage(currentItemDetails?.Weight)}}</div>
             </div>
             <div class="heading-item med">
                 <div class="heading-title">Adjusted weight</div>
-                <div class="heading-value">{{item?.data?.Weight}}</div>
+                <div class="heading-value">{{getAsPrecentage(item?.data?.Weight)}}</div>
             </div>
             <div class="heading-item sm badge">
                 <span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
@@ -49,7 +49,7 @@
                             <tbody>
                                 <tr *ngFor="let con of currentItemDetails?.Conditions">
                                     <td>{{con.FieldName}}</td>
-                                    <td>{{con.Operator}}</td>
+                                    <td>{{getReadableValue(con.Operator)}}</td>
                                     <td>{{con.Value}}</td>
                                 </tr>
                             </tbody>
@@ -77,10 +77,10 @@
                                 <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'EffectiveDate') | utcDate | date:'shortDate'}}</div>
                             </div>
                             <div class="heading-item med">
-                                <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'Weight')}}</div>
+                                <div class="heading-value">{{getAsPrecentage(GetChildPropertValue(item?.data,child?.data,'Weight'))}}</div>
                             </div>
                             <div class="heading-item med">
-                                <div class="heading-value">{{child?.data?.Weight}}</div>
+                                <div class="heading-value">{{getAsPrecentage(child?.data?.Weight)}}</div>
                             </div>
                             <div class="heading-item sm badge">
                                 <span *ngIf="item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': child?.data?.Value, 'red': !child?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
@@ -110,7 +110,7 @@
                                             <tbody>
                                                 <tr *ngFor="let con of GetChildPropertValue(item?.data,child?.data,'Conditions')">
                                                     <td>{{con.FieldName}}</td>
-                                                    <td>{{con.Operator}}</td>
+                                                    <td>{{getReadableValue(con.Operator)}}</td>
                                                     <td>{{con.Value}}</td>
                                                 </tr>
                                             </tbody>
