@@ -1,4 +1,6 @@
-﻿export class PointBreakdown {
+﻿import { ScoreType } from "./metrics.model";
+
+export class PointBreakdown {
     Uid: string;
     ParentUid: string;
     Level: number;
@@ -8,6 +10,7 @@
     Weight: number;
     Value: boolean;
     EffectiveDate: string;
+    ScoreType: ScoreType;
 }
 
 export class ScorePoint {

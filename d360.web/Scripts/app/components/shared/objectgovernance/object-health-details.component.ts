@@ -1,10 +1,11 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
+import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 
 
 @Component({
@@ -16,7 +17,6 @@ import { ScoreType } from '../../../models/metrics.model';
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
     @Input() uid: string;
     @Input() objectName: string;
-
     scoreHistory: Object;
     averageScore: number;
     scoreDate: string = null;
@@ -29,6 +29,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private pointBreakdownTree: TreeNode[] = [];
     private scoreDefinition: any;
     private ScoreType = ScoreType;
+    private selectedScoreType = ScoreType.Governance;
+
+    @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
+
     constructor(protected scoreService: ScoreService) {
         super();
     }
@@ -187,17 +191,39 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             case ScoreType.Governance:
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
+                this.selectedScoreType = ScoreType.Governance;
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
+                this.selectedScoreType = ScoreType.DataQuality;
                 break;
             default:
         }
     }
-
+    private setCollapsed(val: boolean) {
+        if (this.OHDitems && this.OHDitems.length > 0) 
+            this.OHDitems.forEach(x => { x.setCollapsed(val); })
+    }
+    private isAllCollapsed() {
+        if (this.OHDitems && this.OHDitems.length > 0) {
+            let any = this.OHDitems.filter(x => { return !x.isCollapsed; });
+            if (any && any.length > 0)
+                return false;
+            else 
+                return true;
+        }
+    }
     private hasAnyScoreType(scoreType: ScoreType) {
-        return true;
+        if (this.pointBreakdown && this.pointBreakdown.length > 0) {
+            let any = this.pointBreakdown.filter(x => { return x.ScoreType == scoreType });
+            if (any.length > 0) {
+                return true;
+            } else {
+                return false;
+            }
+        } else
+            return false;
     }
 
     private getCurrentScoreDateText() {

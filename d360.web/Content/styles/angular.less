@@ -5684,9 +5684,29 @@ a.mid-blue {
             color: @igx-grey-light;
             padding: 8px 0 8px 0px !important;
 
+            &.breakdown {
+                display: inline-flex;
+                flex-direction: row;
+                flex-grow: 1;
+                width: 100%;
+            }
+
             .heading-text {
                 height: 32px;
                 line-height: 3;
+            }
+
+            .collapse-btn {
+                margin-left: auto;
+                line-height: 1;
+                padding: 8px;
+                border-radius: 4px;
+                color: @igx-blue;
+
+                &:hover {
+                    background-color: rgba(0,0,0,0.03);
+                    cursor: pointer;
+                }
             }
 
             .button {
@@ -5750,11 +5770,11 @@ a.mid-blue {
             display: inline-flex;
             flex-direction: row;
             width: 32px;
-            padding: 12px;
-            margin-top: 12px;
+            padding: 16px;
+            margin-top: 16px;
 
             &.no-padding {
-                margin: 0px -30px 0px 12px;
+                margin: 0px -22px 0px 16px;
                 margin-top: 0px;
                 display: inline-flex;
                 flex-direction: row;
@@ -5762,8 +5782,13 @@ a.mid-blue {
             }
 
             .expander {
-                height: 14px;
-                width: 10px;
+                height: 16px;
+                margin-top: -4px;
+                width: 16px;
+
+                &.sm-icon {
+                    padding-left: 4px;
+                }
             }
 
             .icon-down {
@@ -5794,6 +5819,10 @@ a.mid-blue {
 
                 &.med-lg {
                     width: 20%;
+
+                    &.lg {
+                        width: 55%;
+                    }
                 }
 
                 &.med {
@@ -5807,6 +5836,23 @@ a.mid-blue {
                 &.desc {
                     margin-left: 0px;
                     width: 40%;
+
+                    &.large {
+                        width: 50%;
+                    }
+                }
+
+                &.condition {
+                    display: inline-flex;
+                    width: 40%;
+
+                    .condition-name {
+                        width: 40%;
+                    }
+
+                    .condition-value {
+                        width: 40%;
+                    }
                 }
 
                 &.badge {
@@ -5816,7 +5862,7 @@ a.mid-blue {
                     display: inline-flex;
 
                     .d3s-badge {
-                        align-self: flex-end;
+                        margin-top: 4px;
                     }
                 }
 
@@ -5902,5 +5948,11 @@ a.mid-blue {
         height: 1px;
         background-color: #DCDFE2;
         margin: 0px 8px;
+    }
+
+    .condition-table{
+        td{
+            width:33%;
+        }
     }
 }
