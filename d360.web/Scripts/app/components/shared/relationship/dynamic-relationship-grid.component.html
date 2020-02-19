@@ -92,7 +92,8 @@
                     [selection]="addRelationship ? null : selected" 
                     [rowID]="'ID'" 
                     (saveClick)="saveRelationship($event)" 
-                    (closeClick)="closeEditor()"></d3s-dynamic-editor>
+                    (closeClick)="closeEditor()"
+                    [useV2ApiLink]="true"></d3s-dynamic-editor>
 <div *ngIf="!isLoading && relations.length == 0 && !shouldShowEditor()">
     <h5 class="center-align" style="font-weight:bold;">No relationships exist from this object to this object type.</h5>
 </div>

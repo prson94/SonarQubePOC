@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { ChipsFilterComponent } from './chips-filter-component';
@@ -8,8 +8,8 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { DirectivesModule } from '../../../../directives/directives.module';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         DirectivesModule,
     ],

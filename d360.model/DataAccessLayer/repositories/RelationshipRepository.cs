@@ -10,19 +10,21 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using d360.extensions;
+using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace d360.model.DataAccessLayer
 {
-    public class RelationshipRepository : IRelationshipRepository
+    public class RelationshipRepository : BaseRepository, IRelationshipRepository
     {
         ICompanyContext companyContext;
         IQueueSource QueueSource;
         IStorageProvider Storage;
         ICommunityContext communityContext;
         public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+            :base(companyContext)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
@@ -230,19 +232,12 @@ end = @f{fieldType.ID}Value";
                 }
             }
 
-            var fieldColumns = "";
-            var fieldJoins = "";
+            List<string> fieldColumns = new List<string>();
+            List<string> fieldJoins = new List<string>();
 
             if (fieldTypes != null)
             {
-                fieldColumns = string.Join(",", fieldTypes.Select(f => $@"case 
- when FT{f.ID}.AllowAllValue = 1 and F{f.ID}.Value = '0' then cast(FT{f.ID}.AllowAllLabel as nvarchar(max)) 
- when F{f.ID}.FormattedValue is not null then F{f.ID}.FormattedValue
- when FT{f.ID}.DefaultFormattedValue is not null then cast(FT{f.ID}.DefaultFormattedValue as nvarchar(max))
- else null
-end as {f.Name}"));
-                fieldColumns += string.IsNullOrEmpty(fieldColumns) ? "" : ",";
-                fieldJoins = " " + string.Join(" ", fieldTypes.Select(f => $"inner join FieldType FT{f.ID} on FT{f.ID}.ID = {f.ID} left join Field F{f.ID} on F{f.ID}.ObjectType = 'Intersect' and F{f.ID}.ObjectID = I.ID and F{f.ID}.FieldTypeID = FT{f.ID}.ID"));
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "'Intersect'", "i.Id");
             }
 
             if (pageNumber < 0)
@@ -271,10 +266,13 @@ end as {f.Name}"));
             });
             predicateTypeSql += " end as 'Predicate.Type', ";
 
+            string fieldColumnsSql = "";
+            if (fieldColumns.Count > 0)
+                fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var sql = $@"
 declare @total int
-select	@total = count(1) {countSql} {(filteringByFields ? fieldJoins : "")} {whereClause}
+select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}
 
 select	@pageSize as 'pageSize',
 		@pageNum as 'pageNum',
@@ -283,7 +281,7 @@ select	@pageSize as 'pageSize',
 		select	I.Uid,
 				T.Uid as RelationshipTypeUid,
 				{stateSql}
-				{fieldColumns}
+				{fieldColumnsSql}
 				P.UID as 'Predicate.Uid',
 				{predicateTypeSql}
 				P.Name as 'Predicate.Name',
@@ -293,11 +291,11 @@ select	@pageSize as 'pageSize',
 				O.Uid as 'Object.Uid',
 				ISNULL(OT1.Uid,OT2.Uid) as 'Object.AssetTypeUid'
 		{baseTableSql}
-                {fieldJoins} 
+        {string.Join("\n", fieldJoins)}
         {whereClause} 
         order by I.IntersectTypeID
 		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
-		for json path
+		for json path,INCLUDE_NULL_VALUES
 		) as 'items'
 for json path, WITHOUT_ARRAY_WRAPPER";
 

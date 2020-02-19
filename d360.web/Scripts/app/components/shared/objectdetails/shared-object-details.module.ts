@@ -1,5 +1,5 @@
 ﻿import { ButtonModule } from 'primeng/button';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { CoreModule } from '../core.module';
 import { DynamicLookupGridComponent } from './dynamic-lookup-grid.component';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -24,8 +24,7 @@ import { TooltipModule } from 'primeng/tooltip';
     imports: [
         ButtonModule,
         CommonModule,
-        CoreModule,
-        DeprecatedI18NPipesModule,
+        CoreModule,        
         HttpClientModule,
         InputTextModule,
         NgxJsonViewModule,

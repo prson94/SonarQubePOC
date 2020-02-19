@@ -1,5 +1,5 @@
-﻿import { NgModule, Component } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -16,8 +16,8 @@ import { ResourceModule } from '../../resource/resource.module';
 import { SocialModule } from '../../shared/social/social.module';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
         RouterModule,

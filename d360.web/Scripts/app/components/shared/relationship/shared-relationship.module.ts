@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule }    from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
@@ -26,13 +26,13 @@ import { SharedDeleteFormModule } from '../../shared/delete.form';
 import { DirectivesModule } from '../../../directives/directives.module';
 
 @NgModule({
-    imports: [CommonModule,
+    imports: [
+        CommonModule,
         RouterModule,
         FormsModule,
         HttpClientModule,
         //d3s
         CoreModule,
-        DeprecatedI18NPipesModule,
         PipesModule,
         SharedDynamicGridEditorModule,
         SharedFusionAttributeItemDetailsModule,

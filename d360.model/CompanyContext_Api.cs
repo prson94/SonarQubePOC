@@ -5216,6 +5216,12 @@ where   ER.ExecutionID = @ExecutionID
     from	api.ExecutionDeletedPredicate T
     cross apply (select * from IntersectType where PredicateId = T.PredicateId)Usage
     where	T.ExecutionID = @ExecutionID
+
+    update T
+    set T.Success = 0, [Message] = coalesce([Message] + '; ', '') + 'This predicate is system predicate and may not be removed.'
+    from	api.ExecutionDeletedPredicate T
+    cross apply (select * from Predicate P  where P.ID = T.PredicateID AND P.IsSystem = 1) Usage
+    where	T.ExecutionID = @ExecutionID
 ",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
