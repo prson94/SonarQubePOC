@@ -1,0 +1,37 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-9712">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER TABLE [metrics].[Score] DROP CONSTRAINT IF EXISTS [PK_MetricScore]
+
+ALTER TABLE [metrics].[Score] ADD  CONSTRAINT [PK_MetricScore] PRIMARY KEY CLUSTERED 
+(
+    [AssetUid] ASC,
+	[ScoreType] ASC,
+    [EffectiveDate] DESC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+ALTER TABLE [metrics].[Score] DROP CONSTRAINT IF EXISTS [PK_MetricScore]
+
+ALTER TABLE [metrics].[Score] ADD  CONSTRAINT [PK_MetricScore] PRIMARY KEY CLUSTERED 
+(
+    [AssetUid] ASC,
+    [EffectiveDate] DESC
+)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF) ON [PRIMARY]
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
