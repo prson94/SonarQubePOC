@@ -61,6 +61,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() selectedObjectID: any;
     @Input() adding: boolean = false;
     @Input() isV2API: boolean = false;
+    @Input() useV2ApiLink: boolean = false;
 
     @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
@@ -487,7 +488,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
-        if (this.isV2API) {
+        if (this.isV2API || this.useV2ApiLink) {
             let links = this.fields.filter(x => x.FieldType == 'Link');
             //need to get the link and url for each            
             for (let link of links) {
