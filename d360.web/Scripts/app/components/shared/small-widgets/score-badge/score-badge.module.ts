@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { PipesModule } from '../../../../pipes/pipes.module';
 
 import { ScoreBadgeComponent } from './score-badge.component';
@@ -9,7 +9,6 @@ import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
     imports: [CommonModule,
-        DeprecatedI18NPipesModule,
         DynamicPercentageModule,
         PipesModule
     ],

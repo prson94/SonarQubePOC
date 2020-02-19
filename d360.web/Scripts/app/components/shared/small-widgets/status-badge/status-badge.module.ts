@@ -1,13 +1,13 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 import { StatusBadgeComponent } from './status-badge.component';
 import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-request.interceptor';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule
     ],
     declarations: [
         StatusBadgeComponent
