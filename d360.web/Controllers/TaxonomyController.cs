@@ -1,12 +1,7 @@
-﻿using System.Linq;
-using System.Web.Mvc;
-using d360.core.entities;
+﻿using System.Web.Mvc;
 using d360.model;
 using d360.web.Models.Attributes;
-using System.Web;
-using d360.core;
 using d360.core.enums;
-using System.Collections.Generic;
 
 namespace d360.web.Controllers
 {

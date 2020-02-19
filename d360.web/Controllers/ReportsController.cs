@@ -1,21 +1,15 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.enums;
 using d360.model;
 using d360.web.Models;
 using d360.web.Models.Attributes;
-using Microsoft.PowerBI.Api;
 using Microsoft.PowerBI.Api.V2;
-using Microsoft.PowerBI.Security;
 using Microsoft.Rest;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.Mvc;
-using System.Xml.Linq;
 using System.Data.Entity;
 using System.Net;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
@@ -40,17 +34,7 @@ namespace d360.web.Controllers
         private static readonly string pbiAuthorityUrl = "https://login.windows.net/common/oauth2/authorize/";
         private static readonly string pbiResourceUrl = "https://analysis.windows.net/powerbi/api";
         private static readonly string pbiUrl = "https://api.powerbi.com";
-
-        private IPowerBIClient CreatePowerBIClient(string accessKey)
-        {
-            var credentials = new TokenCredentials(accessKey, "AppKey");
-            var client = new PowerBIClient(credentials)
-            {
-                BaseUri = new Uri("https://api.powerbi.com")
-            };
-
-            return client;
-        }
+        
         
         [Route("powerbi/tokens/{reportId}")]
         public async Task<JsonNetResult> GetPowerBITokens(string reportId)
