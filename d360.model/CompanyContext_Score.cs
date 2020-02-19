@@ -487,7 +487,7 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                 where   ExecutionID = @ExecutionID
                         and Success is null;
 
-", new { execution.ExecutionID });
+                ", new { execution.ExecutionID });
 
 
             #endregion
@@ -515,33 +515,33 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                             #region Load valid items into table
 
                             Connection.Execute($@"
-            merge into  [metrics].Score T
-            using       (
-                        select      *
-                        from        api.ExecutionMetric
-                        where       ExecutionID = @ExecutionID 
-                                    and ItemNumber between {beginItemNumber} and {endItemNumber}
-                                    and Success = 1
-                        ) S
-            on          (
-                            S.AssetUid = T.AssetUid and 
-                            T.ScoreType = @scoreType and 
-                            S.EffectiveDate = T.EffectiveDate
-                        )
-            when matched and T.Value <> S.Value then
-                update set
-                        T.Value = S.Value,
-                        T.RunDate = S.RunDate
-            when not matched by target then
-                insert  (AssetUid, EffectiveDate, RunDate, Value, EndDate, ScoreType)
-                values  (S.AssetUid, S.EffectiveDate, S.RunDate, S.Value, null, @scoreType);",
-                            new { execution.ExecutionID, scoreType = (int)scoreType },
-                            transaction: trans);
+                            merge into  [metrics].Score T
+                            using       (
+                                        select      *
+                                        from        api.ExecutionMetric
+                                        where       ExecutionID = @ExecutionID 
+                                                    and ItemNumber between {beginItemNumber} and {endItemNumber}
+                                                    and Success = 1
+                                        ) S
+                            on          (
+                                            S.AssetUid = T.AssetUid and 
+                                            T.ScoreType = @scoreType and 
+                                            S.EffectiveDate = T.EffectiveDate
+                                        )
+                            when matched and T.Value <> S.Value then
+                                update set
+                                        T.Value = S.Value,
+                                        T.RunDate = S.RunDate
+                            when not matched by target then
+                                insert  (AssetUid, EffectiveDate, RunDate, Value, EndDate, ScoreType)
+                                values  (S.AssetUid, S.EffectiveDate, S.RunDate, S.Value, null, @scoreType);",
+                                            new { execution.ExecutionID, scoreType = (int)scoreType },
+                                            transaction: trans);
 
                             Connection.Execute($@"
-                            merge into  [metrics].StagingScoreItem T
+                            merge into  [metrics].ScoreItem T
                             using       (
-                                        select      E.AssetUid, E.MetricAssetUid, E.EffectiveDate, M.Passed, M.MeasureUid
+                                        select      E.AssetUid, E.MetricAssetUid, E.EffectiveDate, M.Passed, M.MeasureUid, E.RunDate
                                         from        api.ExecutionMetric E
                                         inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID and M.ItemNumber = E.ItemNumber
                                         where       E.ExecutionID = @ExecutionID 
@@ -550,24 +550,26 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                                         ) S
                             on          (
                                             S.AssetUid = T.AssetUid and 
-                                            S.MetricAssetUid = T.MetricAssetUid and 
+                                            S.MeasureUid = T.MetricAssetUid and 
                                             S.EffectiveDate = T.EffectiveDate
                                         )
-                            when matched and T.Result <> S.Passed then
+                            when matched then
                                 update set
-                                        T.Result = S.Passed,
-                                        T.Archived = 0
+                                        T.[Value] = S.Passed,
+                                        T.RunDate = S.RunDate,
+                                        T.UpdatedOn = getutcdate()
                             when not matched by target then
-                                insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
-                                values  (S.AssetUid, S.MeasureUid, S.EffectiveDate, S.Passed, 0, 0, @scoreType);",
+                                insert  (AssetUid, MetricAssetUid, EffectiveDate, [Value], RunDate, AdjustedWeight, UpdatedOn)
+                                values  (S.AssetUid, S.MeasureUid, S.EffectiveDate, S.Passed, S.RunDate, NULL, getutcdate());",
                             new { execution.ExecutionID, scoreType = (int)scoreType },
                             transaction: trans);
 
+
                             results.AddRange(
-     Connection.Query<ExternalScoreResultsApiResultsModel>(
-     $"select AssetUid, EffectiveDate, Success as IsSuccess, Message as ErrorMessage  from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-     new { execution.ExecutionID },
-     transaction: trans)
+                                 Connection.Query<ExternalScoreResultsApiResultsModel>(
+                                 $"select AssetUid, EffectiveDate, Success as IsSuccess, Message as ErrorMessage  from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
+                                 new { execution.ExecutionID },
+                                 transaction: trans)
  );
 
                             #endregion
@@ -599,17 +601,30 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
             {
                 //update EndDate of previous scores
                 Connection.Execute(@"
-		update M
-		set M.EndDate = R.EffectiveDate
-		from [metrics].[Score] M
-        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and M.AssetUid = E.AssetUid and E.Success = 1
-		cross apply (
-			select top 1 EffectiveDate from metrics.Score R
-			where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
-			and R.EffectiveDate > M.EffectiveDate
-			order by EffectiveDate asc
-		) R
-        where M.EndDate is null and M.ScoreType = @scoreType", new { execution.ExecutionID, scoreType = (int)scoreType });
+		        update  M
+		        set     M.EndDate = R.EffectiveDate
+		        from    [metrics].[Score] M
+                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and M.AssetUid = E.AssetUid and E.Success = 1
+		                cross apply (
+			                select top 1 EffectiveDate from metrics.Score R
+			                where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
+			                and R.EffectiveDate > M.EffectiveDate
+			                order by EffectiveDate asc
+		                ) R
+                where   M.EndDate is null and M.ScoreType = @scoreType
+
+		        update  M
+		        set     M.EndDate = R.EffectiveDate
+		        from    [metrics].[ScoreItem] M
+                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and E.AssetUid = M.AssetUid and E.Success = 1
+                        inner join api.ExecutionMetricMeasure S on S.ExecutionId = @executionID and S.MeasureUid = M.MetricAssetUid
+		                cross apply (
+			                select top 1 EffectiveDate from metrics.ScoreItem R
+			                where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid and R.MetricAssetUid = M.MetricAssetUid
+			                and R.EffectiveDate > M.EffectiveDate
+			                order by EffectiveDate asc
+		                ) R
+                where   M.EndDate is null", new { execution.ExecutionID, scoreType = (int)scoreType });
 
 
                 execution.Error = results.Count(i => !i.IsSuccess);
