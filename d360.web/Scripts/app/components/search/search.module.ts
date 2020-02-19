@@ -15,6 +15,8 @@ import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
 import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
+import { StatusBadgeModule } from '../shared/small-widgets/status-badge/status-badge.module';
+import { ScoreBadgeModule } from '../shared/small-widgets/score-badge/score-badge.module';
 import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar-module';
 import { CheckTreeModule } from '../shared/small-widgets/check-tree/check-tree.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -57,6 +59,8 @@ import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
         CoreModule,
         TilesModule,
         DynamicPercentageModule,
+        StatusBadgeModule,
+        ScoreBadgeModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
         ChipsFilterModule,

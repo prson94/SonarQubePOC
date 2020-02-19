@@ -55,7 +55,7 @@
                         <div class="filter-section">
                             <div class="filter-header">Asset Ancestry</div>
                             <div>
-                                <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterAncestryModeChange()" styleClass="filter-dropdown"></p-dropdown>
+                                <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterTriggerVisualizationUpdate()" styleClass="filter-dropdown"></p-dropdown>
                             </div>
                         </div>
 
@@ -77,6 +77,9 @@
                                 </div>
                                 <div>
                                     <p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox>
+                                </div>
+                                <div>
+                                    <p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Impacts/Owners" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterTriggerVisualizationUpdate()"></p-checkbox>
                                 </div>
                             </div>
                         </div>
@@ -154,7 +157,6 @@
                         <p-tabView [(activeIndex)]="panelTabIndex">
                             <p-tabPanel header="Alerts" [disabled]="!isAlertTabEnabled">
                                 <d3s-loading [(isLoading)]="isAlertPanelLoading"></d3s-loading>
-                                <!--<p-contextMenu [target]="alertPanelContent" [model]="alertContextItems"></p-contextMenu>-->
                                 <div #alertPanelContent [(hidden)]="isAlertPanelLoading" class="asset-browser-window-tabs-content">
                                     <div *ngIf="alerts.length == 0" class="error-msg">
                                         No alerts displayed.

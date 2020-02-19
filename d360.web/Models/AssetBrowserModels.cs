@@ -270,6 +270,9 @@ namespace d360.web.Models
 
         [DataMember]
         public Guid resourceUid { get; set; }
+
+        //[DataMember]
+        public int resourceId { get; set; }
     }
 
     public class AssetBrowserOwnersModel

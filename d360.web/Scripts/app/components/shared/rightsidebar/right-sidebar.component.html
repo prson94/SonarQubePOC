@@ -14,10 +14,9 @@
             <d3s-dynamic-percentage [percentage]="statistics?.Score"></d3s-dynamic-percentage>
             <span class="text">{{statistics?.Score}}%</span>
         </span>
-        <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-            <i class="fa fa-certificate"></i>
-            <span class="text">{{status}}</span>
-        </span>
+        <d3s-status-badge *ngIf="showStatus"
+                          [status]="status">
+        </d3s-status-badge>
         <button class="button" *ngIf="showCertify" (click)="requestCertification()"><span>Request Certification</span></button>
         <span class="grow"></span>
         <button class="button" (click)="navigateToSurvey()" *ngIf="showSurvey"><i class="fa fa-edit"></i><span>Take Survey</span></button>
