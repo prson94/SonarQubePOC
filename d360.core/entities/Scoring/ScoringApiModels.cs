@@ -65,7 +65,7 @@ namespace d360.core.entities.Scoring
         public Guid assetUid { get; set; }
 
         [DataMember]
-        public DateTime effectiveDate { get; set; }
+        public DateTime? effectiveDate { get; set; }
 
         [DataMember]
         public bool result{ get; set; }
