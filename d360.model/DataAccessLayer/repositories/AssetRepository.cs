@@ -1554,19 +1554,18 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 select
 	                A.[UID] as [uid],
                     COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
-                    cast(S.Value * 100 as int) as 'Score',
-                    S.EffectiveDate as 'EffectiveDate',  
 	                Node.Path 
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
                 left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
-                left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
                 WHERE A.ID = @id
             ";
-
-            var res = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
+            var res = new {
+                AssetDetail = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs),
+                Scores = await GetAssetScores(asset.uid)
+            };
             return res;
         }
 
@@ -1586,5 +1585,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
 
+        private async Task<List<core.entities.Scoring.Score>> GetAssetScores(Guid AssetUid)
+        {
+            return await CompanyContext.Scores.Where(x => x.AssetUid == AssetUid && x.EffectiveDate <= DateTime.UtcNow && x.EndDate == null).ToListAsync();
+        }
     }
 }

@@ -213,6 +213,8 @@ namespace d360.model
 
         public DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
 
+        public DbSet<Score> Scores { get; set; }
+
         public DbSet<SiteNav> SiteNav { get; set; }
 
         public DbSet<SiteNavPermission> SiteNavPermissions { get; set; }

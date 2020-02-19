@@ -3072,6 +3072,14 @@ button.tab-scroller {
         height: 16px;
     }
 
+    &.smallmed-icon {
+        height: 24px;
+        width: 24px;
+        align-items: center;
+        font-size: 16px;
+        justify-content: center;
+    }
+
     &.med-icon {
         height: 32px;
         width: 32px;
@@ -3082,13 +3090,12 @@ button.tab-scroller {
 }
 
 .d3s-chart {
-    width: 25px;
+    width: 18px;
 }
 
 .d3s-circular-chart {
     display: block;
     margin: 10px auto;
-    max-width: 80%;
     max-height: 250px;
     background-color: transparent;
 }
@@ -3096,13 +3103,13 @@ button.tab-scroller {
 .d3s-circle-bg {
     fill: none;
     stroke: rgba(255,255,255,.5);
-    stroke-width: 5;
+    stroke-width: 7;
 }
 
 .d3s-circle {
     fill: none;
-    stroke-width: 5;
-    stroke-linecap: round;
+    stroke-width: 7;
+    stroke-linecap: butt;
     animation: progress 1s ease-out forwards;
     stroke: white;
 }
@@ -4364,7 +4371,7 @@ button.tab-scroller {
                         display: inline-flex;
                         flex-shrink: 1;
                         flex-direction: row;
-                        align-items: center;
+                        align-items: flex-end;
                         align-self: stretch;
 
                         .d3s-icon {
@@ -4469,6 +4476,120 @@ button.tab-scroller {
     }
 }
 ///
+
+///Badge/pill components
+.d3s-status-badge {
+    height: 24px;
+    border-radius: 12px;
+
+    .icon-container {
+        width: 16px;
+        height: 16px;
+        line-height: 16px;
+        font-size: 16px;
+        margin: 4px;
+        float: left;
+    }
+
+    .text {
+        height: 16px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.33;
+        text-align: center;
+        padding-left: 4px;
+        padding-right: 16px;
+        float: right;
+        margin-top: 4px;
+    }
+}
+
+d3s-status-badge + .d3s-score-container {
+    padding-left: 24px;
+}
+
+.d3s-score-container {
+    display: flex;
+
+    .d3s-score-badge {
+        padding-left: 12px;
+    }
+}
+
+.d3s-score-badge {
+    .scoretitle {
+        width: 80px;
+        height: 16px;
+        font-size: 11px;
+        font-weight: 600;
+        line-height: 1.27;
+        text-align: center;
+        color: #252c41;
+
+        .mast& {
+            width: 104px;
+            height: 23px;
+            font-size: 12px;
+            line-height: 1.17;
+        }
+    }
+
+    .d3s-score-pill {
+        height: 24px;
+        width: 80px;
+        border-radius: 12px;
+        display: flex;
+
+        .mast& {
+            height: 30px;
+            width: 104px;
+            border-radius: 15px;
+        }
+
+        .text {
+            width: 55px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+
+            .mast& {
+                width: 104px;
+                height: 30px;
+                line-height: 30px;
+                font-size: 18px;
+            }
+        }
+
+        .d3s-chart {
+            width: 16px;
+            display: inline-block;
+            margin-top: 4px;
+            margin-left: 4px;
+
+            .d3s-circular-chart {
+                display: inline;
+                margin: 0;
+                max-width: 100%;
+                max-height: 250px;
+                background-color: transparent;
+
+                .d3s-circle-bg {
+                    stroke-width: 16;
+                    stroke: rgba(255, 255, 255, 0.3);
+                }
+
+                .d3s-circle {
+                    stroke-width: 16;
+                }
+            }
+        }
+    }
+}
+
 //paging bar
 .paging-bar {
     display: flex;
