@@ -322,20 +322,17 @@ begin
 			insert into @lookups (FieldTypeID, [Label]) values (-4, 'Add')
 			insert into @lookups (FieldTypeID, [Label]) values (-4, 'Remove')
 				
-			insert into @lookups ([Value], FieldTypeID, [Label])         
-				select	Uid,
-						-2,
-						SubjectName + ' ' + PredicateName + ' ' + ObjectName
+			insert into @lookups (FieldTypeID, [Label])         
+				select	-2,
+						SubjectName + ' ' + coalesce(PredicateName,'/') + ' ' + ObjectName
 				from	IntersectTypeDetail
 				where	PredicateType in (1,7,8,9,10,11)
 
-			insert into @lookups ([Value], FieldTypeID, [Label])
-				select		[uid],		
-							-3,
-							F.Name 
-				from		AssetDetail A
-							inner join Fusion F on A.[Object] = 'Fusion' and F.ID = A.ObjectID
-				order by	F.Name
+			insert into @lookups (FieldTypeID, [Label])
+				select		-3,
+							Name 
+				from		Fusion
+				order by	Name
 	end
 
 	if @action = 'TL'
@@ -348,14 +345,11 @@ begin
 
 		insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, 'Group', 0, 0, 0, 0, 1)
 
-		insert into @lookups ([Value], FieldTypeID, [Label])
-			select		[uid],		
-						-1,
-						T.TextPath 
-			from		Asset A
-			cross apply dbo.GetAssetTextPathById(A.ID, '.') T
-			where		A.[Object] = 'Fusion'
-			order by	T.TextPath
+		insert into @lookups (FieldTypeID, [Label])
+			select		-1,
+						Name 
+			from		Fusion
+			order by	Name
 	end
 	
 	select	Name,
