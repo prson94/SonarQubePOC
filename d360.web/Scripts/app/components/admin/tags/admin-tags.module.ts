@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -29,8 +29,8 @@ import { TagUsageInfoModule } from './tags-usage-info.module';
 import { AdminTagsActionModule } from './admin-tags-action.module';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         
         AdminTagsRoutingModule,

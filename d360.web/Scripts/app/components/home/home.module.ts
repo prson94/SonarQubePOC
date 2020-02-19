@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 
@@ -8,7 +8,7 @@ import { RouterModule } from '@angular/router';
 import { CoreModule } from '../shared/core.module';
 import { SocialModule } from '../shared/social/social.module';
 import { SearchModule } from '../search/search.module';
-import { TilesModule  } from '../shared/tiles/tiles.module';
+import { TilesModule } from '../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component';
 import { SharedAssignmentsModule } from '../shared/assignments/shared-assignments.module'
 import { ShortcutDisplayModule } from '../shared/shortcutdisplay/shortcut-display.module';
@@ -27,8 +27,8 @@ import { TableModule } from 'primeng/table';
 
 
 @NgModule({
-    imports: [CommonModule,     
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         HttpClientModule,
         RouterModule,
 

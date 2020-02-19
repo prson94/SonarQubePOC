@@ -1,8 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
-import { RouterModule } from '@angular/router';
 
 import { AdminModule } from '../admin.module';
 import { CoreModule } from '../../shared/core.module';
@@ -42,8 +41,8 @@ import { AdminExportTemplateStyleFormComponent } from './admin-export-template-s
 
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
 

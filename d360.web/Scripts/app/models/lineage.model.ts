@@ -768,6 +768,7 @@ export class AssetBrowserFilterModel {
     DisplayBadges: boolean = true;
     DisplayIcons: boolean = true;
     DisplayScores: boolean = true;
+    IncludeNonLeaf: boolean = true;
     NumberOfHops: number = 3;
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
