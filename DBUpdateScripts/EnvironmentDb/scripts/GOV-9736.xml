@@ -38,13 +38,13 @@ BEGIN
 												and C.IsDeleted = 0
 
 	insert into @table 
-		select	NULL, cast(Value * 100 as int), 'Score', '', S.EffectiveDate ,null
+		select	NULL, cast(Value * 100 as int), 'Score', '', coalesce(S.RunDate, S.EffectiveDate), null
 		from	metrics.Score S
 			inner join (
-				select	max(EffectiveDate) as EffectiveDate
+				select	top 1 RunDate, EffectiveDate
 				from	metrics.Score
 				where	AssetUid = @assetUid
-						and EffectiveDate <= getutcdate()
+						and ScoreType = 1 and EndDate is null
 			) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid
 
 	if @type = 'Artifact' or @type = 'Taxonomy' or @type = 'Rule' or @type = 'Policy'
