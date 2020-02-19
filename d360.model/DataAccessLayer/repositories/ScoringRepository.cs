@@ -89,6 +89,20 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypes);
                         break;
 
+                    case "isexternallycalculated":
+                        bool? isExtern = null;
+                        if ("yes".Contains(kp.Value.ToLower()))
+                            isExtern = true;
+                        if ("no".Contains(kp.Value.ToLower()))
+                            isExtern = false;
+
+                        if (isExtern.HasValue)
+                        {
+                            whereStatements.Add("AL.IsExternallyCalculated = @isExt");
+                            dbArgs.Add("@isExt", isExtern);
+                        }
+                        break;
+
                     case "global":
                         List<string> globalFilters = new List<string>();
                         var classListGlobal = AssetTypeClass.Generic.GetAsList();
@@ -105,8 +119,19 @@ namespace d360.model.DataAccessLayer
                         globalFilters.Add("AL.scoreType in @filteredScoreTypesGlobal");
                         dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypesGlobal);
 
-                        whereStatements.Add($"({string.Join(" or ", globalFilters)})");
+                        bool? isExt = null;
+                        if ("yes".Contains(kp.Value.ToLower()))
+                            isExt = true;
+                        if ("no".Contains(kp.Value.ToLower()))
+                            isExt = false;
 
+                        if (isExt.HasValue)
+                        {
+                            globalFilters.Add("AL.IsExternallyCalculated = @isExt");
+                            dbArgs.Add("@isExt", isExt);
+                        }
+
+                        whereStatements.Add($"({string.Join(" or ", globalFilters)})");
                         break;
 
                     default: break;

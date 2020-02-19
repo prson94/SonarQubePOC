@@ -677,6 +677,7 @@ where   A.FusionQueryAttributeTypeID = @t
                         if (asset != null)
                         {
                             model["AssetID"] = asset.ID;
+                            model["Uid"] = asset.uid;
                             var assetType = Company.AssetTypes.Where(x => x.ID == asset.AssetTypeID).FirstOrDefault();
                             if (assetType != null)
                             {

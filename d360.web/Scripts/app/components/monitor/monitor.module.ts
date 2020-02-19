@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { RouterModule } from '@angular/router';
@@ -31,8 +31,8 @@ import { GrowlModule } from 'primeng/growl';
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
 @NgModule({
-    imports: [CommonModule,   
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         HttpClientModule,
         RouterModule,
         FormsModule,

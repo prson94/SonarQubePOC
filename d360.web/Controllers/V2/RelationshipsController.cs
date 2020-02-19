@@ -342,7 +342,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.ObjectTypeName);
 
-                document.SetCellValue(rowNumber, index++, row.UID.ToString());
+                document.SetCellValue(rowNumber, index++, (row.UID ?? "").ToString());
                 document.SetCellValue(rowNumber, index++, (int)row.ID);
                 document.SetCellValue(rowNumber, index++, row.SubjectUid.ToString());
                 document.SetCellValue(rowNumber, index++, (int)row.SubjectID);

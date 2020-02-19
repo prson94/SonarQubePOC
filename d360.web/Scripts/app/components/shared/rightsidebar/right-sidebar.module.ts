@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -7,6 +7,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 import { RightSidebarItemComponent } from './right-sidebar-item.component';
 import { RightSidebarComponent } from './right-sidebar.component';
 import { DynamicPercentageModule } from '../small-widgets/dynamic-percentage/dynamic-percentage-module';
+import { StatusBadgeModule } from '../small-widgets/status-badge/status-badge.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { SharedDeleteFormModule } from '../delete.form';
@@ -16,10 +17,11 @@ import { PipesModule } from '../../../pipes/pipes.module';
 
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         DynamicPercentageModule,
+        StatusBadgeModule,
         HttpClientModule,
         SharedDynamicGridEditorModule,
         TagUsageInfoModule,

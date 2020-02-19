@@ -183,12 +183,12 @@ export class BrowserService extends BaseObservableService {
     * Converts a response from the Govern API into a more appropriate representation for the asset browser diagram.
     * @returns A diagram-specific representation for the nodes.
     */
-    public translateAssetNodes(assets: AssetBrowserAssetModel[]): AssetBrowserTranslationNode[] {
+    public translateAssetNodes(includeNonLeaf: boolean, assets: AssetBrowserAssetModel[]): AssetBrowserTranslationNode[] {
         let nodes: AssetBrowserTranslationNode[] = new Array<AssetBrowserTranslationNode>();
 
         try {
             assets.forEach(a => {
-                this.loadTranslationChildNodes(nodes, a, null, a.backColor, a.foreColor);
+                this.loadTranslationChildNodes(includeNonLeaf, nodes, a, null, null, a.backColor, a.foreColor);
             });
         } catch (e) {
             console.log(e);
@@ -402,19 +402,25 @@ export class BrowserService extends BaseObservableService {
     * @returns A string of impacted keys. This impacted keys are used for node highlighting for impact paths.
     */
     private loadTranslationChildNodes(
+        includeNonLeaf: boolean,
         nodesToReturn: AssetBrowserTranslationNode[],
         current: AssetBrowserAssetModel,
+        rootTranslationNode: AssetBrowserTranslationNode,
         parentKey: string,
         backColor: string,
         foreColor: string) {
 
         // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, parentKey, backColor, foreColor);
+        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, rootTranslationNode, parentKey, backColor, foreColor);
+
+        if (!rootTranslationNode && includeNonLeaf) {
+            rootTranslationNode = currentNode;
+        } 
 
         if (current.items) {
             current.items.forEach(a => {
                 // Recurse
-                this.loadTranslationChildNodes(nodesToReturn, a, current.key, backColor, foreColor);
+                this.loadTranslationChildNodes(includeNonLeaf, nodesToReturn, a, rootTranslationNode, current.key, backColor, foreColor);
             });
         }
 
@@ -429,31 +435,62 @@ export class BrowserService extends BaseObservableService {
     */
     private createTranslationNode(
         a: AssetBrowserAssetModel,
+        rootTranslationNode: AssetBrowserTranslationNode,
         parentKey: string,
         backColor: string,
         foreColor: string): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
         a.ownerCounts.forEach(oC => {
-            let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
-            assetBrowserTranslationOwnerCount.key = a.key + '-O-' + oC.ResponsibilityTypeID.toString();
-            assetBrowserTranslationOwnerCount.expanded = false;
-            assetBrowserTranslationOwnerCount.count = oC.Count;
-            assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
-            assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
-            n.owners.push(assetBrowserTranslationOwnerCount);
+            let thisKey: string = (rootTranslationNode ? rootTranslationNode.key : a.key) + '-O-' + oC.ResponsibilityTypeID.toString();
+
+            let existing = (rootTranslationNode) ?
+                rootTranslationNode.owners.find(i => { return i.key == thisKey; }) :
+                n.owners.find(i => { return i.key == thisKey; });
+            
+            if (existing) {
+                existing.count += oC.Count;
+            }
+            else {
+                let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
+                assetBrowserTranslationOwnerCount.key = thisKey;
+                assetBrowserTranslationOwnerCount.expanded = false;
+                assetBrowserTranslationOwnerCount.count = oC.Count;
+                assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
+                assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
+                if (rootTranslationNode) {
+                    rootTranslationNode.owners.push(assetBrowserTranslationOwnerCount);
+                }
+                else {
+                    n.owners.push(assetBrowserTranslationOwnerCount);
+                }
+            }
         }); 
 
         a.relationCounts.forEach(rC => {
-            let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
-            assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
-            assetBrowserTranslationRelationCount.expanded = false;
-            assetBrowserTranslationRelationCount.count = rC.Count;
-            assetBrowserTranslationRelationCount.direction = rC.Direction;
-            assetBrowserTranslationRelationCount.predicate = rC.Predicate;
-            assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
-            assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
-            n.relations.push(assetBrowserTranslationRelationCount);
+            let existing = (rootTranslationNode) ?
+                rootTranslationNode.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; }) :
+                n.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; });
+
+            if (existing) {
+                existing.count += rC.Count;
+            }
+            else {
+                let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
+                assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
+                assetBrowserTranslationRelationCount.expanded = false;
+                assetBrowserTranslationRelationCount.count = rC.Count;
+                assetBrowserTranslationRelationCount.direction = rC.Direction;
+                assetBrowserTranslationRelationCount.predicate = rC.Predicate;
+                assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
+                assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
+                if (rootTranslationNode) {
+                    rootTranslationNode.relations.push(assetBrowserTranslationRelationCount);
+                }
+                else {
+                    n.relations.push(assetBrowserTranslationRelationCount);
+                }
+            }
         });
 
         n.actionCount = a.actionCount;

@@ -152,7 +152,7 @@ namespace d360.model
                     from    api.ExecutionMetric M
                             left join AssetWithType A on A.uid = M.assetUid
                             left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
-                    where   L.Uid is null
+                    where   L.Uid is null and M.ExecutionID = @executionID
                 ", new { execution.ExecutionID, scoreType });
 
 
@@ -163,7 +163,7 @@ namespace d360.model
                     from    api.ExecutionMetric M
                             left join AssetWithType A on A.uid = M.assetUid
                             left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 0
-                    where   L.Uid is null
+                    where   L.Uid is null and M.ExecutionID = @executionID
                 ", new { execution.ExecutionID, scoreType });
 
                 }

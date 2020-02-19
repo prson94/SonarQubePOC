@@ -144,6 +144,7 @@ namespace d360.model
         DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
         DbSet<RuleResult> RuleResults { get; set; }
         DbSet<Rule> Rules { get; set; }
+        DbSet<Score> Scores { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
         DbSet<ShoppingCartType> ShoppingCartTypes { get; set; }

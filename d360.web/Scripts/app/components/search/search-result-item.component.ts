@@ -1,7 +1,7 @@
 ﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
-import { SearchFullResult } from '../../models/search-result.model';
+import { SearchFullResult, SearchDetail } from '../../models/search-result.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { ShoppingCartService } from '../../services/shopping-cart.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
@@ -20,24 +20,19 @@ declare var CompanySettings;
                         <span *ngIf="result?.Icon" class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
                         <span *ngIf="result?.ImageUrl" class="d3s-icon large-icon title-icon"><img [src]="result.ImageUrl" /></span> 
                         <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-                        <span #badge *ngIf="searchDetails && searchDetails.Score;else noScore" class="d3s-icon large-icon"
-                              title="{{lastCalculatedMessage()}}"
-                              [ngClass]="{
-                                                    'fail':scoreBetween(0,49),
-                                                    'ok':scoreBetween(50,89),
-                                                    'good':scoreBetween(90,1000)
-                                                }">
-			                <d3s-dynamic-percentage [percentage]="searchDetails?.Score"></d3s-dynamic-percentage>
-			                <span class="text">{{searchDetails?.Score}}%</span>
-		                </span>
-		                <span *ngIf="showStatus" class="d3s-icon large-icon" [style.background-color]="getCertificationStatusColor(status)">
-			                <i class="fa fa-certificate"></i>
-			                <span class="text">{{status}}</span>
-		                </span>
+                        <d3s-status-badge
+                            *ngIf="showStatus"
+                            [status]="status"
+                        >
+                        </d3s-status-badge>
+                        <span #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
+                            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
+                            </d3s-score-badge>
+                        </span>
                         <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </button>
-                        <span *ngIf="result.Uid" class="d3s-icon med-icon light">
+                        <span *ngIf="result.Uid" class="d3s-icon smallmed-icon light">
                             <d3s-preview-tooltip [uid]="result.Uid" icon="info-circle"></d3s-preview-tooltip>
                         </span>
                     </span>
@@ -68,7 +63,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     showShoppingCart = false;
     private obj: string;
     private objID: number;
-    private searchDetails: any;
+    private searchDetails: SearchDetail;
     private formattedPath: string;
 
     parseTagResult(tags: any[]) {
@@ -110,14 +105,14 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.objectStatisticsService.getSearchDetails(this.result.Uid).subscribe(
                 result => {
                     this.searchDetails = result;
-                    if (this.searchDetails && this.searchDetails.Status) {
-                        this.status = this.searchDetails.Status; 
+                    if (this.searchDetails && this.searchDetails.AssetDetail.Status) {
+                        this.status = this.searchDetails.AssetDetail.Status;
                         this.showStatus = true;
                     } else {
                         this.showStatus = false;
                     }
-                    if (this.searchDetails && this.searchDetails.Path) {
-                        this.formattedPath = this.formatPath(this.searchDetails.Path);
+                    if (this.searchDetails && this.searchDetails.AssetDetail.Path) {
+                        this.formattedPath = this.formatPath(this.searchDetails.AssetDetail.Path);
                         this.showPath = true;
                     } else {
                         this.showPath = false;
@@ -151,44 +146,5 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         var id = this.result.ID.toString().split('|')[1];
         this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
             .subscribe(r => this.showMessageForResult(this.messagesService, r));
-    }
-
-    scoreBetween(start, end) {
-        if (this.searchDetails && this.searchDetails.Score) {
-            return this.searchDetails.Score >= start && this.searchDetails.Score <= end;
-        }
-    }
-
-    getCertificationStatusColor(status: string) {
-        return this.objectStatisticsService.getCertificationStatusColor(status);
-    }
-
-    private lastCalculatedMessage() {
-        if (!this.searchDetails.EffectiveDate) {
-            return "Governance Score not yet calculated";
-        }
-        var diff = new Date(Date.now() - Date.parse(this.searchDetails.EffectiveDate));
-
-        var years = diff.getUTCFullYear() - 1970;
-
-        if (years > 0) return "Governance Score last calculated " + years + " years ago.";
-
-        var months = diff.getUTCMonth();
-
-        if (months > 0) return "Governance Score last calculated " + months + " months ago.";
-
-        var days = diff.getUTCDate() - 1;
-
-        if (days > 0) return "Governance Score last calculated " + days + " days ago.";
-
-        var hours = diff.getUTCHours();
-
-        if (hours > 0) return "Governance Score last calculated " + hours + " hours ago.";
-
-        var minutes = diff.getUTCMinutes();
-
-        if (minutes > 0) return "Governance Score last calculated " + minutes + " minutes ago.";
-
-        return "Governance Score last calculated a few seconds ago.";
     }
 };

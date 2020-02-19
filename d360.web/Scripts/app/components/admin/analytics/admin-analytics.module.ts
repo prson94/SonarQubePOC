@@ -1,15 +1,15 @@
-﻿import {NgModule} from '@angular/core';
-import {CommonModule, DeprecatedI18NPipesModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
-import {HttpClientModule, HTTP_INTERCEPTORS} from '@angular/common/http';
+﻿import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 
-import {CoreModule} from '../../shared/core.module';
-import {PipesModule} from '../../../pipes/pipes.module';
-import {TilesModule} from '../../shared/tiles/tiles.module';
-import {SharedGridPagingInfoModule} from '../../shared/grid-paging-info.component';
-import {SharedDeleteFormModule} from '../../shared/delete.form';
-import {SharedDynamicGridEditorModule} from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
-import {SharedObjectDetailsModule} from '../../shared/objectdetails/shared-object-details.module';
+import { CoreModule } from '../../shared/core.module';
+import { PipesModule } from '../../../pipes/pipes.module';
+import { TilesModule } from '../../shared/tiles/tiles.module';
+import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
+import { SharedDeleteFormModule } from '../../shared/delete.form';
+import { SharedDynamicGridEditorModule } from '../../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedObjectDetailsModule } from '../../shared/objectdetails/shared-object-details.module';
 
 import {AdminAnalyticsComponent} from './admin-analytics.component';
 import {AdminMetricAssetTypeListComponent} from './admin-metric-asset-type-list.component';
@@ -35,18 +35,18 @@ import { InputTextareaModule } from 'primeng/inputtextarea';
 import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
 
-import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
-import {ErrorNotifyInterceptor} from '../../../http-interceptors/error-notify-interceptor';
-import {DirectivesModule} from '../../../directives/directives.module';
-import {GovernRequestInterceptor} from "../../../http-interceptors/govern-request.interceptor";
+import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
+import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
+import { DirectivesModule } from '../../../directives/directives.module';
+import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
         HttpClientModule,
 
