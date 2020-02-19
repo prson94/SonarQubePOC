@@ -1,4 +1,4 @@
-﻿<div class="scorecard-item">
+﻿<div class="scorecard-item" *ngIf="showtype == item?.data?.ScoreType">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="scorecard-heading">
         <div class="expander-gutter" (click)="toggleDetails()">
@@ -31,10 +31,33 @@
             <div class="expander-gutter">
             </div>
             <div class="heading-content">
-                <div class="heading-item desc">
+                <div class="heading-item desc large">
                     <div class="heading-title">Description</div>
                     <div class="heading-value block-with-text">{{item?.data?.Description}}</div>
                 </div>
+                <div *ngIf="currentItemDetails?.Conditions && currentItemDetails?.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
+                    <div class="heading-title">Conditions</div>
+                    <div class="heading-value">
+                        <table class="condition-table">
+                            <thead>
+                                <tr>
+                                    <td>Field Name</td>
+                                    <td>Operator</td>
+                                    <td>Value</td>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let con of currentItemDetails?.Conditions">
+                                    <td>{{con.FieldName}}</td>
+                                    <td>{{con.Operator}}</td>
+                                    <td>{{con.Value}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>      
+                <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
             </div>
         </div>
         
@@ -43,8 +66,8 @@
                 <div class="group-container">
                     <div class="separator"></div>
                     <div class="heading-content group">
-                        <div class="expander-gutter no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
-                            <i class="fa fa-caret-down expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
+                        <div class="expander-gutter small no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
+                            <i class="fa fa-caret-down sm-icon expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
                         </div>
                         <div class="scorecard-heading" [ngClass]="{'collapsed': isCollapsed}">
                             <div class="heading-item large">
@@ -60,7 +83,7 @@
                                 <div class="heading-value">{{child?.data?.Weight}}</div>
                             </div>
                             <div class="heading-item sm badge">
-                                <span *ngIf="item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
+                                <span *ngIf="item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': child?.data?.Value, 'red': !child?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
                             </div>
                         </div>
                     </div>
@@ -69,10 +92,33 @@
                             <div class="expander-gutter">
                             </div>
                             <div class="heading-content">
-                                <div class="heading-item desc">
+                                <div class="heading-item desc large">
                                     <div class="heading-title">Description</div>
                                     <div class="heading-value block-with-text">{{child?.data?.Description}}</div>
                                 </div>
+                                <div *ngIf="GetChildPropertValue(item?.data,child?.data,'Conditions') && GetChildPropertValue(item?.data,child?.data,'Conditions').length > 0; else showmdlg" class="heading-item med-lg lg">
+                                    <div class="heading-title">Conditions</div>
+                                    <div class="heading-value">
+                                        <table class="condition-table">
+                                            <thead>
+                                                <tr>
+                                                    <td>Field Name</td>
+                                                    <td>Operator</td>
+                                                    <td>Value</td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr *ngFor="let con of GetChildPropertValue(item?.data,child?.data,'Conditions')">
+                                                    <td>{{con.FieldName}}</td>
+                                                    <td>{{con.Operator}}</td>
+                                                    <td>{{con.Value}}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>
+                                <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
                             </div>
                         </div>
                     </div>

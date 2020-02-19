@@ -1,10 +1,8 @@
 ﻿import { Component, Input, Output, EventEmitter, OnChanges, AfterViewInit, SimpleChange } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
-import { PointBreakdown } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
-import { Item } from '../../../models/metrics.model';
-import { validateDashboardLoad } from 'powerbi-models';
+import { ScoreType } from '../../../models/metrics.model';
 
 
 @Component({
@@ -17,10 +15,12 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     @Input() item: TreeNode;
     @Input() definition: any[];
     @Input() isloading: boolean = false;
+
+    @Input() showtype: ScoreType;
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
-    private isCollapsed: boolean = false;
+    public isCollapsed: boolean = false;
     constructor(protected scoreService: ScoreService) {
         super();
     }
@@ -58,6 +58,10 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             }
         }
         this.isLoading = false;
+    }
+
+    public setCollapsed(val: boolean) {
+        this.isCollapsed = val;
     }
 
     GetChildPropertValue(parent, child, property) {

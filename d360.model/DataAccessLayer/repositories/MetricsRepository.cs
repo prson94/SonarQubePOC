@@ -464,7 +464,7 @@ namespace d360.model.DataAccessLayer
                     	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
                     	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
                     	[Weight] decimal(5,3), EffectiveDate date, 
-                    	[Value] bit null, [Applies] bit null, [Level] int null
+                    	[Value] bit null, [Applies] bit null, [Level] int null, [ScoreType] int null
                     );
                     
                     with rh as (
@@ -475,7 +475,8 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			I.AdjustedWeight as [Weight],
                     			I.EffectiveDate,
-                    			I.[Value]
+                    			I.[Value],
+                                A.[ScoreType]
                     	from	metrics.ScoreItem I
                     			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     			inner join (
@@ -494,7 +495,8 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			V.Weight,
                     			V.EffectiveDate,
-                    			NULL as Value
+                    			NULL as Value,
+								A.[ScoreType]
                     	from	metrics.AssetVersion V
                     			inner join #groups MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
                     			inner join metrics.Asset A on A.[Uid] = V.[Uid]
@@ -502,7 +504,7 @@ namespace d360.model.DataAccessLayer
                     	)
                     
                     insert into #tbl 
-                    	select *, NULL, NULL from rh;
+                    	select *, NULL, rh.[ScoreType] from rh;
                     
                     with h as (
                     	select	*,
@@ -522,7 +524,7 @@ namespace d360.model.DataAccessLayer
                     		inner join h S on S.Uid = T.Uid;
                     
                     select	distinct
-                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
+                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
                     from	#tbl 
                     order by [Level], Name";
 
