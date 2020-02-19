@@ -297,6 +297,11 @@ namespace d360.model.DataAccessLayer
 
         }
 
+        public List<ExternalScoreResultsApiResultsModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultsApiPostModel> model, ApiExecution execution)
+        {
+            return companyContext.BulkExternalResultsImport(model, execution, scoreType);
+        }
+
         public List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results)
         {
 
