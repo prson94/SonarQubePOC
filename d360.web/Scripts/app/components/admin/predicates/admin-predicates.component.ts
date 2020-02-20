@@ -1,5 +1,5 @@
 ﻿import { Component, OnDestroy } from '@angular/core';
-import { Predicate } from '../../../models/predicate.model';
+import { Predicate, PredicateFriendlyType } from '../../../models/predicate.model';
 import { PredicatesService } from '../../../services/predicates.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -20,7 +20,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <span *ngIf="!isLoading && !showDelete && !showEditor">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                    <p-table #dt [value]="predicates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Inverse','Type']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                    <p-table #dt [value]="predicates" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name','Inverse','FriendTypeName']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
                         <ng-template pTemplate="header">
                             <tr>
                                 <th [pSortableColumn]="'Name'">
@@ -30,10 +30,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                 <th [pSortableColumn]="'Inverse'">
                                     Inverse
                                     <d3s-sortIcon [field]="'Inverse'"></d3s-sortIcon>
-                                </th>
-                                <th [pSortableColumn]="'Type'">
+                                </th>                                
+                                <th [pSortableColumn]="'FriendTypeName'">
                                     Functional Type
-                                    <d3s-sortIcon [field]="'Type'"></d3s-sortIcon>
+                                    <d3s-sortIcon [field]="'FriendTypeName'"></d3s-sortIcon>
                                 </th>
                                 <th style="width: 30px"></th>
                                 <th style="width: 30px"></th>
@@ -42,7 +42,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <tr [hidden]="showSimpleFilter">
                                 <th><d3s-column-filter [field]="'Name'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th><d3s-column-filter [field]="'Inverse'" [datatype]="'text'"></d3s-column-filter></th>
-                                <th><d3s-column-filter [field]="'Type'" [datatype]="'text'"></d3s-column-filter></th>
+                                <th><d3s-column-filter [field]="'FriendTypeName'" [datatype]="'text'"></d3s-column-filter></th>
                                 <th></th>
                                 <th></th>
                                 <th></th>
@@ -52,7 +52,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             <tr (dblclick)="selected=item;showPredicateEditor();" [pSelectableRow]="item">
                                 <td>{{item.Name}}</td>
                                 <td>{{item.Inverse}}</td>
-                                <td>{{item.Type}}</td>
+                                <td>{{item.FriendTypeName}}</td>
                                 <td>
                                     <div class="RowTools" *ngIf="!item.IsSystem">
                                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true"><i class="fa fa-pencil"></i></a>
@@ -120,6 +120,7 @@ export class AdminPredicatesComponent extends AdminBaseComponent implements OnDe
             .subscribe(predicates => {
                 this.predicates = predicates;
                 this.selected = predicates[0];
+                this.predicates.forEach(p => p.FriendTypeName = PredicateFriendlyType[p.Type] ? PredicateFriendlyType[p.Type] : p.Type)
                 this.isLoading = false;
             })
     }
