@@ -70,8 +70,8 @@ export class StatusBadgeComponent implements AfterViewInit, OnChanges {
 
         switch (this.status.toLowerCase().trim()) {
             case 'draft':
-            case 'certified':
                 return dark;
+            case 'certified':
             case 'under review':
                 return light;
             default:
