@@ -2666,6 +2666,10 @@ modal-overlay .modal-dialog .content {
         .checkbox {
             white-space: nowrap;
         }
+
+        &.has-scoring {
+            padding-top: 26px;
+        }
     }
 
     .icon {
@@ -4510,9 +4514,65 @@ d3s-status-badge + .d3s-score-container {
 
 .d3s-score-container {
     display: flex;
+    position: relative;
 
     .d3s-score-badge {
         padding-left: 12px;
+        cursor: pointer;
+        position: relative;
+
+        &:hover {
+            .score-tooltip {
+                display: block;
+            }
+        }
+    }
+
+    &.secondary-nav {
+        top: -11px;
+    }
+
+    .score-tooltip {
+        display: none;
+        width: 202px;
+        height: 154px;
+        border-radius: 4px;
+        box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
+        border: solid 2px #c8cfd9;
+        background-color: #ffffff;
+        position: absolute;
+        z-index: 200;
+        left: -150px;
+        padding: 8px;
+
+        .item {
+            font-weight: bold;
+            font-size: 14px;
+
+            .light-text {
+                font-weight: normal;
+            }
+        }
+
+        .score-ranges {
+            padding: 5px 0px;
+
+            .score-range {
+                .score-box {
+                    width: 24px;
+                    height: 10px;
+                    border-radius: 8px;
+                    margin-right: 4px;
+                    display: inline-block;
+                }
+
+                .text {
+                    color: #646464;
+                    font-size: 14px;
+                    font-weight: 600;
+                }
+            }
+        }
     }
 }
 
@@ -4530,7 +4590,7 @@ d3s-status-badge + .d3s-score-container {
             width: 104px;
             height: 23px;
             font-size: 12px;
-            line-height: 1.17;
+            line-height: 23px;
         }
     }
 

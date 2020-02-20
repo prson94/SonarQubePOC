@@ -14,6 +14,7 @@ import { SharedDeleteFormModule } from '../delete.form';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 
 
 @NgModule({
@@ -29,6 +30,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SiteModalModule,
         TakeSurveyModule,
         PipesModule,
+        ScoreBadgeModule
     ],
     declarations: [
         RightSidebarItemComponent,
