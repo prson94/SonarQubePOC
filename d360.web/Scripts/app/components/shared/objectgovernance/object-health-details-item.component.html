@@ -32,8 +32,8 @@
             </div>
             <div class="heading-content">
                 <div class="heading-item desc large">
-                    <div class="heading-title">Description</div>
-                    <div class="heading-value block-with-text">{{item?.data?.Description}}</div>
+                    <div *ngif="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
+                    <div *ngif="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text">{{item?.data?.Description}}</div>
                 </div>
                 <div *ngIf="currentItemDetails?.Conditions && currentItemDetails?.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
                     <div class="heading-title">Conditions</div>
@@ -93,8 +93,8 @@
                             </div>
                             <div class="heading-content">
                                 <div class="heading-item desc large">
-                                    <div class="heading-title">Description</div>
-                                    <div class="heading-value block-with-text">{{child?.data?.Description}}</div>
+                                    <div *ngif="child?.data?.Description && child?.data?.Description != ''" class="heading-title">Description</div>
+                                    <div *ngif="child?.data?.Description && child?.data?.Description != ''" class="heading-value block-with-text">{{child?.data?.Description}}</div>
                                 </div>
                                 <div *ngIf="GetChildPropertValue(item?.data,child?.data,'Conditions') && GetChildPropertValue(item?.data,child?.data,'Conditions').length > 0; else showmdlg" class="heading-item med-lg lg">
                                     <div class="heading-title">Conditions</div>
