@@ -303,10 +303,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            } else if (field.FieldType == "DateTime") {
+            } else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
-                    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+
+                    if (field.FieldType == "DateTime") {
+                        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+                    }
+
                     field.Value = date;
                 }
 
@@ -459,7 +463,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
-
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                     }
