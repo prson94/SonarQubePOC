@@ -505,7 +505,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{uid}/definitionFromAsset"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
@@ -525,22 +525,17 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="assetUid">The public identifier for the asset.</param>
         /// <param name="scoreType">The type of score to return.</param>
-        /// <returns>A status for the DELETE request.</returns>
+        /// <returns>The score history for a given an asset type Uid and score type.</returns>
         [
             HttpGet,
             Route("history/{scoreType}/{assetUid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Rerturns the history given an asset type Uid and score type .", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
         public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove this metric."));
-
             var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid", new { assetUid });
-
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model ));
         }
 

@@ -22,7 +22,8 @@
                 <div class="heading-value">{{getAsPrecentage(item?.data?.Weight)}}</div>
             </div>
             <div class="heading-item sm badge">
-                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+                <!--<span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>-->
+                <div class="d3s-score-badge" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</div>
             </div>
         </div>
     </div>
@@ -32,8 +33,8 @@
             </div>
             <div class="heading-content">
                 <div class="heading-item desc large">
-                    <div *ngif="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
-                    <div *ngif="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text">{{item?.data?.Description}}</div>
+                    <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
+                    <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text">{{item?.data?.Description}}</div>
                 </div>
                 <div *ngIf="currentItemDetails?.Conditions && currentItemDetails?.Conditions.length > 0; else showmdlg" class="heading-item med-lg lg">
                     <div class="heading-title">Conditions</div>
@@ -93,8 +94,8 @@
                             </div>
                             <div class="heading-content">
                                 <div class="heading-item desc large">
-                                    <div *ngif="child?.data?.Description && child?.data?.Description != ''" class="heading-title">Description</div>
-                                    <div *ngif="child?.data?.Description && child?.data?.Description != ''" class="heading-value block-with-text">{{child?.data?.Description}}</div>
+                                    <div *ngIf="child?.data?.Description && child?.data?.Description != ''" class="heading-title">Description</div>
+                                    <div *ngIf="child?.data?.Description && child?.data?.Description != ''" class="heading-value block-with-text">{{child?.data?.Description}}</div>
                                 </div>
                                 <div *ngIf="GetChildPropertValue(item?.data,child?.data,'Conditions') && GetChildPropertValue(item?.data,child?.data,'Conditions').length > 0; else showmdlg" class="heading-item med-lg lg">
                                     <div class="heading-title">Conditions</div>
