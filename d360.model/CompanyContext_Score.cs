@@ -34,9 +34,6 @@ namespace d360.model
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution, ScoreType scoreType = ScoreType.Governance, bool useAllocation = false)
         {
-
-            SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
             //Set effective date for any results that do not have a date set.
             model.ForEach(m =>
             {
@@ -54,6 +51,7 @@ namespace d360.model
             if (dupes)
             {
                 Add(execution);
+                SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
                 var message = "The request contains duplicate combinations of AssetUid, MetricAssetUid, and EffectiveDate. You must send in unique combinations for those three fields.";
                 execution.Error = 1;
@@ -71,6 +69,7 @@ namespace d360.model
             {
 
                 Add(execution);
+                SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
                 var table = new DataTable();
 
@@ -306,11 +305,9 @@ when not matched by target then
 
         public List<ExternalScoreResultsApiResultsModel> BulkExternalResultsImport(List<ExternalScoreResultsApiPostModel> model, ApiExecution execution, ScoreType scoreType)
         {
-            SetApiExecutionProcessingStartTime(execution.ExecutionID);
-
-
             Add(execution);
 
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             #region Generate Data Sets
 
