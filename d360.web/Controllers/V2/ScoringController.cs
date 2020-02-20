@@ -423,7 +423,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Loads score results for the associated allocations.
+        /// Loads measure results to build a score for a specified asset.
         /// </summary>
         /// <param name="model">The score results to load.</param>
         /// <param name="scoreType">The score type of the score results.</param>
