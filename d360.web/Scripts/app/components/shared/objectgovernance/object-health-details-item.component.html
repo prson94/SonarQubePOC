@@ -22,8 +22,7 @@
                 <div class="heading-value">{{getAsPrecentage(item?.data?.Weight)}}</div>
             </div>
             <div class="heading-item sm badge">
-                <!--<span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>-->
-                <div class="d3s-score-badge" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</div>
+                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
             </div>
         </div>
     </div>

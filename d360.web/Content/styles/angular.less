@@ -5710,11 +5710,16 @@ a.mid-blue {
             }
 
             .button {
-                background: @igx-grey-lightscoring;
+                width: 145px;
+                height: 40px;
+                border-radius: 4px;
+                border: solid 2px @igx-grey-lightscoring;
+                background-color: @igx-grey-lightscoring;
                 color: #515667;
 
                 &.selected {
-                    background: #ffffff;
+                    background-color: #ffffff;
+                    font-weight: 600;
                 }
             }
         }
@@ -5862,7 +5867,11 @@ a.mid-blue {
                     display: inline-flex;
 
                     .d3s-badge {
-                        margin-top: 4px;
+                        line-height: 24px;
+                        color: #ffffff;
+                        width: 47px;
+                        height: 24px;
+                        border-radius: 16px;
                     }
                 }
 
