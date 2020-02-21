@@ -525,13 +525,13 @@ namespace d360.model.DataAccessLayer
                     select	distinct
                     		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
                     from	#tbl 
-                    where [uid] = '22DAB88B-C237-472E-BFC2-D8DCA80E3878'
+                    where [uid] = @assetUid
                     UNION 
-                    select ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
+                    select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
                     from metrics.Allocation AA
                         inner join assettype att on AA.AssetTypeUid = att.[uid]
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
-	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType
+	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
 	                    inner join metrics.SCORE ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
                     where 
                         a.[uid] = @assetUid

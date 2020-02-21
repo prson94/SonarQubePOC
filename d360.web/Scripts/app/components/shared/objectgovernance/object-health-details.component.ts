@@ -6,6 +6,7 @@ import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
+import { ignoreElements } from 'rxjs/operators';
 
 
 @Component({
@@ -31,7 +32,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes :number[] = [];
-
+    private DQwithNoMeasure: boolean = false;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
 
     constructor(protected scoreService: ScoreService) {
@@ -149,7 +150,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
             .subscribe(res => {
                 this.pointBreakdown = res;
+
                 this.pointBreakdownTree = [];
+                let DQpoints = this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality });
+                if (this.hasAnyScoreType(ScoreType.DataQuality) && DQpoints.length <= 0) {
+                    this.DQwithNoMeasure = true;
+                }
 
                 let tree = (node: any) => {
                     let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
@@ -200,6 +206,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.isLoading = false;
         }
     }
+   
 
     private setSelectedButton(scoreType: ScoreType) {
         switch (scoreType) {
@@ -208,14 +215,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadSeriesData();
-                this.getCurrentScoreDateText();
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadSeriesData();
-                this.getCurrentScoreDateText();
                 break;
             default:
         }
