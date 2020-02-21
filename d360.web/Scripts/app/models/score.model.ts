@@ -16,6 +16,7 @@ export class PointBreakdown {
 export class ScorePoint {
     Score: number;
     Date: string;
+    ScoreType: ScoreType;
 }
 
 export class AverageScore {

@@ -15,7 +15,7 @@
         </div>
         <div class="row">&nbsp;</div>
     </div>
-    <div class="score-chart-container">
+    <div *ngIf="!isLoading; else chartLoading" class="score-chart-container">
         <div class="heading">
             <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
         </div>
@@ -24,4 +24,7 @@
             <chart [options]="scoreHistory"></chart>
         </div>
     </div>
+    <ng-template #chartLoading>
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    </ng-template>
 </div>

@@ -71,10 +71,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
     private loadSeriesData() {
         if (this.uid) {
+            this.historicalData = [];
+            this.isLoading = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
-                        return [Date.parse(val.Date), val.Score, val.];
+                        return [Date.parse(val.Date), val.Score];
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
@@ -136,6 +138,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 color: '#FF7155'
                             }]
                         };
+                    this.isLoading = false;
                 });
         }
     }
@@ -205,12 +208,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadSeriesData();
+                this.getCurrentScoreDateText();
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadSeriesData();
+                this.getCurrentScoreDateText();
                 break;
             default:
         }
@@ -229,18 +234,22 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
     private hasAnyScoreType(scoreType: ScoreType) {
-        return this.scoreTypes.indexOf(scoreType) !== -1;
+        if (this.scoreTypes && this.scoreTypes.length > 0)
+            return this.scoreTypes.indexOf(scoreType) !== -1;
     }
 
     private getCurrentScoreDateText() {
         if (this.historicalData && this.historicalData.length > 0) {
             let dataArray = [...this.historicalData];
             dataArray.sort((a, b) => b[0] - a[0]);
-            
+
             let mostRecent = dataArray.splice(0, 1)[0];
-            let lastchangedDate = this.getLastChangedDate(dataArray, mostRecent);     
+            let lastchangedDate = this.getLastChangedDate(dataArray, mostRecent);
             let milliseconds = Math.floor((new Date(mostRecent[0])).getTime() - (new Date(lastchangedDate[0]).getTime()));
             this.formatCalculatedScoreText(milliseconds, mostRecent[1]);
+        }
+        else {
+            return "Calculating...";
         }
 
     }
