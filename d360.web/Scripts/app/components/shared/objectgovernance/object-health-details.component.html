@@ -8,7 +8,7 @@
                     <div *ngIf="!isAllCollapsed();else expand" (click)="setCollapsed(true)" class="collapse-btn">Collapse all</div>
                     <ng-template #expand><div (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
                 </div>
-                <div class="scorecards-container" *ngIf="!DQwithNoMeasure && selectedScoreType == ScoreType.DataQuality; else emptyMessage">
+                <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
                     <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="isloading"></d3s-object-health-details-item>
                 </div>
                 <ng-template #emptyMessage>
@@ -16,7 +16,7 @@
                         <div class="scorecard-item">
                             This score was calculated and sent in from an external source. No measures have been defined.
                         </div>
-                        </div>
+                    </div>
                 </ng-template>
             </div>
         </div>
