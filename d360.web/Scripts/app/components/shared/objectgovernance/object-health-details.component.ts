@@ -30,6 +30,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private scoreDefinition: any;
     private ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
+    private scoreTypes :number[] = [];
 
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
 
@@ -41,6 +42,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.loadPoints();
         this.loadSeriesData();
         this.loadDefinition();
+        this.loadTypes();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -55,15 +57,24 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.loadPoints();
             this.loadSeriesData();
             this.loadDefinition();
+            this.loadTypes();
         }
     }
-
+    private loadTypes() {
+        if (this.uid) {
+            this.scoreService.getScoreTypes(this.uid).subscribe(x => {
+                this.scoreTypes = x;
+                if (x.length > 0)
+                    this.selectedScoreType = x[0];
+            });
+        }
+    }
     private loadSeriesData() {
         if (this.uid) {
-            this.scoreService.getScoreHistory(ScoreType.Governance, this.uid)
+            this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
-                        return [Date.parse(val.Date), val.Score];
+                        return [Date.parse(val.Date), val.Score, val.];
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
@@ -84,7 +95,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 title: {
                                     text: ''
                                 },
-                                min: 0
+                                min: 0,
+                                max:100
                             },
                             credits: {
                                 enabled: false
@@ -131,7 +143,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadPoints() {
         this.isLoading = true;
         if (this.uid) {
-            this.scoreService.getPointBreakdown(this.uid, ScoreType.Governance, this.scoreDate)
+            this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
             .subscribe(res => {
                 this.pointBreakdown = res;
                 this.pointBreakdownTree = [];
@@ -192,11 +204,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
+                this.loadSeriesData();
                 break;
             case ScoreType.DataQuality:
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
+                this.loadSeriesData();
                 break;
             default:
         }
@@ -215,15 +229,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
     private hasAnyScoreType(scoreType: ScoreType) {
-        if (this.pointBreakdown && this.pointBreakdown.length > 0) {
-            let any = this.pointBreakdown.filter(x => { return x.ScoreType == scoreType });
-            if (any.length > 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else
-            return false;
+        return this.scoreTypes.indexOf(scoreType) !== -1;
     }
 
     private getCurrentScoreDateText() {
@@ -255,18 +261,18 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         var days = Math.floor(milliseconds / day);
         var months = Math.floor(days / 31);
         var years = Math.floor(months / 12);
-
+        let type = this.selectedScoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
         if (days == 0 || days == 1) {
-            this.calculatedScoreText = "Your Governance Score changed to  <strong> " + score + "% </strong> today</strong>";
+            this.calculatedScoreText = "Your " + type +" Score changed to  <strong> " + score + "% </strong> today</strong>";
         }
         else if (days > 0 && days <= 90) {
-            this.calculatedScoreText = "Your Governance Score has been <strong> " + score + "% </strong> for <strong>" + days + " days</strong>";
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + days + " days</strong>";
         }
         else if (days > 90 && days <= 780) {
-            this.calculatedScoreText = "Your Governance Score has been <strong> " + score + "% </strong> for <strong>" + months + " months</strong>";
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + months + " months</strong>";
         }
         else if (days > 780) {
-            this.calculatedScoreText = "Your Governance Score has been <strong> " + score + "% </strong> for <strong>" + years + " years</strong>";
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + years + " years</strong>";
         }
     }
 }

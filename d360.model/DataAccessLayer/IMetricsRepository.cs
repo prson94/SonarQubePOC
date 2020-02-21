@@ -16,7 +16,8 @@ namespace d360.model.DataAccessLayer
         MetricAsset GetMetricByUid(Guid uid);
         MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate);
         List<string> GetMetricFieldFragments(Guid assetTypeUid);
-        MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate);
+        MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType scoreType);
+        List<int> GetScoreTypesForAsset(Guid assetUid);
         List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreType);
         ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);

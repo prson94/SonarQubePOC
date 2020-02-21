@@ -52,4 +52,12 @@ export class ScoreService extends BaseObservableService  {
                 catchError(err => this.handleError(err))
             );
     }
+
+    getScoreTypes(assetUid: string): Observable<number[]> {
+        return this.http.get(`/api/v2/metrics/getScoreTypes/${assetUid}`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
 }

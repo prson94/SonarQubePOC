@@ -430,14 +430,13 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate)
+        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
 
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
-
-            var sql = @"
+            string sql = @"
                     declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
@@ -526,7 +525,17 @@ namespace d360.model.DataAccessLayer
                     select	distinct
                     		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
                     from	#tbl 
-                    order by [Level], Name";
+                    UNION 
+                    select AssetUid, null, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
+                    from metrics.Allocation AA
+                        inner join assettype att on AA.AssetTypeUid = att.[uid]
+                        inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
+	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType
+	                    inner join metrics.SCORE ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
+                    where 
+                        a.[uid] = @assetUid and AA.ScoreType = 2
+                    order by [Level], Name
+                    ";           
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -541,6 +550,16 @@ namespace d360.model.DataAccessLayer
             }
 
             return model;
+        }
+
+        public List<int> GetScoreTypesForAsset(Guid assetUid)
+        {
+            var sql = $@"select distinct ma.scoretype from metrics.Allocation  ma
+                            inner join assettype att on ma.AssetTypeUid = att.[uid]
+                            inner join asset a on att.id = a.AssetTypeID
+                        where 
+                            a.[uid] = '{assetUid.ToString()}'";
+            return Company.Query<int>(sql).ToList();
         }
 
         public List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreTypeFilter)
