@@ -4534,7 +4534,7 @@ d3s-status-badge + .d3s-score-container {
 
     .score-tooltip {
         display: none;
-        width: 202px;
+        min-width: 202px;
         height: 154px;
         border-radius: 4px;
         box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
@@ -4546,11 +4546,12 @@ d3s-status-badge + .d3s-score-container {
         padding: 8px;
 
         .item {
-            font-weight: bold;
             font-size: 14px;
+            display:block;
 
-            .light-text {
-                font-weight: normal;
+            .item-name {
+                width: 116px;
+                display: inline-block;
             }
         }
 
@@ -4564,12 +4565,6 @@ d3s-status-badge + .d3s-score-container {
                     border-radius: 8px;
                     margin-right: 4px;
                     display: inline-block;
-                }
-
-                .text {
-                    color: #646464;
-                    font-size: 14px;
-                    font-weight: 600;
                 }
             }
         }

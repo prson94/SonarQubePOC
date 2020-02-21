@@ -1,11 +1,11 @@
 ﻿<div class="d3s-score-badge" [ngClass]="{'mast' : mast}">
     <div class="score-tooltip">
-        <span class="item" style="display:block;">
-            {{getType()}} {{score.Value | scoreDisplay:1}}
-        </span>
-       
         <span class="item">
-            Score Threshold <span class="light-text">{{getCurrentScoreThreshold()}}</span>
+            <span class="item-name"><strong>{{getType()}}</strong></span>{{score.Value | scoreDisplay:1}}
+        </span>
+
+        <span class="item">
+            <span class="item-name"><strong>Score Threshold</strong></span>{{getCurrentScoreThreshold()}}
         </span>
         <div class="score-ranges">
             <div class="score-range">
@@ -23,7 +23,7 @@
         </div>
 
         <span class="item">
-            Last Run Date <span class="light-text">{{score.EffectiveDate | date:'shortDate'}}</span>
+            <strong>Last Run Date</strong> {{score.EffectiveDate | date:'shortDate'}}
         </span>
     </div>
 
