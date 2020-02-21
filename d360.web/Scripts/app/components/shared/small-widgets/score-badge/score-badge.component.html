@@ -1,6 +1,34 @@
 ﻿<div class="d3s-score-badge" [ngClass]="{'mast' : mast}">
+    <div class="score-tooltip">
+        <span class="item" style="display:block;">
+            {{getType()}} {{score.Value | scoreDisplay:1}}
+        </span>
+       
+        <span class="item">
+            Score Threshold <span class="light-text">{{getCurrentScoreThreshold()}}</span>
+        </span>
+        <div class="score-ranges">
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="lowColour"></span>
+                <span class="text">0%-{{lowerThreshold*100}}%</span>
+            </div>
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="mediumColour"></span>
+                <span class="text">>{{lowerThreshold*100}}%-{{upperThreshold*100}}%</span>
+            </div>
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="goodColour"></span>
+                <span class="text">>{{upperThreshold*100}}%-100%</span>
+            </div>
+        </div>
+
+        <span class="item">
+            Last Run Date <span class="light-text">{{score.EffectiveDate | date:'shortDate'}}</span>
+        </span>
+    </div>
+
     <div *ngIf="score.ScoreType" class="scoretitle">{{getType()}}</div>
-    <div class="d3s-score-pill" [style.background-color]="getBackgroundColor()" title="{{lastCalculatedMessage()}}">
+    <div class="d3s-score-pill" [style.background-color]="getBackgroundColor()">
         <d3s-dynamic-percentage *ngIf="!mast" [percentage]="getValuePct()"></d3s-dynamic-percentage>
         <div class="text">{{score.Value | scoreDisplay:1}}</div>
     </div>

@@ -13,6 +13,7 @@ import { SurveyType } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SearchDetail } from '../../../models/search-result.model';
 
 
 declare var CompanySettings
@@ -51,6 +52,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
+    private searchDetails: SearchDetail;
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
     private isScoringScreen: boolean = false;
@@ -170,6 +172,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showCertify = false;
         this.showHeader = false;
         this.showSurvey = false;
+        this.searchDetails = null;
         this.items = [];
         this.buttons = [];
         this.showScrollButtons = false;
@@ -219,6 +222,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.statistics = null;
                 this.showCertify = false;
                 this.showSurvey = false;
+                this.searchDetails = null;
                 this.emitChanges();
             }
         });
@@ -256,6 +260,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
             }
         );
+
+        this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
+            result => {
+                this.searchDetails = result;
+                this.ref.markForCheck();
+            }
+        );
+
+
 
         this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
@@ -341,12 +354,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return icon.replace(/^URL-+/i, '');
     }
 
-    scoreBetween(start, end) {
-        if (this.statistics) {
-            return this.statistics.Score >= start && this.statistics.Score <= end;
-        }
-    }
-
     private requestCertification() {
         this.showCertifyModal = true;
         this.showCertify = false;
@@ -382,34 +389,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     handleComplete(event) {
         this.closeSurveyPopup();
         this.showSurvey = false;
-    }
-    private lastCalculatedMessage() {
-        if (!this.statistics) {
-            return "Governance Score not yet calculated";
-        }
-        var diff = new Date(Date.now() - Date.parse(this.statistics.ScoreLast));
-
-        var years = diff.getUTCFullYear() - 1970;
-
-        if (years > 0) return "Governance Score last calculated " + years + " years ago.";
-
-        var months = diff.getUTCMonth();
-
-        if (months > 0) return "Governance Score last calculated " + months + " months ago.";
-
-        var days = diff.getUTCDate() - 1;
-
-        if (days > 0) return "Governance Score last calculated " + days + " days ago.";
-
-        var hours = diff.getUTCHours();
-
-        if (hours > 0) return "Governance Score last calculated " + hours + " hours ago.";
-
-        var minutes = diff.getUTCMinutes();
-
-        if (minutes > 0) return "Governance Score last calculated " + minutes + " minutes ago.";
-
-        return "Governance Score last calculated a few seconds ago.";
     }
 
     OpenScoring() {

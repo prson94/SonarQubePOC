@@ -6,6 +6,6 @@ export class ScoreDisplayPipe implements PipeTransform {
     transform(score: number, precision:number = 0): any {
         if (isNaN(precision))
             precision = 0;
-        return (score == null) ? 'N/A' : (Math.round((score * Math.pow(10, 2 + precision)) / Math.pow(10, precision)).toFixed(precision) + '%');
+        return (score == null) ? 'N/A' : ((score * Math.pow(10, 2 + precision)) / Math.pow(10, precision)).toFixed(precision) + '%';
     }
 }
