@@ -116,6 +116,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         if (event.url.endsWith('DataQuality') || event.url.endsWith('Governance')) {
                             this.isScoringScreen = true;
                         }
+                        else {
+                            this.isScoringScreen = false;
+                        }
                     }
                 });
     }
@@ -312,6 +315,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     itemClicked(item: SecondaryNavItem) {
+        if (item.active == true)
+            return;
+
         if (this.AllClosed()) {
             this.secondaryNavService.setLocalHomeUrl(this.router.url);
             this.homeUrl = this.router.url;

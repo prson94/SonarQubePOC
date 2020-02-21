@@ -212,7 +212,7 @@ export class BaseComponent {
                     'Governance Score',
                     'Governance Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}Governance`, null, 20
+                    `${baseUrl}Governance`, null, 10
                 );
                 this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
             }
@@ -743,7 +743,7 @@ export class BaseComponent {
         if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
             //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
             data.PreloadData = true;
-        } 
+        }
 
         if (assetUid == null && !assetId && !assetTypeUid && !objectId) {
             return;
