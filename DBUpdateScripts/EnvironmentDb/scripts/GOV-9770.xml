@@ -12,25 +12,9 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF (EXISTS 
-		(
-		SELECT 
-			* 
-		FROM 
-			sys.objects o 
-			inner join 
-			sys.schemas s on o.schema_id=s.schema_id 
-		where 
-			s.name='fusion' 
-			and 
-			o.type = 'P' 
-			AND 
-			o.name = 'RelateAction'
-		)
-	)
-BEGIN
-	DROP PROCEDURE [fusion].[RelateAction]
-END
+
+	DROP PROCEDURE IF EXISTS [fusion].[RelateAction]
+
 		]]>
     </sql>
 	<rollback>
