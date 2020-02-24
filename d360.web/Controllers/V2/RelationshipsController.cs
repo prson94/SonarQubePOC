@@ -421,6 +421,12 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
+                bool isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (isValid == false)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large");
+                }
                 var items = await RelationshipRepository.GetRelationships(queryParams);
                 return Request.CreateResponse(HttpStatusCode.OK, items);
             }

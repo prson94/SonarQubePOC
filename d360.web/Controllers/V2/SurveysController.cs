@@ -78,6 +78,13 @@ namespace d360.web.Controllers.V2
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                bool isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (isValid == false)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
@@ -144,6 +151,14 @@ namespace d360.web.Controllers.V2
             {
 
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                bool isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (isValid == false)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value);
@@ -217,6 +232,13 @@ namespace d360.web.Controllers.V2
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                bool isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (isValid == false)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
                 {

@@ -89,7 +89,7 @@ namespace d360.web.Controllers.V2
 
                 if (isValid == false)
                 {
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large");
                 }
                 var results = await FieldsRepository.GetFieldTypes(queryParams);
                 if(results.Item2.StatusCode != HttpStatusCode.OK)
