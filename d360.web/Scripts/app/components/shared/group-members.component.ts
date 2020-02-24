@@ -52,18 +52,20 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.field.FieldName = "resources";
         this.field.MultiSelect = true;
         this.isLoading = true;
-        if (this.groupUid != undefined) {
-            this.groupService.getGroupResourceList(this.groupUid).subscribe(
-                d => {
-                    this.groupItems = d.items;
-                    if (this.groupItems.length > 0) {
-                        this.selectedRow = this.groupItems[0];
-                    }
+        this.groupService.getGroupUid(this.groupId).subscribe(
+            g => {
+                this.groupUid = g.uid;
+                this.groupService.getGroupResourceList(this.groupUid).subscribe(
+                    d => {
+                        this.groupItems = d.items;
+                        if (this.groupItems.length > 0) {
+                            this.selectedRow = this.groupItems[0];
+                        }
 
-                    this.isLoading = false;
-                }
-            );
-        }
+                        this.isLoading = false;
+                    }
+                );
+            })
     }
 
     cancel() {
