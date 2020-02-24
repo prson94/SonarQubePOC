@@ -114,6 +114,7 @@ export class AssetScore {
     EffectiveDate: string;
     Value: number;
     ScoreType: string;
+    RunDate: string;
 }
 
 export class SearchDetail {
