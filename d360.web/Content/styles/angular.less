@@ -4525,14 +4525,19 @@ d3s-status-badge + .d3s-score-container {
     padding-left: 24px;
 }
 
+.d3s-score-container-field,
 .d3s-score-container {
-    display: flex;
     position: relative;
+
+    .d3s-score-badge-inline {
+        display: inline-flex;
+        margin-top: 5px;
+        margin-bottom: 15px
+    }
 
     .d3s-score-badge {
         padding-left: 12px;
         cursor: pointer;
-        position: relative;
 
         &:hover {
             .score-tooltip {
@@ -4541,11 +4546,17 @@ d3s-status-badge + .d3s-score-container {
         }
     }
 
+    .d3s-score-badge-inline,
+    .d3s-score-badge {
+        position: relative;
+    }
+
     &.secondary-nav {
         top: -11px;
     }
 
     .score-tooltip {
+        z-index: 2000;
         display: none;
         min-width: 202px;
         height: 154px;
@@ -4554,13 +4565,12 @@ d3s-status-badge + .d3s-score-container {
         border: solid 2px #c8cfd9;
         background-color: #ffffff;
         position: absolute;
-        z-index: 200;
         left: -150px;
         padding: 8px;
 
         .item {
             font-size: 14px;
-            display:block;
+            display: block;
 
             .item-name {
                 width: 122px;
@@ -4584,6 +4594,12 @@ d3s-status-badge + .d3s-score-container {
     }
 }
 
+
+.d3s-score-container {
+    display: flex;
+}
+
+.d3s-score-badge-inline,
 .d3s-score-badge {
     .scoretitle {
         width: 80px;
