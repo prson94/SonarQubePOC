@@ -90,4 +90,14 @@ export class ScoreBadgeComponent implements AfterViewInit, OnChanges {
         return this.getType() + " last calculated a few seconds ago.";
     }
 
+    get lastRunDate(): string {
+        if (this.score != null) {
+            if (this.score.RunDate)
+                return this.score.RunDate;
+            if (this.score.EffectiveDate)
+                return this.score.EffectiveDate;
+        }
+        return null;
+    }
+
 };

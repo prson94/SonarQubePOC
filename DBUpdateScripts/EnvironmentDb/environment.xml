@@ -450,5 +450,6 @@
   <include file="scripts/GOV-9434.xml"/> <!-- api table updates for external scoring endpoint and small fix to LoadFromStaging -->
   <include file="scripts/GOV-9588.xml"/> <!-- metrics.LoadFromStaging populate RunDate when staging calculates scores -->
   <include file="scripts/GOV-9770.xml"/> <!-- Drop stored procedure [fusion].[RelateAction] -->
+  <include file="scripts/GOV-9779.xml"/> <!-- clean up orphaned parent/child AssetEdge records from prior to dupe fix -->
   <include file="scripts/GOV-6468.xml"/> <!-- bulkload.GetLoadColumns - Add required column Threshold for ruletype -->
 </databaseChangeLog>
