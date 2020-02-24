@@ -2885,6 +2885,25 @@ where   ExecutionID = @ExecutionID
                                             {
                                                 errorMessage = "Asset is missing a required Threshold field value";
                                             }
+                                            else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
+                                            {
+                                                if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
+                                                {
+                                                    errorMessage = "Threshold value must be between 0 and 1";
+                                                    success = false;
+                                                }
+                                                else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
+                                                {
+                                                    errorMessage = "Threshold value cannot exceed 3 decimal places.";
+                                                    success = false;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                errorMessage = "Threshold value is not a valid number";
+                                                success = false;
+                                            }
+                                            
                                         }
                                     }
                                     if (at.Object == "ReferenceItemType")

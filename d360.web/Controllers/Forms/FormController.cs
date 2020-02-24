@@ -1635,6 +1635,13 @@ from	(
 		from		AssetType A
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 8 
+        union
+		select		9 as Sort,
+					'RuleType|' + cast(ObjectID as varchar(10)) as value, 
+					'{CommonNames.AssetTypeClass_Rule.CleanForSql()}: ' + P.[Path] as title 
+		from		AssetType A
+					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
+		where		[Class] = 7
 		) O
 order by Sort, title";
                     break;
