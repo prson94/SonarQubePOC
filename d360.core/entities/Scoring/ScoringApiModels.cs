@@ -66,9 +66,9 @@ namespace d360.core.entities.Scoring
         public decimal score { get; set; }
 
         [DataMember]
-        public DateTime effectiveDate { get; set; }
+        public DateTime? effectiveDate { get; set; }
         [DataMember]
-        public DateTime runDate { get; set; }
+        public DateTime? runDate { get; set; }
 
 
         public List<ExternalScoreResultMeasureModel> measures { get; set; }
