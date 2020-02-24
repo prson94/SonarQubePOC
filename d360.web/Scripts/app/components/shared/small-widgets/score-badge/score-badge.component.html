@@ -1,4 +1,4 @@
-﻿<div class="d3s-score-badge" [ngClass]="{'mast' : mast}">
+﻿<div class="{{scoreBadgeClass}}" [ngClass]="{'mast' : mast}">
     <div class="score-tooltip">
         <span class="item">
             <span class="item-name"><strong>{{getType()}}</strong></span>{{score.Value | scoreDisplay:1}}
@@ -27,7 +27,7 @@
         </span>
     </div>
 
-    <div *ngIf="score.ScoreType" class="scoretitle">{{getType()}}</div>
+    <div *ngIf="score.ScoreType" [class]="displayAsFieldClass">{{getType()}}</div>
     <div class="d3s-score-pill" [style.background-color]="getBackgroundColor()">
         <d3s-dynamic-percentage *ngIf="!mast" [percentage]="getValuePct()"></d3s-dynamic-percentage>
         <div class="text">{{score.Value | scoreDisplay:1}}</div>

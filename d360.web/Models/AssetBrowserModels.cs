@@ -172,7 +172,7 @@ namespace d360.web.Models
         public string Path { get; set; }
         public string Url { get; set; }
         public List<AssetBrowserDiagramAssetField> Fields { get; set; } = new List<AssetBrowserDiagramAssetField>();
-        public List<AssetBrowserDiagramAssetScore> Scores { get; set; } = new List<AssetBrowserDiagramAssetScore>();
+        public List<core.entities.Scoring.Score> Scores { get; set; } = new List<core.entities.Scoring.Score>();
         public List<AssetBrowserDiagramAssetOwner> Owners { get; set; } = new List<AssetBrowserDiagramAssetOwner>();
     }
 
