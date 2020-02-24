@@ -18,14 +18,17 @@
                         <button (click)="goToPrevious()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == 1 ? 'light' : ''}}"><i class="fa fa-chevron-up"></i></button>
                         <button (click)="goToNext()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == searchResults.length ? 'light' : ''}}"><i class="fa fa-chevron-down"></i></button>
                     </div>
-                </div>
+                </div> 
                 <div class="controls-right">
                     <div class="asset-browser-button-group">
+                        <button type="button" title="Impact View" (click)="switchToImpactView($event)" [class]="impactViewButtonSelectedClass()" style="width: 80px; font-size: .8em">Impact View</button>
+                        <button type="button" title="Lineage View" (click)="switchToLineageView($event)" [class]="lineageViewButtonSelectedClass()" style="width: 80px; font-size: .8em">Lineage View</button>
+                        <div class="button-spacer"></div>
                         <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
                         <div class="button-spacer"></div>
                         <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
                         <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
+                        <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()" [disabled]="!lineageDiagramApplies()"><i class="fa fa-plus"></i></button>
                         <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
                         <div class="button-spacer"></div>
                         <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)" [disabled]="totalAlertCount == 0">
@@ -52,7 +55,7 @@
                         <div class="clearfix"></div>
                     </div>
                     <div class="asset-browser-window-content asset-browser-window-content-padded" *ngIf="isFilterWindowVisible">
-                        <div class="filter-section">
+                        <div class="filter-section" *ngIf="lineageDiagramApplies()">
                             <div class="filter-header">Asset Ancestry</div>
                             <div>
                                 <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterTriggerVisualizationUpdate()" styleClass="filter-dropdown"></p-dropdown>
@@ -78,7 +81,7 @@
                                 <div>
                                     <p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox>
                                 </div>
-                                <div>
+                                <div *ngIf="lineageDiagramApplies()">
                                     <p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Impacts/Owners" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterTriggerVisualizationUpdate()"></p-checkbox>
                                 </div>
                             </div>

@@ -431,7 +431,12 @@ export class SourceRuleSource {
 
 //#endregion
 
-// #region ASSET BROWSER
+// #region ASSET/IMPACT BROWSER
+
+export enum DiagramType {
+    Lineage,
+    Impact
+}
 
 export class AssetBrowserModel {
     focalAssetUid: string;
@@ -601,6 +606,7 @@ export class AssetBrowserAssetsModel {
 
 export class AssetBrowserAssetModel {
     //hop: number;
+    focal: boolean = false;
     assetUid: string;
     assetTypeId: number;
     assetTypeUid: string;
@@ -764,6 +770,7 @@ export class AssetBrowserResponsibilityTypeFilterModel {
 }
 
 export class AssetBrowserFilterModel {
+    DiagramType: DiagramType = DiagramType.Lineage;
     AncestryMode: FilterAncestryMode = FilterAncestryMode.AllAncestors;
     DisplayBadges: boolean = true;
     DisplayIcons: boolean = true;

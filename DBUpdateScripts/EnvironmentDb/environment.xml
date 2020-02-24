@@ -448,4 +448,18 @@
   <include file="scripts/GOV-9711.xml"/> <!-- Update [graph].[GetHop] return non-leaf asset impacts and owners to asset browser -->
   <include file="scripts/GOV-9601B.xml"/> <!-- Update [graph].[GetHop] to add back the position logic to account for composite keys on an asset -->
   <include file="scripts/GOV-9434.xml"/> <!-- api table updates for external scoring endpoint and small fix to LoadFromStaging -->
+
+  <!-- Types (object-based naming) -->
+  
+  <!-- Tables (object-based naming) -->
+  
+  <!-- Views (object-based naming) -->
+  
+  <!-- Functions (object-based naming) -->
+  
+  <!-- Procedures (object-based naming) -->
+  <include file="scripts/graph.GetImpactHop.xml"/>
+
+  <!-- Data Scripts (jira-based naming) --> 
+  
 </databaseChangeLog>

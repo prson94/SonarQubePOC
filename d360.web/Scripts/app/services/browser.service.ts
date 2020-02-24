@@ -85,7 +85,7 @@ export class BrowserService extends BaseObservableService {
     * Retrieve results from the Govern API for lineage regarding a specific asset.
     * @returns A deep models with hierarchical assets and relationships between them.
     */
-    public getAssetLineage(
+    public getAssetBrowserHop(
         model: AssetBrowserApiHopRequestModel
     ): Observable<AssetBrowserAssetsModel> {
         const url = `api/v2/browser`;
@@ -140,12 +140,11 @@ export class BrowserService extends BaseObservableService {
     * Retrieve results from the Govern API for lineage regarding a specific asset.
     * @returns A deep models with hierarchical assets and relationships between them.
     */
-    public getAssetImpacts(
+    public getImpactBrowserHop(
         model: AssetBrowserApiHopRequestModel
     ): Observable<AssetBrowserAssetsModel> {
-        const url = `api/v2/browser`;
+        const url = `api/v2/browser/impact`;
 
-        model.HopType = AssetBrowserApiHopType.Impact; 
         return this.http.post(url, model).pipe(
             map(response => response),
             catchError(err => this.handleError(err))
@@ -507,7 +506,7 @@ export class BrowserService extends BaseObservableService {
         n.key = a.key;
         n.text = a.displayValue;
         n.hasAssetReadAccess = a.hasAssetReadAccess;
-        
+
         if (parentKey && parentKey !== "") {
             n.group = parentKey;
 
@@ -516,7 +515,7 @@ export class BrowserService extends BaseObservableService {
             } 
         }
         else {
-            n.template = "PortGroup";
+            n.template = (a.focal) ? "FocalPortGroup" :"PortGroup";
         }
 
         return n;

@@ -26,7 +26,8 @@ import {
     LoadedFilterTypesModel,
     AssetBrowserApiHopType,
     AssetBrowserAlertRequest,
-    AssetBrowserAlert
+    AssetBrowserAlert,
+    DiagramType
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -58,6 +59,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     @ViewChild('diagram', { static: false }) diagramRef;
 
+    //#region Variables
+
     DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserApiHopRequestModel;
@@ -65,7 +68,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
     private menuItems: MenuItem[] = [];
-
     private isAlertTabEnabled: boolean = true;
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
@@ -81,6 +83,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen: boolean = false;
     private loadingText: string = "";
     private fromRefresh: boolean = false;
+
+    //#endregion
 
     //#region Filters
 
@@ -437,6 +441,36 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isFullScreen = !this.isFullScreen;
         this.resizeDiagram();
         this.cdRef.markForCheck();
+    }
+
+    //#endregion
+
+    //#region Diagram Switching
+
+    private switchToImpactView(event) {
+        this.filterModel.DiagramType = DiagramType.Impact;
+        this.saveFilter();
+        this.diagram.div = null;
+        this.initializeDiagram();
+    }
+
+    private switchToLineageView(event) {
+        this.filterModel.DiagramType = DiagramType.Lineage;
+        this.saveFilter();
+        this.diagram.div = null;
+        this.initializeDiagram();
+    }
+
+    private impactViewButtonSelectedClass() {
+        return (this.filterModel.DiagramType == DiagramType.Impact) ? "right-margin-4 selected" : "right-margin-4";
+    }
+
+    private lineageViewButtonSelectedClass() {
+        return (this.filterModel.DiagramType == DiagramType.Lineage) ? "right-margin-4 selected" : "right-margin-4";
+    }
+
+    private lineageDiagramApplies(): boolean {
+        return (this.filterModel.DiagramType == DiagramType.Lineage);
     }
 
     //#endregion
@@ -826,32 +860,36 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private highlightPath(e: go.InputEvent, obj: go.Part) {
-        //Set all to not highlighted.
-        obj.diagram.nodes.each(n => {
-            n.isHighlighted = false;
-        });
+        try {
+            //Set all to not highlighted.
+            obj.diagram.nodes.each(n => {
+                n.isHighlighted = false;
+            });
 
-        if (obj.key) {
-            // Highlight the selected node.
-            obj.isHighlighted = true;
+            if (obj.key) {
+                // Highlight the selected node.
+                obj.isHighlighted = true;
 
-            // Recurse through and highlight based on the atomic (non-grouped) links.
-            this.highlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined);
-        }
-        else {
-            // You are clicking on a link instead.
-            let link = this.diagram.findLinkForData(obj.data);
-            if (obj.data) {
-                if (obj.data.impacts) {
-                    let keysToHighlight: string[] = obj.data.impacts;
-                    keysToHighlight.forEach(k => {
-                        let node: go.Node = obj.diagram.findNodeForKey(k);
-                        if (node) {
-                            node.isHighlighted = true;
-                        }
-                    });
+                // Recurse through and highlight based on the atomic (non-grouped) links.
+                this.highlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined);
+            }
+            else {
+                // You are clicking on a link instead.
+                let link = this.diagram.findLinkForData(obj.data);
+                if (obj.data) {
+                    if (obj.data.impacts) {
+                        let keysToHighlight: string[] = obj.data.impacts;
+                        keysToHighlight.forEach(k => {
+                            let node: go.Node = obj.diagram.findNodeForKey(k);
+                            if (node) {
+                                node.isHighlighted = true;
+                            }
+                        });
+                    }
                 }
             }
+        } catch (e) {
+
         }
     }
 
@@ -899,14 +937,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private initializeDiagram() {
-
         this.initializeCustomShapes();
+
+        this.loadFilter();
 
         this.diagram = this.createDiagram();
 
         var forelayer = this.diagram.findLayer("Foreground");
         this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
 
+        this.diagram.groupTemplateMap.add("FocalPortGroup", this.createPortFocalGroupNode());
         this.diagram.groupTemplateMap.add("PortGroup", this.createPortGroupNode());
         this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
 
@@ -917,7 +957,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.nodeTemplateMap.add("Owner", this.createOwnerNode());
         this.diagram.nodeTemplate = this.createListItemNode();
 
-        this.diagram.linkTemplateMap.add("", this.createDefaultLink());
+        if (this.lineageDiagramApplies()) {
+            this.diagram.linkTemplateMap.add("", this.createLineageLink());
+        }
+        else {
+            this.diagram.linkTemplateMap.add("", this.createImpactLink());
+        }
 
         this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
 
@@ -926,7 +971,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
 
-        this.loadFilter();
+
         this.populateDiagram().subscribe(bComplete => {
             this.hideDeselectedAssetTypes(undefined);
             this.hideDeselectedPredicates(undefined);
@@ -954,29 +999,35 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.requestModel.Hops = this.filterModel.NumberOfHops;
             this.requestModel.HopType = AssetBrowserApiHopType.Self; 
 
-            this.browserService.getAssetLineage(this.requestModel)
-                .subscribe(data => {
-                    this.responseModel.assets.assets = data.assets;
-                    this.responseModel.assets.assetRelations = data.assetRelations;
-                    this.loadingText = "Determining links and meaning...";
-                    data = this.browserService.convertResponseModel(data, this.filterModel.AncestryMode);
+            let subscriber = (data: AssetBrowserAssetsModel) => {
+                this.responseModel.assets.assets = data.assets;
+                this.responseModel.assets.assetRelations = data.assetRelations;
+                this.loadingText = "Determining links and meaning...";
+                data = this.browserService.convertResponseModel(data, this.filterModel.AncestryMode);
 
-                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, data.assets);
-                    trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
+                let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
+                trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, data.assets);
+                trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
 
-                    this.parseData(trans);
-                    this.resizeDiagram();
-                    this.diagram.scale = 1;
-                    this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                    this.loadingText = "";
-                    this.isLoading = false;
+                this.parseData(trans);
+                this.resizeDiagram();
+                this.diagram.scale = 1;
+                this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                this.loadingText = "";
+                this.isLoading = false;
 
-                    this.cdRef.markForCheck();
+                this.cdRef.markForCheck();
 
-                    obs.next(true);
-                    obs.complete();
-                });
+                obs.next(true);
+                obs.complete();
+            };
+
+            if (this.lineageDiagramApplies()) {
+                this.browserService.getAssetBrowserHop(this.requestModel).subscribe(subscriber);
+            }
+            else {
+                this.browserService.getImpactBrowserHop(this.requestModel).subscribe(subscriber);
+            }
         });
 
         return dgmObs;
@@ -1247,7 +1298,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             model.HopType = AssetBrowserApiHopType.Lineage;
             model.Assets = data.assetUids;
 
-            this.browserService.getAssetLineage(model)
+            this.browserService.getAssetBrowserHop(model)
                 .subscribe(response => {
 
                     // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
@@ -1829,20 +1880,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private collapseNodesAndLinks(dm: go.GraphLinksModel, links: go.Iterator<go.Link>) {
+    private collapseNodesAndLinks(dm: go.GraphLinksModel, key: string, links: go.Iterator<go.Link>) {
         if (links) {
             let lnks: any[] = [];
             links.iterator.each(link => {
-                lnks.push({ link: link, toNode: link.toNode });
+                lnks.push({ link: link, node: (link.toNode.key == key) ? link.fromNode : link.toNode });
             });
             lnks.forEach(lnk => {
-                if (lnk.toNode) {
-                    // Go back to incoming nodes and remove them too. 
-                    this.collapseNodesAndLinks(dm, lnk.toNode.findLinksOutOf());
+                if (lnk.node) {
+                    let backLinks: go.Iterator<go.Link> = lnk.node.findLinksInto().filter(b => { return (b.fromNode.key !== key); });
+                    this.collapseNodesAndLinks(dm, lnk.node.key, backLinks);
+
+                    let forwardLinks: go.Iterator<go.Link> = lnk.node.findLinksOutOf().filter(b => { return (b.toNode.key !== key); });
+                    this.collapseNodesAndLinks(dm, lnk.node.key, forwardLinks);
 
                     // Remove immediate child.
-                    this.diagram.remove(lnk.toNode);
-                    dm.removeNodeData(dm.findNodeDataForKey(lnk.toNode.key));
+                    this.diagram.remove(lnk.node);
+                    dm.removeNodeData(dm.findNodeDataForKey(lnk.node.key));
                 }
 
                 this.diagram.remove(lnk.link);
@@ -1850,11 +1904,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private collapseBadgeDependentNodesAndLinks(key: string) {
+    private collapseBadgeDependentNodesAndLinks(badgeKey: string, nodeKey: string) {
         this.diagram.startTransaction("collapseBadge");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == key);
-        this.collapseNodesAndLinks(dm, links);
+        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == badgeKey);
+        this.collapseNodesAndLinks(dm, nodeKey, links);
         this.diagram.commitTransaction("collapseBadge");
     }
 
@@ -1865,7 +1919,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
 
             if (owner.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(owner.key);
+                this.collapseBadgeDependentNodesAndLinks(owner.key, node.key, AssetBrowserApiHopDirection.Forward);
                 owner.expanded = false;
                 this.diagram.model.removeArrayItem(node.owners, ix);
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
@@ -1934,7 +1988,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
 
             if (relation.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(relation.key);
+                this.collapseBadgeDependentNodesAndLinks(relation.key, node.key);
                 relation.expanded = false;
                 this.diagram.model.removeArrayItem(node.relations, ix);
                 this.diagram.model.insertArrayItem(node.relations, ix, relation);
@@ -1952,12 +2006,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 let n = node;
                 if (n.isGroup) {
-
                     // Add the root node's asset information.
                     if (this.filterModel.IncludeNonLeaf) {
                         requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
                     }
-                    
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                         let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
                         if (shouldInclude) {
@@ -1979,53 +2031,60 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     })
                 }
 
-                this.browserService.getAssetImpacts(requestModel)
-                    .subscribe(response => {
+                let subscriber = (response: AssetBrowserAssetsModel) => {
+                    response.assets.forEach(a => {
+                        this.responseModel.assets.assets.push(a);
+                    });
+                    response.assetRelations.forEach(i => {
+                        this.responseModel.assets.assetRelations.push(i);
+                    });
 
-                        response.assets.forEach(a => {
-                            this.responseModel.assets.assets.push(a);
-                        });
-                        response.assetRelations.forEach(i => {
-                            this.responseModel.assets.assetRelations.push(i);
-                        });
+                    let nodeToPull = this.findInApiModel(node.key, this.responseModel.assets);
+                    if (nodeToPull) {
+                        response.assets.push(nodeToPull);
+                    }
 
-                        let nodeToPull = this.findInApiModel(node.key, this.responseModel.assets);
-                        if (nodeToPull) {
-                            response.assets.push(nodeToPull);
-                        }
+                    response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
 
-                        response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
+                    let keysToBeConcernedWith: string[] = [];
+                    let nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
+                    nodes.forEach(n => {
 
-                        let keysToBeConcernedWith: string[] = [];
-                        let nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
-                        nodes.forEach(n => {
+                        keysToBeConcernedWith.push(n.key);
 
-                            keysToBeConcernedWith.push(n.key);
-
-                            // Transfer ignored predicates to the newly created nodes.
+                        // Transfer ignored predicates to the newly created nodes.
+                        if (this.lineageDiagramApplies()) {
                             existingIgnoredPredicates.forEach(ep => {
                                 n.ignoredPredicates.push(ep);
                             });
                             n.ignoredPredicates.push(relation.predicateUid);
-                        });
-
-                        let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                        trans.nodes = nodes;
-                        trans.links = this.browserService.translateAssetLinks(this.getFullResponseModelAsTranslationNodes(), response.assetRelations);
-
-                        trans.links.forEach(l => {
-                            l.expandedByBadgeKey = relation.key;
-                        });
-
-                        relation.expanded = true;
-                        this.parseData(trans, true);
-
-                        this.setFilterWindow(false);
-
-                        this.hideDeselectedAssetTypes(keysToBeConcernedWith);
-                        this.hideDeselectedPredicates(keysToBeConcernedWith);
-                        this.hideDeselectedResponsibilityTypes(keysToBeConcernedWith);
+                        }
                     });
+
+                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
+                    trans.nodes = nodes;
+                    trans.links = this.browserService.translateAssetLinks(this.getFullResponseModelAsTranslationNodes(), response.assetRelations);
+
+                    trans.links.forEach(l => {
+                        l.expandedByBadgeKey = relation.key;
+                    });
+
+                    relation.expanded = true;
+                    this.parseData(trans, true);
+
+                    this.setFilterWindow(false);
+
+                    this.hideDeselectedAssetTypes(keysToBeConcernedWith);
+                    this.hideDeselectedPredicates(keysToBeConcernedWith);
+                    this.hideDeselectedResponsibilityTypes(keysToBeConcernedWith);
+                };
+
+                if (this.lineageDiagramApplies()) {
+                    this.browserService.getAssetBrowserHop(requestModel).subscribe(subscriber);
+                }
+                else {
+                    this.browserService.getImpactBrowserHop(requestModel).subscribe(subscriber);
+                }
             }
         }
     }
@@ -2299,14 +2358,27 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private createDiagram(): go.Diagram {
+
+        let layout: go.Layout;
+
+        if (this.lineageDiagramApplies()) {
+            layout = this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false });
+        }
+        else {
+            layout = this.g(go.ForceDirectedLayout, {
+                defaultSpringLength: 50,
+                defaultElectricalCharge: 250,
+                arrangementSpacing: new go.Size(250, 250)
+            });
+        }
+
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
             initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false }), //direction: 270, 
-            //layout: this.g(AssetBrowserLayout, {}),//layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
+            layout: layout,
             "undoManager.isEnabled": true,
             "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
         });
@@ -2345,107 +2417,152 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     )
             },
-            this.g(
-                go.Panel,
-                "Vertical",
-                this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "relations"),
-                    new go.Binding("visible", "showBadges"),
-                    {
-                        itemTemplate: this.createRelationsBadge()
-                    }
-                ),
-                this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "owners"),
-                    new go.Binding("visible", "showBadges"),
-                    {
-                        itemTemplate: this.createOwnersBadge()
-                    }
-                ),
-                this.g(
-                    go.Shape,  // the "top" port
-                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(
-                        go.Shape,
-                        "Rectangle",
-                        { strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
-                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
-                    ),
-                    this.g(go.Panel, "Vertical",
-                        this.g(
-                            go.Panel,
-                            "Horizontal",
-                            // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            //new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
-                            new go.Binding("background", "", v => (v.isHighlighted) ?
-                                go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
-                                go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
-                            ).ofObject(),
-                            this.g(
-                                "SubGraphExpanderButton",
-                                { alignment: go.Spot.Right, margin: 5 }
-                            ),
-                            //icon
-                            this.g(
-                                go.TextBlock,
-                                {
-                                    row: 0,
-                                    margin: 0,
-                                    alignment: go.Spot.Center,
-                                    editable: false,
-                                    font: this.fontLabelIcon
-                                },
-                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
-                                new go.Binding("text", "icon"),
-                                new go.Binding("visible", "showIcon")
-                            ),
-                            this.g(
-                                go.TextBlock,
-                                {
-                                    alignment: go.Spot.Left,
-                                    editable: false,
-                                    margin: 5,
-                                    font: this.fontLabel,
-                                    maxLines: this.textMaxLines,
-                                    maxSize: this.textMaxSize,
-                                    overflow: this.textOverflowStyle,
-                                    toolTip: this.createTooltip()
-                                },
-                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
-                                new go.Binding("text", "text").makeTwoWay()
-                            )
-                        ),  // end Horizontal Panel
-                        this.g(
-                            go.Panel,
-                            "Horizontal",
-                            // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal },
-                            this.g(
-                                go.Shape,  // the "left" port
-                                { width: 0, height: 0, portId: "L", toSpot: go.Spot.LeftCenter, toLinkable: true, stroke: "transparent" }
-                            ),
-                            this.g(
-                                go.Placeholder,
-                                { padding: 2, alignment: go.Spot.TopLeft },
-                            ),
-                            this.g(
-                                go.Shape,  // the "right" port
-                                { width: 0, height: 0, portId: "R", toSpot: go.Spot.RightCenter, toLinkable: true, stroke: "transparent" }
-                            )
-                        ),  //end Horizontal Panel
-
-                        this.g(
-                            go.Shape,  // the "bottom" port
-                            { width: 0, height: 0, portId: "B", toSpot: go.Spot.BottomCenter, toLinkable: true, stroke: "transparent" }
-                        ),
-                    ) //end Vertical Panel,
-                ) //end Auto Panel (main group Panel),
-            ), //end Vertical Panel
+            this.basePortGroupNodeContent()
         );
+    }
+
+    private createPortFocalGroupNode(): go.Group {
+        return this.g(
+            go.Group,
+            "Auto",
+            {
+                background: "transparent",
+                contextMenu: this.createContextMenu(),
+                click: (e, obj) => this.highlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                        }
+                    )
+            },
+            this.g(go.Panel,
+                "Auto",
+
+                this.g(
+                    go.Shape,
+                    "Border",
+                    { strokeWidth: 2, isPanelMain: true, spot1: go.Spot.TopLeft, spot2: go.Spot.BottomRight },
+                    new go.Binding("fill", "", (v) => go.Brush.mix("#ebebeb", this.lightenBoxColor, 0.7)), 
+                    new go.Binding("stroke", "", (v) => this.linkBackColor) //go.Brush.mix("#cccccc", this.lightenBoxColor, 0.7)
+                ),
+
+                this.g(go.Panel, "Table",
+                    this.g(go.RowColumnDefinition, { width: 10 }),
+                    this.makeCircle(go.Spot.Top, 0, 1, "topNodeText", "hasTop"),
+                    this.makeCircle(go.Spot.Left, 2, 0, "leftNodeText", "hasLeft"),
+                    this.g(go.Panel,
+                        "Auto",
+                        { row: 2, column: 1 },
+                        this.basePortGroupNodeContent()
+                    ),
+                    this.makeCircle(go.Spot.Right, 2, 2, "rightNodeText", "hasRight"),
+                    this.makeCircle(go.Spot.Bottom, 3, 1, "bottomNodeText", "hasBottom")
+                )
+            )
+        );
+    }
+
+    private makeCircle(spot, row, col, textprop, visprop) {
+        return this.g(go.Panel, "Auto",
+            { row: row, column: col },
+            this.g(go.Shape,
+                "Circle",
+                { fill: "transparent", stroke: "transparent" },
+                new go.Binding("visible", visprop)),
+            this.g(go.TextBlock,
+                new go.Binding("text", textprop),
+                new go.Binding("visible", visprop))
+    );
+}
+
+    private basePortGroupNodeContent(): go.Panel {
+        return this.g(
+            go.Panel,
+            "Vertical",
+            this.g(go.Panel, "Table",
+                new go.Binding("itemArray", "relations"),
+                new go.Binding("visible", "showBadges"),
+                {
+                    itemTemplate: this.createRelationsBadge()
+                }
+            ),
+            this.g(go.Panel, "Table",
+                new go.Binding("itemArray", "owners"),
+                new go.Binding("visible", "showBadges"),
+                {
+                    itemTemplate: this.createOwnersBadge()
+                }
+            ),
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    "Rectangle",
+                    { strokeWidth: 2, isPanelMain: true },
+                    new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
+                    new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+                ),
+                this.g(go.Panel, "Vertical",
+                    this.g(
+                        go.Panel,
+                        "Horizontal",
+                        // button next to TextBlock
+                        { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
+                        new go.Binding("background", "", v => (v.isHighlighted) ?
+                            go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                            go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                        ).ofObject(),
+                        this.g(
+                            "SubGraphExpanderButton",
+                            { alignment: go.Spot.Right, margin: 5 }
+                        ),
+                        //icon
+                        this.g(
+                            go.TextBlock,
+                            {
+                                row: 0,
+                                margin: 0,
+                                alignment: go.Spot.Center,
+                                editable: false,
+                                font: this.fontLabelIcon
+                            },
+                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                            new go.Binding("text", "icon"),
+                            new go.Binding("visible", "showIcon")
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                alignment: go.Spot.Left,
+                                editable: false,
+                                margin: 5,
+                                font: this.fontLabel,
+                                maxLines: this.textMaxLines,
+                                maxSize: this.textMaxSize,
+                                overflow: this.textOverflowStyle,
+                                toolTip: this.createTooltip()
+                            },
+                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                            new go.Binding("text", "text").makeTwoWay()
+                        )
+                    ),  // end Horizontal Panel
+                    this.g(
+                        go.Panel,
+                        "Horizontal",
+                        // button next to TextBlock
+                        { stretch: go.GraphObject.Horizontal },
+                        this.g(
+                            go.Placeholder,
+                            { padding: 2, alignment: go.Spot.TopLeft },
+                        )
+                    )  //end Horizontal Panel
+                ) //end Vertical Panel,
+            ) //end Auto Panel (main group Panel),
+        ); //end Vertical Panel
     }
 
     private createGroupNode(): go.Group {
@@ -2854,7 +2971,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private createDefaultLink(): go.Link {
+    private createLineageLink(): go.Link {
         return this.g(
             go.Link, {
             routing: go.Link.AvoidsNodes,
@@ -2864,6 +2981,48 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             click: (e, obj) => this.highlightPath(e, obj as any),
             zOrder: 1000
         },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    {
+                        visible: false,
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor
+                    },
+                    new go.Binding("background", "back"),
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private createImpactLink(): go.Link {
+        return this.g(
+            go.Link, 
             // the whole link panel
             this.g(go.Shape,
                 { stroke: this.linkBackColor, strokeWidth: 1 },
