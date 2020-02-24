@@ -305,6 +305,15 @@ when not matched by target then
 
         public List<ExternalScoreResultsApiResultsModel> BulkExternalResultsImport(List<ExternalScoreResultsApiPostModel> model, ApiExecution execution, ScoreType scoreType)
         {
+            //Set effective date for any results that do not have a date set.
+            model.ForEach(m =>
+            {
+                if (!m.effectiveDate.HasValue)
+                {
+                    m.effectiveDate = DateTime.UtcNow.Date;
+                }
+            });
+
             Add(execution);
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -323,6 +332,8 @@ when not matched by target then
             metricTable.Columns.Add("Value", typeof(decimal));
             metricTable.Columns.Add("RunDate", typeof(DateTime));
 
+            metricTable.Columns["RunDate"].AllowDBNull = true;
+
 
             measureTable.Columns.Add("ExecutionID", typeof(Guid));
             measureTable.Columns.Add("ItemNumber", typeof(int));
@@ -340,7 +351,10 @@ when not matched by target then
                 row["EffectiveDate"] = item.effectiveDate;
                 row["Result"] = false;
                 row["Value"] = item.score;
-                row["RunDate"] = item.runDate;
+                if (item.runDate.HasValue)
+                    row["RunDate"] = item.runDate;
+                else
+                    row["RunDate"] = DBNull.Value;
 
 
                 metricTable.Rows.Add(row);
@@ -406,16 +420,35 @@ when not matched by target then
 
             #region Validation
 
+            // Resolve Metric Group/Item Effective Date
+            Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
+                inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID
+                left join metrics.[Asset] A on A.[Uid] = M.MeasureUid and A.[State] = 1 and A.ScoreType = @scoreType
+                outer apply (
+                            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
+                            ) M_M
+                where T.ExecutionID = @ExecutionID
+            ", new { execution.ExecutionID, scoreType = (int)scoreType });
+
+
             //resolve allocation
             Connection.Execute(@"update T set T.IsValidAsset = case when S.uid is null then 0 else 1 end 
 from api.ExecutionMetric T 
 left join Asset S on S.[uid] = T.AssetUid 
 where T.ExecutionID = @executionID", new { execution.ExecutionID, scoreType = (int)scoreType });
 
-            //validate effective date
-            Connection.Execute(@"update T set T.IsValidMetricDate = 0, T.Message = coalesce(T.Message + '; ', '') + 'Effective date cannot be in the future; '
+            //validate date ranges
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Effective date cannot be in the future; '
 from api.ExecutionMetric T 
 where T.ExecutionID = @executionID and T.EffectiveDate > getutcdate()", new { execution.ExecutionID });
+
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Run date cannot be in the future; '
+from api.ExecutionMetric T 
+where T.ExecutionID = @executionID and T.RunDate > getutcdate()", new { execution.ExecutionID });
+
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Run date must be provided; '
+from api.ExecutionMetric T 
+where T.ExecutionID = @executionID and T.RunDate is null", new { execution.ExecutionID });
 
 
             //resolve allocation
@@ -605,7 +638,7 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
 		                cross apply (
 			                select top 1 EffectiveDate from metrics.Score R
 			                where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
-			                and R.EffectiveDate > M.EffectiveDate
+			                and R.EffectiveDate > M.EffectiveDate and R.ScoreType = @scoreType
 			                order by EffectiveDate asc
 		                ) R
                 where   M.EndDate is null and M.ScoreType = @scoreType
