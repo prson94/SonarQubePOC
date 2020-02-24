@@ -36,7 +36,6 @@ import { MessagesObservableService } from '../../../services/messages-observable
        .display-table-title {
             text-align:center;
             width:100%;
-            font-family: "Roboto", Tahoma !important;
             text-transform: uppercase;
             color: #5c5e60 !important;
             font-size: 1rem;
