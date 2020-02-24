@@ -13,6 +13,19 @@
     url('/fonts/sanspro/source-sans-pro-v13-latin-regular.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
 
+/* source-sans-pro-700 - latin */
+@font-face {
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 700;
+    src: url('/fonts/sanspro/source-sans-pro-v13-latin-700.eot'); /* IE9 Compat Modes */
+    src: local('Source Sans Pro Bold'), local('SourceSansPro-Bold'), url('/fonts/sanspro/source-sans-pro-v13-latin-700.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-700.woff2') format('woff2'), /* Super Modern Browsers */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-700.woff') format('woff'), /* Modern Browsers */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-700.ttf') format('truetype'), /* Safari, Android, iOS */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-700.svg#SourceSansPro') format('svg'); /* Legacy iOS */
+}
+
 body {
     background: #EFF2F6;
     min-height: 100vh;
@@ -4534,7 +4547,7 @@ d3s-status-badge + .d3s-score-container {
 
     .score-tooltip {
         display: none;
-        width: 202px;
+        min-width: 202px;
         height: 154px;
         border-radius: 4px;
         box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
@@ -4546,11 +4559,12 @@ d3s-status-badge + .d3s-score-container {
         padding: 8px;
 
         .item {
-            font-weight: bold;
             font-size: 14px;
+            display:block;
 
-            .light-text {
-                font-weight: normal;
+            .item-name {
+                width: 122px;
+                display: inline-block;
             }
         }
 
@@ -4564,12 +4578,6 @@ d3s-status-badge + .d3s-score-container {
                     border-radius: 8px;
                     margin-right: 4px;
                     display: inline-block;
-                }
-
-                .text {
-                    color: #646464;
-                    font-size: 14px;
-                    font-weight: 600;
                 }
             }
         }
