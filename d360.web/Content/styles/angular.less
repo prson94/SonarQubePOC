@@ -4525,12 +4525,14 @@ d3s-status-badge + .d3s-score-container {
     padding-left: 24px;
 }
 
+.d3s-score-container-field,
 .d3s-score-container {
-    display: flex;
     position: relative;
 
     .d3s-score-badge-inline {
         display: inline-flex;
+        margin-top: 5px;
+        margin-bottom: 15px
     }
 
     .d3s-score-badge {
@@ -4590,6 +4592,11 @@ d3s-status-badge + .d3s-score-container {
             }
         }
     }
+}
+
+
+.d3s-score-container {
+    display: flex;
 }
 
 .d3s-score-badge-inline,

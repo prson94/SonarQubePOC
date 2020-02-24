@@ -205,7 +205,7 @@
                                     </div>
 
                                     <div *ngIf="filterModel.DisplayScores">
-                                        <span *ngIf="selectedDiagramAsset?.Scores" class="d3s-score-container">
+                                        <span *ngIf="selectedDiagramAsset?.Scores" class="d3s-score-container-field">
                                             <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" displayAsField="true" displayAsFieldClass="asset-browser-window-tabs-content-field-name">
                                             </d3s-score-badge>
                                         </span>
