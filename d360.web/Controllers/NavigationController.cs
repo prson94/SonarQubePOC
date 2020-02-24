@@ -864,7 +864,7 @@ SELECT count(ATT.[Object]) as count,
 		from    [Asset] A
 		inner join AssetType ATT on (a.AssetTypeID = Att.id)
 		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-         AND A.[Object] in('Artifact','Taxonomy','Policy','Rule')
+         AND ATT.[Class] in(1,2,6,7,8)
 		Group by 
 		ATT.[Object], 
 		ATT.ObjectID,
