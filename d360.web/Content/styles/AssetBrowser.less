@@ -86,6 +86,7 @@
         width: 400px;
         top: 60px;
         overflow-y: auto;
+        overflow-x: hidden;
         background-color: #FFF;
         border-bottom: 1px solid #ccc;
         border-right: 1px solid #ccc;
@@ -162,6 +163,10 @@
         font-weight: 600;
     }
 
+    .asset-browser-window-tabs-content-field-name::after {
+        content: '\00a0'; //&#160;
+    }
+
     .asset-browser-window-tabs-content-field-content {
         word-break: break-word;
 
@@ -194,6 +199,57 @@
 
             .icon {
                 margin-right: 5px;
+            }
+
+            .settings-menu {
+                width: 32px;
+                line-height: 32px;
+                background-color: transparent;
+                border: 1px solid #FFCFCF;
+                stroke-opacity: 0.4;
+                border-radius: 2px;
+                height: 32px;
+                float: right;
+                position: relative;
+                /*opacity: 0.5;*/
+                text-align: center;
+                vertical-align: middle;
+
+                .popup-menu {
+                    display: none;
+
+                    ul {
+                        & > li {
+                            & > span {
+                                padding-left: 10px;
+                                width: 200px;
+                                text-align: left;
+                            }
+                        }
+                    }
+                }
+
+                &:hover {
+                    background-color: rgb(200,200,200);
+                    cursor: pointer;
+                    border-top-left-radius: 2px;
+                    border-top-right-radius: 2px;
+                    border-bottom-left-radius: 0px;
+                    border-bottom-right-radius: 0px;
+                    border-bottom: none;
+
+                    .popup-menu {
+                        display: inline-block;
+                        top: 1px;
+                        /*right: 9px;*/
+                        width: 160px;
+                        z-index: 100;
+
+                        &.place-right {
+                            right: 128px;
+                        }
+                    }
+                }
             }
         }
 

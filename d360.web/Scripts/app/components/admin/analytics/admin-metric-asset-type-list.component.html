@@ -6,7 +6,7 @@
 <div *ngIf="!isLoading">
 
     <input type="text" pInputText [hidden]="!showSimpleFilter" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter" [ngModel]="dt.filters['global']?.value">
-    <p-table #dt class="gov-table" [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
+    <p-table #dt [rowHover]="true" [value]="allocations" selectionMode="single" [globalFilterFields]="['assetClassName','assetTypePath','scoreType','isExternallyCalculated']" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selection" (onRowSelect)="onRowSelect($event)">
         <ng-template pTemplate="header">
             <tr>
                 <th [pSortableColumn]="'assetClassName'" style="width: 200px">
@@ -21,12 +21,17 @@
                     Score Type
                     <d3s-sortIcon [field]="'scoreType'"></d3s-sortIcon>
                 </th>
+                <th [pSortableColumn]="'isExternallyCalculated'">
+                    Externally Calculated
+                    <d3s-sortIcon [field]="'isExternallyCalculated'"></d3s-sortIcon>
+                </th>
                 <th></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
                 <th><d3s-column-filter [field]="'assetClassName'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'assetTypePath'" [datatype]="'text'"></d3s-column-filter></th>
                 <th><d3s-column-filter [field]="'scoreType'" [datatype]="'text'"></d3s-column-filter></th>
+                <th><d3s-column-filter [field]="'isExternallyCalculated'" [datatype]="'text'"></d3s-column-filter></th>
                 <th></th>
             </tr>
         </ng-template>
@@ -35,10 +40,13 @@
                 <td (click)="openMeasures(item)">{{item.assetClassName}}</td>
                 <td (click)="openMeasures(item)">{{item.assetTypePath}}</td>
                 <td (click)="openMeasures(item)">{{item.scoreType}}</td>
-                <td class="RowTools">
-                    <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
-                    <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
-                    <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
+                <td (click)="openMeasures(item)">{{item.isExternallyCalculated}}</td>
+                <td>
+                    <div class="RowTools">
+                        <a style="cursor:pointer;"><i [copy-clipboard]="item.uid" [pTooltip]="'UID: \n' + item.uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>
+                        <a style="cursor:pointer;" (click)="doEdit(item);"><i class="fa fa-pencil"></i></a>
+                        <a style="cursor:pointer;" (click)="doDelete(item);"><i class="fa fa-trash-o"></i></a>
+                    </div>
                 </td>
             </tr>
         </ng-template>

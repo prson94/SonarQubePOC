@@ -1,5 +1,5 @@
 ﻿﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
@@ -15,6 +15,8 @@ import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
 import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
+import { StatusBadgeModule } from '../shared/small-widgets/status-badge/status-badge.module';
+import { ScoreBadgeModule } from '../shared/small-widgets/score-badge/score-badge.module';
 import { PaginatorModule } from '../shared/small-widgets/paginator/paginator-bar-module';
 import { CheckTreeModule } from '../shared/small-widgets/check-tree/check-tree.module';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
@@ -34,8 +36,8 @@ import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,                
         HttpClientModule,
         RouterModule,
@@ -57,6 +59,8 @@ import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
         CoreModule,
         TilesModule,
         DynamicPercentageModule,
+        StatusBadgeModule,
+        ScoreBadgeModule,
         SharedDynamicGridEditorModule,
         PaginatorModule,
         ChipsFilterModule,

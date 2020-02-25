@@ -127,7 +127,7 @@ namespace d360.model.DataAccessLayer
                     "Error adding metric",
                     (model.ParentUid.HasValue) ?
                     "You may not add a metric with the same name under the same grouping." :
-                    "You may not add a metric with the same name at the root of the hierarchy.");
+                    $"Measure with name '{model.Name}' already exists.");
             }
 
 
@@ -147,7 +147,7 @@ namespace d360.model.DataAccessLayer
 
                 metricAsset.Description = model.Description;
                 metricAsset.Name = model.Name.Trim();
-                metricAsset.ScoreType = model.ScoreType;
+                metricAsset.ScoreType = model.ScoreType.Value;
 
                 // If results, then you cannot change. 
                 if (existingResultCount > 0 && model.IsGroup)
@@ -173,7 +173,7 @@ namespace d360.model.DataAccessLayer
                     IsGroup = model.IsGroup,
                     Name = model.Name.Trim(),
                     State = State.Active,
-                    ScoreType = model.ScoreType
+                    ScoreType = model.ScoreType.Value
                 };
 
                 if (model.AssetTypeUid == Guid.Empty)
@@ -475,13 +475,12 @@ namespace d360.model.DataAccessLayer
                     	from	metrics.ScoreItem I
                     			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     			inner join (
-                    				select	max(EndDate) as EndDate
+                    				select	max(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
-                    						and EffectiveDate <= @effectiveDate
-                                            and EndDate is not null
-                    			) MI on MI.EndDate = I.EffectiveDate
+                    						and EndDate is null
+                    			) MI on MI.EffectiveDate = I.EffectiveDate
                     	where	AssetUid = @assetUid
                     	union all
                     	select	A.[Uid],

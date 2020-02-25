@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -20,12 +20,10 @@ import { AssetTypeEditorComponent } from './asset-type-editor.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
 import { IconPickerModule } from '../icon-picker.component';
-import { SiteModalModule } from '../modal/gov-modal.module';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 @NgModule({
     imports: [CommonModule,
-        DeprecatedI18NPipesModule,
         HttpClientModule,
         ReactiveFormsModule,
         FormsModule,

@@ -89,6 +89,20 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypes);
                         break;
 
+                    case "isexternallycalculated":
+                        bool? isExtern = null;
+                        if ("yes".Contains(kp.Value.ToLower()))
+                            isExtern = true;
+                        if ("no".Contains(kp.Value.ToLower()))
+                            isExtern = false;
+
+                        if (isExtern.HasValue)
+                        {
+                            whereStatements.Add("AL.IsExternallyCalculated = @isExt");
+                            dbArgs.Add("@isExt", isExtern);
+                        }
+                        break;
+
                     case "global":
                         List<string> globalFilters = new List<string>();
                         var classListGlobal = AssetTypeClass.Generic.GetAsList();
@@ -105,8 +119,19 @@ namespace d360.model.DataAccessLayer
                         globalFilters.Add("AL.scoreType in @filteredScoreTypesGlobal");
                         dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypesGlobal);
 
-                        whereStatements.Add($"({string.Join(" or ", globalFilters)})");
+                        bool? isExt = null;
+                        if ("yes".Contains(kp.Value.ToLower()))
+                            isExt = true;
+                        if ("no".Contains(kp.Value.ToLower()))
+                            isExt = false;
 
+                        if (isExt.HasValue)
+                        {
+                            globalFilters.Add("AL.IsExternallyCalculated = @isExt");
+                            dbArgs.Add("@isExt", isExt);
+                        }
+
+                        whereStatements.Add($"({string.Join(" or ", globalFilters)})");
                         break;
 
                     default: break;
@@ -269,6 +294,29 @@ namespace d360.model.DataAccessLayer
 	                        not exists (select 1 from [metrics].Allocation a where a.[state] = 1 and a.assettypeuid = att.[uid] and a.scoretype = @scoreType)";
 
             return (await companyContext.QueryAsync<AllocationApiGetUnallocatedAssetTypeModel>(sql, dbArgs)).ToList();
+
+        }
+
+        public List<ExternalScoreResultsApiResultsModel> PostExternalResults(ScoreType scoreType, List<ExternalScoreResultsApiPostModel> model, ApiExecution execution)
+        {
+            return companyContext.BulkExternalResultsImport(model, execution, scoreType);
+        }
+
+        public List<BulkMetricTemporaryTableModel> PostScoreResults(ScoreType scoreType, ApiExecution execution, List<ScoreResultApiPostModel> results)
+        {
+
+            BulkMetricsImport bulkModel = new BulkMetricsImport();
+            bulkModel.AddRange(results.Select(m =>
+                new BulkMetricImport()
+                {
+                    AssetUid = m.assetUid,
+                    MetricAssetUid = m.metricAssetUid,
+                    EffectiveDate = m.effectiveDate,
+                    Result = m.result
+                }
+            ).ToList());
+
+            return companyContext.BulkMetricsImport(bulkModel, execution, scoreType, true);
 
         }
     }

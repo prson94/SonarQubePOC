@@ -439,6 +439,17 @@
   <include file="scripts/GOV-9652.xml"/> <!-- modify [dbo].[GetDynamicAssets] fix issue with json for multiple items causing issues on single select items -->
   <include file="scripts/GOV-9601.xml"/> <!-- Multiple updates to graph functions and procedures, and a full refresh of graph tables -->
   <include file="scripts/GOV-9628.xml"/> <!-- dbo.reports - remove report ID column and rename the ReportLayout and ReportTile tables -->
+  <include file="scripts/GOV-9435.xml"/> <!-- sdd IsValidAllocation to api.ExecutionMetrics table -->
   <include file="scripts/GOV-9684.xml"/> <!-- fixes to metrics.LoadFromStaging after adding new columns -->
   <include file="scripts/GOV-9694.xml"/> <!-- Remove ReportLayoutID from [utility].[AddAuditEntry] -->
+  <include file="scripts/GOV-9712.xml"/> <!-- update primary key on metrics.Score to include ScoreType -->
+  <include file="scripts/GOV-9736.xml"/> <!-- tile.GetObjectStatistics show RunDate on score badge -->
+  <include file="scripts/GOV-9735.xml"/> <!-- bulkload.GetLoadColumns - fix lookups and columns incorrectly set to Required -->
+  <include file="scripts/GOV-9711.xml"/> <!-- Update [graph].[GetHop] return non-leaf asset impacts and owners to asset browser -->
+  <include file="scripts/GOV-9601B.xml"/> <!-- Update [graph].[GetHop] to add back the position logic to account for composite keys on an asset -->
+  <include file="scripts/GOV-9434.xml"/> <!-- api table updates for external scoring endpoint and small fix to LoadFromStaging -->
+  <include file="scripts/GOV-9588.xml"/> <!-- metrics.LoadFromStaging populate RunDate when staging calculates scores -->
+  <include file="scripts/GOV-9770.xml"/> <!-- Drop stored procedure [fusion].[RelateAction] -->
+  <include file="scripts/GOV-9779.xml"/> <!-- clean up orphaned parent/child AssetEdge records from prior to dupe fix -->
+  <include file="scripts/GOV-6468.xml"/> <!-- bulkload.GetLoadColumns - Add required column Threshold for ruletype -->
 </databaseChangeLog>

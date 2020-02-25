@@ -1,5 +1,5 @@
 ﻿import { NgModule }       from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule }       from '@angular/common';
+import { CommonModule }       from '@angular/common';
 import { FormsModule }    from '@angular/forms';
 import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
@@ -21,6 +21,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
+import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -37,7 +38,6 @@ import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.comp
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { LineageInfoComponent } from './lineage/lineage-info.component';
 import { LineageEditorComponent } from './lineage/lineage-editor.component';
-
 import { AssetBrowserComponent } from './assetbrowser/browser.component';
 
 import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
@@ -55,7 +55,6 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
 import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
-import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
@@ -63,7 +62,6 @@ import { PipesModule } from '../../../pipes/pipes.module';
 
 @NgModule({
     imports: [CommonModule,
-        DeprecatedI18NPipesModule,
         FormsModule,
         HttpClientModule,
         RouterModule,
@@ -78,6 +76,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
         AssetTypeModalEditorModule,
+        ScoreBadgeModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

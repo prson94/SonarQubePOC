@@ -132,7 +132,7 @@ export class ScoreTypeAllocationFormatted {
     scoreType: string;
     state: State;
     hasMeasure: boolean;
-    isExternallyCalculated: boolean;
+    isExternallyCalculated: string;
 }
 
 export enum ScoreType {

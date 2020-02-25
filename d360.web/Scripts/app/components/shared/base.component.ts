@@ -212,7 +212,7 @@ export class BaseComponent {
                     'Governance Score',
                     'Governance Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}Governance`, null, 20
+                    `${baseUrl}Governance`, null, 10
                 );
                 this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
             }
@@ -762,6 +762,10 @@ export class BaseComponent {
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
+
+            if (this.objectType == 'FusionAttribute') {
+                return;
+            }
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();

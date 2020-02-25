@@ -1,5 +1,5 @@
 import { AutoCompleteModule } from 'primeng/autocomplete';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NgModule } from '@angular/core';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -17,7 +17,6 @@ import { TagView } from './d3s-tag-view';
     imports: [
         AutoCompleteModule,
         CommonModule,
-        DeprecatedI18NPipesModule,
         FormsModule,
         PipesModule,
         SharedModule,

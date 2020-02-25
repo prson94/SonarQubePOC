@@ -55,4 +55,53 @@ namespace d360.core.entities.Scoring
         [DataMember]
         public string assetTypePath { get; set; }
     }
+
+    public class ExternalScoreResultsApiPostModel
+    {
+
+        [DataMember]
+        public Guid assetUid { get; set; }
+
+        [DataMember]
+        public decimal score { get; set; }
+
+        [DataMember]
+        public DateTime? effectiveDate { get; set; }
+        [DataMember]
+        public DateTime? runDate { get; set; }
+
+
+        public List<ExternalScoreResultMeasureModel> measures { get; set; }
+    }
+
+    public class ExternalScoreResultMeasureModel
+    {
+        [DataMember]
+        public Guid measureUid { get; set; }
+        [DataMember]
+        public bool passed { get; set; }
+    }
+
+    public class ExternalScoreResultsApiResultsModel
+    {
+        public Guid AssetUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public bool IsSuccess { get; set; }
+        public string ErrorMessage { get; set; }
+    }
+
+    public class ScoreResultApiPostModel
+    {
+        [DataMember]
+        public Guid metricAssetUid { get; set; }
+
+        [DataMember]
+        public Guid assetUid { get; set; }
+
+        [DataMember]
+        public DateTime? effectiveDate { get; set; }
+
+        [DataMember]
+        public bool result{ get; set; }
+    }
 }

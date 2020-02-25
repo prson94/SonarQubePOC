@@ -31,8 +31,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/scoring"),
-        Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        Authorize
     ]
     public class ScoringController : BaseV2ApiController
     {
@@ -57,6 +56,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
@@ -96,6 +96,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPost,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -148,7 +149,7 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
             }
-            catch
+            catch (Exception ex)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
@@ -160,6 +161,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPut,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -209,9 +211,10 @@ namespace d360.web.Controllers.V2
                 }
 
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
-                if (hasActiveMeasures)
+                bool hasChangesTypes = model.scoreType != alloc.ScoreType || model.assetTypeUid != alloc.AssetTypeUid;
+                if (hasActiveMeasures && hasChangesTypes)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to delete a score with measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update ScoreType and/or AssetType if score has measures defined.");
                 }
 
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
@@ -235,6 +238,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The metric.</returns>
         [
             HttpDelete,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(ConfirmResponse)),
@@ -305,6 +309,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset Class");
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Score Type");
+            document.SetCellValue(1, index++, "Externally Calculated");
             document.SetCellValue(1, index++, "Asset Type UID");
             document.SetCellValue(1, index++, "Score UID");
 
@@ -318,6 +323,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.assetTypePath);
                 document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
+                document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "Yes" : "No");
                 document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
                 document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }
@@ -348,6 +354,7 @@ namespace d360.web.Controllers.V2
         /// <returns>List of asset types that have not been allocated to the provided score type.</returns>
         [
             HttpGet,
+            ApiExplorerSettings(IgnoreApi = true),
             Route("unallocatedAssetTypes/{scoreType}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns a list of asset types that are not yet allocated to the score type provided.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
@@ -376,7 +383,83 @@ namespace d360.web.Controllers.V2
             }
         }
 
-     
+        /// <summary>
+        /// Post a list of externally calculated score results
+        /// </summary>
+        /// <param name="model">The externally calculated score results to load.</param>
+        /// <param name="scoreType">The score type of the score results.</param>
+        /// <returns>List of results.</returns>
+        [
+            HttpPost,
+            Route("{scoreType}/externalresults"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultsApiResultsModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult PostExternalResults(string scoreType, List<ExternalScoreResultsApiPostModel> model)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
+                }
+
+                if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+                }
+
+                var execution = getApiExecution(model.Count);
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostExternalResults(scoreTypeEnum, model, execution)));
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
+        }
+
+
+        /// <summary>
+        /// Loads measure results to build a score for a specified asset.
+        /// </summary>
+        /// <param name="model">The score results to load.</param>
+        /// <param name="scoreType">The score type of the score results.</param>
+        /// <returns>The results.</returns>
+        [
+            HttpPost,
+            Route("{scoreType}/results"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request model was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult PostScoreResults(string scoreType, List<ScoreResultApiPostModel> model)
+        {
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
+                
+                if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
+
+                if (model == null || model.Count < 1)
+                    return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty data set. Please check your request and submit again."));
+
+
+                var execution = getApiExecution(model.Count);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
+            }
+            catch
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
+        }
     }
 
 

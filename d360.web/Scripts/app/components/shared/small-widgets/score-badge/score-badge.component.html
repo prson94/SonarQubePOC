@@ -1,0 +1,35 @@
+﻿<div class="{{scoreBadgeClass}}" [ngClass]="{'mast' : mast}">
+    <div class="score-tooltip">
+        <span class="item">
+            <span class="item-name"><strong>{{getType()}}</strong></span>{{score.Value | scoreDisplay:1}}
+        </span>
+
+        <span class="item">
+            <span class="item-name"><strong>Score Threshold</strong></span>{{getCurrentScoreThreshold()}}
+        </span>
+        <div class="score-ranges">
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="lowColour"></span>
+                <span class="text">0%-{{lowerThreshold*100}}%</span>
+            </div>
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="mediumColour"></span>
+                <span class="text">>{{lowerThreshold*100}}%-{{upperThreshold*100}}%</span>
+            </div>
+            <div class="score-range">
+                <span class="score-box" [style.background-color]="goodColour"></span>
+                <span class="text">>{{upperThreshold*100}}%-100%</span>
+            </div>
+        </div>
+
+        <span class="item">
+            <strong>Last Run Date</strong> {{lastRunDate | date:'shortDate'}}
+        </span>
+    </div>
+
+    <div *ngIf="score.ScoreType" [class]="displayAsFieldClass">{{getType()}}</div>
+    <div class="d3s-score-pill" [style.background-color]="getBackgroundColor()">
+        <d3s-dynamic-percentage *ngIf="!mast" [percentage]="getValuePct()"></d3s-dynamic-percentage>
+        <div class="text">{{score.Value | scoreDisplay:1}}</div>
+    </div>
+</div>

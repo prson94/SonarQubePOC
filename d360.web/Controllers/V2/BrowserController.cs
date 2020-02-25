@@ -345,7 +345,8 @@ select	distinct
 		A.Uid as assetUid,
 		R.ResourceName as displayValue, 
 		'fa-user' as icon,
-		RE.Uid as resourceUid
+		RE.Uid as resourceUid,
+        R.resourceId
 from	ResponsibilityDetail R
 		inner join Asset A on ( (A.ID = R.AssetID) OR (R.AssetID = 0 and A.AssetTypeID = R.AssetTypeID) ) and R.IsVisible = 1
 		inner join reporting.Global_Resource RE on RE.ResourceID = R.ResourceID
@@ -356,7 +357,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
                 foreach(var o in owners)
                 {
-                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceUid}");
+                    o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceId}");
                     if (!distinctOwners.Any(d => d.key == o.key))
                     {
                         distinctOwners.Add(o);
@@ -457,12 +458,11 @@ select	A.TypeName,
 			for json path
 		) as Fields,
 		(
-			select	    top 1 
-                        'Governance Score' as Name,
-					    cast([Value]*100 as int) as Value
+			select	    *
 			from	    metrics.Score
 			where	    AssetUid = A.Uid
-            order by    EffectiveDate desc
+                        and EffectiveDate <= getutcdate() 
+                        and EndDate is null
 			for json path
 		) as Scores,
 		(

@@ -116,8 +116,13 @@ namespace d360.web.Controllers.V2
             }
 
             List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
-            //backward compatibility
-            if (!allowedScoreTypes.Contains(model.ScoreType))
+
+            if (model.ScoreType != null && !allowedScoreTypes.Contains(model.ScoreType.Value))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You have not provided valid Score Type.");
+            }
+
+            if(model.ScoreType == null)
             {
                 model.ScoreType = ScoreType.Governance;
             }
@@ -391,7 +396,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Adds one or more metric results for processing and scoring.
+        /// Loads measure results to build a score for a specified asset.
         /// </summary>
         /// <remarks>If you do not provide an effective date for a metric result, the current date (UTC) will be used.</remarks>
         /// <param name="model">The list of raw metrics to save for processing.</param>

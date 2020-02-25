@@ -1,5 +1,5 @@
 ﻿import { NgModule } from '@angular/core';
-import { CommonModule, DeprecatedI18NPipesModule } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { PaginatorComponent } from './paginator-bar-component';
@@ -7,8 +7,8 @@ import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-r
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 
 @NgModule({
-    imports: [CommonModule,
-        DeprecatedI18NPipesModule,
+    imports: [
+        CommonModule,
         FormsModule,
     ],
     declarations: [

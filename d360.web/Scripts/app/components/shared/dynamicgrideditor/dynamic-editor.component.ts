@@ -61,6 +61,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() selectedObjectID: any;
     @Input() adding: boolean = false;
     @Input() isV2API: boolean = false;
+    @Input() useV2ApiLink: boolean = false;
 
     @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
@@ -302,10 +303,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 group[field.FieldName + '_Name'] = new FormControl(name || '');
                 group[field.FieldName + '_Url'] = new FormControl(url || '', this.getFieldValidators(field));
-            } else if (field.FieldType == "DateTime") {
+            } else if (field.FieldType == "DateTime" || field.FieldType == "Date") {
                 if (field.Value != null) {
                     let date = new Date(field.Value);
-                    date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+
+                    if (field.FieldType == "DateTime") {
+                        date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+                    }
+
                     field.Value = date;
                 }
 
@@ -458,7 +463,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
-
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
                     }
@@ -487,7 +491,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         // if this is the v2 api we need to combine any link field types into the format stored in the db
         // tallyfy|https://tallyfy.com/what-is-compliance-management/
-        if (this.isV2API) {
+        if (this.isV2API || this.useV2ApiLink) {
             let links = this.fields.filter(x => x.FieldType == 'Link');
             //need to get the link and url for each            
             for (let link of links) {
