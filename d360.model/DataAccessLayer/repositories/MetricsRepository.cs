@@ -436,7 +436,11 @@ namespace d360.model.DataAccessLayer
 
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
-            string sql = @"
+            string sql = "";
+            switch (type)
+            {
+                case ScoreType.Governance:
+                    sql = @"
                     declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
@@ -525,18 +529,33 @@ namespace d360.model.DataAccessLayer
                     select	distinct
                     		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
                     from	#tbl 
-                    where [uid] = @assetUid
-                    UNION 
-                    select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
+                    order by [Level], Name";
+                    break;
+                case ScoreType.DataQuality:
+                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
                     from metrics.Allocation AA
                         inner join assettype att on AA.AssetTypeUid = att.[uid]
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
 	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
-	                    inner join metrics.SCORE ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
+	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
+                        inner join (
+                    				select	max(EffectiveDate) as EffectiveDate
+                    				from	metrics.ScoreItem I
+                    				where	AssetUid = @assetUid
+                    						and MetricAssetUid = I.MetricAssetUid
+                    						and EndDate is null
+                    			) MI on MI.EffectiveDate = ms.EffectiveDate
                     where 
-                        a.[uid] = @assetUid
-                    order by [Level], Name
-                    ";           
+                        a.[uid] = @assetUid and AA.ScoreType = {(int)type}
+                    order by Name";
+                    break;
+                case ScoreType.Perceptional:
+                    break;
+                default:
+                    break;
+            }
+
+                       
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
