@@ -982,6 +982,19 @@ from	api.ExecutionField T
                 QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
         }
 
+        private void SendApiGraphEvent(ApiExecutionInfo info)
+        {
+            var e = new AssetEventInfo()
+            { 
+              execution = info,
+              CompanyID = CurrentCompanyID,
+              Type = AssetEventType.Execution
+            };
+
+
+            QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
+        }
+
         #region Validation
 
         private List<DataRow> ValidateFields(
