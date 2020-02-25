@@ -855,7 +855,7 @@ order by	f.SortOrder";
 
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
-        {            
+        {
             string sql = $@"
 SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
@@ -963,11 +963,22 @@ SELECT count(ATT.[Object]) as count,
             //Static nav
             if (model.AssetUid == null)
             {
+                if (model.ObjectType == SystemObjects.ArtifactType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ArtifactType.ToString();
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
+                    responseModel.DisplayValue = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Assets" : "Business Assets";
+                    responseModel.MainTabTitle = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Asset Types" : "Business Asset Types";
+                    responseModel.Items.HasAudit = true;
+
+                }
+
                 if (model.ObjectType == SystemObjects.IntersectType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Relationships";
                     responseModel.MainTabTitle = "Relationship Types";
                     responseModel.Items.HasAudit = true;
@@ -979,7 +990,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Workflow Actions";
                     responseModel.MainTabTitle = "Action Types";
                     responseModel.Items.HasAudit = true;
@@ -989,7 +1000,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Attributes";
                     responseModel.MainTabTitle = "Attribute Groups";
                     responseModel.Items.HasAudit = true;
@@ -999,7 +1010,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.LookupType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Lookups";
                     responseModel.MainTabTitle = "Lookup Types";
                     responseModel.Items.HasAudit = true;
@@ -1009,7 +1020,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Responsibilities";
                     responseModel.MainTabTitle = "Responsibility Types";
                     responseModel.Items.HasAudit = true;
@@ -1019,7 +1030,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Dashboards";
                     responseModel.MainTabTitle = "Dashboards";
                     responseModel.Items.HasAudit = true;
@@ -1029,9 +1040,29 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.FusionType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
                     responseModel.DisplayValue = "Fusion";
                     responseModel.MainTabTitle = "Fusion Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
+                    responseModel.DisplayValue = "Models";
+                    responseModel.MainTabTitle = "Model Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.PolicyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
+                    responseModel.ObjectID = model.ObjectId != null ? model.ObjectId.Value : 0; ;
+                    responseModel.DisplayValue = "Policies";
+                    responseModel.MainTabTitle = "Policy Types";
                     responseModel.Items.HasAudit = true;
                 }
 
