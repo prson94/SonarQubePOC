@@ -404,6 +404,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'reflistrelationship':
                 try {
                     this.model.FieldType.IsListable = false;
+                    this.model.FieldType.IsRequired = false;
                     if (this.model.cardinalRelationship && (this.lookups.Field_CardinalReferenceRelationships.length > 0)
                         && (this.lookups.Field_CardinalReferenceRelationships.find(x => x.value == this.model.cardinalRelationship))) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
@@ -1429,7 +1430,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.model.FieldType.Type) > -1
                     || (this.model.FieldType.Type == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement', 'Tag'].indexOf(this.model.FieldType.Type) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.model.FieldType.Type) > -1);
             case 'IsPartOfKey':
                 return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.model.FieldType.Type) > -1
                     || this.model.FieldType.AllowMultipleValues || this.objectType == 'ReferenceItemType');

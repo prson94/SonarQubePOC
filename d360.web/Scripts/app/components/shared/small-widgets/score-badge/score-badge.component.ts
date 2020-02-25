@@ -1,5 +1,5 @@
 ﻿
-import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange } from '@angular/core';
+import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterViewInit, OnChanges, SimpleChange, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { AssetScore } from '../../../../models/search-result.model';
@@ -10,16 +10,21 @@ import { AssetScore } from '../../../../models/search-result.model';
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class ScoreBadgeComponent implements AfterViewInit, OnChanges {
+export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
 
     @Input() score: AssetScore;
     @Input() mast: boolean = false;
+    @Input() displayAsField: boolean = false;
+    @Input() displayAsFieldClass: string = ""; 
+    
     @Input() lowerThreshold: number = 0.5; //50%
     @Input() upperThreshold: number = 0.9; //90%
 
     @Input() lowColour: string = "#ed3765";
     @Input() mediumColour: string = "#f8a41a";
     @Input() goodColour: string = "#4ecc89";
+
+    private scoreBadgeClass: string;
 
     private changeWait: any;
     constructor(
@@ -28,7 +33,15 @@ export class ScoreBadgeComponent implements AfterViewInit, OnChanges {
     ) {
     }
 
+    public ngOnInit() {
+        this.scoreBadgeClass = this.displayAsField ? "d3s-score-badge-inline" : "d3s-score-badge";
+        if (this.displayAsFieldClass == "") {
+            this.displayAsFieldClass = "scoretitle";
+        }
+    }
+
     ngAfterViewInit(): void {
+
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -37,7 +50,13 @@ export class ScoreBadgeComponent implements AfterViewInit, OnChanges {
 
     getType(): string {
         var type = this.score.ScoreType.split(/(?=[A-Z])/).join(' ');
-        return type + (this.mast ? ' Score' : '');
+        if (this.mast || this.displayAsField) {
+            type += ' Score';
+            if (this.displayAsField) {
+                type += ': ';
+            }
+        }
+        return type;
     }
 
     getValuePct() {
@@ -88,6 +107,16 @@ export class ScoreBadgeComponent implements AfterViewInit, OnChanges {
         if (minutes > 0) return this.getType() + " last calculated " + minutes + " minutes ago.";
 
         return this.getType() + " last calculated a few seconds ago.";
+    }
+
+    get lastRunDate(): string {
+        if (this.score != null) {
+            if (this.score.RunDate)
+                return this.score.RunDate;
+            if (this.score.EffectiveDate)
+                return this.score.EffectiveDate;
+        }
+        return null;
     }
 
 };

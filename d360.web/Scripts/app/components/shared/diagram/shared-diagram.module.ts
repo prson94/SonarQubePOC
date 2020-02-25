@@ -21,6 +21,7 @@ import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
+import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -37,7 +38,6 @@ import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.comp
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { LineageInfoComponent } from './lineage/lineage-info.component';
 import { LineageEditorComponent } from './lineage/lineage-editor.component';
-
 import { AssetBrowserComponent } from './assetbrowser/browser.component';
 
 import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
@@ -76,6 +76,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
         AssetTypeModalEditorModule,
+        ScoreBadgeModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
