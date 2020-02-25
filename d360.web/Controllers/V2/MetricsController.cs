@@ -256,17 +256,18 @@ namespace d360.web.Controllers.V2
         /// Gets a hierarchical structure of metrics associated with the asset Uid provided, for a given effective date. If no effective date is provided, today's date is used.
         /// </summary>
         /// <param name="assetUid">The Uid of the asset.</param>
+        /// <param name="scoreType">The scoreType to be returned.</param>
         /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
-            Route("{assetUid:Guid}/pointbreakdown"),
+            Route("{scoreType}/{assetUid:Guid}/pointbreakdown"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset based on the provided Uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "The hierarchical structure of metric values for a given asset.", typeof(MetricAssetHierarchyModels)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(Guid assetUid, DateTime? effectiveDate = null)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(ScoreType scoreType, Guid assetUid, DateTime? effectiveDate = null)
         {
             /*
                          declare @effectiveDate date = '10/3/2018',
@@ -282,7 +283,7 @@ namespace d360.web.Controllers.V2
                 if (asset == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
 
-                var result = MetricsRepository.GetMetricHierarchyByAsset(assetUid, effectiveDate);
+                var result = MetricsRepository.GetMetricHierarchyByAsset(assetUid, effectiveDate, scoreType);
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
             }
@@ -497,7 +498,69 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Gets a administrative hierarchical structure of metrics associated with the asset Uid provided.
+        /// </summary>
+        /// <param name="uid">The Uid of the asset.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{uid}/definitionFromAsset"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
+        {
+            var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
+            if(asset == null)
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {asset.uid.ToString()} not found.");
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
+            if(assetType == null)
+                return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
+            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid);
+        }
 
+
+        /// <summary>
+        /// Get the score history.
+        /// </summary>
+        /// <param name="assetUid">The public identifier for the asset.</param>
+        /// <param name="scoreType">The type of score to return.</param>
+        /// <returns>The score history for a given an asset type Uid and score type.</returns>
+        [
+            HttpGet,
+            Route("history/{scoreType}/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+        ]
+        public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
+        {
+            int type = (int)scoreType;
+            var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type });
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model ));
+        }
+
+
+        /// <summary>
+        /// Get the score history.
+        /// </summary>
+        /// <param name="assetUid">The public identifier for the asset.</param>
+        /// <param name="scoreType">The type of score to return.</param>
+        /// <returns>The score history for a given an asset type Uid and score type.</returns>
+        [
+            HttpGet,
+            Route("getScoreTypes/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public IHttpActionResult GetHistory(Guid assetUid)
+        {
+            var model = MetricsRepository.GetScoreTypesForAsset(assetUid);
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
+        }
 
     }
 }

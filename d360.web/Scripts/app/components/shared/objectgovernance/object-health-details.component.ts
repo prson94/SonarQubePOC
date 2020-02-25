@@ -1,69 +1,40 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
+import { ScoreType } from '../../../models/metrics.model';
+import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
+import { ignoreElements } from 'rxjs/operators';
+import { debug } from 'util';
+
 
 @Component({
     selector: 'd3s-object-health-details',    
-    template: `
-            <div class="row">
-                <div class="col l6 m12 s12">
-                    <header>Score History</header>
-                    <chart [options]="scoreHistory"></chart>
-                </div>
-                <div class="col l6 m12 s12">
-                    <div class="row">
-                        <div class="col s12">
-                            <header>Point Breakdown</header>
-                            <p-treeTable  scrollable="true" scrollWidth="100%" [value]="pointBreakdownTree" selectionMode="single">  
-                                <ng-template pTemplate="header">
-	                                <tr>
-		                                <th  style="width:60%;text-align:left">Analytic</th>
-		                                <th style="width:20%;text-align:right">Value</th>
-		                                <th style="width:20%;text-align:right">Adjusted Weight</th>
-	                                </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-rowNode let-item="rowData">
-	                                <tr [ttSelectableRow]="rowNode">
-		                                <td  style="width:60%;">
-			                                <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-			                                <span *ngIf="!item.IsGroup" [innerText]="item.Name"></span>
-                                            <b *ngIf="item.IsGroup"><span [innerText]="item.Name"></span></b>
-		                                </td>
-                                        <td  style="width:20%;text-align:right">
-                                            <span *ngIf="!item.IsGroup">
-                                                <i *ngIf="item.Value" class="fa fa-check enabled" title="Passed"></i>
-                                                <i *ngIf="!item.Value" class="fa fa-times disabled" title="Failed"></i>
-                                            </span>
-                                        </td>
-                                        <td style="width:20%;text-align:right">
-                                            <span [innerText]="item.Weight"></span>
-                                        </td>
-	                                </tr>
-                                </ng-template>
-                            </p-treeTable>  
-                        </div>
-                    </div>
-                    <div class="row">&nbsp;</div>
-                </div>
-            </div>
-            
-        `,
+    templateUrl: `./object-health-details.component.html`,
     providers: [ScoreService],
 })
 
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
     @Input() uid: string;
     @Input() objectName: string;
-
     scoreHistory: Object;
     averageScore: number;
     scoreDate: string = null;
-    
+    private showGovernanceScores: boolean = true;
+    private showDQScores: boolean = false;
+
+    private historicalData: any[];
+    private calculatedScoreText: string = 'Calculating...';
     private pointBreakdown: PointBreakdown[] = [];
     private pointBreakdownTree: TreeNode[] = [];
+    private scoreDefinition: any;
+    private ScoreType = ScoreType;
+    private selectedScoreType = ScoreType.Governance;
+    private scoreTypes :number[] = [];
+    private showEmptyMessage: boolean = false;
+    @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
 
     constructor(protected scoreService: ScoreService) {
         super();
@@ -72,33 +43,45 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     ngAfterViewInit(): void {
         this.loadPoints();
         this.loadSeriesData();
+        this.loadDefinition();
+        this.loadTypes();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
         for (let p in changes) {
             if (p == 'uid') {
-                requiresLoad = changes['uid'].currentValue != changes['uid'].previousValue;
+                requiresLoad = (changes['uid'].currentValue != changes['uid'].previousValue) && changes['uid'] != undefined;
             }
         }
         if (requiresLoad) {
+            this.isLoading = true;
             this.loadPoints();
             this.loadSeriesData();
+            this.loadDefinition();
+            this.loadTypes();
         }
     }
-
+    private loadTypes() {
+        if (this.uid) {
+            this.scoreService.getScoreTypes(this.uid).subscribe(x => {
+                this.scoreTypes = x;
+                if (x.length > 0)
+                    this.selectedScoreType = x[0];
+            });
+        }
+    }
     private loadSeriesData() {
         if (this.uid) {
-            this.scoreService.getAverageScore(this.uid)
-            .subscribe(res => {
-                this.averageScore = (res == null || res.AverageScore == null) ? 0 : res.AverageScore;
-                this.scoreService.getScoreHistory(this.uid)
-                    .subscribe(res => {
-                        let data = res.map(val => {
-                            return [Date.parse(val.Date), val.Score];
-                        });
-
-                        this.scoreHistory = {
+            this.historicalData = [];
+            this.isLoading = true;
+            this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
+                .subscribe(res => {
+                    this.historicalData = res.map(val => {
+                        return [Date.parse(val.Date), val.Score];
+                    });
+                    this.getCurrentScoreDateText();
+                    this.scoreHistory = {
                             chart: {
                                 zoomType: 'x',
                                 style: {
@@ -114,19 +97,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             },
                             yAxis: {
                                 title: {
-                                    text: 'Governance Score'
+                                    text: ''
                                 },
                                 min: 0,
-                                plotLines: [{
-                                    value: this.averageScore,
-                                    color: '#6b5a51',
-                                    dashStyle: 'solid',
-                                    width: 2,
-                                    label: {
-                                        text: 'Average Score'
-                                    }
-                                }
-                                ]
+                                max:100
                             },
                             credits: {
                                 enabled: false
@@ -139,10 +113,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     marker: {
                                         radius: 1
                                     },
-                                    lineWidth: 2,
+                                    lineWidth: 4,
                                     states: {
                                         hover: {
-                                            lineWidth: 3
+                                            lineWidth: 6
                                         }
                                     },
                                     threshold: null
@@ -162,21 +136,22 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             series: [{
                                 type: 'line',
                                 name: 'Governance Score',
-                                data: data,
-                                color: '#426A84'
+                                data: this.historicalData,
+                                color: '#FF7155'
                             }]
                         };
-                    });
-            }) 
+                    this.isLoading = false;
+                });
         }
     }
 
     private loadPoints() {
         this.isLoading = true;
         if (this.uid) {
-            this.scoreService.getPointBreakdown(this.uid, this.scoreDate)
+            this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
             .subscribe(res => {
                 this.pointBreakdown = res;
+                this.isDQAndNoItems();
                 this.pointBreakdownTree = [];
 
                 let tree = (node: any) => {
@@ -217,9 +192,106 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.pointBreakdownTree.push(root);
                 });
 
-                //console.log(this.pointBreakdownTree);
                 this.isLoading = false;
             });
+        }
+    }
+
+    private isDQAndNoItems() {
+        if (this.pointBreakdown) {
+            this.showEmptyMessage =  this.pointBreakdown.filter(x => { x.ScoreType == ScoreType.DataQuality }).length == 0
+                && this.selectedScoreType == ScoreType.DataQuality;
+        }
+    }
+    private loadDefinition() {
+        if (this.uid) {
+            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res; });
+            this.isLoading = false;
+        }
+    }
+   
+
+    private setSelectedButton(scoreType: ScoreType) {
+        switch (scoreType) {
+            case ScoreType.Governance:
+                this.showGovernanceScores = true;
+                this.showDQScores = false;
+                this.selectedScoreType = ScoreType.Governance;
+                this.loadSeriesData();
+                this.isDQAndNoItems();
+                break;
+            case ScoreType.DataQuality:
+                this.showGovernanceScores = false;
+                this.showDQScores = true;
+                this.selectedScoreType = ScoreType.DataQuality;
+                this.loadSeriesData();
+                this.isDQAndNoItems();
+                break;
+            default:
+        }
+    }
+    private setCollapsed(val: boolean) {
+        if (this.OHDitems && this.OHDitems.length > 0) 
+            this.OHDitems.forEach(x => { x.setCollapsed(val); })
+    }
+    private isAllCollapsed() {
+        if (this.OHDitems && this.OHDitems.length > 0) {
+            let any = this.OHDitems.filter(x => { return !x.isCollapsed; });
+            if (any && any.length > 0)
+                return false;
+            else 
+                return true;
+        }
+    }
+    private hasAnyScoreType(scoreType: ScoreType) {
+        if (this.scoreTypes && this.scoreTypes.length > 0)
+            return this.scoreTypes.indexOf(scoreType) !== -1;
+    }
+
+    private getCurrentScoreDateText() {
+        if (this.historicalData && this.historicalData.length > 0) {
+            let dataArray = [...this.historicalData];
+            dataArray.sort((a, b) => b[0] - a[0]);
+
+            let mostRecent = dataArray.splice(0, 1)[0];
+            let lastchangedDate = this.getLastChangedDate(dataArray, mostRecent);
+            let milliseconds = Math.floor((new Date(mostRecent[0])).getTime() - (new Date(lastchangedDate[0]).getTime()));
+            this.formatCalculatedScoreText(milliseconds, mostRecent[1]);
+        }
+        else {
+            return "Calculating...";
+        }
+
+    }
+    private getLastChangedDate(tempArr: any[], mostRecent: any): any {
+        if (tempArr.length > 0) {
+            var nextLatest = tempArr.splice(0, 1)[0];
+            if (mostRecent[1] == nextLatest[1]) {
+                return this.getLastChangedDate(tempArr, nextLatest);
+            } else {
+                return mostRecent;
+            }
+        } else
+            return mostRecent;
+    }
+
+    private formatCalculatedScoreText(milliseconds: number, score: number) {
+        var day = 1000 * 60 * 60 * 24;
+        var days = Math.floor(milliseconds / day);
+        var months = Math.floor(days / 31);
+        var years = Math.floor(months / 12);
+        let type = this.selectedScoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
+        if (days == 0 || days == 1) {
+            this.calculatedScoreText = "Your " + type +" Score changed to  <strong> " + score + "% </strong> today</strong>";
+        }
+        else if (days > 0 && days <= 90) {
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + days + " days</strong>";
+        }
+        else if (days > 90 && days <= 780) {
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + months + " months</strong>";
+        }
+        else if (days > 780) {
+            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + years + " years</strong>";
         }
     }
 }
