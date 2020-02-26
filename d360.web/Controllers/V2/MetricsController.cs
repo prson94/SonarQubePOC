@@ -227,9 +227,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetTypeAsync(Guid assetTypeUid, DateTime? effectiveDate = null)
         {
-            if (!Company.CurrentResourceIsAdmin)
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type.")));
-
             var prefix = "Metrics.GetMetricHierarchyByAssetTypeAsync => ";
 
             try
