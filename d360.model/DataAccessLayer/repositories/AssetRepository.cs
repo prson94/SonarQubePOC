@@ -186,6 +186,7 @@ namespace d360.model.DataAccessLayer
             var includeRelationships = false;
             var fusionAttributeWithParent = false;
             var includeSegments = false;
+            var includePermissionDetails = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -378,6 +379,28 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
+            string permissionDetailSQL = @"cross apply (       select    case 
+	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 1 = 1 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
+	                            else 0 
+                            end as ReadAsset,
+                                   case 
+	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
+	                            else 0 
+                            end as ModifyAsset,
+                            case 
+	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
+	                            else 0 
+                            end as DeleteAsset 
+		                    for json path, without_array_wrapper)Permissions(Value)";
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_loadpermissiondetails"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
+                bool.TryParse(value, out includePermissionDetails);
+                dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+            }
+
+
+
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
             {
                 var simpleFilter = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_simplefilter").Value.Trim();
@@ -443,12 +466,14 @@ namespace d360.model.DataAccessLayer
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
+                    {(includePermissionDetails ? ",JSON_QUERY(Permissions.Value) as Permissions" : "")}
                 from Asset A
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
+                {(includePermissionDetails ? permissionDetailSQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
             ";
@@ -463,6 +488,14 @@ namespace d360.model.DataAccessLayer
                 foreach (var result in results)
                 {
                     result.Relationships = JsonConvert.DeserializeObject(result.Relationships);
+                }
+            }
+
+            if (includePermissionDetails)
+            {
+                foreach (var result in results)
+                {
+                    result.Permissions = JsonConvert.DeserializeObject(result.Permissions);
                 }
             }
 
