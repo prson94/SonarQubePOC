@@ -59,7 +59,9 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
                 this.columns = result.Columns;
                 this.fields = result.Fields;
 
-                this.assetService.getAssets(this.assetTypeUid, null).subscribe(result => {
+                var params = { _loadPermissionDetails: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1 };
+
+                this.assetService.getAssets(this.assetTypeUid, params).subscribe(result => {
                     console.log(result);
                     this.items = result.items;
                     if (this.items.length > 0) {
@@ -68,7 +70,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
                     this.isLoading = false;
                 });
             }
-        ); 
+        );
     }
 
     private export() {
