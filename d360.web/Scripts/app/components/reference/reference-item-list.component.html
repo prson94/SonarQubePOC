@@ -9,11 +9,17 @@
     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
            (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
            class="grid-simple-filter">
-    <p-table #dt [value]="items" selectionMode="single" [metaKeySelection]="true"
-             [globalFilterFields]="globalFilterFields" [sortField]="sortField" [pageLinks]="3"
+    <p-table #dt [value]="items" selectionMode="single" 
+             [metaKeySelection]="true"
+             [globalFilterFields]="globalFilterFields" 
+             [sortField]="sortField" 
+             [pageLinks]="3"
              [paginator]="true"
              [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-             [(selection)]="selected" (sortFunction)="customSort($event)" [customSort]="true">
+             [totalRecords]="totalRecords"
+             [lazy]="true"
+             (onLazyLoad)="loadAssets($event)"
+             [(selection)]="selected" >
         <ng-template pTemplate="header">
             <tr>
                 <th *ngFor="let column of columns"
@@ -42,23 +48,23 @@
                                              [item]="item"></d3s-dynamic-field-value>
                 </td>
                 <td>
-                    <div class="RowTools" *ngIf="item.UID">
+                    <div class="RowTools" *ngIf="item.AssetUid">
                         <a style="cursor:pointer;" (click)="selected=item;">
-                            <i [copy-clipboard]="item.UID"
-                               [pTooltip]="'UID: \n' + item.UID + '\n\n (click to copy)\n'"
+                            <i [copy-clipboard]="item.AssetUid"
+                               [pTooltip]="'UID: \n' + item.AssetUid + '\n\n (click to copy)\n'"
                                tooltipPosition="top" class="fa fa-info"></i>
                         </a>
                     </div>
                 </td>
                 <td>
-                    <div class="RowTools" *ngIf="showEditButton || item.P_CanEdit">
+                    <div class="RowTools" *ngIf="showEditButton || item.Permissions.ModifyAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showEditor=true;">
                             <i class="fa fa-pencil"></i>
                         </a>
                     </div>
                 </td>
                 <td>
-                    <div class="RowTools" *ngIf="showDeleteButton || item.P_CanDelete">
+                    <div class="RowTools" *ngIf="showDeleteButton || item.Permissions.DeleteAsset">
                         <a style="cursor:pointer;" (click)="selected=item;showDelete=true;">
                             <i class="fa fa-trash-o"></i>
                         </a>

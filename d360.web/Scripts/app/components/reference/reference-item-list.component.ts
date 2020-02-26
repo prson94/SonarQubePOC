@@ -4,6 +4,7 @@ import { AssetService } from '../../services/asset.service';
 import { ReferenceItemType } from '../../models/reference.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -21,7 +22,9 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     @Input() assetTypeUid: string;
+    private sortField: string = 'Code';
     private items: any[] = [];
+    private totalRecords: number = 10000;
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
@@ -29,6 +32,9 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     private selected: any;
     private showEditor: boolean = false;
     private showDelete: boolean = false;
+
+    private loadParams = { _loadPermissionDetails: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1 };
+
 
     add() {
         this.selected = null;
@@ -44,7 +50,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
     }
 
     ngOnInit() {
-        this.load();
+
     }
 
     private load() {
@@ -58,19 +64,35 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
             result => {
                 this.columns = result.Columns;
                 this.fields = result.Fields;
-
-                var params = { _loadPermissionDetails: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1 };
-
-                this.assetService.getAssets(this.assetTypeUid, params).subscribe(result => {
-                    console.log(result);
-                    this.items = result.items;
-                    if (this.items.length > 0) {
-                        this.selected = this.items[0];
-                    }
-                    this.isLoading = false;
-                });
+                this.loadItems();
             }
         );
+    }
+
+    private loadItems() {
+
+        this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
+            console.log(result);
+            this.items = result.items;
+            this.totalRecords = result.total;
+            if (this.items.length > 0) {
+                this.selected = this.items[0];
+            }
+            this.isLoading = false;
+        });
+    }
+
+    private loadAssets(event) {
+        console.log(event);
+        if (event) {
+            this.loadParams._order = event.sortField;
+            this.loadParams._direction = event.sortOrder == 1 ? 'ASC' : 'DESC';
+
+            this.loadParams._pageSize = +event.rows;
+            this.loadParams._pageNum = (+event.first / +event.rows) + 1;
+        }
+
+        this.loadItems();
     }
 
     private export() {
