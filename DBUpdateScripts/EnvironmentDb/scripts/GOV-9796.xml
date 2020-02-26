@@ -1,0 +1,1154 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="GOV-9796">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+ALTER procedure [graph].[GetHop]
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@hopType int, -- 1 = Self/Initial, 2 = Lineage, 3 = Impact
+	@hopSalt varchar(25),
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@resourceId int,
+	@isAdmin bit
+as
+begin
+	set nocount on;
+
+	drop table if exists #assetIds
+	create table #assetIds ([Uid] uniqueidentifier, ID bigint, Class int, [Key] varchar(50))
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	drop table if exists #links;
+	create table #links (
+		[Uid] uniqueidentifier,
+		Direction char(1),
+		ProvidedKey varchar(50), 
+		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, [Path] nvarchar(2500), [Segment] xml, 
+		PredicateId int, PredicateUid uniqueidentifier, [Predicate] nvarchar(250), PredicateType int);
+
+	drop table if exists #nodes
+	create table #nodes (
+		[Level] int,
+		AssetUid uniqueidentifier, 
+		AssetID bigint, [Key] varchar(50), 
+		ParentID bigint null, ParentKey varchar(50), 
+		Back varchar(25), Fore varchar(25), Icon varchar(50), 
+		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
+		DisplayValue nvarchar(500), 
+		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		IsLeaf bit, 
+		IsSubjectInTransformation bit null,
+		HasAssetReadAccess bit null);
+	create index ix_Temp_Nodes_AssetID on #nodes ([AssetID] asc);
+	create index ix_Temp_Nodes_AssetID_IsLeaf on #nodes ([AssetID] asc, IsLeaf asc);
+	create index ix_Temp_Nodes_AssetTypeID_IsLeaf on #nodes ([AssetTypeID] asc, IsLeaf asc);
+
+	insert into #assetIds
+		select	distinct 
+				A.Uid,
+				A.ID, 
+				T.[Class],
+				O.[Key]
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID
+
+	if @hopType = 1			-- SELF
+	begin
+		insert into #links (Direction, [Key], ID, AssetUid, [Path], [Segment])
+			select	@direction,
+					A.[Key],
+					
+					N.ID as ToID,
+					N.Uid as ToUid, 
+					N.[Path] as ToPath,
+					N.Segments as ToSegment
+					
+			from	graph.AssetNode N,
+					#assetIds A
+			where	N.ID = A.ID;
+	end
+	else if @hopType = 2	-- LINEAGE
+	begin
+		-- Backward-facing hop
+		if @direction = 'B'
+			begin
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+					select	E.[Uid],
+							@direction,
+							A.[Key],
+						
+							utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+							S.ID as ToID,
+							S.Uid as ToUid, 
+							S.[Path] as ToPath,
+							S.Segments as ToSegment,
+					
+							E.PredicateID,
+							E.PredicateUid,
+							E.PredicateType,
+							P.Name
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							[Predicate] P,
+							#assetIds A
+					where	MATCH(S-(E)->T)
+							and E.PredicateType in (12,13)
+							and P.[Uid] = E.PredicateUid
+							and T.ID = A.ID;
+			end
+		else if @direction = 'F' -- Forward-facing hop
+			begin
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+					select	E.[Uid],
+							@direction,
+							A.[Key],
+					
+							utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+							T.ID as ToID,
+							T.Uid as ToUid, 
+							T.[Path] as ToPath,
+							T.Segments as ToSegment,
+					
+							E.PredicateID,
+							E.PredicateUid,
+							E.PredicateType,
+							P.Name
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							[Predicate] P,
+							#assetIds A
+					where	MATCH(S-(E)->T)
+							and E.PredicateType in (12,13)
+							and P.[Uid] = E.PredicateUid
+							and S.ID = A.ID;
+			end;
+	end
+	else if @hopType = 3	-- IMPACT
+	begin
+		if @direction = 'B'
+		begin
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+						S.ID as ToID,
+						S.Uid as ToUid, 
+						S.[Path] as ToPath,
+						S.Segments as ToSegment,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Inverse
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and T.ID = A.ID;		
+		end
+		else 
+		begin 
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+						T.ID as ToID,
+						T.Uid as ToUid, 
+						T.[Path] as ToPath,
+						T.Segments as ToSegment,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Name
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and S.ID = A.ID;		
+		end
+	end;
+
+	with cte as (
+		select	Segment.query('
+				<path> {
+					let $segments := (/path/segment)
+					for $x in $segments
+					return 
+					 <segment>
+						<position>{data($x/@position)}</position>
+						<level>{data($x/@level)}</level>
+						<assetTypeId>{data($x/@assetTypeId)}</assetTypeId>
+						<assetId>{data($x/@assetId)}</assetId>
+						<parentLevel>{data(/path/segment[. << $x][last()]/@level)}</parentLevel>
+						<parentPosition>{data(/path/segment[. << $x][last()]/@position)}</parentPosition>
+						<parentAssetId>{data(/path/segment[. << $x][last()]/@assetId)}</parentAssetId>
+						<value>{data($x)}</value>
+						<leaf>{$x is $segments[last()]}</leaf>
+					 </segment>
+				}
+				</path>
+				') as Segment,
+				[Key], 
+				AssetUid
+		from	#links
+	)
+
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+		select	distinct
+				doc.c.value('(level/text())[1]', 'int') as [Level]
+				,A.Uid as AssetUid
+				,doc.c.value('(assetId/text())[1]', 'bigint') as AssetID
+				,case 
+					when T.[Key] is not null and A.Uid = T.AssetUid and doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then T.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) + '|' + cast( doc.c.value('(level/text())[1]', 'int') * doc.c.value('(position/text())[1]', 'int') as varchar ) )
+				 end as [Key]
+				,doc.c.value('(parentAssetId/text())[1]', 'bigint') as ParentID
+				,utility.GetHash(
+					@hopSalt + '|' + 
+					doc.c.value('(parentAssetId/text())[1]', 'varchar(50)') + '|' + 
+					cast( doc.c.value('(parentLevel/text())[1]', 'int') * doc.c.value('(parentPosition/text())[1]', 'int') as varchar ) 
+				) as [ParentKey]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,doc.c.value('(assetTypeId/text())[1]', 'int') as AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,doc.c.value('(value/text())[1]', 'nvarchar(250)') as DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,case when doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then cast(1 as bit) else cast(0 as bit) end as IsLeaf
+				,case 
+					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
+					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
+				else @isAdmin
+				end as HasReadAccess
+		from	cte T
+				cross apply T.Segment.nodes('/path/segment') doc(c)
+				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint');
+
+	if @hopType = 1			-- SELF
+	begin
+		with d as (
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#nodes p,
+					#assetIds A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+					and A.ID = p.AssetID
+			union all
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					d p
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+		)
+
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+			select	distinct
+					d.[Level]
+					,d.AssetUid
+					,d.AssetID
+					,d.[Key]
+					,d.ParentID
+					,d.[ParentKey]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,coalesce(V.DisplayValue, '{Unknown}') as DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,cast(0 as bit) as IsLeaf
+					,case 
+						when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
+						when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
+					else @isAdmin
+					end as HasReadAccess
+			from	d
+					inner join AssetWithType A on A.ID = d.AssetID
+					left join AssetDisplayValue V on V.AssetID = d.AssetID;
+
+		declare @maxLevel int = 1
+		select @maxLevel = max([Level]) from #nodes
+		update	#nodes set isLeaf = case [level] when @maxLevel then 1 else 0 end;
+	end
+
+	-- Get type-based parent for single-level asset hierarchies above.
+	if @hopType = 2		-- LINEAGE
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+			select	1 as [Level],
+					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+					0 as AssetID,
+					utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+					null as ParentID,
+					null as ParentKey,
+					n.Back,
+					n.Fore,
+					n.Icon,
+					n.AssetTypeID,
+					n.AssetTypeUid,
+					n.Class,
+					t.Name as DisplayValue,
+					n.Reveal,
+					0 as ActionCount,
+					n.RelationCounts,
+					t.UseAsTransformation,
+					0 as HasAssetReadAccess -- 0 as this is AssetType
+			from	#nodes n
+					inner join #links l on l.[Key] = n.[Key] and n.[ParentKey] is null
+					inner join AssetType t on t.ID = n.AssetTypeID
+					left join #nodes c on c.ParentID = n.AssetID
+			where	c.AssetID is null;
+
+		update	t
+		set		t.ParentID = t.AssetTypeID,
+				t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+				t.[Level] = 2
+		from	#nodes t
+				inner join #links l on l.[Key] = t.[Key] and t.[ParentKey] is null
+				left join #nodes c on c.ParentID = t.AssetID
+		where	c.AssetID is null;
+	end
+	else
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+			select	1 as [Level],
+					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+					0 as AssetID,
+					utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+					null as ParentID,
+					null as ParentKey,
+					n.Back,
+					n.Fore,
+					n.Icon,
+					n.AssetTypeID,
+					n.AssetTypeUid,
+					n.Class,
+					t.Name as DisplayValue,
+					n.Reveal,
+					0 as ActionCount,
+					n.RelationCounts,
+					t.UseAsTransformation,
+					0 as HasAssetReadAccess -- 0 as this is AssetType
+			from	#nodes n
+					inner join AssetType t on t.ID = n.AssetTypeID and n.[ParentKey] is null
+					left join #nodes c on c.ParentID = n.AssetID
+			where	c.AssetID is null;
+
+		update	t
+		set		t.ParentID = t.AssetTypeID,
+				t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+				t.[Level] = 2
+		from	#nodes t
+				inner join #nodes l on l.assetTypeId = t.assetTypeId and t.[ParentKey] is null and t.assetID > 0
+				left join #nodes c on c.ParentID = t.AssetID
+		where	c.AssetID is null;
+	end
+
+	-- Determine UseAsTransformation
+	update	T
+	set		T.UseAsTransformation = S.UseAsTransformation,
+			T.IsSubjectInTransformation = CASE 
+											WHEN ATO.Cnt = 0 THEN 0 
+											ELSE 1
+										END
+	from	#nodes T 
+			inner join AssetType S on S.ID = T.AssetTypeID
+			cross apply (
+						select	count(*) 
+						from	IntersectType IT
+								left join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID and ATO.UseAsTransformation = 1
+						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
+						) ATO(Cnt);
+
+	
+	if @hopType <> 3 -- No REVEALS on Impact.
+	begin
+		-- Calculate reveal.
+		if @direction = 'B'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and T.ID = R.AssetID
+								) S;
+		end
+
+		if @direction = 'F'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and S.ID = R.AssetID
+								) S;
+		end
+	end
+
+	-- Get action counts
+	update	R
+	set		R.ActionCount =	(
+								select	count(1) as ActionCount
+								from	Issue I
+										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+										left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
+								where	I.CompletedOn is null and W.CompletedOn is null
+										and A.ID = R.AssetID
+								group by A.Uid
+								)
+	from	#nodes R;
+
+	-- Get impact badges
+	update	R
+	set		R.RelationCounts =	coalesce(
+									(
+									select	[Predicate], ID as PredicateID, Uid as PredicateUid, Direction, count(1) as [Count]
+									from	(
+											select	P.Name as [Predicate], P.ID, P.Uid, 1 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and S.ID = R.AssetID
+													and P.ID = E.PredicateID
+													and E.PredicateType in (6,7,9,14)
+											union all
+											select	P.Inverse as [Predicate], P.ID, P.Uid, 2 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and T.ID = R.AssetID
+													and P.ID = E.PredicateID
+													and E.PredicateType in (6,7,9,14)
+											) O
+									group by [Predicate], ID, Uid, Direction
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+	--where	R.IsLeaf = 1;
+    
+	-- Get owner badges
+	update	R
+	set		R.OwnerCounts =	coalesce(
+									(
+									select	ResponsibilityType, ResponsibilityTypeID, count(1) as [Count]
+									from	(
+											select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID
+											from	ResponsibilityDetail
+											where	(
+														AssetID = R.AssetID 
+														OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+													) 
+													and IsVisible = 1
+											) O
+									group by ResponsibilityType, ResponsibilityTypeID
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+	--where	R.IsLeaf = 1;
+
+	update	#nodes
+	set		OwnerCounts =	'[]',
+			IsLeaf = 0
+	where	--IsLeaf = 0 or 
+			IsLeaf is null;
+
+
+	-- Return to caller
+	select		distinct
+				assetUid,
+				assetId,
+				[key],
+				parentId,
+				parentKey,
+				back,
+				fore,
+				icon,
+				assetTypeId,
+				assetTypeUid,
+				class,
+				displayValue,
+				reveal,
+				actionCount,
+				relationCounts,
+				ownerCounts,
+				useAsTransformation,
+				isSubjectInTransformation,
+				isLeaf,
+				hasAssetReadAccess,
+				[level]
+	from		#nodes 
+	order by	[Level];
+
+	if @hopType = 3 --IMPACT (special case)
+	begin
+		select	[uid] 
+				,ProvidedKey as subjectKey
+				,[Key] as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+	else
+	begin 
+		select	[uid] 
+				,case Direction when 'F' then ProvidedKey else [Key] end as subjectKey
+				,case Direction when 'F' then [Key] else ProvidedKey end as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+alter procedure [graph].[GetHop]
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@hopType int, -- 1 = Self/Initial, 2 = Lineage, 3 = Impact
+	@hopSalt varchar(25),
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@resourceId int,
+	@isAdmin bit
+as
+begin
+	set nocount on;
+
+	drop table if exists #assetIds
+	create table #assetIds ([Uid] uniqueidentifier, ID bigint, Class int, [Key] varchar(50))
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	drop table if exists #links;
+	create table #links (
+		[Uid] uniqueidentifier,
+		Direction char(1),
+		ProvidedKey varchar(50), 
+		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, [Path] nvarchar(2500), [Segment] xml, 
+		PredicateId int, PredicateUid uniqueidentifier, [Predicate] nvarchar(250), PredicateType int);
+
+	drop table if exists #nodes
+	create table #nodes (
+		[Level] int,
+		AssetUid uniqueidentifier, 
+		AssetID bigint, [Key] varchar(50), 
+		ParentID bigint null, ParentKey varchar(50), 
+		Back varchar(25), Fore varchar(25), Icon varchar(50), 
+		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
+		DisplayValue nvarchar(500), 
+		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		IsLeaf bit, 
+		IsSubjectInTransformation bit null,
+		HasAssetReadAccess bit null);
+	create index ix_Temp_Nodes_AssetID on #nodes ([AssetID] asc);
+	create index ix_Temp_Nodes_AssetID_IsLeaf on #nodes ([AssetID] asc, IsLeaf asc);
+	create index ix_Temp_Nodes_AssetTypeID_IsLeaf on #nodes ([AssetTypeID] asc, IsLeaf asc);
+
+	insert into #assetIds
+		select	distinct 
+				A.Uid,
+				A.ID, 
+				T.[Class],
+				O.[Key]
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID
+
+	if @hopType = 1			-- SELF
+	begin
+		insert into #links (Direction, [Key], ID, AssetUid, [Path], [Segment])
+			select	@direction,
+					A.[Key],
+					
+					N.ID as ToID,
+					N.Uid as ToUid, 
+					N.[Path] as ToPath,
+					N.Segments as ToSegment
+					
+			from	graph.AssetNode N,
+					#assetIds A
+			where	N.ID = A.ID;
+	end
+	else if @hopType = 2	-- LINEAGE
+	begin
+		-- Backward-facing hop
+		if @direction = 'B'
+			begin
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+					select	E.[Uid],
+							@direction,
+							A.[Key],
+						
+							utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+							S.ID as ToID,
+							S.Uid as ToUid, 
+							S.[Path] as ToPath,
+							S.Segments as ToSegment,
+					
+							E.PredicateID,
+							E.PredicateUid,
+							E.PredicateType,
+							P.Name
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							[Predicate] P,
+							#assetIds A
+					where	MATCH(S-(E)->T)
+							and E.PredicateType in (12,13)
+							and P.[Uid] = E.PredicateUid
+							and T.ID = A.ID;
+			end
+		else if @direction = 'F' -- Forward-facing hop
+			begin
+				insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+					select	E.[Uid],
+							@direction,
+							A.[Key],
+					
+							utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+							T.ID as ToID,
+							T.Uid as ToUid, 
+							T.[Path] as ToPath,
+							T.Segments as ToSegment,
+					
+							E.PredicateID,
+							E.PredicateUid,
+							E.PredicateType,
+							P.Inverse
+					from	graph.AssetNode S,
+							graph.AssetEdge E,
+							graph.AssetNode T,
+							[Predicate] P,
+							#assetIds A
+					where	MATCH(S-(E)->T)
+							and E.PredicateType in (12,13)
+							and P.[Uid] = E.PredicateUid
+							and S.ID = A.ID;
+			end;
+	end
+	else if @hopType = 3	-- IMPACT
+	begin
+		if @direction = 'B'
+		begin
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+						S.ID as ToID,
+						S.Uid as ToUid, 
+						S.[Path] as ToPath,
+						S.Segments as ToSegment,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Inverse
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and T.ID = A.ID;		
+		end
+		else 
+		begin 
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+						T.ID as ToID,
+						T.Uid as ToUid, 
+						T.[Path] as ToPath,
+						T.Segments as ToSegment,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Name
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and S.ID = A.ID;		
+		end
+	end;
+
+	with cte as (
+		select	Segment.query('
+				<path> {
+					let $segments := (/path/segment)
+					for $x in $segments
+					return 
+					 <segment>
+						<position>{data($x/@position)}</position>
+						<level>{data($x/@level)}</level>
+						<assetTypeId>{data($x/@assetTypeId)}</assetTypeId>
+						<assetId>{data($x/@assetId)}</assetId>
+						<parentLevel>{data(/path/segment[. << $x][last()]/@level)}</parentLevel>
+						<parentPosition>{data(/path/segment[. << $x][last()]/@position)}</parentPosition>
+						<parentAssetId>{data(/path/segment[. << $x][last()]/@assetId)}</parentAssetId>
+						<value>{data($x)}</value>
+						<leaf>{$x is $segments[last()]}</leaf>
+					 </segment>
+				}
+				</path>
+				') as Segment,
+				[Key], 
+				AssetUid
+		from	#links
+	)
+
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+		select	distinct
+				doc.c.value('(level/text())[1]', 'int') as [Level]
+				,A.Uid as AssetUid
+				,doc.c.value('(assetId/text())[1]', 'bigint') as AssetID
+				,case 
+					when T.[Key] is not null and A.Uid = T.AssetUid and doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then T.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) + '|' + cast( doc.c.value('(level/text())[1]', 'int') * doc.c.value('(position/text())[1]', 'int') as varchar ) )
+				 end as [Key]
+				,doc.c.value('(parentAssetId/text())[1]', 'bigint') as ParentID
+				,utility.GetHash(
+					@hopSalt + '|' + 
+					doc.c.value('(parentAssetId/text())[1]', 'varchar(50)') + '|' + 
+					cast( doc.c.value('(parentLevel/text())[1]', 'int') * doc.c.value('(parentPosition/text())[1]', 'int') as varchar ) 
+				) as [ParentKey]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,doc.c.value('(assetTypeId/text())[1]', 'int') as AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,doc.c.value('(value/text())[1]', 'nvarchar(250)') as DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,case when doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then cast(1 as bit) else cast(0 as bit) end as IsLeaf
+				,case 
+					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
+					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
+				else @isAdmin
+				end as HasReadAccess
+		from	cte T
+				cross apply T.Segment.nodes('/path/segment') doc(c)
+				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint');
+
+	if @hopType = 1			-- SELF
+	begin
+		with d as (
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#nodes p,
+					#assetIds A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+					and A.ID = p.AssetID
+			union all
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					d p
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+		)
+
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+			select	distinct
+					d.[Level]
+					,d.AssetUid
+					,d.AssetID
+					,d.[Key]
+					,d.ParentID
+					,d.[ParentKey]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,coalesce(V.DisplayValue, '{Unknown}') as DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,cast(0 as bit) as IsLeaf
+					,case 
+						when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
+						when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
+					else @isAdmin
+					end as HasReadAccess
+			from	d
+					inner join AssetWithType A on A.ID = d.AssetID
+					left join AssetDisplayValue V on V.AssetID = d.AssetID;
+
+		declare @maxLevel int = 1
+		select @maxLevel = max([Level]) from #nodes
+		update	#nodes set isLeaf = case [level] when @maxLevel then 1 else 0 end;
+	end
+
+	-- Get type-based parent for single-level asset hierarchies above.
+	if @hopType = 2		-- LINEAGE
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+			select	1 as [Level],
+					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+					0 as AssetID,
+					utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+					null as ParentID,
+					null as ParentKey,
+					n.Back,
+					n.Fore,
+					n.Icon,
+					n.AssetTypeID,
+					n.AssetTypeUid,
+					n.Class,
+					t.Name as DisplayValue,
+					n.Reveal,
+					0 as ActionCount,
+					n.RelationCounts,
+					t.UseAsTransformation,
+					0 as HasAssetReadAccess -- 0 as this is AssetType
+			from	#nodes n
+					inner join #links l on l.[Key] = n.[Key] and n.[ParentKey] is null
+					inner join AssetType t on t.ID = n.AssetTypeID
+					left join #nodes c on c.ParentID = n.AssetID
+			where	c.AssetID is null;
+
+		update	t
+		set		t.ParentID = t.AssetTypeID,
+				t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+				t.[Level] = 2
+		from	#nodes t
+				inner join #links l on l.[Key] = t.[Key] and t.[ParentKey] is null
+				left join #nodes c on c.ParentID = t.AssetID
+		where	c.AssetID is null;
+	end
+	else
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+			select	1 as [Level],
+					CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+					0 as AssetID,
+					utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+					null as ParentID,
+					null as ParentKey,
+					n.Back,
+					n.Fore,
+					n.Icon,
+					n.AssetTypeID,
+					n.AssetTypeUid,
+					n.Class,
+					t.Name as DisplayValue,
+					n.Reveal,
+					0 as ActionCount,
+					n.RelationCounts,
+					t.UseAsTransformation,
+					0 as HasAssetReadAccess -- 0 as this is AssetType
+			from	#nodes n
+					inner join AssetType t on t.ID = n.AssetTypeID and n.[ParentKey] is null
+					left join #nodes c on c.ParentID = n.AssetID
+			where	c.AssetID is null;
+
+		update	t
+		set		t.ParentID = t.AssetTypeID,
+				t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+				t.[Level] = 2
+		from	#nodes t
+				inner join #nodes l on l.assetTypeId = t.assetTypeId and t.[ParentKey] is null and t.assetID > 0
+				left join #nodes c on c.ParentID = t.AssetID
+		where	c.AssetID is null;
+	end
+
+	-- Determine UseAsTransformation
+	update	T
+	set		T.UseAsTransformation = S.UseAsTransformation,
+			T.IsSubjectInTransformation = CASE 
+											WHEN ATO.Cnt = 0 THEN 0 
+											ELSE 1
+										END
+	from	#nodes T 
+			inner join AssetType S on S.ID = T.AssetTypeID
+			cross apply (
+						select	count(*) 
+						from	IntersectType IT
+								left join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID and ATO.UseAsTransformation = 1
+						where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
+						) ATO(Cnt);
+
+	
+	if @hopType <> 3 -- No REVEALS on Impact.
+	begin
+		-- Calculate reveal.
+		if @direction = 'B'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and T.ID = R.AssetID
+								) S;
+		end
+
+		if @direction = 'F'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
+			from	#nodes R
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (12,13)
+										and S.ID = R.AssetID
+								) S;
+		end
+	end
+
+	-- Get action counts
+	update	R
+	set		R.ActionCount =	(
+								select	count(1) as ActionCount
+								from	Issue I
+										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+										left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
+								where	I.CompletedOn is null and W.CompletedOn is null
+										and A.ID = R.AssetID
+								group by A.Uid
+								)
+	from	#nodes R;
+
+	-- Get impact badges
+	update	R
+	set		R.RelationCounts =	coalesce(
+									(
+									select	[Predicate], ID as PredicateID, Uid as PredicateUid, Direction, count(1) as [Count]
+									from	(
+											select	P.Name as [Predicate], P.ID, P.Uid, 1 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and S.ID = R.AssetID
+													and P.ID = E.PredicateID
+													and E.PredicateType in (6,7,9,14)
+											union all
+											select	P.Inverse as [Predicate], P.ID, P.Uid, 2 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and T.ID = R.AssetID
+													and P.ID = E.PredicateID
+													and E.PredicateType in (6,7,9,14)
+											) O
+									group by [Predicate], ID, Uid, Direction
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+	--where	R.IsLeaf = 1;
+    
+	-- Get owner badges
+	update	R
+	set		R.OwnerCounts =	coalesce(
+									(
+									select	ResponsibilityType, ResponsibilityTypeID, count(1) as [Count]
+									from	(
+											select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID
+											from	ResponsibilityDetail
+											where	(
+														AssetID = R.AssetID 
+														OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+													) 
+													and IsVisible = 1
+											) O
+									group by ResponsibilityType, ResponsibilityTypeID
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+	--where	R.IsLeaf = 1;
+
+	update	#nodes
+	set		OwnerCounts =	'[]',
+			IsLeaf = 0
+	where	--IsLeaf = 0 or 
+			IsLeaf is null;
+
+
+	-- Return to caller
+	select		distinct
+				assetUid,
+				assetId,
+				[key],
+				parentId,
+				parentKey,
+				back,
+				fore,
+				icon,
+				assetTypeId,
+				assetTypeUid,
+				class,
+				displayValue,
+				reveal,
+				actionCount,
+				relationCounts,
+				ownerCounts,
+				useAsTransformation,
+				isSubjectInTransformation,
+				isLeaf,
+				hasAssetReadAccess,
+				[level]
+	from		#nodes 
+	order by	[Level];
+
+	if @hopType = 3 --IMPACT (special case)
+	begin
+		select	[uid] 
+				,ProvidedKey as subjectKey
+				,[Key] as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+	else
+	begin 
+		select	[uid] 
+				,case Direction when 'F' then ProvidedKey else [Key] end as subjectKey
+				,case Direction when 'F' then [Key] else ProvidedKey end as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+end
+]]>
+	</rollback>
+  </changeSet>
+
+  </databaseChangeLog>
