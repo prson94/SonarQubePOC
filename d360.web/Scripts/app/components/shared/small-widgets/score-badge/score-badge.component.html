@@ -1,11 +1,11 @@
 ﻿<div class="{{scoreBadgeClass}}" [ngClass]="{'mast' : mast}">
     <div class="score-tooltip">
         <span class="item">
-            <span class="item-name"><strong class="gov-bold">{{getType()}}</strong></span>{{score.Value | scoreDisplay:1}}
+            <span class="item-name"><strong class="gov-bold">{{getType()}}</strong></span> {{score.Value | scoreDisplay:1}}
         </span>
 
         <span class="item">
-            <span class="item-name"><strong class="gov-bold">Score Threshold</strong></span>{{getCurrentScoreThreshold()}}
+            <span class="item-name"><strong class="gov-bold">Score Threshold</strong></span> {{getCurrentScoreThreshold()}}
         </span>
         <div class="score-ranges">
             <div class="score-range">
