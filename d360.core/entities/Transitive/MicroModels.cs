@@ -225,7 +225,7 @@ namespace d360.core.entities
         public SiteNav Folder { get; set; }
         public List<SiteNav> Items { get; set; } = new List<SiteNav>();
     }
-        
+
 
     #region ResponsibilityRule Models
 
@@ -418,6 +418,7 @@ namespace d360.core.entities
         public Guid? AssetUid { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public bool PreloadData { get; set; }
+        public AssetTypeClass Class { get; set; }
     }
 
     public class SecondaryNavigationResponseModel

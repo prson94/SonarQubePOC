@@ -27,23 +27,23 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     theDeleteCallback: Function;
     assetTypeClass: AssetTypeClass;
     AssetTypeClass = AssetTypeClass;
-    
+
     constructor(
-        private activatedRoute: ActivatedRoute,        
+        private activatedRoute: ActivatedRoute,
         private stateService: StateService,
         protected assetTypeService: AssetTypeService,
         protected policiesService: PoliciesService,
         secondaryNavService: SecondaryNavService,
-        private taxonomiesService: TaxonomiesService,        
+        private taxonomiesService: TaxonomiesService,
         private messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
     ) {
 
         super(headerBreadcrumbService, titleService, secondaryNavService);
-                
+
         this.activatedRoute.parent.url.subscribe((urlPath) => {
-            const url = urlPath[urlPath.length - 1].path;            
+            const url = urlPath[urlPath.length - 1].path;
 
             if (!url) {
                 console.error('UNSPECIFIED ASSET TYPE FOR HIERARCHY TYPE ADMIN PAGE');
@@ -56,11 +56,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.areaName = 'Models';
                 this.tabTitle = 'Model Types';
                 this.objectType = 'TaxonomyType';
-                                
+
                 this.getModelTypes();
             }
             else if (url.toUpperCase() == 'POLICIES') {
-                this.assetTypeClass = AssetTypeClass.Policy;                
+                this.assetTypeClass = AssetTypeClass.Policy;
                 this.areaName = 'Policies';
                 this.tabTitle = 'Policy Types';
                 this.objectType = 'PolicyType';
@@ -72,11 +72,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selected.ID, this.objectType);
+        this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
 
     }
 
-    ngOnInit() {        
+    ngOnInit() {
         this.theDeleteCallback = this.deleteType.bind(this);
     }
 
@@ -90,6 +90,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
             .getTaxonomies()
             .subscribe(results => {
                 this.types = results.sort((a, b) => a.Name.localeCompare(b.Name));
+
                 if (this.types.length && this.types.length > 0) {
                     this.selected = this.types[0];
                     this.selectedItemChange();
@@ -139,7 +140,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         else if (this.assetTypeClass == AssetTypeClass.Policy) {
             this.getPolicyTypes();
         }
-        
+
         this.stateService.reloadLeftNavMenu();
     }
 
