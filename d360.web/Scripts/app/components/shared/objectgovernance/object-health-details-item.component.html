@@ -65,7 +65,7 @@
             <div *ngFor="let child of item?.children" class="groups">
                 <div class="group-container">
                     <div class="separator"></div>
-                    <div class="heading-content group">
+                    <div class="heading-content">
                         <div class="expander-gutter small no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
                             <i class="fa fa-caret-down sm-icon expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
                         </div>

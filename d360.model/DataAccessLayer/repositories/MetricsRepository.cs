@@ -403,11 +403,12 @@ namespace d360.model.DataAccessLayer
                             EffectiveDate,
                             Description,
                     		(
-                    			select	F.Name as FieldName,
+                    			select	F.FriendlyName as FieldName,
                     					C.Operator,
-                    					C.ValueJson as [Value]
+                    					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE C.ValueJson END) as [Value]
                     			from	[metrics].[AssetVersionCondition] C
                     					inner join FieldType F on F.ID = C.FieldTypeID
+                                        left join FieldLookupValue FL on FL.FieldTypeID = F.ID and [Value] = C.ValueJson
                     			where	[Uid] = h.[Uid]
                     					and EffectiveDate = h.EffectiveDate
                     			for json path
@@ -577,8 +578,11 @@ namespace d360.model.DataAccessLayer
             var sql = $@"select distinct ma.scoretype from metrics.Allocation  ma
                             inner join assettype att on ma.AssetTypeUid = att.[uid]
                             inner join asset a on att.id = a.AssetTypeID
+							inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = ma.ScoreType
                         where 
-                            a.[uid] = '{assetUid.ToString()}'";
+                            a.[uid] = '{assetUid.ToString()}' 
+							and ma.[state] = 1
+							and EndDate is null";
             return Company.Query<int>(sql).ToList();
         }
 

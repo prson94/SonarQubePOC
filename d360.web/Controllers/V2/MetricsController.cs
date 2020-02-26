@@ -546,17 +546,15 @@ namespace d360.web.Controllers.V2
         /// Get the score history.
         /// </summary>
         /// <param name="assetUid">The public identifier for the asset.</param>
-        /// <param name="scoreType">The type of score to return.</param>
-        /// <returns>The score history for a given an asset type Uid and score type.</returns>
+        /// <returns>The score types for a given an asset Uid.</returns>
         [
             HttpGet,
             Route("getScoreTypes/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the score types given an asset Uid.", typeof(ConfirmResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public IHttpActionResult GetHistory(Guid assetUid)
+        public IHttpActionResult GetScoreTypes(Guid assetUid)
         {
             var model = MetricsRepository.GetScoreTypesForAsset(assetUid);
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));

@@ -12,8 +12,8 @@
                     <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="isloading"></d3s-object-health-details-item>
                 </div>
                 <ng-template #emptyMessage>
-                    <div class="scorecards-container empty">
-                        <div class="scorecard-item">
+                    <div class="scorecards-container">
+                        <div class="scorecard-item empty">
                             This score was calculated and sent in from an external source. No measures have been defined.
                         </div>
                     </div>
