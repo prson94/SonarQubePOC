@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json;
 using SpreadsheetLight;
@@ -19,7 +20,7 @@ namespace d360.model.DataAccessLayer.repositories
         }
         #region Private
 
-        private string GetSplitFilterCriteriaRelationship(int lookupObjectID, string objecttype, int objectid)
+        private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship(int lookupObjectID, string objecttype, int objectid)
         {
 
             var intersecttypeboth = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Object == objecttype && i.ObjectID == objectid && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
@@ -30,18 +31,18 @@ namespace d360.model.DataAccessLayer.repositories
                 {
                     var intersecttypesubject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
                     if (intersecttypesubject == null)
-                        return "BOTH";
+                        return SplitFilterCriteriaRelationship.Both;
                     else
-                        return "SUBJECT";
+                        return SplitFilterCriteriaRelationship.Subject;
                 }
                 else
                 {
-                    return "OBJECT";
+                    return SplitFilterCriteriaRelationship.Object;
                 }
             }
             else
             {
-                return "BOTH";
+                return SplitFilterCriteriaRelationship.Both;
             }
 
         }
@@ -134,7 +135,7 @@ namespace d360.model.DataAccessLayer.repositories
                 if (f.Type == "FieldFromRelationship")
                 {
                     var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID);
-                    if (filtercond == "OBJECT")
+                    if (filtercond == SplitFilterCriteriaRelationship.Object)
                     {
                         fieldJoins.Add($@"outer apply (
                             select
@@ -146,7 +147,7 @@ namespace d360.model.DataAccessLayer.repositories
                             having string_agg(F1.FormattedValue,',') is not null                        
                         ) {tableAlias}");
                     }
-                    else if (filtercond == "SUBJECT")
+                    else if (filtercond == SplitFilterCriteriaRelationship.Subject)
                     {
                         fieldJoins.Add($@"outer apply (
                             select
@@ -177,7 +178,7 @@ namespace d360.model.DataAccessLayer.repositories
                 {
                     var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID);
 
-                    if (filtercond == "OBJECT")
+                    if (filtercond == SplitFilterCriteriaRelationship.Object)
                     {
                         fieldJoins.Add($@"outer apply (
                         select 
@@ -189,7 +190,7 @@ namespace d360.model.DataAccessLayer.repositories
                         having string_agg(AD1.DisplayValue,',') is not null
                        ) {tableAlias}");
                     }
-                    else if (filtercond == "SUBJECT")
+                    else if (filtercond == SplitFilterCriteriaRelationship.Subject)
                     {
                         fieldJoins.Add($@"outer apply (
                         select 
@@ -218,41 +219,14 @@ namespace d360.model.DataAccessLayer.repositories
                 }
                 else if (f.Type == "RefListRelationship")
                 {
-                    var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID);
-                    if (filtercond == "OBJECT")
-                    {
-                        fieldJoins.Add($@"outer apply (
-                        select
-                           STRING_AGG(R1.SubjectName,',') as FormattedValue
-                        from [Intersect] I
-                        left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
-                        where I.IntersectTypeID = {f.LookupObjectID} and R1.SubjectName is not null
-                        having string_agg(R1.SubjectName,',') is not null
-                        ) {tableAlias}");
-                    }
-                    else if (filtercond == "SUBJECT")
-                    {
-                        fieldJoins.Add($@"outer apply (
-                        select
-                           STRING_AGG(R2.ObjectName,',') as FormattedValue
-                        from [Intersect] I
-						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
-                        where I.IntersectTypeID = {f.LookupObjectID} and R2.ObjectName is not null
-                        having string_agg(R2.ObjectName,',') is not null
-                        ) {tableAlias}");
-                    }
-                    else
-                    {
-                        fieldJoins.Add($@"outer apply (
+                    fieldJoins.Add($@"outer apply (
                         select
                            STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),',') as FormattedValue
                         from [Intersect] I
                         left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
 						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(R1.SubjectName,R2.ObjectName) is not null
-                        having string_agg(ISNULL(R1.SubjectName,R2.ObjectName),',') is not null
                     ) {tableAlias}");
-                    }
                 }
                 else if (f.Type == "JsonElement")
                 {
