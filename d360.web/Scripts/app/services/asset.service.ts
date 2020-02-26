@@ -89,9 +89,12 @@ export class AssetService extends BaseObservableService {
     }
 
     public getAssets(assetTypeUid: string, params: any): Observable<any> {
-        var qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
-        if (qString)
-            qString = '?' + qString;
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
         return this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
