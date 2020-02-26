@@ -430,7 +430,8 @@ select	A.TypeName,
 			        from	utility.FieldValue V
 					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
 			        where	AssetID = A.ID
-					        and F.IsDisplayable = 1
+					        and F.IsDisplayable = 1 
+                            and (F.ShowIfEmpty = 1 OR (F.ShowIfEmpty = 0 AND V.FormattedValue <> '' and V.FormattedValue IS NOT NULL))
                     union all
                     select	F.ColumnOrder,
 							F.FriendlyName as Name,
