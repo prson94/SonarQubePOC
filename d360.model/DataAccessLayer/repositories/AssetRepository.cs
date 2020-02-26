@@ -210,6 +210,9 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@uid", uid.ToString());
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
 
+            dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
+            dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
+
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
             List<string> countJoins = new List<string>(fieldJoins);
 
@@ -381,22 +384,21 @@ namespace d360.model.DataAccessLayer
 
             string permissionDetailSQL = @"cross apply (       select    case 
 	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 1 = 1 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else 0 
+	                            else @isAdmin 
                             end as ReadAsset,
                                    case 
 	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else 0 
+	                            else @isAdmin 
                             end as ModifyAsset,
                             case 
 	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else 0 
+	                            else @isAdmin
                             end as DeleteAsset 
 		                    for json path, without_array_wrapper)Permissions(Value)";
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_loadpermissiondetails"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
                 bool.TryParse(value, out includePermissionDetails);
-                dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             }
 
 
