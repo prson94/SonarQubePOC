@@ -1879,7 +1879,7 @@ a.breadcrumb {
 
             .separator {
                 height: 1px;
-                background-color: #DCDFE2;
+                background-color: @igx-grey-lightbadge;
                 width: 100%;
             }
         }
@@ -3775,7 +3775,7 @@ button.tab-scroller {
 
             &.separator > span {
                 height: 1px;
-                background: #dcdfe2;
+                background: @igx-grey-lightbadge;
             }
         }
     }
@@ -3844,7 +3844,7 @@ button.tab-scroller {
             color: white;
 
             &::placeholder {
-                color: #dcdfe2;
+                color: @igx-grey-lightbadge;
             }
         }
     }
@@ -4351,7 +4351,7 @@ button.tab-scroller {
 
                         .d3s-badge {
                             margin-left: auto;
-                            background: #dcdfe2;
+                            background: @igx-grey-lightbadge;
                             color: #202020;
                             position: relative;
                             top: -3px;
@@ -5642,7 +5642,7 @@ a.mid-blue {
 
     .separator {
         height: 1px;
-        background-color: #DCDFE2;
+        background-color: @igx-grey-lightbadge;
         width: 100%;
     }
 
@@ -5854,21 +5854,30 @@ a.mid-blue {
     max-height: initial;
     margin-bottom: 4px;
 
+    &.empty {
+        padding: 24px;
+        background: #dbe2ec;
+        color: #515667;
+        text-align: center;
+        font-weight: bold;
+    }
+
     .scorecard-heading {
         display: flex;
         flex-direction: row;
         flex-grow: 1;
-        line-height: 26px;
+        line-height: 24px;
+        overflow: hidden;
 
         .expander-gutter {
             display: inline-flex;
             flex-direction: row;
             width: 32px;
             padding: 16px;
-            margin-top: 16px;
+            margin-top: 8px;
 
             &.no-padding {
-                margin: 0px -22px 0px 16px;
+                margin: 0px -16px 0px 16px;
                 margin-top: 0px;
                 display: inline-flex;
                 flex-direction: row;
@@ -5882,6 +5891,7 @@ a.mid-blue {
 
                 &.sm-icon {
                     padding-left: 4px;
+                    margin-top: 0px;
                 }
             }
 
@@ -5968,6 +5978,10 @@ a.mid-blue {
                 .heading-title {
                     padding: 0px 4px;
                     font-weight: bold;
+                    height: 20px;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                    overflow: hidden;
                 }
 
                 .heading-value {
@@ -6023,19 +6037,6 @@ a.mid-blue {
                 flex-direction: column;
             }
 
-            .group {
-                display: flex;
-
-                .scorecard-heading {
-                    flex-direction: row;
-
-                    .heading-item {
-                        padding: 8px 8px 8px 0px;
-                        margin-left: 4px;
-                    }
-                }
-            }
-
             &.collapsed {
                 max-height: 0;
                 overflow: hidden;
@@ -6045,7 +6046,7 @@ a.mid-blue {
 
     .separator {
         height: 1px;
-        background-color: #DCDFE2;
+        background-color: @igx-grey-lightbadge;
         margin: 0px 8px;
     }
 
@@ -6055,13 +6056,11 @@ a.mid-blue {
         }
 
         td {
-            width: 30%;
-            padding-left: 4px;
+            width: 33%;
         }
 
         td:first-child {
-            width: 40%;
-            padding-left: 0px;
+            width: 42%;
         }
 
         tr {
