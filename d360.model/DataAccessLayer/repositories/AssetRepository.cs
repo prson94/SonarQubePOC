@@ -382,19 +382,32 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
-            string permissionDetailSQL = @"cross apply (       select    case 
-	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 1 = 1 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else @isAdmin 
-                            end as ReadAsset,
-                                   case 
-	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else @isAdmin 
-                            end as ModifyAsset,
-                            case 
-	                            when exists (select 1 from UserAssetPermissions(@userId,A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID)) ) then 1 
-	                            else @isAdmin
-                            end as DeleteAsset 
-		                    for json path, without_array_wrapper)Permissions(Value)";
+            string permissionDetailSQL = @"				outer apply (
+				 select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+					where AssetID = A.ID
+				union all 	
+					select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+					where AssetID = 0 and AssetTypeID = A.AssetTypeID
+				   )Permission(mask)";
+
+            string includePermissionFields = @",(SELECT case 
+					   when permission.mask is null then @isAdmin
+					   when permission.mask is not null and permission.mask & 1 = 1 then 1
+					 else 0
+					 end as 'ReadAsset',
+					 Case 
+					   when permission.mask is null then @isAdmin
+					   when permission.mask is not null and permission.mask & 2 = 2 then 1
+					 else 0
+					 end as 'ModifyAsset', 
+					 case 
+					   when permission.mask is null then @isAdmin
+					   when permission.mask is not null and permission.mask & 4 = 4 then 1
+					 else 0
+					 end as 'DeleteAsset'
+					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+					 ) as Permissions";
+
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_loadpermissiondetails"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
@@ -453,6 +466,8 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", countJoins)}
                 {whereSql}";
 
+
+
             var sql = $@"
                 select
                     A.ID as AssetId,
@@ -468,7 +483,7 @@ namespace d360.model.DataAccessLayer
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
-                    {(includePermissionDetails ? ",JSON_QUERY(Permissions.Value) as Permissions" : "")}
+                    {(includePermissionDetails ? includePermissionFields : "")}
                 from Asset A
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
