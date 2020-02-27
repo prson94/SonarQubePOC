@@ -82,6 +82,8 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     }
 
     getAsPrecentage(val: number) {
+        if (val == 0)
+            return '0%';
         if (!val)
             return;
         if (val == 1)
