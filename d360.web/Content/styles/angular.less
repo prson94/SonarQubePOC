@@ -26,8 +26,8 @@
     url('/fonts/sanspro/source-sans-pro-v13-latin-700.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
 
-.gov-bold{
-    font-family:'Source Sans Pro Bold';
+.gov-bold {
+    font-family: 'Source Sans Pro Bold';
 }
 
 body {
@@ -4539,7 +4539,7 @@ d3s-status-badge + .d3s-score-container {
         margin-bottom: 15px
     }
 
-    .d3s-score-badge {
+    .d3s-score-badge, .d3s-score-badge-inline {
         padding-left: 12px;
         cursor: pointer;
 
@@ -4593,6 +4593,12 @@ d3s-status-badge + .d3s-score-container {
                     display: inline-block;
                 }
             }
+        }
+    }
+
+    .d3s-score-badge-inline {
+        .score-tooltip {
+            left: -12px;
         }
     }
 }
@@ -5758,6 +5764,7 @@ a.mid-blue {
         max-width: 378px;
     }
 }
+
 .score-tile-detail {
     background: transparent;
     border: none;
