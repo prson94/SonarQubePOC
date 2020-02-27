@@ -34,13 +34,15 @@ begin
 
 	declare @min_date date,
 			@max_date date,
-			@current_date date
+			@current_date date,
+			@run_date datetime
 	select	@min_date = min(EffectiveDate),
 			@max_date = max(EffectiveDate)
 	from	metrics.StagingScoreItem
 	where	Archived = 0
 
 	set		@current_date = @min_date
+	set 	@run_date = getutcdate();
 
 	drop table if exists #assets;
 	create table #assets (AssetTypeUid uniqueidentifier not null, [Type] varchar(50), TypeID int, AssetUid uniqueidentifier not null, [Object] varchar(50), ObjectID int, ScoreType int);
@@ -312,10 +314,10 @@ begin
 		when		matched then
 			update	set
 					T.Value = S.Value,
-					T.RunDate = getutcdate()
+					T.RunDate = @run_date
 		when		not matched by target then
 			insert	(AssetUid, EffectiveDate, Value, ScoreType, RunDate)
-			values	(S.AssetUid, @current_date, S.Value, S.ScoreType, getutcdate());
+			values	(S.AssetUid, @current_date, S.Value, S.ScoreType, @run_date);
 
 		--set end date for previous score items
 		update	M
@@ -351,10 +353,10 @@ begin
 					T.AdjustedWeight = S.AdjustedWeight,
 					T.Value = S.Value,
 					T.UpdatedOn = getutcdate(),
-					T.RunDate = getutcdate()
+					T.RunDate = @run_date
 		when		not matched by target then
 			insert	(AssetUid, MetricAssetUid, EffectiveDate, UpdatedOn, Value, AdjustedWeight, RunDate)
-			values	(S.AssetUid, S.MetricAssetUid, @current_date, getutcdate(), S.Value, S.AdjustedWeight, getutcdate());
+			values	(S.AssetUid, S.MetricAssetUid, @current_date, getutcdate(), S.Value, S.AdjustedWeight, @run_date);
 	
 		--set end date for previous score items
 		update	M
