@@ -70,16 +70,16 @@
                             <div class="filter-header">Display</div>
                             <div>
                                 <div>
-                                    <p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox>
+                                    <p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="All Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox>
+                                </div>
+                                <div>
+                                    <p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterTriggerVisualizationUpdate()"></p-checkbox>
                                 </div>
                                 <div>
                                     <p-checkbox [(ngModel)]="filterModel.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox>
                                 </div>
                                 <div>
                                     <p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox>
-                                </div>
-                                <div>
-                                    <p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Impacts/Owners" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterTriggerVisualizationUpdate()"></p-checkbox>
                                 </div>
                             </div>
                         </div>
@@ -209,28 +209,18 @@
                                             <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" displayAsField="true" displayAsFieldClass="asset-browser-window-tabs-content-field-name">
                                             </d3s-score-badge>
                                         </span>
-
-                                        <!--<div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Scores">
-                                            <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
-                                            <span class="asset-browser-score"
-                                                  [ngClass]="{
-                                                    'fail':scoreBetween(field.Value,0,49),
-                                                    'ok':scoreBetween(field.Value,50,89),
-                                                    'good':scoreBetween(field.Value,90,1000)
-                                                }">{{field.Value}}%</span>
-                                        </div>-->
                                     </div>
 
                                     <div class="asset-browser-window-tabs-content-field" *ngFor="let field of selectedDiagramAsset?.Fields">
 
                                         <ng-container [ngSwitch]="field.Type">
                                             <ng-container *ngSwitchCase="'Date'">
-                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
-                                                <span *ngIf="field.Value !== ''">{{(field.Value | date:'shortDate')}}</span>
+                                                <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
+                                                <span>{{(field.Value | date:'shortDate')}}</span>
                                             </ng-container>
                                             <ng-container *ngSwitchCase="'DateTime'">
-                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
-                                                <span *ngIf="field.Value !== ''">{{(field.Value | date:'medium')}}</span>
+                                                <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
+                                                <span>{{(field.Value | date:'medium')}}</span>
                                             </ng-container>
                                             <ng-container *ngSwitchCase="'Boolean'">
                                                 <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
@@ -247,12 +237,12 @@
                                                 </ng-template>
                                             </ng-container>
                                             <ng-container *ngSwitchCase="'Html'">
-                                                <div *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
-                                                <div *ngIf="field.Value !== ''" [innerHtml]="field.Value | safeHtml"></div>
+                                                <div class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</div>
+                                                <div [innerHtml]="field.Value | safeHtml"></div>
                                             </ng-container>
                                             <ng-container *ngSwitchCase="'Link'">
-                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
-                                                <span class="asset-browser-window-tabs-content-field-content FieldDisplayContent" *ngIf="field.Value !== ''" [innerHtml]="field.Value"></span>
+                                                <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
+                                                <span class="asset-browser-window-tabs-content-field-content FieldDisplayContent" [innerHtml]="field.Value"></span>
                                             </ng-container>
                                             <ng-container *ngSwitchCase="'Tag'">
                                                 <div class="asset-browser-window-tabs-content-field-name">{{field.Name}}:</div>
@@ -261,8 +251,8 @@
                                                 </div>
                                             </ng-container>
                                             <ng-container *ngSwitchDefault>
-                                                <span *ngIf="field.Value !== ''" class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
-                                                <span *ngIf="field.Value != null" [innerHtml]="field.Value"></span>
+                                                <span class="asset-browser-window-tabs-content-field-name">{{ field.Name }}:</span>
+                                                <span [innerHtml]="field.Value"></span>
                                             </ng-container>
                                         </ng-container>
                                     </div>
