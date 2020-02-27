@@ -39,7 +39,7 @@ declare var CompanySettings;
                     <span class="category">
                         {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
                     </span>
-                    <span class="asset-path" *ngIf="searchDetails && searchDetails?.Path">
+                    <span class="asset-path" *ngIf="searchDetails && searchDetails?.AssetDetail?.Path">
                         {{formattedPath}}
                     </span>
                     <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
