@@ -9,17 +9,17 @@
     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
            (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
            class="grid-simple-filter">
-    <p-table #dt [value]="items" selectionMode="single" 
+    <p-table #dt [value]="items" selectionMode="single"
              [metaKeySelection]="true"
-             [globalFilterFields]="globalFilterFields" 
-             [sortField]="sortField" 
+             [globalFilterFields]="globalFilterFields"
+             [sortField]="sortField"
              [pageLinks]="3"
              [paginator]="true"
              [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
              [totalRecords]="totalRecords"
              [lazy]="true"
              (onLazyLoad)="loadAssets($event)"
-             [(selection)]="selected" >
+             [(selection)]="selected">
         <ng-template pTemplate="header">
             <tr>
                 <th *ngFor="let column of columns"
@@ -78,3 +78,23 @@
         </ng-template>
     </p-table>
 </span>
+<d3s-dynamic-editor
+                    *ngIf="showEditor"
+                    [objectID]="selected?.AssetUid"
+                    [objectType]="'ReferenceItem'"
+                    [objectTypeUid]="assetTypeUid"
+                    [title]="'New Reference Item'"
+                    [useTypeUidForDefinition]="!selected"
+                    [selection]="selected"
+                    (saveClick)="saveReferenceItem($event)"
+                    (closeClick)="showEditor=false"
+                    [isV2API]="true">
+</d3s-dynamic-editor>
+
+
+<d3s-asset-delete-editor *ngIf="showDelete && assetTypeUid"
+                         [uid]="selected?.AssetUid"
+                         [assetTypeUid]="assetTypeUid"
+                         (onCancel)="showDelete = false"
+                         (onDeleted)="onDeleted()">
+</d3s-asset-delete-editor>

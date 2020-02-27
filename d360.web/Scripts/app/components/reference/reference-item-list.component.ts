@@ -99,4 +99,14 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         console.log("exporting");
     }
 
+    public onDeleted() {
+        this.items = this.items.filter(x => x.AssetUid != this.selected.AssetUid);
+        this.selected = null;
+        this.showDelete = false;
+    }
+
+    public saveReferenceItem(event) {
+        this.showEditor = false;
+    }
+
 }

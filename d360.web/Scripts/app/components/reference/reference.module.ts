@@ -29,6 +29,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { ReferenceItemGridComponent } from './reference-item-list.component';
 import { DirectivesModule } from '../../directives/directives.module';
+import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
 
 @NgModule({
     imports: [
@@ -59,6 +60,7 @@ import { DirectivesModule } from '../../directives/directives.module';
         SharedGridPagingInfoModule,        
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
+        SharedAssetEditorsModule,
         TilesModule,
     ],
     declarations: [                
