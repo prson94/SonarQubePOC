@@ -383,7 +383,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Post a list of externally calculated score results
+        /// Post externally calculated scores and measure results.
         /// </summary>
         /// <param name="model">The externally calculated score results to load.</param>
         /// <param name="scoreType">The score type of the score results. Valid values for scoreType are 1) DataQuality and 2) Governance. Either the numerical value or string value can be supplied</param>
@@ -422,7 +422,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Loads measure results to build a score for a specified asset.
+        /// Post measure results to calculate a score internally.
         /// </summary>
         /// <param name="model">The score results to load.</param>
         /// <param name="scoreType">The score type of the score results. Valid values for scoreType are 1) DataQuality and 2) Governance. Either the numerical value or string value can be supplied</param>
