@@ -1135,10 +1135,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#endregion
 
-        this.recheckAlertCount();
-
         this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
+
+        this.recheckAlertCount();
     }
 
     private recheckAlertCount() {
@@ -1152,6 +1152,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
+        if (this.isInfoWindowVisible) {
+            this.showAlertsByDisplayedAssets();
+        }
     }
 
     /**
@@ -1724,9 +1727,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Context menu actions
 
     private showAlertsByDisplayedAssets() {
-        this.isAlertPanelLoading = true;
-
         if (this.assetsWithAlerts.length > 0) {
+            this.isAlertPanelLoading = true;
+
             let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
             this.assetsWithAlerts.forEach(a => {

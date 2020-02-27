@@ -13,7 +13,9 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Newtonsoft.Json;
 using static d360.core.entities.Resource;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -42,6 +44,10 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="actionTypeUid">The unique identifier of an action type</param>
         /// <param name="assetUid">The unique identifier of an asset</param>
+        /// <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
+        /// <param name="_pageNum">The page number to return results for.</param>
+        /// <param name="_order">The field to use to order the results.</param>
+        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
         [
            HttpGet,
            MapToApiVersion("2.0"),
@@ -50,95 +56,107 @@ namespace d360.web.Controllers.V2
            SwaggerResponse(HttpStatusCode.OK, "Gets all actions.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.NotFound, "Uid {uid} not found."),
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-           SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 users per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-           SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
-           SwaggerParameter("_order", "The way in which to order the results.", DataType = "string", ParameterType = "query", Required = false),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
        ]
-        public async Task<IHttpActionResult> GetIssues(string actionTypeUid = null, string assetUid = null)
+        public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string assetUid = null, int _pageSize = 5, int _pageNum = 1, string _order = null, string _direction = "asc")
         {
-            string finalSql = "";
-            string countSql = @"SELECT 
-                                    count(*)
-                                     FROM[dbo].[Issue] I
-                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
-                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
-                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
-                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy";
-            string selectSql = @"SELECT 
-                                    I.Uid,
-                                    A.uid as 'AssetUid',
-                                    AT.uid as 'AssetTypeUid',
-                                    IT.Name as 'ActionTypeName',
-                                    IT.uid as 'ActionTypeUid',
-                                    I.CreatedOn,
-                                    R.uid as CreatedByUid,
-                                    I.UpdatedOn,
-                                    GR.uid as UpdatedByUid";
-            string whereSql = "";
-            string joinsSql = " ";
-            string orderBySQL = " order By CreatedOn ";
+            List<string> selectColumns = new List<string>() { 
+                "I.Uid", "I.CompletedOn",
+                "A.Uid as AssetUid", "A.AssetTypeUid", "A.TypeName as AssetTypeName", 
+                "IT.uid as ActionTypeUid", "IT.Name as ActionTypeName", 
+                "I.CreatedOn", "CR.Uid as CreatedByUid", "I.UpdatedOn", "UR.Uid as UpdatedByUid" 
+            };
             List<string> queries = new List<string>();
-            List<string> fieldColumns = new List<string>();
-            List<string> fieldJoins = new List<string>();
+            List<string> fieldJoins = new List<string>() {
+                "inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID", 
+                "left join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID",
+                "left join[reporting].[Global_Resource] CR on CR.ResourceID = I.CreatedBy",
+                "left join[reporting].[Global_Resource] UR on UR.ResourceID = I.UpdatedBy"
+            };
 
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
-            var pageSize = 5;
-            var pageNum = 1;
-            string order = "CreatedOn";
-            var queryParams = Request.GetQueryNameValuePairs();
-            queryParams.ToList().ForEach(q =>
-            {
-                var key = q.Key.ToLower();
-                if (key.StartsWith("_"))
-                {
-                    switch (key)
-                    {
-                        case "_pagesize":
-                            if (int.TryParse(q.Value, out pageSize))
-                            {
-                                if (pageSize < 1) pageSize = 1;
-                            }
-                            break;
-                        case "_pagenum":
-                            if (int.TryParse(q.Value, out pageNum))
-                            {
-                                if (pageNum < 1) pageNum = 1;
-                            }
-                            break;
-                        case "_order":
-                            if (q.Value != null)
-                            {
-                                order = q.Value;
-                                dbArgs.Add("OrderBy", order);
-                                orderBySQL = @" ORDER BY CASE 
-                                                    WHEN @OrderBy='AssetUid' THEN CAST(A.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='AssetTypeUid' THEN CAST(AT.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='ActionTypeName' THEN IT.Name
-                                                    WHEN @OrderBy='ActionTypeUid' THEN CAST(IT.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='CreatedOn' THEN TRY_CONVERT(VARCHAR, I.CreatedOn, 120)
-                                                    WHEN @OrderBy='CreatedByUid' THEN CAST(R.uid AS VARCHAR(36))
-                                                    WHEN @OrderBy='UpdatedOn' THEN TRY_CONVERT(VARCHAR, I.UpdatedOn, 120)
-                                                    WHEN @OrderBy='UpdatedByUid' THEN CAST(GR.uid AS VARCHAR(36))";
-                            }
-                            break;
-                    }
-                }
-            });
+            bool isOrderByFieldValid = false;
 
-            bool isValid = isPageSizeAndNumValid(pageSize, pageNum);
+            #region Determine paging
 
-            if (isValid == false)
+            if (_pageNum < 1) _pageNum = 1;
+            if (_pageSize < 1) _pageSize = 5;
+            if (!isPageSizeAndNumValid(_pageSize, _pageNum))
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
             }
+            model.pageNum = _pageNum;
+            model.pageSize = _pageSize;
 
-            if (actionTypeUid != null)
+            #endregion
+
+            #region Determine order by
+
+            switch (_direction)
             {
-                Guid atGuid = new Guid();
-                if (Guid.TryParse(actionTypeUid, out atGuid))
+                case "asc":
+                case "desc":
+                    break;
+                default:
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid value for _direction. Allowed values are: asc; desc"));
+            }
+
+            if (string.IsNullOrEmpty(_order))
+            {
+                _order = $"I.CreatedOn";
+                isOrderByFieldValid = true;
+            }
+            else 
+            {
+                _order = _order.Trim();
+                switch (_order) {
+                    case "CompletedOn":
+                        _order = $"I.CompletedOn";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "AssetUid":
+                        _order = $"CAST(A.uid AS VARCHAR(36))";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "AssetTypeUid":
+                        _order = $"CAST(AT.uid AS VARCHAR(36))";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "ActionTypeName":
+                        _order = $"IT.Name";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "ActionTypeUid":
+                        _order = $"CAST(IT.uid AS VARCHAR(36))";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "CreatedOn":
+                        _order = $"I.CreatedOn";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "CreatedByUid":
+                        _order = $"CAST(CR.uid AS VARCHAR(36))";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "UpdatedOn":
+                        _order = $"I.UpdatedOn";
+                        isOrderByFieldValid = true;
+                        break;
+                    case "UpdatedByUid":
+                        _order = $"CAST(UR.uid AS VARCHAR(36))";
+                        isOrderByFieldValid = true;
+                        break;
+                }
+            }
+
+            #endregion
+
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            if (!string.IsNullOrEmpty(actionTypeUid) && !string.IsNullOrWhiteSpace(actionTypeUid))
+            {
+                if (Guid.TryParse(actionTypeUid, out Guid atGuid))
                 {
                     IssueType issueType = this.issueRepository.GetIssueTypeByUID(atGuid);
 
@@ -146,29 +164,27 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Action Type with Uid {actionTypeUid} could not be found."));
                     else
                     {
-                        var fieldTypes = Company.FieldTypes.Where(f => f.Object == "IssueType" && f.ObjectID == issueType.ID).ToList();
-                        getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+                        queries.Add("IT.[Uid] = @actionTypeUid");
+                        dbArgs.Add("actionTypeUid", actionTypeUid);
 
-                        foreach (var col in fieldColumns)
-                        {
-                            selectSql += "," + col;
-                        }
-
-                        foreach (var join in fieldTypes)
-                        {
-                            string fieldJoin = "left join Field F" + join.ID + " on F" + join.ID + ".FieldTypeID =" + join.ID + " and F" + join.ID + ".[ObjectType] = 'Issue' and F" + join.ID + ".[ObjectID] = I.ID ";
-                            joinsSql += fieldJoin;
-                        }
+                        var fieldTypes = Company.Filter<FieldType>(f => f.Object == "IssueType" && f.ObjectID == issueType.ID).ToList();
+                        getFieldSql(fieldTypes, dbArgs, fieldJoins, selectColumns, "'Issue'", "I.ID");
 
                         foreach (FieldType customField in fieldTypes)
                         {
                             if (queryParams.Any(x => x.Key == customField.Name))
                             {
-                                var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                                var dynamicFieldFilterValue = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+
                                 queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
-                                dbArgs.Add($"@field{customField.ID}", paramval);
-                                if(customField.Name.ToLower() == order.ToLower())
-                                    orderBySQL += @" Else @field{customField.ID}";
+
+                                dbArgs.Add($"@field{customField.ID}", dynamicFieldFilterValue);
+                            }
+
+                            if (_order.ToLower() == customField.Name.ToLower())
+                            {
+                                _order = $"F{customField.ID}.FormattedValue";
+                                isOrderByFieldValid = true;
                             }
                         }
                     }
@@ -176,74 +192,130 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Invaild GUID {actionTypeUid}."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Action Type Not Found", $"Invalid GUID {actionTypeUid}."));
                 }
             }
 
-            if (assetUid != null)
+            if (!isOrderByFieldValid)
             {
-                Guid aGuid = new Guid();
-                if (Guid.TryParse(assetUid, out aGuid))
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Order By Field Not Found", $"The field you specified for sorting ({_order}) could not be found."));
+            }
+
+            if (!string.IsNullOrEmpty(assetUid) && !string.IsNullOrWhiteSpace(assetUid))
+            {
+                if (Guid.TryParse(assetUid, out Guid aGuid))
                 {
                     Asset asset = this.assetRepository.GetAssetByUID(aGuid);
-
                     if (asset == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {assetUid} could not be found."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Asset Not found", $"Asset with Uid {assetUid} could not be found."));
+
+                    queries.Add("A.[Uid] = @assetUid");
+                    dbArgs.Add("assetUid", assetUid);
                 }
                 else
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Invaild GUID {assetUid}."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Asset Not found", $"Invalid GUID {assetUid}."));
                 }
             }
 
-            if (actionTypeUid != null)
-            {
-                queries.Add("IT.uid = @actionTypeUid");
-                dbArgs.Add("actionTypeUid", actionTypeUid);
-            }
-            if (assetUid != null)
-            {
-                queries.Add("A.uid = @assetUid");
-                dbArgs.Add("assetUid", assetUid);
-            }
+            #region Build SQL statements
 
+            string workflowCheckSql = "exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)";
+            string columns = string.Join(", ", selectColumns);
+            string conditions = string.Empty;
+            string joins = string.Join(" ", fieldJoins);
             if (queries.Count() > 0)
             {
-                whereSql += " where ";
+                conditions += " and " + string.Join(" and ", queries);
+                conditions = conditions.Trim();
             }
+           
+            string resultsSql = $"select {columns} from Issue I {joins} where {workflowCheckSql} {conditions} order by {_order} {_direction} offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
+            string countSql = string.IsNullOrEmpty(conditions) ? 
+                $"select count(*) from Issue I where {workflowCheckSql}" : 
+                $"select count(*) from Issue I {joins} where {workflowCheckSql} {conditions}";
 
-            for (int i = 0; i < queries.Count(); i++)
-            {
-                whereSql += queries[i].ToString();
-                if (i < queries.Count() - 1)
-                {
-                    whereSql += " and ";
-                }
-            }
-            finalSql = selectSql + @" FROM[dbo].[Issue] I
-                                    inner join[dbo].[IssueType] IT on IT.ID = I.IssueTypeID
-                                    left join[dbo].Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-                                    left join[dbo].AssetType AT on AT.Object = I.ObjectType and AT.ObjectID = I.ObjectTypeID
-                                    left join[reporting].[Global_Resource] R on R.ResourceID = I.CreatedBy
-                                    left join[reporting].[Global_Resource] GR on GR.ResourceID = I.UpdatedBy" + joinsSql + whereSql;
-            countSql += whereSql;
-            if (pageSize > 0 || pageNum > 0)
-            {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
-                model.pageNum = pageNum;
-                model.pageSize = pageSize;
+            #endregion
 
-                string offsetSql = $" offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                if (orderBySQL != " order By CreatedOn ")
-                    orderBySQL += " END ";
-                finalSql += orderBySQL + offsetSql;
-            }
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
-            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
+            var results = await Company.QueryAsync<dynamic>(resultsSql, dbArgs);
             model.total = count.FirstOrDefault();
             model.items = results;
+
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model)));
+        }
+
+        /// <summary>
+        /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
+        /// </summary>
+        /// <param name="model">The uid of the asset that we are getting field information for.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            Route("alerts"),
+            ApiExplorerSettings(IgnoreApi = true),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserDiagramAsset)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> RetrieveAlertsForAssets(AssetBrowserAlertRequest model)
+        {
+            try
+            {
+                var sql = @"
+select	I.uid as 'uid', 
+        A.uid as 'asset.uid',
+		coalesce(A.icon, 'fa-book') as 'asset.icon',
+		A.TypeName + ' > ' + A.DisplayValue as 'asset.displayValue',
+		IT.name as 'action.name', 
+		reporting.StripHTML(F.FormattedValue) as 'action.description'
+from	AssetDetail A
+        inner join @uids U on U.Uid = A.Uid
+		inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
+		left join IssueType IT on IT.ID = I.IssueTypeID
+		left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
+		left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
+where	I.CompletedOn is null
+        and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+for json path";
+
+                if (model == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria.");
+                }
+                else if (model.assets.Count == 0)
+                {
+                    AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts)));
+                }
+
+                var reader = await Company.QueryAsync<string>(sql,
+                    new
+                    {
+                        uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
+                            "dbo.UidTable",
+                            new List<string>() { "Uid" }
+                            )
+                    }, timeout: 100);
+                var json = string.Join("", reader);
+
+                var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "BrowserController.GetDiagramAlerts" },
+                    { "model", JsonConvert.SerializeObject(model) }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
 
         /// <summary>
