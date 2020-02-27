@@ -684,7 +684,7 @@ from    Field F
         inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
         new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-            var collectionFieldroperties = new List<FieldJsonProperty>();
+            var collectionFieldProperties = new List<FieldJsonProperty>();
 
             foreach (var f in fields)
             {
@@ -696,7 +696,7 @@ from    Field F
                     {
                         i.FieldID = f.ID;
                     });
-                    collectionFieldroperties.AddRange(assetFieldProperties);
+                    collectionFieldProperties.AddRange(assetFieldProperties);
                 }
 
             }
@@ -712,7 +712,7 @@ from    Field F
             table.Columns.Add("IsArray", typeof(bool));
             table.Columns.Add("Value", typeof(string));
 
-            foreach (var f in collectionFieldroperties)
+            foreach (var f in collectionFieldProperties)
             {
                 var row = table.NewRow();
 
@@ -993,7 +993,6 @@ from	api.ExecutionField T
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
             string errorDelimiter = ". ";
-
             success = true;
             errorMessage = string.Empty;
 
@@ -1117,6 +1116,13 @@ from	api.ExecutionField T
                                 {
                                     success = false;
                                     errorMessages.Add($"{fieldName} must be a valid percentage");
+                                }
+                                break;
+                            case "JSON":
+                                if (fieldValue.Length > 2500)
+                                {
+                                    success = false;
+                                    errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters.");
                                 }
                                 break;
                             default: // Html, Text
