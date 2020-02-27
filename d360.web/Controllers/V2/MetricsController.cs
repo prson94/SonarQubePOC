@@ -394,7 +394,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Loads measure results to build a score for a specified asset.
+        /// Post measure results to calculate a score internally.
         /// </summary>
         /// <remarks>If you do not provide an effective date for a metric result, the current date (UTC) will be used.</remarks>
         /// <param name="model">The list of raw metrics to save for processing.</param>
