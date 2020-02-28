@@ -94,8 +94,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
-        return s;
-        
+        return s;   
     }
 
     GetChildPropertValue(parent, child, property) {

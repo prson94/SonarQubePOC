@@ -8,12 +8,14 @@ import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
 import { ignoreElements } from 'rxjs/operators';
 import { debug } from 'util';
+import { SearchDetail } from '../../../models/search-result.model';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 
 
 @Component({
     selector: 'd3s-object-health-details',    
     templateUrl: `./object-health-details.component.html`,
-    providers: [ScoreService],
+    providers: [ScoreService, ObjectStatisticsService],
 })
 
 export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
@@ -34,9 +36,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private selectedScoreType = ScoreType.Governance;
     private scoreTypes :number[] = [];
     private showEmptyMessage: boolean = false;
+    private searchDetails: SearchDetail;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
 
-    constructor(protected scoreService: ScoreService) {
+    constructor(protected scoreService: ScoreService, protected objectStatisticsService: ObjectStatisticsService) {
         super();
     }
 
@@ -44,7 +47,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.loadPoints();
         this.loadSeriesData();
         this.loadDefinition();
-        this.loadTypes();
+        this.loadTypesAndLatestScore();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -59,16 +62,22 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.loadPoints();
             this.loadSeriesData();
             this.loadDefinition();
-            this.loadTypes();
+            this.loadTypesAndLatestScore();
         }
     }
-    private loadTypes() {
+    private loadTypesAndLatestScore() {
         if (this.uid) {
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
                 this.scoreTypes = x;
                 if (x.length > 0)
                     this.selectedScoreType = x[0];
             });
+            this.objectStatisticsService.getSearchDetails(this.uid).subscribe(
+                result => {
+                    this.searchDetails = result;
+                    this.getCurrentScoreDateText();
+                }
+            );
         }
     }
     private loadSeriesData() {
@@ -200,7 +209,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage =  this.pointBreakdown.filter(x => { x.ScoreType == ScoreType.DataQuality }).length == 0
+            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
@@ -264,6 +273,18 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
 
     }
+
+    getScoreType() {
+        switch (this.selectedScoreType) {
+            case ScoreType.Governance:
+                return "Governance";
+            case ScoreType.DataQuality:
+                return "Data Quality";
+            default:
+                return "";
+        }
+    }
+
     private getLastChangedDate(tempArr: any[], mostRecent: any): any {
         if (tempArr.length > 0) {
             var nextLatest = tempArr.splice(0, 1)[0];
@@ -282,17 +303,37 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         var months = Math.floor(days / 31);
         var years = Math.floor(months / 12);
         let type = this.selectedScoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
+        let latestScore = score;
+        if (this.searchDetails)
+            latestScore = this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] }).length > 0 ?
+                this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] })[0].Value : score;
+
         if (days == 0 || days == 1) {
-            this.calculatedScoreText = "Your " + type +" Score changed to  <strong> " + score + "% </strong> today</strong>";
+            this.calculatedScoreText = "Your " + type + " Score changed to  <strong> " + this.getAsPrecentage(latestScore) + " </strong> today</strong>";
         }
         else if (days > 0 && days <= 90) {
-            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + days + " days</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + days + " days</strong>";
         }
         else if (days > 90 && days <= 780) {
-            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + months + " months</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + months + " months</strong>";
         }
         else if (days > 780) {
-            this.calculatedScoreText = "Your " + type +" Score has been <strong> " + score + "% </strong> for <strong>" + years + " years</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + years + " years</strong>";
         }
+    }
+    getAsPrecentage(val: number) {
+        if (val == 0)
+            return '0%';
+        if (!val)
+            return;
+        if (val == 1)
+            return '100%'
+        let s = val + '0000';
+        s = s.replace('0.', '');
+        if (s.length > 6)
+            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+        else
+            s = (s.substr(0, 2)) + "%";
+        return s;
     }
 }
