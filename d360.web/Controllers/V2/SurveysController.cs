@@ -78,11 +78,11 @@ namespace d360.web.Controllers.V2
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                bool isValid = isPageSizeAndNumValidParma(queryParams);
+                string isValid = isPageSizeAndNumValidParma(queryParams);
 
-                if (isValid == false)
+                if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
@@ -151,12 +151,11 @@ namespace d360.web.Controllers.V2
             {
 
                 var queryParams = Request.GetQueryNameValuePairs();
+                string isValid = isPageSizeAndNumValidParma(queryParams);
 
-                bool isValid = isPageSizeAndNumValidParma(queryParams);
-
-                if (isValid == false)
+                if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
@@ -233,11 +232,11 @@ namespace d360.web.Controllers.V2
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                bool isValid = isPageSizeAndNumValidParma(queryParams);
+                string isValid = isPageSizeAndNumValidParma(queryParams);
 
-                if (isValid == false)
+                if (!string.IsNullOrEmpty(isValid))
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))

@@ -62,11 +62,11 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
-            bool isValid = isPageSizeAndNumValidParma(queryParams);
+            string isValid = isPageSizeAndNumValidParma(queryParams);
 
-            if (isValid == false)
+            if (!string.IsNullOrEmpty(isValid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid PageSize/PageNum value provided. Number is too large"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
             }
 
             var executions = await AssetRepository.GetExecutionItems(queryParams);
