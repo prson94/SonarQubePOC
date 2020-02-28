@@ -1,0 +1,266 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="GOV-9853">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ALTER procedure [graph].[PopulatePathsForAssetType]
+	@assetTypeID int,
+	@assetID bigint = null
+as
+begin
+	set nocount on;
+
+	if @assetTypeID is null
+	begin
+		RAISERROR ('Required parameter @assetTypeID not supplied or is NULL.', 10, 1);
+	end
+
+	declare @class int = 1,
+			@predicateType int = 3,
+			@sql nvarchar(max) = '',
+			@columnSql nvarchar(max) = '',
+			@segmentSql nvarchar(max) = '',
+			@fromSql nvarchar(max) = '',
+			@whereSql nvarchar(max) = '',
+			@matchSql nvarchar(max) = 'a1';
+
+	declare @a table(RowID int identity, AssetTypeID int, [Level] int);
+	declare @f table(RowID int, AssetTypeID int, FieldTypeID int, ColumnOrder int, KeyOrder int identity);
+
+	select @class = Class from AssetType where ID = @assetTypeID;
+
+	if @class = 2 or @class = 6
+	begin
+		declare @hierarchy table (ID bigint, [Level] int, Segments xml, [Path] nvarchar(2500));
+		set @predicateType = 4;
+
+		with p as (
+			select	A.ID,
+					A.Object,
+					A.ObjectID,
+					cast(null as varchar(50)) as ParentObject,
+					cast(null as int) as ParentObjectID,
+					1 as [Level],
+					cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
+					cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					left join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+			where	A.AssetTypeID = @assetTypeID
+					and I.ID is null
+			union all
+			select	A.ID,
+					A.Object,
+					A.ObjectID,
+					p.Object as ParentObject,
+					p.ObjectID as ParentObjectID,
+					p.[Level]+1 as [Level],
+					cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
+					cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+					inner join p on p.Object = I.Subject and p.ObjectID = I.SubjectID
+			where	A.AssetTypeID = @assetTypeID
+					and p.[Level] <= 25
+		)
+		insert into @hierarchy
+			select ID, [Level], Segments, Segment from p
+
+		delete	T
+		from	@hierarchy T
+				left join (
+					select	ID,
+							max([Level]) as [Level]
+					from	@hierarchy
+					group by	ID
+				) S on S.ID = T.ID and S.[Level] = T.[Level]
+		where	S.ID is null;
+
+		update	T 
+		set		T.[Path] = S.[Path], 
+				T.[Segments] = S.[Segments] 
+		from	graph.AssetNode T 
+				inner join @hierarchy S on S.ID = T.ID;
+	end
+	else
+	begin
+
+		declare @h table (ID int, [Level] int)
+		insert into @h
+			select ID, [Level] from dbo.GetAssetTypeAncestry(@assetTypeID) order by [Level];
+
+		with p2 as (
+			select	A.AssetTypeID,
+					A.ID,
+					A.Object,
+					A.ObjectID,
+					cast(null as varchar(50)) as ParentObject,
+					cast(null as int) as ParentObjectID,
+					1 as [Level],
+					cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
+					cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join @h H on H.[Level] = 1 and H.ID = A.AssetTypeID
+					left join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+			where	I.IntersectID is null
+			union all
+			select	A.AssetTypeID,
+					A.ID,
+					A.Object,
+					A.ObjectID,
+					p.Object as ParentObject,
+					p.ObjectID as ParentObjectID,
+					p.[Level]+1 as [Level],
+					cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
+					cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+					inner join p2 as p on p.Object = I.Subject and p.ObjectID = I.SubjectID
+					inner join @h H on H.[Level] = p.[Level]+1 and H.ID = A.AssetTypeID
+		)
+
+		update	T 
+		set		T.[Path] = S.Segment, 
+				T.[Segments] = S.[Segments] 
+		from	graph.AssetNode T 
+				inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID ;
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+	<![CDATA[	
+ALTER procedure [graph].[PopulatePathsForAssetType]
+	@assetTypeID int,
+	@assetID bigint = null
+as
+begin
+	set nocount on;
+
+	if @assetTypeID is null
+	begin
+		RAISERROR ('Required parameter @assetTypeID not supplied or is NULL.', 10, 1);
+	end
+
+	declare @class int = 1,
+			@predicateType int = 3,
+			@sql nvarchar(max) = '',
+			@columnSql nvarchar(max) = '',
+			@segmentSql nvarchar(max) = '',
+			@fromSql nvarchar(max) = '',
+			@whereSql nvarchar(max) = '',
+			@matchSql nvarchar(max) = 'a1';
+
+	declare @a table(RowID int identity, AssetTypeID int, [Level] int);
+	declare @f table(RowID int, AssetTypeID int, FieldTypeID int, ColumnOrder int, KeyOrder int identity);
+
+	select @class = Class from AssetType where ID = @assetTypeID;
+
+	if @class = 2 or @class = 6
+	begin
+		declare @hierarchy table (ID bigint, [Level] int, Segments xml, [Path] nvarchar(2500));
+		set @predicateType = 4;
+
+		with p as (
+			select	A.ID,
+					A.Object,
+					A.ObjectID,
+					cast(null as varchar(50)) as ParentObject,
+					cast(null as int) as ParentObjectID,
+					1 as [Level],
+					cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
+					cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					left join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+			where	A.AssetTypeID = @assetTypeID
+					and I.ID is null
+			union all
+			select	A.ID,
+					A.Object,
+					A.ObjectID,
+					p.Object as ParentObject,
+					p.ObjectID as ParentObjectID,
+					p.[Level]+1 as [Level],
+					cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
+					cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+					inner join p on p.Object = I.Subject and p.ObjectID = I.SubjectID
+			where	A.AssetTypeID = @assetTypeID
+					and p.[Level] <= 25
+		)
+		insert into @hierarchy
+			select ID, [Level], Segments, Segment from p
+
+		delete	T
+		from	@hierarchy T
+				left join (
+					select	ID,
+							max([Level]) as [Level]
+					from	@hierarchy
+					group by	ID
+				) S on S.ID = T.ID and S.[Level] = T.[Level]
+		where	S.ID is null;
+
+		update	T 
+		set		T.[Path] = S.[Path], 
+				T.[Segments] = S.[Segments] 
+		from	graph.AssetNode T 
+				inner join @hierarchy S on S.ID = T.ID;
+	end
+	else
+	begin
+
+		declare @h table (ID int, [Level] int)
+		insert into @h
+			select ID, [Level] from dbo.GetAssetTypeAncestry(@assetTypeID) order by [Level];
+
+		with p2 as (
+			select	A.AssetTypeID,
+					A.ID,
+					A.Object,
+					A.ObjectID,
+					cast(null as varchar(50)) as ParentObject,
+					cast(null as int) as ParentObjectID,
+					1 as [Level],
+					cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
+					cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join @h H on H.[Level] = 1 and H.ID = A.AssetTypeID
+					left join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+			where	I.IntersectID is null
+			union all
+			select	A.AssetTypeID,
+					A.ID,
+					A.Object,
+					A.ObjectID,
+					p.Object as ParentObject,
+					p.ObjectID as ParentObjectID,
+					p.[Level]+1 as [Level],
+					cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
+					cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
+			from	Asset A
+					inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
+					inner join p2 as p on p.Object = I.Subject and p.ObjectID = I.SubjectID
+					inner join @h H on H.[Level] = p.[Level]+1 and H.ID = A.AssetTypeID
+		)
+
+		update	T 
+		set		T.[Path] = S.Segment, 
+				T.[Segments] = S.[Segments] 
+		from	graph.AssetNode T 
+				inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID ;
+	end
+end
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
