@@ -144,6 +144,9 @@
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Invalid maximum depth. Model level specified must be a value between 1 and 10.</value>
   </data>
+  <data name="InvalidPolicyDepth" xml:space="preserve">
+    <value>Invalid maximum depth. Policy level specified must be a value between 1 and 10.</value>
+  </data>
   <data name="InvalidName" xml:space="preserve">
     <value>No valid Name provided.</value>
   </data>
