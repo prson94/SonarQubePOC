@@ -488,6 +488,7 @@ namespace d360.model.DataAccessLayer
                     				from	metrics.ScoreItem I
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
+                                            and EffectiveDate <= @effectiveDate
                     						and EndDate is null
                     			) MI on MI.EffectiveDate = I.EffectiveDate
                     	where	AssetUid = @assetUid
@@ -539,15 +540,8 @@ namespace d360.model.DataAccessLayer
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
 	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
 	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
-                        inner join (
-                    				select	max(EffectiveDate) as EffectiveDate
-                    				from	metrics.ScoreItem I
-                    				where	AssetUid = @assetUid
-                    						and MetricAssetUid = I.MetricAssetUid
-                    						and EndDate is null
-                    			) MI on MI.EffectiveDate = ms.EffectiveDate
                     where 
-                        a.[uid] = @assetUid and AA.ScoreType = {(int)type}
+                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and EndDate is null
                     order by Name";
                     break;
                 case ScoreType.Perceptional:

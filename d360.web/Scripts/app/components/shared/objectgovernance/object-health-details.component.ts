@@ -228,6 +228,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadSeriesData();
+                this.loadPoints();
                 this.isDQAndNoItems();
                 break;
             case ScoreType.DataQuality:
@@ -235,6 +236,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadSeriesData();
+                this.loadPoints();
                 this.isDQAndNoItems();
                 break;
             default:
