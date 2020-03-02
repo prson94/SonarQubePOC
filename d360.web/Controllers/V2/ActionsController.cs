@@ -44,7 +44,7 @@ namespace d360.web.Controllers.V2
         /// </summary>
         /// <param name="actionTypeUid">The unique identifier of an action type</param>
         /// <param name="assetUid">The unique identifier of an asset</param>
-        /// <param name="_pageSize">The number of results to return per page. The default is 5 users per page and max value is 250.</param>
+        /// <param name="_pageSize">The number of results to return per page. The default is 5 actions per page and max value is 250.</param>
         /// <param name="_pageNum">The page number to return results for.</param>
         /// <param name="_order">The field to use to order the results.</param>
         /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
