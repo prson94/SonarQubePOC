@@ -144,6 +144,13 @@ namespace d360.web.Controllers.V2
 
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
 
                 if (!validator.IsValidGuidCountForWorkflowGetVersionModel(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "More than one uid is passed in the request , either  ActionTypeUid OR AssetTypeUid OR RelationshipTypeUid or WorkflowTypeUid"));
@@ -297,6 +304,13 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
 
 
                 if (!validator.IsValidGuidCountForGetWorkflowModel(queryParams))
