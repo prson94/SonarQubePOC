@@ -29,7 +29,9 @@
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-    DECLARE @companyId int
+IF((SELECT @@SERVERNAME) = 'bzbdz2ikmp')
+BEGIN    
+	DECLARE @companyId int
     DECLARE @companyIDs table(companyId int)
 	    INSERT INTO @companyIDs VALUES 
 	    (2),(13),(24),(33),(35),(38),(39),(40),(46),(48),(50),(52),(56),(57),(60),(70),(73),(87),(89),
@@ -54,6 +56,7 @@
     END
     CLOSE COMPANY_CURSOR
     DEALLOCATE COMPANY_CURSOR 
+END
 ]]>
     </sql>
   </changeSet>
