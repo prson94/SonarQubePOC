@@ -54,10 +54,12 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         this.groupService.getGroupUid(this.groupId).subscribe(
             g => {
-                this.groupUid = g[0].uid;
+                if (g != undefined)
+                    this.groupUid = g[0].uid;
                 this.groupService.getGroupResourceList(this.groupUid).subscribe(
                     d => {
-                        this.groupItems = d.items;
+                        if (d != undefined)
+                            this.groupItems = d.items;
                         if (this.groupItems.length > 0) {
                             this.selectedRow = this.groupItems[0];
                         }
@@ -66,6 +68,17 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
                     }
                 );
             })
+        this.groupService.getGroupResourceList(this.groupUid).subscribe(
+            d => {
+                if (d != undefined)
+                    this.groupItems = d.items;
+                if (this.groupItems.length > 0) {
+                    this.selectedRow = this.groupItems[0];
+                }
+
+                this.isLoading = false;
+            }
+        );
     }
 
     cancel() {
