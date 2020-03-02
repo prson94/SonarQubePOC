@@ -189,6 +189,9 @@ namespace igx.jobs.apiexecutionprocessor
                             log.WriteLine($"POST Assets (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postAssetsResults));
                             log.WriteLine($"POST Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+                            company.SendApiGraphEvent(Info);
+
                             break;
                             #endregion
                         case ApiExecutionAction.PutAssets:
@@ -199,7 +202,7 @@ namespace igx.jobs.apiexecutionprocessor
                             var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize);
+                            var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
                             dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
                             dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                             log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
@@ -207,6 +210,9 @@ namespace igx.jobs.apiexecutionprocessor
                             log.WriteLine($"PUT Assets (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                             storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
                             log.WriteLine($"PUT Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+                            company.SendApiGraphEvent(Info);
+
                             break;
                             #endregion
                         case ApiExecutionAction.DeleteAssets:

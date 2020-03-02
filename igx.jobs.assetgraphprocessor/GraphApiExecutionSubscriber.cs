@@ -29,11 +29,9 @@ namespace igx.jobs.assetgraphprocessor
             if (info.Type != AssetEventType.Execution)
                 return;
 
-#if DEBUG
             CoreFunction.AITrackJobStart(functionName);
-            log.WriteLine($"GraphApiExecutionSubscriber triggered for execution uid: {info.execution.ExecutionID}");
-            CoreFunction.AITrackEvent(functionName, "GraphApiExecutionSubscriber triggered", new Dictionary<string, string> { { "executionUid", info.execution.ExecutionID.ToString() } });
-#endif
+            log.WriteLine($"GraphApiExecutionSubscriber triggered for execution uid: {(info?.execution?.ExecutionID.ToString() ?? "")}");
+            CoreFunction.AITrackEvent(functionName, "GraphApiExecutionSubscriber triggered", new Dictionary<string, string> { { "executionUid", (info?.execution?.ExecutionID.ToString() ?? "") } });
 
             AzureStorageProvider storage = new AzureStorageProvider();
 
@@ -52,37 +50,46 @@ namespace igx.jobs.assetgraphprocessor
                         , new { info.execution.ExecutionID }))
                         .SingleOrDefault();
 
+                    if (info.execution == null)
+                        throw new Exception("Event execution info is null");
+
+                    if (execution == null)
+                        throw new Exception("Execution record not found");
+
+
                     switch (info.execution.Action)
                     {
                         case ApiExecutionAction.PutAssets:
-                            var postFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
-                            assetTypeUid = postFields.AssetTypeUid;
+                            var putFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
+                            assetTypeUid = putFields.AssetTypeUid;
                             string putAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
-                            assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
+                            if (!string.IsNullOrEmpty(putAssetsJson))
+                                assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
                             break;
                         case ApiExecutionAction.PostAssets:
-                            isInsert = true;
-                            var putFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(execution.Fields);
-                            assetTypeUid = putFields.AssetTypeUid;
-
+                            var postFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
+                            assetTypeUid = postFields.AssetTypeUid;
                             string postAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
-                            assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(postAssetsJson);
+                            if (!string.IsNullOrEmpty(postAssetsJson))
+                                assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(postAssetsJson);
 
                             break;
                         default:
-                            return;
+                            throw new Exception($"Action {info.execution.Action.ToString()} is not supported");
                     }
 
                     if (assets == null || !assets.Any())
-                        return;
+                    {
+                        throw new Exception("Asset JSON not found in storage");
+                    }
 
 
                     using (var trans = company.BeginTransaction())
                     {
-
-
-                        var keyFieldsList = (await company.QueryAsync<string>(@"
+                        try
+                        {
+                            var keyFieldsList = (await company.QueryAsync<string>(@"
                             select F.[Name] from FieldType F 
                             inner join AssetType A on A.ID = F.AssetTypeID 
                             where A.[uid] = @assetTypeUid and F.IsPartOfKey = 1"
@@ -91,61 +98,63 @@ namespace igx.jobs.assetgraphprocessor
                             .ToList();
 
 
-                        #region Bulk Copy
+                            #region Bulk Copy
 
-                        var table = new DataTable();
-                        table.Columns.Add("Uid", typeof(Guid));
-                        table.Columns.Add("ParentUid", typeof(Guid));
-                        table.Columns["ParentUid"].AllowDBNull = true;
-                        table.Columns.Add("UpdatePath", typeof(bool));
+                            var table = new DataTable();
+                            table.Columns.Add("Uid", typeof(Guid));
+                            table.Columns.Add("ParentUid", typeof(Guid));
+                            table.Columns["ParentUid"].AllowDBNull = true;
+                            table.Columns.Add("UpdatePath", typeof(bool));
 
-                        foreach (var asset in assets)
-                        {
-                            var row = table.NewRow();
-                            row["Uid"] = asset.Uid;
-                            if (asset.ParentUid.HasValue)
-                                row["ParentUid"] = asset.ParentUid;
-                            else
-                                row["ParentUid"] = DBNull.Value;
-
-                            if (isInsert || asset.Fields.Keys.Any(k => keyFieldsList.Contains(k)))
+                            foreach (var asset in assets)
                             {
-                                row["UpdatePath"] = true;
-                            }
-                            else
-                            {
-                                row["UpdatePath"] = false;
+                                var row = table.NewRow();
+                                row["Uid"] = asset.Uid;
+                                if (asset.ParentUid.HasValue)
+                                    row["ParentUid"] = asset.ParentUid;
+                                else
+                                    row["ParentUid"] = DBNull.Value;
+
+                                if (isInsert || asset.Fields.Keys.Any(k => keyFieldsList.Contains(k)))
+                                {
+                                    row["UpdatePath"] = true;
+                                }
+                                else
+                                {
+                                    row["UpdatePath"] = false;
+                                }
+
+                                table.Rows.Add(row);
                             }
 
-                            table.Rows.Add(row);
-                        }
-
-                        await company.ExecuteAsync(@"
+                            await company.ExecuteAsync(@"
                             drop table if exists #GraphAssets;
-                            create table #GraphAssets ([uid] uniqueidentifier not null, [ParentUid] uniqueidentifier, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
+                            create table #GraphAssets ([Uid] uniqueidentifier not null, [ParentUid] uniqueidentifier, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
                             ", transaction: trans);
 
-                        var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
-                        {
-                            BatchSize = table.Rows.Count,
-                            DestinationTableName = "#GraphAssets",
-                            BulkCopyTimeout = 3600
-                        };
+                            var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                            {
+                                BatchSize = table.Rows.Count,
+                                DestinationTableName = "#GraphAssets",
+                                BulkCopyTimeout = 3600
+                            };
 
-                        bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                        bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
-                        bulkCopy.ColumnMappings.Add("UpdatePath", "UpdatePath");
-
-
-                        await bulkCopy.WriteToServerAsync(table);
-
-                        #endregion
+                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                            bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
+                            bulkCopy.ColumnMappings.Add("UpdatePath", "UpdatePath");
 
 
-                        #region Update Graph Tables
+                            await bulkCopy.WriteToServerAsync(table);
 
-                        //update temp table flags
-                        await company.ExecuteAsync(@"
+
+                            var rr = (await company.QueryAsync("select * from #GraphAssets", transaction: trans)).ToList();
+                            #endregion
+
+
+                            #region Update Graph Tables
+
+                            //update temp table flags
+                            await company.ExecuteAsync(@"
                             update  G
                             set     AssetExists = 1
                             from    #GraphAssets G
@@ -157,15 +166,15 @@ namespace igx.jobs.assetgraphprocessor
                             where   exists (select 1 from graph.AssetNode where [uid] = G.[uid]);
 
                             update  #GraphAssets set GraphExists = 0 where GraphExists is null;
-                            update  #GraphAssets set AssetExists = 0 where AssetExists is null;");
+                            update  #GraphAssets set AssetExists = 0 where AssetExists is null;", transaction: trans);
 
-                        //update graph records
-                        await company.ExecuteAsync(@"
+                            //update graph records
+                            await company.ExecuteAsync(@"
 		                    delete  E
 		                    from    graph.AssetEdge E
 				                    inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
                                     inner join #GraphAssets G on G.[uid] = N.[uid] and G.GraphExists = 1 and G.AssetExists = 0
-		                    where   N.[uid] = @uid
+		                    where   N.[uid] = G.[uid]
 
 		                    delete  N
                             from    graph.AssetNode N
@@ -197,8 +206,8 @@ namespace igx.jobs.assetgraphprocessor
                             ", transaction: trans);
 
 
-                        //update paths/segments for applicable assets
-                        await company.ExecuteAsync(@"
+                            //update paths/segments for applicable assets
+                            await company.ExecuteAsync(@"
                             	declare @class int = 1,
 			                    @predicateType int = 3,
                                 @assetTypeId int = 0;
@@ -302,34 +311,48 @@ namespace igx.jobs.assetgraphprocessor
 		                                set		T.[Path] = S.Segment, 
 				                                T.[Segments] = S.[Segments] 
 		                                from	graph.AssetNode T 
-				                                inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID ;
+				                                inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID; 
 	                                end
-
                             "
-                            , new { assetTypeUid }
-                            ,transaction: trans);
+                                , new { assetTypeUid }
+                                , transaction: trans);
 
 
-                        //cleanup 
-                        await company.ExecuteAsync(@"
+                            //cleanup 
+                            await company.ExecuteAsync(@"
 		                    drop table if exists #GraphAssets;
                             ", transaction: trans);
 
-                        #endregion
-                    }
+                            #endregion
 
+                            trans.Commit();
+                        }
+                        catch( Exception ex)
+                        {
+                            trans.Rollback();
+                            throw ex;
+                        }
+                        
+                    }
                 }
                 catch (Exception ex)
                 {
-                    string fieldNameList = info.ChangedFieldNames == null ? "" : string.Join(", ", info.ChangedFieldNames);
-                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, new Dictionary<string, string>() { { "uid", info.Uid.ToString() }, { "fields", fieldNameList } });
+                    var values = new Dictionary<string, string>();
+                    values.Add("uid", info.Uid.ToString());
+
+                    if (info.execution != null)
+                    {
+                        values.Add("ExecutionID", info.execution.ExecutionID.ToString());
+                        values.Add("ResourceID", info.execution.ResourceID.ToString());
+                        values.Add("Action", info.execution.Action.ToString());
+                    }
+
+;                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, values);
                 }
             }
 
-#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-#endif
 
         }
     }
