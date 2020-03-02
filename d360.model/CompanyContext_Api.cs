@@ -511,165 +511,196 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
             return res;
         }
 
-        private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false)
+        private void ImportRelationships(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, int timeout = 3600, bool resolveRelationshipOnObjectId = false, bool sendGraphEvents = true)
         {
 
             string assetJoin = resolveRelationshipOnObjectId ? "S.ObjectID = try_cast(V.[value] as int)" : "S.DisplayValue = V.[value]";
 
 
-            Connection.Execute($@"
-                begin
-	                drop table if exists #Relationships;
-	                create table #Relationships
-	                (
-		                ID int,
-		                IntersectTypeID int,
-		                [Subject] varchar(50),
-		                SubjectID int,
-                        SubjectAssetTypeID int,
-		                [Object] varchar(50),
-		                ObjectID int,
-                        ObjectAssetTypeID int,
-                        SwitchObject bit
-	                )
-                    ;with R
-                        as (
-                            select  distinct 
-                                    A.[Object],
-                                    A.ObjectID,
-                                    OT.ID as ObjectAssetTypeID,
-                                    FT.LookupObjectId as IntersectTypeID,
-                                    S.[Object] as [Subject],
-                                    S.ObjectID as SubjectID,
-                                    S.AssetTypeID as SubjectAssetTypeID,
-                                    case 
-                                    when S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID then 1
-                                    else 0
-                                    end as switchObject
-                            from    {tableName} A
-                                    inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
-                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                                        and F.ItemNumber = A.ItemNumber 
-                                        and A.ObjectID is not null 
-                                        and F.FieldTypeID is not null
-						                and A.Success is null
-                                    cross apply string_split(F.FieldValue, ',') V                                    
-                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
-                                    inner join IntersectType IT on IT.ID = FT.LookupObjectId
-                                    inner join (
-										select	AD.DisplayValue,
-                                                AD.[Object], 
-												AD.ObjectID, 
-												AD.[Type], 
-												AD.TypeID,
-                                                AD.AssetTypeID
-										from	AssetDetail AD 
-										union all
-										select	T.[Name] as DisplayValue,
-                                                T.[Object],
-												T.ObjectID,
-												T.[Object] as [Type],
-												0 as TypeID,
-                                                T.ID as AssetTypeID
-										from	AssetType T
-										where	T.[Object] = 'ReferenceItemType'
-									) S on {assetJoin}
-										and ((S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID) 
-                                        or (S.[Type] = IT.[Subject] AND S.TypeID = IT.SubjectID))
-                            where   A.ExecutionID = @executionID
-                                    and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                                    and (F.Ignore = 0 or F.Ignore is null)
-                                    and FT.Type = 'Relationship'
-                            )
-                            insert into #Relationships (ID, IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
-                            select
-                                null as ID,
-			                    IntersectTypeId, 
-			                    CASE 
-				                    when switchObject = 0 then SubjectAssetTypeID
-				                    else ObjectAssetTypeID
-			                    END AS SubjectAssetTypeID, 
-			                    CASE 
-				                    when switchObject = 0 then Subject
-				                    else Object
-			                    END AS Subject, 
-			                    CASE 
-				                    when switchObject = 0 then SubjectId
-				                    else ObjectID
-			                    END AS SubjectId,
-			                    CASE 
-				                    when switchObject = 0 then ObjectAssetTypeID
-				                    else SubjectAssetTypeID
-			                    END AS ObjectAssetTypeID, 
-			                    CASE 
-				                    when switchObject = 0 then Object
-				                    else Subject
-			                    END AS Object, 
-			                    CASE 
-				                    when switchObject = 0 then ObjectId
-				                    else SubjectId
-			                    END AS ObjectID,
-                                SwitchObject
-			                from R;
+            var events = Connection.Query<DatabaseBulkRelationshipResult>($@"
 
-                            update R
-                            set R.ID = I.ID
-                            from #Relationships R
-                            inner join [Intersect] I on 
-                                I.IntersectTypeID = R.IntersectTypeID 
-                                and I.[Subject] = R.[Subject] 
-                                and I.SubjectID = R.SubjectID 
-                                and I.[Object] = R.[Object] 
-                                and I.ObjectID = R.ObjectID;
+	            drop table if exists #Relationships;
+	            create table #Relationships
+	            (
+		            ID int,
+                    [uid] uniqueidentifier,
+		            IntersectTypeID int,
+		            [Subject] varchar(50),
+		            SubjectID int,
+                    SubjectAssetTypeID int,
+		            [Object] varchar(50),
+		            ObjectID int,
+                    ObjectAssetTypeID int,
+                    SwitchObject bit
+	            )
 
-                            --check reverse if subject/object type are the same
-					        update R
-                            set R.ID = I.ID
-                            from #Relationships R
-					        inner join IntersectType T on T.ID = R.IntersectTypeID and T.Subject = T.Object and T.SubjectID = T.ObjectID
-                            inner join [Intersect] I on 
-                                I.IntersectTypeID = R.IntersectTypeID 
-                                and I.[Subject] = R.[Object] 
-                                and I.SubjectID = R.ObjectID
-                                and I.[Object] = R.[Subject] 
-                                and I.ObjectID = R.SubjectID
-					        where R.ID is null;
+                drop table if exists #DeletedRelationships;
+                create table #DeletedRelationships
+                (
+                    [uid] uniqueidentifier
+                )
+
+                ;with R
+                    as (
+                        select  distinct 
+                                A.[Object],
+                                A.ObjectID,
+                                OT.ID as ObjectAssetTypeID,
+                                FT.LookupObjectId as IntersectTypeID,
+                                S.[Object] as [Subject],
+                                S.ObjectID as SubjectID,
+                                S.AssetTypeID as SubjectAssetTypeID,
+                                case 
+                                when S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID then 1
+                                else 0
+                                end as switchObject
+                        from    {tableName} A
+                                inner join AssetType OT on OT.Object = A.ObjectType and OT.ObjectID = A.ObjectTypeID
+                                inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                    and F.ItemNumber = A.ItemNumber 
+                                    and A.ObjectID is not null 
+                                    and F.FieldTypeID is not null
+						            and A.Success is null
+                                cross apply string_split(F.FieldValue, ',') V                                    
+                                inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+                                inner join IntersectType IT on IT.ID = FT.LookupObjectId
+                                inner join (
+									select	AD.DisplayValue,
+                                            AD.[Object], 
+											AD.ObjectID, 
+											AD.[Type], 
+											AD.TypeID,
+                                            AD.AssetTypeID
+									from	AssetDetail AD 
+									union all
+									select	T.[Name] as DisplayValue,
+                                            T.[Object],
+											T.ObjectID,
+											T.[Object] as [Type],
+											0 as TypeID,
+                                            T.ID as AssetTypeID
+									from	AssetType T
+									where	T.[Object] = 'ReferenceItemType'
+								) S on {assetJoin}
+									and ((S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID) 
+                                    or (S.[Type] = IT.[Subject] AND S.TypeID = IT.SubjectID))
+                        where   A.ExecutionID = @executionID
+                                and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                and (F.Ignore = 0 or F.Ignore is null)
+                                and FT.Type = 'Relationship'
+                        )
+                        insert into #Relationships (ID, [uid], IntersectTypeID, SubjectAssetTypeID, Subject, SubjectId, ObjectAssetTypeID, Object, ObjectID, SwitchObject)
+                        select
+                            null as ID,
+                            null as [uid],
+			                IntersectTypeId, 
+			                CASE 
+				                when switchObject = 0 then SubjectAssetTypeID
+				                else ObjectAssetTypeID
+			                END AS SubjectAssetTypeID, 
+			                CASE 
+				                when switchObject = 0 then Subject
+				                else Object
+			                END AS Subject, 
+			                CASE 
+				                when switchObject = 0 then SubjectId
+				                else ObjectID
+			                END AS SubjectId,
+			                CASE 
+				                when switchObject = 0 then ObjectAssetTypeID
+				                else SubjectAssetTypeID
+			                END AS ObjectAssetTypeID, 
+			                CASE 
+				                when switchObject = 0 then Object
+				                else Subject
+			                END AS Object, 
+			                CASE 
+				                when switchObject = 0 then ObjectId
+				                else SubjectId
+			                END AS ObjectID,
+                            SwitchObject
+			            from R;
+
+                        update R
+                        set R.ID = I.ID,
+                            R.[uid] = I.[uid]
+                        from #Relationships R
+                        inner join [Intersect] I on 
+                            I.IntersectTypeID = R.IntersectTypeID 
+                            and I.[Subject] = R.[Subject] 
+                            and I.SubjectID = R.SubjectID 
+                            and I.[Object] = R.[Object] 
+                            and I.ObjectID = R.ObjectID;
+
+                        --check reverse if subject/object type are the same
+					    update R
+                        set R.ID = I.ID,
+                            R.[uid] = I.[uid]
+                        from #Relationships R
+					    inner join IntersectType T on T.ID = R.IntersectTypeID and T.Subject = T.Object and T.SubjectID = T.ObjectID
+                        inner join [Intersect] I on 
+                            I.IntersectTypeID = R.IntersectTypeID 
+                            and I.[Subject] = R.[Object] 
+                            and I.SubjectID = R.ObjectID
+                            and I.[Object] = R.[Subject] 
+                            and I.ObjectID = R.SubjectID
+					    where R.ID is null;
 
 
-                            delete from [Intersect] where ID in(
-                             select I.ID  from api.ExecutionAsset A
-                                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
-                                        and F.ItemNumber = A.ItemNumber 
-                                        and A.ObjectID is not null 
-                                        and F.FieldTypeID is not null
-						                and A.Success is null
-                                    inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
-									inner join IntersectType IT on IT.ID = FT.LookupObjectId
-									inner join [Intersect] I on IT.ID = I.IntersectTypeID
-		                                 and ((I.Object = A.Object and I.ObjectID = A.ObjectID) OR (I.Subject = A.Object and I.SubjectID = A.ObjectID))
-									left join #Relationships R on R.ID = I.Id
-									where R.ID is null and
-                                            A.ExecutionID = @executionID
-                                            and A.ItemNumber between @beginItemNumber and @endItemNumber 
-                                            and (F.Ignore = 0 or F.Ignore is null)
-                                            and FT.Type = 'Relationship');
+                        insert into #DeletedRelationships
+                            select I.[uid]  from api.ExecutionAsset A
+                                inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                                    and F.ItemNumber = A.ItemNumber 
+                                    and A.ObjectID is not null 
+                                    and F.FieldTypeID is not null
+						            and A.Success is null
+                                inner join FieldType FT on FT.ID = F.FieldTypeID AND FT.Type = 'Relationship' AND FT.LookupObjectType = 'IntersectType'
+								inner join IntersectType IT on IT.ID = FT.LookupObjectId
+								inner join [Intersect] I on IT.ID = I.IntersectTypeID
+		                                and ((I.Object = A.Object and I.ObjectID = A.ObjectID) OR (I.Subject = A.Object and I.SubjectID = A.ObjectID))
+								left join #Relationships R on R.ID = I.Id
+								where R.ID is null and
+                                        A.ExecutionID = @executionID
+                                        and A.ItemNumber between @beginItemNumber and @endItemNumber 
+                                        and (F.Ignore = 0 or F.Ignore is null)
+                                        and FT.Type = 'Relationship';
 
-                            insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
-                            select  R.IntersectTypeID,
-                                    R.Subject,
-                                    R.SubjectID,
-                                    R.Object,
-                                    R.ObjectID
-                                from    #Relationships R
-							    inner join [IntersectType] IT on IT.ID = IntersectTypeID
-                                inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
-                                inner join AssetType OT on OT.ID = R.ObjectAssetTYpeID
-                                where  R.ID is null 
-                                       and OT.Object = IT.Object 
-                                       and ST.Object = IT.Subject;      
-                end
+
+                        delete from [Intersect] where [uid] in (select [uid] from #DeletedRelationships);
+
+                        insert into [Intersect] (IntersectTypeID, Subject, SubjectId, Object, ObjectID)
+                        select  R.IntersectTypeID,
+                                R.Subject,
+                                R.SubjectID,
+                                R.Object,
+                                R.ObjectID
+                            from    #Relationships R
+							inner join [IntersectType] IT on IT.ID = IntersectTypeID
+                            inner join AssetType ST on ST.ID = R.SubjectAssetTypeID
+                            inner join AssetType OT on OT.ID = R.ObjectAssetTYpeID
+                            where  R.ID is null 
+                                    and OT.Object = IT.Object 
+                                    and ST.Object = IT.Subject; 
+
+                        update R
+                        set R.ID = I.ID,
+                            R.[uid] = I.[uid]
+                        from #Relationships R
+                        inner join [Intersect] I on I.Subject = R.Subject and I.SubjectID = R.SubjectID and I.Object = R.Object
+                            and I.ObjectID = R.ObjectID and I.IntersectTypeID = R.IntersectTypeID
+                        where R.ID is null;
+
+                        select [uid], 1 as Success, 'Intersect' as [Object] from #Relationships
+                        union all
+                        select [uid], 1 as Success, 'Intersect' as [Object] from #DeletedRelationships
 ",
             new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+
+            if (sendGraphEvents)
+            {
+                SendAssetGraphEvents(events);
+            }
 
         }
 
@@ -684,7 +715,7 @@ from    Field F
         inner join {tableName} A on A.ExecutionID = E.ExecutionID and A.ItemNumber = E.ItemNumber and A.Object = F.ObjectType and A.ObjectID = F.ObjectID",
         new { executionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
-            var collectionFieldroperties = new List<FieldJsonProperty>();
+            var collectionFieldProperties = new List<FieldJsonProperty>();
 
             foreach (var f in fields)
             {
@@ -696,7 +727,7 @@ from    Field F
                     {
                         i.FieldID = f.ID;
                     });
-                    collectionFieldroperties.AddRange(assetFieldProperties);
+                    collectionFieldProperties.AddRange(assetFieldProperties);
                 }
 
             }
@@ -712,7 +743,7 @@ from    Field F
             table.Columns.Add("IsArray", typeof(bool));
             table.Columns.Add("Value", typeof(string));
 
-            foreach (var f in collectionFieldroperties)
+            foreach (var f in collectionFieldProperties)
             {
                 var row = table.NewRow();
 
@@ -1006,7 +1037,6 @@ from	api.ExecutionField T
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
             string errorDelimiter = ". ";
-
             success = true;
             errorMessage = string.Empty;
 
@@ -1130,6 +1160,13 @@ from	api.ExecutionField T
                                 {
                                     success = false;
                                     errorMessages.Add($"{fieldName} must be a valid percentage");
+                                }
+                                break;
+                            case "JSON":
+                                if (fieldValue.Length > 2500)
+                                {
+                                    success = false;
+                                    errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters.");
                                 }
                                 break;
                             default: // Html, Text

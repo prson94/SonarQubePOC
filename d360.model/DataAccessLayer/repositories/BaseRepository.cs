@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json;
 using SpreadsheetLight;
@@ -17,6 +18,35 @@ namespace d360.model.DataAccessLayer.repositories
         {
             this.CompanyContext = ctx;
         }
+        #region Private
+
+        private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship(int lookupObjectID, string objecttype, int objectid)
+        {
+
+            var intersecttypeboth = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Object == objecttype && i.ObjectID == objectid && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
+            if (intersecttypeboth == null)
+            {
+                var intersecttypeobject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Object == objecttype && i.ObjectID == objectid).SingleOrDefault();
+                if (intersecttypeobject == null)
+                {
+                    var intersecttypesubject = CompanyContext.Filter<IntersectType>(i => i.ID == lookupObjectID && i.Subject == objecttype && i.SubjectID == objectid).SingleOrDefault();
+                    if (intersecttypesubject == null)
+                        return SplitFilterCriteriaRelationship.Both;
+                    else
+                        return SplitFilterCriteriaRelationship.Subject;
+                }
+                else
+                {
+                    return SplitFilterCriteriaRelationship.Object;
+                }
+            }
+            else
+            {
+                return SplitFilterCriteriaRelationship.Both;
+            }
+
+        }
+        #endregion
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql= "A.[ObjectId]")
         {
             fieldTypes.ForEach(f =>
@@ -104,7 +134,34 @@ namespace d360.model.DataAccessLayer.repositories
 
                 if (f.Type == "FieldFromRelationship")
                 {
-                    fieldJoins.Add($@"outer apply (
+                    var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID);
+                    if (filtercond == SplitFilterCriteriaRelationship.Object)
+                    {
+                        fieldJoins.Add($@"outer apply (
+                            select
+                                STRING_AGG(F1.FormattedValue,',') as FormattedValue
+                            from [Intersect] I
+                            left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
+                            left join Field F1 on F1.FieldTypeID = {f.LookupObjectFieldTypeID} and F1.AssetID = R1.ID
+                            where I.IntersectTypeID = {f.LookupObjectID} and F1.FormattedValue is not null
+                            having string_agg(F1.FormattedValue,',') is not null                        
+                        ) {tableAlias}");
+                    }
+                    else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+                    {
+                        fieldJoins.Add($@"outer apply (
+                            select
+                                STRING_AGG(F2.FormattedValue,',') as FormattedValue
+                            from [Intersect] I
+						    left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
+                            left join Field F2 on F2.FieldTypeID = {f.LookupObjectFieldTypeID} and F2.AssetID = R2.ID
+                            where I.IntersectTypeID = {f.LookupObjectID} and F2.FormattedValue is not null
+                            having string_agg(F2.FormattedValue,',') is not null
+                        ) {tableAlias}");
+                    }
+                    else
+                    {
+                        fieldJoins.Add($@"outer apply (
                         select
                             STRING_AGG(ISNULL(F1.FormattedValue,F2.FormattedValue),',') as FormattedValue
                         from [Intersect] I
@@ -113,20 +170,52 @@ namespace d360.model.DataAccessLayer.repositories
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join Field F2 on F2.FieldTypeID = {f.LookupObjectFieldTypeID} and F2.AssetID = R2.ID
                         where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(F1.FormattedValue,F2.FormattedValue) is not null
-                    ) {tableAlias}");
+                        having string_agg(ISNULL(F1.FormattedValue,F2.FormattedValue),',') is not null
+                        ) {tableAlias}");
+                    }
                 }
                 else if (f.Type == "Relationship")
                 {
-                    fieldJoins.Add($@"outer apply (
+                    var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID);
+
+                    if (filtercond == SplitFilterCriteriaRelationship.Object)
+                    {
+                        fieldJoins.Add($@"outer apply (
                         select 
-                            STRING_AGG(ISNULL(AD1.DisplayValue,AD2.DisplayValue),',') as FormattedValue
+                            STRING_AGG(AD1.DisplayValue,',') as FormattedValue
                         from [Intersect] I
                         left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
                         left join AssetDetail AD1 on AD1.Object = R1.Object and AD1.ObjectID = R1.ObjectId
+                        where I.IntersectTypeID = {f.LookupObjectID} and AD1.DisplayValue is not null
+                        having string_agg(AD1.DisplayValue,',') is not null
+                       ) {tableAlias}");
+                    }
+                    else if (filtercond == SplitFilterCriteriaRelationship.Subject)
+                    {
+                        fieldJoins.Add($@"outer apply (
+                        select 
+                            STRING_AGG(AD2.DisplayValue,',') as FormattedValue
+                        from [Intersect] I
 						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
                         left join AssetDetail AD2 on AD2.Object = R2.Object and AD2.ObjectID = R2.ObjectId
-                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(AD1.DisplayValue,AD2.DisplayValue) is not null
-                    ) {tableAlias}");
+                        where I.IntersectTypeID = {f.LookupObjectID} and AD2.DisplayValue is not null
+                        having string_agg(AD2.DisplayValue,',') is not null
+                       ) {tableAlias}");
+                    }
+                    else
+                    {
+                        fieldJoins.Add($@"outer apply (
+                            select 
+                                STRING_AGG(ISNULL(AD1.DisplayValue,AD2.DisplayValue),',') as FormattedValue
+                            from [Intersect] I
+                            left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
+                            left join AssetDetail AD1 on AD1.Object = R1.Object and AD1.ObjectID = R1.ObjectId
+						    left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
+                            left join AssetDetail AD2 on AD2.Object = R2.Object and AD2.ObjectID = R2.ObjectId
+                            where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(AD1.DisplayValue,AD2.DisplayValue) is not null
+                            having string_agg(isnull(AD1.DisplayValue,AD2.DisplayValue),',') is not null
+                        ) {tableAlias}");
+                    }
                 }
                 else if (f.Type == "RefListRelationship")
                 {

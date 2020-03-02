@@ -243,6 +243,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.emitChanges();
                 }
             })
+
+        this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
+            item => {
+                this.homeUrl = item;
+            }
+        )
+
         this.emitChanges();
     }
 
@@ -263,13 +270,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
             }
         );
-
-        this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
-            result => {
-                this.searchDetails = result;
-                this.ref.markForCheck();
-            }
-        );
+        if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
+            this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
+                result => {
+                    this.searchDetails = result;
+                    this.ref.markForCheck();
+                }
+            );
+        }
 
 
 
@@ -308,6 +316,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectSub.unsubscribe();
         this.buttonSubscriptionClear.unsubscribe();
         this.buttonSubscription.unsubscribe();
+        this.homeUrlChangeSub.unsubscribe();
     }
 
     trackById(index, item) {

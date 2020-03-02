@@ -86,7 +86,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 zoomType: 'x',
                                 style: {
                                     fontFamily: 'Source Sans Pro'
-                                }
+                                },
+                                height: '240px',
                             },
                             title: {
                                 text: ''

@@ -1135,10 +1135,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#endregion
 
-        this.recheckAlertCount();
-
         this.diagram.commitTransaction("load_all_data");
         this.reOrderLayout();
+
+        this.recheckAlertCount();
     }
 
     private recheckAlertCount() {
@@ -1152,6 +1152,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
+        if (this.isInfoWindowVisible) {
+            this.showAlertsByDisplayedAssets();
+        }
     }
 
     /**
@@ -1185,7 +1188,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         if (!currentRoot) {
             this.responseModel.assets.assets.forEach(a => {
-                foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, a, undefined);
+                if (foundRootAsset == undefined) {
+                    foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, a, undefined);
+                }
             });
         }
         else {
@@ -1200,7 +1205,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     else {
                         if (currentParentToSearch.items) {
                             currentParentToSearch.items.forEach(i => {
-                                foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                                if (foundRootAsset == undefined) {
+                                    foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                                }
                             });
                         }
                     }
@@ -1208,13 +1215,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 else {
                     if (currentRoot.items) {
                         currentRoot.items.forEach(i => {
-                            foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                            if (foundRootAsset == undefined) {
+                                foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                            }
                         });
                     }
                 }
             }
         }
-
         return foundRootAsset;
     }
 
@@ -1239,9 +1247,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 model.Direction = AssetBrowserApiHopDirection.Forward;
             }
             this.revealedKeys.push(currentTopGroupKey);
-
+            console.log(this.responseModel.assets);
+            console.log('KeyToFind:'+currentTopGroupKey);
             // Now we need to find the real root asset for this current key.
             let realRootAsset = this.findTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
+
+            console.log(realRootAsset);
 
             model.Hops = 1;
             model.HopType = AssetBrowserApiHopType.Lineage;
@@ -1716,9 +1727,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Context menu actions
 
     private showAlertsByDisplayedAssets() {
-        this.isAlertPanelLoading = true;
-
         if (this.assetsWithAlerts.length > 0) {
+            this.isAlertPanelLoading = true;
+
             let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
 
             this.assetsWithAlerts.forEach(a => {
@@ -1829,20 +1840,23 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private collapseNodesAndLinks(dm: go.GraphLinksModel, links: go.Iterator<go.Link>) {
+    private collapseNodesAndLinks(dm: go.GraphLinksModel, key: string, links: go.Iterator<go.Link>) {
         if (links) {
             let lnks: any[] = [];
             links.iterator.each(link => {
-                lnks.push({ link: link, toNode: link.toNode });
+                lnks.push({ link: link, node: (link.toNode.key == key) ? link.fromNode : link.toNode });
             });
             lnks.forEach(lnk => {
-                if (lnk.toNode) {
-                    // Go back to incoming nodes and remove them too. 
-                    this.collapseNodesAndLinks(dm, lnk.toNode.findLinksOutOf());
+                if (lnk.node) {
+                    let backLinks: go.Iterator<go.Link> = lnk.node.findLinksInto().filter(b => { return (b.fromNode.key !== key); });
+                    this.collapseNodesAndLinks(dm, lnk.node.key, backLinks);
+
+                    let forwardLinks: go.Iterator<go.Link> = lnk.node.findLinksOutOf().filter(b => { return (b.toNode.key !== key); });
+                    this.collapseNodesAndLinks(dm, lnk.node.key, forwardLinks);
 
                     // Remove immediate child.
-                    this.diagram.remove(lnk.toNode);
-                    dm.removeNodeData(dm.findNodeDataForKey(lnk.toNode.key));
+                    this.diagram.remove(lnk.node);
+                    dm.removeNodeData(dm.findNodeDataForKey(lnk.node.key));
                 }
 
                 this.diagram.remove(lnk.link);
@@ -1850,11 +1864,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
-    private collapseBadgeDependentNodesAndLinks(key: string) {
+    private collapseBadgeDependentNodesAndLinks(badgeKey: string, nodeKey: string) {
         this.diagram.startTransaction("collapseBadge");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == key);
-        this.collapseNodesAndLinks(dm, links);
+        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == badgeKey);
+        this.collapseNodesAndLinks(dm, nodeKey, links);
         this.diagram.commitTransaction("collapseBadge");
     }
 
@@ -1865,7 +1879,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
 
             if (owner.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(owner.key);
+                this.collapseBadgeDependentNodesAndLinks(owner.key, node.key);
                 owner.expanded = false;
                 this.diagram.model.removeArrayItem(node.owners, ix);
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
@@ -1934,7 +1948,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
 
             if (relation.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(relation.key);
+                this.collapseBadgeDependentNodesAndLinks(relation.key, node.key);
                 relation.expanded = false;
                 this.diagram.model.removeArrayItem(node.relations, ix);
                 this.diagram.model.insertArrayItem(node.relations, ix, relation);
