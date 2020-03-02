@@ -454,4 +454,7 @@
   <include file="scripts/GOV-9779.xml"/> <!-- clean up orphaned parent/child AssetEdge records from prior to dupe fix -->
   <include file="scripts/GOV-6468.xml"/> <!-- bulkload.GetLoadColumns - Add required column Threshold for ruletype -->
   <include file="scripts/GOV-9796.xml"/> <!-- Update [graph].[GetHop] to add back the position logic to account for composite keys on an asset -->
+  <include file="scripts/GOV-9811.xml"/> <!-- Drop Unused Procedures, Functions and Views -->
+  <include file="scripts/GOV-9856.xml"/> <!-- Update [api].[ShouldAllowNewBatchCall] to check against number of active jobs instead of number of assets -->  
+  <include file="scripts/GOV-9858.xml"/> <!-- metrics.LoadFromStaging missing ScoreType joins for End Date -->
 </databaseChangeLog>
