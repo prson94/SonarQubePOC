@@ -57,7 +57,7 @@ export class BrowserService extends BaseObservableService {
         model: AssetBrowserAlertRequest
 
     ): Observable<AssetBrowserAlert[]> {
-        const url = `api/v2/browser/actions`;
+        const url = `api/v2/actions/alerts`;
 
         return this.http.post(url, model).pipe(
             map(response => response),
