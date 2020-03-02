@@ -115,6 +115,11 @@
                     &:not(:disabled):hover, &.hover {
                         box-shadow: inset 0 -2px 0 0 #202020 !important;
                     }
+
+                    &:disabled {
+                        color: @d3s-gray-7;
+                        cursor: not-allowed;
+                    }
                 }
 
                 button.tab-selected {
@@ -147,14 +152,12 @@
                 }
 
                 .filter-row {
-                    padding-bottom: 10px;
-                    margin-bottom: 25px;
+                    margin-bottom: 9px;
 
                     .filter-row-label {
                         vertical-align: top;
                         width: 150px;
                         height: 24px;
-                        padding-bottom: 25px;
                         font-family: 'Source Sans Pro Bold';
                         font-size: 14px;
                         font-weight: bold;
@@ -167,7 +170,6 @@
 
                     .filter-row-control {
                         vertical-align: top;
-                        padding-bottom: 25px;
                         font-family: 'Source Sans Pro';
                         font-size: 14px;
                         font-weight: normal;

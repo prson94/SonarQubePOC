@@ -63,7 +63,7 @@
                             </div>
                             <div class="scores">
                                 <span class="d3s-score-container" *ngIf="isInfoWindowVisible && filterModel.DisplayScores && selectedDiagramAsset?.Scores">
-                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score">
+                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" [showSparkline]="false">
                                     </d3s-score-badge>
                                 </span>
                             </div>
@@ -195,19 +195,19 @@
                                 <div #infoDetailPanel *ngIf="panelTabIndex == 0" class="scroll-panel">
                                     <table>
                                         <tr class="filter-row">
-                                            <td class="filter-row-label">Path:</td>
+                                            <td class="filter-row-label">Path</td>
                                             <td class="filter-row-control" style="word-break:break-word">
                                                 {{selectedDiagramAsset?.Path}}
                                             </td>
                                         </tr>
                                         <tr class="filter-row">
-                                            <td class="filter-row-label">Type:</td>
+                                            <td class="filter-row-label">Type</td>
                                             <td class="filter-row-control">
                                                 {{selectedDiagramAsset?.TypeName}}
                                             </td>
                                         </tr>
                                         <tr class="filter-row" *ngFor="let field of selectedDiagramAsset?.Fields">
-                                            <td class="filter-row-label">{{ field.Name }}:</td>
+                                            <td class="filter-row-label">{{ field.Name }}</td>
                                             <td class="filter-row-control">
                                                 <ng-container [ngSwitch]="field.Type">
                                                     <ng-container *ngSwitchCase="'Date'">
