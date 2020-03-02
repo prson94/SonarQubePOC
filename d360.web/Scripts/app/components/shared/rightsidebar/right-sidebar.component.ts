@@ -270,13 +270,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
             }
         );
-
-        this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
-            result => {
-                this.searchDetails = result;
-                this.ref.markForCheck();
-            }
-        );
+        if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
+            this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
+                result => {
+                    this.searchDetails = result;
+                    this.ref.markForCheck();
+                }
+            );
+        }
 
 
 
