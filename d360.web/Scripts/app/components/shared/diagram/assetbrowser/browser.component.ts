@@ -71,6 +71,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
+    private isAlertPanelLoading: boolean = false;
     private totalAlertCount: number = 0;
 
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
@@ -1819,6 +1820,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.alerts = [];
                     this.isAlertTabEnabled = false;
                 }
+                this.isAlertPanelLoading = false;
                 this.cdRef.markForCheck();
             });
         }
