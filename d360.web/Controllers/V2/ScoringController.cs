@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset Class");
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Score Type");
-            document.SetCellValue(1, index++, "Externally Calculated");
+            document.SetCellValue(1, index++, "Score Calculation");
             document.SetCellValue(1, index++, "Asset Type UID");
             document.SetCellValue(1, index++, "Score UID");
 
@@ -322,7 +322,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.assetTypePath);
                 document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
-                document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "Yes" : "No");
+                document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "External" : "Internal");
                 document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
                 document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }

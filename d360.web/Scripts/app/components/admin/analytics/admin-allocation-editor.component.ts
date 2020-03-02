@@ -27,6 +27,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         super();
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
+        this.selection.isExternallyCalculated = false;
     }
 
     ngOnInit() {
