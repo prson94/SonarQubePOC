@@ -87,7 +87,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
-                        return [Date.parse(val.Date), val.Score];
+                        return [Date.parse(val.Date), val.Score, this.getScoreType()];
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
@@ -149,7 +149,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             }
                         },
                         tooltip: {
-                            pointFormat: '<span style="font-weight: bold">{series.name}<span style="padding-left: 4px;font-weight: normal;">{point.y}%</span></span>',
+                            pointFormatter: function () {
+                                var additionalValue = this.series.userOptions.data[this.index][2];
+                                return '<span style="font-weight: bold">' + additionalValue + ' Score<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
+                            },
                             headerFormat: '<span>{point.key}</span><br/>',
                             useHTML: 'true',
                             shape: 'square',
