@@ -408,7 +408,11 @@ namespace d360.model.DataAccessLayer
                     					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE C.ValueJson END) as [Value]
                     			from	[metrics].[AssetVersionCondition] C
                     					inner join FieldType F on F.ID = C.FieldTypeID
-                                        left join FieldLookupValue FL on FL.FieldTypeID = F.ID and [Value] = C.ValueJson
+                                        inner join FieldLookupValue FL on 
+				                            FL.FieldTypeID = F.ID 
+				                            and F.LookupObjectType = FL.LookupObjectType 
+				                            and F.LookupObjectID = FL.LookupObjectID 
+                                            and [Value] = C.ValueJson
                     			where	[Uid] = h.[Uid]
                     					and EffectiveDate = h.EffectiveDate
                     			for json path
