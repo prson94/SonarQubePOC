@@ -6,7 +6,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="GOV-9853">
+  <changeSet author="MDonato" id="GOV-9853-2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -106,7 +106,7 @@ begin
 			from	Asset A
 					inner join @h H on H.[Level] = 1 and H.ID = A.AssetTypeID
 					left join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-			where	I.IntersectID is null 
+			where	I.IntersectID is null and (@assetID is null or A.ID = @assetID)
 			union all
 			select	A.AssetTypeID,
 					A.ID,
@@ -121,7 +121,6 @@ begin
 					inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
 					inner join p2 as p on p.Object = I.Subject and p.ObjectID = I.SubjectID
 					inner join @h H on H.[Level] = p.[Level]+1 and H.ID = A.AssetTypeID
-			where	(@assetID is null or A.ID = @assetID)
 		)
 
 		update	T 
