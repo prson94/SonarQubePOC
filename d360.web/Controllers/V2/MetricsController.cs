@@ -115,6 +115,21 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You are have provided a null metric.");
             }
 
+            if (model.Uid != Guid.Empty)
+            {
+                var metric = MetricsRepository.GetMetricByUid(model.Uid);
+                if (metric == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", $"Metric with UID {model.Uid} does not exist.");
+                }
+
+                if (metric.ParentUid.HasValue && model.IsGroup)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+                }
+
+            }
+
             List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
 
             if (model.ScoreType != null && !allowedScoreTypes.Contains(model.ScoreType.Value))
@@ -122,29 +137,29 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You have not provided valid Score Type.");
             }
 
-            if(model.ScoreType == null)
+            if (model.ScoreType == null)
             {
                 model.ScoreType = ScoreType.Governance;
             }
 
             var allocation = MetricsRepository.GetAllocationByMetricModel(model);
 
-            if(allocation == null)
+            if (allocation == null)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
             }
 
-            
+
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = true;
-            
+
             isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
             if (!isValid)
-            {                
+            {
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
 
-        
+
             if (allocation.IsExternallyCalculated == false && (model.Weight == 0 || model.Weight > 1))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
@@ -161,10 +176,27 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
             }
 
-            if(model.IsGroup && model.ParentUid != null && model.ParentUid != Guid.Empty)
+            if (model.ParentUid != null && model.ParentUid != Guid.Empty)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+                var parent = MetricsRepository.GetMetricByUid(model.ParentUid.Value);
+
+                if (parent == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
+                }
+
+                if (!parent.IsGroup)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Parent metric must have 'IsGroup' value set to True.");
+                }
+
+                if (model.IsGroup || parent.ParentUid != null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
+                }
             }
+
+
 
             var isNew = true;
 
@@ -492,7 +524,7 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
@@ -517,10 +549,10 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
         {
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
-            if(asset == null)
+            if (asset == null)
                 return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid of {asset.uid.ToString()} not found.");
             var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
-            if(assetType == null)
+            if (assetType == null)
                 return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
             return await GetMetricHierarchyByAssetTypeAsync(assetType.uid);
         }
@@ -535,7 +567,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("history/{scoreType}/{assetUid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
         ]
@@ -543,7 +575,7 @@ namespace d360.web.Controllers.V2
         {
             int type = (int)scoreType;
             var model = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid, @type", new { assetUid, type });
-            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model ));
+            return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 
 
