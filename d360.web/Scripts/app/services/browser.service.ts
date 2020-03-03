@@ -453,12 +453,24 @@ export class BrowserService extends BaseObservableService {
                     n.owners.find(i => { return i.key == thisKey; });
             
                 if (existing) {
-                    existing.count += oC.Count;
+                    if (oC.Users) {
+                        console.log(oC.Users);
+                        oC.Users.forEach(u => {
+                            console.log("u:" + u);
+                            if (!existing.users.find(eu => { return eu == u; })) {
+                                existing.count += 1;
+                            }
+                        });
+                    }
+                    else {
+                        existing.count += oC.Count;
+                    }
                 }
                 else {
                     let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
                     assetBrowserTranslationOwnerCount.key = thisKey;
                     assetBrowserTranslationOwnerCount.expanded = false;
+                    assetBrowserTranslationOwnerCount.users = oC.Users;
                     assetBrowserTranslationOwnerCount.count = oC.Count;
                     assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
                     assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;

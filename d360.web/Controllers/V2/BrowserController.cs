@@ -69,7 +69,8 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
-
+                //child.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
+                
                 Recurse(model, hierarchies, child, multiplier+1);
 
                 if (current.items == null)
@@ -111,6 +112,7 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
+                //current.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
                 Recurse(model, hierarchies, current, multiplier + 1);
 
                 if (!model.assets.Any(r => r.key == current.key))
