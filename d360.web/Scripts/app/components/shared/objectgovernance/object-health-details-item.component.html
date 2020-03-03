@@ -1,9 +1,10 @@
 ﻿<div class="scorecard-item" *ngIf="showtype == item?.data?.ScoreType">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="scorecard-heading">
-        <div class="expander-gutter" (click)="toggleDetails()">
+        <div *ngIf="showExpand(item); else noclckGutter" class="expander-gutter" (click)="toggleDetails()">
             <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
         </div>
+        <ng-template #noclckGutter><div class="expander-gutter"></div></ng-template>
         <div class="heading-content">
             <div class="heading-item large">
                 <div class="heading-title">Measure</div>
@@ -22,11 +23,11 @@
                 <div class="heading-value">{{getAsPrecentage(item?.data?.Weight)}}</div>
             </div>
             <div class="heading-item sm badge">
-                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': item?.data?.Value, 'red': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item?.data?.Value, 'rd': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
             </div>
         </div>
     </div>
-    <div class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': isCollapsed}">
+    <div *ngIf="showExpand(item)" class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': isCollapsed}">
         <div class="description-line">
             <div class="expander-gutter">
             </div>
@@ -65,9 +66,10 @@
             <div *ngFor="let child of item?.children">
                 <div class="separator"></div>
                 <div class="heading-content">
-                    <div class="expander-gutter small no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
+                    <div *ngIf="showExpand(child); else noclckGutterSM" class="expander-gutter small no-padding" (click)="child.data.IsCollapsed = !child.data.IsCollapsed">
                         <i class="fa fa-caret-down sm-icon expander" [ngClass]="{'icon-right': child.data.IsCollapsed, 'icon-down': !child.data.IsCollapsed}"></i>
                     </div>
+                    <ng-template #noclckGutterSM><div class="expander-gutter"></div></ng-template>
                     <div class="scorecard-heading" [ngClass]="{'collapsed': isCollapsed}">
                         <div class="heading-item large">
                             <div class="heading-value">{{child?.data?.Name}}</div>
@@ -82,11 +84,11 @@
                             <div class="heading-value">{{getAsPrecentage(child?.data?.Weight)}}</div>
                         </div>
                         <div class="heading-item sm badge">
-                            <span *ngIf="item?.data?.IsGroup" class="d3s-badge green" [ngClass]="{'green': child?.data?.Value, 'red': !child?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
+                            <span *ngIf="item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': child?.data?.Value, 'rd': !child?.data?.Value}">{{child?.data?.Value ? "Pass":"Fail"}}</span>
                         </div>
                     </div>
                 </div>
-                <div class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': child.data.IsCollapsed}">
+                <div *ngIf="showExpand(child)" class="scorecard-heading collapsible-content" [ngClass]="{'collapsed': child.data.IsCollapsed}">
                     <div class="description-line">
                         <div class="expander-gutter">
                         </div>
@@ -122,7 +124,6 @@
                     </div>
                 </div>
             </div>
-            <div class="separator"></div>
         </div>
     </div>
 </div>

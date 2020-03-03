@@ -11,7 +11,7 @@ import { ScoreType } from '../../../models/metrics.model';
     providers: [ScoreService],
 })
 
-export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges, AfterViewInit {
+export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges {
     @Input() item: TreeNode;
     @Input() definition: any[];
     @Input() isloading: boolean = false;
@@ -20,6 +20,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
+    private disableToggle: boolean = false;
     public isCollapsed: boolean = false;
     constructor(protected scoreService: ScoreService) {
         super();
@@ -39,9 +40,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             this.loadItemDetails();
         }
     }
-    ngAfterViewInit(): void {
-        this.loadItemDetails();
-    }
+
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
     }
@@ -61,7 +60,8 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     }
 
     public setCollapsed(val: boolean) {
-        this.isCollapsed = val;
+        if (!this.disableToggle)
+            this.isCollapsed = val;
     }
     private getReadableValue(value: string) {
         switch (value.toLowerCase()) {
@@ -94,8 +94,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
-        return s;
-        
+        return s;   
     }
 
     GetChildPropertValue(parent, child, property) {
@@ -106,5 +105,23 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
                 return childItem[property];
             }
         }
+    }
+    private showExpand(item) {
+        if (this.isloading)
+            return;
+        if ((!item && !item.data) || !this.currentItemDetails) {
+            return;
+        }
+        if (item.data.IsGroup) {
+            if (!item.data.Description && !item.children) {
+                return false;
+            }
+        } else {
+            if (!item.data.Description && !this.currentItemDetails.Conditions) {
+                return false;
+            }
+        }
+        this.disableToggle = false;
+        return true;
     }
 }
