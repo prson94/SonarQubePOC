@@ -1226,7 +1226,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
-        if (this.isInfoWindowVisible) {
+        if (this.isAlertWindowVisible) {
             this.showAlertsByDisplayedAssets();
         }
     }
@@ -1416,6 +1416,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.hideDeselectedAssetTypes(undefined);
             this.hideDeselectedPredicates(undefined);
             this.hideDeselectedResponsibilityTypes(undefined);
+            this.showAlertsByDisplayedAssets();
         });
     }
 
@@ -1810,7 +1811,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.assetsWithAlerts.forEach(a => {
                 model.assets.push({ uid: a });
             });
-
             this.browserService.getAlertsByAsset(model).subscribe(alerts => {
                 if (alerts) {
                     this.alerts = alerts;
@@ -1818,11 +1818,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 else {
                     this.alerts = [];
+                    this.isAlertWindowVisible = false;
                     this.isAlertTabEnabled = false;
                 }
                 this.isAlertPanelLoading = false;
                 this.cdRef.markForCheck();
             });
+        }
+        else {
+            this.isAlertWindowVisible = false;
+            this.isAlertTabEnabled = false;
         }
     }
 
@@ -1830,6 +1835,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
         model.assets.push({ uid: assetUid });
 
+        this.isAlertPanelLoading = true;
         this.browserService.getAlertsByAsset(model).subscribe(alerts => {
             if (alerts) {
                 this.alerts = alerts;
@@ -1839,6 +1845,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.alerts = [];
                 this.isAlertTabEnabled = false;
             }
+            this.isAlertPanelLoading = false;
             this.cdRef.markForCheck();
         });
     }
