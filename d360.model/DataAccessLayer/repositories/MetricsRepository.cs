@@ -441,7 +441,7 @@ namespace d360.model.DataAccessLayer
             switch (type)
             {
                 case ScoreType.Governance:
-                    sql = @"
+                    sql = $@"
                     declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
@@ -486,12 +486,14 @@ namespace d360.model.DataAccessLayer
                     			inner join (
                     				select	max(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
+                                    inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
                                             and EffectiveDate <= @effectiveDate
                     						and EndDate is null
+                                            and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
-                    	where	AssetUid = @assetUid
+                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
