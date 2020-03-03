@@ -20,7 +20,7 @@ namespace d360.core.entities.Metric
 
         public bool IsGroup { get; set; }
 
-        [Required(AllowEmptyStrings = false, ErrorMessage = "You are have provided an invalid name.")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "You have provided an invalid name.")]
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string Name { get; set; }
 
