@@ -5,7 +5,7 @@
                 <div class="heading breakdown">
                     <button *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'selected': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" class="button ng-star-inserted"><span>Governance Score</span></button>
                     <button *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'selected': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality)" class="button ng-star-inserted"><span>Data Quality Score</span></button>
-                    <div *ngIf="!isAllCollapsed() && !showEmptyMessage;else expand" (click)="setCollapsed(true)" class="collapse-btn">Collapse all</div>
+                    <div *ngIf="!isAllCollapsed() && !showEmptyMessage;else expand" (click)="setCollapsed(true)" class="collapse-btn">Collapse All</div>
                     <ng-template #expand><div *ngIf="!showEmptyMessage" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
                 </div>
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">

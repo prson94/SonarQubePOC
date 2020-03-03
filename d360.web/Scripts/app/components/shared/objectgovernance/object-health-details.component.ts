@@ -91,65 +91,90 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
-                            chart: {
-                                zoomType: 'x',
-                                style: {
-                                    fontFamily: 'Source Sans Pro'
-                                },
-                                height: '240px',
+                        chart: {
+                            zoomType: 'x',
+                            style: {
+                                fontFamily: 'Source Sans Pro'
                             },
+                            height: '240px',
+                        },
+                        title: {
+                            text: ''
+                        },
+                        xAxis: {
+                            type: 'datetime',
+                            minTickInterval: (24 * 3600 * 1000),
+                        },
+                        yAxis: {
                             title: {
                                 text: ''
                             },
-                            xAxis: {
-                                type: 'datetime',
-                                minTickInterval: (24 * 3600 * 1000),
+                            labels: {
+                                format: '{value}%'
                             },
-                            yAxis: {
-                                title: {
-                                    text: ''
+                            gridLineWidth: 2,
+                            floor: 0,
+                            ceiling: 100,
+                            tickInterval: 10,
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            line: {
+                                marker: {
+                                    radius: 1
                                 },
-                                min: 0,
-                                max:100
-                            },
-                            credits: {
-                                enabled: false
-                            },
-                            legend: {
-                                enabled: false
-                            },
-                            plotOptions: {
-                                line: {
-                                    marker: {
-                                        radius: 1
-                                    },
-                                    lineWidth: 4,
-                                    states: {
-                                        hover: {
-                                            lineWidth: 6
-                                        }
-                                    },
-                                    threshold: null
+                                lineWidth: 4,
+                                states: {
+                                    hover: {
+                                        lineWidth: 4
+                                    }
                                 },
-                                series: {
-                                    cursor: 'pointer',
-                                    point: {
-                                        events: {
-                                            click: e => {
-                                                this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
-                                                this.loadPoints();
-                                            }
+                                threshold: null
+                            },
+                            series: {
+                                cursor: 'pointer',
+                                point: {
+                                    events: {
+                                        click: e => {
+                                            this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
+                                            this.loadPoints();
                                         }
                                     }
                                 }
+                            }
+                        },
+                        tooltip: {
+                            pointFormat: '<span style="font-weight: bold">{series.name}<span style="padding-left: 4px;font-weight: normal;">{point.y}%</span></span>',
+                            headerFormat: '<span>{point.key}</span><br/>',
+                            useHTML: 'true',
+                            shape: 'square',
+                            borderColor: '#c8cfd9',
+                            borderWidth: 2,
+                        },
+                        series: [{
+                            type: 'line',
+                            name: 'Governance Score',
+                            marker: {
+                                enabled: false,
+                                symbol: 'circle',
+                                radius: 5,
+                                states: {
+                                    hover: {
+                                        fillColor: 'white',
+                                        lineColor: '#FF7155',
+                                        lineWidth: 3
+                                    }
+                                }
                             },
-                            series: [{
-                                type: 'line',
-                                name: 'Governance Score',
-                                data: this.historicalData,
-                                color: '#FF7155'
-                            }]
-                        };
+                            data: this.historicalData,
+                            color: '#FF7155'
+                        }]
+                    };
                     this.isLoading = false;
                 });
         }
