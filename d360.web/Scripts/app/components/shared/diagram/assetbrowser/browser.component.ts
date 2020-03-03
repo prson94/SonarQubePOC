@@ -97,6 +97,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#region Constants
 
+    private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
     private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
 
@@ -1226,7 +1227,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
-        if (this.isInfoWindowVisible) {
+        if (this.isAlertWindowVisible) {
             this.showAlertsByDisplayedAssets();
         }
     }
@@ -1416,6 +1417,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.hideDeselectedAssetTypes(undefined);
             this.hideDeselectedPredicates(undefined);
             this.hideDeselectedResponsibilityTypes(undefined);
+            this.showAlertsByDisplayedAssets();
         });
     }
 
@@ -1650,14 +1652,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (parts.count == 1) {
                     let data = parts.first().data;
                     let uid: string = '';
-                    let emptyUid: string = '00000000-0000-0000-0000-000000000000';
 
-                    if (data.assetUid != null && data.assetUid != emptyUid) {
+                    if (data.assetUid != null && data.assetUid != this.emptyUid) {
                         // selected item is an asset
                         uid = data.assetUid;
                     }
 
-                    if (uid !== '' && uid != emptyUid) {
+                    if (uid !== '' && uid != this.emptyUid) {
                         this.isInfoTabDisabled = false;
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             //this.isInfoWindowVisible = false;
@@ -1810,7 +1811,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.assetsWithAlerts.forEach(a => {
                 model.assets.push({ uid: a });
             });
-
             this.browserService.getAlertsByAsset(model).subscribe(alerts => {
                 if (alerts) {
                     this.alerts = alerts;
@@ -1818,11 +1818,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
                 else {
                     this.alerts = [];
+                    this.isAlertWindowVisible = false;
                     this.isAlertTabEnabled = false;
                 }
                 this.isAlertPanelLoading = false;
                 this.cdRef.markForCheck();
             });
+        }
+        else {
+            this.isAlertWindowVisible = false;
+            this.isAlertTabEnabled = false;
         }
     }
 
@@ -1830,6 +1835,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
         model.assets.push({ uid: assetUid });
 
+        this.isAlertPanelLoading = true;
         this.browserService.getAlertsByAsset(model).subscribe(alerts => {
             if (alerts) {
                 this.alerts = alerts;
@@ -1839,6 +1845,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.alerts = [];
                 this.isAlertTabEnabled = false;
             }
+            this.isAlertPanelLoading = false;
             this.cdRef.markForCheck();
         });
     }
@@ -1968,14 +1975,14 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 let n = node;
                 if (n.isGroup) {
                     // Add the root node's asset information.
-                    if (this.filterModel.IncludeNonLeaf) {
+                    if (this.filterModel.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
                         requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
                     }
                     
 
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                         let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
-                        if (shouldInclude) {
+                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
                             let asset = new AssetBrowserApiHopAssetRequestModel();
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key
@@ -2041,13 +2048,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (n.isGroup) {
 
                     // Add the root node's asset information.
-                    if (this.filterModel.IncludeNonLeaf) {
+                    if (this.filterModel.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
                         requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
                     }
                     
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                         let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
-                        if (shouldInclude) {
+                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
 
                             // Get existing ignored predicates so we can continue to skip these along the impact chain.
                             if (g.data.ignoredPredicates !== undefined) {
@@ -2057,7 +2064,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     }
                                 });
                             }
-                         
+
                             let asset = new AssetBrowserApiHopAssetRequestModel();
                             asset.Uid = g.data.assetUid;
                             asset.Key = g.data.key
@@ -2329,8 +2336,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
                 {
                     click: (e, obj) => {
-                        let emptyUid: string = '00000000-0000-0000-0000-000000000000';
-                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != emptyUid) {
+                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != this.emptyUid) {
                             this.isFilterWindowVisible = false;
                             this.isInfoWindowVisible = true;
                             this.showDetails(obj.part.data.assetUid);
