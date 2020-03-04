@@ -69,18 +69,20 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
                     );
                 }
             })
-        this.groupService.getGroupResourceList(this.groupUid).subscribe(
-            d => {
-                if (d != undefined) {
-                    this.groupItems = d.items;
-                    if (this.groupItems.length > 0) {
-                        this.selectedRow = this.groupItems[0];
-                    }
+        if (this.groupUid != undefined) {
+            this.groupService.getGroupResourceList(this.groupUid).subscribe(
+                d => {
+                    if (d != undefined) {
+                        this.groupItems = d.items;
+                        if (this.groupItems.length > 0) {
+                            this.selectedRow = this.groupItems[0];
+                        }
 
-                    this.isLoading = false;
+                        this.isLoading = false;
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     cancel() {
