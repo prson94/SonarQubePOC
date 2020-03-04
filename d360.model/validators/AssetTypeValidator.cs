@@ -37,7 +37,7 @@ namespace d360.core.validators
         }
 
         public WorkHttpStatus ValidateModel(bool isInsert, AssetTypeUpsert model, AssetType parentAssetType, Predicate predicate, AssetType assetType = null)
-        {            
+        {
             if (!SupportedClasses.Contains(model.Class))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.UnsupportedAssetClass);
 
@@ -46,9 +46,9 @@ namespace d360.core.validators
 
             if (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
-            
+
             #region Basic Model Validation
-            
+
             List<ValidationResult> validationResults = new List<ValidationResult>();
             bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
             if (!isValid)
@@ -57,7 +57,7 @@ namespace d360.core.validators
             }
 
             #endregion
-            
+
             if (!isInsert)
             {
                 if (assetType == null)
@@ -140,10 +140,10 @@ namespace d360.core.validators
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
 
-            if (model.IconStyle.BackColor !=null && model.IconStyle.ForeColor != null)
+            if (model.IconStyle.BackColor != null && model.IconStyle.ForeColor != null)
             {
                 string backColour = model.IconStyle.BackColor.Length == 4 ? String.Concat(model.IconStyle.BackColor[0], model.IconStyle.BackColor[1], model.IconStyle.BackColor[1], model.IconStyle.BackColor[2], model.IconStyle.BackColor[2], model.IconStyle.BackColor[3], model.IconStyle.BackColor[3]) : model.IconStyle.BackColor;
-                string foreColour = model.IconStyle.ForeColor.Length == 4 ? String.Concat(model.IconStyle.ForeColor[0], model.IconStyle.ForeColor[1], model.IconStyle.ForeColor[1], model.IconStyle.ForeColor[2], model.IconStyle.ForeColor[2], model.IconStyle.ForeColor[3], model.IconStyle.ForeColor[3]) : model.IconStyle.ForeColor;                
+                string foreColour = model.IconStyle.ForeColor.Length == 4 ? String.Concat(model.IconStyle.ForeColor[0], model.IconStyle.ForeColor[1], model.IconStyle.ForeColor[1], model.IconStyle.ForeColor[2], model.IconStyle.ForeColor[2], model.IconStyle.ForeColor[3], model.IconStyle.ForeColor[3]) : model.IconStyle.ForeColor;
 
                 if (backColour.ToUpper().Equals(foreColour.ToUpper()))
                 {
@@ -212,6 +212,18 @@ namespace d360.core.validators
 
             if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
                 defaultAssetFields.Add("code");
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                bool includeParent = false;
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+                if (includeParent)
+                {
+                    defaultAssetFields.Add("parentdisplayname");
+                }
+            }
+
 
             return doesOrderFieldExists || defaultAssetFields.Contains(fieldName.Trim().ToLower());
         }
