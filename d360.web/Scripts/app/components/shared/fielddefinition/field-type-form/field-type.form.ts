@@ -53,7 +53,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() id: number;
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() assetTypeID: number;
     @Input() actionName: string = "Add";
     @Input() objectName: string = '';
     @Output() onComplete = new EventEmitter();
@@ -967,7 +966,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         let object = this.objectType;
         let objectId = this.objectID;
-        let assetId = this.assetTypeID;
 
         if (index != 0) {
             object = last.Object;
@@ -976,7 +974,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getChildRelations(object, assetId)
+                return this.fieldsService.getChildRelations(object, this.objectID)
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));

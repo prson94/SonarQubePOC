@@ -15,8 +15,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: number
-    @Input() assetTypeID: number;
+    @Input() objectID: number;
     @Input() title: string = 'Field Definition';
 
     @Input() showAddButton: boolean = true;

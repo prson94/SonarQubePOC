@@ -1150,7 +1150,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
             var sql = @"select I.ObjectID from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
-                    where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
+                    where P.[Type] = @type and [Object] = @object and ObjectID = @objectId";
             var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
 
             if (!childIds.Any())
