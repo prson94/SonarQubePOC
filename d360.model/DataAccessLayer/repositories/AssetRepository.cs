@@ -398,7 +398,7 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns);
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                 whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
 

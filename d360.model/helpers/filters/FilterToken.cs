@@ -78,6 +78,25 @@ namespace d360.model.helpers
             return _stringBuilder.ToString();
         }
 
+        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, string fieldSyntax)
+        {
+            _sqlParams = sqlParams;
+            _value = _value.ToString().Trim('\'');
+            if (_operator == "ct")
+            {
+                _value = $"%{_value.ToString().Replace("*", "%")}%";
+            }
+
+            _stringBuilder.Clear();
+
+            _stringBuilder.Append(fieldSyntax);
+            _stringBuilder.Append(GetSQLOperator(_operator));
+            _stringBuilder.Append($"@filter_{_parameterIdx}");
+
+            _sqlParams.Add($"@filter_{_parameterIdx}", _value);
+            return _stringBuilder.ToString();
+        }
+
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             _fieldType = ft;
