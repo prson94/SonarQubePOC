@@ -55,8 +55,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() targetTypeID: number;
     @Input() hasCloseButton = false;
     @Input() newActionName: string = "New";
-    @Input() hasHeader = true;
-    @Input() copy: boolean;
+    @Input() hasHeader = true;    
     @Input() selectedObject: string;
     @Input() selectedObjectID: any;
     @Input() adding: boolean = false;
@@ -147,8 +146,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != undefined) {
-            this.editedItem = _.cloneDeep(this.selection);
-            this.action = this.copy ? "Copy" : this.action;
+            this.editedItem = _.cloneDeep(this.selection);            
         } else {
             this.editedItem = {};
             this.action = this.newActionName;
@@ -209,10 +207,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.fields = result;
 
             this.fields.forEach(f => {
-                if (this.copy == true && f.FieldName == "Name") {
-                    f.Value = "";
-                }
-
+                
                 if (f.Category == null)
                 {
                     currentCategory = "";
@@ -450,11 +445,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         this.savingInProgress = true;
         let action = (this.selection == null ? "new" : "edit");
-        let values: any = {};
-        if (this.copy == true) {
-            action = this.action;
-        }
-
+        let values: any = {};        
 
         //adjust any dates to utc
         for (var p in this.form.value) {

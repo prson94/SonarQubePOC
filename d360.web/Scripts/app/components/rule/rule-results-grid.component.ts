@@ -1,11 +1,11 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ViewChild } from '@angular/core';
+﻿import { Input, Component, SimpleChange, ViewChild } from '@angular/core';
 import { RulesService } from '../../services/rules.service';
 import { BaseComponent } from '../shared/base.component';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import { Rule, RuleResult, RuleResultPagedResults, RuleResultFilter } from '../../models/rule.model';
+import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
-import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression  } from '../../models/grid-definition.model';
+import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression  } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
 
 @Component({
@@ -45,7 +45,6 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                     <col style="width: 150px">
                                     <col style="width: 150px">
                                     <col style="width: 200px">
-                                    <col style="width: 200px">
                                 </colgroup>
                             </ng-template> 
                             <ng-template pTemplate="header">
@@ -73,15 +72,10 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                     <th [pSortableColumn]="'Passed'">
                                         Passed
                                         <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'FusionAttribute'">
-                                        Fusion
-                                        <d3s-sortIcon [field]="'FusionAttribute'"></d3s-sortIcon>
-                                    </th>
+                                    </th>                                    
                                     <th [pSortableColumn]="''"></th>
                                 </tr>
                                 <tr [hidden]="showSimpleFilter">
-                                    <th></th>
                                     <th></th>
                                     <th></th>
                                     <th></th>
@@ -106,7 +100,6 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
                                             <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
                                             <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
                                     </td>
-                                    <td>{{item.FusionAttribute}}</td>
                                     <td></td>
                                 </tr>
                             </ng-template>
@@ -121,7 +114,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 
 export class RuleResultsGridComponent extends BaseComponent {
 
-    @Input() implementationId: number;
+    @Input() ruleId: number;
     @Input() showTitle: boolean = true;
 
     simpleTextFilter: string;
@@ -151,7 +144,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['implementationId'] && this.implementationId) {
+        if (changes['ruleId'] && this.ruleId) {
             this.filters = [];
             this.getData();
         }
@@ -164,7 +157,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private getData() {
-        if (!this.implementationId) {
+        if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
         }
@@ -178,7 +171,7 @@ export class RuleResultsGridComponent extends BaseComponent {
             }
         }
 
-        this.ruleService.getResultsByRule(this.implementationId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleTextFilter)
+        this.ruleService.getResultsByRule(this.ruleId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleTextFilter)
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
@@ -224,7 +217,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private doExport() {
-        this.ruleService.getResultsByRuleExcel(this.implementationId);
+        this.ruleService.getResultsByRuleExcel(this.ruleId);
     }
 
     resetFilters() {
