@@ -145,6 +145,8 @@
     <Compile Include="DataAccessLayer\IFieldsRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\WorkflowRepository.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="helpers\filters\FilterExpressionParser.cs" />
+    <Compile Include="helpers\filters\FilterToken.cs" />
     <Compile Include="IBaseContext.cs" />
     <Compile Include="ICommunityContext.cs" />
     <Compile Include="ICompanyContext.cs" />

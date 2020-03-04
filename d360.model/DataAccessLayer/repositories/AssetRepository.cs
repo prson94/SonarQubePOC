@@ -21,6 +21,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -376,6 +377,19 @@ namespace d360.model.DataAccessLayer
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "includesegments").Value;
                 bool.TryParse(value, out includeSegments);
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns);
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
+
+                foreach(var item in sqlParams)
+                {
+                    dbArgs.Add(item.Key, item.Value);
+                }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
