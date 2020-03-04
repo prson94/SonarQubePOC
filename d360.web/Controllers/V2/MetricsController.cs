@@ -159,10 +159,18 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
 
-
-            if (allocation.IsExternallyCalculated == false && (model.Weight == 0 || model.Weight > 1))
+        
+            if (allocation.IsExternallyCalculated == false)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
+                if (model.Weight <= 0 || model.Weight > 1)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
+                }
+                else if (decimal.Round(model.Weight, 2) != model.Weight)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
+                }
+                    
             }
 
             if (model.IsGroup && model.Conditions.Count > 0)
