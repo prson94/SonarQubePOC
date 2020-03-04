@@ -438,9 +438,11 @@ namespace d360.model.DataAccessLayer
         public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
-
+            string dateString = "";
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
+            else
+                dateString = " or endDate < @EffectiveDate ";
             string sql = "";
             switch (type)
             {
@@ -453,12 +455,19 @@ namespace d360.model.DataAccessLayer
                     
                     drop table if exists #groups;
                     create table #groups (
-                    	[Uid] uniqueidentifier, EffectiveDate date
+                    	[Uid] uniqueidentifier, EffectiveDate date, EndDate date
                     );
                     
                     insert into #groups
                     	select		IA.[Uid],
-                    				max(IV.EffectiveDate) as EffectiveDate
+                    				max(IV.EffectiveDate) as EffectiveDate,
+                                    (SELECT AV.EffectiveDate FROM metrics.AssetVersion AV
+                    					inner join metrics.Asset IA on IA.[Uid] = AV.[Uid] 
+                    												and IA.IsGroup = 1
+                    												and IA.AssetTypeUid = @assetTypeUid 
+                    												and AV.EffectiveDate <= @effectiveDate 
+										order by EffectiveDate desc OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY) 
+                                    as [EndDate]
                     	from		metrics.AssetVersion IV
                     				inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
                     											and IA.IsGroup = 1
@@ -471,11 +480,11 @@ namespace d360.model.DataAccessLayer
                     create table #tbl (
                     	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
                     	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
-                    	[Weight] decimal(5,3), EffectiveDate date, 
+                    	[Weight] decimal(5,3), EffectiveDate date, EndDate date null,
                     	[Value] bit null, [Applies] bit null, [Level] int null, [ScoreType] int null
                     );
                     
-                    with rh as (
+                    with rh as ( 
                     	select	I.MetricAssetUid,
                     			A.ParentUid,
                     			A.Name,	
@@ -483,6 +492,7 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			I.AdjustedWeight as [Weight],
                     			I.EffectiveDate,
+                                I.EndDate,
                     			I.[Value],
                                 A.[ScoreType]
                     	from	metrics.ScoreItem I
@@ -494,7 +504,7 @@ namespace d360.model.DataAccessLayer
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
                                             and EffectiveDate <= @effectiveDate
-                    						and EndDate is null
+                    						and EndDate is null {dateString}
                                             and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
                     	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
@@ -506,6 +516,7 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			V.Weight,
                     			V.EffectiveDate,
+								MV.EndDate as [EndDate],
                     			NULL as Value,
 								A.[ScoreType]
                     	from	metrics.AssetVersion V
@@ -535,7 +546,7 @@ namespace d360.model.DataAccessLayer
                     		inner join h S on S.Uid = T.Uid;
                     
                     select	distinct
-                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
+                    		Uid, ParentUid, [Level], Name, Description, IsGroup, EffectiveDate, EndDate, Weight, Value, ScoreType
                     from	#tbl 
                     order by [Level], Name";
                     break;

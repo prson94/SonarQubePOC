@@ -11,8 +11,8 @@
                 <div class="heading-value">{{item?.data?.Name}}</div>
             </div>
             <div class="heading-item med-lg">
-                <div class="heading-title" title="Effective Dates">Effective Dates</div>
-                <div class="heading-value">{{currentItemDetails?.EffectiveDate | utcDate | date:'shortDate'}}</div>
+                <div class="heading-title" title="Effective Dates">Measure Effective Dates</div>
+                <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item med" title="Defined Weight">
                 <div class="heading-title">Defined Weight</div>
@@ -77,7 +77,7 @@
                         </div>
                         <div class="heading-item med-lg">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'EffectiveDate') | utcDate | date:'shortDate'}}</div>
+                            <div class="heading-value">{{child?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{child?.data?.EndDate ? (child?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
                         </div>
                         <div class="heading-item med">
                             <div class="heading-title no-height"></div>
