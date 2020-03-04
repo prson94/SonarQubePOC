@@ -2912,37 +2912,7 @@ where   ExecutionID = @ExecutionID
                                             }
                                         }
                                     }
-                                    if (at.Object == "RuleType")
-                                    {
-                                        // Check to ensure Threshold is present.
-                                        if (success)
-                                        {
-                                            success = model.Fields.ContainsKey("Threshold");
-                                            if (!success)
-                                            {
-                                                errorMessage = "Asset is missing a required Threshold field value";
-                                            }
-                                            else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
-                                            {
-                                                if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
-                                                {
-                                                    errorMessage = "Threshold value must be between 0 and 1";
-                                                    success = false;
-                                                }
-                                                else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
-                                                {
-                                                    errorMessage = "Threshold value cannot exceed 3 decimal places.";
-                                                    success = false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                errorMessage = "Threshold value is not a valid number";
-                                                success = false;
-                                            }
-                                            
-                                        }
-                                    }
+                                    
                                     if (at.Object == "ReferenceItemType")
                                     {
                                         // Check to ensure Code is present.
@@ -2954,8 +2924,37 @@ where   ExecutionID = @ExecutionID
                                     }
                                 }
 
-                                if (success)
+                                if (success && at.Object == "RuleType")
                                 {
+                                    // Check to ensure Threshold is present.
+                                    success = model.Fields.ContainsKey("Threshold");
+                                    if (!success)
+                                    {
+                                        errorMessage = "Asset is missing a required Threshold field value";
+                                    }
+                                    else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
+                                    {
+                                        if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
+                                        {
+                                            errorMessage = "Threshold value must be between 0 and 1";
+                                            success = false;
+                                        }
+                                        else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
+                                        {
+                                            errorMessage = "Threshold value cannot exceed 3 decimal places.";
+                                            success = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        errorMessage = "Threshold value is not a valid number";
+                                        success = false;
+                                    }
+                                }
+
+                                if (success)
+                                {                                    
+
                                     fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
                                     var row = table.NewRow();
