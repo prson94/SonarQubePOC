@@ -1149,9 +1149,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj)
         {
-
-            var sql = @"select I.ObjectID from IntersectType I
+            var sql = @"select AT.ID from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
+                    inner join AssetType AT on AT.Object = I.Object and AT.ObjectID = I.ObjectID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
             var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
 

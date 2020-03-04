@@ -975,7 +975,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getChildRelations(object, objectId)
+                return this.fieldsService.getChildRelations(object, this.objectID)
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
