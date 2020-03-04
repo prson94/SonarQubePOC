@@ -72,12 +72,26 @@
                                 <button *ngIf="isInfoWindowVisible" [class]="(panelTabIndex == 0) ? 'tab-selected' : 'tab'" (click)="switchToInfoDetailTab()">Details</button>
                                 <button *ngIf="isInfoWindowVisible" [class]="(panelTabIndex == 1) ? 'tab-selected' : 'tab'" [disabled]="!OwnershipTabEnabled()" (click)="switchToOwnerDetailTab()">Ownership</button>
 
-                                <button *ngIf="isFilterWindowVisible" class="tab-selected">Filters</button>
+                                <!--button *ngIf="isFilterWindowVisible" class="tab-selected">Filters</button-->
+                                <div class="saved-filter-controls" *ngIf="isFilterWindowVisible">
+                                    <p-dropdown [(ngModel)]="selectedFilter"
+                                                [options]="savedFilters"
+                                                [showClear]="true"
+                                                [style]="{'width':'100%'}"
+                                                optionLabel="name"
+                                                placeholder="Select a predefined filter"
+                                                optionLabel="name"
+                                                (onChange)="applySavedFilter($event)"
+                                                styleClass="filter-dropdown"
+                                                style="width:100%"></p-dropdown>
+                                    <p-menu #filtermenu [popup]="true" [model]="filtermenuItems" appendTo="body"></p-menu>
+                                    <button type="button" pButton icon="fa fa-ellipsis-v" (click)="filtermenu.toggle($event)"></button>
+                                </div>
 
                                 <button *ngIf="isAlertWindowVisible" class="tab-selected">Alerts</button>
 
                                 <button *ngIf="isAddRelationshipWindowVisible" class="tab-selected">Lineage</button>
-                                
+
                                 <button *ngIf="isSettingWindowVisible" class="tab-selected">General</button>
                             </div>
                         </div>
@@ -299,3 +313,21 @@
         </div>
     </div>
 </div>
+
+<d3s-modal [title]="'Create New Filter Set'" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
+    <form #createfilterform="ngForm">
+        <div class="content">
+            <div class="row">
+                <label for="name" style="margin-right:10px;">Name</label>
+                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name"/>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="button" (click)="createUserFilterCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+            <span class="grow"></span>
+            <button class="button primary" (click)="createUserFilterSave()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid">
+                Create
+            </button>
+        </div>
+    </form>
+</d3s-modal>
