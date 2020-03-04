@@ -96,6 +96,7 @@
     <Compile Include="Core\Helpers.cs" />
     <Compile Include="Core\MessagesHelper.cs" />
     <Compile Include="Core\SqlConstants.cs" />
+    <Compile Include="FilterParserTests\FilterExpressionParserTests.cs" />
     <Compile Include="LibraryTests\JsonTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="V2ControllerTests\ActionsControllerTest.cs" />
