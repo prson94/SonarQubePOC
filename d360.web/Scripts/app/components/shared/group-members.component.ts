@@ -54,29 +54,31 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         this.groupService.getGroupUid(this.groupId).subscribe(
             g => {
-                if (g != undefined)
+                if (g.length > 0) {
                     this.groupUid = g[0].uid;
-                this.groupService.getGroupResourceList(this.groupUid).subscribe(
-                    d => {
-                        if (d != undefined)
-                            this.groupItems = d.items;
-                        if (this.groupItems.length > 0) {
-                            this.selectedRow = this.groupItems[0];
-                        }
+                    this.groupService.getGroupResourceList(this.groupUid).subscribe(
+                        d => {
+                            if (d != undefined)
+                                this.groupItems = d.items;
+                            if (this.groupItems.length > 0) {
+                                this.selectedRow = this.groupItems[0];
+                            }
 
-                        this.isLoading = false;
-                    }
-                );
+                            this.isLoading = false;
+                        }
+                    );
+                }
             })
         this.groupService.getGroupResourceList(this.groupUid).subscribe(
             d => {
-                if (d != undefined)
+                if (d != undefined) {
                     this.groupItems = d.items;
-                if (this.groupItems.length > 0) {
-                    this.selectedRow = this.groupItems[0];
-                }
+                    if (this.groupItems.length > 0) {
+                        this.selectedRow = this.groupItems[0];
+                    }
 
-                this.isLoading = false;
+                    this.isLoading = false;
+                }
             }
         );
     }
