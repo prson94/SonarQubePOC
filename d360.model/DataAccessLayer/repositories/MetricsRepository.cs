@@ -551,7 +551,7 @@ namespace d360.model.DataAccessLayer
                     order by [Level], Name";
                     break;
                 case ScoreType.DataQuality:
-                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  si.Value,  ms.ScoreType
+                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, EffectiveDate, EndDate, null,  si.Value,  ms.ScoreType
                     from metrics.Allocation AA
                         inner join assettype att on AA.AssetTypeUid = att.[uid]
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
