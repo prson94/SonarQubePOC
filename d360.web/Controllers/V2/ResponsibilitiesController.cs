@@ -270,6 +270,7 @@ namespace d360.web.Controllers.V2
             Route("assignments"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(AssetResponsibilityItemModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 assets per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -310,7 +311,6 @@ namespace d360.web.Controllers.V2
                                 {
                                     if (pageSize < 1) pageSize = 1;
                                 }
-                                if (pageSize > 250) pageSize = 250; // max page size is 250 people.
                                 break;
                             case "_pagenum":
                                 if (int.TryParse(q.Value, out pageNum))
@@ -339,6 +339,13 @@ namespace d360.web.Controllers.V2
                         }
                     }
                 });
+
+                bool isValid = isPageSizeAndNumValid(pageSize, pageNum);
+
+                if (isValid == false)
+                {
+                   return ReturnApiError(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large");
+                }
 
                 //validation dont allow assigneeuid filter across entire universe
 

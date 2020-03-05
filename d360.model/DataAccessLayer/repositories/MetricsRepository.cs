@@ -408,7 +408,11 @@ namespace d360.model.DataAccessLayer
                     					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE C.ValueJson END) as [Value]
                     			from	[metrics].[AssetVersionCondition] C
                     					inner join FieldType F on F.ID = C.FieldTypeID
-                                        left join FieldLookupValue FL on FL.FieldTypeID = F.ID and [Value] = C.ValueJson
+                                        inner join FieldLookupValue FL on 
+				                            FL.FieldTypeID = F.ID 
+				                            and F.LookupObjectType = FL.LookupObjectType 
+				                            and F.LookupObjectID = FL.LookupObjectID 
+                                            and [Value] = C.ValueJson
                     			where	[Uid] = h.[Uid]
                     					and EffectiveDate = h.EffectiveDate
                     			for json path
@@ -441,7 +445,7 @@ namespace d360.model.DataAccessLayer
             switch (type)
             {
                 case ScoreType.Governance:
-                    sql = @"
+                    sql = $@"
                     declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
@@ -486,11 +490,14 @@ namespace d360.model.DataAccessLayer
                     			inner join (
                     				select	max(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
+                                    inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
+                                            and EffectiveDate <= @effectiveDate
                     						and EndDate is null
+                                            and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
-                    	where	AssetUid = @assetUid
+                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
@@ -539,15 +546,8 @@ namespace d360.model.DataAccessLayer
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
 	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
 	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
-                        inner join (
-                    				select	max(EffectiveDate) as EffectiveDate
-                    				from	metrics.ScoreItem I
-                    				where	AssetUid = @assetUid
-                    						and MetricAssetUid = I.MetricAssetUid
-                    						and EndDate is null
-                    			) MI on MI.EffectiveDate = ms.EffectiveDate
                     where 
-                        a.[uid] = @assetUid and AA.ScoreType = {(int)type}
+                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and EndDate is null
                     order by Name";
                     break;
                 case ScoreType.Perceptional:

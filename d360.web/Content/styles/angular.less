@@ -4621,6 +4621,10 @@ d3s-status-badge + .d3s-score-container {
         text-align: center;
         color: #252c41;
 
+        .nomast& {
+            width: 80px;
+        }
+
         .mast& {
             width: 104px;
             height: 23px;
@@ -4634,6 +4638,10 @@ d3s-status-badge + .d3s-score-container {
         width: 80px;
         border-radius: 12px;
         display: flex;
+
+        .nomast& {
+            width: 80px;
+        }
 
         .mast& {
             height: 30px;
@@ -4650,6 +4658,10 @@ d3s-status-badge + .d3s-score-container {
             font-size: 14px;
             font-weight: 600;
             color: #ffffff;
+
+            .nomast& {
+                width: 80px;
+            }
 
             .mast& {
                 width: 104px;
@@ -5797,12 +5809,12 @@ a.mid-blue {
             .collapse-btn {
                 margin-left: auto;
                 line-height: 1.6;
-                padding: 8px;
+                padding: 8px 0px 8px 8px;
                 border-radius: 4px;
                 color: @igx-blue;
 
                 &:hover {
-                    background-color: rgba(0,0,0,0.03);
+                    text-decoration: underline;
                     cursor: pointer;
                 }
             }
@@ -5846,6 +5858,7 @@ a.mid-blue {
                     font-size: 16px;
                     font-weight: 600;
                     color: @igx-darkblue;
+                    padding-left: 8px;
                 }
 
                 .highcharts-container {
@@ -5862,7 +5875,7 @@ a.mid-blue {
     border: solid 1px rgba(185, 192, 197, 0.7);
     background-color: #ffffff;
     max-height: initial;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
 
     &.empty {
         padding: 24px;
@@ -5881,7 +5894,8 @@ a.mid-blue {
 
         .expander-gutter {
             display: inline-flex;
-            flex-direction: row;
+            flex-direction: column;
+            align-items: center;
             width: 32px;
             padding: 16px;
             margin-top: 8px;
@@ -5950,6 +5964,7 @@ a.mid-blue {
                 &.desc {
                     margin-left: 0px;
                     width: 40%;
+                    margin-right: 6px;
 
                     &.large {
                         width: 46%;
@@ -5975,6 +5990,7 @@ a.mid-blue {
                     margin-left: 0px;
                     display: inline-flex;
 
+
                     .d3s-badge {
                         line-height: 24px;
                         color: #ffffff;
@@ -5982,18 +5998,39 @@ a.mid-blue {
                         height: 24px;
                         border-radius: 16px;
                         margin-top: 0px;
+
+                        &.grn {
+                            background: #4ecc89;
+                        }
+
+                        &.rd {
+                            background: #ed3765;
+                        }
                     }
                 }
 
                 .heading-title {
-                    padding: 0px 4px;
                     font-weight: bold;
                     height: 20px;
                     overflow: hidden;
+                    word-break: break-all;
+                    min-width: 80px;
+
+                    &.no-height {
+                        height: 0px;
+                    }
+
+                    &.no-min {
+                        min-width: 0px;
+                    }
+
+                    &.condition {
+                        min-width: 350px;
+                    }
                 }
 
                 .heading-value {
-                    padding: 0px 4px;
+                    word-break: break-word;
 
                     &.block-with-text {
                         overflow: hidden;
@@ -6001,7 +6038,7 @@ a.mid-blue {
                         line-height: 1.25em;
                         max-height: 4em;
                         text-align: justify;
-                        margin-right: -1em;
+                        margin-right: 0em;
                         padding-right: 1em;
                     }
                 }

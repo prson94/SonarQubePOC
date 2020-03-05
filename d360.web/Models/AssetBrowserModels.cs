@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -284,7 +285,20 @@ namespace d360.web.Models
     public class AssetBrowserOwnerCountModel
     {
         public string ResponsibilityType { get; set; }
+        
         public int ResponsibilityTypeID { get; set; }
+        
+        public string UsersList { get; set; }
+
+        public int[] Users
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(UsersList)) UsersList = "[]"; 
+                return JsonConvert.DeserializeObject<int[]>(UsersList);
+            }
+        }
+
         public int Count { get; set; }
     }
 

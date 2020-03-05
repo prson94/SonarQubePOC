@@ -203,6 +203,39 @@ namespace d360.web.Controllers.V2
             return true;
         }
 
+        public string isPageSizeAndNumValidParma(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var parameters = queryParams.ToList();
+            int pageSize = 0;
+            int pageNum = 0;
+
+            if (parameters.Any(q => q.Key == "_pageSize"))
+            {
+                var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
+                if (int.TryParse(_pageSize, out pageSize))
+                {
+                    if (pageSize > 200000) return "Invalid pageSize value provided. Number is too large";
+                    if (pageSize < 0) return "Invalid pageSize value provided. Cannot be a negative value";
+                }
+                else
+                    return "Invalid pageSize value provided. Must be a numeric value ";
+            }
+
+            if (parameters.Any(q => q.Key == "_pageNum"))
+            {
+                var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
+                if (int.TryParse(_pageNum, out pageNum))
+                {
+                    if (pageNum > 10000) return "Invalid pageNum value provided. Number is too large";
+                    if (pageNum < 0) return "Invalid pageNum value provided. Cannot be a negative value";
+                }
+                else
+                    return "Invalid pageNum value provided. Must be a numeric value ";
+            }
+
+            return "";
+        }
+
         protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)
         {
             string json = "";

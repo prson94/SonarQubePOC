@@ -1,8 +1,9 @@
-﻿import { Component, Input, Output, EventEmitter, OnChanges, AfterViewInit, SimpleChange } from '@angular/core';
+﻿import { Component, Input, EventEmitter, OnChanges, AfterViewInit, SimpleChange, Output,   } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { TreeNode } from 'primeng/api';
 import { ScoreType } from '../../../models/metrics.model';
+import { expand } from 'rxjs/operators';
 
 
 @Component({
@@ -11,19 +12,26 @@ import { ScoreType } from '../../../models/metrics.model';
     providers: [ScoreService],
 })
 
-export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges, AfterViewInit {
+export class ObjectHealthDetailsItemComponent extends BaseComponent implements OnChanges {
     @Input() item: TreeNode;
     @Input() definition: any[];
     @Input() isloading: boolean = false;
-
     @Input() showtype: ScoreType;
+    @Output() checkExpander = new EventEmitter();
+
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
+    private disableToggle: boolean = false;
     public isCollapsed: boolean = false;
+
+    public expandable: boolean = false;
+    private childExpandable: boolean = false;
+
     constructor(protected scoreService: ScoreService) {
         super();
     }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
         for (let p in changes) {
@@ -39,9 +47,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             this.loadItemDetails();
         }
     }
-    ngAfterViewInit(): void {
-        this.loadItemDetails();
-    }
+
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
     }
@@ -55,13 +61,15 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             var definitionItem = this.definition.filter(x => { return x.Uid == this.item.data.Uid })[0];
             if (definitionItem) {
                 this.currentItemDetails = definitionItem;
+                this.checkExpanders();
             }
         }
         this.isLoading = false;
     }
 
     public setCollapsed(val: boolean) {
-        this.isCollapsed = val;
+        if (!this.disableToggle)
+            this.isCollapsed = val;
     }
     private getReadableValue(value: string) {
         switch (value.toLowerCase()) {
@@ -94,8 +102,9 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
-        return s;
-        
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
+        return s;   
     }
 
     GetChildPropertValue(parent, child, property) {
@@ -105,6 +114,22 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
                 let childItem = parentItem.Metrics.filter(y => { return y.Uid == child.Uid })[0];
                 return childItem[property];
             }
+        }
+    }
+    private checkExpanders() {
+        if (this.item && this.item.data && this.currentItemDetails) {
+            this.expandable = !(!this.item.data.Description && !this.item.children && !this.currentItemDetails.Conditions);
+            if (this.item.children) {
+                this.item.children.forEach(x => {
+                    let expandable = !(
+                        !x.data.Description
+                        && !x.children
+                        && !(this.GetChildPropertValue(this.item, x, 'Conditions').length && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
+                        )   
+                    x.data.expandable = expandable;
+                });
+            }
+            this.checkExpander.emit();
         }
     }
 }

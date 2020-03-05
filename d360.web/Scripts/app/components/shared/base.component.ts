@@ -212,7 +212,7 @@ export class BaseComponent {
                     'Governance Score',
                     'Governance Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}Governance`, null, 10
+                    `/${baseUrl}Governance`, null, 10
                 );
                 this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
             }
@@ -222,7 +222,7 @@ export class BaseComponent {
                     'Data Quality Score',
                     'Data Quality Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}DataQuality`, null, 20
+                    `/${baseUrl}DataQuality`, null, 20
                 );
                 this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
             }
