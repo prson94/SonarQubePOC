@@ -1,4 +1,4 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList} from '@angular/core';
+﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList, ElementRef, AfterContentInit} from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, AverageScore } from '../../../models/score.model';
@@ -10,6 +10,7 @@ import { ignoreElements } from 'rxjs/operators';
 import { debug } from 'util';
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+import { Element } from '@angular/compiler';
 
 
 @Component({
@@ -18,7 +19,7 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
     providers: [ScoreService, ObjectStatisticsService],
 })
 
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
+export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges{
     @Input() uid: string;
     @Input() objectName: string;
     scoreHistory: Object;
@@ -38,16 +39,10 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
+    private showExpandAndCollapse: boolean = true;
 
     constructor(protected scoreService: ScoreService, protected objectStatisticsService: ObjectStatisticsService) {
         super();
-    }
-
-    ngAfterViewInit(): void {
-        this.loadPoints();
-        this.loadSeriesData();
-        this.loadDefinition();
-        this.loadTypesAndLatestScore();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -59,9 +54,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
         if (requiresLoad) {
             this.isLoading = true;
-            this.loadPoints();
-            this.loadSeriesData();
-            this.loadDefinition();
             this.loadTypesAndLatestScore();
         }
     }
@@ -69,8 +61,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         if (this.uid) {
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
                 this.scoreTypes = x;
-                if (x.length > 0)
-                    this.selectedScoreType = x[0];
+                if (x.length > 0) {
+                    this.setSelectedButton(x[0])
+                }
             });
             this.objectStatisticsService.getSearchDetails(this.uid).subscribe(
                 result => {
@@ -113,9 +106,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 format: '{value}%'
                             },
                             gridLineWidth: 2,
-                            floor: 0,
-                            ceiling: 100,
-                            tickInterval: 10,
+                            min: 0,
+                            max: 100,
+                            tickInterval: 20,
                         },
                         credits: {
                             enabled: false
@@ -191,7 +184,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.pointBreakdown = res;
                 this.isDQAndNoItems();
                 this.pointBreakdownTree = [];
-
                 let tree = (node: any) => {
                     let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
 
@@ -237,17 +229,23 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality }).length == 0
+            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
     private loadDefinition() {
         if (this.uid) {
-            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res; });
+            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res;});
             this.isLoading = false;
         }
     }
-   
+    hasAnyExpanders() {
+        if (this.OHDitems) {
+            this.showExpandAndCollapse = this.OHDitems.filter(x => {
+                return x.expandable;
+            }).length > 0;
+        }
+    }
 
     private setSelectedButton(scoreType: ScoreType) {
         switch (scoreType) {
@@ -255,6 +253,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
+                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints();
                 this.isDQAndNoItems();
@@ -263,6 +262,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
+                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints();
                 this.isDQAndNoItems();
@@ -364,6 +364,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
         return s;
     }
 }
