@@ -442,7 +442,7 @@ namespace d360.model.DataAccessLayer
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
             else
-                dateString = " or endDate < @EffectiveDate ";
+                dateString = " or endDate <= @EffectiveDate ";
             string sql = "";
             switch (type)
             {
