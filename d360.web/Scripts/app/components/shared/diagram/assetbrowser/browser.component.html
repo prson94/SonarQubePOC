@@ -84,7 +84,7 @@
                                                 (onChange)="applySavedFilter($event)"
                                                 styleClass="filter-dropdown"
                                                 style="width:100%"></p-dropdown>
-                                    <p-menu #filtermenu [popup]="true" [model]="filtermenuItems" appendTo="body"></p-menu>
+                                    <p-menu #filtermenu [popup]="true" [model]="getFiltermenuItems()" appendTo="body"></p-menu>
                                     <button type="button" pButton icon="fa fa-ellipsis-v" (click)="filtermenu.toggle($event)"></button>
                                 </div>
 

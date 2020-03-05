@@ -100,12 +100,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     saveFilterModalWorking: boolean = false;
     items: MenuItem[];
 
-    filtermenuItems: MenuItem[] = [
-        { label: 'Save', command: (event) => { this.updateUserFilter() } },
-        { label: 'Add', command: (event) => { this.addUserFilter() } },
-        { label: 'Remove', command: (event) => { this.removeUserFilter() } }
-    ];
-
     //#endregion
 
     //#region Constants
@@ -476,7 +470,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
     }
 
+    private getFiltermenuItems(): MenuItem[] {
+        return [
+            { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.updateUserFilter() } },
+            { label: 'Add', command: (event) => { this.addUserFilter() } },
+            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.removeUserFilter() } }
+        ];
+    }
+
+    private hasSelectedUserFilter(): boolean {
+        return (this.selectedFilter != undefined && this.selectedFilter != null);
+    }
+
     private applySavedFilter(e) {
+        if (!this.hasSelectedUserFilter())
+            return;
+
         var selectedAssetTypes = this.filterSelectionsModel.AssetTypeOptions
             .filter(a => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
             .map((a) => a.AssetTypeId);
@@ -528,12 +537,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.cdRef.markForCheck();
             });
     }
+
     private createUserFilterCancel() {
         this.saveFilterModalVisible = false;
     }
 
     private updateUserFilter() {
-        if (this.selectedFilter == undefined)
+        if (!this.hasSelectedUserFilter())
             return;
 
         this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
@@ -560,7 +570,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private removeUserFilter() {
-        if (this.selectedFilter != undefined) {
+        if (this.hasSelectedUserFilter()) {
             this.browserService
                 .deleteUserFilter(this.selectedFilter)
                 .subscribe(success => {
