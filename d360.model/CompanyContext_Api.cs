@@ -1013,6 +1013,19 @@ from	api.ExecutionField T
                 QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
         }
 
+        public void SendApiGraphEvent(ApiExecutionInfo info)
+        {
+            var e = new AssetEventInfo()
+            { 
+              execution = info,
+              CompanyID = CurrentCompanyID,
+              Type = AssetEventType.Execution
+            };
+
+
+            QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
+        }
+
         #region Validation
 
         private List<DataRow> ValidateFields(
@@ -2733,7 +2746,7 @@ where   ExecutionID = @ExecutionID
             client.TrackTrace($"API v2 Execution ID[{execution.ExecutionID.ToString()}", propsToSend);
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -3811,25 +3824,29 @@ select [uid] from #ParentChildRelationships",
 
                         Connection.Close();
 
-                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
-
-                        if (parentIntersectGuids.Any())
+                        if (sendGraphEvents)
                         {
-                            graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
+                            IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+
+                            if (parentIntersectGuids.Any())
                             {
-                                uid = i,
-                                Success = true
-                            }));
-                        }
+                                graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
+                                {
+                                    uid = i,
+                                    Success = true
+                                }));
+                            }
 
-                        try
-                        {
-                            var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
-                            sw.Restart();
-                            SendAssetGraphEvents(graphResults, changedFields,true);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                            try
+                            {
+                                var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                                sw.Restart();
+                                SendAssetGraphEvents(graphResults, changedFields, true);
+                                this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                            }
+                            catch { }
                         }
-                        catch { }
+                       
 
 
                         if (sendWorkflowEvents)
