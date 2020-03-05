@@ -834,6 +834,8 @@ export class StoredAssetBrowserFilterModel {
     assetTypes: StoredAssetBrowserAssetTypeFilterModel[] = [];
     predicates: StoredAssetBrowserPredicateFilterModel[] = [];
     responsibilityTypes: StoredAssetBrowserResponsibilityTypeFilterModel[] = [];
+    ancestryMode: number;
+    numberOfHops: number;
     isDefault: boolean;
     createdOn: string;
     updatedOn: string;

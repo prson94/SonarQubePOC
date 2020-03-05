@@ -506,6 +506,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(selectedPredicates, this.filterSelectionsModel.FilterPredicates);
         this.filterPredicateChange({ value: this.selectedFilterPredicates });
+
+        if (this.selectedFilter.numberOfHops) {
+            this.filterModel.NumberOfHops = this.selectedFilter.numberOfHops;
+            this.filterNumberOfHopsChange();
+        }
+
+        if (this.selectedFilter.ancestryMode) {
+            this.filterModel.AncestryMode = this.selectedFilter.ancestryMode;
+            this.filterTriggerVisualizationUpdate();
+        }
     }
 
     private addUserFilter() {
@@ -521,6 +531,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
             .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name } });
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
         this.createUserFilter.name = '';
     }
 
@@ -556,6 +568,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
             .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name } });
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
 
         this.browserService
             .saveUserFilter(this.createUserFilter)
