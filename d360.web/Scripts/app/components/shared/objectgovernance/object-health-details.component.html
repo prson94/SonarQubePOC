@@ -5,11 +5,13 @@
                 <div class="heading breakdown">
                     <button *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'selected': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" class="button ng-star-inserted"><span>Governance Score</span></button>
                     <button *ngIf="hasAnyScoreType(ScoreType.DataQuality)" [ngClass]="{'selected': showDQScores}" (click)="setSelectedButton(ScoreType.DataQuality)" class="button ng-star-inserted"><span>Data Quality Score</span></button>
-                    <div *ngIf="!isAllCollapsed() && !showEmptyMessage;else expand" (click)="setCollapsed(true)" class="collapse-btn">Collapse All</div>
-                    <ng-template #expand><div *ngIf="!showEmptyMessage" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
+                    
+                        <div *ngIf="!isAllCollapsed() && !showEmptyMessage && showExpandAndCollapse;else expand" (click)="setCollapsed(true)" class="collapse-btn">Collapse All</div>
+                        <ng-template #expand><div *ngIf="!showEmptyMessage && showExpandAndCollapse" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
+                   
                 </div>
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
-                    <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="isloading"></d3s-object-health-details-item>
+                    <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="isloading" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
                 </div>
                 <ng-template #emptyMessage>
                     <div class="scorecards-container">
