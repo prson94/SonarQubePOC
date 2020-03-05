@@ -20,6 +20,10 @@ namespace igx.UnitTests.FilterExpressionTests
         private Func<string, string, bool> CheckParamOccurance =
             (string sql, string param) => { return sql.Contains(param) && sql.IndexOf(param) == sql.LastIndexOf(param); };
 
+        private Func<string, string, bool> CheckMultipleParamOccurance =
+          (string sql, string param) => { return sql.Contains(param) && sql.IndexOf(param) != sql.LastIndexOf(param); };
+
+
         public FilterExpressionParserTests()
         {
             List<FieldType> fieldTypes = new List<FieldType>();
@@ -29,6 +33,8 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "boolean", ID = 3, Type = "Boolean" });
             fieldTypes.Add(new FieldType() { Name = "date", ID = 4, Type = "Date" });
             fieldTypes.Add(new FieldType() { Name = "text", ID = 5, Type = "Text" });
+            fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
 
             fieldTypes.ForEach(x =>
             {
@@ -72,7 +78,19 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("(text eq 'text') and test and")]
         [InlineData("text bla 'word'")]
         [InlineData("text eq 'word' xor text eq 'test'")]
-
+        [InlineData("lookup ct 'validlookupvalue'")]
+        [InlineData("lookup lt 'validlookupvalue'")]
+        [InlineData("lookup gt 'validlookupvalue'")]
+        [InlineData("lookup le 'validlookupvalue'")]
+        [InlineData("lookup ge 'validlookupvalue'")]
+        [InlineData("lookup eq 'invalidlookupvalue'")]
+        [InlineData("lookup ne 'invalidlookupvalue'")]
+        [InlineData("relationship ct 'relationshipassetvalue'")]
+        [InlineData("relationship lt 'relationshipassetvalue'")]
+        [InlineData("relationship gt 'relationshipassetvalue'")]
+        [InlineData("relationship le 'relationshipassetvalue'")]
+        [InlineData("relationship ge 'relationshipassetvalue'")]
+        [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -174,6 +192,36 @@ namespace igx.UnitTests.FilterExpressionTests
             foreach (var param in sqlParams)
             {
                 Assert.True(CheckParamOccurance(sql, param.Key));
+            }
+        }
+
+        [Theory]
+        [InlineData("lookup eq 'validlookupvalue'")]
+        [InlineData("lookup ne 'validlookupvalue'")]
+        public void ValidLookupTests(string expression)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            string sql = filterParser.Parse(expression, out sqlParams);
+            Assert.True(sqlParams.Count == 1);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckParamOccurance(sql, param.Key));
+                Assert.True(sql.Contains("string_split"));
+            }
+        }
+
+        [Theory]
+        [InlineData("relationship eq 'relationshipassetvalue'")]
+        [InlineData("relationship ne 'relationshipassetvalue'")]
+        public void ValidRelationshipTests(string expression)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            string sql = filterParser.Parse(expression, out sqlParams);
+            Assert.True(sqlParams.Count == 1);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckMultipleParamOccurance(sql, param.Key));
+                Assert.True(sql.Contains("select id from intersectdetail where intersecttypeid"));
             }
         }
 

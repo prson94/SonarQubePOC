@@ -329,5 +329,6 @@ namespace d360.model
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
+        int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
     }
 }

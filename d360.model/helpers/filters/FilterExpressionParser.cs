@@ -20,7 +20,11 @@ namespace d360.model.helpers
         private List<string> fieldColumns = new List<string>();
         private FilterExpressionParseType parseType;
 
-        public FilterExpressionParser(ICompanyContext ctx, List<FieldType> fields, List<string> columns, FilterExpressionParseType type = FilterExpressionParseType.CustomFields)
+        public FilterExpressionParser(
+            ICompanyContext ctx, 
+            List<FieldType> fields, 
+            List<string> columns, 
+            FilterExpressionParseType type = FilterExpressionParseType.CustomFields)
         {
             this.CompanyContext = ctx;
             this.fieldTypes = fields;
