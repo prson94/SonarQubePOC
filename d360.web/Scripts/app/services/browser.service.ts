@@ -453,9 +453,7 @@ export class BrowserService extends BaseObservableService {
             
                 if (existing) {
                     if (oC.Users) {
-                        console.log(oC.Users);
                         oC.Users.forEach(u => {
-                            console.log("u:" + u);
                             if (!existing.users.find(eu => { return eu == u; })) {
                                 existing.count += 1;
                             }
