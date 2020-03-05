@@ -38,6 +38,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private scoreTypes :number[] = [];
     private showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
+    private handle: any;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
     private showExpandAndCollapse: boolean = true;
 
@@ -80,7 +81,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
-                        return [Date.parse(val.Date), val.Score, this.getScoreType()];
+                        return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
@@ -240,11 +241,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
     hasAnyExpanders() {
-        if (this.OHDitems) {
-            this.showExpandAndCollapse = this.OHDitems.filter(x => {
-                return x.expandable;
-            }).length > 0;
-        }
+        clearTimeout(this.handle);
+        this.handle = window.setTimeout(() => {
+            if (this.OHDitems && !this.isLoading) {
+                this.showExpandAndCollapse = this.OHDitems.filter(x => {
+                    return x.expandable;
+                }).length > 0;
+            }
+        }, 100);
     }
 
     private setSelectedButton(scoreType: ScoreType) {

@@ -15,11 +15,12 @@ export class PointBreakdown {
 
 export class ScorePoint {
     Score: number;
-    Date: string;
+    EndDate: string;
+    EffectiveDate: string;
     ScoreType: ScoreType;
 }
 
-export class AverageScore {
+export class AverageScore { 
     AverageScore: number;
     Object: string;
     ObjectID: number;

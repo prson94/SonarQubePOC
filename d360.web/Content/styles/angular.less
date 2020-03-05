@@ -6035,11 +6035,19 @@ a.mid-blue {
                     &.block-with-text {
                         overflow: hidden;
                         position: relative;
-                        line-height: 1.25em;
+                        line-height: 16px;
                         max-height: 4em;
                         text-align: justify;
                         margin-right: 0em;
                         padding-right: 1em;
+
+                        &.DQ {
+                            max-height: none;
+
+                            &.collapsed {
+                                max-height: 2.3em;
+                            }
+                        }
                     }
                 }
             }
@@ -6052,6 +6060,10 @@ a.mid-blue {
             bottom: 0;
             background: white;
             padding-left: 4px;
+
+            &.DQ {
+                height: 1.2em;
+            }
         }
 
         .block-with-text:after {
