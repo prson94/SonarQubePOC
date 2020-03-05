@@ -24,16 +24,8 @@ begin
 	end
 
 	declare @class int = 1,
-			@predicateType int = 3,
-			@sql nvarchar(max) = '',
-			@columnSql nvarchar(max) = '',
-			@segmentSql nvarchar(max) = '',
-			@fromSql nvarchar(max) = '',
-			@whereSql nvarchar(max) = '',
-			@matchSql nvarchar(max) = 'a1';
+			@predicateType int = 3;
 
-	declare @a table(RowID int identity, AssetTypeID int, [Level] int);
-	declare @f table(RowID int, AssetTypeID int, FieldTypeID int, ColumnOrder int, KeyOrder int identity);
 
 	select @class = Class from AssetType where ID = @assetTypeID;
 
@@ -73,6 +65,8 @@ begin
 		insert into @hierarchy
 			select ID, [Level], Segments, Segment from p
 
+		select @assetID = case when max([Level]) > 1 then null else @assetID end from @hierarchy;
+
 		delete	T
 		from	@hierarchy T
 				left join (
@@ -87,7 +81,7 @@ begin
 		set		T.[Path] = S.[Path], 
 				T.[Segments] = S.[Segments] 
 		from	graph.AssetNode T 
-				inner join @hierarchy S on S.ID = T.ID;
+				inner join @hierarchy S on S.ID = T.ID and (@assetID is null or T.ID = @assetID);
 	end
 	else
 	begin
@@ -95,6 +89,9 @@ begin
 		declare @h table (ID int, [Level] int)
 		insert into @h
 			select ID, [Level] from dbo.GetAssetTypeAncestry(@assetTypeID) order by [Level];
+
+		select @assetID = case when max([Level]) > 1 then null else @assetID end from @h;
+
 
 		with p2 as (
 			select	A.AssetTypeID,
@@ -109,7 +106,7 @@ begin
 			from	Asset A
 					inner join @h H on H.[Level] = 1 and H.ID = A.AssetTypeID
 					left join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-			where	I.IntersectID is null
+			where	I.IntersectID is null and (@assetID is null or A.ID = @assetID)
 			union all
 			select	A.AssetTypeID,
 					A.ID,
@@ -130,7 +127,7 @@ begin
 		set		T.[Path] = S.Segment, 
 				T.[Segments] = S.[Segments] 
 		from	graph.AssetNode T 
-				inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID ;
+				inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID;
 	end
 end
 		]]>

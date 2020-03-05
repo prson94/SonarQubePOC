@@ -5,26 +5,27 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.GetBreadcrumbStringWrapper-v1">
+  <changeSet author="Core" id="View.reporting.Model_Fields-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetBreadcrumbStringWrapper')
-begin
-	EXEC('CREATE FUNCTION [utility].[GetBreadcrumbStringWrapper]
-	(
-		@Type varchar(50),
-		@ID int,
-		@Delimiter varchar(10)
-	)
-	RETURNS nvarchar(1000)
-	AS
-	BEGIN
-		RETURN utility.GetBreadcrumbString(@Type, @ID, @Delimiter)
-	END')
-end
+CREATE OR ALTER VIEW [reporting].[Model_Fields] AS
+	select  O.ID as AssetID,
+			O.ObjectID as ID, 
+			T.ObjectID as TaxonomyTypeID, 
+			D.DisplayValue, 
+			null as TextPath,
+			F.FieldTypeID, 
+			FT.Name as FieldName, 
+			FT.FriendlyName as FieldFriendlyName, 
+			F.FormattedValue as FieldValue 
+	from	Asset O 
+			inner join AssetType T on T.ID = O.AssetTypeID and T.Class = 2 and O.State = 1
+			inner join dbo.AssetDisplayValue D on D.AssetID = O.ID	
+			inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID
+			inner join FieldType FT on FT.ID = F.FieldTypeID
 		]]>
     </sql>
 	<rollback>

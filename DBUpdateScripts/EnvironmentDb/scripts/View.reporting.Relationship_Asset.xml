@@ -1,0 +1,37 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Relationship_Asset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Relationship_Asset] AS
+    select  i.ID as IntersectID,
+            st.ID as SubjectAssetTypeID,
+            st.Name as SubjectAssetTypeName, 
+            s.ID as SubjectAssetID, 
+            ot.ID as ObjectAssetTypeID,
+            ot.Name as ObjectAssetTypeName,         
+            o.ID as ObjectAssetID, 
+            i.IntersectTypeID 
+    from    [intersect] i 
+            inner join asset s on (i.[subject] = s.[object] and i.[subjectid] = s.objectid) 
+            inner join assettype st on s.assettypeid = st.id
+            inner join asset o on (i.[object] = o.[object] and i.[objectid] = o.objectid)
+            inner join assettype ot on o.assettypeid = ot.id
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

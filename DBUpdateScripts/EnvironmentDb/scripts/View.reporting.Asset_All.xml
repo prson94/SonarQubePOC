@@ -5,26 +5,32 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.GetBreadcrumbStringWrapper-v1">
+  <changeSet author="Core" id="View.reporting.Asset_All-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetBreadcrumbStringWrapper')
-begin
-	EXEC('CREATE FUNCTION [utility].[GetBreadcrumbStringWrapper]
-	(
-		@Type varchar(50),
-		@ID int,
-		@Delimiter varchar(10)
-	)
-	RETURNS nvarchar(1000)
-	AS
-	BEGIN
-		RETURN utility.GetBreadcrumbString(@Type, @ID, @Delimiter)
-	END')
-end
+CREATE OR ALTER VIEW [reporting].[Asset_All] AS
+    select	A.ID,
+		A.[uid],
+        A.AssetTypeID,
+        T.[uid] as AssetTypeUid,
+		A.State,
+		A.Object,
+		A.ObjectID,
+		A.SourceID,
+		A.CreatedOn,
+		A.CreatedBy,
+		A.UpdatedOn,
+		A.UpdatedBy,
+		T.Class as AssetTypeClass,
+		T.Description as AssetTypeDescription,
+		T.Name as TypeName,
+		T.Object as Type,
+		T.ObjectID as TypeID
+from	Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
 		]]>
     </sql>
 	<rollback>

@@ -5,26 +5,24 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.utility.GetBreadcrumbStringWrapper-v1">
+  <changeSet author="Core" id="View.reporting.Glossary_Fields-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetBreadcrumbStringWrapper')
-begin
-	EXEC('CREATE FUNCTION [utility].[GetBreadcrumbStringWrapper]
-	(
-		@Type varchar(50),
-		@ID int,
-		@Delimiter varchar(10)
-	)
-	RETURNS nvarchar(1000)
-	AS
-	BEGIN
-		RETURN utility.GetBreadcrumbString(@Type, @ID, @Delimiter)
-	END')
-end
+CREATE OR ALTER VIEW [reporting].[Glossary_Fields] AS
+    select 	O.ID as AssetID,
+			O.ObjectID, 
+			O.TypeID as ArtifactTypeID, 
+			O.DisplayValue, 
+			F.FieldTypeID, 
+			F.Name as FieldName, 
+			F.FriendlyName as FieldFriendlyName, 
+			F.FormattedValue as FieldValue 
+	from	AssetDetail O 
+			inner join FieldDetail F on F.AssetID = O.ID
+	where	O.AssetTypeClass = 1  
 		]]>
     </sql>
 	<rollback>

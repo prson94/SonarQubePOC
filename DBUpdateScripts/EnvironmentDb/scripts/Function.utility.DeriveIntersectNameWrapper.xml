@@ -11,15 +11,18 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [utility].[DeriveIntersectNameWrapper]
-(
-	@id int
-)
-RETURNS nvarchar(500)
-AS
-BEGIN
-	RETURN utility.DeriveIntersectName(@id)
-END
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'DeriveIntersectNameWrapper')
+begin
+	EXEC('CREATE FUNCTION [utility].[DeriveIntersectNameWrapper]
+	(
+		@id int
+	)
+	RETURNS nvarchar(500)
+	AS
+	BEGIN
+		RETURN utility.DeriveIntersectName(@id)
+	END')
+end
 		]]>
     </sql>
 	<rollback>

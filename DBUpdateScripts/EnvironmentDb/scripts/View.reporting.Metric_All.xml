@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Metric_All-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ CREATE OR ALTER VIEW [reporting].[Metric_All] AS
+    select	A.AssetTypeUid,
+		A.[Uid],
+		A.Name,
+		A.ParentUid,
+		A.IsGroup,
+		V.Weight,
+		V.EffectiveDate as MetricMaxEffectiveDate,
+		(
+			select	F.Name as FieldName,
+					C.Operator,
+					C.ValueJson
+			from	[metrics].[AssetVersionCondition] C
+					inner join FieldType F on F.ID = C.FieldTypeID
+			where	[Uid] = A.[Uid]
+					and EffectiveDate = V.EffectiveDate
+			for json path
+		) as ConditionsJson
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.[Uid] = V.[Uid] 
+		inner join (
+				select		IA.[Uid],
+							max(IV.EffectiveDate) as EffectiveDate
+				from		metrics.AssetVersion IV
+							inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
+														and IV.EffectiveDate <= getutcdate()
+														and IA.State = 1
+				group by	IA.[Uid]
+		) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

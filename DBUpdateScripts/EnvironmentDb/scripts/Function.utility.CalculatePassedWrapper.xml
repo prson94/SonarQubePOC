@@ -11,16 +11,19 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [utility].[CalculatePassedWrapper]
-(
-	@PassFraction decimal(18,17),
-	@RuleID int
-)
-RETURNS bit
-AS
-BEGIN
-	RETURN [utility].CalculatePassed(@PassFraction, @RuleID)
-END
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'CalculatePassedWrapper')
+begin
+	EXEC('CREATE FUNCTION [utility].[CalculatePassedWrapper]
+	(
+		@PassFraction decimal(18,17),
+		@RuleID int
+	)
+	RETURNS bit
+	AS
+	BEGIN
+		RETURN [utility].CalculatePassed(@PassFraction, @RuleID)
+	END')
+end
 		]]>
     </sql>
 	<rollback>

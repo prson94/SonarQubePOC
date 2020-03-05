@@ -11,15 +11,18 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [utility].[GetAssetDisplayValueWrapper]
-(
-	@ID bigint
-)
-RETURNS nvarchar(max)
-AS
-BEGIN
-	return utility.GetAssetDisplayValue(@ID)
-END
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetAssetDisplayValueWrapper')
+begin
+	EXEC('CREATE FUNCTION [utility].[GetAssetDisplayValueWrapper]
+	(
+		@ID bigint
+	)
+	RETURNS nvarchar(max)
+	AS
+	BEGIN
+		return utility.GetAssetDisplayValue(@ID)
+	END')
+end
 		]]>
     </sql>
 	<rollback>

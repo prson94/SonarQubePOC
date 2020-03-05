@@ -29,7 +29,7 @@ BEGIN
 	)
 END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = '')
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_LoadItem_Load')
 BEGIN
 	ALTER TABLE [dbo].[LoadItem] WITH NOCHECK ADD CONSTRAINT [FK_LoadItem_Load] FOREIGN KEY([LoadID]) REFERENCES [dbo].[Load] ([ID]) ON DELETE CASCADE
 	ALTER TABLE [dbo].[LoadItem] CHECK CONSTRAINT [FK_LoadItem_Load]

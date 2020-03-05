@@ -38,6 +38,11 @@ BEGIN
 	CREATE CLUSTERED INDEX [CIX_Field] ON [dbo].[Field] ( [ObjectType] ASC, [ObjectID] ASC )
 END
 
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Field_ID')
+BEGIN
+	CREATE UNIQUE NONCLUSTERED INDEX [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
+END
+
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_AssetID_Include')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
@@ -62,11 +67,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_ObjectID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Field_ObjectID] ON [dbo].[Field] ( [ObjectID] ASC )
 END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Field_ID')
-BEGIN
-	CREATE UNIQUE NONCLUSTERED INDEX [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
-END
 		]]>
     </sql>
 	<rollback>
@@ -75,6 +75,35 @@ END
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Field-FullText-v1" runInTransaction="false">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
+BEGIN
+	CREATE FULLTEXT INDEX ON [dbo].[Field] KEY INDEX [UQ_Field_ID] ON [FieldCatalog]
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Value' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
+BEGIN
+	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([Value] LANGUAGE 1033)
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'FormattedValue' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
+BEGIN
+	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([FormattedValue] LANGUAGE 1033)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet> 
 
   <changeSet author="Core" id="Table.dbo.Field-Field_AfterUpsert-v1">
     <sql dbms="mssql"

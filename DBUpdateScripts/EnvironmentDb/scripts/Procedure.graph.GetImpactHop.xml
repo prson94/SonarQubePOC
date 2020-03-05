@@ -247,17 +247,18 @@ begin
 	update	R
 	set		R.OwnerCounts =	coalesce(
 									(
-									select	ResponsibilityType, ResponsibilityTypeID, count(1) as [Count]
+									select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID, '[' + string_Agg(ResourceID, ',') + ']' as UsersList, count(1) as [Count]
 									from	(
-											select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID
-											from	ResponsibilityDetail
-											where	(
-														AssetID = R.AssetID 
-														OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
-													) 
-													and IsVisible = 1
+											select		ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											from		ResponsibilityDetail
+											where		(
+															AssetID = R.AssetID 
+															OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+														) 
+														and IsVisible = 1
+											group by	ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
 											) O
-									group by ResponsibilityType, ResponsibilityTypeID
+									group by ResponsibilityTypeName, ResponsibilityTypeID
 									for json path
 									),
 									'[]'

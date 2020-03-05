@@ -8,8 +8,9 @@
 	<!-- Core Objects -->
 	<include file="scripts/Schemas.xml"/>
 	<include file="scripts/Sequences.xml"/>
-	<include file="scripts/FieldCatalog.FullTextCatalog.xml"/>
- 
+	<include file="scripts/FullTextCatalog.xml"/>
+	<include file="scripts/FullTextStopList.xml"/>
+	
 	<!-- Types (object-based naming) -->
 	<include file="scripts/Udt.dbo.AssetBrowserImpactTable.xml"/>
 	<include file="scripts/Udt.dbo.AssetFiltersTable.xml"/>
@@ -52,30 +53,6 @@
 	<include file="scripts/Table.analytics.Object.xml"/>
 	<include file="scripts/Table.analytics.Statistic.xml"/>
 	<include file="scripts/Table.analytics.UserAgent.xml"/>
-	<include file="scripts/Table.api.Namespace.xml"/>
-	<include file="scripts/Table.api.Service.xml"/>
-	<include file="scripts/Table.api.Endpoint.xml"/>
-	<include file="scripts/Table.api.EndpointVersion.xml"/>
-	<include file="scripts/Table.api.Entity.xml"/>
-	<include file="scripts/Table.api.EntityFieldType.xml"/>
-	<include file="scripts/Table.api.EntityFieldTypeMultiSelectField.xml"/>
-	<include file="scripts/Table.api.EntityUri.xml"/>
-	<include file="scripts/Table.api.Execution.xml"/>
-	<include file="scripts/Table.api.ExecutionAsset.xml"/>
-	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
-	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
-	<include file="scripts/Table.api.ExecutionField.xml"/>
-	<include file="scripts/Table.api.ExecutionMetric.xml"/>
-	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
-	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
-	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
-	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
-	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.dbo.AssetType.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeLevel.xml"/>
 	<include file="scripts/Table.dbo.AssetTypeStyle.xml"/>
@@ -239,6 +216,32 @@
 	<include file="scripts/Table.workflow.ItemStep.xml"/>
 	<include file="scripts/Table.workflow.ItemStepTransition.xml"/>
 	<include file="scripts/Table.workflow.TaskProcedure.xml"/>
+
+	<include file="scripts/Table.api.Namespace.xml"/>
+	<include file="scripts/Table.api.Service.xml"/>
+	<include file="scripts/Table.api.Endpoint.xml"/>
+	<include file="scripts/Table.api.EndpointVersion.xml"/>
+	<include file="scripts/Table.api.Entity.xml"/>
+	<include file="scripts/Table.api.EntityFieldType.xml"/>
+	<include file="scripts/Table.api.EntityFieldTypeMultiSelectField.xml"/>
+	<include file="scripts/Table.api.EntityUri.xml"/>
+	<include file="scripts/Table.api.Execution.xml"/>
+	<include file="scripts/Table.api.ExecutionAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
+	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
+	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
+	<include file="scripts/Table.api.ExecutionField.xml"/>
+	<include file="scripts/Table.api.ExecutionMetric.xml"/>
+	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
+	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
+	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
+	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
+	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
+
   
 	<!-- Views (object-based naming) -->
 	<include file="scripts/Function.dbo.GetAssetDisplayValue.xml"/>				<!--Function used for computed column-->
@@ -260,9 +263,6 @@
 	<include file="scripts/View.dbo.FieldLookupValue.xml"/>
 	<include file="scripts/View.dbo.FieldTypeWithRelation.xml"/>
 	<include file="scripts/Function.dbo.GenerateAssetTypeUrl.xml"/>				<!--Function used for computed column-->
-	<!--include file="scripts/Function.dbo.GenerateAssetUrl.xml"/-->				<!--Function used for computed column-->
-	<!--include file="scripts/Function.dbo.GenerateObjectUrl.xml"/-->				<!--Function used for computed column-->
-	<!--include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/-->			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.FieldWithRelation.xml"/>
 	<include file="scripts/View.dbo.PredicateIntersect.xml"/>
 	<include file="scripts/View.dbo.FollowDetail.xml"/>
@@ -287,8 +287,42 @@
 	<include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
 
-	<!-- Functions (object-based naming) -->
+	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>	<!--dependency-->
+	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> 	<!--dependency-->
+	<include file="scripts/Function.dbo.GetAssetTextPathById.xml"/> <!--dependency-->
+	
+	<!-- Views: REPORTING -->
+	<include file="scripts/View.reporting.Asset_All.xml"/>
+	<include file="scripts/View.reporting.Fusion_All.xml"/>
+	<include file="scripts/View.reporting.Fusion_Fields.xml"/>
+	<include file="scripts/View.reporting.FusionQuery_All.xml"/>
+	<include file="scripts/View.reporting.FusionQuery_Fields.xml"/>
+	<include file="scripts/View.reporting.Global_ModelInterRelationships.xml"/>
+	<include file="scripts/View.reporting.Glossary_All.xml"/>
+	<include file="scripts/View.reporting.Glossary_Fields.xml"/>
+	<include file="scripts/View.reporting.Integration_ExecutionErrors.xml"/>
+	<include file="scripts/View.reporting.Integration_Mappings.xml"/>
+	<include file="scripts/View.reporting.Issue_All.xml"/>
+	<include file="scripts/View.reporting.Metric_All.xml"/>
+	<include file="scripts/View.reporting.Model_All.xml"/>
+	<include file="scripts/View.reporting.Model_Fields.xml"/>
+	<include file="scripts/View.reporting.Policy_All.xml"/>
+	<include file="scripts/View.reporting.Reference_All.xml"/>
+	<include file="scripts/View.reporting.Reference_Fields.xml"/>
+	<include file="scripts/View.reporting.Relationship_All.xml"/>
+	<include file="scripts/View.reporting.Relationship_Asset.xml"/>
+	<include file="scripts/View.reporting.Relationship_Fields.xml"/>
+	<include file="scripts/View.reporting.Resource_All.xml"/>
+	<include file="scripts/View.reporting.Responsibility_All.xml"/>
+	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
+	<include file="scripts/View.reporting.RuleImplementations_All.xml"/>
+	<include file="scripts/View.reporting.Rules_All.xml"/>
+	<include file="scripts/View.reporting.Rules_Fields.xml"/>
+	<include file="scripts/View.reporting.WorkflowForms.xml"/>
+	<include file="scripts/View.reporting.Workflows.xml"/>
+	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
+	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
@@ -304,10 +338,7 @@
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHashById.xml"/>
-	<include file="scripts/Function.dbo.GetAssetLevelById.xml"/>
 	<include file="scripts/Function.dbo.GetAssetTextPath.xml"/>
-	<include file="scripts/Function.dbo.GetParentByAssetID.xml"/> <!--dependency-->
-	<include file="scripts/Function.dbo.GetAssetTextPathById.xml"/>
 	<include file="scripts/Function.dbo.GetAssetTypeAncestry.xml"/>
 	<include file="scripts/Function.dbo.GetChildObjectIds.xml"/>
 	<include file="scripts/Function.dbo.GetContractValidations.xml"/>
@@ -326,6 +357,7 @@
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
+	<include file="scripts/Function.utility.GetIntersectNames.xml"/>
 	<include file="scripts/Function.utility.GetIntersectTypesByType.xml"/>
 	<include file="scripts/Function.utility.GetObjectTypePath.xml"/>
 	<include file="scripts/Function.utility.ObjectDetail.xml"/>

@@ -11,7 +11,9 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [integration].[GetObjectIDByAssetTypeId]
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'GetObjectIDByAssetTypeId')
+begin
+	EXEC('CREATE FUNCTION [integration].[GetObjectIDByAssetTypeId]
 (
     @id int
 )
@@ -23,7 +25,8 @@ BEGIN
     SELECT @o = [ObjectID] from AssetType where ID = @id
 
     RETURN @o
-END
+END')
+end
 		]]>
     </sql>
 	<rollback>

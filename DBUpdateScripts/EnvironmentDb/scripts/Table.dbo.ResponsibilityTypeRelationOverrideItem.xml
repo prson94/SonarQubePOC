@@ -25,7 +25,7 @@ BEGIN
 	)
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID] ON [dbo].[ResponsibilityTypeRelationOverrideItem] ( [SecurityAsset] ASC, [SecurityAssetID] ASC, [AssetID] ASC ) INCLUDE([ResponsibilityTypeID])
 END

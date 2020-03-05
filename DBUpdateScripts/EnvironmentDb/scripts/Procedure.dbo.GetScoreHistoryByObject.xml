@@ -18,7 +18,8 @@ AS
 begin
 	declare @date date = getutcdate()
 
-	select	EffectiveDate as [Date],
+	select	EffectiveDate as [EffectiveDate],
+			[EndDate] as [EndDate],
 			cast(Value * 100 as int) as Score,
 			ScoreType
 	from	metrics.Score
@@ -26,7 +27,8 @@ begin
 			and EffectiveDate <= @date
 			and ScoreType = @scoreType
 	union
-	select	cast(@date as date) as [Date],
+	select	cast(@date as date) as [EffectiveDate],
+			null as [EndDate],
 			cast(Value * 100 as int) as Score,
 			ScoreType
 	from	metrics.Score S

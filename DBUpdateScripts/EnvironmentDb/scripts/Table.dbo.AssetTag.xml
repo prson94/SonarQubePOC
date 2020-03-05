@@ -55,4 +55,62 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterDelete]
+   ON  [dbo].[AssetTag] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM deleted D INNER JOIN [dbo].[Asset] A
+		ON D.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterUpsert]
+   ON  [dbo].[AssetTag] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted  I INNER JOIN [dbo].[Asset] A
+		ON I.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

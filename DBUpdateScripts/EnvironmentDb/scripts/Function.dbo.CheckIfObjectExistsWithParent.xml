@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE function [dbo].[CheckIfObjectExistsWithParent]
+CREATE OR ALTER function [dbo].[CheckIfObjectExistsWithParent]
 (
 	@ObjectType varchar(50), 
 	@ObjectTypeID int, 

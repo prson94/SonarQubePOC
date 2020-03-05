@@ -23,7 +23,7 @@ BEGIN
 	)
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ( [SecurityAsset] ASC, [SecurityAssetID] ASC )
 END

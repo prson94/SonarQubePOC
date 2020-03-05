@@ -23,7 +23,7 @@ BEGIN
 	)
 END
 
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResonsibilityRuleResultAsset_AssetTypeID')
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResonsibilityRuleResultAsset_AssetTypeID-AssetID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResonsibilityRuleResultAsset_AssetTypeID-AssetID] ON [dbo].[ResponsibilityRuleResultAsset] ( [AssetTypeID] ASC, [AssetID] ASC )
 END

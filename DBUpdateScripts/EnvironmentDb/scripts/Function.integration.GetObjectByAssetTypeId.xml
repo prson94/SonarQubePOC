@@ -11,19 +11,22 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [integration].[GetObjectByAssetTypeId]
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'integration' and SPECIFIC_NAME = 'GetObjectByAssetTypeId')
+begin
+	EXEC('CREATE FUNCTION [integration].[GetObjectByAssetTypeId]
 (
-    @id int
+	@id int
 )
 RETURNS varchar(50)
 AS
 BEGIN
-    DECLARE @o varchar(50)
+	DECLARE @o varchar(50)
 
-    SELECT @o = [Object] from AssetType where ID = @id
+	SELECT @o = [Object] from AssetType where ID = @id
 
-    RETURN @o
-END
+	RETURN @o
+END')
+end
 		]]>
     </sql>
 	<rollback>

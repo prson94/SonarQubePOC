@@ -103,7 +103,7 @@ AS
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE TRIGGER [dbo].[Attribute_AfterUpdate]
+CREATE OR ALTER TRIGGER [dbo].[Attribute_AfterUpdate]
    ON  [dbo].[Attribute] 
    AFTER UPDATE
 AS 

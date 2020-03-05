@@ -11,17 +11,20 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-CREATE OR ALTER FUNCTION [utility].[GetObjectDisplayValueWrapper]
-(
-	@Object varchar(50),
-	@ObjectID int,
-	@ObjectTypeID int	
-)
-RETURNS nvarchar(max)
-AS
-BEGIN
-	RETURN utility.GetObjectDisplayValue(@Object, @ObjectID, @ObjectTypeID)
-END
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetObjectDisplayValueWrapper')
+begin
+	EXEC('CREATE FUNCTION [utility].[GetObjectDisplayValueWrapper]
+	(
+		@Object varchar(50),
+		@ObjectID int,
+		@ObjectTypeID int	
+	)
+	RETURNS nvarchar(max)
+	AS
+	BEGIN
+		RETURN utility.GetObjectDisplayValue(@Object, @ObjectID, @ObjectTypeID)
+	END')
+end
 		]]>
     </sql>
 	<rollback>
