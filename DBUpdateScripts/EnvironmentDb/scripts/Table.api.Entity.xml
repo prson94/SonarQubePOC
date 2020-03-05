@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.Entity-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'Entity')
+BEGIN
+	CREATE TABLE [api].[Entity](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[EndpointVersionID] [int] NOT NULL,
+		[AssetTypeID] [int] NOT NULL,
+		CONSTRAINT [PK_Api_Entity] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Entity_AssetType')
+BEGIN
+	ALTER TABLE [api].[Entity]  WITH CHECK ADD  CONSTRAINT [FK_Entity_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [api].[Entity] CHECK CONSTRAINT [FK_Entity_AssetType]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Entity_EndpointVersion')
+BEGIN
+	ALTER TABLE [api].[Entity]  WITH CHECK ADD  CONSTRAINT [FK_Entity_EndpointVersion] FOREIGN KEY([EndpointVersionID]) REFERENCES [api].[EndpointVersion] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [api].[Entity] CHECK CONSTRAINT [FK_Entity_EndpointVersion]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

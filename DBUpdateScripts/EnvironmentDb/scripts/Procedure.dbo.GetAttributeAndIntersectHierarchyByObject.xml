@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.dbo.GetAttributeAndIntersectHierarchyByObject-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [dbo].[GetAttributeAndIntersectHierarchyByObject]
+	@type varchar(25),
+	@id int
+as
+begin
+	select	'Attribute|' + cast(A.ID as varchar(25)) as ID,
+			case 
+				when A.ParentID is not null then  'Attribute|' + cast(A.ParentID as varchar(25)) 
+				when A.ObjectType = @type and A.ObjectID = @id then NULL
+				else A.ObjectType + '|' + cast(A.ObjectID as varchar(25)) 
+			end	as ParentID,
+			A.AttributeTypeID as TypeID,
+			A.Name as ObjectTypeName,
+			'Attribute' as ObjectType,
+			A.ID as ObjectID,
+			A.ObjectType as ParentObjectType,
+			A.ObjectID as ParentObjectID,
+			'Attribute' as TargetObjectType,
+			A.ID as TargetObjectID,
+			T.IsTechnical,
+			A.FormattedValue as Name,
+			A.AttributeTypeCategory,
+			A.ShowNameInTree
+	from	AttributeDetail A
+			INNER JOIN	(
+						SELECT	@type + '|' +cast(@id as varchar(25)) as ID,
+								cast(0 as bit) as IsTechnical
+						) T	ON	A.ObjectType + '|' + cast(A.ObjectID as varchar(25)) = T.ID
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

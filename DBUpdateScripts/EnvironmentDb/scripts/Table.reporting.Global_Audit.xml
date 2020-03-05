@@ -1,0 +1,46 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.reporting.Global_Audit-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'reporting' AND TABLE_NAME = 'Global_Audit')
+BEGIN
+	CREATE TABLE [reporting].[Global_Audit](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[ObjectName] [nvarchar](250) NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[Date] [datetime] NOT NULL,
+		[Action] [varchar](15) NOT NULL,
+		[ActionObject] [varchar](50) NOT NULL,
+		[ActionObjectID] [int] NOT NULL,
+		[ActionObjectTypeName] [nvarchar](250) NOT NULL,
+		[ActionObjectName] [nvarchar](250) NOT NULL,
+		[ActionDescription] [nvarchar](max) NOT NULL,
+		CONSTRAINT [PK_ReportingAudit] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ReportingAudit_Object_ActionObject')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ReportingAudit_Object_ActionObject] ON [reporting].[Global_Audit] ( [Object] ASC, [ObjectID] ASC, [ActionObject] ASC, [ActionObjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

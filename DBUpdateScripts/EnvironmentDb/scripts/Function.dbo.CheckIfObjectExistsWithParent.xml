@@ -1,0 +1,191 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.CheckIfObjectExistsWithParent-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE function [dbo].[CheckIfObjectExistsWithParent]
+(
+	@ObjectType varchar(50), 
+	@ObjectTypeID int, 
+	@ObjectID int, 
+	@Fields nvarchar(max), 
+	@ParentID int = -1
+)
+returns bit
+as
+begin
+	declare @exists bit = 0;
+	declare @numberOfKeyFields int = 0;
+	declare @numberOfKeyMatches int = 0;
+	declare @parentIntersectType int = 0;	
+	declare @tbl table (ID int, Value nvarchar(max))
+	
+	insert into @tbl
+		select	F.*
+		from	openjson(@Fields) with (ID int 'strict $.ID', Value nvarchar(max) '$.Value') as F
+				inner join FieldType T on T.ID = F.ID and T.Object = @ObjectType and T.ObjectID = @ObjectTypeID and T.IsPartOfKey = 1
+
+	declare @results table (ID int, ObjectID int)
+	
+	
+	if (@ObjectType = 'PolicyType' or @ObjectType = 'TaxonomyType')
+	begin
+		select @parentIntersectType = IT.id 
+			from 
+				IntersectType IT
+				inner join [Predicate] P on (IT.PredicateID = P.ID)
+			where 
+				[subject] = @ObjectType and [object] = @ObjectType and [subjectid] = @ObjectTypeID and [ObjectId] = @ObjectTypeID  and P.[Type] = 4;
+
+		if ( @ParentID is null or @ParentID <=0 ) and @ObjectID is not null
+		begin					
+			select @ParentId = [subjectid] 
+			from 
+				[Intersect] I 
+			where 
+				I.IntersectTypeId = @parentIntersectType and I.ObjectID = @ObjectID;
+		end;
+
+			
+			if ( @ParentId is not null and @ParentId > 0)
+			begin
+				if @ObjectID is not null 
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and (F.ObjectID <> @ObjectID)
+								inner join [Intersect] I on (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID and I.SubjectID = @ParentId)
+				end
+				else
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value
+								inner join [Intersect] I on (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID and I.SubjectID = @ParentId)
+				end
+			end
+			else
+			begin
+				if @ObjectID is not null 
+				begin
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and (F.ObjectID <> @ObjectID)
+						where 
+							not exists (select 1 from [Intersect] I where (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID)	)					
+				end
+				else
+				begin 
+					insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value
+						where 
+							not exists (select 1 from [Intersect] I where (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID)	)					
+				end
+			end				
+	end	
+	else if (@ObjectType = 'ArtifactType')
+	begin
+		begin
+			select top 1 @parentIntersectType = IT.id 
+				from 
+					IntersectType IT
+					inner join [Predicate] P on (IT.PredicateID = P.ID)
+				where 
+					[subject] = @ObjectType and [object] = @ObjectType and [ObjectId] = @ObjectTypeID  and P.[Type] = 3;
+		end
+
+		if (@parentIntersectType is not null and @parentIntersectType > 0)
+		begin
+			
+
+			if ( @ParentID is null or @ParentID <=0 ) and @ObjectID is not null
+			begin					
+				select @ParentId = [subjectid] 
+				from 
+					[Intersect] I 
+				where 
+					I.IntersectTypeId = @parentIntersectType and I.ObjectID = @ObjectID;
+			end;
+
+			insert into @results
+						select	T.ID,
+								F.ObjectID 
+						from	@tbl T										
+								inner join Field F on F.FieldTypeID = T.ID and F.Value = T.Value  and ( (@ObjectID is null) OR (@ObjectID is not null and F.ObjectID <> @ObjectID) )
+								inner join [Intersect] I on (I.IntersectTypeID = @parentIntersectType and I.ObjectID = F.ObjectID and I.SubjectID = @ParentId)
+		end
+		else
+		begin
+			
+			insert into @results
+			select	T.ID,
+					F.ObjectID 
+			from	@tbl T
+					left join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and ( (@ObjectID is null) OR (@ObjectID is not null and F.ObjectID <> @ObjectID) )
+		end
+	end
+	else
+	begin
+		insert into @results
+			select	T.ID,
+					F.ObjectID 
+			from	@tbl T
+					left join Field F on F.FieldTypeID = T.ID and F.Value = T.Value and ( (@ObjectID is null) OR (@ObjectID is not null and F.ObjectID <> @ObjectID) )
+	end
+
+	if exists(select 1 from @results)
+		begin
+			if exists(select 1 from @results where ObjectID is null)
+				begin
+					set	@exists = 0
+				end
+			else
+				begin
+					
+					select @numberOfKeyMatches = a.maxcount from (select top 1 objectid, count(1) as maxcount from @results group by objectid order by 2 desc) a ;
+					select @numberOfKeyFields = count(1) from @tbl
+
+					if (@numberOfKeyMatches = @numberOfKeyFields)
+					begin
+						set @exists = 1
+					end
+					else
+					begin
+						set @exists = 0
+					end
+				end
+		end
+	else
+		begin
+			set @exists = 0
+		end
+
+	return @exists
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

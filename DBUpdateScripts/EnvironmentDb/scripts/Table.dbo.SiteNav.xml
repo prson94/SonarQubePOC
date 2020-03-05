@@ -1,0 +1,99 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.SiteNav-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'SiteNav')
+BEGIN
+	CREATE TABLE [dbo].[SiteNav](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ParentID] [int] NULL,
+		[Name] [varchar](250) NULL,
+		[Route] [varchar](250) NULL,
+		[SortOrder] [int] NULL,
+		[ObjectID] [int] NULL,
+		[Object] [varchar](50) NULL,
+		[Icon] [varchar](100) NULL,
+		[Title] [nvarchar](250) NULL,
+		[ImageIconUrl] [varchar](100) NULL,
+		CONSTRAINT [PK_SiteNav] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.SiteNav-SiteNav_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[SiteNav_AfterDelete]
+	ON [dbo].[SiteNav]
+	FOR DELETE
+AS
+BEGIN	
+	update n
+	set n.sortorder = s.sortorder 
+	from
+		sitenav n
+		join (
+		select 
+			id,
+			row_number() over (partition by parentid order by sortorder) as sortorder
+		from sitenav where parentid is null) s on s.id = n.id;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.SiteNav-SiteNav_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[SiteNav_AfterInsert]
+	ON [dbo].[SiteNav]
+	FOR INSERT
+AS
+BEGIN	
+	update n
+	set		n.sortorder = s.sortorder 
+	from	sitenav n
+			join (
+				select	id,
+						row_number() over (partition by parentid order by sortorder) as sortorder
+				from	sitenav 
+				where	parentid is null
+				) s on s.id = n.id;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

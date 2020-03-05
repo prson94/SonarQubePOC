@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.CommentVote-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'CommentVote')
+BEGIN
+	CREATE TABLE [dbo].[CommentVote](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[CommentID] [int] NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[Vote] [int] CONSTRAINT [DF_CommentVote_Vote] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_CommentVote] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_CommentVote_Comment')
+BEGIN
+	ALTER TABLE [dbo].[CommentVote] WITH CHECK ADD CONSTRAINT [FK_CommentVote_Comment] FOREIGN KEY([CommentID]) REFERENCES [dbo].[Comment] ([ID])
+	ALTER TABLE [dbo].[CommentVote] CHECK CONSTRAINT [FK_CommentVote_Comment]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,123 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultAsset')
+BEGIN
+	CREATE TABLE [dbo].[ResponsibilityRuleResultAsset](
+		[RuleID] [bigint] NOT NULL,
+		[AssetID] [bigint] DEFAULT (0) NOT NULL,
+		[AssetTypeID] [int] DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		CONSTRAINT [PK_ResponsibilityRuleResultAsset] PRIMARY KEY CLUSTERED ( [RuleID] ASC, [AssetID] ASC, [AssetTypeID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResonsibilityRuleResultAsset_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ResonsibilityRuleResultAsset_AssetTypeID-AssetID] ON [dbo].[ResponsibilityRuleResultAsset] ( [AssetTypeID] ASC, [AssetID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultAsset_AfterDelete]
+   ON  [dbo].[ResponsibilityRuleResultAsset] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM deleted D INNER JOIN [dbo].[Asset] A
+	ON D.AssetID = A.ID
+		WHERE D.AssetTypeID = 0;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM deleted D INNER JOIN [dbo].[Asset] A
+	ON D.AssetTypeID = A.AssetTypeID
+		WHERE D.AssetID = 0;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultAsset-ResponsibilityRuleResultAsset_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultAsset_AfterInsert]
+   ON  [dbo].[ResponsibilityRuleResultAsset] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM inserted I INNER JOIN [dbo].[Asset] A
+	ON I.AssetID = A.ID
+		WHERE I.AssetTypeID = 0;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM inserted I INNER JOIN [dbo].[Asset] A
+	ON I.AssetTypeID = A.AssetTypeID
+		WHERE I.AssetID = 0;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

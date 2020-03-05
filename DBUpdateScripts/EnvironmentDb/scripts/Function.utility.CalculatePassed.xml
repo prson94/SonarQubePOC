@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.utility.CalculatePassed-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [utility].[CalculatePassed]
+(
+	@PassFraction decimal(18,17),
+	@RuleImplementationID int
+)
+RETURNS bit
+AS
+BEGIN
+	DECLARE @Passed bit
+
+	select	top 1
+			@Passed = case 
+						when @PassFraction >= R.Threshold then cast(1 as bit)
+						else cast(0 as bit)
+					end
+	from	RuleImplementation I
+			inner join [Rule] R on I.ID = @RuleImplementationID and I.RuleID = R.ID
+
+	RETURN @Passed
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,51 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.LoadItem-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'LoadItem')
+BEGIN
+	CREATE TABLE [dbo].[LoadItem](
+		[LoadID] [int] NOT NULL,
+		[RowIndex] [int] NOT NULL,
+		[Object] [varchar](50) NULL,
+		[ObjectID] [int] NULL,
+		[Status] [bit] NULL,
+		[StatusMessage] [nvarchar](500) NULL,
+		[KeyHash] [varchar](250) NULL,
+		[FieldHash] [varchar](250) NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		[AssetUid] [uniqueidentifier] NULL,
+		[ParentAssetUid] [uniqueidentifier] NULL,
+		CONSTRAINT [PK_LoadItem] PRIMARY KEY CLUSTERED ( [LoadID] ASC, [RowIndex] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = '')
+BEGIN
+	ALTER TABLE [dbo].[LoadItem] WITH NOCHECK ADD CONSTRAINT [FK_LoadItem_Load] FOREIGN KEY([LoadID]) REFERENCES [dbo].[Load] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[LoadItem] CHECK CONSTRAINT [FK_LoadItem_Load]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItem_Load')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_LoadItem_Load] ON [dbo].[LoadItem] ( [LoadID] DESC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
