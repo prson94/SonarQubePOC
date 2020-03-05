@@ -146,7 +146,7 @@
                                             </td>
                                         </tr>
                                         <tr class="filter-row">
-                                            <td class="filter-row-label">Display by Asset Type:</td>
+                                            <td class="filter-row-label">Hide by Asset Type:</td>
                                             <td class="filter-row-control">
                                                 <p-listbox [options]="filterSelectionsModel?.FilterAssetTypes"
                                                            [(ngModel)]="selectedFilterAssetTypes"
@@ -273,10 +273,10 @@
                             <section *ngIf="isSettingWindowVisible">
                                 <table>
                                     <tr class="filter-row">
-                                        <td class="filter-row-label">Display:</td>
+                                        <td class="filter-row-short-label">Display:</td>
                                         <td class="filter-row-control">
                                             <div><p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="All Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox></div>
-                                            <div><p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterTriggerVisualizationUpdate()"></p-checkbox></div>
+                                            <div><p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayAncestorBadgesChange()"></p-checkbox></div>
                                             <div><p-checkbox [(ngModel)]="filterModel.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox></div>
                                             <div><p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox></div>
                                         </td>
