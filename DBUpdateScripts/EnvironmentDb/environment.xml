@@ -459,4 +459,5 @@
   <include file="scripts/GOV-9853.xml"/> <!-- [graph].[PopulatePathsForAssetType] fix @assetID param not working -->
   <include file="scripts/GOV-9856.xml"/> <!-- Update [api].[ShouldAllowNewBatchCall] to check against number of active jobs instead of number of assets -->  
   <include file="scripts/GOV-9858.xml"/> <!-- metrics.LoadFromStaging missing ScoreType joins for End Date -->
+  <include file="scripts/GOV-9915.xml"/> <!-- adding missing end date to score history endpoint-->
 </databaseChangeLog>

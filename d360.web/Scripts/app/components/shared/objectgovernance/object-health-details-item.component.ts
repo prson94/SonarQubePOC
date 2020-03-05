@@ -1,4 +1,4 @@
-﻿import { Component, Input, EventEmitter, OnChanges, AfterViewInit, SimpleChange, Output,   } from '@angular/core';
+﻿import { Component, Input, EventEmitter, OnChanges, AfterViewInit, SimpleChange, Output, ViewChild, ElementRef,   } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { TreeNode } from 'primeng/api';
@@ -18,7 +18,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     @Input() isloading: boolean = false;
     @Input() showtype: ScoreType;
     @Output() checkExpander = new EventEmitter();
-
+    private ScoreType = ScoreType;
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
@@ -26,7 +26,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     public isCollapsed: boolean = false;
 
     public expandable: boolean = false;
-    private childExpandable: boolean = false;
+    @ViewChild('DQDescription', { static: false }) dqDescription: ElementRef;
 
     constructor(protected scoreService: ScoreService) {
         super();
@@ -51,6 +51,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
     }
+
     private loadItemDetails() {
         if (this.definition)
             this.getCurrentItemDetails();
@@ -118,18 +119,32 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     }
     private checkExpanders() {
         if (this.item && this.item.data && this.currentItemDetails) {
-            this.expandable = !(!this.item.data.Description && !this.item.children && !this.currentItemDetails.Conditions);
-            if (this.item.children) {
-                this.item.children.forEach(x => {
-                    let expandable = !(
-                        !x.data.Description
-                        && !x.children
-                        && !(this.GetChildPropertValue(this.item, x, 'Conditions').length && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
-                        )   
-                    x.data.expandable = expandable;
-                });
+            if (this.showtype == ScoreType.Governance) {
+                this.expandable = !(!this.item.data.Description && !this.item.children && !this.currentItemDetails.Conditions);
+                if (this.item.children) {
+                    this.item.children.forEach(x => {
+                        let expandable = !(
+                            !x.data.Description
+                            && !x.children
+                            && !(this.GetChildPropertValue(this.item, x, 'Conditions').length && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
+                        )
+                        x.data.expandable = expandable;
+                    });
+                }
+                this.checkExpander.emit();
             }
-            this.checkExpander.emit();
+            else {
+                if (this.dqDescription) {
+                    let htmlEl = this.dqDescription.nativeElement;
+                    if (htmlEl.offsetHeight > 34) {
+                        this.expandable = true;
+                        this.checkExpander.emit();
+                    }
+                } else {
+                    this.expandable = false;
+                    this.checkExpander.emit();
+                }
+            }
         }
     }
 }
