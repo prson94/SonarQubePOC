@@ -824,6 +824,10 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
 drop table if exists #LookupValues
 create table #LookupValues (ItemNumber int, FieldTypeID int not null, FieldValue nvarchar(max) not null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempLookupValues ON #LookupValues ( FieldTypeID ASC );
+
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
 		
 insert into #LookupValues
 	select		T.ItemNumber,
@@ -836,11 +840,18 @@ insert into #LookupValues
 				T.FieldTypeID,
 				T.FieldValue;
 
+insert into #RelevantLookupValues
+select FieldTypeId,
+		[Text],
+		[Value]
+from FieldLookupValue F
+where F.FieldTypeID in (select FieldTypeID from #Lookupvalues);
+
 update	T
 set		T.[Value] = S.[Value]
 from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
-		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
+		inner join #RelevantLookupValues S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
 
 update	T
 set		T.[Value] = '0'
@@ -859,10 +870,6 @@ insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 	from		#LookupValues T
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
-
-
-drop table if exists #RelevantLookupValues;
-create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
 
 insert into #RelevantLookupValues 
 select		top 100 percent
