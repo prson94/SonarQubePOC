@@ -504,7 +504,8 @@ namespace d360.model.DataAccessLayer
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
                                             and EffectiveDate <= @effectiveDate
-                    						and EndDate is null {dateString}
+                    						and ((I.EndDate is null and I.EffectiveDate <= @effectiveDate) or 
+                                                (I.EndDate <= dateadd(day, 1,@effectiveDate) and I.EffectiveDate >= @effectiveDate))
                                             and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
                     	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
