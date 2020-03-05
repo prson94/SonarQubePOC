@@ -8326,7 +8326,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
 
                 if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
                 {
-                    val = $"coalesce({val}, {ft.DefaultFormattedValue})";
+                    val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
                 }
 
                 if (fieldType == "bit")
