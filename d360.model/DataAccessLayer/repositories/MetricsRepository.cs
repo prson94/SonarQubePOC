@@ -32,6 +32,13 @@ namespace d360.model.DataAccessLayer
         public void DeleteMetric(MetricAsset model)
         {
             model.State = State.Deleted;
+
+            var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
+            if (children.Count > 0)
+            {
+                children.ForEach(c => c.State = State.Deleted);
+            }
+
             Company.SaveChanges();
         }
 
@@ -569,7 +576,7 @@ namespace d360.model.DataAccessLayer
                     break;
             }
 
-                       
+
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
