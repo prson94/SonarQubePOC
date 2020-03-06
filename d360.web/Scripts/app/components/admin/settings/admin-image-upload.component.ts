@@ -1,7 +1,6 @@
 ﻿import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { CompanySettings, CompanyImage } from '../../../models/settings.model';
-import { SiteNav } from '../../../models/site-menu.model';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Title } from '@angular/platform-browser';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -22,8 +21,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
         <div class="row">
             <div class="col s6">
                 <div class="directions">
-                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.<br />  
-                    The image will be scaled to 40px high as necessary.
+                    You may upload a custom logo for your company.  The following formats are accepted: .GIF, .JPG, .PNG.  The image will be scaled to 40px high as necessary.
                 </div>
             </div>
             <div class="col s6">

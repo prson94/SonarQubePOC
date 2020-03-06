@@ -13,6 +13,7 @@ import { SurveyType } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SearchDetail } from '../../../models/search-result.model';
 
 
 declare var CompanySettings
@@ -23,7 +24,7 @@ declare var CurrentResourceID;
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
-    host: { '(window:resize)': 'checkSize()', '(window:beforeunload)': 'destroy()' }
+    host: { '(window:resize)': 'checkSize()' }
 })
 
 export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit {
@@ -51,6 +52,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
     private statistics: ObjectStatistics;
+    private searchDetails: SearchDetail;
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
     private isScoringScreen: boolean = false;
@@ -114,6 +116,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                         if (event.url.endsWith('DataQuality') || event.url.endsWith('Governance')) {
                             this.isScoringScreen = true;
                         }
+                        else {
+                            this.isScoringScreen = false;
+                        }
                     }
                 });
     }
@@ -124,7 +129,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     filterScoringTabHasNoValue = (tab: SecondaryNavItem) => {
         if (tab.title === "Scoring")
-            if (this.statistics && (this.statistics.Score === undefined))
+            if (this.searchDetails && this.searchDetails.Scores.length <= 0)
                 return false;
         return true;
     }
@@ -170,6 +175,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.showCertify = false;
         this.showHeader = false;
         this.showSurvey = false;
+        this.searchDetails = null;
         this.items = [];
         this.buttons = [];
         this.showScrollButtons = false;
@@ -219,6 +225,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.statistics = null;
                 this.showCertify = false;
                 this.showSurvey = false;
+                this.searchDetails = null;
                 this.emitChanges();
             }
         });
@@ -236,6 +243,13 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.emitChanges();
                 }
             })
+
+        this.homeUrlChangeSub = this.secondaryNavService.homeUrlChange$.subscribe(
+            item => {
+                this.homeUrl = item;
+            }
+        )
+
         this.emitChanges();
     }
 
@@ -256,6 +270,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 }
             }
         );
+        if (this.currentObject.Uid && this.currentObject.Uid != '00000000-0000-0000-0000-000000000000') {
+            this.objectStatisticsService.getSearchDetails(this.currentObject.Uid).subscribe(
+                result => {
+                    this.searchDetails = result;
+                    this.ref.markForCheck();
+                }
+            );
+        }
+
+
 
         this.objectStatisticsService.getObjectStatistics(objectID, objectName).subscribe(
             result => {
@@ -292,6 +316,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         this.objectSub.unsubscribe();
         this.buttonSubscriptionClear.unsubscribe();
         this.buttonSubscription.unsubscribe();
+        this.homeUrlChangeSub.unsubscribe();
     }
 
     trackById(index, item) {
@@ -299,6 +324,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     itemClicked(item: SecondaryNavItem) {
+        if (item.active == true)
+            return;
+
         if (this.AllClosed()) {
             this.secondaryNavService.setLocalHomeUrl(this.router.url);
             this.homeUrl = this.router.url;
@@ -341,12 +369,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             return icon.replace(/^URL-+/i, '');
     }
 
-    scoreBetween(start, end) {
-        if (this.statistics) {
-            return this.statistics.Score >= start && this.statistics.Score <= end;
-        }
-    }
-
     private requestCertification() {
         this.showCertifyModal = true;
         this.showCertify = false;
@@ -382,34 +404,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     handleComplete(event) {
         this.closeSurveyPopup();
         this.showSurvey = false;
-    }
-    private lastCalculatedMessage() {
-        if (!this.statistics) {
-            return "Governance Score not yet calculated";
-        }
-        var diff = new Date(Date.now() - Date.parse(this.statistics.ScoreLast));
-
-        var years = diff.getUTCFullYear() - 1970;
-
-        if (years > 0) return "Governance Score last calculated " + years + " years ago.";
-
-        var months = diff.getUTCMonth();
-
-        if (months > 0) return "Governance Score last calculated " + months + " months ago.";
-
-        var days = diff.getUTCDate() - 1;
-
-        if (days > 0) return "Governance Score last calculated " + days + " days ago.";
-
-        var hours = diff.getUTCHours();
-
-        if (hours > 0) return "Governance Score last calculated " + hours + " hours ago.";
-
-        var minutes = diff.getUTCMinutes();
-
-        if (minutes > 0) return "Governance Score last calculated " + minutes + " minutes ago.";
-
-        return "Governance Score last calculated a few seconds ago.";
     }
 
     OpenScoring() {

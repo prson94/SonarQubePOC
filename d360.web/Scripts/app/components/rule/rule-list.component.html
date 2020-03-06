@@ -17,7 +17,7 @@
                     </header>
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
                     <p-table #dt [value]="rules" selectionMode="single" [metaKeySelection]="true"
-                             [globalFilterFields]="globalFilterFields" sortField="Name" [sortOrder]="1"
+                             [globalFilterFields]="globalFilterFields"
                              [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage"
                              [rowsPerPageOptions]="defaultPagingOptions" [(selection)]="selected"
                              (sortFunction)="customSort($event)" [customSort]="true">

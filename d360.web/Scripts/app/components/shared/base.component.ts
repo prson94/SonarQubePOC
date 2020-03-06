@@ -212,7 +212,7 @@ export class BaseComponent {
                     'Governance Score',
                     'Governance Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}Governance`, null, 20
+                    `/${baseUrl}Governance`, null, 10
                 );
                 this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
             }
@@ -222,7 +222,7 @@ export class BaseComponent {
                     'Data Quality Score',
                     'Data Quality Score',
                     ['fa-drivers-license-o'],
-                    `${baseUrl}DataQuality`, null, 20
+                    `/${baseUrl}DataQuality`, null, 20
                 );
                 this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
             }
@@ -697,8 +697,8 @@ export class BaseComponent {
         this.buildSecondaryNavigation(null, null, object, assetId, null, buildBreadcrumbOverride);
     }
 
-    buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null) {
-        this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride);
+    buildSecondaryNavigationForObject(objectId: number, object: string, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
+        this.buildSecondaryNavigation(null, objectId, object, null, null, buildBreadcrumbOverride, assetClass);
     }
 
     private isSidebarLoadedForCurrentObject(loadData: SecondaryNavPostModel): boolean {
@@ -722,9 +722,10 @@ export class BaseComponent {
         return false;
     }
 
-    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null) {
+    buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
+        data.Class = assetClass;
         if (assetUid != null)
             data.AssetUid = assetUid.toString().toLowerCase();
 
@@ -743,12 +744,11 @@ export class BaseComponent {
         if (!this.preloadedTreeData || this.preloadedTreeData.length == 0) {
             //This will have effect only on pages that need populate tree to create breadcrumbs (model, policy)
             data.PreloadData = true;
-        } 
-
-        if (assetUid == null && !assetId && !assetTypeUid && !objectId) {
-            return;
         }
 
+        if (assetUid == null && !assetId && !assetTypeUid && !(objectId != null && objectId != undefined)) {
+            return;
+        }
         if (this.isSidebarLoadedForCurrentObject(data)) {
             return;
         }

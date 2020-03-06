@@ -7,8 +7,6 @@ using d360.model;
 using d360.core.entities;
 using System.Xml.Linq;
 using d360.core.enums;
-using System.Text;
-using System.Security.Cryptography;
 using System;
 using d360.web.Models.Attributes;
 using d360.extensions;
@@ -18,7 +16,6 @@ using System.Net;
 using System.IO;
 using System.Threading.Tasks;
 using d360.core.resources;
-using Newtonsoft.Json.Linq;
 
 namespace d360.web.Controllers
 {
@@ -859,18 +856,6 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            List<string> ignoreObjects = new List<string>();
-            string ignoreObjectTypeSQL = string.Empty;
-            if (!Community.IsFusionEnabled())
-            {
-                ignoreObjects.Add(SystemObjects.FusionType.ToString());
-                ignoreObjects.Add(SystemObjects.FusionAttributeType.ToString());
-                ignoreObjects.Add(SystemObjects.FusionQueryAttributeType.ToString());
-            }
-
-            if (ignoreObjects.Count > 0)
-                ignoreObjectTypeSQL = $" AND ATT.[Object] not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
-
             string sql = $@"
 SELECT count(ATT.[Object]) as count, 
 		ATT.[Object], 
@@ -879,7 +864,7 @@ SELECT count(ATT.[Object]) as count,
 		from    [Asset] A
 		inner join AssetType ATT on (a.AssetTypeID = Att.id)
 		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-        {ignoreObjectTypeSQL}
+         AND ATT.[Class] in(1,2,6,7,8)
 		Group by 
 		ATT.[Object], 
 		ATT.ObjectID,
@@ -978,11 +963,22 @@ SELECT count(ATT.[Object]) as count,
             //Static nav
             if (model.AssetUid == null)
             {
+                if (model.ObjectType == SystemObjects.ArtifactType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.ArtifactType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Assets" : "Business Assets";
+                    responseModel.MainTabTitle = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Asset Types" : "Business Asset Types";
+                    responseModel.Items.HasAudit = true;
+
+                }
+
                 if (model.ObjectType == SystemObjects.IntersectType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IntersectType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Relationships";
                     responseModel.MainTabTitle = "Relationship Types";
                     responseModel.Items.HasAudit = true;
@@ -994,7 +990,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.IssueType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Workflow Actions";
                     responseModel.MainTabTitle = "Action Types";
                     responseModel.Items.HasAudit = true;
@@ -1004,7 +1000,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Attributes";
                     responseModel.MainTabTitle = "Attribute Groups";
                     responseModel.Items.HasAudit = true;
@@ -1014,7 +1010,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.LookupType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Lookups";
                     responseModel.MainTabTitle = "Lookup Types";
                     responseModel.Items.HasAudit = true;
@@ -1024,7 +1020,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.ResponsibilityType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Responsibilities";
                     responseModel.MainTabTitle = "Responsibility Types";
                     responseModel.Items.HasAudit = true;
@@ -1034,7 +1030,7 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.Report.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Dashboards";
                     responseModel.MainTabTitle = "Dashboards";
                     responseModel.Items.HasAudit = true;
@@ -1044,9 +1040,29 @@ SELECT count(ATT.[Object]) as count,
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.FusionType.ToString();
-                    responseModel.ObjectID = model.ObjectId.Value;
+                    responseModel.ObjectID = model.ObjectId ?? 0;
                     responseModel.DisplayValue = "Fusion";
                     responseModel.MainTabTitle = "Fusion Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.TaxonomyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaxonomyType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Models";
+                    responseModel.MainTabTitle = "Model Types";
+                    responseModel.Items.HasAudit = true;
+                }
+
+                if (model.ObjectType == SystemObjects.PolicyType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.PolicyType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Policies";
+                    responseModel.MainTabTitle = "Policy Types";
                     responseModel.Items.HasAudit = true;
                 }
 

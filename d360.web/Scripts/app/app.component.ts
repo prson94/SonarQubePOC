@@ -1,13 +1,12 @@
 import { Component, OnDestroy, AfterContentInit, ViewChild, ElementRef } from '@angular/core';
-import { Router } from '@angular/router';
-import { HeaderBreadcrumbService } from './services/header-breadcrumb.service';
 import { HeaderActionsService } from './services/header-actions.service';
 import { Subscription } from 'rxjs';
 import { Message } from 'primeng/components/common/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
+import { ApplicationInsightsService } from './services/application-insights.service';
 
-
+declare var CurrentResourceID;
 
 @Component({
     selector: 'd3s-app',
@@ -43,6 +42,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     constructor(                
         private messagesService: MessagesObservableService,
         protected headerActionsService: HeaderActionsService,
+        protected aiService: ApplicationInsightsService,
         private cookieService: CookieService) {
         this.msgs = [];
         this.subscription = messagesService.errorMessage$.subscribe(
@@ -53,6 +53,7 @@ export class AppComponent implements AfterContentInit, OnDestroy {
             infoMsg => {
                 this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
+        this.aiService.setUserId(String(CurrentResourceID));
     }
 
     ngAfterContentInit() {        

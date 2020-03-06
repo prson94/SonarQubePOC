@@ -21,6 +21,7 @@ import { HeaderActionsService } from './services/header-actions.service';
 import { SecondaryNavService } from './services/right-sidebar.service';
 import { StateService } from './services/state.service';
 import { WebAnalyticsService } from './services/web-analytics.service';
+import { ApplicationInsightsService } from './services/application-insights.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service'
 import { GovernRequestInterceptor } from "./http-interceptors/govern-request.interceptor";
@@ -112,7 +113,8 @@ export function localeInitializer(localeId: string) {
             multi: true,
             useFactory: localeInitializer,
             deps: [LOCALE_ID]
-        }
+        },
+        ApplicationInsightsService
     ],
     entryComponents: [D3SModal],
 

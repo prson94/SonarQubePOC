@@ -1,22 +1,26 @@
-/* roboto-regular - latin */
+/* source-sans-pro-regular - latin */
 @font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: url('fonts/roboto-v15-latin-regular.eot'); /* IE9 Compat Modes */
-  src: local('Roboto'), local('Roboto-Regular'),
-       url('fonts/roboto-v15-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
-       url('fonts/roboto-v15-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
-       url('fonts/roboto-v15-latin-regular.woff') format('woff'), /* Modern Browsers */
-       url('fonts/roboto-v15-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
-       url('fonts/roboto-v15-latin-regular.svg#Roboto') format('svg'); /* Legacy iOS */
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 400;
+    src: url('/fonts/sanspro/source-sans-pro-v13-latin-regular.eot'); /* IE9 Compat Modes */
+    src: local('Source Sans Pro Regular'), local('SourceSansPro-Regular'), url('/fonts/sanspro/source-sans-pro-v13-latin-regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-regular.woff2') format('woff2'), /* Super Modern Browsers */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-regular.woff') format('woff'), /* Modern Browsers */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-regular.ttf') format('truetype'), /* Safari, Android, iOS */
+    url('/fonts/sanspro/source-sans-pro-v13-latin-regular.svg#SourceSansPro') format('svg'); /* Legacy iOS */
 }
+
 
 /* Component containers
 ----------------------------------*/
-.ui-widget { font-family: "Roboto", "Trebuchet MS", Arial, Helvetica, sans-serif; font-size: 1em; font-size: 1em; }
+.ui-widget {
+    font-family: "Source Sans Pro", "Trebuchet MS", Arial, Helvetica, sans-serif;
+    font-size: 1em;
+    font-size: 1em;
+}
 .ui-widget .ui-widget { font-size: 1em; }
-.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: Arial,Helvetica,sans-serif; font-size: 1em; }
+.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button { font-family: "Source Sans Pro", Arial,Helvetica,sans-serif; font-size: 1em; }
 .ui-widget-content { border: none; background: #ffffff; color: #646464; }
 .ui-widget-content a { color: #646464; text-decoration: none; /*font-weight:bold;*/ cursor:pointer; }
 .ui-widget-header { background-color: #999; color: #222222; font-weight: bold; }
@@ -571,12 +575,17 @@ button.ui-button:disabled {
 
 /* Checkbox and Radio */
 .ui-chkbox-box.ui-state-active,
-.ui-chkbox-box.ui-state-focus.ui-state-active,
-.ui-radiobutton-box.ui-state-active,
-.ui-radiobutton-box.ui-state-focus.ui-state-active {
+.ui-chkbox-box.ui-state-focus.ui-state-active {
     border: 1px solid #000;
     background: #6B5A51;
     color: #FFF;
+    line-height: 1px;
+}
+.ui-radiobutton-box.ui-state-active,
+.ui-radiobutton-box.ui-state-focus.ui-state-active {
+    border: 1px solid #006fc0;
+    background: #ffffff;
+    color: #006fc0;
     line-height: 1px;
 }
 
@@ -1500,4 +1509,14 @@ p-calendar .ui-datepicker {
 /*show calender under field always in case of modal to avoid clipping */
 .modal-dialog p-calendar .ui-datepicker {
     top: 26px !important;
+}
+
+p-radiobutton .ui-radiobutton-label {
+    color: black;
+    position: relative;
+    top: 1px;
+}
+
+p-radiobutton .ui-radiobutton-label.ui-label-disabled {
+    opacity: 0.2;
 }

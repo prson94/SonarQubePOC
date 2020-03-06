@@ -758,7 +758,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     {
                         try
                         {
-                            var hashClearModel = Company.Query<ExecutionsSinceClearedHashes>(ExecutionsSinceClearedHashes.Query, new { QueueModel.SynchedAssetTypeID }).Single();
+                            var hashClearModel = Company.Query<ExecutionsSinceClearedHashes>(ExecutionsSinceClearedHashes.Query, new { QueueModel.SynchedAssetTypeID }, 360).Single();
                             Func<int, int?, int, bool> clearHashes = delegate (int executionCount, int? interval, int section)
                             {
                                 var cleared = false;

@@ -27,6 +27,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         super();
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
+        this.selection.isExternallyCalculated = false;
     }
 
     ngOnInit() {
@@ -42,6 +43,11 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
         if (this.selection.scoreType.toString() == 'DataQuality')
             this.selection.isExternallyCalculated = true;
+
+        if (!this.selection.uid && this.selection.scoreType.toString() == 'Governance') {
+            this.selection.isExternallyCalculated = false;
+
+        }
 
     }
 

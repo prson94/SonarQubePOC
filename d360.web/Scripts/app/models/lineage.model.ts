@@ -455,6 +455,7 @@ export class AssetBrowserTranslationOwnerCount {
     key: string;
     responsibilityType: string;
     responsibilityTypeId: number;
+    users: number[];
     count: number;
     expanded: boolean;
 }
@@ -567,6 +568,7 @@ export class AssetBrowserGenericRelationModel {
 export class AssetBrowserOwnerCountModel {
     ResponsibilityType: string;
     ResponsibilityTypeID: number;
+    Users: number[];
     Count: number;
 }
 

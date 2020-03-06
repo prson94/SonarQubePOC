@@ -36,7 +36,7 @@ export class AdminAttributesComponent extends AdminBaseComponent {
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selected.data.ID, 'AttributeType');
+        this.buildSecondaryNavigationForObject(this.selected ? this.selected.data.ID : 0, 'AttributeType');
     }
 
     ngOnInit() {

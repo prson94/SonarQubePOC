@@ -3,6 +3,7 @@ import { SelectItem } from 'primeng/api';
 import { GridFilterExpression, GridFilterColumn, GridFilterFieldType } from '../../models/grid-definition.model';
 import { FilterField, FilterFieldType, FilterExpression } from '../../models/filter-field.model';
 import { setTimeout } from 'timers';
+import { FormHelpers } from '../../static/form-helpers';
 
 @Component({
     selector: 'd3s-workflowmonitor-list-column-filter',
@@ -33,7 +34,7 @@ import { setTimeout } from 'timers';
                                             <option *ngFor="let p of filter.Field?.Data?.filteritems" [value]="p">{{p}}</option>
                                         </select>
                                     </span>
-                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [ngModel]="prepareDateValueForCalendar(filter)" placeholder="mm/dd/yyyy"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
+                                    <p-calendar *ngSwitchCase="'date'" [name]="'FilterValue_' + index" [ngModel]="prepareDateValueForCalendar(filter)" [dateFormat]="getLocaleDateString()" placeholder="{{getLocaleDateString()}}"   [showIcon]="true" (onBlur)="onDateBlur(filter)"   (onSelect)="onDateSelected($event,filter)" ></p-calendar>
                                     <input *ngSwitchDefault [name]="'FilterValue_' + index" type="text" required [ngModel]="filter?.Data?.value" (ngModelChange)="filter.Data.value = $event" placeholder="Enter a value" style="width:100%;"> 
                                 </span>   
                         </div>
@@ -113,14 +114,14 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     private onDateSelected($event, filter) {
         let d = new Date(Date.parse($event));
         if (d.toString() != "Invalid Date") {
-            filter.Data.value = this.getUTCFormattedDateForSearch(d, false);
+            filter.Data.value = this.getUTCFormattedDateForSearch(d, false, false);
         }
     }
 
     private onDateBlur(filter) {
         let d = new Date(Date.parse(filter.Data.value));
         if (d.toString() != "Invalid Date")
-            filter.Data.value = this.getUTCFormattedDateForSearch(d, true);
+            filter.Data.value = this.getUTCFormattedDateForSearch(d, true, false);
         else
             filter.Data.value = null;
     }
@@ -128,17 +129,20 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
     private prepareDateValueForCalendar(filter): string {
         let d = new Date(Date.parse(filter.Data.value));
         if (d.toString() != "Invalid Date")
-            return this.getUTCFormattedDateForSearch(d, true);
+            return this.getUTCFormattedDateForSearch(d, true, true);
         else
             return null;
     }
 
-    private getUTCFormattedDateForSearch(date: Date, isReverse: boolean): string {
+    private getUTCFormattedDateForSearch(date: Date, isReverse: boolean, isForUI: boolean): string {
         let utcDate: Date = null;
         if (isReverse)
             utcDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
         else
             utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
+
+        if (isForUI)
+            return utcDate.toLocaleDateString()
 
         return `${utcDate.getMonth() + 1}/${utcDate.getDate()}/${utcDate.getFullYear()} ${utcDate.toTimeString().split(' ')[0]}`;
     }
@@ -183,6 +187,10 @@ export class WorkflowMonitorListColumnFilterComponent implements OnInit, OnChang
         setTimeout(() => {
             this.ref.markForCheck();
         }, 50);
+    }
+
+    getLocaleDateString(): string {
+        return FormHelpers.getLocaleDateString();
     }
 };
 

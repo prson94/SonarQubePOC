@@ -75,155 +75,6 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Returns the rule result with the specified rule result id.
-        /// If the user is not an admin, http status code 403 (forbidden) is returned.
-        /// </summary>
-        /// <param name="ruleResultId">The id of the rule result</param>
-        /// <returns>The rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
-        [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
-            Route("ruleresult/{ruleResultId:int}"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule result was found."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public core.entities.RuleResult GetRuleResult(int ruleResultId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-            var result =  Company.RuleResults.FirstOrDefault(x => x.ID == ruleResultId);
-
-            if(result == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule result with id {ruleResultId}"));
-
-            return result;
-        }
-
-        /// <summary>
-        /// Returns the asset information of fusion tied to a rule result with the specific rule result id.
-        /// If the user is not an admin, http status code 403 (forbidden) is returned.
-        /// </summary>
-        /// <param name="ruleResultId">The id of the rule result</param>
-        /// <returns>The asset information tied to the rule result object with the specified id.  If no such rule result exists http status code 404 not found is returned.</returns>
-        [
-            HttpGet, 
-            MapToApiVersion("2.0"), 
-            Route("ruleresult/{ruleResultId:int}/fusionattributes"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule result was found."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public IEnumerable<core.entities.Asset> GetRuleResultFusionAttributes(int ruleResultId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-            var result = Company.RuleResults.FirstOrDefault(x => x.ID == ruleResultId);
-
-            if (result == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule result with id {ruleResultId}"));
-
-            var fus = Company.RuleResultFusionAttributes.Where(x => x.RuleResultID == ruleResultId).Select(x => x.FusionAttributeID).ToList();
-
-            if (fus == null)
-                return new List<core.entities.Asset>();
-
-            return Company.Assets.Where(x => x.Object == "FusionAttribute" && fus.Contains(x.ObjectID)).Include(x=>x.Fields);
-        }
-
-        /// <summary>
-        /// Deletes a rule result with the specified Rule Result ID.  It also deletes any ruleresultfusion records for the same rule result.
-        /// </summary>
-        /// <param name="ruleResultId">The id of the rule result</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
-            Route("{ruleResultId:int}"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result could be deleted."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-            
-            //deletes the rule result fusion attribute records
-            await Company.Database.Connection.ExecuteAsync("delete ruleresultfusionattribute where ruleresultid = @ruleResultId", new { ruleResultId });
-
-            //deletes the rule result record
-            var res = await Company.Database.Connection.ExecuteAsync("delete ruleresult where id = @ruleResultId", new { ruleResultId });
-
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
-
-        /// <summary>
-        /// Deletes all rule result fusion attributes for the specified asset Uid.
-        /// </summary>
-        /// <param name="assetUid">The Uid of the asset</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
-            Route("fusionattribute/{assetUid}"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified asset Uid could be deleted."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public async Task<HttpResponseMessage> DeleteFusionAttributeByAssetUID(Guid assetUid)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
-            //deletes the rule result fusion attribute records
-            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetUid });
-
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
-
-        /// <summary>
-        /// Deletes specified rule results fusion attributes for the specified asset Uid.
-        /// </summary>
-        /// <param name="ruleResultId">The id of the rule result</param>
-        /// <param name="assetUid">The Uid of the asset</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [
-            HttpDelete, 
-            MapToApiVersion("2.0"), 
-            Route("fusionattribute/{ruleResultId:int}/{assetUid}"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result for the specified rule result id /asset Uid could be deleted."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public async Task<HttpResponseMessage> DeleteFusionAttributeByRuleResultAndAssetUID(int ruleResultId, Guid assetUid)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-
-            //deletes the rule result fusion attribute records
-            var res = await Company.Database.Connection.ExecuteAsync("delete from ruleresultfusionattribute where  ruleresultid = @ruleResultId and fusionattributeid in (select a.objectid from asset a where a.[uid] = @uid)", new { uid = assetUid, ruleResultId });
-
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
-
-        /// <summary>
         /// Creates a new Data Quality Rule result record for the specified Rule with the specified rule Uid.  
         ///  Looks for a rule implementation called 'default'.  If not found, it creates this rule implemention.        
         ///  Current user must be an admin or http status code 403 is returned. If the specified RuleUid is not found http status code 401 is returned.            
@@ -326,7 +177,35 @@ namespace d360.web.Controllers.V2
             }
             return ruleResults;
         }
-               
+
+        /// <summary>
+        /// Deletes a rule result with the specified Rule Result ID.
+        /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
+        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("{ruleResultId:int}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result could be deleted."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
+        public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                        
+            //deletes the rule result record
+            var res = await Company.Database.Connection.ExecuteAsync("delete ruleresult where id = @ruleResultId", new { ruleResultId });
+
+            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+
+            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
+        }
+
         private async Task SaveRuleResults(List<DataQualityResult> resultList, int timeout, SqlTransaction transaction, int implementationId)
         {
             await Company.Database.Connection.ExecuteAsync(@"

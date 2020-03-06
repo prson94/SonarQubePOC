@@ -841,6 +841,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         UseAsTransformation = model.UseAsTransformation,
                         Class = AssetTypeClass.Policy
                     };
+
+                    if (p.HierarchyMaximumDepth <= 0 || p.HierarchyMaximumDepth > 10)
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidPolicyDepth);
+
                     CompanyContext.Add(p);
                     parentType = SystemObjects.PolicyType;
                     model.ObjectID = p.ObjectID;

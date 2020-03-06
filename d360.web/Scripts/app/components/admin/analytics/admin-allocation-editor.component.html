@@ -35,27 +35,31 @@
             </div>
         </div>
         <div class="row">
-            <div *ngIf="disabled" class="warningMessage">
-                Score Type and Asset Type cannot be edited as there are measures related to this allocation.
-            </div>
-        </div>
-        <div class="row">
             <div class="FieldName">
                 <span>&nbsp;</span>
             </div>
             <div class="col s12 no-padding">
-                <p-checkbox label="Externally Calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="isExtCalcDisabled()" binary="true"></p-checkbox>
+                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled"></p-radioButton>
             </div>
-            <div class="col s12 light-text">
-                If externally calculated, then all scores and measures must be passed in by an external provider and no conditions may be set on the measures themselves.
+            <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
+                Externally calculated scores require the score itself and measure results be passed in from an external provider. Measures for externally calculated scores are intended to provide context and information about the external score.
+            </div>
+            <div class="col s12 light-text" *ngIf="!selection.isExternallyCalculated">
+                Internally calculated scores use measure results to determine the score.
             </div>
         </div>
-
+        <div class="row">
+            <div *ngIf="disabled" class="warningMessage">
+                This allocation cannot be edited as there are measures related to this allocation.
+            </div>
+        </div>
     </div>
+
     <div class="action-bar">
         <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
         <span class="grow"></span>
-        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || (disabled && isExtCalcDisabled())">
+        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || disabled">
             {{savingInProgress ? '' : 'Save'}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>
