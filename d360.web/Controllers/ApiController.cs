@@ -8294,7 +8294,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
         private string GetOrderStatement(SystemObjects type, int id)
         {
             string sortStatement;
-            var fieldTypes = Company.FieldTypes.Where(x => x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
+            var fieldTypes = Company.FieldTypes.Where(x => x.IsListable == true && x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
                 .OrderBy(x => x.SortOrder)
                 .ThenBy(x => x.Name)
                 .ToList();
