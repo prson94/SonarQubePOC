@@ -1,0 +1,35 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Reference_Fields-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Reference_Fields] AS
+    select		F.AssetID,
+                ATT.ObjectID as ReferenceItemTypeID,
+			    A.ObjectID as ReferenceItemID,
+			    T.Name as FieldTypeName,
+			    T.FriendlyName as FieldTypeFriendlyName,
+			    F.FormattedValue
+    from		Field F
+			    inner join FieldType T on T.ID = F.FieldTypeID
+                inner join Asset A on (A.Object = F.ObjectType and A.ObjectID = F.ObjectID)
+			    inner join AssetType ATT on (A.AssetTypeID = ATT.ID)
+    where       A.[Object] = 'ReferenceItem' and A.State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

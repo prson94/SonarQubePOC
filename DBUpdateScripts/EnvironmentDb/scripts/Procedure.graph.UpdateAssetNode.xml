@@ -1,0 +1,78 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.graph.UpdateAssetNode-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [graph].[UpdateAssetNode]
+	@uid uniqueidentifier,
+	@updatePath bit = 0
+as
+begin
+	declare @id bigint, @typeId bigint;
+	select	@id = id,
+			@typeId = assetTypeId
+	from	Asset
+	where	[uid] = @uid;
+
+	if exists (select 1 from graph.AssetNode where [uid] = @uid) and not exists (select 1 from Asset where [uid] = @uid)
+	begin
+		delete E
+		from    graph.AssetEdge E
+				inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+		where   N.[uid] = @uid
+
+		delete from graph.AssetNode where [uid] = @uid;
+	end
+	else if exists (select 1 from graph.AssetNode where [uid] = @uid)
+	begin
+		update N
+		set     N.UpdatedOn = A.UpdatedOn,
+				N.[State] = A.[State],
+				N.AssetTypeID = A.AssetTypeID,
+				N.AssetTypeUid = T.[Uid],
+				N.Class = T.Class
+		from    graph.AssetNode N
+				inner join Asset A on A.ID = N.ID
+				inner join AssetType T on T.ID = A.AssetTypeId
+		where   A.[uid] = @uid;
+
+		if @updatePath = 1
+		begin
+			exec graph.PopulatePathsForAssetType @typeId, @id
+		end
+	end
+	else
+	begin
+		insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], UpdatedOn, Class)
+		select  A.ID,
+				A.Uid,
+				A.AssetTypeID,
+				T.[Uid] as AssetTypeUid,
+				A.[State],
+				A.UpdatedOn,
+				T.Class
+		from    Asset A
+				inner join AssetType T on T.ID = A.AssetTypeID
+		where   A.[uid] = @uid;
+
+		exec graph.PopulatePathsForAssetType @typeId, @id
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

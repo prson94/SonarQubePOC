@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.RuleResultQualifierType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifierType')
+BEGIN
+	CREATE TABLE [dbo].[RuleResultQualifierType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Order] [int] NOT NULL,
+		[ResolutionObject] [varchar](50) NULL,
+		[ResolutionObjectID] [int] NULL,
+		[ResolutionFieldTypeID] [int] NULL,
+		[ResolutionFieldTypeName] [nvarchar](250) NULL,
+		[RuleImplementationID] [int] CONSTRAINT [DF_RuleResultQualifierType_RuleImplementationID] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_RuleResultQualifierType] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [DF_RuleResultQualifierType_RuleImplementationID_Name] UNIQUE NONCLUSTERED ( [RuleImplementationID] ASC, [Name] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifierType_RuleImplementation')
+BEGIN
+	ALTER TABLE [dbo].[RuleResultQualifierType] WITH CHECK ADD CONSTRAINT [FK_RuleResultQualifierType_RuleImplementation] FOREIGN KEY([RuleImplementationID]) REFERENCES [dbo].[RuleImplementation] ([ID])
+	ALTER TABLE [dbo].[RuleResultQualifierType] CHECK CONSTRAINT [FK_RuleResultQualifierType_RuleImplementation]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

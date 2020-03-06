@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityTypeRelationOverrideItem')
+BEGIN
+	CREATE TABLE [dbo].[ResponsibilityTypeRelationOverrideItem](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[ResponsibilityTypeID] [int] NOT NULL,
+		[AssetID] [bigint] NOT NULL,
+		[SecurityAsset] [char](1) NOT NULL,
+		[SecurityAssetID] [int] NOT NULL,
+		[Context] [nvarchar](max) NULL,
+		CONSTRAINT [PK_ResponsibilityTypeRelationOverrideItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [UQ_ResponsibilityTypeRelationOverrideItem] UNIQUE NONCLUSTERED ( [ResponsibilityTypeID] ASC, [AssetID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID] ON [dbo].[ResponsibilityTypeRelationOverrideItem] ( [SecurityAsset] ASC, [SecurityAssetID] ASC, [AssetID] ASC ) INCLUDE([ResponsibilityTypeID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

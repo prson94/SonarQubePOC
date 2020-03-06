@@ -1,0 +1,44 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.ItemAssignment-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'ItemAssignment')
+BEGIN
+	CREATE TABLE [workflow].[ItemAssignment](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[ItemID] [bigint] NOT NULL,
+		[ResourceObject] [varchar](50) NOT NULL,
+		[ResourceObjectID] [int] NOT NULL,
+		[CreatedBy] [int] NOT NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[ItemStepID] [bigint] NULL,
+		CONSTRAINT [PK_WorkflowItemAssignment] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItemAssignment_WorkflowItem')
+BEGIN
+	ALTER TABLE [workflow].[ItemAssignment] WITH CHECK ADD CONSTRAINT [FK_WorkflowItemAssignment_WorkflowItem] FOREIGN KEY([ItemID]) REFERENCES [workflow].[Item] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [workflow].[ItemAssignment] CHECK CONSTRAINT [FK_WorkflowItemAssignment_WorkflowItem]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

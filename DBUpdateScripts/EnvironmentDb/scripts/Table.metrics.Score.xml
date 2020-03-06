@@ -1,0 +1,35 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.metrics.Score-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score')
+BEGIN
+	CREATE TABLE [metrics].[Score](
+		[AssetUid] [uniqueidentifier] NOT NULL,
+		[EffectiveDate] [date] CONSTRAINT [DF_MetricsNewScore_EffectiveDate] DEFAULT (getutcdate()) NOT NULL,
+		[Value] [decimal](5, 3) NOT NULL,
+		[RunDate] [datetime] NULL,
+		[EndDate] [date] NULL,
+		[ScoreType] [int] NOT NULL,
+		CONSTRAINT [PK_MetricScore] PRIMARY KEY CLUSTERED ( [AssetUid] ASC, [ScoreType] ASC, [EffectiveDate] DESC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

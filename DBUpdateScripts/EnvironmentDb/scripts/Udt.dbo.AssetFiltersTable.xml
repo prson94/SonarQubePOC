@@ -1,0 +1,33 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Udt.dbo.AssetFiltersTable-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF TYPE_ID(N'dbo.AssetFiltersTable') IS NULL 
+BEGIN
+	CREATE TYPE [dbo].[AssetFiltersTable] AS TABLE (
+		[FilterType] [varchar](1) NOT NULL,
+		[Operator] [varchar](25) NULL,
+		[TypeID] [int] NOT NULL,
+		[OptionalIdentifier] [varchar](50) NULL,
+		[FilterValues] [nvarchar](max) NOT NULL
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

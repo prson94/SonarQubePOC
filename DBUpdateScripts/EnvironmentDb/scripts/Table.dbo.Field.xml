@@ -1,0 +1,173 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Field-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Field')
+BEGIN
+	CREATE TABLE [dbo].[Field](
+		[AssetID] [bigint] NULL,
+		[ObjectType] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		[Value] [nvarchar](max) NULL,
+		[FormattedValue] [nvarchar](max) NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_Field_UpdatedBy] DEFAULT (0) NOT NULL,
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_Field_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
+		CONSTRAINT [PK_Field] PRIMARY KEY NONCLUSTERED ( [ObjectType] ASC, [ObjectID] ASC, [FieldTypeID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Field_FieldType')
+BEGIN
+	ALTER TABLE [dbo].[Field]  WITH CHECK ADD  CONSTRAINT [FK_Field_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Field] CHECK CONSTRAINT [FK_Field_FieldType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Field')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_Field] ON [dbo].[Field] ( [ObjectType] ASC, [ObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'UQ_Field_ID')
+BEGIN
+	CREATE UNIQUE NONCLUSTERED INDEX [UQ_Field_ID] ON [dbo].[Field] ( [ID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_AssetID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Field_AssetID_Include] ON [dbo].[Field] ( [AssetID] ASC ) INCLUDE([FieldTypeID],[Value],[FormattedValue])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([ObjectType],[ObjectID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([FormattedValue],[Value])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_FieldTypeID_Include_date')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Field_FieldTypeID_Include_date] ON [dbo].[Field] ( [FieldTypeID] ASC ) INCLUDE([UpdatedOn])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Field_ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Field_ObjectID] ON [dbo].[Field] ( [ObjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Field-FullText-v1" runInTransaction="false">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from sys.fulltext_indexes f inner join sys.objects t on t.object_id = f.object_id and name = 'Field')
+BEGIN
+	CREATE FULLTEXT INDEX ON [dbo].[Field] KEY INDEX [UQ_Field_ID] ON [FieldCatalog]
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'Value' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
+BEGIN
+	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([Value] LANGUAGE 1033)
+END
+
+IF NOT EXISTS (select 1 from sys.columns c inner join sys.fulltext_index_columns f on f.object_id = c.object_id and f.column_id = c.column_id and c.name = 'FormattedValue' inner join sys.objects t on t.object_id = f.object_id and t.name = 'Field')
+BEGIN
+	ALTER FULLTEXT INDEX ON [dbo].[Field] ADD ([FormattedValue] LANGUAGE 1033)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet> 
+
+  <changeSet author="Core" id="Table.dbo.Field-Field_AfterUpsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
+	ON [dbo].[Field]
+	FOR INSERT, UPDATE
+AS
+	SET NOCOUNT ON;
+
+	UPDATE	T
+	SET		T.UpdatedOn = getutcdate()
+	FROM	Field T 
+			inner join inserted F on F.ID = T.ID;
+
+	UPDATE	T
+	SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+	FROM	Field T 
+			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
+			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+
+	drop table if exists #insertedFields;
+	create table #insertedFields (FieldTypeID int, ObjectType varchar(250), ObjectID int);
+	create clustered index IX_TempInsertedFields ON #insertedFields (FieldTypeID, ObjectType, ObjectID);
+
+	insert into #insertedFields
+	select
+		FieldTypeID,
+		replace(FT.[Object],'Type',''),
+		FT.ObjectID
+	from inserted
+	inner join FieldType FT on FT.ID = FieldTypeID;
+
+
+	if exists(
+		select 1 from 	Field TF
+				inner join FieldType FT on FT.ID = TF.FieldTypeID
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute')
+	begin
+		
+		UPDATE	TF
+		SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
+		from	Field TF
+				inner join FieldType FT on FT.ID = TF.FieldTypeID
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
+	end
+
+	UPDATE	T
+	SET		T.AssetID = A.ID
+	FROM	Field T 
+			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
+			inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.OrganizationDomain-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'OrganizationDomain')
+BEGIN
+	CREATE TABLE [dbo].[OrganizationDomain](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[OrganizationID] [int] NOT NULL,
+		[Domain] [nvarchar](500) NOT NULL,
+		CONSTRAINT [PK_OrganizationDomain] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_OrganizationDomain_Organization')
+BEGIN
+	ALTER TABLE [dbo].[OrganizationDomain] WITH CHECK ADD CONSTRAINT [FK_OrganizationDomain_Organization] FOREIGN KEY([OrganizationID]) REFERENCES [dbo].[Organization] ([ID])
+	ALTER TABLE [dbo].[OrganizationDomain] CHECK CONSTRAINT [FK_OrganizationDomain_Organization]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

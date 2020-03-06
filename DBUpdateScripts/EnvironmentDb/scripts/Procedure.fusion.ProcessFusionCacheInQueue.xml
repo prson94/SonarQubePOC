@@ -1,0 +1,62 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.fusion.ProcessFusionCacheInQueue-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [fusion].[ProcessFusionCacheInQueue]
+
+	@FusionID int,
+	@UseNewMarkitLineage bit = 0
+
+as
+begin
+	SET NOCOUNT, ANSI_PADDING ON;
+	SET ANSI_WARNINGS ON;
+
+	UPDATE  FusionAttribute
+	SET		TextPath = utility.GetBreadcrumbStringWrapper('FusionAttribute', ID, '.')
+	FROM	FusionAttribute 
+	WHERE	FusionID = @FusionID and deleted = 0
+
+	
+	declare @fusionTypeId int;
+
+	select 
+		@fusionTypeId = fusiontypeid
+	from
+		fusion
+	where
+		id = @FusionID;
+
+	if @fusionTypeId = 13
+	begin		
+		exec fusion.GenerateMarkitMapLineageData @FusionID, @UseNewMarkitLineage
+	end
+	else if @fusionTypeId = 16
+	begin
+		exec [fusion].[GenerateEagleLineageData] @FusionID
+	end
+	else if @fusionTypeId = 111
+	begin
+		exec [fusion].[GenerateFoundationLineage] @FusionID
+	end
+	
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

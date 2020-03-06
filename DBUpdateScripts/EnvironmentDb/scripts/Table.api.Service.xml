@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.Service-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'Service')
+BEGIN
+	CREATE TABLE [api].[Service](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[UriPrefix] [varchar](100) NOT NULL,
+		[Name] [nvarchar](500) NOT NULL,
+		[Description] [nvarchar](max) NULL,
+		[MaximumCacheAge] [int] CONSTRAINT [DF_Api_Service_MaximumCacheAge] DEFAULT (3600) NOT NULL,
+		CONSTRAINT [PK_Api_Service] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
