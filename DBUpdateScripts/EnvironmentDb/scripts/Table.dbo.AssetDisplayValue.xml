@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AssetDisplayValue-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDisplayValue')
+BEGIN
+	CREATE TABLE [dbo].[AssetDisplayValue](
+		[AssetID] [bigint] NOT NULL,
+		[DisplayValue] [nvarchar](max) NOT NULL,
+		[DisplayValueHash] [nvarchar](50) NULL,
+		[DisplayValuePrefix] [nvarchar](250) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_AssetDisplayValue_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
+		CONSTRAINT [PK_AssetDisplayValue] PRIMARY KEY NONCLUSTERED ( [AssetID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetDisplayValue_DisplayValuePrefix_AssetID')
+BEGIN
+	CREATE CLUSTERED INDEX [IX_AssetDisplayValue_DisplayValuePrefix_AssetID] ON [dbo].[AssetDisplayValue] ( [DisplayValuePrefix] ASC, [AssetID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

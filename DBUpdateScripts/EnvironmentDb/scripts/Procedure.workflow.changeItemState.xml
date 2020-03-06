@@ -1,0 +1,49 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.workflow.changeItemState-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [workflow].[changeItemState]
+	@workflowID int,
+	@workflowStepID int = 0,
+	@workflowItemID int = 0
+AS
+BEGIN
+	declare @xmlSettings xml;
+	declare @stateValue int;
+	declare @objectType varchar(20);
+	declare @objectId int;
+
+	SET NOCOUNT ON;
+
+	select @xmlSettings = settings from [workflow].[VersionStep] where id = @workflowStepID
+    select @stateValue = T.C.value('.','int') from @xmlSettings.nodes('(/settings/State)') as T(C);
+
+	
+
+	select @objectType = object, @objectId = objectid from [workflow].[item] where id = @workflowItemID;
+
+	if @objectType = 'Intersect'
+	begin
+		update [dbo].[intersect] set [state] = @stateValue where id = @objectId;
+	end
+
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

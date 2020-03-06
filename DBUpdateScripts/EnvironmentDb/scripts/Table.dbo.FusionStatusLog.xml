@@ -1,0 +1,53 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.FusionStatusLog-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionStatusLog')
+BEGIN
+	CREATE TABLE [dbo].[FusionStatusLog](
+		[ID] [uniqueidentifier] NOT NULL,
+		[FusionID] [int] NOT NULL,
+		[DateStarted] [datetime] NOT NULL,
+		[DateCompleted] [datetime] NULL,
+		[MachineQueuedOn] [varchar](250) NULL,
+		[Success] [bit] NOT NULL,
+		[Message] [nvarchar](max) NULL,
+		[FullRefresh] [bit] CONSTRAINT [DF_FusionStatusLog_FullRefresh] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_FusionStatusLog] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FusionStatusLog_Fusion')
+BEGIN
+	ALTER TABLE [dbo].[FusionStatusLog] WITH CHECK ADD CONSTRAINT [FK_FusionStatusLog_Fusion] FOREIGN KEY([FusionID]) REFERENCES [dbo].[Fusion] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[FusionStatusLog] CHECK CONSTRAINT [FK_FusionStatusLog_Fusion]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_FusionStatusLog')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_FusionStatusLog] ON [dbo].[FusionStatusLog] ( [FusionID] ASC, [DateCompleted] DESC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FusionStatusLog_DateStarted_FusionID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FusionStatusLog_DateStarted_FusionID] ON [dbo].[FusionStatusLog] ( [FusionID] ASC, [DateStarted] DESC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

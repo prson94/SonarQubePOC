@@ -391,6 +391,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'fieldfromrelationship':
                 try {
+                    this.model.FieldType.IsRequired = false;
                     if (this.model.cardinalRelationship) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship, this.model.FieldType.LookupObjectFieldTypeID));
                     } else if (this.lookups.Field_CardinalRelationships.length > 0) {

@@ -1,0 +1,112 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.IntersectType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'IntersectType')
+BEGIN
+	CREATE TABLE [dbo].[IntersectType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Subject] [varchar](50) NULL,
+		[SubjectID] [int] NULL,
+		[Object] [varchar](50) NULL,
+		[ObjectID] [int] NULL,
+		[IsSystem] [bit] NULL,
+		[State] [int] CONSTRAINT [DF_IntersectType_State] DEFAULT (1) NOT NULL,
+		[CreatedBy] [int] NULL,
+		[CreatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[PredicateID] [int] NULL,
+		[SubjectCardinality] [int] CONSTRAINT [DF_IntersectType_SubjectCardinality] DEFAULT (2) NOT NULL,
+		[ObjectCardinality] [int] CONSTRAINT [DF_IntersectType_ObjectCardinality] DEFAULT (2) NOT NULL,
+		[SubjectUid] [uniqueidentifier] NULL,
+		[ObjectUid] [uniqueidentifier] NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_IntersectType_uid] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_IntersectType] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [UQ_IntersectType] UNIQUE CLUSTERED ( [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC, [PredicateID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_Object')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_Object] ON [dbo].[IntersectType] ( [Object] ASC, [ObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_PredicateID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_PredicateID] ON [dbo].[IntersectType] ( [PredicateID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_IntersectType_Subject')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_IntersectType_Subject] ON [dbo].[IntersectType] ( [Subject] ASC, [SubjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.IntersectType-IntersectType_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[IntersectType_AfterInsert]
+	ON [dbo].[IntersectType]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Add', [queue].WriteIndexXml('', 'IntersectType', ID, coalesce(UpdatedBy, 0)), 'IntersectType', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.IntersectType-IntersectType_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[IntersectType_AfterUpdate]
+	ON [dbo].[IntersectType]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select 'Update', [queue].WriteIndexXml('', 'IntersectType', ID, coalesce(UpdatedBy, 0)), 'IntersectType', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

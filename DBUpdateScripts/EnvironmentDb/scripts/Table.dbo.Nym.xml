@@ -1,0 +1,116 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Nym-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Nym')
+BEGIN
+	CREATE TABLE [dbo].[Nym](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Object] [varchar](25) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[Name] [nvarchar](250) NULL,
+		[PredicateID] [int] NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_Nym_UpdatedOn] DEFAULT (getutcdate()) NULL,
+		[UpdatedBy] [int] NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_Nym_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[CreatedBy] [int] NOT NULL,
+		[Visible] [bit] CONSTRAINT [DF_Nym_Visible] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_Nym] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Nym_Predicate')
+BEGIN
+	ALTER TABLE [dbo].[Nym] WITH CHECK ADD CONSTRAINT [FK_Nym_Predicate] FOREIGN KEY([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Nym] CHECK CONSTRAINT [FK_Nym_Predicate]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Nym_Visible')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Nym_Visible] ON [dbo].[Nym] ( [Visible] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Nym-Nym_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Nym_AfterDelete]
+   ON  [dbo].[Nym] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				'D', 
+				@ot, 
+				ID
+		from	deleted;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Nym-Nym_AfterUpsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Nym_AfterUpsert]
+   ON  [dbo].[Nym] 
+   AFTER INSERT, UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Synonym'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select	'ObjectIndex',
+				case 
+					when D.ID is not null then 'U'
+					else 'A'
+				end, 
+				@ot, 
+				I.ID,
+				A.ID as AssetID
+		from	inserted I
+				left join deleted D on D.ID = I.ID
+				left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

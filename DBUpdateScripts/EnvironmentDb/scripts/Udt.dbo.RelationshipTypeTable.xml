@@ -1,0 +1,33 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Udt.dbo.RelationshipTypeTable-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF TYPE_ID(N'dbo.RelationshipTypeTable') IS NULL 
+BEGIN
+	CREATE TYPE [dbo].[RelationshipTypeTable] AS TABLE (
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[startpromotedobjecttype] [varchar](25) NULL,
+		[startpromotedobjecttypeid] [int] NULL,
+		[endpromotedobjecttype] [varchar](25) NULL,
+		[endpromotedobjecttypeid] [int] NULL
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

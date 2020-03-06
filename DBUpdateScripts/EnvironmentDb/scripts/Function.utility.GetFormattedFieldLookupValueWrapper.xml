@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.utility.GetFormattedFieldLookupValueWrapper-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[ROUTINES] where SPECIFIC_SCHEMA = 'utility' and SPECIFIC_NAME = 'GetFormattedFieldLookupValueWrapper')
+begin
+	EXEC('CREATE FUNCTION [utility].[GetFormattedFieldLookupValueWrapper]
+	(
+		@Type varchar(25),
+		@DisplayFormat nvarchar(250),
+		@LookupObjectType varchar(25),
+		@LookupObjectID int,
+		@Value nvarchar(max)	
+	)
+	RETURNS nvarchar(max)
+	AS
+	BEGIN
+		RETURN utility.GetFormattedFieldLookupValue(@Type, @DisplayFormat, @LookupObjectType, @LookupObjectID, @Value)
+	END')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

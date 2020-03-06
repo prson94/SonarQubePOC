@@ -1,0 +1,61 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.dbo.Relationship-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	create or alter view [dbo].[Relationship]
+	as
+		select	R.IntersectTypeID,
+				R.ID as IntersectID,
+				null as Description,
+				'' as [Role],
+				0 as SourceIntersectTypeNodeID,
+				R.Subject as SourceObjectType,
+				R.SubjectID as SourceObjectID,
+				R.SubjectName as SourceName, 
+				'' as SourceParent,
+				0 as SourceParentID,
+				'' as SourceParentName,
+				R.SubjectTypeID as SourceTypeID,
+				R.SubjectType as SourceType,
+				R.SubjectTypeName as SourceTypeName,
+				R.[SubjectUrl] as SourceUrl,
+				0 as TargetIntersectTypeNodeID,
+				R.Object as TargetObjectType,
+				R.ObjectID as TargetObjectID,
+				R.ObjectName as TargetName,
+				'' as TargetParent,
+				0 as TargetParentID,
+				'' as TargetParentName,
+				R.ObjectTypeID as TargetTypeID,
+				R.ObjectType as TargetType,
+				R.ObjectTypeName as TargetTypeName,
+				R.[ObjectUrl] as TargetUrl,
+				TR.[Exists] as HasTechnicalRelationships
+		from	IntersectDetail R
+				cross apply (
+							select	case 
+										when count(1) > 0 then cast(1 as bit) 
+										else cast(0 as bit) 
+									end as [Exists]
+							from	[Intersect]
+							where	Subject = 'Intersect' and SubjectID = R.ID
+							) TR
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

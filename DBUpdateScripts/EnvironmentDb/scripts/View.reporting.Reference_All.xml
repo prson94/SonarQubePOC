@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Reference_All-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Reference_All] AS
+	select	A.ID as AssetID,
+			ATT.Name as ReferenceItemType,
+			ATT.ObjectID as ReferenceItemTypeID,
+			A.ObjectID as ReferenceItemID,
+			A.Code,
+			AD.DisplayValue,
+			A.CreatedBy,
+			A.CreatedOn,
+			A.UpdatedBy,
+			A.UpdatedOn
+	from	Asset A
+			inner join AssetType ATT on (A.AssetTypeID = ATT.ID)
+            inner join AssetDisplayValue AD on (A.ID = AD.AssetID)
+	where	ATT.Class = 9 and A.State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

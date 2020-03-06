@@ -1,0 +1,100 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityTypeRelation-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityTypeRelation')
+BEGIN
+	CREATE TABLE [dbo].[ResponsibilityTypeRelation](
+		[ResponsibilityTypeID] [int] NOT NULL,
+		[ObjectType] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[PermissionsBitMask] [int] CONSTRAINT [DF_ResponsibilityTypeRelation_PermissionsBitMask] DEFAULT (0) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedOn] DEFAULT (getdate()) NOT NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_ResponsibilityTypeRelation_CreatedBy] DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedOn] DEFAULT (getdate()) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_ResponsibilityTypeRelation_UpdatedBy] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_ResponsibilityTypeRelation] PRIMARY KEY CLUSTERED ( [ResponsibilityTypeID] ASC, [ObjectType] ASC, [ObjectID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRelation_Object')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelation_Object] ON [dbo].[ResponsibilityTypeRelation] ( [ObjectType] ASC, [ObjectID] ASC ) INCLUDE([ResponsibilityTypeID]) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityTypeRelation-ResponsibilityTypeRelation_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelation_AfterUpdate]
+   ON  [dbo].[ResponsibilityTypeRelation] 
+   AFTER UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	
+	IF( UPDATE(PermissionsBitMask))
+	BEGIN
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT DISTINCT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+		FROM inserted I
+		INNER JOIN deleted D ON I.ResponsibilityTypeID = D.ResponsibilityTypeID
+		INNER JOIN [dbo].[ResponsibilityTypeRelationRule] rtrr ON (rtrr.ResponsibilityTypeID = I.ResponsibilityTypeID
+															  AND rtrr.[Object] = I.[ObjectType]
+															  AND rtrr.ObjectID = I.ObjectID)
+		INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on RA.RuleID = rtrr.ID
+		INNER JOIN [dbo].[Asset] A ON RA.AssetID = A.ID
+		WHERE (I.PermissionsBitMask ^ D.PermissionsBitMask) & 1 = 1
+		AND RA.AssetTypeID = 0;
+	
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT DISTINCT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted I
+		INNER JOIN deleted D ON I.ResponsibilityTypeID = D.ResponsibilityTypeID
+		INNER JOIN [dbo].[ResponsibilityTypeRelationRule] rtrr ON (rtrr.ResponsibilityTypeID = I.ResponsibilityTypeID
+															  AND rtrr.[Object] = I.[ObjectType]
+															  AND rtrr.ObjectID = I.ObjectID)
+		INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on RA.RuleID = rtrr.ID
+		INNER JOIN [dbo].[Asset] A ON RA.AssetTypeID = A.AssetTypeID
+		WHERE (I.PermissionsBitMask ^ D.PermissionsBitMask) & 1 = 1
+		AND RA.AssetID = 0;
+	
+	END;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
