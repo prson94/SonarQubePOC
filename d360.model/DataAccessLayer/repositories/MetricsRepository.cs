@@ -358,7 +358,7 @@ namespace d360.model.DataAccessLayer
 
             var sql = @"
                     drop table if exists #tbl
-                    create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date)
+                    create table #tbl ([Uid] uniqueidentifier, Name nvarchar(250), ParentUid uniqueidentifier, IsGroup bit, Weight decimal(5,3), EffectiveDate date, Description nvarchar(500))
                     
                     insert into #tbl 
                     	select	A.[Uid],
@@ -366,7 +366,9 @@ namespace d360.model.DataAccessLayer
                     			A.ParentUid,
                     			A.IsGroup,
                     			V.Weight,
-                    			V.EffectiveDate
+                    			V.EffectiveDate,
+                    			A.Description
+
                     	from	metrics.AssetVersion V
                     			inner join (
                     					select		IA.[Uid],
@@ -398,12 +400,19 @@ namespace d360.model.DataAccessLayer
                     		Name,
                     		IsGroup,
                     		Weight,
+                            EffectiveDate,
+                            Description,
                     		(
-                    			select	F.Name as FieldName,
+                    			select	F.FriendlyName as FieldName,
                     					C.Operator,
-                    					C.ValueJson as [Value]
+                    					(case WHEN F.Type = 'Lookup' THEN FL.Text ELSE C.ValueJson END) as [Value]
                     			from	[metrics].[AssetVersionCondition] C
                     					inner join FieldType F on F.ID = C.FieldTypeID
+                                        inner join FieldLookupValue FL on 
+				                            FL.FieldTypeID = F.ID 
+				                            and F.LookupObjectType = FL.LookupObjectType 
+				                            and F.LookupObjectID = FL.LookupObjectID 
+                                            and [Value] = C.ValueJson
                     			where	[Uid] = h.[Uid]
                     					and EffectiveDate = h.EffectiveDate
                     			for json path
@@ -426,14 +435,17 @@ namespace d360.model.DataAccessLayer
             return model;
         }
 
-        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate)
+        public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
 
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
-
-            var sql = @"
+            string sql = "";
+            switch (type)
+            {
+                case ScoreType.Governance:
+                    sql = $@"
                     declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
@@ -460,7 +472,7 @@ namespace d360.model.DataAccessLayer
                     	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
                     	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
                     	[Weight] decimal(5,3), EffectiveDate date, 
-                    	[Value] bit null, [Applies] bit null, [Level] int null
+                    	[Value] bit null, [Applies] bit null, [Level] int null, [ScoreType] int null
                     );
                     
                     with rh as (
@@ -471,17 +483,21 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			I.AdjustedWeight as [Weight],
                     			I.EffectiveDate,
-                    			I.[Value]
+                    			I.[Value],
+                                A.[ScoreType]
                     	from	metrics.ScoreItem I
                     			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     			inner join (
                     				select	max(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
+                                    inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
                     						and MetricAssetUid = I.MetricAssetUid
+                                            and EffectiveDate <= @effectiveDate
                     						and EndDate is null
+                                            and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
-                    	where	AssetUid = @assetUid
+                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
@@ -490,7 +506,8 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			V.Weight,
                     			V.EffectiveDate,
-                    			NULL as Value
+                    			NULL as Value,
+								A.[ScoreType]
                     	from	metrics.AssetVersion V
                     			inner join #groups MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
                     			inner join metrics.Asset A on A.[Uid] = V.[Uid]
@@ -498,7 +515,7 @@ namespace d360.model.DataAccessLayer
                     	)
                     
                     insert into #tbl 
-                    	select *, NULL, NULL from rh;
+                    	select *, NULL, rh.[ScoreType] from rh;
                     
                     with h as (
                     	select	*,
@@ -518,9 +535,29 @@ namespace d360.model.DataAccessLayer
                     		inner join h S on S.Uid = T.Uid;
                     
                     select	distinct
-                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value
+                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
                     from	#tbl 
                     order by [Level], Name";
+                    break;
+                case ScoreType.DataQuality:
+                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  si.Value,  ms.ScoreType
+                    from metrics.Allocation AA
+                        inner join assettype att on AA.AssetTypeUid = att.[uid]
+                        inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
+	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
+	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
+                        inner Join metrics.scoreItem si on si.AssetUid = a.uid and si.effectiveDate = ms.EffectiveDate and ma.Uid = si.MetricAssetUid
+                    where 
+                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and ms.EndDate is null
+                    order by Name";
+                    break;
+                case ScoreType.Perceptional:
+                    break;
+                default:
+                    break;
+            }
+
+                       
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
@@ -535,6 +572,19 @@ namespace d360.model.DataAccessLayer
             }
 
             return model;
+        }
+
+        public List<int> GetScoreTypesForAsset(Guid assetUid)
+        {
+            var sql = $@"select distinct ma.scoretype from metrics.Allocation  ma
+                            inner join assettype att on ma.AssetTypeUid = att.[uid]
+                            inner join asset a on att.id = a.AssetTypeID
+							inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = ma.ScoreType
+                        where 
+                            a.[uid] = '{assetUid.ToString()}' 
+							and ma.[state] = 1
+							and EndDate is null";
+            return Company.Query<int>(sql).ToList();
         }
 
         public List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreTypeFilter)

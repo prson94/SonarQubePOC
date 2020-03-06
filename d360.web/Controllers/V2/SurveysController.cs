@@ -78,6 +78,13 @@ namespace d360.web.Controllers.V2
                 }
                 var queryParams = Request.GetQueryNameValuePairs();
 
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assetuid").Value);
@@ -144,6 +151,13 @@ namespace d360.web.Controllers.V2
             {
 
                 var queryParams = Request.GetQueryNameValuePairs();
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value);
@@ -217,6 +231,13 @@ namespace d360.web.Controllers.V2
                 }
 
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
 
                 if (queryParams.Any(x => x.Key.ToLower() == "assetuid"))
                 {

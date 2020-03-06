@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
@@ -82,6 +83,8 @@ namespace d360.core.entities
 
         [DataMember]
         public bool Value { get; set; }
+        [DataMember]
+        public ScoreType ScoreType { get; set; }
     }
 
     #endregion
@@ -108,6 +111,9 @@ namespace d360.core.entities
 
         [DataMember]
         public decimal Weight { get; set; }
+
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
 
         public string ConditionsJson { get; set; }
 

@@ -77,20 +77,6 @@ order by	R.LastName, R.FirstName", new { id }).ToList();
             return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
         }
 
-        [Route("{assetUid:Guid}/ScoreHistoryByObject")]
-        public JsonNetResult GetScoreHistoryByObject(Guid assetUid)
-        {
-            var query = Company.Query<dynamic>(@"EXEC GetScoreHistoryByObject @assetUid", new { assetUid });
-            return new JsonNetResult { Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
-        [Route("{assetUid:Guid}/AverageScoreByObjectType")]
-        public JsonNetResult GetAverageScoreByObjectType(Guid assetUid)
-        {
-            var query = Company.Query<dynamic>(@"EXEC GetAverageScoreByObjectType @assetUid", new { assetUid }).SingleOrDefault();
-            return new JsonNetResult{ Data = query, Formatting = Newtonsoft.Json.Formatting.None };
-        }
-
         [Route("{type}/{id:int}/SocialBreakdown")]
         public JsonNetResult GetSocialBreakdownByObject(string type, int id)
         {

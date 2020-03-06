@@ -75,7 +75,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selectedRow.data.ID, this.objectType);
+        this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
     }
 
     ngOnDestroy() {

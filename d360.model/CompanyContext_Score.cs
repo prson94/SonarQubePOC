@@ -147,7 +147,7 @@ namespace d360.model
                     Connection.Execute(@"
                     update  M
                     set     M.IsValidAllocation = 0,
-                            M.Message = coalesce(Message + '; ', '') + 'This asset does not have this score type allocated; '
+                            M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated; '
                     from    api.ExecutionMetric M
                             left join AssetWithType A on A.uid = M.assetUid
                             left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid
@@ -158,7 +158,7 @@ namespace d360.model
                     Connection.Execute(@"
                     update  M
                     set     M.IsValidAllocation = 0,
-                            M.Message = coalesce(Message + '; ', '') + 'This asset does not have this score type allocated for internal scores; '
+                            M.Message = coalesce(Message, '') + 'This asset does not have this score type allocated for internal scores; '
                     from    api.ExecutionMetric M
                             left join AssetWithType A on A.uid = M.assetUid
                             left join metrics.Allocation L on L.ScoreType = @scoreType and L.AssetTypeUid = A.AssetTypeUid and L.IsExternallyCalculated = 0
@@ -181,23 +181,23 @@ namespace d360.model
     where   ExecutionID = @ExecutionID;
 
     update  api.ExecutionMetric
-    set     Message = coalesce(Message + '; ', '') + 'Invalid asset specified; '
+    set     Message = coalesce(Message, '') + 'Invalid asset specified; '
     where   ExecutionID = @ExecutionID 
             and IsValidAsset = 0;
 
     update  api.ExecutionMetric
-    set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified; '
+    set     Message = coalesce(Message, '') + 'Invalid metric specified; '
     where   ExecutionID = @ExecutionID 
             and IsValidMetric = 0;
 
     update  api.ExecutionMetric
-    set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified for the date provided; '
+    set     Message = coalesce(Message, '') + 'Invalid metric specified for the date provided; '
     where   ExecutionID = @ExecutionID 
             and IsValidMetricDate = 0;
 
     update  api.ExecutionMetric
     set     Success = 0,
-            Message = coalesce(Message + '; ', '') + 'Effective date cannot be in the future; '
+            Message = coalesce(Message, '') + 'Effective date cannot be in the future; '
     where   ExecutionID = @ExecutionID and EffectiveDate > getutcdate();
 
     update api.ExecutionMetric set Message = null where ExecutionID = @ExecutionID and Success = 1;", new { execution.ExecutionID });
@@ -438,15 +438,15 @@ left join Asset S on S.[uid] = T.AssetUid
 where T.ExecutionID = @executionID", new { execution.ExecutionID, scoreType = (int)scoreType });
 
             //validate date ranges
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Effective date cannot be in the future; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'Effective date cannot be in the future; '
 from api.ExecutionMetric T 
 where T.ExecutionID = @executionID and T.EffectiveDate > getutcdate()", new { execution.ExecutionID });
 
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Run date cannot be in the future; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'Run date cannot be in the future; '
 from api.ExecutionMetric T 
 where T.ExecutionID = @executionID and T.RunDate > getutcdate()", new { execution.ExecutionID });
 
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Run date must be provided; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'Run date must be provided; '
 from api.ExecutionMetric T 
 where T.ExecutionID = @executionID and T.RunDate is null", new { execution.ExecutionID });
 
@@ -460,7 +460,7 @@ left join metrics.Allocation A on A.AssetTypeUid = AT.[uid]
 where T.ExecutionID = @executionID and A.ScoreType = @scoreType and A.IsExternallyCalculated = 1 and T.IsValidAsset = 1", new { execution.ExecutionID, scoreType = (int)scoreType });
 
             //resolve measures
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'All measures must be provided for this metric; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'All measures must be provided for this metric; '
 from api.ExecutionMetric T
 left join Asset S on S.[uid] = T.AssetUid 
 left join AssetType AT on AT.ID = S.AssetTypeId
@@ -470,7 +470,7 @@ and T.IsValidAsset = 1
 and A.uid not in (select measureuid from api.ExecutionMetricMeasure where ExecutionID = @executionID and ItemNumber = T.ItemNumber)
 ", new { execution.ExecutionID, scoreType = (int)scoreType });
 
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Provided measures do not match allocation measures; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'Provided measures do not match allocation measures; '
 from api.ExecutionMetric T
 left join Asset S on S.[uid] = T.AssetUid 
 left join AssetType AT on AT.ID = S.AssetTypeId
@@ -482,7 +482,7 @@ and M.MeasureUid not in (select uid from metrics.Asset where AssetTypeUid = At.u
 ", new { execution.ExecutionID, scoreType = (int)scoreType });
 
             //validate score
-            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message + '; ', '') + 'Score must be between 0 and 1; '
+            Connection.Execute(@"update T set T.Success = 0, T.Message = coalesce(T.Message, '') + 'Score must be between 0 and 1; '
 from api.ExecutionMetric T 
 where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[Value] > 1", new { execution.ExecutionID });
 
@@ -498,17 +498,17 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                 where   ExecutionID = @ExecutionID and success is null;
 
                 update  api.ExecutionMetric
-                set     Message = coalesce(Message + '; ', '') + 'Invalid asset specified; '
+                set     Message = coalesce(Message, '') + 'Invalid asset specified; '
                 where   ExecutionID = @ExecutionID 
                         and IsValidAsset = 0;
 
                 update  api.ExecutionMetric
-                set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified; '
+                set     Message = coalesce(Message, '') + 'Invalid metric specified; '
                 where   ExecutionID = @ExecutionID 
                         and IsValidMetric = 0;
 
                 update  api.ExecutionMetric
-                set     Message = coalesce(Message + '; ', '') + 'Invalid metric specified for the date provided; '
+                set     Message = coalesce(Message, '') + 'Invalid metric specified for the date provided; '
                 where   ExecutionID = @ExecutionID 
                         and IsValidMetricDate = 0;
 
@@ -595,13 +595,30 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                             transaction: trans);
 
 
-                            results.AddRange(
-                                 Connection.Query<ExternalScoreResultsApiResultsModel>(
-                                 $"select AssetUid, EffectiveDate, Success as IsSuccess, Message as ErrorMessage  from api.ExecutionMetric where ExecutionID = @ExecutionID and ItemNumber between {beginItemNumber} and {endItemNumber}",
-                                 new { execution.ExecutionID },
-                                 transaction: trans)
- );
+                            var batchResults = Connection.Query<ExternalScoreResultsApiResultsModel>( 
+                                $@"select E.AssetUid, E.EffectiveDate, E.Success as IsSuccess, 
+E.RunDate, E.[Value] as Score, E.[Message] as ErrorMessage, M.[Value] as measuresJson
+from api.ExecutionMetric E
+outer apply(
+    select(
+        select MeasureUid, Passed from api.ExecutionMetricMeasure
+        where ExecutionID = E.ExecutionID and ItemNumber = E.ItemNumber
+        for json path
+    ) as [value]
+) M where E.ExecutionID = @ExecutionID and E.ItemNumber between {beginItemNumber} and {endItemNumber}",
+                                 new { execution.ExecutionID }, transaction: trans).ToList();
 
+                            batchResults.ForEach(r =>
+                            {
+                                if (!string.IsNullOrEmpty(r.measuresJson))
+                                {
+                                    r.Measures = JsonConvert.DeserializeObject<List<ExternalScoreResultMeasureModel>>(r.measuresJson);
+                                    r.measuresJson = null;
+                                }
+                            });
+
+                            results.AddRange(batchResults);
+                            
                             #endregion
 
                             trans.Commit();
@@ -660,6 +677,7 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                 execution.Error = results.Count(i => !i.IsSuccess);
                 execution.Processed = results.Count(i => i.IsSuccess);
                 execution.CompletedOn = DateTime.UtcNow;
+                
                 Update(execution);
 
                 // Cleanup
