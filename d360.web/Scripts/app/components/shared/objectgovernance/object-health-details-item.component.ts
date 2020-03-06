@@ -139,6 +139,9 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
                     if (htmlEl.offsetHeight > 34) {
                         this.expandable = true;
                         this.checkExpander.emit();
+                    } else {
+                        this.expandable = false;
+                        this.checkExpander.emit();
                     }
                 } else {
                     this.expandable = false;
