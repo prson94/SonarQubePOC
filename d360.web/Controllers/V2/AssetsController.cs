@@ -171,6 +171,10 @@ namespace d360.web.Controllers.V2
         /// *  If you use either the subjectUid or objectUid filter, the predicateUid must be included in the request. 
         /// *  If you do not include the predicateUid, any values given in the subjectUid or objectUid field are ignored.
         /// 
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct ‘Lo’.
+        /// 
         /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
         /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
