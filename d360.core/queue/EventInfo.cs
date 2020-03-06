@@ -1,4 +1,5 @@
-﻿using d360.core.enums.Workflow;
+﻿using d360.core.entities;
+using d360.core.enums.Workflow;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,12 +49,14 @@ namespace d360.core.queue
         public AssetEventType Type { get; set; }
         public List<string> ChangedFieldNames { get; set; }
         public Guid Uid { get; set; }
+        public ApiExecutionInfo execution { get; set; }
     }
 
     public enum AssetEventType
     {
         Node,
         Edge,
-        Path
+        Path,
+        Execution
     }
 }

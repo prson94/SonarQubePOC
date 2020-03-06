@@ -1517,7 +1517,7 @@ where	T.LoadID = @id;
 
             #endregion
 
-            if (assetType.Class == AssetTypeClass.BusinessAsset)
+            if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Rule)
             {
                 if (parentAssetType != null)
                 {

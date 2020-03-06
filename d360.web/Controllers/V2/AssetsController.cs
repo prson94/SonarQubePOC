@@ -201,6 +201,14 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+
+                string isValid = isPageSizeAndNumValidParma(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+                }
+
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));

@@ -14,7 +14,7 @@ namespace igx.jobs.assetgraphprocessor
     public class GraphNodePathSubscriber
     {
         const string functionName = "AssetGraphProcessor_GraphNodePathSubscriber";
-        const int timeout = 1000 * 60 * 10;
+        const int timeout = 60 * 10;
 
         public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphNodePath", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
