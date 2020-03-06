@@ -1,0 +1,67 @@
+﻿<div class="modal-form">
+    <div class="content">
+        <div class="row">
+            <div class="col s12 no-padding">
+                <div class="FieldName">
+                    <span>Score Type&nbsp;</span>
+                </div>
+                <p-dropdown [disabled]="disabled" [options]="ddlScoreTypes" (onChange)="scoreTypeChange($event)" [(ngModel)]="selection.scoreType" [style]="{'width':'70%'}">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <span>{{item.label}}</span>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+        <br />
+        <div class="row">
+            <div class="col s12 no-padding">
+                <div class="FieldName">
+                    <span>Asset Type&nbsp;</span>
+                </div>
+                <p-dropdown [disabled]="disabled" [options]="ddlAssetTypes" [(ngModel)]="selection.assetTypeUid" [style]="{'width':'70%'}" filter="true">
+                    <ng-template let-item pTemplate="selectedItem">
+                        <span>{{item.label}}</span>
+                    </ng-template>
+                    <ng-template let-item pTemplate="item">
+                        <span *ngIf="item.class">
+                            <span class="option-class">{{item.class}}</span>&nbsp;|&nbsp;
+                            <span class="option-name">{{item.name}}</span>
+                        </span>
+                        <span *ngIf="!item.class">
+                            {{item.label}}
+                        </span>
+                    </ng-template>
+                </p-dropdown>
+            </div>
+        </div>
+        <div class="row">
+            <div class="FieldName">
+                <span>&nbsp;</span>
+            </div>
+            <div class="col s12 no-padding">
+                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled"></p-radioButton>
+            </div>
+            <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
+                Externally calculated scores require the score itself and measure results be passed in from an external provider. Measures for externally calculated scores are intended to provide context and information about the external score.
+            </div>
+            <div class="col s12 light-text" *ngIf="!selection.isExternallyCalculated">
+                Internally calculated scores use measure results to determine the score.
+            </div>
+        </div>
+        <div class="row">
+            <div *ngIf="disabled" class="warningMessage">
+                This allocation cannot be edited as there are measures related to this allocation.
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
+        <span class="grow"></span>
+        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || disabled">
+            {{savingInProgress ? '' : 'Save'}}
+            <span class="loader"><span class="spinner light"></span></span>
+        </button>
+    </div>
+</div>
