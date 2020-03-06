@@ -1,8 +1,9 @@
-﻿import { Component, Input, Output, EventEmitter, OnChanges, AfterViewInit, SimpleChange } from '@angular/core';
+﻿import { Component, Input, EventEmitter, OnChanges, AfterViewInit, SimpleChange, Output, ViewChild, ElementRef,   } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { TreeNode } from 'primeng/api';
 import { ScoreType } from '../../../models/metrics.model';
+import { expand } from 'rxjs/operators';
 
 
 @Component({
@@ -15,16 +16,22 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     @Input() item: TreeNode;
     @Input() definition: any[];
     @Input() isloading: boolean = false;
-
     @Input() showtype: ScoreType;
+    @Output() checkExpander = new EventEmitter();
+    private ScoreType = ScoreType;
     private currentItemDetails: any;
     private scoreItemUid: string;
     private scoreItem: any;
     private disableToggle: boolean = false;
     public isCollapsed: boolean = false;
+
+    public expandable: boolean = false;
+    @ViewChild('DQDescription', { static: false }) dqDescription: ElementRef;
+
     constructor(protected scoreService: ScoreService) {
         super();
     }
+
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         let requiresLoad: boolean = false;
         for (let p in changes) {
@@ -44,6 +51,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
     private toggleDetails() {
         this.isCollapsed = !this.isCollapsed;
     }
+
     private loadItemDetails() {
         if (this.definition)
             this.getCurrentItemDetails();
@@ -54,6 +62,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             var definitionItem = this.definition.filter(x => { return x.Uid == this.item.data.Uid })[0];
             if (definitionItem) {
                 this.currentItemDetails = definitionItem;
+                this.checkExpanders();
             }
         }
         this.isLoading = false;
@@ -94,6 +103,8 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
         return s;   
     }
 
@@ -106,22 +117,34 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
             }
         }
     }
-    private showExpand(item) {
-        if (this.isloading)
-            return;
-        if ((!item && !item.data) || !this.currentItemDetails) {
-            return;
-        }
-        if (item.data.IsGroup) {
-            if (!item.data.Description && !item.children) {
-                return false;
+    private checkExpanders() {
+        if (this.item && this.item.data && this.currentItemDetails) {
+            if (this.showtype == ScoreType.Governance) {
+                this.expandable = !(!this.item.data.Description && !this.item.children && !this.currentItemDetails.Conditions);
+                if (this.item.children) {
+                    this.item.children.forEach(x => {
+                        let expandable = !(
+                            !x.data.Description
+                            && !x.children
+                            && !(this.GetChildPropertValue(this.item, x, 'Conditions').length && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
+                        )
+                        x.data.expandable = expandable;
+                    });
+                }
+                this.checkExpander.emit();
             }
-        } else {
-            if (!item.data.Description && !this.currentItemDetails.Conditions) {
-                return false;
+            else {
+                if (this.dqDescription) {
+                    let htmlEl = this.dqDescription.nativeElement;
+                    if (htmlEl.offsetHeight > 34) {
+                        this.expandable = true;
+                        this.checkExpander.emit();
+                    }
+                } else {
+                    this.expandable = false;
+                    this.checkExpander.emit();
+                }
             }
         }
-        this.disableToggle = false;
-        return true;
     }
 }

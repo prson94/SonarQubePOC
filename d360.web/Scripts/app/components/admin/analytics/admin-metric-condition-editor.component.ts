@@ -32,6 +32,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             ft.Disabled = false;
         });
 
+        this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
+
         this.usedFieldTypes.forEach(i => {
             let ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID == i);
             if (ft) {

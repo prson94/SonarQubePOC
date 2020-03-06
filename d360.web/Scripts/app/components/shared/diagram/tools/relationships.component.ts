@@ -421,7 +421,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         resolveRelationshipsObservable.subscribe(results => {
             var eligibleRelationships = [];
             results.forEach(res => {
-                res.forEach(r => {
+                (<any[]>res).forEach(r => {
                     if (r.Predicate.Type == 'Transformation') {
                         eligibleRelationships.push(r);
                     }
@@ -472,7 +472,7 @@ export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
         resolveRelationshipsObservable.subscribe(results => {
             var eligibleRelationships = [];
             results.forEach(res => {
-                res.forEach(r => {
+                (<any[]>res).forEach(r => {
                     if (r.Predicate.Type == 'Transformation') {
                         eligibleRelationships.push(r);
                     }

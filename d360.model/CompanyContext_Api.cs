@@ -824,6 +824,10 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
 drop table if exists #LookupValues
 create table #LookupValues (ItemNumber int, FieldTypeID int not null, FieldValue nvarchar(max) not null, [Value] nvarchar(max) null)
 CREATE CLUSTERED INDEX CIX_TempLookupValues ON #LookupValues ( FieldTypeID ASC );
+
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
 		
 insert into #LookupValues
 	select		T.ItemNumber,
@@ -836,11 +840,18 @@ insert into #LookupValues
 				T.FieldTypeID,
 				T.FieldValue;
 
+insert into #RelevantLookupValues
+select FieldTypeId,
+		[Text],
+		[Value]
+from FieldLookupValue F
+where F.FieldTypeID in (select FieldTypeID from #Lookupvalues);
+
 update	T
 set		T.[Value] = S.[Value]
 from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 0
-		inner join FieldLookupValue S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
+		inner join #RelevantLookupValues S on S.FieldTypeID = T.FieldTypeID and S.[Text] = T.FieldValue;
 
 update	T
 set		T.[Value] = '0'
@@ -859,10 +870,6 @@ insert into #MvLookupValues (ItemNumber, FieldTypeID, [RawValue])
 	from		#LookupValues T
 				inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 				cross apply string_split(T.FieldValue, ',') MV;
-
-
-drop table if exists #RelevantLookupValues;
-create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
 
 insert into #RelevantLookupValues 
 select		top 100 percent
@@ -1011,6 +1018,19 @@ from	api.ExecutionField T
 
             if (events.Any())
                 QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+        }
+
+        public void SendApiGraphEvent(ApiExecutionInfo info)
+        {
+            var e = new AssetEventInfo()
+            { 
+              execution = info,
+              CompanyID = CurrentCompanyID,
+              Type = AssetEventType.Execution
+            };
+
+
+            QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
         #region Validation
@@ -2733,7 +2753,7 @@ where   ExecutionID = @ExecutionID
             client.TrackTrace($"API v2 Execution ID[{execution.ExecutionID.ToString()}", propsToSend);
         }
 
-        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500)
+        public List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -2912,37 +2932,7 @@ where   ExecutionID = @ExecutionID
                                             }
                                         }
                                     }
-                                    if (at.Object == "RuleType")
-                                    {
-                                        // Check to ensure Threshold is present.
-                                        if (success)
-                                        {
-                                            success = model.Fields.ContainsKey("Threshold");
-                                            if (!success)
-                                            {
-                                                errorMessage = "Asset is missing a required Threshold field value";
-                                            }
-                                            else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
-                                            {
-                                                if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
-                                                {
-                                                    errorMessage = "Threshold value must be between 0 and 1";
-                                                    success = false;
-                                                }
-                                                else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
-                                                {
-                                                    errorMessage = "Threshold value cannot exceed 3 decimal places.";
-                                                    success = false;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                errorMessage = "Threshold value is not a valid number";
-                                                success = false;
-                                            }
-                                            
-                                        }
-                                    }
+                                    
                                     if (at.Object == "ReferenceItemType")
                                     {
                                         // Check to ensure Code is present.
@@ -2954,8 +2944,37 @@ where   ExecutionID = @ExecutionID
                                     }
                                 }
 
-                                if (success)
+                                if (success && at.Object == "RuleType")
                                 {
+                                    // Check to ensure Threshold is present.
+                                    success = model.Fields.ContainsKey("Threshold");
+                                    if (!success)
+                                    {
+                                        errorMessage = "Asset is missing a required Threshold field value";
+                                    }
+                                    else if (decimal.TryParse(model.Fields["Threshold"], out decimal threshold)) //Check threshold is a number
+                                    {
+                                        if (!(threshold > 0 && threshold <= 1)) //check threshold is between 0 and 1
+                                        {
+                                            errorMessage = "Threshold value must be between 0 and 1";
+                                            success = false;
+                                        }
+                                        else if (decimal.Round(threshold, 3) != threshold) //check threshold has a max of 3 decimal places
+                                        {
+                                            errorMessage = "Threshold value cannot exceed 3 decimal places.";
+                                            success = false;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        errorMessage = "Threshold value is not a valid number";
+                                        success = false;
+                                    }
+                                }
+
+                                if (success)
+                                {                                    
+
                                     fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
                                     var row = table.NewRow();
@@ -3812,25 +3831,29 @@ select [uid] from #ParentChildRelationships",
 
                         Connection.Close();
 
-                        IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
-
-                        if (parentIntersectGuids.Any())
+                        if (sendGraphEvents)
                         {
-                            graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
+                            IEnumerable<IGraphAsset> graphResults = results.AsEnumerable();
+
+                            if (parentIntersectGuids.Any())
                             {
-                                uid = i,
-                                Success = true
-                            }));
-                        }
+                                graphResults = graphResults.Concat(parentIntersectGuids.Select(i => new DatabaseBulkRelationshipResult()
+                                {
+                                    uid = i,
+                                    Success = true
+                                }));
+                            }
 
-                        try
-                        {
-                            var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
-                            sw.Restart();
-                            SendAssetGraphEvents(graphResults, changedFields,true);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                            try
+                            {
+                                var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+                                sw.Restart();
+                                SendAssetGraphEvents(graphResults, changedFields, true);
+                                this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                            }
+                            catch { }
                         }
-                        catch { }
+                       
 
 
                         if (sendWorkflowEvents)
