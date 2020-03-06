@@ -1,5 +1,4 @@
 ﻿<div class="scorecard-item" *ngIf="ScoreType.Governance == showtype">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="scorecard-heading">
         <div *ngIf="expandable; else noclckGutter" class="expander-gutter" (click)="toggleDetails()">
             <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
@@ -132,7 +131,6 @@
     </div>
 </div>
 <div class="scorecard-item" *ngIf="ScoreType.DataQuality == showtype">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
     <div *ngIf="!isLoading" class="scorecard-heading">
         <div *ngIf="expandable; else noclckGutterDQ" class="expander-gutter" (click)="toggleDetails()">
             <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
