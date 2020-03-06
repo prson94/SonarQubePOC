@@ -577,7 +577,8 @@ namespace d360.web.Controllers.V2
             Route("history/{scoreType}/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
         {

@@ -430,5 +430,4 @@
 
 	<!-- Data Scripts (jira-based naming) --> 
 	<!--include file="scripts/GOV-1234.xml"/--> <!-- Insert default data records for XYX. -->
-
 </databaseChangeLog>

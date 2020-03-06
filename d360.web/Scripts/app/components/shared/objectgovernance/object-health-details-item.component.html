@@ -1,5 +1,4 @@
-﻿<div class="scorecard-item" *ngIf="showtype == item?.data?.ScoreType">
-    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+﻿<div class="scorecard-item" *ngIf="ScoreType.Governance == showtype">
     <div *ngIf="!isLoading" class="scorecard-heading">
         <div *ngIf="expandable; else noclckGutter" class="expander-gutter" (click)="toggleDetails()">
             <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
@@ -11,8 +10,8 @@
                 <div class="heading-value">{{item?.data?.Name}}</div>
             </div>
             <div class="heading-item med-lg">
-                <div class="heading-title" title="Effective Dates">Effective Dates</div>
-                <div class="heading-value">{{currentItemDetails?.EffectiveDate | utcDate | date:'shortDate'}}</div>
+                <div class="heading-title" title="Effective Dates">Measure Effective Dates</div>
+                <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item med" title="Defined Weight">
                 <div class="heading-title">Defined Weight</div>
@@ -57,11 +56,11 @@
                         </table>
                     </div>
                 </div>
-                <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>      
+                <ng-template #showmdlg><div class="heading-item med-lg lg"><div class="heading-title">&nbsp;</div></div></ng-template>
                 <div class="heading-item sm badge"><div class="heading-title">&nbsp;</div></div>
             </div>
         </div>
-        
+
         <div *ngIf="item?.data?.IsGroup" class="card-groupings">
             <div *ngFor="let child of item?.children">
                 <div class="separator"></div>
@@ -77,7 +76,7 @@
                         </div>
                         <div class="heading-item med-lg">
                             <div class="heading-title no-height"></div>
-                            <div class="heading-value">{{GetChildPropertValue(item?.data,child?.data,'EffectiveDate') | utcDate | date:'shortDate'}}</div>
+                            <div class="heading-value">{{child?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{child?.data?.EndDate ? (child?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
                         </div>
                         <div class="heading-item med">
                             <div class="heading-title no-height"></div>
@@ -131,3 +130,29 @@
         </div>
     </div>
 </div>
+<div class="scorecard-item" *ngIf="ScoreType.DataQuality == showtype">
+    <div *ngIf="!isLoading" class="scorecard-heading">
+        <div *ngIf="expandable; else noclckGutterDQ" class="expander-gutter" (click)="toggleDetails()">
+            <i class="fa fa-chevron-down expander" [ngClass]="{'icon-right': isCollapsed, 'icon-down': !isCollapsed}"></i>
+        </div>
+        <ng-template #noclckGutterDQ><div class="expander-gutter"></div></ng-template>
+        <div class="heading-content">
+            <div class="heading-item large">
+                <div class="heading-title" title="Measure">Measure</div>
+                <div class="heading-value">{{item?.data?.Name}}</div>
+            </div>
+            <div class="heading-item desc large">
+                <div *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-title">Description</div>
+                <div #DQDescription *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text DQ" [ngClass]="{'collapsed': isCollapsed}">{{item?.data?.Description}}</div>
+            </div>
+            <div class="heading-item med-lg">
+                <div class="heading-title" title="Effective Dates">Effective Dates</div>
+                <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
+            </div>
+            <div class="heading-item sm badge">
+                <span *ngIf="!item?.data?.IsGroup" class="d3s-badge grn" [ngClass]="{'grn': item?.data?.Value, 'rd': !item?.data?.Value}">{{item?.data?.Value ? "Pass":"Fail"}}</span>
+            </div>
+        </div>
+    </div>
+</div>
+

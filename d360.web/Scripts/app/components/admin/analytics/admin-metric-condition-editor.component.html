@@ -31,20 +31,10 @@
                     <option value="gte">>=</option>
                 </select>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Lookup'">
+            <div *ngIf="condition.FieldType.Type == 'Lookup' || condition.FieldType.Type == 'Text'">
                 <select [(ngModel)]="condition.Operator" style="width: 95%">
                     <option value="eq">=</option>
                     <option value="neq">!=</option>
-                </select>
-            </div>
-            <div *ngIf="condition.FieldType.Type == 'Text'">
-                <select [(ngModel)]="condition.Operator" style="width: 95%">
-                    <option value="eq">=</option>
-                    <option value="neq">!=</option>
-                    <option value="lt"><</option>
-                    <option value="lte"><=</option>
-                    <option value="gt">></option>
-                    <option value="gte">>=</option>
                 </select>
             </div>
         </div>
