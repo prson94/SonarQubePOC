@@ -19,7 +19,7 @@ import {
     FilterSelectionsModel,
     AssetBrowserApiHopRequestModel,
     AssetBrowserTranslationOwnerCount,
-    AssetBrowserApiOwnerHopRequestModel,
+    AssetBrowserApiOwnerHopRequestModel,    StoredAssetBrowserFilterModel,
     AssetBrowserAssetsModel,
     AssetBrowserAssetModel,
     AssetBrowserOwnersModel,
@@ -33,6 +33,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
+import { ApiResult } from '../models/apiresult.model';
 
 @Injectable()
 export class BrowserService extends BaseObservableService {
@@ -174,6 +175,43 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions, response.ResponsibilityTypeOptions)),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieves a set of options to filter by within the Asset Browser, for use in the filter panel.
+    * @returns A set of filter options, as list properties.
+    */
+    public getUserFilters(): Observable<StoredAssetBrowserFilterModel[]> {
+        const url = `api/v2/browser/filters/me`;
+
+        return this.http.get(url).pipe(
+            map((response: StoredAssetBrowserFilterModel[]) => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public saveUserFilter(model: StoredAssetBrowserFilterModel):Observable<StoredAssetBrowserFilterModel> {
+        const url = `api/v2/browser/filters`;
+
+        if (model.uid != undefined)
+            return this.http.put(url+'/'+model.uid, model).pipe(
+                map((response: StoredAssetBrowserFilterModel) => response),
+                catchError(err => this.handleError(err))
+            );
+        else
+            return this.http.post(url, model).pipe(
+                map((response: StoredAssetBrowserFilterModel) => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public deleteUserFilter(model: StoredAssetBrowserFilterModel): Observable<boolean> {
+        const url = `api/v2/browser/filters`;
+
+        return this.http.delete(url + '/' + model.uid).pipe(
+            map((response: ApiResult) => response.Success),
             catchError(err => this.handleError(err))
         );
     }

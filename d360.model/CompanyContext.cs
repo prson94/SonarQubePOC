@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Scoring;
 using d360.core.entities.Views;
+using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
@@ -162,6 +163,8 @@ namespace d360.model
         public DbSet<FusionType> FusionTypes { get; set; }
 
         public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
+
+        public DbSet<GraphFilter> GraphFilters { get; set; }
 
         public DbSet<Intersect> Intersects { get; set; }
 
