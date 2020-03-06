@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
       <![CDATA[
-Create FUNCTION [dbo].[AssetWithAssetsByTypeUserCantRead]
+Create or Alter FUNCTION [dbo].[AssetWithAssetsByTypeUserCantRead]
 (		        
 	@ResourceID int
 )

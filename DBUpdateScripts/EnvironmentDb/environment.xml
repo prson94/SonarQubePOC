@@ -44,6 +44,7 @@
 	<include file="scripts/Function.utility.GetHash.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
+  
 
 	<!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
@@ -326,6 +327,7 @@
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
+  <include file="scripts/Function.dbo.AssetWithAssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.CheckIfAssetExistsWithParent.xml"/>
 	<include file="scripts/Function.dbo.CheckIfObjectExists.xml"/>
 	<include file="scripts/Function.dbo.CheckIfObjectExistsWithParent.xml"/>
@@ -398,6 +400,7 @@
 	<include file="scripts/Procedure.dbo.GetResponsibilityTypeBreakdown.xml"/>
 	<include file="scripts/Procedure.dbo.GetScoreHistoryByObject.xml"/>
 	<include file="scripts/Procedure.dbo.GetSiteNavigation.xml"/>
+  <include file="scripts/Procedure.dbo.GetSiteNavigationCounts.xml"/>  
 	<include file="scripts/Procedure.dbo.ResponsibilityRuleShouldRun.xml"/>
 	<include file="scripts/Procedure.dbo.SecondaryNavSettings.xml"/>
 	<include file="scripts/Procedure.dbo.UpdateDependentObjectTypeDisplayValues.xml"/>
