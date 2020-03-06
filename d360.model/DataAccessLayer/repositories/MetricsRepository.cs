@@ -199,9 +199,9 @@ namespace d360.model.DataAccessLayer
                 }
                 Company.MetricAssets.Add(metricAsset);
             }
-
-            var cleanDate = model.EffectiveDate.Date;
-            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == cleanDate, v => v.Conditions).SingleOrDefault();
+            
+            var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
+            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
 
             string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
             newConditionHash = newConditionHash.GetD3sHashString();
@@ -211,7 +211,7 @@ namespace d360.model.DataAccessLayer
 
                 if (maxEffectiveDate.HasValue)
                 {
-                    if (maxEffectiveDate.Value > cleanDate)
+                    if (maxEffectiveDate.Value > effectiveDate.Date)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
                     }
@@ -229,7 +229,7 @@ namespace d360.model.DataAccessLayer
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ConditionAndOr = model.ConditionAndOr,
-                    EffectiveDate = model.EffectiveDate,
+                    EffectiveDate = effectiveDate,
                     Weight = model.Weight
                 };
 
