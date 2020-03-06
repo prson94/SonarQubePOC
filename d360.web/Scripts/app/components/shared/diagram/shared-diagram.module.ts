@@ -19,6 +19,7 @@ import { EditorModule } from 'primeng/editor';
 import { ListboxModule } from 'primeng/listbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
+import { MenuModule } from 'primeng/menu';
 import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
@@ -57,6 +58,7 @@ import { IconService } from '../../../services/icon.service';
 import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
+import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
@@ -77,6 +79,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
         AssetTypeModalEditorModule,
+        SiteModalModule,
         ScoreBadgeModule,
         //prime        
         CheckboxModule,
@@ -91,6 +94,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         DropdownModule,
         MenubarModule,
         ScrollPanelModule,
+        MenuModule,
         TableModule,
         TabViewModule,
         TreeModule,
