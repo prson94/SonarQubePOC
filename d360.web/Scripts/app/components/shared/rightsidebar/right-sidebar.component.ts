@@ -24,7 +24,7 @@ declare var CurrentResourceID;
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
-    host: { '(window:resize)': 'checkSize()', '(window:beforeunload)': 'destroy()' }
+    host: { '(window:resize)': 'checkSize()' }
 })
 
 export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewInit {
