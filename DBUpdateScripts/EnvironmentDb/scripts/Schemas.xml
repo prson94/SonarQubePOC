@@ -1,0 +1,365 @@
+<databaseChangeLog
+    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Schema.analytics-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'analytics' )
+			EXEC('CREATE SCHEMA [analytics]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.api-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'api' )
+			EXEC('CREATE SCHEMA [api]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.asset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'asset' )
+			EXEC('CREATE SCHEMA [asset]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.bulkload-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'bulkload' )
+			EXEC('CREATE SCHEMA [bulkload]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.cache-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'cache' )
+			EXEC('CREATE SCHEMA [cache]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.fusion-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'fusion' )
+			EXEC('CREATE SCHEMA [fusion]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.graph-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'graph' )
+			EXEC('CREATE SCHEMA [graph]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.integration-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'integration' )
+			EXEC('CREATE SCHEMA [integration]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.lineage-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'lineage' )
+			EXEC('CREATE SCHEMA [lineage]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.metrics-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'metrics' )
+			EXEC('CREATE SCHEMA [metrics]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.overlay-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'overlay' )
+			EXEC('CREATE SCHEMA [overlay]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.quality-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'quality' )
+			EXEC('CREATE SCHEMA [quality]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.queue-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'queue' )
+			EXEC('CREATE SCHEMA [queue]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.relation-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'relation' )
+			EXEC('CREATE SCHEMA [relation]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.report-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'report' )
+			EXEC('CREATE SCHEMA [report]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.reporting-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'reporting' )
+			EXEC('CREATE SCHEMA [reporting]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.responsibility-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'responsibility' )
+			EXEC('CREATE SCHEMA [responsibility]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.tile-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'tile' )
+			EXEC('CREATE SCHEMA [tile]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.utility-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'utility' )
+			EXEC('CREATE SCHEMA [utility]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.validate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'validate' )
+			EXEC('CREATE SCHEMA [validate]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Schema.workflow-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'workflow' )
+			EXEC('CREATE SCHEMA [workflow]');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>

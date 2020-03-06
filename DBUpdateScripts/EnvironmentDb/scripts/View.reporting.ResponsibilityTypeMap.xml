@@ -1,0 +1,32 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.ResponsibilityTypeMap-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ CREATE OR ALTER VIEW [reporting].[ResponsibilityTypeMap] AS
+    select	R.ResponsibilityTypeID, 
+            RT.Name as ResponsibilityName, 
+            D.Name as ObjectName, 
+            D.Object, 
+            D.ObjectID 
+    from	ResponsibilityTypeRelation R
+	        inner Join [dbo].[ResponsibilityType] RT on RT.ID = R.ResponsibilityTypeID 
+	        inner join AssetType D on D.Object = R.ObjectType and D.ObjectID = R.ObjectID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

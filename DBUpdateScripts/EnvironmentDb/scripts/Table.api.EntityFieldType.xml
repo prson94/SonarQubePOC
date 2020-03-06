@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.EntityFieldType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'EntityFieldType')
+BEGIN
+	CREATE TABLE [api].[EntityFieldType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[EntityID] [int] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		[JsonFieldNameOverride] [nvarchar](250) NULL,
+		[XmlFieldNameOverride] [nvarchar](250) NULL,
+		[AllowSelect] [bit] NOT NULL,
+		[AllowSort] [bit] NOT NULL,
+		[AllowFilter] [bit] NOT NULL,
+		[ItemNameOverride] [varchar](250) NULL,
+		CONSTRAINT [PK_Api_EntityFieldType] PRIMARY KEY NONCLUSTERED ( [EntityID] ASC, [FieldTypeID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_EntityFieldType_Entity')
+BEGIN
+	ALTER TABLE [api].[EntityFieldType]  WITH CHECK ADD  CONSTRAINT [FK_EntityFieldType_Entity] FOREIGN KEY([EntityID]) REFERENCES [api].[Entity] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [api].[EntityFieldType] CHECK CONSTRAINT [FK_EntityFieldType_Entity]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_EntityFieldType_FieldType')
+BEGIN
+	ALTER TABLE [api].[EntityFieldType]  WITH CHECK ADD  CONSTRAINT [FK_EntityFieldType_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [api].[EntityFieldType] CHECK CONSTRAINT [FK_EntityFieldType_FieldType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

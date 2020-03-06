@@ -1,0 +1,58 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.dbo.UpdateDependentObjectTypeDisplayValues-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter PROCEDURE [dbo].[UpdateDependentObjectTypeDisplayValues]		
+	@ChangedObject varchar(20),
+	@ChangedObjectTypeID int
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	Declare @ObjectType varchar(20);
+	Declare @ObjectID int;
+	Declare @AssetTypeID int;
+
+	SELECT @ChangedObject = REPLACE(@ChangedObject, 'Type', '');
+
+	if exists (select 1 from FieldType where LookupObjectType = @ChangedObject and LookupObjectID = @ChangedObjectTypeID)
+	begin
+		Print 'Found dependent lookup fields updating them'
+		
+		Declare curP cursor LOCAL For
+
+		 select distinct [Object] as ObjectType, ObjectID, AssetTypeID from FieldType where LookupObjectType = @ChangedObject and LookupObjectID = @ChangedObjectTypeID and AssetTypeID is not null
+
+		OPEN curP 
+		Fetch Next From curP Into @ObjectType, @ObjectID,@AssetTypeID
+
+		While @@Fetch_Status = 0 Begin
+			print 'Updating dependent AssetTypeID'
+			print @AssetTypeID
+			exec GenerateAssetTypeDisplayValues	@AssetTypeID
+		Fetch Next From curP Into @ObjectType, @ObjectID,@AssetTypeID
+		End 
+
+		Close curP
+		Deallocate curP
+	end
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

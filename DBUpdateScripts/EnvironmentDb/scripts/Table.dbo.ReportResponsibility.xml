@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ReportResponsibility-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ReportResponsibility')
+BEGIN
+	CREATE TABLE [dbo].[ReportResponsibility](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ReportID] [int] NOT NULL,
+		[ResponsibilityTypeID] [int] NOT NULL,
+		CONSTRAINT [PK_ReportResponsibility] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ReportResponsibility_Report')
+BEGIN
+	ALTER TABLE [dbo].[ReportResponsibility] WITH CHECK ADD CONSTRAINT [FK_ReportResponsibility_Report] FOREIGN KEY([ReportID]) REFERENCES [dbo].[Report] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[ReportResponsibility] CHECK CONSTRAINT [FK_ReportResponsibility_Report]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

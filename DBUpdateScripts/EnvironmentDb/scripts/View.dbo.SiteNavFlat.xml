@@ -1,0 +1,64 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.dbo.SiteNavFlat-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	create or alter view [dbo].[SiteNavFlat] 
+	as
+		select	u.ObjectID,
+				u.[Class],
+				u.Name,
+				u.url as Route,
+				u.Object,
+				null as SortOrder,
+				u.ParentID as ParentID
+		from	(
+				select	T.ObjectID,
+						T.[Class],
+						null as ParentID,
+						T.Name,
+						dbo.GenerateAssetTypeUrl(T.ID) As url,
+						'ArtifactType' as [Object]
+				FROM	AssetType T 
+				where	T.[Object] = 'ArtifactType'
+
+				UNION ALL
+
+				SELECT	T.ObjectID,
+						T.[Class],
+						null as ParentID,
+						T.Name,
+						dbo.GenerateAssetTypeUrl(T.ID)  As url,
+						'TaxonomyType' as [Object]
+				FROM	AssetType T
+				WHERE	T.[Object] = 'TaxonomyType'
+
+				UNION ALL
+
+				SELECT	T.ObjectID,
+						T.[Class],
+						null as ParentID,
+						T.Name,
+						dbo.GenerateAssetTypeUrl(T.ID)  As url,
+						'PolicyType' as [Object]
+				FROM	AssetType T 
+				WHERE	T.[Object] = 'PolicyType'
+				) u
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,46 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.metrics.AssetVersionCondition-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionCondition')
+BEGIN
+	CREATE TABLE [metrics].[AssetVersionCondition](
+		[Uid] [uniqueidentifier] NOT NULL,
+		[EffectiveDate] [date] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		[Operator] [varchar](10) NOT NULL,
+		[ValueJson] [nvarchar](max) NOT NULL,
+		CONSTRAINT [PK_MetricAssetVersionCondition] PRIMARY KEY NONCLUSTERED ( [Uid] ASC, [EffectiveDate] DESC, [FieldTypeID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionCondition_FieldType')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionCondition] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionCondition_FieldType] FOREIGN KEY([FieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionCondition] CHECK CONSTRAINT [FK_MetricAssetVersionCondition_FieldType]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionCondition] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion] FOREIGN KEY([Uid], [EffectiveDate]) REFERENCES [metrics].[AssetVersion] ([Uid], [EffectiveDate]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionCondition] CHECK CONSTRAINT [FK_MetricAssetVersionCondition_MetricAssetVersion]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

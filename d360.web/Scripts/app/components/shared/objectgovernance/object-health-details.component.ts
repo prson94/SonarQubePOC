@@ -1,16 +1,14 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList, ElementRef, AfterContentInit} from '@angular/core';
+﻿import {Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
-import { PointBreakdown, AverageScore } from '../../../models/score.model';
+import { PointBreakdown } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
-import { ignoreElements } from 'rxjs/operators';
-import { debug } from 'util';
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
-import { Element } from '@angular/compiler';
+
 
 
 @Component({
@@ -39,6 +37,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
     private handle: any;
+    private loadingPoints: boolean = false;
+    private loadingDefinition: boolean = false;
+    private loadingHistory: boolean = false;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
     private showExpandAndCollapse: boolean = true;
 
@@ -54,7 +55,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             }
         }
         if (requiresLoad) {
-            this.isLoading = true;
             this.loadTypesAndLatestScore();
         }
     }
@@ -77,7 +77,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadSeriesData() {
         if (this.uid) {
             this.historicalData = [];
-            this.isLoading = true;
+            this.loadingHistory = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
@@ -172,13 +172,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             color: '#FF7155'
                         }]
                     };
-                    this.isLoading = false;
+                    this.loadingHistory = false;
                 });
         }
     }
 
     private loadPoints() {
-        this.isLoading = true;
+        this.loadingPoints = true;
         if (this.uid) {
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
             .subscribe(res => {
@@ -223,7 +223,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.pointBreakdownTree.push(root);
                 });
 
-                this.isLoading = false;
+                this.loadingPoints = false;
             });
         }
     }
@@ -236,14 +236,14 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
     private loadDefinition() {
         if (this.uid) {
-            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res;});
-            this.isLoading = false;
+            this.loadingDefinition = true;
+            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res; this.loadingDefinition = false; });
         }
     }
     hasAnyExpanders() {
         clearTimeout(this.handle);
         this.handle = window.setTimeout(() => {
-            if (this.OHDitems && !this.isLoading) {
+            if (this.OHDitems && !this.loadingDefinition && !this.loadingHistory && !this.loadingPoints) {
                 this.showExpandAndCollapse = this.OHDitems.filter(x => {
                     return x.expandable;
                 }).length > 0;

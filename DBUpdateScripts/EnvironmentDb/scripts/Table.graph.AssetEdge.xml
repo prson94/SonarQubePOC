@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.graph.AssetEdge-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'graph' AND TABLE_NAME = 'AssetEdge')
+BEGIN
+	CREATE TABLE [graph].[AssetEdge](
+		[ID] [bigint] NOT NULL,
+		[Uid] [uniqueidentifier] NOT NULL,
+		[IntersectTypeID] [int] NOT NULL,
+		[IntersectTypeUid] [uniqueidentifier] NOT NULL,
+		[PredicateID] [int] NOT NULL,
+		[PredicateUid] [uniqueidentifier] NOT NULL,
+		[PredicateType] [int] NOT NULL,
+		[Properties] [xml] NOT NULL,
+		[State] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL
+	)
+	AS EDGE;
+	
+	ALTER TABLE [graph].[AssetEdge] ADD CONSTRAINT [EC_GraphAssetEdge] CONNECTION (graph.[AssetNode] To graph.[AssetNode]);
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge] ON [graph].[AssetEdge] ( [UpdatedOn] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_From')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_From] ON [graph].[AssetEdge] ( $from_id, $to_id )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_Id')
+BEGIN
+	CREATE UNIQUE NONCLUSTERED INDEX [IX_GraphAssetEdge_Id] ON [graph].[AssetEdge] ( $edge_id )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_To')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_To] ON [graph].[AssetEdge] ( $to_id, $from_id )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_Uid] ON [graph].[AssetEdge] ( [Uid] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

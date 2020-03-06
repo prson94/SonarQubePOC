@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ResourceGroup-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResourceGroup')
+BEGIN
+	CREATE TABLE [dbo].[ResourceGroup](
+		[ResourceID] [int] NOT NULL,
+		[GroupID] [int] NOT NULL,
+		CONSTRAINT [PK_ResourceGroup] PRIMARY KEY CLUSTERED ( [ResourceID] ASC, [GroupID] ASC )
+	)
+
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ResourceGroup_Group')
+BEGIN
+	ALTER TABLE [dbo].[ResourceGroup] WITH CHECK ADD CONSTRAINT [FK_ResourceGroup_Group] FOREIGN KEY([GroupID]) REFERENCES [dbo].[Group] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[ResourceGroup] CHECK CONSTRAINT [FK_ResourceGroup_Group]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

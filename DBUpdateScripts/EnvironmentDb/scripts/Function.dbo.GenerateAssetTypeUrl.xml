@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.GenerateAssetTypeUrl-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GenerateAssetTypeUrl] 
+(
+	@AssetTypeID int
+)
+RETURNS varchar(500)
+AS
+BEGIN
+	DECLARE @Type varchar(50), @TypeID int;
+	DECLARE @Url varchar(500) = '';
+
+	select 
+		@Type = T.[Object],
+		@TypeID = T.ObjectID
+	from
+		AssetType T
+	where T.ID = @AssetTypeID;
+
+	SET @Url = CASE @Type
+		WHEN 'ArtifactType' THEN 'artifact/' + CAST(@TypeID as varchar)
+		WHEN 'ReferenceItemType' THEN 'reference/' + CAST(@TypeID as varchar)	
+		WHEN 'FusionType' THEN 'fusion/' + CAST(@TypeID as varchar)
+		WHEN 'PolicyType' THEN 'policy/' + CAST(@TypeID as varchar) + '/structure'		
+		WHEN 'ResourceType' THEN 'resource/list/' + CAST(@TypeID as varchar)
+		WHEN 'RuleType' THEN 'quality/rule/' + CAST(@TypeID as varchar)	
+		WHEN 'TaxonomyType' THEN 'model/' + CAST(@TypeID as varchar) + '/structure'				
+	END
+
+	RETURN @Url
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

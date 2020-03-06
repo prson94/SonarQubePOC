@@ -10,6 +10,7 @@ export class PointBreakdown {
     Weight: number;
     Value: boolean;
     EffectiveDate: string;
+    EndDate: string;
     ScoreType: ScoreType;
 }
 
