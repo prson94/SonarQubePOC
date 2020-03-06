@@ -438,11 +438,10 @@ namespace d360.model.DataAccessLayer
         public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
-            string dateString = "";
+            
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
-            else
-                dateString = " or endDate <= @EffectiveDate ";
+
             string sql = "";
             switch (type)
             {
@@ -502,7 +501,6 @@ namespace d360.model.DataAccessLayer
                     				from	metrics.ScoreItem I
                                     inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
-                    						and MetricAssetUid = I.MetricAssetUid
                                             and EffectiveDate <= @effectiveDate
                     						and ((I.EndDate is null and I.EffectiveDate <= @effectiveDate) or 
                                                 (I.EndDate <= dateadd(day, 1,@effectiveDate) and I.EffectiveDate >= @effectiveDate))
@@ -552,7 +550,7 @@ namespace d360.model.DataAccessLayer
                     order by [Level], Name";
                     break;
                 case ScoreType.DataQuality:
-                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, EffectiveDate, EndDate, null,  si.Value,  ms.ScoreType
+                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, ms.EffectiveDate, ms.EndDate, null,  si.Value,  ms.ScoreType
                     from metrics.Allocation AA
                         inner join assettype att on AA.AssetTypeUid = att.[uid]
                         inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
@@ -560,7 +558,9 @@ namespace d360.model.DataAccessLayer
 	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
                         inner Join metrics.scoreItem si on si.AssetUid = a.uid and si.effectiveDate = ms.EffectiveDate and ma.Uid = si.MetricAssetUid
                     where 
-                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and ms.EndDate is null
+                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and
+                                ((ms.EndDate is null and ms.EffectiveDate <= @effectiveDate) or 
+                                 (ms.EndDate <= dateadd(day, 1,@effectiveDate) and ms.EffectiveDate >= @effectiveDate))
                     order by Name";
                     break;
                 case ScoreType.Perceptional:
