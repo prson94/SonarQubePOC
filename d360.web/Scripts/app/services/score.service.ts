@@ -2,17 +2,18 @@
 import { PointBreakdown, ScorePoint, AverageScore } from '../models/score.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, Subject, of } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
+import { ScoreType } from '../models/metrics.model';
 
 @Injectable()
 export class ScoreService extends BaseObservableService  {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getPointBreakdown(assetUid: string, date: string = null): Observable<PointBreakdown[]> {
-        let uri = `/api/v2/metrics/${assetUid}/pointbreakdown` + (date == null ? '' : `?effectiveDate=${date}`);
+    getPointBreakdown(assetUid: string, type: ScoreType, date: string = null): Observable<PointBreakdown[]> {
+        let uri = `/api/v2/metrics/${type}/${assetUid}/pointbreakdown` + (date == null ? '' : `?effectiveDate=${date}`);
         return this.http.get(uri)
             .pipe(
                 map(response => <PointBreakdown[]>response),
@@ -20,8 +21,8 @@ export class ScoreService extends BaseObservableService  {
             );
     }
 
-    getScoreHistory(assetUid: string): Observable<ScorePoint[]> {
-        return this.http.get(`queries/${assetUid}/ScoreHistoryByObject`)
+    getScoreHistory(type: ScoreType, assetUid: string): Observable<ScorePoint[]> {
+        return this.http.get(`/api/v2/metrics/history/${type}/${assetUid}`)
             .pipe(
                 map(response => <ScorePoint[]>response),
                 catchError(err => this.handleError(err))
@@ -32,6 +33,30 @@ export class ScoreService extends BaseObservableService  {
         return this.http.get(`queries/${assetUid}/AverageScoreByObjectType`)
             .pipe(
                 map(response => <AverageScore>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getScoreDefinition(assetUid: string): Observable<any> {
+        return this.http.get(`/api/v2/metrics/${assetUid}/definition`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getScoreitemDetails(uid: string): Observable<any> {
+        return this.http.get(`/api/v2/metrics/${uid}/definitionFromAsset`)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getScoreTypes(assetUid: string): Observable<number[]> {
+        return this.http.get(`/api/v2/metrics/getScoreTypes/${assetUid}`)
+            .pipe(
+                map(response => <any>response),
                 catchError(err => this.handleError(err))
             );
     }

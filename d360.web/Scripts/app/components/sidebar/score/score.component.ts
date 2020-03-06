@@ -12,7 +12,7 @@ import { SiteMenuService } from '../../../services/site-menu.service';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
-                    <div class="tile tile-detail">
+                    <div class="tile tile-detail score-tile-detail">
                        <d3s-object-health-details *ngIf="showBoard"
                                        [uid]="uid"
                                        [objectName]="objectName"></d3s-object-health-details>

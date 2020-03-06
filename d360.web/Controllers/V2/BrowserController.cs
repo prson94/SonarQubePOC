@@ -69,7 +69,8 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
-
+                //child.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
+                
                 Recurse(model, hierarchies, child, multiplier+1);
 
                 if (current.items == null)
@@ -111,6 +112,7 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
+                //current.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
                 Recurse(model, hierarchies, current, multiplier + 1);
 
                 if (!model.assets.Any(r => r.key == current.key))
@@ -430,7 +432,8 @@ select	A.TypeName,
 			        from	utility.FieldValue V
 					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
 			        where	AssetID = A.ID
-					        and F.IsDisplayable = 1
+					        and F.IsDisplayable = 1 
+                            and (F.ShowIfEmpty = 1 OR (F.ShowIfEmpty = 0 AND V.FormattedValue <> '' and V.FormattedValue IS NOT NULL))
                     union all
                     select	F.ColumnOrder,
 							F.FriendlyName as Name,
@@ -495,77 +498,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
-        }
-
-        /// <summary>
-        /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
-        /// </summary>
-        /// <param name="model">The uid of the asset that we are getting field information for.</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            Route("actions"),
-            ApiExplorerSettings(IgnoreApi = true),
-            HttpPost,
-            MapToApiVersion("2.0"),
-            SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the GET request.", typeof(AssetBrowserDiagramAsset)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetDiagramAlerts(AssetBrowserAlertRequest model)
-        {
-            try
-            {
-                var sql = @"
-select	I.uid as 'uid', 
-        A.uid as 'asset.uid',
-		coalesce(A.icon, 'fa-book') as 'asset.icon',
-		A.TypeName + ' > ' + A.DisplayValue as 'asset.displayValue',
-		IT.name as 'action.name', 
-		reporting.StripHTML(F.FormattedValue) as 'action.description'
-from	AssetDetail A
-        inner join @uids U on U.Uid = A.Uid
-		inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
-		left join IssueType IT on IT.ID = I.IssueTypeID
-		left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
-		left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
-where	I.CompletedOn is null
-for json path";
-
-                if (model == null) 
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria.");
-                }
-                else if (model.assets.Count == 0) 
-                {
-                    AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts)));
-                }
-                
-                var reader = await Company.QueryAsync<string>(sql, 
-                    new {
-                        uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
-                            "dbo.UidTable",
-                            new List<string>() { "Uid" }
-                            )
-                    }, timeout: 100);
-                var json = string.Join("", reader);
-
-                var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel)));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", "BrowserController.GetDiagramAlerts" },
-                    { "model", JsonConvert.SerializeObject(model) }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
 

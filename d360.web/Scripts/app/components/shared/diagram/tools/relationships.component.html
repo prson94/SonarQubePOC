@@ -1,12 +1,8 @@
-<div class="asset-browser-window-header">
-    <div class="asset-browser-window-header-name">Add Lineage</div>
-    <div class="clearfix"></div>
-    <div class="switcher" style="display:none;">
-        <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType('Lineage')">Lineage</button>
-        <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
-    </div>
+<div class="switcher" style="display:none;">
+    <button class="{{editorType == 'Lineage' ? 'selected' : ''}}" (click)="changeEditorType('Lineage')">Lineage</button>
+    <!--<button class="{{editorType == 'RelatedAssets' ? 'selected' : ''}}" (click)="changeEditorType('RelatedAssets')">Related Assets</button>-->
 </div>
-<div class="asset-browser-window-content asset-browser-window-content-padded {{isAddTransformationVisible ? 'popup-opened' : ''}}">
+<div class="{{isAddTransformationVisible ? 'popup-opened' : ''}}">
     
     <div class="browser-relationship-editor">
         <div class="errorMessage" *ngIf="topWarningMessage.length > 0">

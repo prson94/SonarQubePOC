@@ -177,7 +177,35 @@ namespace d360.web.Controllers.V2
             }
             return ruleResults;
         }
-               
+
+        /// <summary>
+        /// Deletes a rule result with the specified Rule Result ID.
+        /// </summary>
+        /// <param name="ruleResultId">The id of the rule result</param>
+        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
+        [
+            HttpDelete,
+            MapToApiVersion("2.0"),
+            Route("{ruleResultId:int}"),
+            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
+            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result could be deleted."),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+        ]
+        public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+                        
+            //deletes the rule result record
+            var res = await Company.Database.Connection.ExecuteAsync("delete ruleresult where id = @ruleResultId", new { ruleResultId });
+
+            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
+
+            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
+        }
+
         private async Task SaveRuleResults(List<DataQualityResult> resultList, int timeout, SqlTransaction transaction, int implementationId)
         {
             await Company.Database.Connection.ExecuteAsync(@"

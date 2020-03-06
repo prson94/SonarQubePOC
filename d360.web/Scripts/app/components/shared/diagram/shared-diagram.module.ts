@@ -19,6 +19,7 @@ import { EditorModule } from 'primeng/editor';
 import { ListboxModule } from 'primeng/listbox';
 import { DropdownModule } from 'primeng/dropdown';
 import { MenubarModule } from 'primeng/menubar';
+import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
@@ -89,6 +90,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         ListboxModule,
         DropdownModule,
         MenubarModule,
+        ScrollPanelModule,
         TableModule,
         TabViewModule,
         TreeModule,

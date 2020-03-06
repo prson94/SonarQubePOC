@@ -29,7 +29,7 @@ namespace igx.jobs.assetgraphprocessor
 #endif
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(queueInfo.CompanyID))
             {
-                const int timeout = 1000 * 60 * 10;
+                const int timeout = 60 * 180;
 
                 companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
