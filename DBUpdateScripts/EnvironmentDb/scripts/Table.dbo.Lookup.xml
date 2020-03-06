@@ -1,0 +1,68 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Lookup-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup')
+BEGIN
+	CREATE TABLE [dbo].[Lookup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[LookupTypeID] [int] NOT NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		CONSTRAINT [PK_Lookup] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Lookup_LookupType')
+BEGIN
+	ALTER TABLE [dbo].[Lookup]  WITH CHECK ADD  CONSTRAINT [FK_Lookup_LookupType] FOREIGN KEY([LookupTypeID]) REFERENCES [dbo].[LookupType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Lookup] CHECK CONSTRAINT [FK_Lookup_LookupType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Lookup_LookupTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Lookup_LookupTypeID] ON [dbo].[Lookup] ( [LookupTypeID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Lookup-Lookup_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Lookup_AfterDelete]
+   ON  [dbo].[Lookup] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0)), 'Lookup', ID from deleted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

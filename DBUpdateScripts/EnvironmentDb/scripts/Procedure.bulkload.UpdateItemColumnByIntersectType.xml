@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.bulkload.UpdateItemColumnByIntersectType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [bulkload].[UpdateItemColumnByIntersectType]
+	@id int,
+	@intersectTypeColumn int, 
+	@isSubject bit, 
+	@itemColumn int
+as
+begin
+	set nocount on;
+	update	T
+	set		T.LookupObject = replace(case when @isSubject = 1 then IT.Subject else IT.Object end, 'Type', ''),
+			T.LookupObjectID = A.ObjectID
+	from	LoadItemColumn T
+			inner join LoadItemColumn TI on TI.LoadID = T.LoadID and TI.RowIndex = T.RowIndex and TI.ColumnIndex = @intersectTypeColumn and T.ColumnIndex = @itemColumn
+			inner join IntersectType IT on TI.LookupObject = 'IntersectType' and IT.ID = TI.LookupObjectID
+			inner join Asset A on A.ID = cast(T.[Value] as bigint)
+			inner join AssetType P on P.ID = A.AssetTypeID 
+				and P.ObjectID = case when @isSubject = 1 then  IT.SubjectID else IT.ObjectID end
+				and P.[Object] = case when @isSubject = 1 then IT.[Subject] else IT.[Object] end			
+	where	T.LoadID = @id and A.ID is not null
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

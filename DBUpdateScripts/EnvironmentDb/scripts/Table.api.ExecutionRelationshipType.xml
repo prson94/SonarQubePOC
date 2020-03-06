@@ -1,0 +1,46 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.ExecutionRelationshipType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionRelationshipType')
+BEGIN
+	CREATE TABLE [api].[ExecutionRelationshipType](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ExecutionItemUid] [uniqueidentifier] NULL,
+		[ItemNumber] [int] NOT NULL,
+		[SubjectUid] [uniqueidentifier] NULL,
+		[Subject] [varchar](50) NULL,
+		[SubjectID] [int] NULL,
+		[SubjectCardinality] [int] NOT NULL,
+		[ObjectUid] [uniqueidentifier] NULL,
+		[Object] [varchar](50) NULL,
+		[ObjectID] [int] NULL,
+		[ObjectCardinality] [int] NOT NULL,
+		[PredicateUid] [uniqueidentifier] NOT NULL,
+		[PredicateID] [int] NULL,
+		[Message] [nvarchar](2500) NULL,
+		[Success] [bit] NULL,
+		[IsNew] [bit] NULL,
+		[uid] [uniqueidentifier] NULL,
+		CONSTRAINT [PK_ApiExecutionRelationshipType] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

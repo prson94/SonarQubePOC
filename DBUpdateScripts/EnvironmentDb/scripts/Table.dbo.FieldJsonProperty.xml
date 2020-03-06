@@ -1,0 +1,51 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.FieldJsonProperty-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldJsonProperty')
+BEGIN
+	CREATE TABLE [dbo].[FieldJsonProperty](
+		[FieldID] [bigint] NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Parent] [nvarchar](250) NOT NULL,
+		[Path] [nvarchar](500) NOT NULL,
+		[Position] [int] NOT NULL,
+		[IsArray] [bit] NOT NULL,
+		[Value] [nvarchar](2500) NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_FieldJsonProperty_CreatedBy] DEFAULT (0) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_FieldJsonProperty_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_FieldJsonProperty_UpdatedBy] DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_FieldJsonProperty_UpdatedOn] DEFAULT (getutcdate()) NOT NULL,
+		CONSTRAINT [PK_FieldJsonProperty] PRIMARY KEY CLUSTERED ( [FieldID] ASC, [Position] ASC, [Parent] ASC, [Name] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FieldJsonProperty_Field')
+BEGIN
+	ALTER TABLE [dbo].[FieldJsonProperty] WITH CHECK ADD CONSTRAINT [FK_FieldJsonProperty_Field] FOREIGN KEY([FieldID]) REFERENCES [dbo].[Field] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[FieldJsonProperty] CHECK CONSTRAINT [FK_FieldJsonProperty_Field]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldJsonProperty_Field_Path')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldJsonProperty_Field_Path] ON [dbo].[FieldJsonProperty] ( [FieldID] DESC, [Path] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,132 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AttributeType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType')
+BEGIN
+	CREATE TABLE [dbo].[AttributeType](
+		[ID] [int] IDENTITY(50000,1) NOT NULL,
+		[ParentID] [int] NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](max) NULL,
+		[AttributeTypeCategoryID] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[ShowNameInTree] [bit] CONSTRAINT [DF_AttributeType_ShowNameInTree] DEFAULT (1) NOT NULL,
+		[DisplayFormat] [nvarchar](250) CONSTRAINT [DF_AttributeType_DisplayFormat] DEFAULT ('') NOT NULL,
+		CONSTRAINT [PK_AttributeType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_AttributeTypeCategory')
+BEGIN
+	ALTER TABLE [dbo].[AttributeType] WITH CHECK ADD CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory] ([ID])
+	ALTER TABLE [dbo].[AttributeType] CHECK CONSTRAINT [FK_AttributeType_AttributeTypeCategory]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_ParentAttributeType')
+BEGIN
+	ALTER TABLE [dbo].[AttributeType] WITH CHECK ADD CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY([ParentID]) REFERENCES [dbo].[AttributeType] ([ID])
+	ALTER TABLE [dbo].[AttributeType] CHECK CONSTRAINT [FK_AttributeType_ParentAttributeType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Attribute_ParentID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID] ON [dbo].[AttributeType] ( [ParentID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterDelete]
+   ON  [dbo].[AttributeType] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON
+	delete AssetType where Object = 'AttributeType' and ObjectID in (select ID from deleted);
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterInsert]
+   ON  [dbo].[AttributeType] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+		select Name, Description, 5, DisplayFormat, 1, 0, 1, 'AttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterUpdate]
+   ON  [dbo].[AttributeType] 
+   AFTER UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	update	T
+	set		T.Name = S.Name,
+			T.Description = S.Description,
+			T.DisplayFormat = S.DisplayFormat,
+			T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	AssetType T
+			inner join inserted S on T.Object = 'AttributeType' and T.ObjectID = S.ID;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

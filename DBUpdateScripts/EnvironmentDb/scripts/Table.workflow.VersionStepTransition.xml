@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.VersionStepTransition-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'VersionStepTransition')
+BEGIN
+	CREATE TABLE [workflow].[VersionStepTransition](
+		[FromVersionStepID] [int] NOT NULL,
+		[ToVersionStepID] [int] NOT NULL,
+		[Name] [nvarchar](500) NOT NULL,
+		[TransitionType] [int] NOT NULL,
+		[Condition] [xml] NULL,
+		[FromPortID] [varchar](10) NULL,
+		[ToPortID] [varchar](10) NULL,
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[Settings] [xml] NULL,
+		[State] [int] CONSTRAINT [DF_WorkflowVersionStepTransition_State]  DEFAULT (-1) NOT NULL,
+		[TimerLastRunDate] [datetime] NULL,
+		CONSTRAINT [PK_WorkflowVersionStepTransition] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowVersionStepTransition_FromVersionStep')
+BEGIN
+	ALTER TABLE [workflow].[VersionStepTransition]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowVersionStepTransition_FromVersionStep] FOREIGN KEY([FromVersionStepID]) REFERENCES [workflow].[VersionStep] ([ID])
+	ALTER TABLE [workflow].[VersionStepTransition] CHECK CONSTRAINT [FK_WorkflowVersionStepTransition_FromVersionStep]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowVersionStepTransition_ToVersionStep')
+BEGIN
+	ALTER TABLE [workflow].[VersionStepTransition]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowVersionStepTransition_ToVersionStep] FOREIGN KEY([ToVersionStepID]) REFERENCES [workflow].[VersionStep] ([ID])
+	ALTER TABLE [workflow].[VersionStepTransition] CHECK CONSTRAINT [FK_WorkflowVersionStepTransition_ToVersionStep]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AttributeTypeRelation-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation')
+BEGIN
+	CREATE TABLE [dbo].[AttributeTypeRelation](
+		[AttributeTypeID] [int] NOT NULL,
+		[ObjectType] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[AllowMultipleEntries] [bit] CONSTRAINT [DF_AttributeTypeRelation_AllowMultipleEntries] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_AttributeTypeRelation] PRIMARY KEY CLUSTERED ( [AttributeTypeID] ASC, [ObjectType] ASC, [ObjectID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeTypeRelation_AttributeType')
+BEGIN
+	ALTER TABLE [dbo].[AttributeTypeRelation] WITH CHECK ADD CONSTRAINT [FK_AttributeTypeRelation_AttributeType] FOREIGN KEY([AttributeTypeID]) REFERENCES [dbo].[AttributeType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AttributeTypeRelation] CHECK CONSTRAINT [FK_AttributeTypeRelation_AttributeType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

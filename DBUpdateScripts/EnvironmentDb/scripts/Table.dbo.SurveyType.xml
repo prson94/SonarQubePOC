@@ -1,0 +1,117 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.SurveyType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'SurveyType')
+BEGIN
+	CREATE TABLE [dbo].[SurveyType](
+		[ID] [int] IDENTITY(50000,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](max) NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[ValidForDays] [int] NOT NULL,
+		[CreatedOn] [datetime] NULL,
+		[CreatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[Uid] [uniqueidentifier] CONSTRAINT [DF_SurveyType_Uid] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_SurveyType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_SurveyType_ObjectType-ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_SurveyType_ObjectType-ObjectID] ON [dbo].[SurveyType] ( [Object] ASC, [ObjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.SurveyType-SurveyType_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[SurveyType_AfterDelete]
+   ON  [dbo].[SurveyType] 
+   AFTER DELETE
+AS
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'SurveyType', ID, coalesce(UpdatedBy, 0)), 'SurveyType', ID from deleted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.SurveyType-SurveyType_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[SurveyType_AfterInsert]
+   ON  [dbo].[SurveyType] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'SurveyType', ID, coalesce(UpdatedBy, 0)), 'SurveyType', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.SurveyType-SurveyType_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[SurveyType_AfterUpdate]
+   ON  [dbo].[SurveyType] 
+   AFTER UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Update', [queue].WriteIndexXml('', 'SurveyType', ID, coalesce(UpdatedBy, 0)), 'SurveyType', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

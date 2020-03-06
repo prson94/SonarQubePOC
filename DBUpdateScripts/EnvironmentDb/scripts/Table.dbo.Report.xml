@@ -1,0 +1,114 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Report-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Report')
+BEGIN
+	CREATE TABLE [dbo].[Report](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](4000) NULL,
+		[ObjectType] [varchar](25) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[ReportType] [varchar](25) CONSTRAINT [DF_Report_ReportType] DEFAULT ('legacy') NOT NULL,
+		[PowerBIReportID] [varchar](50) NULL,
+		[PowerBIDatasetID] [varchar](50) NULL,
+		[FileName] [varchar](260) NULL,
+		[Url] [nvarchar](500) NULL,
+		[ShowOnHomePage] [bit] CONSTRAINT [DF_Report_ShowOnHomePage] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_Report] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Report-Report_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Report_AfterDelete]
+   ON  [dbo].[Report] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'Report', ID, coalesce(UpdatedBy, 0)), 'Report', ID from deleted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Report-Report_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Report_AfterInsert]
+   ON  [dbo].[Report] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Add', [queue].WriteIndexXml('', 'Report', ID, coalesce(UpdatedBy, 0)), 'Report', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Report-Report_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Report_AfterUpdate]
+   ON  [dbo].[Report] 
+   AFTER UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Update', [queue].WriteIndexXml('', 'Report', ID, coalesce(UpdatedBy, 0)), 'Report', ID from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

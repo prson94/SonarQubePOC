@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Global_ModelInterRelationships-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Global_ModelInterRelationships] AS
+    select	I.ID as IntersectID,
+		    S.ObjectID as SourceID,
+		    S.DisplayValue as SourceName,
+		    S.TypeName as SourceType,
+		    dbo.GenerateAssetUrl(S.ID) as SourceUrl,
+		    O.ObjectID as TargetID,
+		    O.DisplayValue as TargetName,
+		    O.TypeName as TargetType,
+		    dbo.GenerateAssetUrl(O.ID) as TargetUrl 
+    from	[Intersect] I
+		    inner join IntersectType T on T.ID = I.IntersectTypeID
+		    inner join [Predicate] P on P.ID = T.PredicateID and P.Type <> 4
+		    inner join AssetDetail S on S.Object = I.Subject and S.ObjectID = I.SubjectID and S.AssetTypeClass = 2 and S.State = 1
+		    inner join AssetDetail O on O.Object = I.Object and O.ObjectID = I.ObjectID and O.AssetTypeClass = 2 and O.State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

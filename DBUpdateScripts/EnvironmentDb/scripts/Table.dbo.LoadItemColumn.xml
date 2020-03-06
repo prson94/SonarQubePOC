@@ -1,0 +1,69 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.LoadItemColumn-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'LoadItemColumn')
+BEGIN
+	CREATE TABLE [dbo].[LoadItemColumn](
+		[LoadID] [int] NOT NULL,
+		[RowIndex] [int] NOT NULL,
+		[ColumnIndex] [int] NOT NULL,
+		[Value] [nvarchar](max) NULL,
+		[LookupObject] [varchar](50) NULL,
+		[LookupObjectID] [int] NULL,
+		[LookupValue] [nvarchar](2000) NULL,
+		[Success] [bit] NULL,
+		CONSTRAINT [PK_LoadItemColumn] PRIMARY KEY CLUSTERED ( [LoadID] ASC, [RowIndex] ASC, [ColumnIndex] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_LoadItemColumn_LoadColumn')
+BEGIN
+	ALTER TABLE [dbo].[LoadItemColumn]  WITH NOCHECK ADD  CONSTRAINT [FK_LoadItemColumn_LoadColumn] FOREIGN KEY([LoadID], [ColumnIndex]) REFERENCES [dbo].[LoadColumn] ([LoadID], [ColumnIndex])
+	ALTER TABLE [dbo].[LoadItemColumn] CHECK CONSTRAINT [FK_LoadItemColumn_LoadColumn]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_LoadItemColumn_LoadItem')
+BEGIN
+	ALTER TABLE [dbo].[LoadItemColumn]  WITH NOCHECK ADD  CONSTRAINT [FK_LoadItemColumn_LoadItem] FOREIGN KEY([LoadID], [RowIndex]) REFERENCES [dbo].[LoadItem] ([LoadID], [RowIndex]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[LoadItemColumn] CHECK CONSTRAINT [FK_LoadItemColumn_LoadItem]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItemColumn_Load')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load] ON [dbo].[LoadItemColumn] ( [LoadID] DESC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItemColumn_Load_ColumnIndex')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load_ColumnIndex] ON [dbo].[LoadItemColumn] ( [LoadID] DESC, [ColumnIndex] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItemColumn_Load_ColumnIndex_LookupObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load_ColumnIndex_LookupObjectID] ON [dbo].[LoadItemColumn] ( [LoadID] DESC, [ColumnIndex] ASC, [LookupObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItemColumn_Load_ColumnIndex_Value')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_LoadItemColumn_Load_ColumnIndex_Value] ON [dbo].[LoadItemColumn] ( [LoadID] DESC, [ColumnIndex] ASC, [LookupValue] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

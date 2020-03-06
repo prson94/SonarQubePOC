@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Udt.dbo.IntegrationAssetHashType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF TYPE_ID(N'dbo.IntegrationAssetHashType') IS NULL 
+BEGIN
+	CREATE TYPE [dbo].[IntegrationAssetHashType] AS TABLE(
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[SourceID] [varchar](100) NOT NULL,
+		[Section] [smallint] NOT NULL,
+		[RequestNumber] [int] NOT NULL,
+		[Hash] [varchar](50) NULL,
+		PRIMARY KEY CLUSTERED ( [SynchedAssetTypeID] ASC, [Section] ASC, [SourceID] ASC ) WITH (IGNORE_DUP_KEY = OFF)
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,177 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.FieldType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldType')
+BEGIN
+	CREATE TABLE [dbo].[FieldType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[FriendlyName] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](4000) NULL,
+		[DisplayDescription] [nvarchar](4000) NULL,
+		[FormDescription] [nvarchar](4000) NULL,
+		[Type] [varchar](25) NOT NULL,
+		[LookupObjectType] [varchar](25) NULL,
+		[LookupObjectID] [int] NULL,
+		[LookupDisplayFormat] [nvarchar](250) NULL,
+		[MinimumLength] [decimal](38, 18) NULL,
+		[MaximumLength] [decimal](38, 18) NULL,
+		[Length] [int] NULL,
+		[Pattern] [varchar](1000) NULL,
+		[Object] [varchar](50) CONSTRAINT [CK_FieldType_Object] DEFAULT ('') NOT NULL,
+		[ObjectID] [int] CONSTRAINT [CK_FieldType_ObjectID] DEFAULT (0) NOT NULL,
+		[SortOrder] [int] CONSTRAINT [CK_FieldType_SortOrder] DEFAULT (0) NOT NULL,
+		[IsRequired] [bit] CONSTRAINT [CK_FieldType_IsRequired] DEFAULT (0) NOT NULL,
+		[IsListable] [bit] CONSTRAINT [CK_FieldType_IsListable] DEFAULT (0) NOT NULL,
+		[ValidationDescription] [nvarchar](500) NULL,
+		[Category] [nvarchar](250) NULL,
+		[IsDisplayable] [bit] CONSTRAINT [DF_FieldType_IsDisplayable] DEFAULT (1) NOT NULL,
+		[IsEditable] [bit] CONSTRAINT [DF_FieldType_IsEditable] DEFAULT (1) NOT NULL,
+		[DefaultValue] [nvarchar](max) NULL,
+		[DefaultFormattedValue] [nvarchar](max) NULL,
+		[AllowAllValue] [bit] CONSTRAINT [DF_FieldType_AllowAllValue] DEFAULT (0) NOT NULL,
+		[AllowAllLabel] [nvarchar](250) NULL,
+		[IsPrimaryFilter] [bit] CONSTRAINT [CK_FieldType_IsPrimaryFilter] DEFAULT (0) NOT NULL,
+		[LookupEditFormat] [nvarchar](250) NULL,
+		[IsPartOfKey] [bit] CONSTRAINT [DF_FieldType_IsPartOfKey] DEFAULT (0) NOT NULL,
+		[ColumnOrder] [int] CONSTRAINT [DF_FieldType_ColumnOrder] DEFAULT (1) NOT NULL,
+		[ColumnWidth] [int] NULL,
+		[LookupObjectFieldTypeID] [int] NULL,
+		[AllowMultipleValues] [bit] CONSTRAINT [DF_FieldType_AllowMultipleValues] DEFAULT (0) NOT NULL,
+		[AssetTypeID] [int] NULL,
+		[ParentFieldTypeID] [int] CONSTRAINT [DF_FieldType_ParentFieldTypeID] DEFAULT (0) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_FieldType_UpdatedBy] DEFAULT (0) NOT NULL,
+		[Increment] [decimal](38, 18) NULL,
+		[Precision] [int] NULL,
+		[FilterPredicateID] [int] NULL,
+		[FilterPredicateDirection] [bit] NULL,
+		[FilterFieldTypeID] [int] NULL,
+		[ShowIfEmpty] [bit] CONSTRAINT [DF_FieldType_ShowIfEmpty] DEFAULT (0) NOT NULL,
+		[Definition] [nvarchar](2500) CONSTRAINT [DF_FieldType_Definition] DEFAULT ('{}') NOT NULL,
+		CONSTRAINT [PK_FieldType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldType_AssetTypeID] ON [dbo].[FieldType] ( [AssetTypeID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_LookupObjectType_LookupObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldType_LookupObjectType_LookupObjectID] ON [dbo].[FieldType] ( [LookupObjectType] ASC, [LookupObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_Object-ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldType_Object-ObjectID] ON [dbo].[FieldType] ( [Object] ASC, [ObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_FieldType_Type')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_FieldType_Type] ON [dbo].[FieldType] ( [Type] ASC ) INCLUDE([LookupObjectType],[LookupObjectID],[LookupDisplayFormat],[AllowMultipleValues])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterInsert]
+	ON [dbo].[FieldType]
+	FOR INSERT
+AS
+	SET NOCOUNT ON;
+
+	UPDATE	T
+	SET		T.AssetTypeID = A.ID
+	FROM	FieldType T 
+			inner join inserted F on F.ID = T.ID and T.AssetTypeID is null
+			inner join AssetType A on A.Object = F.Object and A.ObjectID = F.ObjectID;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterUpsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[FieldType_AfterUpsert]
+   ON  [dbo].[FieldType] 
+   AFTER INSERT,UPDATE
+AS 
+BEGIN
+		IF ((substring( columns_updated() , 1 , 1 ) & power( 2, 6 ) > 0) or
+		(substring( columns_updated() , 1 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 0 ) > 0) or
+		(substring( columns_updated() , 2 , 1 ) & power( 2, 1 ) > 0) or
+		(substring( columns_updated() , 5 , 1 ) & power( 2, 1 ) > 0))
+		BEGIN
+
+				UPDATE	F
+				set		F.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+				FROM	Field F
+						inner join inserted FT on FT.ID = F.FieldTypeID and FT.LookupObjectType is not null
+		END
+		
+		IF ((substring( columns_updated() , 3 , 1 ) & power( 2, 7 ) > 0) or
+		(substring( columns_updated() , 4 , 1 ) & power( 2, 0 ) > 0))
+		BEGIN
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is not null
+
+				update	FT	
+				set		FT.defaultformattedvalue  = [utility].[GetFormattedFieldLookupValueWrapper](FT.[Type],FT.[LookupDisplayFormat],FT.[LookupObjectType],FT.[LookupObjectID],FT.[DefaultValue])
+				from	FieldType FT
+						inner join inserted ins on ins.ID = FT.ID and ins.LookupObjectType is null and FT.Type='Link'
+		END
+		
+		IF (EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Update', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
+		ELSE IF (NOT EXISTS (SELECT * FROM DELETED))
+		BEGIN
+			INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+				select 'Add', [queue].WriteIndexXml('', Object, ObjectID, UpdatedBy), 'FieldType', ID from inserted;
+		END
+END;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
