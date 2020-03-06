@@ -243,7 +243,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     hasAnyExpanders() {
         clearTimeout(this.handle);
         this.handle = window.setTimeout(() => {
-            if (this.OHDitems && !this.loadingDefinition && this.loadingHistory && this.loadingPoints) {
+            if (this.OHDitems && !this.loadingDefinition && !this.loadingHistory && !this.loadingPoints) {
                 this.showExpandAndCollapse = this.OHDitems.filter(x => {
                     return x.expandable;
                 }).length > 0;
