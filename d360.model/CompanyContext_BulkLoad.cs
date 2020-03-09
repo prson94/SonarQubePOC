@@ -845,11 +845,64 @@ order by	ColumnIndex", new { id });
 
                 var hasLookups = FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.LookupObjectID != null);
 
-                //need to calculate key hashes to figure out which assets to put and post
-                if (hasLookups)
-                    await LoadLookupValues(load, assetType, timeout);
-                await CalculateHashes(load, assetType, timeout);
+                
                 await GenerateExecutionItemUids(load, timeout);
+
+                //need to calculate key hashes to figure out which assets to put and post
+                using (var trans = Connection.BeginTransaction())
+                {
+                    var executionID = Guid.NewGuid();
+
+                    //load temp tables and calculate key hashes
+                    await Connection.ExecuteAsync(@"
+                        drop table if exists #BulkExecutionAsset;
+                        create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32))
+
+                        drop table if exists #BulkExecutionField;
+                        create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
+
+                        insert into #BulkExecutionAsset
+                        select	@executionID as ExecutionID,
+		                        RowIndex as ItemNumber,
+		                        ParentAssetUid as ParentUid,
+		                        null as ProposedKey
+                        from	[LoadItem] L
+                        where	L.LoadID = @ID
+
+                        insert into #BulkExecutionField
+                        select	BA.ExecutionID,
+		                        I.RowIndex as ItemNumber,
+		                        FT.[Name] as FieldName,
+		                        I.[Value] as FieldValue,
+		                        FT.ID as FieldTypeID,
+		                        null as LookupValue,
+		                        null as Ignore,
+                                I.ColumnIndex
+                        from    [Load] L
+                                inner join AssetType T on T.[Object] = L.[Object] and T.ObjectID = L.ObjectID
+                                inner join LoadColumn LC on LC.LoadID = L.ID
+                                inner join LoadItemColumn I on I.LoadID = L.ID and I.ColumnIndex = LC.ColumnIndex
+		                        inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
+                                inner join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+                        where   L.ID = @ID;
+                        "
+                        , new { executionID, load.ID }, transaction: trans);
+
+                    if (hasLookups)
+                    {
+                        ResolveFieldLookupValues(executionID, "#BulkExecutionField", timeout, trans);
+                        await Connection.ExecuteAsync(@"
+                            update  I
+                            set     I.LookupValue = B.LookupValue
+                            from    LoadItemColumn I
+                                    inner join #BulkExecutionField B on B.ItemNumber = I.RowIndex and B.ColumnIndex = I.ColumnIndex
+                            where   B.LookupValue is not null and I.LoadID = @ID
+                            ", new { load.ID }, transaction: trans);
+                    }
+
+                    CalculateProposedKeyHashes(assetType, executionID, "#BulkExecutionAsset", "#BulkExecutionField", null, timeout, trans);
+
+                }
 
 
                 var putAssets = new List<AssetUpdate>();
