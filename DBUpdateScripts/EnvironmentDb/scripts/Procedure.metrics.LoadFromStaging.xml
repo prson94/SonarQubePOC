@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.metrics.LoadFromStaging-v1">
+  <changeSet author="Core" id="Procedure.metrics.LoadFromStaging-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -299,8 +299,8 @@ begin
 		using		(
 					select		AssetUid,
 								case 
-									when round(sum(Score), 2) > 1 then 1
-									else round(sum(Score), 2)
+									when round(sum(Score), 3) > 1 then 1
+									else round(sum(Score), 3)
 								end as Value,
 								ScoreType
 					from		#step2
