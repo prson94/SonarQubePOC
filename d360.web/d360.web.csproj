@@ -16,7 +16,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -780,6 +780,8 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\score-type-helpers.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />

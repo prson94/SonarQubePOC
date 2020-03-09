@@ -145,6 +145,23 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Data Quality Score Allocation cannot have isExternallyCalculated flag set to False.");
                 }
 
+                if (model.lowerThreshold == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Lower threshold must be set.");
+                }
+                if (model.upperThreshold == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Upper threshold must be set.");
+                }
+                if (model.lowerThreshold >= model.upperThreshold)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Lower threshold must be smaller than Upper threshold.");
+                }
+                if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Threshold values must be between 0 and 100.");
+                }
+
                 AllocationApiGetModel allocation = ScoringRepository.PostAllocation(model, ref alloc);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
@@ -209,17 +226,40 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Score Allocation already exists.");
                 }
-
+                
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
-                if (hasActiveMeasures)
+                bool canBeEdited = model.assetTypeUid == alloc.AssetTypeUid
+                                   && model.scoreType == alloc.ScoreType
+                                   && model.isExternallyCalculated == alloc.IsExternallyCalculated
+                                   && !hasActiveMeasures;
+
+                if (!canBeEdited)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update a score with measures defined.");
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Unfortunately you are unable to update a scores Asset Type, Score Type or Externally calculated flag if score has active measures defined.");
                 }
 
                 if (model.scoreType == ScoreType.DataQuality && model.isExternallyCalculated == false)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Data Quality Score Allocation cannot have isExternallyCalculated flag set to False.");
                 }
+
+                if (model.lowerThreshold == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Lower threshold must be set.");
+                }
+                if (model.upperThreshold == null)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Upper threshold must be set.");
+                }
+                if (model.lowerThreshold >= model.upperThreshold)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Lower threshold must be smaller than Upper threshold.");
+                }
+                if (model.lowerThreshold <= 0 || model.upperThreshold <= 0 || model.upperThreshold > 100)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"Threshold values must be between 0 and 100.");
+                }
+
 
                 AllocationApiGetModel allocation = ScoringRepository.UpdateAllocation(model, alloc);
 
@@ -430,7 +470,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("{scoreType}/results"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), 
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "The list of staging results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved for further processing.", typeof(List<BulkMetricTemporaryTableModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
@@ -443,7 +483,7 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error adding score results", "You are not authorized to perform this action.");
-                
+
                 if (!Enum.TryParse(scoreType, true, out ScoreType scoreTypeEnum))
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding score results", $"Invalid score type: {scoreType} provided, please provide a valid score type.");
 

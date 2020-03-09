@@ -122,6 +122,8 @@ export class ScoreTypeAllocation {
     state: State;
     hasMeasure: boolean;
     isExternallyCalculated: boolean;
+    lowerThreshold: number;
+    upperThreshold: number;
 }
 
 export class ScoreTypeAllocationFormatted {

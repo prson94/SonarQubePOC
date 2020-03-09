@@ -107,6 +107,8 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
         this.selection.isExternallyCalculated = false;
+        this.selection.lowerThreshold = 50;
+        this.selection.upperThreshold = 90;
         this.showEdit = true;
     }
 

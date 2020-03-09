@@ -46,7 +46,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -151,7 +151,7 @@ namespace d360.model.DataAccessLayer
 
             }
 
-            if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+            if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
             {
                 condition += " and A.uid=@assetTypeUid ";
                 dbArgs.Add("assetTypeUid", assetTypeUid.Value);
@@ -388,7 +388,7 @@ namespace d360.model.DataAccessLayer
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
                     List<string> simpleFilters = new List<string>();
-                    foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
                     {
                         if (ft.Type == "Tag")
                         {
@@ -1274,7 +1274,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 var assetList = CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>();
                 assets = new AssetDeletes();
-                if(assetList != null)
+                if (assetList != null)
                     assets.AddRange(assetList);
                 execution.Total = assets.Count;
             }
@@ -1410,10 +1410,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
 
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
-                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum",StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
                     if (pageNum < 1) pageNum = 1;
 
-            if (queryParams.Any(x => x.Key.Equals("_pageSize",StringComparison.OrdinalIgnoreCase)))
+            if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
                     if (pageSize < 1) pageSize = 1;
 
@@ -1566,7 +1566,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 WHERE A.ID = @id
             ";
-            var res = new {
+            var res = new
+            {
                 AssetDetail = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs),
                 Scores = await GetAssetScores(asset.uid)
             };
@@ -1589,9 +1590,28 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
 
-        private async Task<List<core.entities.Scoring.Score>> GetAssetScores(Guid AssetUid)
+        private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
         {
-            return await CompanyContext.Scores.Where(x => x.AssetUid == AssetUid && x.EffectiveDate <= DateTime.UtcNow && x.EndDate == null).ToListAsync();
+            var scoreSQL = @"select S.AssetUid,
+S.EffectiveDate,
+S.EndDate,
+S.RunDate,
+case 
+	when S.ScoreType = 1 then 'Governance'
+	when S.ScoreType = 2 then 'DataQuality'
+end as ScoreType,
+S.Value, 
+AL.LowerThreshold, 
+AL.UpperThreshold 
+from metrics.Score S
+inner join Asset A on A.Uid = S.AssetUid
+inner join AssetType AT on AT.Id = A.AssetTypeID
+inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
+where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
+
+
+
+            return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
     }
 }

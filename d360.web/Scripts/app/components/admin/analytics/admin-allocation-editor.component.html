@@ -49,17 +49,48 @@
                 Internally calculated scores use measure results to determine the score.
             </div>
         </div>
+        <br />
+        <br />
         <div class="row">
-            <div *ngIf="disabled" class="warningMessage">
-                This allocation cannot be edited as there are measures related to this allocation.
+            <div class="FieldName">
+                <span>Adjust your score threshold</span>
+                <d3s-info-toolip [titleValue]="'how does it work'">
+                    content
+                </d3s-info-toolip>
+            </div>
+            <div class="col s12 no-padding">
+                <div class="gov-slider">
+                    <p-slider #slider [(ngModel)]="rangeValues" [range]="true" (onChange)="handleChange($event)"></p-slider>
+                    <div class="text-left">0%</div>
+                    <div class="text-right">100%</div>
+                </div>
+            </div>
+            <div class="gov-hr"></div>
+            <div class="col s12 no-padding">
+                <div class="score-range-manual">
+                    <div class="d3s-score-pill editor" [style.background-color]="poorColour"><span class="text">Poor</span></div>
+                    <div class="value-box">0% - </div>
+                    <div class="input-box">
+                        <input #lt type="number" [value]="selection.lowerThreshold" (change)="onUpperThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
+                        <div class="input-overlay">%</div>
+                    </div>
+                    <div class="d3s-score-pill editor" [style.background-color]="averageColour"><span class="text">Average</span></div>
+                    <div class="value-box">>{{selection.lowerThreshold}}% - </div>
+                    <div class="input-box">
+                        <input #ut type="number" [value]="selection.upperThreshold" (change)="onUpperThresholdChange($event,ut)" (keyup)="onUpperThresholdChange($event,ut, true)" />
+                        <div class="input-overlay">%</div>
+                    </div>
+                    <div class="d3s-score-pill editor" [style.background-color]="goodColour"><span class="text">Good</span></div>
+                    <div class="value-box">>{{selection.upperThreshold}}% - 100%</div>
+                </div>
             </div>
         </div>
     </div>
-
+    <br />
     <div class="action-bar">
         <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
         <span class="grow"></span>
-        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || disabled">
+        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid">
             {{savingInProgress ? '' : 'Save'}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>

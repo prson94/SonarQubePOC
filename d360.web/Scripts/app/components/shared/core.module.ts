@@ -11,6 +11,7 @@ import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { InfoTooltipComponent } from './tooltip/tooltip.component';
 
 @NgModule({
     declarations: [        
@@ -19,6 +20,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         LoadingComponent,
         LookupTooltipComponent,
         D3STreeTableToggler,
+        InfoTooltipComponent
     ],
     exports: [        
         TooltipComponent,        
@@ -28,6 +30,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         D3STreeTableToggler,
         D3SSortIconModule,
         D3SColumnFilterModule,
+        InfoTooltipComponent
     ]
     , imports: [
         CommonModule,
