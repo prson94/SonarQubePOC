@@ -856,22 +856,7 @@ order by	f.SortOrder";
         [HttpGet, Route("GetCounts")]
         public async Task<JsonNetResult> GetCounts()
         {
-            string sql = $@"
-SELECT count(ATT.[Object]) as count, 
-		ATT.[Object], 
-		ATT.ObjectID,
-		ATT.Name
-		from    [Asset] A
-		inner join AssetType ATT on (a.AssetTypeID = Att.id)
-		WHERE A.ID NOT IN (SELECT AssetID FROM dbo.AssetsByTypeUserCantRead(@ResourceID, ATT.ID))
-         AND ATT.[Class] in(1,2,6,7,8)
-		Group by 
-		ATT.[Object], 
-		ATT.ObjectID,
-		ATT.Name
-		Order By ATT.Name
-";
-            var ItemCounts = await Company.QueryAsync<dynamic>(sql,
+            var ItemCounts = await Company.QueryAsync<dynamic>("GetSiteNavigationCounts @ResourceID",
                 new { ResourceID = Company.CurrentResourceID });
 
             return new JsonNetResult
