@@ -100,6 +100,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     createUserFilter: StoredAssetBrowserFilterModel = new StoredAssetBrowserFilterModel();
     saveFilterModalVisible: boolean = false;
     saveFilterModalWorking: boolean = false;
+    deleteFilterModalVisible: boolean = false;
+    deleteFilterModalWorking: boolean = false;
     items: MenuItem[];
 
     //#endregion
@@ -477,7 +479,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return [
             { label: 'Add', command: (event) => { this.addUserFilter() } },
             { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.updateUserFilter() } },
-            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.removeUserFilter() } }
+            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.showRemoveUserFilter() } }
         ];
     }
 
@@ -549,13 +551,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 var filters = this.savedFilters;
                 filters.push(filter);
                 this.savedFilters = filters.filter(f => true);
+                this.selectedFilter = filter;
                 this.messagesService.showInfoMessage('Success', 'Filter added successfully');
                 this.cdRef.markForCheck();
             });
     }
 
-    private createUserFilterCancel() {
+    private filterModalCancel() {
         this.saveFilterModalVisible = false;
+        this.deleteFilterModalVisible = false;
     }
 
     private updateUserFilter() {
@@ -588,7 +592,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
     }
 
+    private showRemoveUserFilter() {
+        this.deleteFilterModalVisible = true;
+        this.deleteFilterModalWorking = false;
+    }
+
     private removeUserFilter() {
+        this.deleteFilterModalWorking = true;
         if (this.hasSelectedUserFilter()) {
             this.browserService
                 .deleteUserFilter(this.selectedFilter)
@@ -601,6 +611,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         this.selectedFilter = undefined;
                         this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
                         this.cdRef.markForCheck();
+                        this.deleteFilterModalWorking = false;
+                        this.deleteFilterModalVisible = false;
                     }
                 });
         }
