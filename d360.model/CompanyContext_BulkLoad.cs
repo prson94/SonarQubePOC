@@ -833,39 +833,70 @@ order by	ColumnIndex", new { id });
 
             try
             {
-
                 var assetTypeUid = (Guid)load.AssetTypeUid;
                 AssetType assetType = repository.GetAssetTypeByUID(assetTypeUid);
 
                 if (assetType == null)
                     throw new Exception($"Asset type with uid {assetTypeUid} not found");
 
-                //get parent type if applicable
-                var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
 
                 var hasLookups = FieldTypes.Any(f => f.AssetTypeID == assetType.ID && f.LookupObjectID != null);
-
                 
                 await GenerateExecutionItemUids(load, timeout);
 
-                //need to calculate key hashes to figure out which assets to put and post
+                //get parent type info if applicable
+                var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
+                int? intersectTypeId = null;
+                PredicateType? predicateType = null;
+                switch(assetType.Class)
+                {
+                    case AssetTypeClass.BusinessAsset:
+                    case AssetTypeClass.TechnicalAsset:
+                    case AssetTypeClass.FusionAttribute:
+                    case AssetTypeClass.ReferenceItemType:
+                        predicateType = PredicateType.InterTypeHierarchy;
+                        break;
+                    case AssetTypeClass.Policy:
+                    case AssetTypeClass.Model:
+                        predicateType = PredicateType.IntraTypeHierarchy;
+                        break;
+                }
+
+                if (predicateType.HasValue)
+                {
+                    var intersectType = Filter<IntersectType>(o => o.Object == assetType.Object && o.ObjectID == assetType.ObjectID && o.Predicate.Type == predicateType).FirstOrDefault();
+                    intersectTypeId = intersectType?.ID;
+                }
+
+
+
+                await Connection.OpenAsync();
+                //calculate key hashes and resolve lookup values
                 using (var trans = Connection.BeginTransaction())
                 {
-                    var executionID = Guid.NewGuid();
+                    try
+                    {
+                        var executionID = Guid.NewGuid();
 
-                    //load temp tables and calculate key hashes
-                    await Connection.ExecuteAsync(@"
+                        await Connection.ExecuteAsync(@"
                         drop table if exists #BulkExecutionAsset;
-                        create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32))
+                        create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32), AssetUid uniqueidentifier, AssetID bigint, Success bit, Message nvarchar(max))
 
                         drop table if exists #BulkExecutionField;
                         create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
+                        ", transaction: trans);
 
+                        //load temp tables and calculate key hashes
+                        await Connection.ExecuteAsync(@"
                         insert into #BulkExecutionAsset
                         select	@executionID as ExecutionID,
 		                        RowIndex as ItemNumber,
 		                        ParentAssetUid as ParentUid,
-		                        null as ProposedKey
+		                        null as ProposedKey,
+                                null as AssetUid,
+                                null as AssetID,
+                                null as [Success],
+                                null as [Message]
                         from	[LoadItem] L
                         where	L.LoadID = @ID
 
@@ -886,24 +917,52 @@ order by	ColumnIndex", new { id });
                                 inner join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                         where   L.ID = @ID;
                         "
-                        , new { executionID, load.ID }, transaction: trans);
+                            , new { executionID, load.ID }, transaction: trans);
 
-                    if (hasLookups)
-                    {
-                        ResolveFieldLookupValues(executionID, "#BulkExecutionField", timeout, trans);
-                        await Connection.ExecuteAsync(@"
+                        if (hasLookups)
+                        {
+                            ResolveFieldLookupValues(executionID, "#BulkExecutionField", timeout, trans);
+                            await Connection.ExecuteAsync(@"
                             update  I
                             set     I.LookupValue = B.LookupValue
                             from    LoadItemColumn I
                                     inner join #BulkExecutionField B on B.ItemNumber = I.RowIndex and B.ColumnIndex = I.ColumnIndex
                             where   B.LookupValue is not null and I.LoadID = @ID
                             ", new { load.ID }, transaction: trans);
+                        }
+
+                        CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
+
+                        await Connection.ExecuteAsync(@"
+                        update T
+                        set T.AssetUid = K.Uid
+                        from #BulkExecutionAsset T 
+                        cross apply (
+                        select		A.Uid,
+			                        utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+                        from		Asset A 
+			                        inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+			                        left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+                        where	    A.AssetTypeID = @atID
+                        group by    A.Uid
+                        ) K 
+                        where K.ActiveKey = T.ProposedKey
+
+                        update L
+                        set L.AssetUid = T.AssetUid
+                        from LoadItem L
+                        inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
+                        where L.LoadID = @ID
+                    ", new { atID = assetType.ID, load.ID }, transaction: trans);
+
+                        trans.Commit();
                     }
-
-                    CalculateProposedKeyHashes(assetType, executionID, "#BulkExecutionAsset", "#BulkExecutionField", null, timeout, trans);
-
+                    catch
+                    {
+                        trans.Rollback();
+                        throw;
+                    }
                 }
-
 
                 var putAssets = new List<AssetUpdate>();
                 var postAssets = new List<AssetInsert>();
@@ -927,22 +986,23 @@ order by	ColumnIndex", new { id });
                     }
 
                     loadItems = (await QueryAsync<LoadItem>(@"
-select I.*, L.[Level] from LoadItem I
-outer apply (
-    select      coalesce(max(L.[Level]), 1) as [Level]
-        from		AssetType ATT
-			        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
-			        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-			        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-        where		ATT.[ObjectID] = @ObjectID
-) L
-where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeout)).ToList();
+                        select I.*, L.[Level] from LoadItem I
+                        outer apply (
+                            select      coalesce(max(L.[Level]), 1) as [Level]
+                                from		AssetType ATT
+			                                inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
+			                                inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+			                                inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = I.RowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
+                                where		ATT.[ObjectID] = @ObjectID
+                        ) L
+                        where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeout)).ToList();
                 }
                 else
                 {
                     loadItems = Query<LoadItem>("select * from LoadItem where LoadID = @id", new { id = load.ID }).ToList();
                 }
 
+                //create API models
                 foreach (var item in loadItems)
                 {
                     var fieldsToSkip = new List<string>();
@@ -1036,9 +1096,7 @@ where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeo
                         }
                         putAssets.Add(update);
                     }
-
                 }
-
 
                 if (putAssets.Any())
                 {
@@ -1091,572 +1149,6 @@ where I.LoadID = @id ", new { id = load.ID, assetType.ObjectID }, timeout: timeo
         {
             public Guid AssetTypeUid { get; set; }
             public int LoadID { get; set; }
-        }
-
-        private async Task LoadLookupValues(Load load, AssetType assetType, int timeout = 90)
-        {
-            var resolveLookupSql = $@"
-begin
-
-	update	T
-	set		T.LookupObject = S.LookupObject,
-			T.LookupObjectID = S.LookupObjectID
-	from	LoadItemColumn T
-			inner join	(
-						select	IC.LoadID,
-								IC.RowIndex,
-								IC.ColumnIndex,
-								case 
-									when ((L_A.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType in ('Artifact', 'ArtifactType')) ) then 'Artifact'									
-									else NULL
-								end as LookupObject,
-								case 
-									when L_A.ObjectID is not null then L_A.ObjectID
-									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-									else NULL
-								end as LookupObjectID 
-						from	FieldType F
-								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex								
-								inner join AssetDetail L_A on L_A.[Object] = 'Artifact' and L_A.TypeID = F.LookupObjectID and (L_A.DisplayValue = IC.Value)								
-						where	F.AllowMultipleValues = 0 and F.LookupObjectType in ('Artifact', 'ArtifactType')
-						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex;
-
-	update	T
-	set		T.LookupObject = S.LookupObject,
-			T.LookupObjectID = S.LookupObjectID
-	from	LoadItemColumn T
-			inner join	(
-						select	IC.LoadID,
-								IC.RowIndex,
-								IC.ColumnIndex,
-								case 									
-									when ( (L_D.ObjectID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItemType') ) then 'ReferenceItemType'									
-									else NULL
-								end as LookupObject,
-								case 									
-									when L_D.ObjectID is not null then L_D.ObjectID
-									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0																		
-									else NULL
-								end as LookupObjectID 
-						from	FieldType F
-								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-								inner join AssetType L_D on L_D.[Object] = 'ReferenceItemType' and L_D.[Name] = IC.Value								
-						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItemType'
-						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-
-if exists (select 1 from	FieldType F
-								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name								
-				where F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItem')
-	begin
-		
-		update	T
-			set		T.LookupObject = S.LookupObject,
-					T.LookupObjectID = S.LookupObjectID
-			from	LoadItemColumn T
-					inner join	(
-								select	IC.LoadID,
-										IC.RowIndex,
-										IC.ColumnIndex,								
-										case
-											
-											when ( (FLV.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'ReferenceItem') ) then 'ReferenceItem'									
-											else NULL
-										end as LookupObject,
-										case 									
-											
-											when FLV.Value is not null then FLV.Value
-											when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-											else NULL
-										end as LookupObjectID 
-								from	FieldType F
-										inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-										inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-										inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-										
-										cross apply [dbo].[FieldLookupValueByFieldTypeID](F.ID) FLV
-										
-								where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'ReferenceItem' and  FLV.Text = IC.Value
-								) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-	end
-
-	update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									case
-										when ( (L_F.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'FusionAttributeType') ) then 'FusionAttribute'									
-										else NULL
-									end as LookupObject,
-									case 									
-										when L_F.ID is not null then L_F.ID
-										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-
-										else NULL
-									end as LookupObjectID 
-							from	FieldType F
-									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-									inner join FusionAttribute L_F on L_F.FusionAttributeTypeID = F.LookupObjectID and (L_F.[Name] = IC.Value OR L_F.TextPath = IC.Value)								
-							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'FusionAttributeType'
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-	update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									case 									
-										when ( (L_L.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Lookup') ) then 'Lookup'									
-										else NULL
-									end as LookupObject,
-									case 									
-										when L_L.Value is not null then L_L.Value
-										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-
-										else NULL
-									end as LookupObjectID 
-							from	FieldType F
-									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and L_L.LookupObjectType = 'Lookup' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value								
-							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'Lookup'
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-	update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									case 									
-										when ( (L_L.Value is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel AND F.LookupObjectType = 'Resource') ) then 'Resource'									
-										else NULL
-									end as LookupObject,
-									case 									
-										when L_L.Value is not null then L_L.Value
-										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-
-										else NULL
-									end as LookupObjectID 
-							from	FieldType F
-									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-									left join [FieldLookupValue] L_L on F.ID = L_L.FieldTypeID and L_L.LookupObjectType = 'Resource' and L_L.LookupObjectID = F.LookupObjectID and L_L.[Text] = IC.Value								
-							where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'Resource'
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-	update	T
-		set		T.LookupObject = S.LookupObject,
-				T.LookupObjectID = S.LookupObjectID
-		from	LoadItemColumn T
-				inner join	(
-							select	IC.LoadID,
-									IC.RowIndex,
-									IC.ColumnIndex,
-									case
-										when ( (L_T.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel ) ) then 'Taxonomy'
-										else NULL
-									end as LookupObject,
-									case 									
-										when L_T.ObjectID is not null then L_T.ObjectID
-										when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-										else NULL
-									end as LookupObjectID 
-							from	FieldType F
-									inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-									inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-									inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-									inner join AssetDetail L_T on L_T.[Object] = 'Taxonomy' and L_T.TypeID = F.LookupObjectID and (L_T.[DisplayValue] = IC.Value )
-							where	F.AllowMultipleValues = 0 and F.LookupObjectType in ('Taxonomy', 'TaxonomyType')
-							) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-
-
-	update	T
-	set		T.LookupObject = S.LookupObject,
-			T.LookupObjectID = S.LookupObjectID
-	from	LoadItemColumn T
-			inner join	(
-						select	IC.LoadID,
-								IC.RowIndex,
-								IC.ColumnIndex,
-								case
-									when ( (L_T.ID is not null) OR (F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel ) ) then 'Taxonomy'
-									else NULL
-								end as LookupObject,
-								case 									
-									when L_T.ObjectID is not null then L_T.ObjectID
-									when F.AllowAllValue = 1 AND IC.Value = F.AllowAllLabel then 0
-									else NULL
-								end as LookupObjectID 
-						from	FieldType F
-								inner join [Load] L on L.ID = @id and L.[Object] = F.[Object] and L.ObjectID = F.ObjectID and F.[Type] = 'Lookup'
-								inner join [LoadColumn] C on C.LoadID = L.ID and F.Name = C.Name
-								inner join [LoadItemColumn] IC on IC.LoadID = C.LoadID and IC.ColumnIndex = C.ColumnIndex
-
-								inner join AssetType L_T on L_T.[Object] = 'TaxonomyType'  and (L_T.Name = IC.Value )
-						where	F.AllowMultipleValues = 0 and F.LookupObjectType = 'TaxonomyType' and F.LookupObjectID = 0
-						) S on S.LoadID = T.LoadID and S.RowIndex = T.RowIndex and S.ColumnIndex = T.ColumnIndex
-	if exists (select 1 from LoadItem LI
-						inner join LoadColumn C on C.LoadID = LI.LoadID
-						inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
-				where
-					FT.AllowMultipleValues = 1 and LI.LoadID = @id )
-	begin
-		
-
-		update	IC
-		set		IC.LookupObject = MV.LookupObject,
-				IC.LookupValue = MV.LookupValue
-		from	LoadItemColumn IC
-				inner join	(
-							select		IC.LoadID,
-										IC.RowIndex,
-										IC.ColumnIndex,
-										'ReferenceItem' as LookupObject,
-										string_agg(AD.ObjectID, ',') as LookupValue
-							from		LoadItem LI
-										inner join LoadItemColumn IC on LI.LoadID = @id and LI.LoadID = IC.LoadID and IC.RowIndex = LI.RowIndex
-										inner join LoadColumn C on C.LoadID = IC.LoadID and C.ColumnIndex = IC.ColumnIndex
-										inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.AllowMultipleValues = 1
-										cross apply string_split(IC.Value, ',') VS									
-										left join AssetWithType AD on AD.Object = 'ReferenceItem' and AD.TypeID = FT.LookupObjectID
-										CROSS APPLY [dbo].[GetReferenceItemDisplayValue](AD.ObjectID, FT.ID) GRIDV
-							where GRIDV.DisplayValue = ltrim(rtrim(VS.Value))
-							group by	IC.LoadID,
-										IC.RowIndex,
-										IC.ColumnIndex			
-							) MV on MV.LoadID = IC.LoadID and MV.RowIndex = IC.RowIndex and MV.ColumnIndex = IC.ColumnIndex
-	end
-
-	update	IC
-		set		IC.LookupObject = REPLACE(FT.LookupObjectType, 'Type', ''),
-				IC.LookupObjectID = 0,
-				IC.LookupValue = 0
-		from	LoadItemColumn IC
-				inner join LoadColumn C on C.ColumnIndex = IC.ColumnIndex and C.LoadID = IC.LoadID and C.LoadID = @id
-				inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and FT.Type = 'Lookup' and FT.AllowAllValue = 1 and IC.Value = FT.AllowAllLabel;
-	
-end
-
-";
-
-            await QueryAsync<int>(resolveLookupSql, new { id = load.ID, assetType.ObjectID, @Object = new DbString { Value = assetType.Object, IsAnsi = true, Length = 50 }},  timeout: timeout);
-
-        }
-
-        private async Task CalculateHashes(Load load, AssetType assetType, int timeout = 90)
-        {
-            var parentAssetType = GetParentTypeById(assetType.ID); 
-
-            #region Hash Sql
-
-            var glossaryHashSql = @"
-update  L
-set     L.KeyHash = K.KeyHash,
-		L.FieldHash = F.FieldHash
-from    LoadItem L
-        inner join (
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' +Value, char(59))), 3, 32), 
-					        2) as KeyHash
-	        from		(
-				        select		top 1000000000 
-							        I.RowIndex,
-							        FT.ID as FieldTypeID,
-							        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
-				        from		LoadItem I
-							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
-							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = C.Name
-				        order by	I.RowIndex,
-							        FT.ID
-				        ) A
-	        group by	A.RowIndex
-        ) K on K.RowIndex = L.RowIndex
-        inner join (
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-					        2) as FieldHash
-	        from		(
-				        select		top 100 percent
-							        I.RowIndex,
-							        FT.ID as FieldTypeID,
-							        coalesce(IC.Value, '') as Value
-				        from		LoadItem I
-							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
-							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
-				        order by	I.RowIndex,
-							        FT.ID
-				        ) A
-	        group by	A.RowIndex	
-        ) F on F.RowIndex = L.RowIndex
-where	L.LoadID = @id
-";
-            var glossaryHashWithParentSql = @"
-update  L
-set     L.KeyHash = K.KeyHash,
-		L.FieldHash = F.FieldHash
-from    LoadItem L
-        inner join	(
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' +Value, char(59))), 3, 32), 
-					        2) as KeyHash
-	        from		(
-								
-				        select		top 1000000000 
-							        I.RowIndex,
-							        FT.ID as FieldTypeID,
-							        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
-				        from		LoadItem I
-							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
-							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = C.Name
-													
-				        union
-				        select
-					        top 1000000000
-					        I.RowIndex,
-					        -1 as FieldTypeID,
-					        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
-				        from
-					        LoadItem I
-					        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id and IC.Value is not null
-					        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-					        inner join ASSETTYPE ATT on ATT.Object = @Object and ATT.ObjectID = @parentTypeID 
-					        inner join ASSET A on A.AssetTypeID = ATT.ID
-					        inner join AssetDisplayValue AD on A.ID = AD.AssetID and AD.DisplayValue = IC.Value
-				        order by	RowIndex,
-							        FieldTypeID
-				        ) A								
-	        group by	A.RowIndex
-        ) K on K.RowIndex = L.RowIndex
-        inner join	(
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-					        2) as FieldHash
-	        from		(
-				        select		top 100 percent
-							        I.RowIndex,
-							        FT.ID as FieldTypeID,
-							        coalesce(IC.Value, '') as Value
-				        from		LoadItem I
-							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
-							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
-				        order by	I.RowIndex,
-							        FT.ID
-				        ) A
-	        group by	A.RowIndex	
-        ) F on F.RowIndex = L.RowIndex
-where	L.LoadID = @id
-";
-            var modelHashSql = @"
-update T set
-       T.KeyHash = K.KeyHash,
-		T.FieldHash = F.FieldHash
-from    LoadItem T
-        left join	(
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-					        2) as KeyHash
-	        from		(
-					        select top 100 percent
-						        IC.RowIndex, 
-						        FT.ID as FieldTypeID, 
-						        coalesce(cast(IC.LookupObjectID as varchar(100)), IC.[Value],'') as [Value] 
-					        from LoadColumn LC
-					        inner join LoadItemColumn IC on IC.LoadID = @id and IC.RowIndex = @rowIndex and IC.ColumnIndex = LC.ColumnIndex
-					        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.IsPartOfKey = 1 and FT.Name = reverse(substring(reverse(LC.[Name]), 0, charindex(' ',reverse(LC.[Name]))))			
-					        where LC.LoadID = @id and LC.ColumnIndex in (
-			 			        select		LC.ColumnIndex 
-						        from		AssetType ATT
-									        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')																	
-									        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-									        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-						        where		ATT.ObjectID = @ObjectID and L.[Level] = @currLevel
-						        )
-				        ) A
-	        group by	A.RowIndex
-        ) K on K.RowIndex = T.RowIndex
-        inner join	(
-	        select		RowIndex,
-				        CONVERT(
-					        varchar(32), 
-					        SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-					        2) as FieldHash
-	        from		(
-				        select		top 100 percent
-							        I.RowIndex,
-							        FT.ID as FieldTypeID,
-							        coalesce(IC.Value, '') as Value
-				        from		LoadItem I
-							        inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
-							        inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex
-							        inner join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name
-				        order by	I.RowIndex,
-							        FT.ID
-				        ) A
-	        group by	A.RowIndex	
-        ) F on F.RowIndex = T.RowIndex
-where	T.LoadID = @id and T.RowIndex = @rowIndex;
-";
-            var referenceItemHashSql = @"
-update	T
-set		T.KeyHash = CONVERT(
-							varchar(32), 
-							SUBSTRING(HASHBYTES('SHA1', substring(ltrim(rtrim(IC.Value)), 1, 250)), 3, 32), 
-							2),
-		T.FieldHash = V.FieldHash
-from	LoadItem T
-		inner join LoadColumn C on C.LoadID = T.LoadID and C.Name = 'Code'
-		inner join LoadItemColumn IC on IC.LoadID = C.LoadID and IC.RowIndex = T.RowIndex and IC.ColumnIndex = C.ColumnIndex
-		inner join	(
-					select		RowIndex,
-								CONVERT(
-									varchar(32), 
-									SUBSTRING(HASHBYTES('SHA1', STRING_AGG(cast(FieldTypeID as nvarchar) + ':' + Value, char(59))), 3, 32), 
-									2) as FieldHash
-					from		(
-								select		top 100 percent
-											I.RowIndex,
-											FT.ID as FieldTypeID,
-											coalesce(cast(IC.LookupObjectID as varchar(100)), IC.Value, '') as Value
-								from		LoadItem I
-											inner join LoadItemColumn IC on IC.LoadID = I.LoadID and IC.RowIndex = I.RowIndex and I.LoadID = @id
-											inner join LoadColumn C on C.LoadID = I.LoadID and C.ColumnIndex = IC.ColumnIndex													
-											left join FieldType FT on FT.Object = @Object and FT.ObjectID = @ObjectID and FT.Name = C.Name and C.Name !='Code'
-											left join Asset RI on RI.Object = 'ReferenceItem' and C.Name = 'Code' and RI.ObjectID = @ObjectID
-								order by	I.RowIndex,
-											FT.ID
-								) A
-					group by	A.RowIndex	
-					) V on V.RowIndex = T.RowIndex
-where	T.LoadID = @id;
-";
-
-            #endregion
-
-            if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Rule)
-            {
-                if (parentAssetType != null)
-                {
-                    await QueryAsync<int>(glossaryHashWithParentSql, new { @object = new DbString { Value = assetType.Object, IsAnsi = true, IsFixedLength = true, Length = 50 }, objectID = assetType.ObjectID, id = load.ID, parentTypeID = parentAssetType.ObjectID });
-                }
-                else
-                {
-                    await QueryAsync<int>(glossaryHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID });
-                }
-            }
-            else if (assetType.Class == AssetTypeClass.Model)
-            {
-                var rows = (await QueryAsync<int>(@"select RowIndex from LoadItem where LoadID = @id", new { id = load.ID })).ToList();
-                foreach (var row in rows)
-                {
-
-                    var currLevel = (await QueryAsync<int>(@"
-                        select      coalesce(max(L.[Level]), 1) 
-                        from		AssetType ATT
-			                        inner join AssetTypeLevel L on (L.AssetTypeID = ATT.ID and ATT.[Object] = 'TaxonomyType')
-			                        inner join LoadColumn LC on LC.LoadID = @id and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
-			                        inner join LoadItemColumn LI on LI.LoadID = @id and LI.RowIndex = @rowIndex and LI.ColumnIndex = LC.ColumnIndex and LI.[Value] is not null
-                        where		ATT.[ObjectID] = @ObjectID"
-                        , new { id = load.ID, rowIndex = row, objectID = assetType.ObjectID })).FirstOrDefault();
-
-                    await QueryAsync<int>(modelHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID, rowIndex = row, currLevel }, timeout: timeout);
-
-                }
-            }
-            else if (assetType.Class == AssetTypeClass.Reference)
-            {
-                await QueryAsync<int>(referenceItemHashSql, new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
-            }
-
-            //find object/objectid for existing items
-            if (assetType.Class == AssetTypeClass.BusinessAsset && parentAssetType != null)
-            {
-                await QueryAsync<int>(@"
-        update	T
-        set     T.Object = A.Object,
-                T.ObjectID = A.ObjectID,
-                T.AssetUid = A.[uid],
-                T.ParentAssetUid = AP.[uid]
-        from LoadItem T
-                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
-                inner join Asset A on A.AssetTypeID = ST.ID
-                cross apply[GetArtifactKeyHashByIdWithParent](A.ID) S
-                outer apply GetParentByAssetId(A.ID) P
-                left join Asset AP on AP.ID = P.ID
-        where S.KeyHash = T.KeyHash and T.LoadID = @id", new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
-
-            }
-            else if (parentAssetType != null)
-            {
-                await QueryAsync<int>(@"
-        update	T
-        set     T.Object = A.Object,
-                T.ObjectID = A.ObjectID,
-                T.AssetUid = A.[uid],
-                T.ParentAssetUid = AP.[uid]
-        from LoadItem T
-                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
-                inner join Asset A on A.AssetTypeID = ST.ID
-                cross apply GetAssetKeyHashById(A.ID) S
-                outer apply GetParentByAssetId(A.ID) P
-                left join Asset AP on AP.ID = P.ID
-        where S.KeyHash = T.KeyHash and T.LoadID = @id",
-new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
-            }
-            else
-            {
-                await QueryAsync<int>(@"
-        update	T
-        set     T.Object = A.Object,
-                T.ObjectID = A.ObjectID,
-                T.AssetUid = A.[uid],
-                T.ParentAssetUid = null
-        from LoadItem T
-                inner join AssetType ST on ST.Object = @Object and ST.ObjectID = @ObjectID
-                inner join Asset A on A.AssetTypeID = ST.ID
-                cross apply GetAssetKeyHashById(A.ID) S
-        where S.KeyHash = T.KeyHash and T.LoadID = @id",
-        new { @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID, id = load.ID }, timeout: timeout);
-
-            }
-
         }
 
         private async Task GenerateExecutionItemUids(Load load, int timeout = 90)
