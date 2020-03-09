@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.graph.GetHop-v1">
+  <changeSet author="Core" id="Procedure.graph.GetHop-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -450,7 +450,8 @@ begin
 
 	-- Get action counts
 	update	R
-	set		R.ActionCount =	(
+	set		R.ActionCount =	coalesce(
+								(
 								select	count(1) as ActionCount
 								from	Issue I
 										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
@@ -458,7 +459,7 @@ begin
 										and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
 										and A.ID = R.AssetID
 								group by A.Uid
-								)
+								), 0)
 	from	#nodes R;
 
 	-- Get impact badges

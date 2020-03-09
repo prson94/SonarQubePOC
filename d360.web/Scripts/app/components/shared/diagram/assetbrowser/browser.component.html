@@ -4,6 +4,11 @@
         <div class="tile tile-detail" style="padding: 0">
             <div [hidden]="isLoading && !fromRefresh" class="asset-browser-header">
                 <div class="controls-left">
+                    <div class="asset-browser-button-group">
+                        <button type="button" title="Impact View" aria-label="Impact View" (click)="switchToImpactView($event)" [class]="impactViewButtonSelectedClass()">Impact View</button>
+                        <button type="button" title="Lineage View" aria-label="Lineage View" (click)="switchToLineageView($event)" [class]="lineageViewButtonSelectedClass()">Lineage View</button>
+                        <div class="button-spacer"></div>
+                    </div>
                     <div class="asset-browser-search">
                         <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
                         <div class="input-actions">
@@ -15,28 +20,24 @@
                         </div>
                     </div>
                     <div class="asset-browser-button-group btn-small">
-                        <button (click)="goToPrevious()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == 1 ? 'light' : ''}}"><i class="fa fa-chevron-up"></i></button>
-                        <button (click)="goToNext()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == searchResults.length ? 'light' : ''}}"><i class="fa fa-chevron-down"></i></button>
+                        <button (click)="goToPrevious()" type="button" title="Previous" aria-label="Previous" class="{{searchResults.length == 0 || searchCurrentItem == 1 ? 'dark' : ''}}"><i class="fa fa-lg fa-angle-up"></i></button>
+                        <button (click)="goToNext()" type="button" title="Next" aria-label="Next" class="{{searchResults.length == 0 || searchCurrentItem == searchResults.length ? 'dark' : ''}}"><i class="fa fa-lg fa-angle-down"></i></button>
                     </div>
-                </div> 
+                </div>
                 <div class="controls-right">
                     <div class="asset-browser-button-group">
-                        <button type="button" title="Impact View" (click)="switchToImpactView($event)" [class]="impactViewButtonSelectedClass()" style="width: 80px; font-size: .8em">Impact View</button>
-                        <button type="button" title="Lineage View" (click)="switchToLineageView($event)" [class]="lineageViewButtonSelectedClass()" style="width: 80px; font-size: .8em">Lineage View</button>
-                        <div class="button-spacer"></div>
-                        <button type="button" title="Asset Browser Settings" (click)="settingsButtonClick($event)" [class]="settingsButtonSelectedClass()"><i class="fa fa-gear"></i></button>
-                        <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
-                        <div class="button-spacer"></div>
-                        <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
-                        <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()" [disabled]="!lineageDiagramApplies()"><i class="fa fa-plus"></i></button>
-                        <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
-                        <div class="button-spacer"></div>
-                        <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)" [disabled]="totalAlertCount == 0">
+                        <button type="button" title="Settings Panel" aria-label="Settings Panel" (click)="settingsButtonClick($event)" [class]="settingsButtonSelectedClass()"><i class="fa fa-gear"></i></button>
+                        <button type="button" title="Filters Panel" aria-label="Filters Panel" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
+                        <button type="button" title="Information Panel" aria-label="Information Panel" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
+                        <button type="button" title="Refresh Diagram" aria-label="Refresh Diagram" class="icon" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
+                        <button type="button" title="Add Lineage Panel" aria-label="Add Lineage Panel" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()" [disabled]="!lineageDiagramApplies()"><i class="fa fa-plus"></i></button>
+                        <button type="button" title="Download as PNG" aria-label="Download as PNG" (click)="savePngButtonClick($event)" class="icon right-margin-4"><i class="fa fa-download"></i></button>
+                        <button type="button" title="Alerts Panel" aria-label="Alerts Panel" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" (click)="alertButtonClick($event)" [disabled]="totalAlertCount == 0">
                             <i [class]="alertCountClass()"></i>
                             <div [class]="alertCountNumberClass()" [innerText]="alertCountNumber()"></div>
                         </button>
-                        <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
+                        <div class="button-spacer"></div>
+                        <button type="button" [title]="isFullScreen ? 'Shrink View':'Expand View'" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
                     </div>
                 </div>
             </div>
@@ -305,9 +306,9 @@
 
                     <div class="asset-browser-controls-bottom">
                         <div class="asset-browser-button-group zoom-controls">
-                            <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" title="Zoom out" aria-label="Zoom out" class="icon" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
                             <span class="diagram-zoom">{{zoomText}}</span>
-                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" title="Zoom in" aria-label="Zoom in" class="icon" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
                         </div>
                     </div>
 

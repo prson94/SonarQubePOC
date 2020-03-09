@@ -81,7 +81,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private filtersLoading: boolean = false;
     private fromRefresh: boolean = false;
     private loadingText: string = '';
-    private zoomText: string = '';
+    private zoomText: string = '100%';
 
     //#endregion
 
@@ -673,7 +673,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private lineageViewButtonSelectedClass() {
-        return (this.filterModel.DiagramType == DiagramType.Lineage) ? "right-margin-4 selected" : "right-margin-4";
+        return (this.filterModel.DiagramType == DiagramType.Lineage) ? "selected" : "";
     }
 
     private lineageDiagramApplies(): boolean {
@@ -695,11 +695,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private addButtonSelectedClass() {
-        return this.isAddRelationshipWindowVisible ? "selected" : "";
+        let css: string = this.isAddRelationshipWindowVisible ? "selected" : "";
+        if (!this.lineageDiagramApplies()) {
+            css = "disabled";
+        }
+        return css;
     }
 
     private alertButtonClass() {
-        let classes: string = "";
+        let classes: string = "icon ";
 
         if (this.isAlertWindowVisible && this.panelTabIndex == 0) {
             classes += "selected";
@@ -783,15 +787,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private filterButtonSelectedClass() {
-        return this.isFilterWindowVisible ? "right-margin-4 selected" : "right-margin-4";
+        return "icon right-margin-4 " + (this.isFilterWindowVisible ? "selected" : "");
     }
 
     private infoButtonSelectedClass() {
-        return (this.isInfoWindowVisible) ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
+        return "icon " + ((this.isInfoWindowVisible) ? "selected" : (this.isInfoTabDisabled ? "disabled" : ""));
     }
 
     private settingsButtonSelectedClass() {
-        return this.isSettingWindowVisible ? "selected" : "";
+        return "icon " + (this.isSettingWindowVisible ? "selected" : "");
     }
 
     private ownerRowClass(icon: string) {
