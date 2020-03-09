@@ -323,8 +323,7 @@ namespace d360.web.Controllers
                                     IsAdministrator = false,
                                     ResourceID = resource.ID,
                                     State = companyResource.State,
-                                    CreatedOn = DateTime.UtcNow,
-                                    UpdatedOn = DateTime.UtcNow
+                                    CreatedOn = DateTime.UtcNow                                    
                                 });
                             }
 
