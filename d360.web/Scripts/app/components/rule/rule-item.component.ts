@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute }       from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -7,15 +7,11 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { SurveysService } from '../../services/surveys.service';
-import { Breadcrumb } from '../../models/breadcrumb.model';
-import { RuleDetail, RuleImplementation, RuleType } from '../../models/rule.model';
+import { RuleDetail, RuleType } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { SurveyType } from '../../models/survey.model';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
-import { Permission } from '../../models/responsibility-type.model';
-import { Observable, Subscribable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -34,14 +30,7 @@ declare var CompanySettings;
                 <div class="row" *ngIf="!isLoading">
                     <div class="col s12">
                         <div class="tile tile-detail">
-                            <div class="row">
-                                <div class="col s12 m6 l3">
-                                    <d3s-rule-implementations-grid [ruleId]="rule?.ID" [(selected)]="selectedImp"></d3s-rule-implementations-grid> 
-                                </div>
-                                <div class="col s12 m6 l9">
-                                    <d3s-rule-implementation-summary [implementation]="selectedImp"></d3s-rule-implementation-summary>
-                                </div>
-                            </div>
+                            <d3s-rule-results-grid [ruleId]="rule?.ID" [showTitle]="true"></d3s-rule-results-grid> 
                         </div>
                     </div>
                 </div>`
@@ -55,8 +44,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
     private surveyType: SurveyType;
-    private showSurvey: boolean = false;
-    private selectedImp: RuleImplementation;
+    private showSurvey: boolean = false;    
     private showSocialScoreBar: boolean = true;
     private ruleType: RuleType;
 
