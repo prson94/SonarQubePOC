@@ -319,15 +319,29 @@
         <div class="content">
             <div class="row">
                 <label for="name" style="margin-right:10px;">Name</label>
-                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field"/>
+                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
             </div>
         </div>
         <div class="action-bar">
-            <button class="button" (click)="createUserFilterCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+            <button class="button" (click)="filterModalCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
             <span class="grow"></span>
             <button class="button primary" (click)="createUserFilterSave()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid">
                 Create
             </button>
         </div>
     </form>
+</d3s-modal>
+<d3s-modal [title]="'Delete Filter Set'" additionalClasses="modal-consolidate" [isVisible]="deleteFilterModalVisible">
+    <div class="content">
+        <div class="row">
+            Are you sure you want to delete the <b>{{selectedFilter?.name}}</b> filter?
+        </div>
+    </div>
+    <div class="action-bar">
+        <button class="button" (click)="filterModalCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+        <span class="grow"></span>
+        <button class="button primary" (click)="removeUserFilter()" [disabled]="filterModalWorking">
+            Delete
+        </button>
+    </div>
 </d3s-modal>
