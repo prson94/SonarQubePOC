@@ -551,6 +551,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 var filters = this.savedFilters;
                 filters.push(filter);
                 this.savedFilters = filters.filter(f => true);
+                this.selectedFilter = filter;
                 this.messagesService.showInfoMessage('Success', 'Filter added successfully');
                 this.cdRef.markForCheck();
             });
