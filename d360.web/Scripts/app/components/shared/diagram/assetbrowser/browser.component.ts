@@ -396,27 +396,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#region Asset Types
 
-        var assetTypes: TreeNode[] = new Array();
-        let classIDs: number[] = [
-            +AssetTypeClass.BusinessAsset,
-            +AssetTypeClass.Model,
-            +AssetTypeClass.Policy,
-            +AssetTypeClass.Rule,
-            +AssetTypeClass.TechnicalAsset
-        ];
+        this.filterSelectionsModel.FilterAssetTypes = [];
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
-            if (classIDs.findIndex(c => c == at.ClassId) > -1) {
-                if (loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1) {
-                    assetTypes.push({
-                        label: at.Path,
-                        data: at.AssetTypeId
-                    });
-                }
-            }
+            let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
+            if (inLoadedAssetTypes) {
+                this.filterSelectionsModel.FilterAssetTypes.push({
+                    label: at.Path,
+                    data: at.AssetTypeId
+                });
+            } 
         });
-        assetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-
-        this.filterSelectionsModel.FilterAssetTypes = assetTypes;
+        this.filterSelectionsModel.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
         this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
 
         //#endregion
@@ -732,10 +722,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         // Loop through nodes and figure out what is visible.
         this.diagram.model.nodeDataArray.forEach((tn: AssetBrowserTranslationNode) => {
-
             if (tn.assetTypeId) {
+                let isRoot: boolean = tn.group == "" || tn.group == undefined;
 
-                if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1) {
+                if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1 && isRoot) {
                     model.AssetTypes.push(tn.assetTypeId);
                 }
                 if (tn.owners) {
@@ -1487,12 +1477,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 model.Direction = AssetBrowserApiHopDirection.Forward;
             }
             this.revealedKeys.push(currentTopGroupKey);
-            console.log(this.responseModel.assets);
-            console.log('KeyToFind:'+currentTopGroupKey);
+
             // Now we need to find the real root asset for this current key.
             let realRootAsset = this.findTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
-
-            console.log(realRootAsset);
 
             model.Hops = 1;
             model.HopType = AssetBrowserApiHopType.Lineage;
@@ -1886,6 +1873,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.loadingText = "";
         this.isLoading = false;
         this.fromRefresh = false;
+
+        this.setFilterWindow(false);
+
         this.cdRef.markForCheck();
 
         this.hideDeselectedAssetTypes(undefined);
@@ -1900,6 +1890,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
         this.saveFilter();
         this.diagram.commitTransaction();
+    }
+
+    private filterDisplayAncestorBadgesChange(): void {
+        this.refreshDiagram();
     }
 
     private filterDisplayIconsChange(): void {
