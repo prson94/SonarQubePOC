@@ -348,7 +348,7 @@ namespace d360.model.validators
                     }
                     if (validation?.MinimumLength < 0)
                     {
-                        errMsg = String.Format(FieldErrors.GreaterThanError, "MinimumLength");
+                        errMsg = String.Format(FieldErrors.GreaterThanError, "MinimumLength", "0");
                         return false;
                     }
                     if (validation?.MinimumLength > maxDecimalFieldValue)
