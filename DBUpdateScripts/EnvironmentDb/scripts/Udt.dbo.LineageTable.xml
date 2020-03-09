@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Udt.dbo.LineageTable-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF TYPE_ID(N'dbo.LineageTable') IS NULL 
+BEGIN
+	CREATE TYPE [dbo].[LineageTable] AS TABLE(
+		[ID] [int] NULL,
+		[SourceIntersectID] [int] NULL,
+		[SourceSubject] [varchar](50) NULL,
+		[SourceSubjectID] [int] NULL,
+		[SourceObject] [varchar](50) NULL,
+		[SourceObjectID] [int] NULL,
+		[TargetIntersectID] [int] NULL,
+		[TargetSubject] [varchar](50) NULL,
+		[TargetSubjectID] [int] NULL,
+		[TargetObject] [varchar](50) NULL,
+		[TargetObjectID] [int] NULL,
+		[Deleting] [bit] NULL,
+		[Adding] [bit] NULL
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

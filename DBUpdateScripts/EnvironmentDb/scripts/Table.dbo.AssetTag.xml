@@ -1,0 +1,116 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AssetTag-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTag')
+BEGIN
+	CREATE TABLE [dbo].[AssetTag](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_AssetTag_uid] DEFAULT (newid()) NOT NULL,
+		[AssetID] [bigint] NULL,
+		[TagID] [int] NOT NULL,
+		[CreatedOn] [datetime] NULL,
+		[CreatedBy] [int] NULL,
+		CONSTRAINT [PK_AssetTag] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [UC_AssetTag_AssetID_TagID] UNIQUE NONCLUSTERED ( [AssetID] ASC, [TagID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ASSETTAG_ASSET')
+BEGIN
+	ALTER TABLE [dbo].[AssetTag]  WITH CHECK ADD  CONSTRAINT [FK_ASSETTAG_ASSET] FOREIGN KEY([AssetID]) REFERENCES [dbo].[Asset] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetTag] CHECK CONSTRAINT [FK_ASSETTAG_ASSET]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ASSETTAG_TAG')
+BEGIN
+	ALTER TABLE [dbo].[AssetTag]  WITH CHECK ADD  CONSTRAINT [FK_ASSETTAG_TAG] FOREIGN KEY([TagID]) REFERENCES [dbo].[Tag] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetTag] CHECK CONSTRAINT [FK_ASSETTAG_TAG]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetTag_AssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetTag_AssetID] ON [dbo].[AssetTag] ( [AssetID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetTag_TagID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_AssetTag_TagID] ON [dbo].[AssetTag] ( [TagID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterDelete]
+   ON  [dbo].[AssetTag] 
+   AFTER DELETE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM deleted D INNER JOIN [dbo].[Asset] A
+		ON D.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.AssetTag-AssetTag_AfterUpsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[AssetTag_AfterUpsert]
+   ON  [dbo].[AssetTag] 
+   AFTER INSERT, UPDATE
+AS 
+	SET NOCOUNT ON;
+		INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		SELECT 'ObjectIndex', 
+				'U',
+				A.Object, 
+				A.ObjectID,
+				A.ID
+		FROM inserted  I INNER JOIN [dbo].[Asset] A
+		ON I.AssetID = A.ID
+		WHERE A.[Object] not in('FusionAttribute', 'FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

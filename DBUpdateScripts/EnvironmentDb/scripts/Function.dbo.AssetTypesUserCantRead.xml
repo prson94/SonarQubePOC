@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.AssetTypesUserCantRead-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[AssetTypesUserCantRead]
+        (		        
+	        @ResourceID int
+        )
+        RETURNS TABLE  with Schemabinding
+        AS
+        RETURN 
+        (
+			      select 
+				      Ast.ID as AssetTypeID
+			      from 
+				      [dbo].[ResponsibilityTypeRelation] RR
+				      inner join [dbo].[responsibilitytyperelationrule] R on (RR.ResponsibilityTypeID = R.ResponsibilityTypeID and RR.ObjectType = R.[Object] and RR.ObjectID = R.ObjectID)	
+				      inner join [dbo].[AssetType] Ast on (Ast.[Object] = R.[Object] and Ast.ObjectID = R.ObjectID)
+				      inner join [dbo].[ResponsibilityRuleResultAsset] rasset on (rasset.assetid = 0 and rasset.AssetTypeID = Ast.ID and rasset.ruleid = r.id)				
+			      where 
+				      RR.PermissionsBitMask & 1 = 0
+				       and 
+					      ( exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource where rresource.RuleID = R.ID and rresource.SecurityAsset = 'R' and rresource.SecurityAssetID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID inner join dbo.OrganizationResource RD on RD.OrganizationID = D.ID where rresource.RuleID = R.ID and RD.ResourceID = @ResourceID )
+					      or exists( select 1 from [dbo].[ResponsibilityRuleResultSecurityAsset] rresource inner join dbo.[Group] G on G.ID = rresource.SecurityAssetID and rresource.SecurityAsset = 'G' inner join dbo.ResourceGroup RG on RG.GroupID = G.ID  where rresource.RuleID = R.ID and RG.ResourceID =  @ResourceID ) )
+	
+		      )
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
+

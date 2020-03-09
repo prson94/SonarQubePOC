@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Scoring;
 using d360.core.entities.Views;
+using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
@@ -162,6 +163,8 @@ namespace d360.model
         public DbSet<FusionType> FusionTypes { get; set; }
 
         public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
+
+        public DbSet<GraphFilter> GraphFilters { get; set; }
 
         public DbSet<Intersect> Intersects { get; set; }
 
@@ -1149,9 +1152,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj)
         {
-
-            var sql = @"select I.ObjectID from IntersectType I
+            var sql = @"select AT.ID from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
+                    inner join AssetType AT on AT.Object = I.Object and AT.ObjectID = I.ObjectID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
             var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
 

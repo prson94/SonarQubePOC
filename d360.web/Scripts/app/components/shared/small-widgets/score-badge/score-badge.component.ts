@@ -14,6 +14,7 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
 
     @Input() score: AssetScore;
     @Input() mast: boolean = false;
+    @Input() showSparkline: boolean = true;
     @Input() displayAsField: boolean = false;
     @Input() displayAsFieldClass: string = ""; 
     
@@ -38,6 +39,7 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
         if (this.displayAsFieldClass == "") {
             this.displayAsFieldClass = "scoretitle";
         }
+        this.scoreBadgeClass += (this.mast) ? " mast" : " nomast";
     }
 
     ngAfterViewInit(): void {

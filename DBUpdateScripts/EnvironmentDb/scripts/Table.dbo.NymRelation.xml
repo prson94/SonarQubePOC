@@ -1,0 +1,42 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.NymRelation-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'NymRelation')
+BEGIN
+	CREATE TABLE [dbo].[NymRelation](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[PredicateID] [int] NOT NULL,
+		[Object] [varchar](25) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		CONSTRAINT [PK_NymRelation] PRIMARY KEY CLUSTERED ( [ID] ASC ),
+		CONSTRAINT [CONST_NymRelation_Name] UNIQUE NONCLUSTERED ( [PredicateID] ASC, [Object] ASC, [ObjectID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_NymRelation_PredicateType')
+BEGIN
+	ALTER TABLE [dbo].[NymRelation]  WITH CHECK ADD  CONSTRAINT [FK_NymRelation_PredicateType] FOREIGN KEY([PredicateID]) REFERENCES [dbo].[Predicate] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[NymRelation] CHECK CONSTRAINT [FK_NymRelation_PredicateType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

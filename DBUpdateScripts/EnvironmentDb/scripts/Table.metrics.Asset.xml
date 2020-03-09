@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.metrics.Asset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset')
+BEGIN
+	CREATE TABLE [metrics].[Asset](
+		[Uid] [uniqueidentifier] CONSTRAINT [DF_MetricsAsset_uid] DEFAULT (newid()) NOT NULL,
+		[ParentUid] [uniqueidentifier] NULL,
+		[AssetTypeUid] [uniqueidentifier] NOT NULL,
+		[IsGroup] [bit] CONSTRAINT [DF_MetricAsset_IsGroup] DEFAULT (1) NOT NULL,
+		[State] [int] CONSTRAINT [DF_MetricAsset_State] DEFAULT (1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](4000) NULL,
+		[CreatedOn] [datetime] NULL,
+		[CreatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[OldMapID] [int] NULL,
+		[ScoreType] [int] CONSTRAINT [DF_MetricScore_ScoreType] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_MetricAsset] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAsset_Parent')
+BEGIN
+	ALTER TABLE [metrics].[Asset] WITH CHECK ADD CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid])
+	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

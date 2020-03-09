@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ShoppingCart-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ShoppingCart')
+BEGIN
+	CREATE TABLE [dbo].[ShoppingCart](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ShoppingCartTypeID] [int] NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_ShoppingCart_CreatedOn] DEFAULT (getutcdate()) NOT NULL,
+		[RequestedOn] [datetime] NULL,
+		[Request] [nvarchar](max) NULL,
+		CONSTRAINT [PK_ShoppingCart] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ShoppingCart_ShoppingCartType')
+BEGIN
+	ALTER TABLE [dbo].[ShoppingCart] WITH CHECK ADD CONSTRAINT [FK_ShoppingCart_ShoppingCartType] FOREIGN KEY([ShoppingCartTypeID]) REFERENCES [dbo].[ShoppingCartType] ([ID])
+	ALTER TABLE [dbo].[ShoppingCart] CHECK CONSTRAINT [FK_ShoppingCart_ShoppingCartType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

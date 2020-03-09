@@ -1,0 +1,32 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.EntityFieldTypeMultiSelectField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'EntityFieldTypeMultiSelectField')
+BEGIN
+	CREATE TABLE [api].[EntityFieldTypeMultiSelectField](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[EntityFieldTypeID] [int] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		CONSTRAINT [PK_EntityFieldTypeMultiSelectField_ID] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

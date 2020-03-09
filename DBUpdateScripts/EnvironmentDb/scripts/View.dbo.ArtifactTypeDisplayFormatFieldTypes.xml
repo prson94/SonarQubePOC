@@ -1,0 +1,32 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.dbo.ArtifactTypeDisplayFormatFieldTypes-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+	create or alter view [dbo].[ArtifactTypeDisplayFormatFieldTypes]
+	as
+	select	T.ID as AssetTypeID,
+			T.ObjectID as ArtifactTypeID,
+			FT.ID as FieldTypeID
+	from	dbo.assettype T
+			cross apply string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
+			inner join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value	
+	where	(TF.value) <> '' and T.Object = 'ArtifactType'
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

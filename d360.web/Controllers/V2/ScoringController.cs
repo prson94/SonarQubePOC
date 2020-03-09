@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset Class");
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Score Type");
-            document.SetCellValue(1, index++, "Externally Calculated");
+            document.SetCellValue(1, index++, "Score Calculation");
             document.SetCellValue(1, index++, "Asset Type UID");
             document.SetCellValue(1, index++, "Score UID");
 
@@ -322,7 +322,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.assetTypePath);
                 document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
-                document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "Yes" : "No");
+                document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "External" : "Internal");
                 document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
                 document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }
@@ -383,7 +383,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Post a list of externally calculated score results
+        /// Post externally calculated scores and measure results.
         /// </summary>
         /// <param name="model">The externally calculated score results to load.</param>
         /// <param name="scoreType">The score type of the score results. Valid values for scoreType are 1) DataQuality and 2) Governance. Either the numerical value or string value can be supplied</param>
@@ -422,7 +422,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Loads measure results to build a score for a specified asset.
+        /// Post measure results to calculate a score internally.
         /// </summary>
         /// <param name="model">The score results to load.</param>
         /// <param name="scoreType">The score type of the score results. Valid values for scoreType are 1) DataQuality and 2) Governance. Either the numerical value or string value can be supplied</param>

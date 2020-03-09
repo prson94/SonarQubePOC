@@ -85,6 +85,10 @@ namespace d360.core.entities
         public bool Value { get; set; }
         [DataMember]
         public ScoreType ScoreType { get; set; }
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+        [DataMember]
+        public DateTime? EndDate { get; set; }
     }
 
     #endregion

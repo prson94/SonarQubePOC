@@ -109,6 +109,7 @@
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
     <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
+    <Compile Include="entities\Graph\GraphFilter.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRoleItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
