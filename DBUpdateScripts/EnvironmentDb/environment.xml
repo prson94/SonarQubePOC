@@ -318,7 +318,9 @@
 	<include file="scripts/View.reporting.Responsibility_All.xml"/>
 	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
 	<include file="scripts/View.reporting.RuleImplementations_All.xml"/>
-	<include file="scripts/View.reporting.Rules_All.xml"/>
+  <include file="scripts/View.reporting.RuleImplementations_ResultQualifiers.xml"/>
+  <include file="scripts/View.reporting.RuleImplementations_Results.xml"/>
+  <include file="scripts/View.reporting.Rules_All.xml"/>
 	<include file="scripts/View.reporting.Rules_Fields.xml"/>
 	<include file="scripts/View.reporting.WorkflowForms.xml"/>
 	<include file="scripts/View.reporting.Workflows.xml"/>

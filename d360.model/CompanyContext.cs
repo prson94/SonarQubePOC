@@ -212,10 +212,6 @@ namespace d360.model
 
         public DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
 
-        public DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
-
-        public DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
