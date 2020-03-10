@@ -60,8 +60,8 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                Trace.TraceInformation("Calling OverlaysController.AuditCombined : {0}", id);
-                var dbArgs = new Dapper.DynamicParameters();
+                Trace.TraceInformation("Calling AuditController.AuditCombined : {0}, {1}", type.ToString(), id);
+                var dbArgs = new DynamicParameters();
 
                 var querySql = @"select 	                            
                                    ga.*,
@@ -79,20 +79,24 @@ namespace d360.web.Controllers.V2
                                      fa.[Version] as 'Version',	                            
                                  									 CASE 
 									      WHEN ga.Action  = 'Tag Consolidate' THEN ga.ActionObjectName
-										  ELSE ( select			
-                                top 1 fa_sub.value as 'value'			                            
-                               from reporting.global_fieldaudit fa_sub
-                                inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                               where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId)
+										  ELSE (select top 1 fa_sub.value as 'value'			                            
+                                                from reporting.global_fieldaudit fa_sub
+                                                inner join reporting.global_audit ga_sub on (fa_sub.auditid = ga_sub.id)	
+                                                where ga_sub.[object] = ga.[object] 
+                                                    and ga_sub.[objectid] = ga.[objectid] 
+                                                    and fa_sub.version = (fa.Version - 1) 
+                                                    and fa_sub.fieldname = fa.FieldName 
+                                                    and fa_sub.fieldtypeid = fa.FieldTypeId 
+                                                    and ga_sub.actionObjectId=ga.actionObjectId)
 									 END AS 'PreviousValue'    
-
                             from reporting.global_audit ga 
-        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = @objType and ga.ObjectID = @objId
 								left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                                 left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
+
                 //get all auditing by type (introduced in tagging)
-                if(id == 0)
+                if (id == 0)
                 {
                     querySql = $@"select                   
 	                               ga.*,
@@ -129,7 +133,8 @@ namespace d360.web.Controllers.V2
 
 
                 if (type.ToString() == "FusionType")
-                {//Gets the Fusion audit for the fusion type
+                {
+                    //Gets the Fusion audit for the fusion type
                     querySql += @" UNION 
                                     select 	                            
                                     ga.*,
@@ -142,23 +147,23 @@ namespace d360.web.Controllers.V2
                                      fa.Value as NewValue, 
                                      3 as Class,
                                      fa.[Version] as 'Version',	                            
-                                  ( select			
-                                top 1 fa_sub.value as 'value'			                            
-                               from reporting.global_fieldaudit fa_sub
-                                inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                               where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
-
-                            from reporting.global_audit ga 
-        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
+                                  (select top 1 fa_sub.value as 'value'			                            
+                                    from reporting.global_fieldaudit fa_sub
+                                    inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+                                    where ga_sub.[object] = ga.[object] 
+                                        and ga_sub.[objectid] = ga.[objectid] 
+                                        and fa_sub.version = (fa.Version -1) 
+                                        and fa_sub.fieldname = fa.FieldName 
+                                        and fa_sub.fieldtypeid = fa.FieldTypeId 
+                                        and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
+                                from reporting.global_audit ga 
+                                left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id ) 
                                 inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'Fusion' 
-                                and ga.ObjectID in ( Select  Id from Fusion where fusiontypeid= @objId)";
+                                and ga.ObjectID in ( select Id from Fusion where fusiontypeid = @objId)";
                 }
 
                 if (type == SystemObjects.ReferenceItemType)
                 {
-                    var sqlRefItems = "select a.objectid from [dbo].[asset] a inner join [dbo].[assettype] att on ( a.assettypeid = att.id) where att.[object] = 'ReferenceItemType' and att.ObjectID = @id";
-                    var referenceItemTypeIDs = await Company.Database.Connection.QueryAsync<int>(sqlRefItems, new { id });
-
                     querySql += @" UNION
                                     select 	                            
                                    ga.*,
@@ -171,17 +176,24 @@ namespace d360.web.Controllers.V2
                                      fa.Value as NewValue, 
                                      9 as Class,
                                      fa.[Version] as 'Version',	                            
-                                  ( select			
-                                top 1 fa_sub.value as 'value'			                            
-                               from reporting.global_fieldaudit fa_sub
-                                inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
-                               where ga_sub.[object] = ga.[object] and ga_sub.[objectid] = ga.[objectid] and fa_sub.version = (fa.Version -1) and fa_sub.fieldname = fa.FieldName and fa_sub.fieldtypeid = fa.FieldTypeId and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
-
-                            from reporting.global_audit ga 
-        left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id) 
-                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID and ga.[Object] = 'ReferenceItem' and ga.ObjectID IN @ReferenceIDs";
-                    dbArgs.Add("ReferenceIDs", referenceItemTypeIDs);
-
+                                  (select top 1 fa_sub.value as 'value'			                            
+                                    from reporting.global_fieldaudit fa_sub
+                                    inner join reporting.global_audit ga_sub on ( fa_sub.auditid = ga_sub.id)	
+                                    where ga_sub.[object] = ga.[object] 
+                                        and ga_sub.[objectid] = ga.[objectid] 
+                                        and fa_sub.version = (fa.Version -1) 
+                                        and fa_sub.fieldname = fa.FieldName 
+                                        and fa_sub.fieldtypeid = fa.FieldTypeId 
+                                        and ga_sub.actionObjectId=ga.actionObjectId) as 'PreviousValue'
+                                from reporting.global_audit ga 
+                                left outer join reporting.global_fieldaudit fa on ( fa.auditid = ga.id ) 
+                                inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID 
+                                    and ga.[Object] = 'ReferenceItem' 
+                                    and ga.ObjectID in 
+                                        (select a.objectid from [dbo].[asset] a 
+                                        inner join [dbo].[assettype] att on (a.assettypeid = att.id) 
+                                        where att.[object] = 'ReferenceItemType' 
+                                            and att.ObjectID = @objId)";
                 }
 
                 var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
