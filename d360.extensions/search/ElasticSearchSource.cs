@@ -887,6 +887,13 @@ namespace d360.extensions.search
             string phrase = queryRequest.Term;
             if (!string.IsNullOrEmpty(phrase))
             {
+                bool isMatchWords = false;
+                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
+                {
+                    isMatchWords = true;
+                    phrase = phrase.Trim('\'');
+                }
+
                 int isGuid = IsPhraseGuid(phrase);
                 if (isGuid == 1)
                 {
@@ -911,7 +918,7 @@ namespace d360.extensions.search
                 else
                 {
                     //Match Whole Words
-                    if (phrase.StartsWith("'") && phrase.EndsWith("'"))
+                    if (isMatchWords)
                     {
                         phrase = EscapeSpecialCharacters(phrase.Trim('\''));
                         shouldQueries.Add(new MultiMatchQuery
