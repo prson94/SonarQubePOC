@@ -1,0 +1,115 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.OrganizationType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'OrganizationType')
+BEGIN
+	CREATE TABLE [dbo].[OrganizationType](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](max) NULL,
+		[DisplayFormat] [nvarchar](250) CONSTRAINT [DF_OrganizationType_DisplayFormat] DEFAULT ('{Name}') NOT NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_OrganizationType_CreatedBy] DEFAULT (0) NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_OrganizationType_CreatedOn] DEFAULT (getutcdate()) NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_OrganizationType_UpdatedBy] DEFAULT (0) NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_OrganizationType_UpdatedOn] DEFAULT (getutcdate()) NULL,
+		[State] [int] CONSTRAINT [DF_OrganizationType_State] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_OrganizationType] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.OrganizationType-OrganizationType_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[OrganizationType_AfterDelete]
+   ON  [dbo].[OrganizationType] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON
+	delete AssetType where Object = 'OrganizationType' and ObjectID in (select ID from deleted)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.OrganizationType-OrganizationType_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[OrganizationType_AfterInsert]
+   ON  [dbo].[OrganizationType] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON
+	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
+		select Name, Description, 10, DisplayFormat, 1, 0, 1, 'OrganizationType', ID, coalesce(CreatedOn, getutcdate()), CreatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.OrganizationType-OrganizationType_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[OrganizationType_AfterUpdate]
+   ON  [dbo].[OrganizationType] 
+   AFTER UPDATE
+AS 
+BEGIN
+	SET NOCOUNT ON
+	update	T
+	set		T.Name = S.Name,
+			T.Description = S.Description,
+			T.DisplayFormat = S.DisplayFormat,
+			T.UpdatedBy = S.UpdatedBy,
+			T.UpdatedOn = S.UpdatedOn
+	from	AssetType T
+			inner join inserted S on T.Object = 'OrganizationType' and T.ObjectID = S.ID
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

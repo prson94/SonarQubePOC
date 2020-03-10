@@ -68,9 +68,12 @@ namespace igx.jobs.assetgraphprocessor
 
                             break;
                         case ApiExecutionAction.PostAssets:
+                            isInsert = true;
                             var postFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
                             assetTypeUid = postFields.AssetTypeUid;
-                            string postAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
+                            //we need the response here since the request doesn't contain uids. 
+                            //Since this is a POST we don't need to check which fields were updated, we always populate the path
+                            string postAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
                             if (!string.IsNullOrEmpty(postAssetsJson))
                                 assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(postAssetsJson);
 
@@ -102,20 +105,15 @@ namespace igx.jobs.assetgraphprocessor
 
                             var table = new DataTable();
                             table.Columns.Add("Uid", typeof(Guid));
-                            table.Columns.Add("ParentUid", typeof(Guid));
-                            table.Columns["ParentUid"].AllowDBNull = true;
                             table.Columns.Add("UpdatePath", typeof(bool));
 
                             foreach (var asset in assets)
                             {
+
                                 var row = table.NewRow();
                                 row["Uid"] = asset.Uid;
-                                if (asset.ParentUid.HasValue)
-                                    row["ParentUid"] = asset.ParentUid;
-                                else
-                                    row["ParentUid"] = DBNull.Value;
 
-                                if (isInsert || asset.Fields.Keys.Any(k => keyFieldsList.Contains(k)))
+                                if (isInsert || (asset.Fields != null && asset.Fields.Keys.Any(k => keyFieldsList.Contains(k))))
                                 {
                                     row["UpdatePath"] = true;
                                 }
@@ -129,7 +127,7 @@ namespace igx.jobs.assetgraphprocessor
 
                             await company.ExecuteAsync(@"
                             drop table if exists #GraphAssets;
-                            create table #GraphAssets ([Uid] uniqueidentifier not null, [ParentUid] uniqueidentifier, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
+                            create table #GraphAssets ([Uid] uniqueidentifier not null, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
                             ", transaction: trans);
 
                             var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
@@ -140,7 +138,6 @@ namespace igx.jobs.assetgraphprocessor
                             };
 
                             bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                            bulkCopy.ColumnMappings.Add("ParentUid", "ParentUid");
                             bulkCopy.ColumnMappings.Add("UpdatePath", "UpdatePath");
 
 

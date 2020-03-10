@@ -149,7 +149,7 @@ namespace d360.web.Controllers.V2
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.Created, allocation));
             }
-            catch (Exception ex)
+            catch
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }

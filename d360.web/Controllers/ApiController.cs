@@ -4973,53 +4973,6 @@ where   R.RuleTypeID = @id
         }
 
 
-        [Route("ruleimplementations/{id:int}/")]
-        public HttpResponseMessage GetRuleImplementation(int id)
-        {
-            var row = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType);
-            var rule = Company.AssetDetails.FirstOrDefault(i => i.Object == SystemObjects.Rule.ToString() && i.ObjectID == row.RuleID);
-
-            return Request.CreateResponse<dynamic>(
-                new Dictionary<string, object>() {
-                    { "ID", row.ID },
-                    { "Name", row.Name ?? $"Implementation {row.ID}" },
-                    { "SourceID", row.SourceID },
-                    { "SourceUri", row.SourceUri },
-                    { "RuleID", row.RuleID },
-                    { "RuleName", rule?.DisplayValue ?? "" },
-                    { "RuleTypeID", row.Rule.RuleTypeID },
-                    { "RuleTypeName", row.Rule.RuleType.Name },
-                    { "CreatedOn", row.CreatedOn.GetValueOrDefault() },
-                    { "UpdatedOn", row.UpdatedOn.GetValueOrDefault() }
-                }
-            );
-        }
-
-        [Route("rules/{id:int}/implementations")]
-        public HttpResponseMessage GetRuleImplementations(int id)
-        {
-            try
-            {
-                var query = Company.Query<dynamic>(@"
-select	A.ID,
-        A.RuleID,
-        R.RuleTypeID,
-        A.SourceID,
-        A.SourceUri,
-		coalesce(A.Name, A.SourceID, 'Implementation ' + cast(A.ID as varchar)) as Name,
-        A.CreatedOn,
-        A.UpdatedOn
-from	RuleImplementation A inner join [Rule] R on R.ID = A.RuleID
-where    A.RuleID = @id", new { id });
-
-                return Request.CreateResponse(HttpStatusCode.OK, query);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
-            }
-        }
-
         [Route("ruleimplementations/{implementationID:int}/qualifiers")]
         public IQueryable<dynamic> GetRuleimplementationQualifierTypes(int implementationID)
         {
@@ -8294,7 +8247,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
         private string GetOrderStatement(SystemObjects type, int id)
         {
             string sortStatement;
-            var fieldTypes = Company.FieldTypes.Where(x => x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
+            var fieldTypes = Company.FieldTypes.Where(x => x.IsListable == true && x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
                 .OrderBy(x => x.SortOrder)
                 .ThenBy(x => x.Name)
                 .ToList();

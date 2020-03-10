@@ -12,6 +12,7 @@ using d360.core.entities.Metric;
 using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
+using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.core.queue;
 using d360.model.DataAccessLayer;
@@ -76,6 +77,7 @@ namespace d360.model
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
+        DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
         DbSet<IntegrationAssetTypeFieldItem> IntegrationAssetTypeFieldItems { get; set; }
         DbSet<IntegrationAssetTypeRelationItem> IntegrationAssetTypeRelationItems { get; set; }

@@ -3,19 +3,14 @@ import { Routes, RouterModule } from '@angular/router';
 import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
-import { RuleQualifiersComponent } from './rule-qualifiers.component';
-import { RuleImplementationComponent } from './rule-implementation.component';
-import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 const routes: Routes = [
     {
         path: '',
         component: RuleComponent,
-        children: [            
-            { path: 'implementation/qualifiers/detail/:implementationId', component: RuleQualifiersComponent },
+        children: [                        
             { path: ':ruleTypeId', component: RuleListComponent },
-            { path: ':ruleTypeId/:ruleId', component: RuleItemComponent },
-            { path: ':ruleTypeId/:ruleId/:implementationId', component: RuleImplementationComponent },            
+            { path: ':ruleTypeId/:ruleId', component: RuleItemComponent }
         ]
     },
 ];

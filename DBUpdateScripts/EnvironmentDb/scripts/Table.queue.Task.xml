@@ -1,0 +1,51 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.queue.Task-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'queue' AND TABLE_NAME = 'Task')
+BEGIN
+	CREATE TABLE [queue].[Task](
+		[ID] [uniqueidentifier] CONSTRAINT [DF_QueueTask_ID] DEFAULT (newid()) NOT NULL,
+		[Action] [varchar](50) NOT NULL,
+		[Custom] [varchar](500) NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[Date] [datetime] CONSTRAINT [DF_QueueTask_Date] DEFAULT (getutcdate()) NOT NULL,
+		[MachineAssigned] [varchar](250) NULL,
+		[HasError] [bit] CONSTRAINT [DF_QueueTask_HasError] DEFAULT (0) NOT NULL,
+		[ErrorMessage] [nvarchar](max) NULL,
+		[NumberOfRetries] [int] CONSTRAINT [DF_QueueTask_NumberOfRetries] DEFAULT (0) NOT NULL,
+		[Priority] [smallint] CONSTRAINT [DF_QueueTask_Priority] DEFAULT (1) NOT NULL,
+		[AssetID] [bigint] CONSTRAINT [DF_QueueTask_AssetID] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_QueueTask] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_QueueTask')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_QueueTask] ON [queue].[Task] ( [Date] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_QueueTask_MachineAssignedNumRetries')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_QueueTask_MachineAssignedNumRetries] ON [queue].[Task] ( [MachineAssigned] ASC, [NumberOfRetries] ASC ) INCLUDE([Date],[ID],[Priority]) 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

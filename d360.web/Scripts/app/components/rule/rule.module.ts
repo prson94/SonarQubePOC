@@ -21,14 +21,9 @@ import { RuleRoutingModule } from './rule.routes';
 import { RuleComponent } from './rule.component';
 import { RuleListComponent } from './rule-list.component';
 import { RuleItemComponent } from './rule-item.component';
-import { RuleImplementationComponent } from './rule-implementation.component';
 import { RuleResultsGridComponent } from './rule-results-grid.component';
 import { RuleColumnFilterComponent } from './rule-column-filter.component';
-import { RuleImplementationsGridComponent } from './rule-implementations-grid.component';
-import { RuleQualifierGridComponent } from './rule-qualifier-grid.component';
-import { RuleQualifierEditorComponent } from './rule-qualifier-editor.component';
-import { RuleQualifiersComponent } from './rule-qualifiers.component';
-import { RuleImplementationSummaryComponent } from './rule-implementation-summary.component';
+
 
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -87,15 +82,9 @@ import { RuleCustomExportComponent } from './rule-custom-export.component';
     declarations: [
         RuleComponent,
         RuleListComponent,
-        RuleItemComponent,
-        RuleImplementationComponent,
-        RuleImplementationsGridComponent,
-        RuleImplementationSummaryComponent,
+        RuleItemComponent,        
         RuleResultsGridComponent,
-        RuleColumnFilterComponent,   
-        RuleQualifierGridComponent,
-        RuleQualifierEditorComponent,
-        RuleQualifiersComponent,
+        RuleColumnFilterComponent,           
         RuleCustomExportComponent,
     ],
     providers: [

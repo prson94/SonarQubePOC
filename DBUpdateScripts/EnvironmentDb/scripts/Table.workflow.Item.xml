@@ -1,0 +1,54 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.Item-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'Item')
+BEGIN
+	CREATE TABLE [workflow].[Item](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[VersionID] [int] NOT NULL,
+		[Active] [bit] NOT NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[StartedBy] [int] NOT NULL,
+		[StartedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[CompletedBy] [int] NULL,
+		[CompletedOn] [datetime] NULL,
+		[IsTest] [bit] CONSTRAINT [DF_WorkflowItem_IsTest] DEFAULT (0) NOT NULL,
+		[NumberOfEvents] [int] CONSTRAINT [DF_WorkflowItem_NumberofEvents] DEFAULT (0) NOT NULL,
+		[UID] [uniqueidentifier] CONSTRAINT [DF_workflow_Item_UID] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_WorkflowItem] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItem_WorkflowVersion')
+BEGIN
+	ALTER TABLE [workflow].[Item] WITH CHECK ADD CONSTRAINT [FK_WorkflowItem_WorkflowVersion] FOREIGN KEY([VersionID]) REFERENCES [workflow].[Version] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [workflow].[Item] CHECK CONSTRAINT [FK_WorkflowItem_WorkflowVersion]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_WorkflowItem_VersionObjectObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_WorkflowItem_VersionObjectObjectID] ON [workflow].[Item] ( [VersionID] ASC, [Object] ASC, [ObjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
