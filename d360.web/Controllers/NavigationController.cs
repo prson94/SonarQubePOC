@@ -1051,6 +1051,15 @@ order by	f.SortOrder";
                     responseModel.Items.HasAudit = true;
                 }
 
+                if (model.ObjectType == SystemObjects.Tag.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Tags";
+                    responseModel.MainTabTitle = "Tags";
+                    responseModel.Items.HasAudit = true;
+                }
 
             }
 
