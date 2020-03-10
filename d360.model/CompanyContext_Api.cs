@@ -839,8 +839,6 @@ set		T.[Value] = '0'
 from	#LookupValues T
 		inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowAllValue = 1 and ST.AllowAllLabel = T.FieldValue;
 
-select * from #LookupValues
-
 update	T
 set		T.LookupValue = LV.Value
 from	api.ExecutionField T
