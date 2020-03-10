@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.integration.SynchedAssetTypeRelationItem-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'integration' AND TABLE_NAME = 'SynchedAssetTypeRelationItem')
+BEGIN
+	CREATE TABLE [integration].[SynchedAssetTypeRelationItem](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SynchedAssetTypeID] [int] NOT NULL,
+		[IncludeInPropertyRequest] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_IncludeInPropertyRequest] DEFAULT (1) NOT NULL,
+		[SourceField] [varchar](250) NOT NULL,
+		[PredicateType] [int] NOT NULL,
+		[IsSubject] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_IsSubject] DEFAULT (0) NOT NULL,
+		[Active] [bit] CONSTRAINT [DF_IntegrationSynchedAssetTypeRelationItem_Active] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_IntegrationSynchedAssetTypeRelationItem] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetType')
+BEGIN
+	ALTER TABLE [integration].[SynchedAssetTypeRelationItem] WITH CHECK ADD CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetType] FOREIGN KEY([SynchedAssetTypeID]) REFERENCES [integration].[SynchedAssetType] ([ID])
+	ALTER TABLE [integration].[SynchedAssetTypeRelationItem] CHECK CONSTRAINT [FK_IntegrationSynchedAssetTypeRelationItem_IntegrationSynchedAssetType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_IntegrationSynchedAssetTypeRelationItem')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_IntegrationSynchedAssetTypeRelationItem] ON [integration].[SynchedAssetTypeRelationItem] ( [SynchedAssetTypeID] ASC, [SourceField] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

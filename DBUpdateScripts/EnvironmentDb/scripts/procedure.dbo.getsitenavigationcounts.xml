@@ -1,0 +1,68 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="kmcnamee" id="procedure.dbo.GetSiteNavigationCounts-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+CREATE OR ALTER PROCEDURE [dbo].[GetSiteNavigationCounts]
+(
+    @ResourceId int
+)
+AS
+BEGIN
+    
+    declare @cntdata int = 0;
+
+    drop table if exists #temtable;
+    	
+    select a.AssetID ,a.assettypeid
+    into #temtable
+    from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID) a
+
+    create index idx_temtable_asset_type on #temtable(AssetID, assettypeid);
+
+
+    select @cntdata = count(1)
+    from #temtable;
+
+    if (@cntdata = 0)
+		SELECT count(ATT.[Object]) as count, 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		from    AssetType ATT
+		inner join [Asset] A on (a.AssetTypeID = Att.id)
+		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+	else
+	    SELECT count(ATT.[Object]) as count, 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		from   AssetType ATT
+		inner join [Asset] A on (a.AssetTypeID = Att.id)
+		WHERE A.[object] in('Artifact','Taxonomy','Policy','Rule')
+		and	not exists (SELECT 1 FROM #temtable rd where rd.assetid = a.id and rd.assettypeid = a.assettypeid)   
+		Group by 
+		ATT.[Object], 
+		ATT.ObjectID,
+		ATT.Name
+		Order By ATT.Name
+
+END
+GO
+]]>
+    </sql>    
+  </changeSet>
+</databaseChangeLog>

@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.WorkflowSteps-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[WorkflowSteps] AS
+	select	S.ItemID,
+			S.StepID,
+			S.StartedBy,
+			S.StartedOn,
+			S.CompletedBy,
+			S.CompletedOn,
+			V.Name as StepName,
+			case V.ActivityType
+				when 1 then 'Email Notification'
+				when 2 then 'Status Change'
+				when 3 then 'Form'
+				when 4 then 'Procedure'
+				when 5 then 'Field Change'
+				else 'None'
+			end as ActivityTypeName
+	from	workflow.ItemStep S
+			inner join workflow.VersionStep V on V.ID = S.StepID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

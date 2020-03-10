@@ -818,9 +818,9 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             ", new { executionID }, commandTimeout: timeout);
         }
 
-        private void ResolveFieldLookupValues(Guid executionID, int timeout = 3600)
+        private void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
         {
-            Connection.Execute(@"
+            Connection.Execute($@"
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
 
@@ -3021,7 +3021,7 @@ where   ExecutionID = @ExecutionID
                             }
                             else
                             {
-                                ResolveFieldLookupValues(execution.ExecutionID, timeout);
+                                ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
                                 this.AITrackTrace(client, execution, METHOD_NAME, "ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
                                 sw.Restart();
                             }
@@ -3055,159 +3055,14 @@ where   ExecutionID = @ExecutionID
 
                         #region Generate proposed key hash and compare against existing data.
 
-                        string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
-                        string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
-                        string keyComparisonUpdateStatement = $@"
-                            update  T 
-                            set     T.Success = 0, 
-                                    T.Message = {keyErrorMessage}
-                            from    api.ExecutionAsset T 
-                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
-
-                            update  T 
-                            set     T.Success = 0, 
-                                    T.Message = {keyErrorMessage}
-                            from    api.ExecutionAsset T 
-                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
 
                         if (at.Object == "FusionAttributeType")
                         {
                             LogErrorsWhereChildFusionConfigDifferentFromParent(execution.ExecutionID);
-
                             LogInvalidFusionIDFields(execution.ExecutionID);
-
-                            Connection.Execute($@"
-{keyTableTempCreation}
-
-update  A
-set     A.ProposedKey = utility.GetHash(
-                            cast(@ID as nvarchar) + '|' + 
-                            FC.FieldValue + '|' + 
-                            COALESCE(
-                                FS.FieldValue, 
-                                COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'')
-                            )
-                        )
-from	api.ExecutionAsset A
-        inner join api.ExecutionField FC on FC.ExecutionID = A.ExecutionID and FC.ItemNumber = A.ItemNumber and FC.FieldName = 'FusionID'
-        inner join api.ExecutionField FN on FN.ExecutionID = A.ExecutionID and FN.ItemNumber = A.ItemNumber and FN.FieldName = 'Name'
-        left join api.ExecutionField FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
-        outer apply (
-            select		DF.ItemNumber,
-                        STRING_AGG(coalesce(DF.LookupValue, DF.FieldValue, DFT.DefaultValue), '|') within group (order by DFT.ColumnOrder asc, DFT.Name asc) as DynamicProposedKey
-            from		api.ExecutionField DF
-                        inner join FieldType DFT on DFT.ID = DF.FieldTypeID and DFT.IsPartOfKey = 1 and DF.ExecutionID = A.ExecutionID and DF.ItemNumber = A.ItemNumber
-            group by    DF.ItemNumber
-        ) DF
-where	A.ExecutionID = @ExecutionID;
-
-insert into #Keys
-    select	A.ID,
-            utility.GetHash(
-                cast(@ID as nvarchar) + '|' + 
-                cast(O.FusionID as nvarchar) + '|' + 
-                COALESCE(
-                    O.SourceID, 
-                    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')
-                )
-            ) as ActiveKey
-    from	Asset A 
-            inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
-            left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
-            left join (
-                select		A.ID,
-                            STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-                from		Asset A 
-                            inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-                            left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-                where	    A.AssetTypeID = @ID
-                group by    A.ID
-            ) DF on DF.ID = A.ID
-    where	A.AssetTypeID = @ID;
-
-{keyComparisonUpdateStatement}",
-                            new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
-
-                            this.AITrackTrace(client, execution, METHOD_NAME, "FusionAttributeType - ProposedKey", sw.ElapsedMilliseconds, isLog);
-                            sw.Restart();
-
                         }
-                        else if (at.Object == "ReferenceItemType")
-                        {
-                            Connection.Execute($@"
-update  T
-set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
-from    api.ExecutionAsset T
-		inner join	(
-					select		A.ItemNumber,
-								F.FieldValue as ProposedKey
-					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
-					where		A.ExecutionID = @ExecutionID	
-					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
 
-{keyTableTempCreation}
-
-insert into #Keys
-    select		A.ID,
-                utility.GetHash(cast(@ID as nvarchar) + '|' + A.Code) as ActiveKey
-    from		Asset A 
-    where	    A.AssetTypeID = @ID;
-
-{keyComparisonUpdateStatement}",
-                            new { execution.ExecutionID, at.ID }, commandTimeout: timeout);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "ReferenceItemType - ProposedKey", sw.ElapsedMilliseconds, isLog);
-                            sw.Restart();
-                        }
-                        else
-                        {
-                            var activeKeySql = $@"
-select		A.ID,
-			utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
-from		Asset A 
-			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-where	    A.AssetTypeID = @ID
-group by    A.ID;";
-
-                            if (parentObjectID.HasValue)
-                            {
-                                activeKeySql = $@"
-select		A.ID,
-			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
-from		Asset A 
-			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
-			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
-			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-where		A.AssetTypeID = @ID
-group by	A.ID, P.Uid";
-                            }
-
-                            Connection.Execute($@"
-update  T
-set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
-from    api.ExecutionAsset T
-		inner join	(
-					select		A.ItemNumber,
-								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
-					from		api.ExecutionAsset A
-								inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
-								inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
-					where		A.ExecutionID = @ExecutionID
-					group by	A.ItemNumber, A.ParentUid
-					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
-
-{keyTableTempCreation}
-
-insert into #Keys
-    {activeKeySql} 
-
-{keyComparisonUpdateStatement}",
-                            new { execution.ExecutionID, at.ID, intersectTypeID }, commandTimeout: timeout);
-                            this.AITrackTrace(client, execution, METHOD_NAME, "Others - ProposedKey", sw.ElapsedMilliseconds, isLog);
-                            sw.Restart();
-                        }
+                        CalculateProposedKeyHashes(at, execution.ExecutionID, timeout, intersectTypeID);
 
                         #endregion
 
@@ -3947,8 +3802,7 @@ select [uid] from #ParentChildRelationships",
                     }
                     else
                     {
-                        ResolveFieldLookupValues(execution.ExecutionID, timeout);
-
+                        ResolveFieldLookupValues(execution.ExecutionID, "api.ExecutionField", timeout);
                     }
                     this.AITrackTrace(client, execution, METHOD_NAME, " ResolveFieldLookupValues", sw.ElapsedMilliseconds, isLog);
                     sw.Restart();
@@ -5916,5 +5770,154 @@ where   ER.ExecutionID = @ExecutionID
             Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId",
                 new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
         }
+
+        public void CalculateProposedKeyHashes(AssetType at, Guid executionID, int timeout = 3600, int? parentIntersectTypeId = null, SqlTransaction trans = null, string assetTable = "api.ExecutionAsset", string fieldTable = "api.ExecutionField")
+        {
+            string keyErrorMessage = "'Key values match another asset under a different set of key fields. '";
+            string keyTableTempCreation = @"CREATE TABLE #Keys (AssetID bigint, ActiveKey varchar(32)); CREATE CLUSTERED INDEX CIX_TempApiExecutionKeys ON #Keys ( ActiveKey ASC ); ";
+            string keyComparisonUpdateStatement = $@"
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    {assetTable} T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and S.AssetID <> T.AssetID and T.AssetID is not null; 
+
+                            update  T 
+                            set     T.Success = 0, 
+                                    T.Message = {keyErrorMessage}
+                            from    {assetTable} T 
+                                    inner join #Keys S on T.ExecutionID = @ExecutionID and S.ActiveKey = T.ProposedKey and T.AssetID is null; ";
+
+
+            if (at.Object == "FusionAttributeType")
+            {
+                Connection.Execute($@"
+{keyTableTempCreation}
+
+update  A
+set     A.ProposedKey = utility.GetHash(
+                            cast(@ID as nvarchar) + '|' + 
+                            FC.FieldValue + '|' + 
+                            COALESCE(
+                                FS.FieldValue, 
+                                COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + FN.FieldValue + coalesce('|'+DF.DynamicProposedKey,'')
+                            )
+                        )
+from	{assetTable} A
+        inner join {fieldTable} FC on FC.ExecutionID = A.ExecutionID and FC.ItemNumber = A.ItemNumber and FC.FieldName = 'FusionID'
+        inner join {fieldTable} FN on FN.ExecutionID = A.ExecutionID and FN.ItemNumber = A.ItemNumber and FN.FieldName = 'Name'
+        left join {fieldTable} FS on FS.ExecutionID = A.ExecutionID and FS.ItemNumber = A.ItemNumber and FS.FieldName = 'SourceID'
+        outer apply (
+            select		DF.ItemNumber,
+                        STRING_AGG(coalesce(DF.LookupValue, DF.FieldValue, DFT.DefaultValue), '|') within group (order by DFT.ColumnOrder asc, DFT.Name asc) as DynamicProposedKey
+            from		{fieldTable} DF
+                        inner join FieldType DFT on DFT.ID = DF.FieldTypeID and DFT.IsPartOfKey = 1 and DF.ExecutionID = A.ExecutionID and DF.ItemNumber = A.ItemNumber
+            group by    DF.ItemNumber
+        ) DF
+where	A.ExecutionID = @ExecutionID;
+
+insert into #Keys
+    select	A.ID,
+            utility.GetHash(
+                cast(@ID as nvarchar) + '|' + 
+                cast(O.FusionID as nvarchar) + '|' + 
+                COALESCE(
+                    O.SourceID, 
+                    COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + O.Name + COALESCE('|'+DF.ProposedKey,'')
+                )
+            ) as ActiveKey
+    from	Asset A 
+            inner join FusionAttribute O on A.Object = 'FusionAttribute' and O.ID = A.ObjectID
+            left join Asset P on P.Object = 'FusionAttribute' and P.ObjectID = O.ParentID and O.ParentID is not null
+            left join (
+                select		A.ID,
+                            STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+                from		Asset A 
+                            inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+                            left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+                where	    A.AssetTypeID = @ID
+                group by    A.ID
+            ) DF on DF.ID = A.ID
+    where	A.AssetTypeID = @ID;
+
+{keyComparisonUpdateStatement}",
+                new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
+
+            }
+            else if (at.Object == "ReferenceItemType")
+            {
+                Connection.Execute($@"
+update  T
+set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+from    {assetTable} T
+		inner join	(
+					select		A.ItemNumber,
+								F.FieldValue as ProposedKey
+					from		{assetTable} A
+								inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldName = 'Code'
+					where		A.ExecutionID = @ExecutionID	
+					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+{keyTableTempCreation}
+
+insert into #Keys
+    select		A.ID,
+                utility.GetHash(cast(@ID as nvarchar) + '|' + A.Code) as ActiveKey
+    from		Asset A 
+    where	    A.AssetTypeID = @ID;
+
+{keyComparisonUpdateStatement}",
+                new { executionID, at.ID }, commandTimeout: timeout, transaction: trans);
+            }
+            else
+            {
+                var activeKeySql = $@"
+select		A.ID,
+			utility.GetHash(cast(@ID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+from		Asset A 
+			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+where	    A.AssetTypeID = @ID
+group by    A.ID;";
+
+                if (parentIntersectTypeId.HasValue)
+                {
+                    activeKeySql = $@"
+select		A.ID,
+			utility.GetHash(cast(@ID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+from		Asset A 
+			left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and I.Object = A.Object and I.ObjectID = A.ObjectID
+			left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+			left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+where		A.AssetTypeID = @ID
+group by	A.ID, P.Uid";
+                }
+
+                Connection.Execute($@"
+update  T
+set     T.ProposedKey = utility.GetHash(cast(@ID as nvarchar) + '|' + S.ProposedKey) 
+from    {assetTable} T
+		inner join	(
+					select		A.ItemNumber,
+								COALESCE(cast(A.ParentUid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.LookupValue, F.FieldValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc) as ProposedKey
+					from		{assetTable} A
+								inner join {fieldTable} F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+								inner join FieldType FT on FT.AssetTypeID = @ID and FT.ID = F.FieldTypeID and FT.IsPartOfKey = 1
+					where		A.ExecutionID = @ExecutionID
+					group by	A.ItemNumber, A.ParentUid
+					) S on T.ExecutionID = @ExecutionID and S.ItemNumber = T.ItemNumber;
+
+{keyTableTempCreation}
+
+insert into #Keys
+    {activeKeySql} 
+
+{keyComparisonUpdateStatement}",
+                new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
+            }
+
+        }
+
     }
 }

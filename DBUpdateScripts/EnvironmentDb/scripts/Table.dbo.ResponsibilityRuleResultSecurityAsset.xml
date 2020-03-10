@@ -1,0 +1,131 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ResponsibilityRuleResultSecurityAsset')
+BEGIN
+	CREATE TABLE [dbo].[ResponsibilityRuleResultSecurityAsset](
+		[RuleID] [bigint] NOT NULL,
+		[SecurityAsset] [char](1) NOT NULL,
+		[SecurityAssetID] [int] NOT NULL,
+		[UpdatedOn] [datetime] NOT NULL,
+		[UpdatedBy] [int] NOT NULL,
+		CONSTRAINT [PK_ResponsibilityRuleResultSecurityAsset] PRIMARY KEY CLUSTERED ( [RuleID] ASC, [SecurityAsset] ASC, [SecurityAssetID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ResponsibilityRuleResultSecurityAsset_SecurityAsset-SecurityAssetID] ON [dbo].[ResponsibilityRuleResultSecurityAsset] ( [SecurityAsset] ASC, [SecurityAssetID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultSecurityAsset_AfterDelete]
+   ON  [dbo].[ResponsibilityRuleResultSecurityAsset] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM deleted R
+	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
+	INNER JOIN [dbo].[Asset] A
+		ON RA.AssetID = A.ID
+			WHERE RA.AssetTypeID = 0;
+	
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM deleted R
+	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
+	INNER JOIN [dbo].[Asset] A
+	ON RA.AssetTypeID = A.AssetTypeID
+		WHERE RA.AssetID = 0;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.ResponsibilityRuleResultSecurityAsset-ResponsibilityRuleResultSecurityAsset_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[ResponsibilityRuleResultSecurityAsset_AfterInsert]
+   ON  [dbo].[ResponsibilityRuleResultSecurityAsset] 
+   AFTER INSERT
+AS 
+BEGIN
+	SET NOCOUNT ON;
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM INSERTED R
+	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
+	INNER JOIN [dbo].[Asset] A
+		ON RA.AssetID = A.ID
+			WHERE RA.AssetTypeID = 0;
+	
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+	SELECT 'ObjectIndex', 
+			'U',
+			A.Object, 
+			A.ObjectID,
+			A.ID
+	FROM INSERTED R
+	INNER JOIN [dbo].[ResponsibilityRuleResultAsset] RA on R.RuleID = RA.RuleID
+	INNER JOIN [dbo].[Asset] A
+	ON RA.AssetTypeID = A.AssetTypeID
+		WHERE RA.AssetID = 0;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

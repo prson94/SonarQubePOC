@@ -13,7 +13,7 @@ import {
     FilterAncestryOption,
     AssetBrowserFilterModel,
     AssetTypeFilter,
-    FilterSelectionsModel,
+    FilterSelectionsModel,    StoredAssetBrowserFilterModel,
     AssetBrowserApiHopRequestModel,
     AssetBrowserApiHopAssetRequestModel,
     AssetBrowserTranslationOwnerCount,
@@ -31,6 +31,8 @@ import {
 
 import { BrowserService } from '../../../../services/browser.service';
 import { PermissionsService } from '../../../../services/permissions.service';
+import { MessagesObservableService } from '../../../../services/messages-observable.service';
+
 
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { AssetBrowserLayout } from './assetbrowserlayout.component';
@@ -92,6 +94,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     selectedFilterPredicates: TreeNode[] = [];
     selectedFilterResponsibilityTypes: TreeNode[] = [];
     filterSelectionsModel: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
+
+    savedFilters: StoredAssetBrowserFilterModel[] = [];
+    selectedFilter: StoredAssetBrowserFilterModel;
+    createUserFilter: StoredAssetBrowserFilterModel = new StoredAssetBrowserFilterModel();
+    saveFilterModalVisible: boolean = false;
+    saveFilterModalWorking: boolean = false;
+    deleteFilterModalVisible: boolean = false;
+    deleteFilterModalWorking: boolean = false;
+    items: MenuItem[];
 
     //#endregion
 
@@ -156,6 +167,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         protected permissionsService: PermissionsService,
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
+        protected messagesService: MessagesObservableService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
@@ -384,27 +396,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#region Asset Types
 
-        var assetTypes: TreeNode[] = new Array();
-        let classIDs: number[] = [
-            +AssetTypeClass.BusinessAsset,
-            +AssetTypeClass.Model,
-            +AssetTypeClass.Policy,
-            +AssetTypeClass.Rule,
-            +AssetTypeClass.TechnicalAsset
-        ];
+        this.filterSelectionsModel.FilterAssetTypes = [];
         this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
-            if (classIDs.findIndex(c => c == at.ClassId) > -1) {
-                if (loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1) {
-                    assetTypes.push({
-                        label: at.Path,
-                        data: at.AssetTypeId
-                    });
-                }
-            }
+            let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
+            if (inLoadedAssetTypes) {
+                this.filterSelectionsModel.FilterAssetTypes.push({
+                    label: at.Path,
+                    data: at.AssetTypeId
+                });
+            } 
         });
-        assetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-
-        this.filterSelectionsModel.FilterAssetTypes = assetTypes;
+        this.filterSelectionsModel.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
         this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
 
         //#endregion
@@ -454,7 +456,160 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.markForCheck();
     }
 
+    private loadSavedFilters() {
+        this.browserService
+            .getUserFilters()
+            .subscribe(filters => {
+                this.savedFilters = filters;
+                this.selectedFilter = filters.find(f => f.isDefault == true);
+            });
+    }
+
+    private getFiltermenuItems(): MenuItem[] {
+        return [
+            { label: 'Add', command: (event) => { this.addUserFilter() } },
+            { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.updateUserFilter() } },
+            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.showRemoveUserFilter() } }
+        ];
+    }
+
+    private hasSelectedUserFilter(): boolean {
+        return (this.selectedFilter != undefined && this.selectedFilter != null);
+    }
+
+    private applySavedFilter(e) {
+        if (!this.hasSelectedUserFilter())
+            return;
+
+        var selectedAssetTypes = this.filterSelectionsModel.AssetTypeOptions
+            .filter(a => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
+            .map((a) => a.AssetTypeId);
+
+        var selectedResponsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
+            .filter(r => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
+            .map((r) => r.Id);
+
+        var selectedPredicates = this.filterSelectionsModel.PredicateOptions
+            .filter(p => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
+            .map((p) => p.Id)
+
+        this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(selectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
+        this.filterAssetTypeChange({ value: this.selectedFilterAssetTypes });
+
+        this.selectedFilterResponsibilityTypes = this.getTreeNodeSelectionNodes(selectedResponsibilityTypes, this.filterSelectionsModel.FilterResponsibilityTypes);
+        this.filterResponsibilityTypeChange({ value: this.selectedFilterResponsibilityTypes });
+
+        this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(selectedPredicates, this.filterSelectionsModel.FilterPredicates);
+        this.filterPredicateChange({ value: this.selectedFilterPredicates });
+
+        if (this.selectedFilter.numberOfHops) {
+            this.filterModel.NumberOfHops = this.selectedFilter.numberOfHops;
+            this.filterNumberOfHopsChange();
+        }
+
+        if (this.selectedFilter.ancestryMode) {
+            this.filterModel.AncestryMode = this.selectedFilter.ancestryMode;
+            this.filterTriggerVisualizationUpdate();
+        }
+    }
+
+    private addUserFilter() {
+        this.saveFilterModalVisible = true;
+        this.saveFilterModalWorking = false;
+        this.createUserFilter = new StoredAssetBrowserFilterModel();
+        this.createUserFilter.assetTypes = this.filterSelectionsModel.AssetTypeOptions
+            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .map((a) => { return { uid: a.Uid, class: a.Class } });
+        this.createUserFilter.responsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
+            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .map((r) => { return { uid: r.Uid, type: r.Name } });
+        this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
+            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .map((p) => { return { uid: p.Uid, type: p.Name } });
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+        this.createUserFilter.name = '';
+    }
+
+    private createUserFilterSave() {
+        this.saveFilterModalWorking = true;
+        this.browserService
+            .saveUserFilter(this.createUserFilter)
+            .subscribe(filter => {
+                this.saveFilterModalVisible = false;
+                this.saveFilterModalWorking = false;
+                var filters = this.savedFilters;
+                filters.push(filter);
+                this.savedFilters = filters.filter(f => true);
+                this.selectedFilter = filter;
+                this.messagesService.showInfoMessage('Success', 'Filter added successfully');
+                this.cdRef.markForCheck();
+            });
+    }
+
+    private filterModalCancel() {
+        this.saveFilterModalVisible = false;
+        this.deleteFilterModalVisible = false;
+    }
+
+    private updateUserFilter() {
+        if (!this.hasSelectedUserFilter())
+            return;
+
+        this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
+        this.createUserFilter.assetTypes = this.filterSelectionsModel.AssetTypeOptions
+            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .map((a) => { return { uid: a.Uid, class: a.Class } });
+        this.createUserFilter.responsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
+            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .map((r) => { return { uid: r.Uid, type: r.Name } });
+        this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
+            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .map((p) => { return { uid: p.Uid, type: p.Name } });
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+
+        this.browserService
+            .saveUserFilter(this.createUserFilter)
+            .subscribe(filter => {
+                var filters = this.savedFilters;
+                var idx = filters.findIndex(f => f.uid == filter.uid);
+                filters[idx] = filter;
+                this.savedFilters = filters.filter(f => true);
+                this.selectedFilter = filter;
+                this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
+                this.cdRef.markForCheck();
+            });
+    }
+
+    private showRemoveUserFilter() {
+        this.deleteFilterModalVisible = true;
+        this.deleteFilterModalWorking = false;
+    }
+
+    private removeUserFilter() {
+        this.deleteFilterModalWorking = true;
+        if (this.hasSelectedUserFilter()) {
+            this.browserService
+                .deleteUserFilter(this.selectedFilter)
+                .subscribe(success => {
+                    if (success) {
+                        var filters = this.savedFilters;
+                        var idx = filters.findIndex(f => f.uid == this.selectedFilter.uid);
+                        filters.splice(idx,1);
+                        this.savedFilters = filters.filter(f => true);
+                        this.selectedFilter = undefined;
+                        this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
+                        this.cdRef.markForCheck();
+                        this.deleteFilterModalWorking = false;
+                        this.deleteFilterModalVisible = false;
+                    }
+                });
+        }
+    }
+
     private filterButtonClick(e) {
+        this.loadSavedFilters();
         if (this.filterSelectionsModel.AssetTypeOptions.length == 0) {
             this.filtersLoading = true;
             this.browserService
@@ -567,10 +722,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         // Loop through nodes and figure out what is visible.
         this.diagram.model.nodeDataArray.forEach((tn: AssetBrowserTranslationNode) => {
-
             if (tn.assetTypeId) {
+                let isRoot: boolean = tn.group == "" || tn.group == undefined;
 
-                if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1) {
+                if (model.AssetTypes.findIndex(o => { return o == tn.assetTypeId }) == -1 && isRoot) {
                     model.AssetTypes.push(tn.assetTypeId);
                 }
                 if (tn.owners) {
@@ -1322,12 +1477,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 model.Direction = AssetBrowserApiHopDirection.Forward;
             }
             this.revealedKeys.push(currentTopGroupKey);
-            console.log(this.responseModel.assets);
-            console.log('KeyToFind:'+currentTopGroupKey);
+
             // Now we need to find the real root asset for this current key.
             let realRootAsset = this.findTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
-
-            console.log(realRootAsset);
 
             model.Hops = 1;
             model.HopType = AssetBrowserApiHopType.Lineage;
@@ -1721,6 +1873,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.loadingText = "";
         this.isLoading = false;
         this.fromRefresh = false;
+
+        this.setFilterWindow(false);
+
         this.cdRef.markForCheck();
 
         this.hideDeselectedAssetTypes(undefined);
@@ -1735,6 +1890,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
         this.saveFilter();
         this.diagram.commitTransaction();
+    }
+
+    private filterDisplayAncestorBadgesChange(): void {
+        this.refreshDiagram();
     }
 
     private filterDisplayIconsChange(): void {

@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AssetTypeExportTemplateStyle-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTypeExportTemplateStyle')
+BEGIN
+	CREATE TABLE [dbo].[AssetTypeExportTemplateStyle](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[AssetTypeExportTemplateID] [int] NOT NULL,
+		[Column] [int] NOT NULL,
+		[Row] [int] NOT NULL,
+		[Color] [int] NULL,
+		[BackgroundColor] [int] NULL,
+		[IsBold] [bit] CONSTRAINT [DF_AssetTypeExportTemplateStyle_IsBold] DEFAULT (0) NOT NULL,
+		[CreatedBy] [int] NULL,
+		[CreatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[BackgroundColorValueFieldTypeID] [int] CONSTRAINT [DF_AssetTypeExportTemplateStyle_BackgroundColorValueFieldTypeID] DEFAULT (0) NOT NULL,
+		[ColorValueFieldTypeID] [int] CONSTRAINT [DF_AssetTypeExportTemplateStyle_ColorValueFieldTypeID] DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_AssetTypeExportTemplateStyle] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate')
+BEGIN
+	ALTER TABLE [dbo].[AssetTypeExportTemplateStyle] WITH CHECK ADD CONSTRAINT [FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate] FOREIGN KEY([AssetTypeExportTemplateID]) REFERENCES [dbo].[AssetTypeExportTemplate] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AssetTypeExportTemplateStyle] CHECK CONSTRAINT [FK_AssetTypeExportTemplateStyle_AssetTypeExportTemplate]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,166 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Intersect-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Intersect')
+BEGIN
+	CREATE TABLE [dbo].[Intersect](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[IntersectTypeID] [int] NOT NULL,
+		[Subject] [varchar](50) NOT NULL,
+		[SubjectID] [int] NOT NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[State] [int] CONSTRAINT [DF_Intersect_State] DEFAULT (1) NOT NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_Intersect_CreatedBy] DEFAULT (0) NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_Intersect_CreatedOn] DEFAULT (getutcdate()) NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_Intersect_UpdatedBy] DEFAULT (0) NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_Intersect_UpdatedOn] DEFAULT (getutcdate()) NULL,
+		[Owner] [varchar](100) NULL,
+		[Deleted] [bit] CONSTRAINT [DF_Intersect_Deleted] DEFAULT (0) NULL,
+		[Visible] [bit] CONSTRAINT [DF_Intersect_Visible] DEFAULT (1) NOT NULL,
+		[SourceID] [nvarchar](500) NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_Intersect_uid] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_Intersect] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Intersect_IntersectType')
+BEGIN
+	ALTER TABLE [dbo].[Intersect] WITH CHECK ADD CONSTRAINT [FK_Intersect_IntersectType] FOREIGN KEY([IntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Intersect] CHECK CONSTRAINT [FK_Intersect_IntersectType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Intersect')
+BEGIN
+	CREATE UNIQUE CLUSTERED INDEX [CIX_Intersect] ON [dbo].[Intersect] ( [IntersectTypeID] ASC, [Subject] ASC, [SubjectID] ASC, [Object] ASC, [ObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_IntersectTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Intersect_IntersectTypeID] ON [dbo].[Intersect] ( [IntersectTypeID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Object_IntersectType_Deleted')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Intersect_Object_IntersectType_Deleted] ON [dbo].[Intersect] ( [Object] ASC, [ObjectID] ASC, [IntersectTypeID] ASC, [Deleted] ASC ) INCLUDE([ID]) 
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Subject_SubjectID_IntersectType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Intersect_Subject_SubjectID_IntersectType] ON [dbo].[Intersect] ( [SubjectID] ASC, [Subject] ASC ) INCLUDE([IntersectTypeID]) 
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Intersect_Uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Intersect_Uid] ON [dbo].[Intersect] ( [uid] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterDelete]
+   ON  [dbo].[Intersect] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON;
+	declare @ot varchar(50) = 'Intersect'
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+        select	'ObjectIndex',
+				'D', 
+				@ot, 
+				ID
+		from	deleted;
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterInsert]
+	ON [dbo].[Intersect]
+	FOR INSERT
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Intersect-Intersect_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Intersect_AfterUpdate]
+	ON [dbo].[Intersect]
+	FOR UPDATE
+AS
+BEGIN
+	SET NOCOUNT ON;
+		
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Subject, I.SubjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Subject] = A.[Object] and I.[SubjectID] = a.[ObjectID];
+
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+        select 'Add', [queue].WriteIndexXml('', I.Object, I.ObjectID, I.UpdatedBy), 'Intersect', I.ID, ISNULL(A.ID, 0) as AssetID from inserted I
+		left outer join [dbo].[Asset] A on I.[Object] = A.[Object] and I.[ObjectID] = a.[ObjectID];
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

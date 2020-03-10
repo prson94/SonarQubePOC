@@ -109,6 +109,7 @@
     <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
     <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
     <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
+    <Compile Include="entities\Graph\GraphFilter.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRoleItem.cs" />
     <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
@@ -383,6 +384,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>CommonNames.resx</DependentUpon>
     </Compile>
+    <Compile Include="resources\FieldErrors.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>FieldErrors.resx</DependentUpon>
+    </Compile>
     <Compile Include="resources\Fields.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -412,6 +418,10 @@
     <EmbeddedResource Include="resources\CommonNames.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\FieldErrors.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>FieldErrors.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="resources\Fields.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>

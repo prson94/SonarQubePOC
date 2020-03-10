@@ -1,0 +1,42 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Model_All-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Model_All] AS
+    select	A.ID as AssetID,
+			A.ObjectID as [Taxonomy ID],
+		    I.SubjectID as ParentID,
+			A.TypeID as [Taxonomy Type id],
+		    A.DisplayValue,
+		    TP.TextPath,
+		    LV.[Level] as [Taxonomy Level],
+		    A.UpdatedOn,
+		    A.UpdatedBy,
+		    CONVERT(VARCHAR(10), A.UpdatedOn, 112) as UpdatedOnKey,
+		    A.TypeName as [Taxonomy Type Name],
+		    coalesce(TL.Name, 'Level ' + cast(LV.[Level] as varchar)) as [Level Name]
+    from	AssetDetail A
+		    cross apply dbo.GetAssetTextPathById(A.ID, '/') TP
+		    cross apply dbo.GetAssetLevelById(A.ID) LV
+		    left join PredicateIntersect I on I.Object = A.Object and I.ObjectID = A.ObjectID and I.PredicateType = 4
+		    left join AssetTypeLevel TL on TL.[AssetTypeID] = A.AssetTypeID and TL.[Level] = LV.[Level]
+    where	A.AssetTypeClass = 2
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Survey-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Survey')
+BEGIN
+	CREATE TABLE [dbo].[Survey](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[SurveyTypeID] [int] NOT NULL,
+		[Object] [varchar](50) NULL,
+		[ObjectID] [int] NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[CreatedOn] [datetime] NOT NULL,
+		[Uid] [uniqueidentifier] CONSTRAINT [DF_Survey_Uid] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_Survey] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Survey_SurveyType')
+BEGIN
+	ALTER TABLE [dbo].[Survey] WITH CHECK ADD CONSTRAINT [FK_Survey_SurveyType] FOREIGN KEY([SurveyTypeID]) REFERENCES [dbo].[SurveyType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Survey] CHECK CONSTRAINT [FK_Survey_SurveyType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Survey_ObjectType-ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Survey_ObjectType-ObjectID] ON [dbo].[Survey] ( [Object] ASC, [ObjectID] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

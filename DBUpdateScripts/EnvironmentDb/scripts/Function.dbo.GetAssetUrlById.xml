@@ -1,0 +1,47 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.GetAssetUrlById-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetUrlById]
+(	
+	@AssetID bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	SELECT CASE A.Object
+		WHEN 'Artifact' THEN 'artifact/' +  + CAST(T.ObjectID as varchar) + '/' + CAST(A.ObjectID as varchar)
+		WHEN 'ReferenceItem' THEN 'reference/' +  + CAST(T.ObjectID as varchar)
+		WHEN 'FusionAttribute' THEN 'fusion/fusionattribute/' + CAST(T.ObjectID as varchar) + '/' + CAST(A.ObjectID as varchar)		
+		WHEN 'Fusion' THEN 'fusion/' + CAST(T.ObjectID as varchar) + '/' + + CAST(A.ObjectID as varchar)
+		WHEN 'Group' THEN 'group/' + CAST(A.ObjectID as varchar)	
+		WHEN 'Policy' THEN 'policy/' + CAST(T.ObjectID as varchar(15)) + '/id/' + CAST(A.ObjectID as varchar)
+		WHEN 'Resource' THEN 'resource/' + CAST(A.ObjectID as varchar)
+		WHEN 'Rule' THEN 'quality/rule/' + CAST(T.ObjectID as varchar) + '/' + CAST(A.ObjectID as varchar)
+		WHEN 'Taxonomy' THEN 'model/' + CAST(T.ObjectID as varchar) + '/id/' + CAST(A.ObjectID as varchar)
+	end as Url
+	from 
+		Asset A
+		inner join AssetType T on T.ID = A.AssetTypeID
+	where A.ID = @AssetID
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

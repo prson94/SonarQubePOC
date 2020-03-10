@@ -32,6 +32,13 @@ namespace d360.model.DataAccessLayer
         public void DeleteMetric(MetricAsset model)
         {
             model.State = State.Deleted;
+
+            var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
+            if (children.Count > 0)
+            {
+                children.ForEach(c => c.State = State.Deleted);
+            }
+
             Company.SaveChanges();
         }
 
@@ -137,7 +144,7 @@ namespace d360.model.DataAccessLayer
 
                 existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
 
-                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid", new { model.Uid }).Single();
+                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State=1", new { model.Uid }).Single();
 
                 metricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.Uid).SingleOrDefault();
                 if (metricAsset == null)
@@ -199,9 +206,9 @@ namespace d360.model.DataAccessLayer
                 }
                 Company.MetricAssets.Add(metricAsset);
             }
-
-            var cleanDate = model.EffectiveDate.Date;
-            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == cleanDate, v => v.Conditions).SingleOrDefault();
+            
+            var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
+            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
 
             string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
             newConditionHash = newConditionHash.GetD3sHashString();
@@ -211,7 +218,7 @@ namespace d360.model.DataAccessLayer
 
                 if (maxEffectiveDate.HasValue)
                 {
-                    if (maxEffectiveDate.Value > cleanDate)
+                    if (maxEffectiveDate.Value > effectiveDate.Date)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
                     }
@@ -229,7 +236,7 @@ namespace d360.model.DataAccessLayer
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ConditionAndOr = model.ConditionAndOr,
-                    EffectiveDate = model.EffectiveDate,
+                    EffectiveDate = effectiveDate,
                     Weight = model.Weight
                 };
 
@@ -569,7 +576,7 @@ namespace d360.model.DataAccessLayer
                     break;
             }
 
-                       
+
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);

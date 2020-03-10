@@ -1,0 +1,57 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.GetAssetTextPath-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetTextPath]
+(
+	@delimiter nvarchar(5)
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with h as (
+		select	T.ID,
+				T.Object,
+				T.ObjectID,
+				cast(null as bigint) as ParentID,
+				D.DisplayValue as TextPath,
+				1 as [Level]
+		from	Asset T
+				inner join dbo.GetAssetDisplayValue() D on D.ID = T.ID
+				left join PredicateIntersect I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateType in (3, 4)
+		where	I.IntersectID is null
+		union all
+		select	T.ID,
+				T.Object,
+				T.ObjectID,
+				P.ID as ParentID,
+				P.TextPath + @delimiter + D.DisplayValue as TextPath,
+				P.[Level] + 1 as [Level]
+		from	Asset T
+				inner join dbo.GetAssetDisplayValue() D on D.ID = T.ID
+				inner join PredicateIntersect I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateType in (3, 4)
+				inner join h as P on I.Subject = P.Object and I.SubjectID = P.ObjectID
+	)
+
+	select * from h
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
