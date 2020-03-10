@@ -191,6 +191,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_objectUid", "The Uid of the object side of a relationship to filter by in addition to filtering by predicate type. _predicateUid is required.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_assetUid", "Filter by provided asset Uid. Multiple asset Uids can be provided delimited by comma", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
@@ -220,6 +221,9 @@ namespace d360.web.Controllers.V2
 
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
+
+                if(!validator.IsValidOwnersGetAssets(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
 
                 HttpResponseMessage response;
 
