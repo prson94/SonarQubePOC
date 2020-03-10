@@ -10,6 +10,19 @@
                     <ng-template #expand><div *ngIf="!showEmptyMessage && showExpandAndCollapse" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
 
                 </div>
+
+                <div class="score-carousel">
+
+                    <div class="carausel-item" *ngFor="let score of scoresPoints">
+                        <ng-container [ngSwitch]="score.ScoreProgression">
+                            <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
+                            <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                            <i *ngSwitchDefault></i>
+                        </ng-container>
+                        {{score.EffectiveDate | date:'shortDate'}}
+                    </div>
+                </div>
+
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
                     <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="loadingPoints" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
                 </div>
@@ -20,6 +33,8 @@
                         </div>
                     </div>
                 </ng-template>
+
+
             </div>
         </div>
         <ng-template #pointsLoading>
@@ -27,14 +42,39 @@
         </ng-template>
         <div class="row">&nbsp;</div>
     </div>
-    <div class="score-chart-container"  *ngIf="!loadingHistory; else chartLoading">
+    <div class="score-chart-container" *ngIf="!loadingHistory; else chartLoading">
         <div class="heading">
             <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
         </div>
         <div class="score-chart">
             <div class="chart-header">{{getScoreType()}} Score History</div>
             <chart [options]="scoreHistory"></chart>
+            <div class="score-table">
+                {{scoreDate}}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <td>Score Change Date</td>
+                            <td>Score</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="{{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
+                            <td>{{item.EffectiveDate | date:'shortDate'}}</td>
+                            <td>
+                                <ng-container [ngSwitch]="item.ScoreProgression">
+                                    <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
+                                    <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                    <i *ngSwitchDefault></i>
+                                </ng-container>
+                                {{item.Score}}%
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
+
     </div>
     <ng-template #chartLoading>
         <d3s-loading [isLoading]="chartLoading"></d3s-loading>

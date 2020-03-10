@@ -6131,3 +6131,55 @@ a.mid-blue {
         }
     }
 }
+
+.score-carousel {
+    .carausel-item {
+        display:inline-block;
+    }
+}
+
+.score-table {
+    background-color: white;
+    margin-top: 16px;
+    padding: 8px;
+    border-radius: 4px;
+
+    thead {
+        font-weight: bold;
+    }
+
+    tr {
+        border-bottom: 1px solid #dbe2ec;
+
+        &:hover, &.selected {
+            background-color: #dff3f7;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    }
+
+    td {
+        height: 38px;
+
+        i.fa {
+            font-size: 28px;
+            position: relative;
+            top: 1px;
+            right: 5px;
+        }
+
+        i.fa-circle {
+            font-size: 16px;
+        }
+    }
+
+    td:first-child {
+        text-align: left;
+        padding-left: 16px;
+    }
+
+    td:last-child {
+        text-align: right;
+        padding-right: 16px;
+    }
+}
