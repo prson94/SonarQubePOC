@@ -405,7 +405,8 @@ from
 	                        f.FusionAttributeTypeID,
 	                        ft.Name as FusionAttributeTypeName,
 	                        fu.Name as FusionName,
-							a.id as AssetID
+							a.id as AssetID,
+                            dbo.GenerateAssetUrl(a.id) as 'Url'
                         from fusionattribute f
 	                        inner join fusionattributetype ft on (f.fusionattributetypeid = ft.id)
 	                        inner join fusion fu on (f.fusionid = fu.id)
@@ -421,7 +422,7 @@ from
                     AssetType = $"{a.FusionName} {a.FusionAttributeTypeName}",
                     ID = a.ID,
                     AssetID = a.AssetID,
-                    RelativeUrl = $"/fusion/details/FusionAttribute/{a.ID}/{Uri.EscapeDataString(a.Name)}",
+                    RelativeUrl = a.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", a.Name }
                     }
@@ -473,7 +474,12 @@ from
 
         private static IEnumerable<IndexObjectModel> LoadGroups(SqlConnection context, int companyID, ElasticSearchSource source)
         {
-            var sql = @"SELECT g.[ID], g.[Name], g.[Description], a.ID as AssetID
+            var sql = @"SELECT
+                        g.[ID],
+                        g.[Name],
+                        g.[Description],
+                        a.ID as AssetID,
+                        dbo.GenerateAssetUrl(a.ID) as 'Url'
                     FROM [Group] g
                     INNER JOIN [Asset] a ON a.[Object] = 'Group' AND a.ObjectID = g.ID";
 
@@ -487,7 +493,7 @@ from
                     ID = o.ID,
                     AssetType = sType,
                     AssetID = o.AssetID,
-                    RelativeUrl = $"/groups/{o.ID}",
+                    RelativeUrl = o.Url,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
                         { "Description", o.Description }
@@ -515,7 +521,7 @@ from
                     CompanyID = companyID,
                     AssetType = "User",
                     ID = o.ResourceID,
-                    RelativeUrl = $"#/resources/{o.ResourceID}",
+                    RelativeUrl = $"resource/{o.ResourceID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", $"{o.FirstName} {o.LastName}" },
                         { "Email", o.Email },
@@ -546,7 +552,7 @@ from
                     CompanyID = companyID,
                     ID = o.ID,
                     AssetType = "Reference List",
-                    RelativeUrl = $"/reference/{o.ID}",
+                    RelativeUrl = $"reference/{o.ID}",
                     AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.Name },
@@ -609,7 +615,8 @@ select
 	adv.DisplayValue,
 	att.Name as TypeName,
     att.uid as AssetTypeUid,
-	a.uid as Uid
+	a.uid as Uid,
+    dbo.GenerateAssetUrl(a.ID) as 'Url'
 from
 	[dbo].Asset a
 	inner join [dbo].assettype att on a.assettypeid = att.id
@@ -630,7 +637,7 @@ ORDER BY A.ID";
                     AssetID = o.AssetID,
                     ItemUniqueID = o.ItemUniqueID,
                     AssetType = o.TypeName,
-                    RelativeUrl = $"/artifact/{o.TypeID}/{o.ID}",
+                    RelativeUrl = o.Url,
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
@@ -677,7 +684,8 @@ SELECT	A.ID as AssetID,
 		D.DisplayValue,
 		T.Name as TypeName,
         T.uid as AssetTypeUid,
-		A.uid as Uid
+		A.uid as Uid,
+        dbo.GenerateAssetUrl(a.ID) as 'Url'
 FROM	[dbo].Asset A
 		INNER JOIN [dbo].AssetType T on A.AssetTypeID = T.id
 		INNER JOIN [dbo].AssetDisplayValue D on D.AssetID = A.ID
@@ -697,7 +705,7 @@ ORDER BY A.ID";
                     ID = o.ID,
                     AssetID = o.AssetID,
                     AssetType = o.TypeName,
-                    RelativeUrl = $"/model/{o.TypeID};hierarchyId={o.ID}",
+                    RelativeUrl = o.Url,
                     Uid = o.Uid,
                     AssetTypeUid = o.AssetTypeUid,
                     Fields = new Dictionary<string, string>() {
@@ -730,7 +738,7 @@ from    fusion f
                     CompanyID = companyID,
                     ID = o.ID,
                     AssetType = o.FusionTypeName,
-                    RelativeUrl = $"/fusion/{o.ID}",
+                    RelativeUrl = $"fusion/{o.ID}",
                     Fields = new Dictionary<string, string>() {
                         { "Name", o.FusionName },
                         { "Description", o.FusionDescription }
