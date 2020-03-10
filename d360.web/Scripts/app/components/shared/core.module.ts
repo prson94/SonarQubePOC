@@ -11,7 +11,7 @@ import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
-import { InfoTooltipComponent } from './tooltip/tooltip.component';
+import { InfoTooltipComponent } from './tooltip/info-tooltip.component';
 
 @NgModule({
     declarations: [        

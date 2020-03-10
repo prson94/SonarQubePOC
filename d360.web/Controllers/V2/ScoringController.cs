@@ -228,10 +228,10 @@ namespace d360.web.Controllers.V2
                 }
                 
                 bool hasActiveMeasures = ScoringRepository.HasActiveMeasures(alloc);
-                bool canBeEdited = model.assetTypeUid == alloc.AssetTypeUid
+                bool canBeEdited = (model.assetTypeUid == alloc.AssetTypeUid
                                    && model.scoreType == alloc.ScoreType
-                                   && model.isExternallyCalculated == alloc.IsExternallyCalculated
-                                   && !hasActiveMeasures;
+                                   && model.isExternallyCalculated == alloc.IsExternallyCalculated)
+                                   || !hasActiveMeasures;
 
                 if (!canBeEdited)
                 {
@@ -349,6 +349,9 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Asset Type");
             document.SetCellValue(1, index++, "Score Type");
             document.SetCellValue(1, index++, "Score Calculation");
+            document.SetCellValue(1, index++, "Threshold - Poor");
+            document.SetCellValue(1, index++, "Threshold - Average");
+            document.SetCellValue(1, index++, "Threshold - Good");
             document.SetCellValue(1, index++, "Asset Type UID");
             document.SetCellValue(1, index++, "Score UID");
 
@@ -359,10 +362,14 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
+
                 document.SetCellValue(rowNumber, index++, row.assetClassName.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.assetTypePath);
                 document.SetCellValue(rowNumber, index++, row.scoreType.GetDisplayName());
                 document.SetCellValue(rowNumber, index++, row.isExternallyCalculated ? "External" : "Internal");
+                document.SetCellValue(rowNumber, index++, $"0-{row.lowerThreshold}");
+                document.SetCellValue(rowNumber, index++, $">{row.lowerThreshold}-{row.upperThreshold}");
+                document.SetCellValue(rowNumber, index++, $">{row.upperThreshold}-100");
                 document.SetCellValue(rowNumber, index++, row.assetTypeUid.ToString());
                 document.SetCellValue(rowNumber, index++, row.uid.ToString());
             }

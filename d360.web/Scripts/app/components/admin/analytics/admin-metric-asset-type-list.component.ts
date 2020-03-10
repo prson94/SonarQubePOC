@@ -71,6 +71,9 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         formatted.uid = x.uid;
         formatted.hasMeasure = x.hasMeasure;
         formatted.isExternallyCalculated = x.isExternallyCalculated ? 'External' : 'Internal';
+        formatted.lowerThreshold = x.lowerThreshold;
+        formatted.upperThreshold = x.upperThreshold;
+        formatted.formattedThreshold = x.lowerThreshold + "," + x.upperThreshold;
         return formatted;
     }
 
