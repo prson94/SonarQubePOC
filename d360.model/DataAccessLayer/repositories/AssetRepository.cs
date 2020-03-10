@@ -512,7 +512,7 @@ namespace d360.model.DataAccessLayer
             {
                 foreach (var result in results)
                 {
-                    AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions); ;
+                    AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions);
 
                     //Override responsibilities for Admin users (as in GetAssets procedure)
                     if (CompanyContext.CurrentResourceIsAdmin)
