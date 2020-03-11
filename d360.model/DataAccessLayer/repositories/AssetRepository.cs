@@ -1650,9 +1650,28 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
 
-        private async Task<List<core.entities.Scoring.Score>> GetAssetScores(Guid AssetUid)
+        private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
         {
-            return await CompanyContext.Scores.Where(x => x.AssetUid == AssetUid && x.EffectiveDate <= DateTime.UtcNow && x.EndDate == null).ToListAsync();
+            var scoreSQL = @"select S.AssetUid,
+S.EffectiveDate,
+S.EndDate,
+S.RunDate,
+case 
+	when S.ScoreType = 1 then 'Governance'
+	when S.ScoreType = 2 then 'DataQuality'
+end as ScoreType,
+S.Value, 
+AL.LowerThreshold, 
+AL.UpperThreshold 
+from metrics.Score S
+inner join Asset A on A.Uid = S.AssetUid
+inner join AssetType AT on AT.Id = A.AssetTypeID
+inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
+where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
+
+
+
+            return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
     }
 }

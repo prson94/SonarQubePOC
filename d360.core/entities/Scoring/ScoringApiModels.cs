@@ -29,6 +29,8 @@ namespace d360.core.entities.Scoring
         public State state { get; set; } = State.Active;
         public bool hasMeasure { get; set; }
         public bool isExternallyCalculated { get; set; }
+        public int lowerThreshold { get; set; }
+        public int upperThreshold { get; set; }
     }
 
     public class AllocationApiUpsertModel
@@ -41,6 +43,10 @@ namespace d360.core.entities.Scoring
 
         [DataMember]
         public bool isExternallyCalculated { get; set; }
+        [DataMember]
+        public int? lowerThreshold { get; set; }
+        [DataMember]
+        public int? upperThreshold { get; set; }
     }
 
     public class AllocationApiGetUnallocatedAssetTypeModel
