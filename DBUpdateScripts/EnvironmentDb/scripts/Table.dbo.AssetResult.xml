@@ -1,0 +1,40 @@
+<databaseChangeLog    
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="bquinlivan" id="Table.dbo.AssetResult-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetResult')
+BEGIN
+	CREATE TABLE [dbo].[AssetResult] (
+		Uid uniqueidentifier NOT NULL,
+		EffectiveDate datetime NOT NULL,
+		RunDate datetime NOT NULL,
+		PassCount bigint NOT NULL,
+		FailCount bigint NOT NULL,
+		TotalCount as (PassCount+FailCount) persisted,
+		PassFraction as (PassCount / (PassCount+FailCount)) persisted,
+		CreatedOn datetime NOT NULL,
+		CreatedBy int NOT NULL,
+		UpdatedOn datetime NOT NULL,
+		UpdatedBy int NOT NULL,
+		CONSTRAINT PK_AssetResult PRIMARY KEY CLUSTERED ( Uid ASC )
+	)
+	AS NODE
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+   DROP TABLE IF EXISTS [dbo].[AssetResult]
+]]>
+	</rollback>
+  </changeSet>
+  </databaseChangeLog>
