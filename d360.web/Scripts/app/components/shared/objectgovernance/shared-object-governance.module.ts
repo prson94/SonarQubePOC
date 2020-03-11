@@ -23,6 +23,7 @@ import { ObjectIssuesComponent } from './object-issues.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
+import { SimpleCarouselModule } from '../small-widgets/carausel/simple-carousel.module';
 
 declare var require: any;
 export function highchartsFactory() {
@@ -51,6 +52,7 @@ export function highchartsFactory() {
 
         //charts        
         ChartModule,
+        SimpleCarouselModule
     ],
     declarations: [    
         ArtifactStatusComponent,

@@ -5792,6 +5792,27 @@ a.mid-blue {
         display: inline-flex;
         width: 100%;
 
+        .carousel-item {
+            display: inline-block;
+            width: 103px;
+            padding: 5px 10px;
+            position: relative;
+
+            .fa {
+                font-size: 26px;
+                position: absolute;
+                left: -7px;
+                top: 2px;
+            }
+
+            .value {
+                &:hover, &.selected {
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+            }
+        }
+
         .heading {
             color: @igx-grey-light;
             padding: 8px 0 8px 0px !important;
@@ -6132,9 +6153,40 @@ a.mid-blue {
     }
 }
 
-.score-carousel {
-    .carausel-item {
-        display:inline-block;
+
+
+.simple-carousel {
+    overflow: hidden;
+    position: relative;
+    height: 36px;
+    transition-duration: 0.3s;
+
+    .navigate-left {
+        position: absolute;
+        left: 0px;
+        top: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 1000;
+        padding: 6px;
+        background: #eff2f6;
+    }
+
+    .navigate-right {
+        position: absolute;
+        right: 0px;
+        font-size: 12px;
+        top: 4px;
+        cursor: pointer;
+        z-index: 1000;
+        padding: 6px;
+        background: #eff2f6;
+    }
+
+    .carousel-content {
+        padding: 0px 30px;
+        display: inline-block;
+        position: absolute;
     }
 }
 

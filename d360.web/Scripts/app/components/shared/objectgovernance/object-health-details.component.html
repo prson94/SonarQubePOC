@@ -1,6 +1,6 @@
 ﻿<div class="scoring">
     <div class="score-breakdown">
-        <div class="row" *ngIf="!loadingPoints && !loadingDefinition; else pointsLoading">
+        <div class="row">
             <div class="col s12">
                 <div class="heading breakdown">
                     <button *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'selected': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" class="button ng-star-inserted"><span>Governance Score</span></button>
@@ -10,19 +10,28 @@
                     <ng-template #expand><div *ngIf="!showEmptyMessage && showExpandAndCollapse" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
 
                 </div>
-
-                <div class="score-carousel">
-
-                    <div class="carausel-item" *ngFor="let score of scoresPoints">
-                        <ng-container [ngSwitch]="score.ScoreProgression">
-                            <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
-                            <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
-                            <i *ngSwitchDefault></i>
-                        </ng-container>
-                        {{score.EffectiveDate | date:'shortDate'}}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="gov-hr"></div>
+                <d3s-simple-carousel [data]="scoresPoints">
+                    <div class="carousel-item" *ngFor="let score of scoresPoints">
+                        <span class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
+                            <ng-container [ngSwitch]="score.ScoreProgression">
+                                <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
+                                <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                <i *ngSwitchDefault></i>
+                            </ng-container>
+                            {{score.EffectiveDate | date:'shortDate'}}
+                        </span>
                     </div>
-                </div>
+                </d3s-simple-carousel>
+            </div>
+        </div>
 
+        <div class="row" *ngIf="!loadingPoints && !loadingDefinition; else pointsLoading">
+            <div class="col s12">
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
                     <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="loadingPoints" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
                 </div>
@@ -33,8 +42,6 @@
                         </div>
                     </div>
                 </ng-template>
-
-
             </div>
         </div>
         <ng-template #pointsLoading>

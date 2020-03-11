@@ -76,8 +76,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
 
-    private scoreTableClick(item) {
-        console.log(item);
+    private scoreTableClick(item: ScorePoint) {
+        this.scoreDate = item.EffectiveDate;
+        this.loadPoints();
+    }
+
+    private onCarouselScoreClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.loadPoints();
     }
@@ -92,6 +96,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
 
+                    this.scoresPoints = null;
                     this.scoresPoints = res.sort(function (a, b) {
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
