@@ -480,6 +480,11 @@ namespace d360.model.DataAccessLayer
                     											and IA.AssetTypeUid = @assetTypeUid 
                     											and IV.EffectiveDate <= @effectiveDate 
                     											and IA.State = 1
+						where		not exists (select 1 
+												from	metrics.ScoreItem R 
+														inner join metrics.Asset AR on AR.[Uid] = R.MetricAssetUid 
+												where	R.EffectiveDate <= @effectiveDate  
+														and R.MetricAssetUid = IA.[Uid] and AR.ScoreType = @scoreType)
                     	group by	IA.[Uid];
                     
                     drop table if exists #tbl
@@ -511,9 +516,9 @@ namespace d360.model.DataAccessLayer
                                             and EffectiveDate <= @effectiveDate
                     						and ((I.EndDate is null and I.EffectiveDate <= @effectiveDate) or 
                                                 (I.EndDate <= dateadd(day, 1,@effectiveDate) and I.EffectiveDate >= @effectiveDate))
-                                            and A.ScoreType = {(int)type} 
+                                            and A.ScoreType = @scoreType 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
-                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
+                    	where	AssetUid = @assetUid and A.ScoreType = @scoreType 
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
@@ -565,7 +570,7 @@ namespace d360.model.DataAccessLayer
 	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
                         inner Join metrics.scoreItem si on si.AssetUid = a.uid and si.effectiveDate = ms.EffectiveDate and ma.Uid = si.MetricAssetUid
                     where 
-                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and
+                        a.[uid] = @assetUid and AA.ScoreType = @scoreType and
                                 ((ms.EndDate is null and ms.EffectiveDate <= @effectiveDate) or 
                                  (ms.EndDate <= dateadd(day, 1,@effectiveDate) and ms.EffectiveDate >= @effectiveDate))
                     order by Name";
@@ -581,7 +586,7 @@ namespace d360.model.DataAccessLayer
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value, scoreType = (int)type }).ToList();
 
             var model = new MetricAssetHierarchyModels();
 
