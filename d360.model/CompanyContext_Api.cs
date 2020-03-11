@@ -827,7 +827,11 @@ CREATE CLUSTERED INDEX CIX_TempLookupValues ON #LookupValues ( FieldTypeID ASC )
 
 drop table if exists #RelevantLookupValues;
 create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
-CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
+
+declare @maxlen int;
+
+
+
 		
 insert into #LookupValues
 	select		T.ItemNumber,
@@ -846,6 +850,9 @@ select FieldTypeId,
 		[Value]
 from FieldLookupValue F
 where F.FieldTypeID in (select FieldTypeID from #Lookupvalues);
+
+
+
 
 update	T
 set		T.[Value] = S.[Value]
@@ -880,6 +887,17 @@ from		#LookupValues T
 			inner join FieldType ST on ST.ID = T.FieldTypeID and ST.AllowMultipleValues = 1
 			cross apply string_split(T.FieldValue, ',') MV 
 			inner join FieldLookupValue FLV on FLV.FieldTypeID = T.FieldTypeID;
+
+select @maxlen = max(len(text)) from #RelevantLookupValues
+if (@maxlen <= 400)
+	begin
+		alter table #RelevantLookupValues alter column text nvarchar(440);
+		CREATE CLUSTERED INDEX CIX_testTempLookupValues ON #RelevantLookupValues (FieldTypeID ASC, [Text])
+	end
+else
+	begin
+		CREATE CLUSTERED INDEX CIX_testTempLookupValues ON #RelevantLookupValues (FieldTypeID ASC)
+	end
 
 update	T
 set		T.Value = S.Value
