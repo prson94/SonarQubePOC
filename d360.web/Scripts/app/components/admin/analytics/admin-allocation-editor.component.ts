@@ -208,7 +208,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
                 var el = document.createElement("span");
                 el.className = 'slider-tooltip';
                 el.innerHTML = value + '%';
-                sliders[index].append(el);
+                sliders[index].appendChild(el);
             }
             else {
                 tooltip[0].innerHTML = this.rangeValues[index] + '%';
