@@ -48,12 +48,12 @@
                 <td (click)="openMeasures(item)">{{item.isExternallyCalculated}}</td>
                 <td (click)="openMeasures(item)">
                     <div class="threshold-table">
-                        <div class="score-pill-small" style="background-color:#ed3765;"></div>
+                        <div class="score-pill-small score-poor"></div>
                         <div class="score-pill-small-label">0% - {{item.lowerThreshold}}%</div>
-                        <div class="score-pill-small" style="background-color:#f8a41a;"></div>
-                        <div class="score-pill-small-label">>{{item.lowerThreshold}}% - {{item.upperThreshold}}%</div>
-                        <div class="score-pill-small" style="background-color:#4ecc89;"></div>
-                        <div class="score-pill-small-label">>{{item.upperThreshold}}% - 100%</div>
+                        <div class="score-pill-small score-average"></div>
+                        <div class="score-pill-small-label">>&nbsp;{{item.lowerThreshold}}% - {{item.upperThreshold}}%</div>
+                        <div class="score-pill-small score-good"></div>
+                        <div class="score-pill-small-label">>&nbsp;{{item.upperThreshold}}% - 100%</div>
                     </div>
                 </td>
                 <td>

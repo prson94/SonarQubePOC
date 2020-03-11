@@ -44,6 +44,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
+import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 
 @NgModule({
     imports: [
@@ -82,7 +83,8 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
         SimpleAccordionModule,
         TooltipModule,
         DirectivesModule,
-        SiteModalModule
+        SiteModalModule,
+        InfoTooltipModule
     ],
     declarations: [
         AdminAnalyticsComponent,

@@ -57,7 +57,7 @@
                 <d3s-info-tooltip [titleValue]="'How does this work?'">
                     <h2>About your score threshold</h2>
                     Score Threshold indicates the limit or range for the score result.  A negative result (red) indicates a score falls within the low threshold range.  An allowable result (yellow) indicates a score falls within the middle threshold range.  And a positive result (green) indicates a score falls within the high threshold range.<br />
-                    <a href="https://help.eng.data3sixty.com/currentsprint-qa/Default.htm#d-admin/scoring.htm?Highlight=scoring" target="_blank">
+                    <a [href]="scoringHelpPage" target="_blank">
                         Read more about scoring<i class="fa fa-external-link" aria-hidden="true"></i>
                     </a>
                 </d3s-info-tooltip>
@@ -72,20 +72,20 @@
             <div class="gov-hr"></div>
             <div class="col s12 no-padding">
                 <div class="score-range-manual">
-                    <div class="d3s-score-pill editor" [style.background-color]="poorColour"><span class="text">Poor</span></div>
-                    <div class="value-box">0% - </div>
+                    <div class="d3s-score-pill editor score-poor"><span class="text">Poor</span></div>
+                    <div class="value-box">0%&nbsp;-&nbsp;</div>
                     <div class="input-box">
                         <input #lt type="number" [value]="selection.lowerThreshold" (change)="onUpperThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
                         <div class="input-overlay">%</div>
                     </div>
-                    <div class="d3s-score-pill editor" [style.background-color]="averageColour"><span class="text">Average</span></div>
-                    <div class="value-box">>{{selection.lowerThreshold}}% - </div>
+                    <div class="d3s-score-pill editor score-average"><span class="text">Average</span></div>
+                    <div class="value-box">>&nbsp;{{selection.lowerThreshold}}%&nbsp;-&nbsp;</div>
                     <div class="input-box">
                         <input #ut type="number" [value]="selection.upperThreshold" (change)="onUpperThresholdChange($event,ut)" (keyup)="onUpperThresholdChange($event,ut, true)" />
                         <div class="input-overlay">%</div>
                     </div>
-                    <div class="d3s-score-pill editor" [style.background-color]="goodColour"><span class="text">Good</span></div>
-                    <div class="value-box">>{{selection.upperThreshold}}% - 100%</div>
+                    <div class="d3s-score-pill editor score-good"><span class="text">Good</span></div>
+                    <div class="value-box">>&nbsp;{{selection.upperThreshold}}%&nbsp;-&nbsp;100%</div>
                 </div>
             </div>
         </div>

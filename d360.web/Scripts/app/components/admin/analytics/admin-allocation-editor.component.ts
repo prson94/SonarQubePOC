@@ -4,7 +4,7 @@ import { ScoreTypeAllocation, ScoreType } from '../../../models/metrics.model';
 import { AssetTypeClass } from '../../../models/asset.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AllocationService } from '../../../services/allocations.service';
-import { ScoreTypeConstants } from '../../../static/score-type-helpers';
+import { CurrentEnvironmentSettings } from '../../../static/environment-settings';
 
 @Component({
     selector: 'd3s-admin-allocation-editor',
@@ -24,14 +24,12 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     private ddlScoreTypes: any[] = [];
     private ddlAssetTypes: any[] = [];
 
-    private poorColour: string = ScoreTypeConstants.poorColour;
-    private averageColour: string = ScoreTypeConstants.averageolour;
-    private goodColour: string = ScoreTypeConstants.goodColour;
+    public scoringHelpPage: string = CurrentEnvironmentSettings.HelpBaseUri + 'Default.htm#d-admin/scoring.htm?Highlight=scoring';
 
     rangeValues: number[] = [];
     @ViewChild('slider', { static: true }) slider: ElementRef;
 
-    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService) {
+    constructor(private allocationService: AllocationService, protected messagesService: MessagesObservableService, private elementRef: ElementRef) {
         super();
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
@@ -154,7 +152,7 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     onLowerThresholdChange($event, el: HTMLInputElement) {
         var tempVal = +el.value;
-        
+
         if (tempVal <= 0) {
             el.value = "0";
         }
@@ -188,7 +186,17 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
     }
 
     ngAfterViewChecked() {
-        var backgroundStyle = `linear-gradient(90deg, ${ScoreTypeConstants.poorColour} ${this.selection.lowerThreshold}%, ${ScoreTypeConstants.poorColour} ${this.selection.lowerThreshold}%,${ScoreTypeConstants.averageolour} ${this.selection.lowerThreshold}%, ${ScoreTypeConstants.averageolour} ${this.selection.upperThreshold}%, ${ScoreTypeConstants.goodColour} ${this.selection.upperThreshold}%, ${ScoreTypeConstants.goodColour} 100%)`;
+
+        //Dynamically load good, average and score css styles from computed style object so branding is possible
+        var poorEl = this.elementRef.nativeElement.getElementsByClassName("score-poor")[0];
+        var avgEl = this.elementRef.nativeElement.getElementsByClassName("score-average")[0];
+        var goodEl = this.elementRef.nativeElement.getElementsByClassName("score-good")[0];
+
+        var poorColor = window.getComputedStyle(poorEl).backgroundColor;
+        var averageColor = window.getComputedStyle(avgEl).backgroundColor;
+        var goodColor = window.getComputedStyle(goodEl).backgroundColor;
+
+        var backgroundStyle = `linear-gradient(90deg, ${poorColor} ${this.selection.lowerThreshold}%, ${poorColor} ${this.selection.lowerThreshold}%,${averageColor} ${this.selection.lowerThreshold}%, ${averageColor} ${this.selection.upperThreshold}%, ${goodColor} ${this.selection.upperThreshold}%, ${goodColor} 100%)`;
         var sliderElement = this.slider["el"].nativeElement.getElementsByClassName('ui-slider-horizontal')[0];
         sliderElement.style.background = backgroundStyle;
 

@@ -1,4 +1,4 @@
-﻿import { NgModule }       from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -11,26 +11,23 @@ import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
-import { InfoTooltipComponent } from './tooltip/info-tooltip.component';
 
 @NgModule({
-    declarations: [        
+    declarations: [
+        TooltipComponent,
+        PreviewTooltipComponent,
+        LoadingComponent,
+        LookupTooltipComponent,
+        D3STreeTableToggler
+    ],
+    exports: [
         TooltipComponent,
         PreviewTooltipComponent,
         LoadingComponent,
         LookupTooltipComponent,
         D3STreeTableToggler,
-        InfoTooltipComponent
-    ],
-    exports: [        
-        TooltipComponent,        
-        PreviewTooltipComponent,
-        LoadingComponent,
-        LookupTooltipComponent,
-        D3STreeTableToggler,
         D3SSortIconModule,
-        D3SColumnFilterModule,
-        InfoTooltipComponent
+        D3SColumnFilterModule
     ]
     , imports: [
         CommonModule,

@@ -3,7 +3,6 @@ import { Component, ChangeDetectionStrategy, ChangeDetectorRef, Input, AfterView
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { AssetScore } from '../../../../models/search-result.model';
-import { ScoreTypeConstants } from '../../../../static/score-type-helpers';
 
 @Component({
     selector: 'd3s-score-badge',
@@ -21,10 +20,6 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
 
     @Input() lowerThreshold: number = 50; //50%
     @Input() upperThreshold: number = 90; //90%
-
-    @Input() lowColour: string = ScoreTypeConstants.poorColour;
-    @Input() mediumColour: string = ScoreTypeConstants.averageolour;
-    @Input() goodColour: string = ScoreTypeConstants.goodColour;
 
     private scoreBadgeClass: string;
 
@@ -53,7 +48,6 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
             this.lowerThreshold = this.score.LowerThreshold;
             this.ref.markForCheck();
         }
-        console.log(this.score);
     }
 
     getType(): string {
@@ -80,12 +74,12 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
 
-    getBackgroundColor() {
+    getScoreCSSClass() {
         if (this.score.Value <= this.lowerThreshold / 100)
-            return this.lowColour; //red
+            return 'score-poor'; //red
         if (this.score.Value <= this.upperThreshold / 100)
-            return this.mediumColour; //yellow
-        return this.goodColour; //green
+            return 'score-average'; //yellow
+        return 'score-good'; //green
     }
 
     private lastCalculatedMessage() {
