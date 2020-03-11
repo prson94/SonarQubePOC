@@ -58,7 +58,7 @@ namespace d360.web.Controllers.V2
            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
        ]
-        public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string assetUid = null, int _pageSize = 5, int _pageNum = 1, string _order = null, string _direction = "asc")
+        public async Task<IHttpActionResult> GetActions(string actionTypeUid = null, string assetUid = null, string _pageSize = "5", string _pageNum = "1", string _order = null, string _direction = "asc")
         {
             List<string> selectColumns = new List<string>() { 
                 "I.Uid", "I.CompletedOn",
@@ -77,17 +77,24 @@ namespace d360.web.Controllers.V2
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
             bool isOrderByFieldValid = false;
+            long pageSize;
+            long pageNum;
 
             #region Determine paging
 
-            if (_pageNum < 1) _pageNum = 1;
-            if (_pageSize < 1) _pageSize = 5;
-            if (!isPageSizeAndNumValid(_pageSize, _pageNum))
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
+            string isValid = isPageSizeAndNumValid(pageParams);
+            
+            if (!string.IsNullOrEmpty(isValid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
             }
-            model.pageNum = _pageNum;
-            model.pageSize = _pageSize;
+
+            long.TryParse(_pageSize, out pageSize);
+            long.TryParse(_pageNum, out pageNum);
+
+            model.pageNum = pageNum;
+            model.pageSize = pageSize;
 
             #endregion
 
@@ -230,7 +237,7 @@ namespace d360.web.Controllers.V2
                 conditions = conditions.Trim();
             }
            
-            string resultsSql = $"select {columns} from Issue I {joins} where {workflowCheckSql} {conditions} order by {_order} {_direction} offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
+            string resultsSql = $"select {columns} from Issue I {joins} where {workflowCheckSql} {conditions} order by {_order} {_direction} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
             string countSql = string.IsNullOrEmpty(conditions) ? 
                 $"select count(*) from Issue I where {workflowCheckSql}" : 
                 $"select count(*) from Issue I {joins} where {workflowCheckSql} {conditions}";

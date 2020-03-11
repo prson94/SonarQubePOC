@@ -201,7 +201,7 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                string isValid = isPageSizeAndNumValidParma(queryParams);
+                string isValid = isPageSizeAndNumValid(queryParams);
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
