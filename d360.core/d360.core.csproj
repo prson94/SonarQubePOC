@@ -177,8 +177,6 @@
     <Compile Include="entities\Fusion\FusionAgentError.cs" />
     <Compile Include="entities\Fusion\FusionAgentErrorItem.cs" />
     <Compile Include="entities\Quality\RuleImplementation.cs" />
-    <Compile Include="entities\Quality\RuleResultQualifier.cs" />
-    <Compile Include="entities\Quality\RuleResultQualifierType.cs" />
     <Compile Include="entities\Quality\RuleResult.cs" />
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
@@ -293,6 +291,7 @@
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\ApiUriType.cs" />
+    <Compile Include="enums\ResultRelationClass.cs" />
     <Compile Include="enums\SplitFilterCriteriaRelationship.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />
     <Compile Include="enums\IntegrationErrorCode.cs" />
