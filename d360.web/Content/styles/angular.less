@@ -5914,6 +5914,12 @@ a.mid-blue {
                 .highcharts-container {
                     border-radius: 4px;
                 }
+
+                .table-caption {
+                    color: #73808A;
+                    position: relative;
+                    top: 10px;
+                }
             }
         }
     }
@@ -6205,7 +6211,7 @@ a.mid-blue {
     }
 
     .ui-slider {
-        cursor:pointer;
+        cursor: pointer;
         height: 16px !important;
         border-radius: 8px !important;
         box-shadow: none;
@@ -6412,29 +6418,29 @@ a.mid-blue {
     background-color: white;
     margin-top: 16px;
     padding: 8px;
+    display: block;
     border-radius: 4px;
 
-    thead {
+    .score-tbl-header {
         font-weight: bold;
-    }
 
-    tr {
-        border-bottom: 1px solid #dbe2ec;
-
-        &:hover, &.selected {
-            background-color: #dff3f7;
-            font-weight: bold;
-            cursor: pointer;
+        .column:last-child {
+            padding-right: 48px;
         }
     }
 
-    td {
+    .row {
+        border-bottom: 1px solid #dbe2ec;
+        line-height: 38px;
+    }
+
+    .column {
         height: 38px;
 
         i.fa {
             font-size: 28px;
             position: relative;
-            top: 1px;
+            top: 4px;
             right: 5px;
         }
 
@@ -6443,13 +6449,37 @@ a.mid-blue {
         }
     }
 
-    td:first-child {
+    .column:first-child {
         text-align: left;
         padding-left: 16px;
     }
 
-    td:last-child {
+    .column:last-child {
         text-align: right;
         padding-right: 16px;
+    }
+
+    .body {
+        max-height: 378px;
+        display: block;
+        overflow-x: auto;
+
+        .row {
+            &:hover, &.selected {
+                background-color: #dff3f7;
+                font-weight: bold;
+                cursor: pointer;
+            }
+        }
+
+        &::-webkit-scrollbar {
+            width: 1em;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #dbe2ec;
+            outline: 1px solid #dbe2ec;
+            border-radius: 10px;
+        }
     }
 }

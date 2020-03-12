@@ -56,29 +56,33 @@
         <div class="score-chart">
             <div class="chart-header">{{getScoreType()}} Score History</div>
             <chart [options]="scoreHistory"></chart>
-            <div class="score-table">
-                {{scoreDate}}
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <td>Score Change Date</td>
-                            <td>Score</td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="{{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
-                            <td>{{item.EffectiveDate | date:'shortDate'}}</td>
-                            <td>
+            <div #scoreTable class="score-table">
+                <div class="col s12">
+                    <div class="row score-tbl-header">
+                        <div class="col s6 column">Score Change Date</div>
+                        <div class="col s6 column">Score</div>
+                    </div>
+                    <div class="body">
+                        <div class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
+                            <div class="col s6 column">{{item.EffectiveDate | date:'shortDate'}}</div>
+                            <div class="col s6 column">
                                 <ng-container [ngSwitch]="item.ScoreProgression">
                                     <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
                                     <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
                                     <i *ngSwitchDefault></i>
                                 </ng-container>
                                 {{item.Score}}%
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                        <div class="row">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="table-caption">
+                All dates are based on UTC
             </div>
         </div>
 

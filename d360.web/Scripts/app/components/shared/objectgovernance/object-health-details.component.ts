@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -17,7 +17,7 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
     providers: [ScoreService, ObjectStatisticsService],
 })
 
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges {
+export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
     scoreHistory: Object;
@@ -44,8 +44,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
     private showExpandAndCollapse: boolean = true;
 
-    constructor(protected scoreService: ScoreService, protected objectStatisticsService: ObjectStatisticsService) {
+    constructor(protected scoreService: ScoreService,
+        protected objectStatisticsService: ObjectStatisticsService,
+        private cdRef: ChangeDetectorRef
+    ) {
         super();
+        this.scoreDate = new Date().toDateString();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -74,16 +78,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 }
             );
         }
-    }
-
-    private scoreTableClick(item: ScorePoint) {
-        this.scoreDate = item.EffectiveDate;
-        this.loadPoints();
-    }
-
-    private onCarouselScoreClick(item: ScorePoint) {
-        this.scoreDate = item.EffectiveDate;
-        this.loadPoints();
     }
 
     private loadSeriesData() {
@@ -418,5 +412,46 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             return d1.getTime() === d2.getTime();
         }
         else return false;
+    }
+
+
+    private scoreTableClick(item: ScorePoint) {
+        this.scoreDate = item.EffectiveDate;
+        this.tableSelectedIDX = this.scoresPoints.indexOf(item);
+        this.loadPoints();
+    }
+
+    private onCarouselScoreClick(item: ScorePoint) {
+        this.scoreDate = item.EffectiveDate;
+        this.loadPoints();
+    }
+
+    @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
+    private tableSelectedIDX: number = 0;
+    ngAfterViewChecked() {
+        //table autoscroll to selected item
+        if (this.scoreTable) {
+            var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');
+            var height = tblBody.clientHeight;
+
+            for (var i = 0; i < tblBody.children.length - 1; i++) {
+                var selected = tblBody.children[i].className.toLowerCase().indexOf('selected') > -1 ? tblBody.children[i] : null;
+
+                if (!selected)
+                    continue;
+
+                if (selected && this.tableSelectedIDX != i) {
+                    this.tableSelectedIDX = i;
+                    var scrollFor = (tblBody.scrollTop + selected.getBoundingClientRect().top) - tblBody.getBoundingClientRect().top;
+                    if (scrollFor < 0) {
+                        tblBody.scrollTop = tblBody.scrollTop + Math.round(scrollFor);
+                    }
+                    else {
+                        tblBody.scrollTop = (scrollFor - height) + selected.clientHeight;
+                    }
+                }
+            }
+            this.cdRef.detectChanges();
+        }
     }
 }
