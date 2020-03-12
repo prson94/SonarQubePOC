@@ -22,10 +22,11 @@ namespace d360.model.helpers
         private List<Tuple<string, string>> allowedDefaultFields = new List<Tuple<string, string>>();
 
         public FilterExpressionParser(
-            ICompanyContext ctx, 
-            List<FieldType> fields, 
-            List<string> columns, 
-            FilterExpressionParseType type = FilterExpressionParseType.CustomFields)
+            ICompanyContext ctx,
+            List<FieldType> fields,
+            List<string> columns,
+            FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
+            bool includeParent = false)
         {
             this.CompanyContext = ctx;
             this.fieldTypes = fields;

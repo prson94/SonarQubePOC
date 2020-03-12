@@ -80,21 +80,21 @@ namespace d360.model.helpers
 
         public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, string fieldSyntax)
         {
-            _sqlParams = sqlParams;
-            _value = _value.ToString().Trim('\'');
-            if (_operator == "ct")
+            this.sqlParamsRef = sqlParams;
+            value = value.ToString().Trim('\'');
+            if (this.@operator == "ct")
             {
-                _value = $"%{_value.ToString().Replace("*", "%")}%";
+                value = $"%{value.ToString().Replace("*", "%")}%";
             }
 
-            _stringBuilder.Clear();
+            stringBuilder.Clear();
 
-            _stringBuilder.Append(fieldSyntax);
-            _stringBuilder.Append(GetSQLOperator(_operator));
-            _stringBuilder.Append($"@filter_{_parameterIdx}");
+            stringBuilder.Append(fieldSyntax);
+            stringBuilder.Append(GetSQLOperator(@operator));
+            stringBuilder.Append($"@filter_{parameterIdx}");
 
-            _sqlParams.Add($"@filter_{_parameterIdx}", _value);
-            return _stringBuilder.ToString();
+            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+            return stringBuilder.ToString();
         }
 
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
