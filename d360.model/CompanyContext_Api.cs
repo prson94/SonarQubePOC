@@ -821,14 +821,25 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
         private void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
         {
             Connection.Execute($@"
+drop table if exists #RelevantLookupValues;
+create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
+CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
+
+;with field_type_ids as( 
+select distinct F.Id from {fieldTable} T
+				inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID)
+				insert into #RelevantLookupValues
+				select FieldTypeId,[Text],[Value] from field_type_ids fti
+					inner join FieldLookupValue FLV on FLV.FieldTypeID = fti.ID
+
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
 
 ;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
-	from api.executionfield  T
+	from {fieldTable}  T
 	cross apply string_split(T.FieldValue, ',') MV
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
-	left join FieldLookupValue FLV on FLV.FieldTypeID = T.FieldTypeID and MV.value = FLV.Text
+	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(MV.value) = FLV.Text
 	where executionid = @executionid)
 insert into #LookupValues
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues
@@ -841,7 +852,7 @@ from	#LookupValues T
 
 update	T
 set		T.LookupValue = LV.Value
-from	api.ExecutionField T
+from	{fieldTable} T
 inner join #LookupValues LV on LV.FieldValue = T.FieldValue and T.FieldTypeID = LV.FieldTypeID
 where T.ExecutionId = @executionid;
 ", new { executionID }, commandTimeout: timeout);
