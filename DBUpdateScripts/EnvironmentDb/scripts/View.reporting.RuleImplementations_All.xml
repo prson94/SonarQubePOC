@@ -5,46 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.RuleImplementations_All-v1">
+  <changeSet author="Puneet Gupta" id="View.reporting.RuleImplementations_All-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
- CREATE OR ALTER VIEW [reporting].[RuleImplementations_All] AS
-    select	R.RuleTypeID,
-		    RT.Name as RuleType,
-		    D.ID as AssetID,
-            I.RuleID,
-		    AD.DisplayValue as [Rule],
-		    I.ID as RuleImplementationID,
-		    coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)) as RuleImplementation,
-		    I.SourceID,
-		    I.SourceUri,
-		    count(Q.ID) as QualifierCount,
-		    I.CreatedOn,
-		    I.CreatedBy,
-		    I.UpdatedOn,
-		    I.UpdatedBy
-    from	RuleImplementation I
-		    left join RuleResultQualifierType Q on Q.RuleImplementationID = I.ID
-		    inner join [Rule] R on R.ID = I.RuleID
-            inner join dbo.Asset D on D.Object = 'Rule' and D.ObjectID = R.ID
-            inner join dbo.AssetDisplayValue AD on AD.AssetId = D.ID
-		    inner join RuleType RT on RT.ID = R.RuleTypeID 
-    group by R.RuleTypeID,
-		    RT.Name,
-            D.ID,
-		    I.RuleID,
-		    AD.DisplayValue,
-		    I.ID,
-		    coalesce(I.Name, 'Implementation ' + cast(I.ID as nvarchar)),
-		    I.SourceID,
-		    I.SourceUri,
-		    I.CreatedOn,
-		    I.CreatedBy,
-		    I.UpdatedOn,
-		    I.UpdatedBy
+				drop view if exists [reporting].[RuleImplementations_All]
 		]]>
     </sql>
 	<rollback>
