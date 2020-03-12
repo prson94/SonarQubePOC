@@ -55,7 +55,7 @@
         </div>
         <div class="score-chart">
             <div class="chart-header">{{getScoreType()}} Score History</div>
-            <chart [options]="scoreHistory"></chart>
+            <chart (load)="getChartInstance($event.context)" [options]="scoreHistory"></chart>
             <div #scoreTable class="score-table">
                 <div class="col s12">
                     <div class="row score-tbl-header">

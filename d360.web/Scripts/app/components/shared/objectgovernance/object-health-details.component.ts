@@ -1,4 +1,4 @@
-﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, HostListener, } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
 import { PointBreakdown, ScorePoint } from '../../../models/score.model';
@@ -86,6 +86,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             this.loadingHistory = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
+
                     this.historicalData = res.map(val => {
                         return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
@@ -153,9 +154,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 states: {
                                     hover: {
                                         lineWidth: 4
-                                    },
-                                    select: {
-                                        lineWidth: 4
                                     }
                                 },
                                 threshold: null
@@ -193,6 +191,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 radius: 5,
                                 states: {
                                     hover: {
+                                        fillColor: 'white',
+                                        lineColor: '#FF7155',
+                                        lineWidth: 3
+                                    },
+                                    select: {
                                         fillColor: 'white',
                                         lineColor: '#FF7155',
                                         lineWidth: 3
@@ -415,6 +418,41 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
 
+    //scoring carousel, table and graph interactivity
+    private setSelectedPoint: boolean = false;
+    @HostListener('mousemove', ['$event'])
+    onMousemove(event: MouseEvent) {
+        if (!event['chartX']) {
+            this.selectPointOnGraph();
+        }
+    }
+
+    private lastPointCheck: Date = new Date();
+    private selectPointOnGraph() {
+        var idx = this.getSelectedIndex();
+        var currentTime = new Date();
+        if (idx > -1 && (+currentTime - +this.lastPointCheck) > 1000) {
+            this.lastPointCheck = new Date();
+            var point = this.chartInstance.series[0].data[this.getSelectedIndex()];
+            this.chartInstance.redraw();
+            point.select(true, true);
+            this.chartInstance.redraw();
+
+        }
+    }
+
+    private getSelectedIndex() {
+        var item = null;
+        this.scoresPoints.forEach(p => {
+            var date = new Date(this.scoreDate.toString());
+            var scoreDate = new Date(p.EffectiveDate.toString());
+            if (date.toString() == scoreDate.toString()) {
+                item = p;
+            }
+        });
+        return this.scoresPoints.length - 1 - this.scoresPoints.indexOf(item);
+    }
+
     private scoreTableClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.tableSelectedIDX = this.scoresPoints.indexOf(item);
@@ -426,9 +464,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.loadPoints();
     }
 
+    private chartInstance: Highcharts.ChartObject;
+    getChartInstance(chartInstance) {
+        this.chartInstance = chartInstance;
+    }
+
     @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
     private tableSelectedIDX: number = 0;
     ngAfterViewChecked() {
+        this.selectPointOnGraph()
         //table autoscroll to selected item
         if (this.scoreTable) {
             var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');
@@ -451,7 +495,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     }
                 }
             }
-            this.cdRef.detectChanges();
         }
+        this.cdRef.detectChanges();
+
     }
 }
