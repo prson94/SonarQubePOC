@@ -1,0 +1,42 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.FieldTypeFilteredLookupDisplayField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDisplayField')
+BEGIN
+	CREATE TABLE [dbo].[FieldTypeFilteredLookupDisplayField](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[FieldTypeFilteredLookupDefinitionID] [int] NOT NULL,
+		[FieldTypeID] [int] NOT NULL,
+		[FieldTypeName] [nvarchar](250) NULL,
+		[Show] [bit] CONSTRAINT [DF_FieldTypeFilteredLookupDisplayField_Show] DEFAULT (1) NOT NULL,
+		[SortOrder] [int] NULL,
+		[Filter] [bit] NOT NULL,
+		CONSTRAINT [PK_FieldTypeFilteredLookupDisplayField] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition')
+BEGIN
+	ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField] WITH CHECK ADD CONSTRAINT [FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition] FOREIGN KEY([FieldTypeFilteredLookupDefinitionID]) REFERENCES [dbo].[FieldTypeFilteredLookupDefinition] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField] CHECK CONSTRAINT [FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

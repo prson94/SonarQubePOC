@@ -134,6 +134,18 @@
                     box-shadow: inset 0 -2px 0 0 #202020;
                     color: #202020;
                 }
+
+                .saved-filter-controls {
+                    display: flex;
+                    justify-content: space-between;
+                    margin: 0 16px;
+
+                    button {
+                        font-weight: normal;
+                        background-color: #ccc;
+                        color: #333;
+                    }
+                }
             }
         }
 
@@ -154,9 +166,9 @@
                 .filter-row {
                     margin-bottom: 9px;
 
-                    .filter-row-label {
+                    .filter-row-label,
+                    .filter-row-short-label {
                         vertical-align: top;
-                        width: 150px;
                         height: 24px;
                         font-family: 'Source Sans Pro Bold';
                         font-size: 14px;
@@ -166,6 +178,14 @@
                         line-height: normal;
                         letter-spacing: normal;
                         color: #202020;
+                    }
+
+                    .filter-row-short-label {
+                        width: 100px;
+                    }
+
+                    .filter-row-label {
+                        width: 142px;
                     }
 
                     .filter-row-control {
@@ -178,6 +198,7 @@
                         line-height: normal;
                         letter-spacing: normal;
                         color: #202020;
+                        padding-bottom: 9px;
 
                         .filter-dropdown {
                             width: 90%;

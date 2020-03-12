@@ -715,6 +715,8 @@ export class AssetBrowserDiagramAssetField {
 export class AssetBrowserDiagramAssetScore {
     Name: string;
     Value: number;
+    LowerThreshold: number;
+    UpperThreshold: number;
 }
 
 export class AssetBrowserDiagramAssetOwner {
@@ -813,7 +815,34 @@ export class LoadedFilterTypesModel {
     ResponsibilityTypes: number[] = [];
 }
 
+export class StoredAssetBrowserAssetTypeFilterModel {
+    uid: string;
+    class: string;
+}
+
+export class StoredAssetBrowserPredicateFilterModel {
+    uid: number;
+    type: string;
+}
+
+export class StoredAssetBrowserResponsibilityTypeFilterModel {
+    uid: number;
+    type: string;
+}
+
+export class StoredAssetBrowserFilterModel {
+    uid: string;
+    name: string;
+    assetTypes: StoredAssetBrowserAssetTypeFilterModel[] = [];
+    predicates: StoredAssetBrowserPredicateFilterModel[] = [];
+    responsibilityTypes: StoredAssetBrowserResponsibilityTypeFilterModel[] = [];
+    ancestryMode: number;
+    numberOfHops: number;
+    isDefault: boolean;
+    createdOn: string;
+    updatedOn: string;
+}
+
 //#endregion
 
 // #endregion
-

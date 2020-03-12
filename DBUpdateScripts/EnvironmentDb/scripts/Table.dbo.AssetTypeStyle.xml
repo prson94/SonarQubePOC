@@ -1,0 +1,40 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.AssetTypeStyle-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetTypeStyle')
+BEGIN
+	CREATE TABLE [dbo].[AssetTypeStyle](
+		[ID] [int] NOT NULL,
+		[IconBackColor] [varchar](7) NOT NULL,
+		[IconForeColor] [varchar](7) NOT NULL,
+		[IconText] [varchar](25) NULL,
+		[Icon] [varchar](50) NULL,
+		CONSTRAINT [PK_AssetTypeStyle] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AssetTypeStyle_AssetType')
+BEGIN
+	ALTER TABLE [dbo].[AssetTypeStyle]  WITH CHECK ADD  CONSTRAINT [FK_AssetTypeStyle_AssetType] FOREIGN KEY([ID]) REFERENCES [dbo].[AssetType] ([ID])
+	ALTER TABLE [dbo].[AssetTypeStyle] CHECK CONSTRAINT [FK_AssetTypeStyle_AssetType]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

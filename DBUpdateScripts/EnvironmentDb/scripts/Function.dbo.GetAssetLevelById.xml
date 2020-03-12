@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Function.dbo.GetAssetLevelById-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER FUNCTION [dbo].[GetAssetLevelById]
+(
+	@Id bigint
+)
+RETURNS TABLE 
+AS
+RETURN 
+(
+	with c as (
+		select	T.ID as AssetID,
+				T.Object as AssetObject,
+				T.ObjectID as AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				1 as Level
+		from	Asset T
+				cross apply dbo.GetAssetDisplayValueById(T.ID) D
+				left join PredicateIntersect I on I.Object = T.Object and I.ObjectID = T.ObjectID and I.PredicateType in (3, 4)
+		where	T.ID = @Id
+		union all
+		select	c.AssetID,
+				c.AssetObject,
+				c.AssetObjectID,
+				T.ID,
+				T.Object,
+				T.ObjectID,
+				c.Level + 1 as Level
+		from	Asset T
+				cross apply dbo.GetAssetDisplayValueById(T.ID) D
+				inner join PredicateIntersect I on I.Subject = T.Object and I.SubjectID = T.ObjectID and I.PredicateType in (3, 4)
+				inner join c on I.Object = c.Object and I.ObjectID = c.ObjectID
+		
+	)
+
+	select	top 1 
+			AssetID as ID, 
+			AssetObject as Object, 
+			AssetObjectID as ObjectID, 
+			Level 
+	from	c
+	order by Level desc
+)
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

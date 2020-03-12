@@ -32,6 +32,13 @@ namespace d360.model.DataAccessLayer
         public void DeleteMetric(MetricAsset model)
         {
             model.State = State.Deleted;
+
+            var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
+            if (children.Count > 0)
+            {
+                children.ForEach(c => c.State = State.Deleted);
+            }
+
             Company.SaveChanges();
         }
 
@@ -137,7 +144,7 @@ namespace d360.model.DataAccessLayer
 
                 existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
 
-                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid", new { model.Uid }).Single();
+                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State=1", new { model.Uid }).Single();
 
                 metricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.Uid).SingleOrDefault();
                 if (metricAsset == null)
@@ -199,9 +206,9 @@ namespace d360.model.DataAccessLayer
                 }
                 Company.MetricAssets.Add(metricAsset);
             }
-
-            var cleanDate = model.EffectiveDate.Date;
-            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == cleanDate, v => v.Conditions).SingleOrDefault();
+            
+            var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
+            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
 
             string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
             newConditionHash = newConditionHash.GetD3sHashString();
@@ -211,7 +218,7 @@ namespace d360.model.DataAccessLayer
 
                 if (maxEffectiveDate.HasValue)
                 {
-                    if (maxEffectiveDate.Value > cleanDate)
+                    if (maxEffectiveDate.Value > effectiveDate.Date)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
                     }
@@ -229,7 +236,7 @@ namespace d360.model.DataAccessLayer
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     ConditionAndOr = model.ConditionAndOr,
-                    EffectiveDate = model.EffectiveDate,
+                    EffectiveDate = effectiveDate,
                     Weight = model.Weight
                 };
 
@@ -438,9 +445,10 @@ namespace d360.model.DataAccessLayer
         public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
-
+            
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
+
             string sql = "";
             switch (type)
             {
@@ -453,12 +461,19 @@ namespace d360.model.DataAccessLayer
                     
                     drop table if exists #groups;
                     create table #groups (
-                    	[Uid] uniqueidentifier, EffectiveDate date
+                    	[Uid] uniqueidentifier, EffectiveDate date, EndDate date
                     );
                     
                     insert into #groups
                     	select		IA.[Uid],
-                    				max(IV.EffectiveDate) as EffectiveDate
+                    				max(IV.EffectiveDate) as EffectiveDate,
+                                    (SELECT AV.EffectiveDate FROM metrics.AssetVersion AV
+                    					inner join metrics.Asset IA on IA.[Uid] = AV.[Uid] 
+                    												and IA.IsGroup = 1
+                    												and IA.AssetTypeUid = @assetTypeUid 
+                    												and AV.EffectiveDate <= @effectiveDate 
+										order by EffectiveDate desc OFFSET 1 ROWS FETCH NEXT 1 ROWS ONLY) 
+                                    as [EndDate]
                     	from		metrics.AssetVersion IV
                     				inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
                     											and IA.IsGroup = 1
@@ -471,33 +486,69 @@ namespace d360.model.DataAccessLayer
                     create table #tbl (
                     	[Uid] uniqueidentifier, ParentUid uniqueidentifier, 
                     	[Name] nvarchar(250), [Description] nvarchar(max), IsGroup bit, 
-                    	[Weight] decimal(5,3), EffectiveDate date, 
+                    	[Weight] decimal(5,3), EffectiveDate date, EndDate date null,
                     	[Value] bit null, [Applies] bit null, [Level] int null, [ScoreType] int null
                     );
                     
-                    with rh as (
+                    with rh as ( 
                     	select	I.MetricAssetUid,
                     			A.ParentUid,
                     			A.Name,	
                     			A.Description,
                     			A.IsGroup,
                     			I.AdjustedWeight as [Weight],
-                    			I.EffectiveDate,
+                    			AV.EffectiveDate,
+                                (SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
+																	WHERE AV1.Uid = I.MetricAssetUid 
+																	and AV1.EffectiveDate > @effectiveDate
+										order by EffectiveDate) 
+                                    as [EndDate],
                     			I.[Value],
                                 A.[ScoreType]
                     	from	metrics.ScoreItem I
                     			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     			inner join (
-                    				select	max(EffectiveDate) as EffectiveDate
+                    				select	min(EffectiveDate) as EffectiveDate
                     				from	metrics.ScoreItem I
                                     inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
-                    						and MetricAssetUid = I.MetricAssetUid
-                                            and EffectiveDate <= @effectiveDate
-                    						and EndDate is null
-                                            and A.ScoreType = {(int)type} 
+                                            and I.EffectiveDate >= @effectiveDate
+                    						 and A.ScoreType = {(int)type} 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
+                                inner join metrics.AssetVersion AV on AV.Uid = I.MetricAssetUid 
+								and AV.EffectiveDate = (select max(EffectiveDate) from metrics.assetVersion AV1 
+								where AV.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
                     	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
+                        union all
+                    	select	I.MetricAssetUid,
+                    			A.ParentUid,
+                    			A.Name,	
+                    			A.Description,
+                    			A.IsGroup,
+                    			I.AdjustedWeight as [Weight],
+                    			AV.EffectiveDate,
+                                (SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
+																	WHERE AV1.Uid = I.MetricAssetUid 
+																	and AV1.EffectiveDate > @effectiveDate
+										order by EffectiveDate) 
+                                    as [EndDate],
+                    			I.[Value],
+                                A.[ScoreType]
+                    	from	metrics.ScoreItem I
+                    			inner join metrics.Asset A on A.Uid = I.MetricAssetUid
+                    			inner join (
+                    				select	min(EffectiveDate) as EffectiveDate
+                    				from	metrics.ScoreItem I
+                                    inner join metrics.Asset A on A.Uid = I.MetricAssetUid
+                    				where	AssetUid = @assetUid
+											and I.EffectiveDate <= @effectiveDate
+                                             and I.EndDate is null
+                                            and A.ScoreType = 1
+                    			) MI on MI.EffectiveDate = I.EffectiveDate
+                                inner join metrics.AssetVersion AV on AV.Uid = I.MetricAssetUid 
+								and AV.EffectiveDate = (select max(EffectiveDate) from metrics.assetVersion AV1 
+								where AV.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
+                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type}
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
@@ -506,6 +557,7 @@ namespace d360.model.DataAccessLayer
                     			A.IsGroup,
                     			V.Weight,
                     			V.EffectiveDate,
+								MV.EndDate as [EndDate],
                     			NULL as Value,
 								A.[ScoreType]
                     	from	metrics.AssetVersion V
@@ -535,20 +587,59 @@ namespace d360.model.DataAccessLayer
                     		inner join h S on S.Uid = T.Uid;
                     
                     select	distinct
-                    		Uid, ParentUid, [Level], Name, Description, IsGroup, Weight, Value, ScoreType
+                    		Uid, ParentUid, [Level], Name, Description, IsGroup, EffectiveDate, EndDate, Weight, Value, ScoreType
                     from	#tbl 
                     order by [Level], Name";
                     break;
                 case ScoreType.DataQuality:
-                    sql = $@" select distinct ma.[Uid], ParentUid, null, ma.Name, ma.Description, ma.IsGroup, null,  ms.Value,  ms.ScoreType
-                    from metrics.Allocation AA
-                        inner join assettype att on AA.AssetTypeUid = att.[uid]
-                        inner join asset a on att.id = a.AssetTypeID and a.[uid] = @assetUid
-	                    inner join metrics.asset ma on ma.AssetTypeuid = ATT.uid and MA.ScoreType = AA.ScoreType and MA.[State] = 1
-	                    inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = AA.ScoreType
-                    where 
-                        a.[uid] = @assetUid and AA.ScoreType = {(int)type} and EndDate is null
-                    order by Name";
+                    sql = $@"declare @assetTypeUid uniqueidentifier;
+                    select	@assetTypeUid = T.[Uid]
+                    from	dbo.Asset A
+                    		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
+
+                    select 
+                        ma.[Uid], 
+                        ParentUid,
+                        null,
+                        ma.Name,
+                        ma.Description,
+                        ma.IsGroup,
+                        AV.EffectiveDate, 
+                        (SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
+							                            WHERE AV1.Uid = ma.Uid 
+							                            and AV1.EffectiveDate > @effectiveDate
+	                        order by EffectiveDate) 
+                         as [EndDate], 
+                         null,  
+                         I.Value,
+                         ma.ScoreType
+                        from metrics.asset ma 
+		                        inner join metrics.AssetVersion AV 
+		                        on AV.Uid = ma.uid and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
+		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
+                        where  ma.ScoreType = {(int)type} and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate >= dateadd(day, 1,@effectiveDate) 
+                        union all 
+                        select 
+                        ma.[Uid], 
+                        ParentUid,
+                        null,
+                        ma.Name,
+                        ma.Description,
+                        ma.IsGroup,
+                        AV.EffectiveDate, 
+                        (SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
+							                            WHERE AV1.Uid = ma.Uid 
+							                            and AV1.EffectiveDate > @effectiveDate
+	                        order by EffectiveDate) 
+                         as [EndDate], 
+                         null,  
+                         I.Value,
+                         ma.ScoreType
+                        from metrics.asset ma 
+		                        inner join metrics.AssetVersion AV 
+		                        on AV.Uid = ma.uid and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
+		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
+                        where  ma.ScoreType = {(int)type} and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate is null";
                     break;
                 case ScoreType.Perceptional:
                     break;
@@ -556,7 +647,7 @@ namespace d360.model.DataAccessLayer
                     break;
             }
 
-                       
+
 
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);

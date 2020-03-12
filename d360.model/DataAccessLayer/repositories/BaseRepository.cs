@@ -491,7 +491,7 @@ namespace d360.model.DataAccessLayer.repositories
 
                 if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
                 {
-                    val = $"coalesce({val}, {ft.DefaultFormattedValue})";
+                    val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
                 }
 
                 if (fieldType == "bit")

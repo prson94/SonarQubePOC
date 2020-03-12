@@ -12,21 +12,21 @@ namespace d360.model.helpers
         private ICompanyContext CompanyContext;
 
 
-        private int _parameterIdx { get; set; }
-        private string _field { get; set; }
-        private string _operator { get; set; }
-        private object _value { get; set; }
-        private FieldType _fieldType { get; set; }
-        private string _fieldColumn { get; set; }
-        private bool _isLookupField { get; set; }
-        private StringBuilder _stringBuilder = new StringBuilder();
-        private Dictionary<string, object> _sqlParams;
+        private int parameterIdx { get; set; }
+        private string field { get; set; }
+        private string @operator { get; set; }
+        private object value { get; set; }
+        private FieldType fieldType { get; set; }
+        private string fieldColumn { get; set; }
+        private bool isLookupField { get; set; }
+        private StringBuilder stringBuilder = new StringBuilder();
+        private Dictionary<string, object> sqlParamsRef;
 
         public bool IsOnlyOperator
         {
             get
             {
-                return _field == null && _value == null;
+                return field == null && value == null;
             }
         }
 
@@ -34,30 +34,30 @@ namespace d360.model.helpers
         {
             get
             {
-                return _field;
+                return field;
             }
         }
 
         public FilterToken(ICompanyContext ctx, string field, string op, object value, int? paramIdx = null)
         {
             CompanyContext = ctx;
-            _parameterIdx = paramIdx ?? -1;
-            _field = field;
-            _operator = op;
-            _value = value;
+            parameterIdx = paramIdx ?? -1;
+            this.field = field;
+            @operator = op;
+            this.value = value;
         }
 
         public string GetSQLForField(ref Dictionary<string, object> sqlParams)
         {
-            if (_field == null)
+            if (field == null)
             {
                 throw new MethodAccessException("Method can be used only when Field Type is loaded. Use LoadFieldType() method before.");
             }
-            _sqlParams = sqlParams;
-            _stringBuilder.Clear();
+            sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
             ValidateTokenForType();
             UpdateTokenValueForType();
-            return _stringBuilder.ToString();
+            return stringBuilder.ToString();
         }
 
         public string GetSQLForOperator()
@@ -66,16 +66,16 @@ namespace d360.model.helpers
             {
                 throw new MethodAccessException("Method can be used only for non field tokens");
             }
-            _stringBuilder.Clear();
-            if (_operator != "(" && _operator != ")")
+            stringBuilder.Clear();
+            if (@operator != "(" && @operator != ")")
             {
-                _stringBuilder.Append(GetLogicalOperator(_operator));
+                stringBuilder.Append(GetLogicalOperator(@operator));
             }
             else
             {
-                _stringBuilder.Append(_operator);
+                stringBuilder.Append(@operator);
             }
-            return _stringBuilder.ToString();
+            return stringBuilder.ToString();
         }
 
         public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, string fieldSyntax)
@@ -99,143 +99,143 @@ namespace d360.model.helpers
 
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
-            _fieldType = ft;
-            _fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + _fieldType.ID));
+            fieldType = ft;
+            fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
         }
 
         private void UpdateTokenValueForType()
         {
-            switch (_fieldType.Type.ToLower())
+            switch (fieldType.Type.ToLower())
             {
                 case "number":
                     int number = 0;
-                    if (!int.TryParse(_value.ToString(), out number))
+                    if (!int.TryParse(value.ToString(), out number))
                     {
-                        throw new FormatException($"Invalid numeric value for field '{_field}'");
+                        throw new FormatException($"Invalid numeric value for field '{field}'");
                     }
-                    _value = number;
+                    value = number;
                     break;
                 case "decimal":
                     decimal dnumber = 0;
-                    if (!decimal.TryParse(_value.ToString(), out dnumber))
+                    if (!decimal.TryParse(value.ToString(), out dnumber))
                     {
-                        throw new FormatException($"Invalid decimal value for field '{_field}'");
+                        throw new FormatException($"Invalid decimal value for field '{field}'");
                     }
-                    _value = dnumber;
+                    value = dnumber;
                     break;
                 case "boolean":
                     bool boolean = false;
-                    if (_value.ToString() == "0") _value = "false";
-                    if (_value.ToString() == "1") _value = "true";
-                    if (!bool.TryParse(_value.ToString(), out boolean))
+                    if (value.ToString() == "0") value = "false";
+                    if (value.ToString() == "1") value = "true";
+                    if (!bool.TryParse(value.ToString(), out boolean))
                     {
-                        throw new FormatException($"Invalid boolean value for field '{_field}'");
+                        throw new FormatException($"Invalid boolean value for field '{field}'");
                     }
-                    _value = boolean;
+                    value = boolean;
                     break;
                 case "date":
                 case "datetime":
                     DateTime date = new DateTime();
-                    if (!DateTime.TryParse(_value.ToString().Trim('\''), out date))
+                    if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
                     {
-                        throw new FormatException($"Invalid date value for field '{_field}'");
+                        throw new FormatException($"Invalid date value for field '{field}'");
                     }
-                    _value = date;
+                    value = date;
 
                     break;
                 default:
-                    _value = _value.ToString().Trim('\'');
+                    value = value.ToString().Trim('\'');
                     break;
             }
-            if (_operator == "ct")
+            if (@operator == "ct")
             {
-                _value = $"%{_value.ToString().Replace("*", "%")}%";
+                value = $"%{value.ToString().Replace("*", "%")}%";
             }
 
             string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
 
-            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(_fieldType.Type.ToLower()) && _fieldType.LookupObjectID != null)
+            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
             {
-                this._isLookupField = true;
+                if (fieldType.LookupObjectID == null)
+                {
+                    throw new Exception("Lookup field type is missing LookupObjectID value!");
+                }
+                this.isLookupField = true;
                 LoadLookupSql();
             }
 
-            if (!this._isLookupField)
+            if (!this.isLookupField)
             {
-                _stringBuilder.Append(GetColumnValueSyntax(_fieldType.ID));
-                _stringBuilder.Append(GetSQLOperator(_operator));
-                _stringBuilder.Append($"@filter_{_parameterIdx}");
+                stringBuilder.Append(GetColumnValueSyntax(fieldType.ID));
+                stringBuilder.Append(GetSQLOperator(@operator));
+                stringBuilder.Append($"@filter_{parameterIdx}");
             }
 
-            _sqlParams.Add($"@filter_{_parameterIdx}", _value);
+            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 
         }
 
         private void LoadLookupSql()
         {
-            if (_fieldType.Type == "Lookup")
+            if (fieldType.Type == "Lookup")
             {
-                int lookupValue = CompanyContext.Query<int>(@"select value
-  from[dbo].[FieldLookupValue]
-  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
-
-new { obj = _fieldType.LookupObjectType, objId = _fieldType.LookupObjectID, f = _fieldType.ID, value = _value }).FirstOrDefault();
+                int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
                 if (lookupValue <= 0)
-                    throw new Exception($"Invalid lookup value '{_value}' for field '{_field}'");
+                    throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 
-                _value = lookupValue.ToString();
+                value = lookupValue.ToString();
 
                 string condition = "in";
-                if (_field == "ne")
+                if (field == "ne")
                 {
                     condition = "not in";
                 }
 
-                if (!string.IsNullOrEmpty(_fieldType.DefaultValue))
+                if (!string.IsNullOrEmpty(fieldType.DefaultValue))
                 {
-                    _stringBuilder.Append($"@filter_{_parameterIdx} {condition} (select * from string_split(coalesce(F{_fieldType.ID}.Value,@defLookupValue{_parameterIdx}),','))");
-                    _sqlParams.Add($"@defLookupValue{_parameterIdx}", _fieldType.DefaultValue);
+                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))");
+                    sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
                 }
                 else
                 {
-                    _stringBuilder.Append($"@filter_{_parameterIdx} {condition} (select * from string_split(F{_fieldType.ID}.Value,','))");
+                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))");
                 }
             }
 
-            if (_fieldType.Type == "Relationship")
+            if (fieldType.Type == "Relationship")
             {
                 string condition = "exists";
-                if (_operator == "ne")
+                if (@operator == "ne")
                 {
                     condition = "not exists";
                 }
 
                 var whereStatement = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {_fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname = @filter_{_parameterIdx}
-                                    union select id from IntersectDetail where intersecttypeid = {_fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname = @filter_{_parameterIdx})";
+                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname = @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname = @filter_{parameterIdx})";
 
-                _stringBuilder.Append(whereStatement);
+                stringBuilder.Append(whereStatement);
             }
         }
 
         private void ValidateTokenForType()
         {
-            bool hasApostrophe = _value.ToString().First() == '\'' && _value.ToString().Last() == '\'';
-            if (!hasApostrophe && !(_fieldType.Type == "Number" || _fieldType.Type == "Decimal" || _fieldType.Type == "Boolean"))
+            bool hasApostrophe = value.ToString().First() == '\'' && value.ToString().Last() == '\'';
+            if (!hasApostrophe && !(fieldType.Type == "Number" || fieldType.Type == "Decimal" || fieldType.Type == "Boolean"))
             {
                 throw new Exception("Text values should be placed within quotations.");
             }
 
             if (!IsValidOperatorForFieldType())
             {
-                throw new Exception($"Operator '{_operator}' is not valid for '{_fieldType.Type}' on field {_field}");
+                throw new Exception($"Operator '{@operator}' is not valid for '{fieldType.Type}' on field {field}");
             }
         }
 
         private bool IsValidOperatorForFieldType()
         {
-            var operand = _operator.ToLower();
-            switch (_fieldType.Type.ToLower())
+            var operand = @operator.ToLower();
+            switch (fieldType.Type.ToLower())
             {
                 case "boolean":
                 case "lookup":
@@ -253,11 +253,11 @@ new { obj = _fieldType.LookupObjectType, objId = _fieldType.LookupObjectID, f = 
 
         private string GetColumnValueSyntax(int fieldTypeId)
         {
-            if (_fieldColumn == null || _fieldColumn.LastIndexOf(" as ") <= 0)
+            if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
             {
                 return $"F{fieldTypeId}.FormattedValue";
             }
-            return _fieldColumn.Substring(0, _fieldColumn.LastIndexOf(" as "));
+            return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
 
         }
 

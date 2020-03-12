@@ -1,0 +1,78 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Table.metrics.Allocation-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Allocation')
+BEGIN
+	CREATE TABLE [metrics].[Allocation](
+		[Uid] [uniqueidentifier] CONSTRAINT [DF_MetricAllocation_uid]  DEFAULT (newid()) NOT NULL,
+		[ScoreType] [int] NOT NULL,
+		[AssetTypeUid] [uniqueidentifier] NOT NULL,
+		[OverrideName] [nvarchar](250) NULL,
+		[State] [int] CONSTRAINT [DF_MetricAllocation_State]  DEFAULT (1) NOT NULL,
+		[CreatedOn] [datetime] CONSTRAINT [DF_MetricAllocation_CreatedOn]  DEFAULT (getutcdate()) NOT NULL,
+		[CreatedBy] [int] CONSTRAINT [DF_MetricAllocation_CreatedBy]  DEFAULT (0) NOT NULL,
+		[UpdatedOn] [datetime] CONSTRAINT [DF_MetricAllocation_UpdatedOn]  DEFAULT (getutcdate()) NOT NULL,
+		[UpdatedBy] [int] CONSTRAINT [DF_MetricAllocation_UpdatedBy]  DEFAULT (0) NOT NULL,
+		[IsExternallyCalculated] [bit] CONSTRAINT [DF_MetricAllocation_IsExternallyCalculated]  DEFAULT (0) NOT NULL,
+		CONSTRAINT [PK_MetricAllocation] PRIMARY KEY CLUSTERED ( [AssetTypeUid] ASC, [ScoreType] ASC )
+	)
+END
+
+IF COL_LENGTH('metrics.Allocation', 'LowerThreshold') IS NULL
+BEGIN
+alter table [metrics].[Allocation] add LowerThreshold [int] CONSTRAINT [DF_MetricAllocation_LowerThreshold] DEFAULT(50) NOT NULL
+END
+
+IF COL_LENGTH('metrics.Allocation', 'UpperThreshold') IS NULL
+BEGIN
+alter table [metrics].[Allocation] add UpperThreshold [int] CONSTRAINT [DF_MetricAllocation_UpperThreshold] DEFAULT(90) NOT NULL
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+SELECT 1 FROM sys.default_constraints 
+    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
+        AND name = 'DF_MetricAllocation_LowerThreshold'
+
+SELECT 1 FROM sys.default_constraints 
+    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
+        AND name = 'DF_MetricAllocation_LowerThreshold'
+BEGIN
+    ALTER TABLE [metrics].[Allocation]
+    DROP CONSTRAINT DF_MetricAllocation_LowerThreshold
+END
+
+SELECT 1 FROM sys.default_constraints 
+    WHERE parent_object_id = OBJECT_ID(N'metrics.Allocation') 
+        AND name = 'DF_MetricAllocation_UpperThreshold'
+BEGIN
+    ALTER TABLE [metrics].[Allocation]
+    DROP CONSTRAINT DF_MetricAllocation_UpperThreshold
+END
+
+IF COL_LENGTH('metrics.Allocation', 'LowerThreshold') IS NOT NULL
+BEGIN
+	alter table [metrics].[Allocation] drop column LowerThreshold
+END
+
+IF COL_LENGTH('metrics.Allocation', 'UpperThreshold') IS NOT NULL
+BEGIN
+	alter table [metrics].[Allocation] drop column UpperThreshold
+END
+
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>

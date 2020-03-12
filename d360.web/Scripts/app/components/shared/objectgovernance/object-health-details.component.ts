@@ -1,15 +1,14 @@
-﻿import {Component, Input, Output, EventEmitter, OnChanges, SimpleChange, AfterViewInit, ViewChildren, QueryList} from '@angular/core';
+﻿import {Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
-import { PointBreakdown, AverageScore } from '../../../models/score.model';
+import { PointBreakdown } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
 import { ObjectHealthDetailsItemComponent } from './object-health-details-item.component';
-import { ignoreElements } from 'rxjs/operators';
-import { debug } from 'util';
 import { SearchDetail } from '../../../models/search-result.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
+
 
 
 @Component({
@@ -18,7 +17,7 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
     providers: [ScoreService, ObjectStatisticsService],
 })
 
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewInit{
+export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges{
     @Input() uid: string;
     @Input() objectName: string;
     scoreHistory: Object;
@@ -37,17 +36,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private scoreTypes :number[] = [];
     private showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
+    private handle: any;
+    private loadingPoints: boolean = false;
+    private loadingDefinition: boolean = false;
+    private loadingHistory: boolean = false;
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
+    private showExpandAndCollapse: boolean = true;
 
     constructor(protected scoreService: ScoreService, protected objectStatisticsService: ObjectStatisticsService) {
         super();
-    }
-
-    ngAfterViewInit(): void {
-        this.loadPoints();
-        this.loadSeriesData();
-        this.loadDefinition();
-        this.loadTypesAndLatestScore();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -58,10 +55,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             }
         }
         if (requiresLoad) {
-            this.isLoading = true;
-            this.loadPoints();
-            this.loadSeriesData();
-            this.loadDefinition();
             this.loadTypesAndLatestScore();
         }
     }
@@ -69,8 +62,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         if (this.uid) {
             this.scoreService.getScoreTypes(this.uid).subscribe(x => {
                 this.scoreTypes = x;
-                if (x.length > 0)
-                    this.selectedScoreType = x[0];
+                if (x.length > 0) {
+                    this.setSelectedButton(x[0])
+                }
             });
             this.objectStatisticsService.getSearchDetails(this.uid).subscribe(
                 result => {
@@ -83,11 +77,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadSeriesData() {
         if (this.uid) {
             this.historicalData = [];
-            this.isLoading = true;
+            this.loadingHistory = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
                     this.historicalData = res.map(val => {
-                        return [Date.parse(val.Date), val.Score, this.getScoreType()];
+                        return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
@@ -113,9 +107,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                 format: '{value}%'
                             },
                             gridLineWidth: 2,
-                            floor: 0,
-                            ceiling: 100,
-                            tickInterval: 10,
+                            min: 0,
+                            max: 100,
+                            tickInterval: 20,
                         },
                         credits: {
                             enabled: false
@@ -143,6 +137,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                         click: e => {
                                             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                             this.loadPoints();
+                                            this.loadDefinition();
                                         }
                                     }
                                 }
@@ -178,20 +173,19 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             color: '#FF7155'
                         }]
                     };
-                    this.isLoading = false;
+                    this.loadingHistory = false;
                 });
         }
     }
 
     private loadPoints() {
-        this.isLoading = true;
+        this.loadingPoints = true;
         if (this.uid) {
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
             .subscribe(res => {
                 this.pointBreakdown = res;
                 this.isDQAndNoItems();
                 this.pointBreakdownTree = [];
-
                 let tree = (node: any) => {
                     let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
 
@@ -230,24 +224,33 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     this.pointBreakdownTree.push(root);
                 });
 
-                this.isLoading = false;
+                this.loadingPoints = false;
             });
         }
     }
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality }).length == 0
+            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
     private loadDefinition() {
         if (this.uid) {
-            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res; });
-            this.isLoading = false;
+            this.loadingDefinition = true;
+            this.scoreService.getScoreitemDetails(this.uid, this.scoreDate).subscribe(res => { this.scoreDefinition = res; this.loadingDefinition = false; });
         }
     }
-   
+    hasAnyExpanders() {
+        clearTimeout(this.handle);
+        this.handle = window.setTimeout(() => {
+            if (this.OHDitems && !this.loadingDefinition && !this.loadingHistory && !this.loadingPoints) {
+                this.showExpandAndCollapse = this.OHDitems.filter(x => {
+                    return x.expandable;
+                }).length > 0;
+            }
+        }, 100);
+    }
 
     private setSelectedButton(scoreType: ScoreType) {
         switch (scoreType) {
@@ -255,6 +258,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showGovernanceScores = true;
                 this.showDQScores = false;
                 this.selectedScoreType = ScoreType.Governance;
+                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints();
                 this.isDQAndNoItems();
@@ -263,6 +267,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.showGovernanceScores = false;
                 this.showDQScores = true;
                 this.selectedScoreType = ScoreType.DataQuality;
+                this.loadDefinition();
                 this.loadSeriesData();
                 this.loadPoints();
                 this.isDQAndNoItems();
@@ -364,6 +369,8 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             s = (s.substr(0, 2)) + '.' + s[2] + "%";
         else
             s = (s.substr(0, 2)) + "%";
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
         return s;
     }
 }

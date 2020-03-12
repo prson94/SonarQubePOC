@@ -1,0 +1,52 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.VersionStep-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'VersionStep')
+BEGIN
+	CREATE TABLE [workflow].[VersionStep](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ParentID] [int] NULL,
+		[VersionID] [int] NOT NULL,
+		[Name] [nvarchar](500) NOT NULL,
+		[StepType] [int] NOT NULL,
+		[ActivityType] [int] NOT NULL,
+		[Settings] [xml] NULL,
+		[Fields] [xml] NULL,
+		[XPosition] [int] NOT NULL,
+		[YPosition] [int] NOT NULL,
+		[State] [int] CONSTRAINT [DF_WorkflowVersionStep_State] DEFAULT (-1) NOT NULL,
+		CONSTRAINT [PK_WorkflowVersionStep] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowVersionStep_Parent')
+BEGIN
+	ALTER TABLE [workflow].[VersionStep]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowVersionStep_Parent] FOREIGN KEY([ParentID]) REFERENCES [workflow].[VersionStep] ([ID])
+	ALTER TABLE [workflow].[VersionStep] CHECK CONSTRAINT [FK_WorkflowVersionStep_Parent]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowVersionStep_WorkflowVersion')
+BEGIN
+	ALTER TABLE [workflow].[VersionStep]  WITH CHECK ADD  CONSTRAINT [FK_WorkflowVersionStep_WorkflowVersion] FOREIGN KEY([VersionID]) REFERENCES [workflow].[Version] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [workflow].[VersionStep] CHECK CONSTRAINT [FK_WorkflowVersionStep_WorkflowVersion]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

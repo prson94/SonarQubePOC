@@ -1,0 +1,48 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.ContractAcceptance-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ContractAcceptance')
+BEGIN
+	CREATE TABLE [dbo].[ContractAcceptance](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ResourceID] [int] NOT NULL,
+		[Accepted] [bit] NOT NULL,
+		[AcceptedOn] [datetime] NOT NULL,
+		[ContractID] [int] NOT NULL,
+		[OrganizationID] [int] NULL,
+		CONSTRAINT [PK_ContractAcceptance] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ContractAcceptance_Contract')
+BEGIN
+	ALTER TABLE [dbo].[ContractAcceptance]  WITH CHECK ADD  CONSTRAINT [FK_ContractAcceptance_Contract] FOREIGN KEY([ContractID]) REFERENCES [dbo].[Contract] ([ID])
+	ALTER TABLE [dbo].[ContractAcceptance] CHECK CONSTRAINT [FK_ContractAcceptance_Contract]
+
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_ContractAcceptance_Organization')
+BEGIN
+	ALTER TABLE [dbo].[ContractAcceptance]  WITH CHECK ADD  CONSTRAINT [FK_ContractAcceptance_Organization] FOREIGN KEY([OrganizationID]) REFERENCES [dbo].[Organization] ([ID])
+	ALTER TABLE [dbo].[ContractAcceptance] CHECK CONSTRAINT [FK_ContractAcceptance_Organization]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

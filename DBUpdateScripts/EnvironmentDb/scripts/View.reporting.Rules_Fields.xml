@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Rules_Fields-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+ CREATE OR ALTER VIEW [reporting].[Rules_Fields] AS
+    select 	O.ID as AssetID,
+            O.ObjectID as RuleID, 
+	        O.DisplayValue as RuleName, 
+	        F.FieldTypeID, 
+            FT.Name as FieldName, 
+            FT.FriendlyName as FieldFriendlyName, 
+	        F.FormattedValue as FieldValue 
+    from	AssetDetail O 
+            inner join Field F on F.ObjectType = O.Object and F.ObjectID = O.ObjectID and O.AssetTypeClass = 7 and O.State = 1
+	        inner join FieldType FT on FT.ID = F.FieldTypeID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

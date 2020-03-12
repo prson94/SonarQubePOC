@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.dbo.OrganizationResourceDetail-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter view [dbo].[OrganizationResourceDetail]
+as
+	select	O.OrganizationID,
+			coalesce(ORG.Name, 'Global') as OrganizationName,
+			O.ResourceID,
+			R.FirstName,
+			R.LastName,
+			R.LastLoggedInOn as DateLastLoggedIn,
+			R.Email,
+			case R.[State] when 1 then 'Active' else 'Inactive' end as [Status],
+			O.Accepted,
+			O.DateAccepted
+	from	OrganizationResource O
+			left join Organization ORG on ORG.ID = O.OrganizationID
+			inner join reporting.Global_Resource R on R.ResourceID = O.ResourceID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

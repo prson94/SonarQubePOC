@@ -115,6 +115,8 @@ export class AssetScore {
     Value: number;
     ScoreType: string;
     RunDate: string;
+    LowerThreshold: number;
+    UpperThreshold: number;
 }
 
 export class SearchDetail {

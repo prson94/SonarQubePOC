@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.dbo.FollowObject-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [dbo].[FollowObject]
+	@id int,
+	@type varchar(50),
+	@resourceID int,
+	@followTypeID int = 1,
+	@includeChildren bit = 0
+AS
+BEGIN
+	insert into Follow (ResourceID, ObjectType, ObjectID, DateCreated, FollowTypeID) values ( @resourceID, @type, @id, getutcdate(), @followTypeID)
+
+	IF @followTypeID = 3 OR @id = 0 
+	BEGIN
+		delete	F
+		from	Follow F
+				inner join FollowDetail FD on FD.ObjectType = F.ObjectType and FD.ObjectID = FD.ObjectID and FD.HardFollow = 0 and F.ResourceID = FD.ResourceID and F.ResourceID = @resourceID and FD.Type = @type and FD.TypeID = @id
+		
+	END
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

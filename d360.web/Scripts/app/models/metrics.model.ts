@@ -19,7 +19,7 @@ export class MetricAssetVersionConditionViewModel {
     FieldTypeID: number;
     Operator: string;
     Values: any;//[] = [];
-    
+
     // Transitive values used for UI logic only.
     FieldType: MetricFieldTypeViewModel;
     FieldTypeName: string;
@@ -55,7 +55,7 @@ export class Group {
 }
 
 export class GroupForm {
-    Group: Group = new Group(); 
+    Group: Group = new Group();
     Children: Group[] = [];
 }
 
@@ -122,6 +122,8 @@ export class ScoreTypeAllocation {
     state: State;
     hasMeasure: boolean;
     isExternallyCalculated: boolean;
+    lowerThreshold: number;
+    upperThreshold: number;
 }
 
 export class ScoreTypeAllocationFormatted {
@@ -133,6 +135,9 @@ export class ScoreTypeAllocationFormatted {
     state: State;
     hasMeasure: boolean;
     isExternallyCalculated: string;
+    lowerThreshold: number;
+    upperThreshold: number;
+    formattedThreshold: string;
 }
 
 export enum ScoreType {

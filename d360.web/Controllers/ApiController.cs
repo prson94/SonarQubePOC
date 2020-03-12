@@ -4573,20 +4573,6 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
 
         #endregion
 
-        #region Qualifiers
-
-        [Route("qualifier/resolutiontypes")]
-        public IQueryable<dynamic> GetQualifierResolutionObjects()
-        {
-            return Company.Query<dynamic>(@"select objectId as ID, 'ArtifactType' as [Type],  'ArtifactType|' + cast(objectId as varchar(50)) as [value],  'Artifact :: ' + [Name] as [label] from AssetType where [Object]='ArtifactType'
-                        union all
-                        select objectId as ID, 'TaxonomyType' as [Type], 'TaxonomyType|' + cast(objectId as varchar(50)) as [value],  'Model :: ' + [Name] as [label] from AssetType where [Object]='TaxonomyType'
-                        union all
-                        select  objectId as ID, 'ReferenceItemType' as [Type], 'ReferenceItemType|' + cast(objectId as varchar(50)) as [value], 'Reference :: ' + [Name] as [label] from AssetType where [Object]='ReferenceItemType'").AsQueryable();
-        }
-
-        #endregion
-
         #region Reports
 
         [Route("reports/targets")]
@@ -4970,63 +4956,6 @@ where   R.RuleTypeID = @id
             {
                 return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
             }
-        }
-
-
-        [Route("ruleimplementations/{id:int}/")]
-        public HttpResponseMessage GetRuleImplementation(int id)
-        {
-            var row = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType);
-            var rule = Company.AssetDetails.FirstOrDefault(i => i.Object == SystemObjects.Rule.ToString() && i.ObjectID == row.RuleID);
-
-            return Request.CreateResponse<dynamic>(
-                new Dictionary<string, object>() {
-                    { "ID", row.ID },
-                    { "Name", row.Name ?? $"Implementation {row.ID}" },
-                    { "SourceID", row.SourceID },
-                    { "SourceUri", row.SourceUri },
-                    { "RuleID", row.RuleID },
-                    { "RuleName", rule?.DisplayValue ?? "" },
-                    { "RuleTypeID", row.Rule.RuleTypeID },
-                    { "RuleTypeName", row.Rule.RuleType.Name },
-                    { "CreatedOn", row.CreatedOn.GetValueOrDefault() },
-                    { "UpdatedOn", row.UpdatedOn.GetValueOrDefault() }
-                }
-            );
-        }
-
-        [Route("rules/{id:int}/implementations")]
-        public HttpResponseMessage GetRuleImplementations(int id)
-        {
-            try
-            {
-                var query = Company.Query<dynamic>(@"
-select	A.ID,
-        A.RuleID,
-        R.RuleTypeID,
-        A.SourceID,
-        A.SourceUri,
-		coalesce(A.Name, A.SourceID, 'Implementation ' + cast(A.ID as varchar)) as Name,
-        A.CreatedOn,
-        A.UpdatedOn
-from	RuleImplementation A inner join [Rule] R on R.ID = A.RuleID
-where    A.RuleID = @id", new { id });
-
-                return Request.CreateResponse(HttpStatusCode.OK, query);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
-            }
-        }
-
-        [Route("ruleimplementations/{implementationID:int}/qualifiers")]
-        public IQueryable<dynamic> GetRuleimplementationQualifierTypes(int implementationID)
-        {
-            return Company.Query<dynamic>(@"select R.*, D.Name as ResolutionObjectName from RuleResultQualifierType R
-                left join AssetType D on D.[Object] = R.ResolutionObject and D.ObjectID = R.ResolutionObjectID
-                where R.RuleImplementationID = @implementationID
-                order by R.[Order]", new { implementationID }).AsQueryable();
         }
 
         #endregion
@@ -6050,70 +5979,7 @@ where    A.RuleID = @id", new { id });
                     }
                     rule = null;
                     break;
-                #endregion
-                case SystemObjects.RuleImplementation:
-                    #region Fields
-
-                    var impl = Company.GetById<RuleImplementation>(id, i => i.Rule.RuleType, i => i.RuleResultQualifierTypes);
-                    if (impl != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_Name, FieldName = "RuleImplementation_Name", Value = $"{impl.Name ?? "Implementation " + impl.ID}" }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_SourceID, FieldName = "RuleImplementation_SourceID", Value = impl.SourceID }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Resources.FieldInfo.RuleImplementation_ResultsEndpoint, FieldName = "RuleImplementation_ResultsEndpoint", DataType = "HTML", Value = $"POST to <a href='/swagger/ui/index#!/Events/Events_AddRuleImplementationResults' target='api'>/services/events/rules/{impl.RuleID}/{impl.ID}/results</a>" }
-                            }
-                        });
-
-                        if (impl.UpdatedOn.HasValue)
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 2,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = impl.CreatedOn.Value.ToShortDateString() }
-                                },
-                                SecondColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "RuleUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = impl.UpdatedOn.GetValueOrDefault().ToShortDateString() }
-                                }
-                            });
-                        }
-                        else
-                        {
-                            model.rows.Add(new DetailReadOnlyRowModel
-                            {
-                                columns = 1,
-                                FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = impl.CreatedOn.Value.ToShortDateString() }
-                                }
-                            });
-                        }
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField> {
-                                    new ReadOnlyField { Name = impl.GetName(i => i.ID), FieldName = "RuleImplementationID", FieldDescription = impl.GetDescription(i => i.ID), Value = $"{impl.ID}" }
-                                }
-                        });
-                    }
-                    rule = null;
-                    break;
-                #endregion
+                #endregion                
                 case SystemObjects.RuleType:
                     #region Fields
                     var ruleType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "RuleType").SingleOrDefault();
@@ -8294,7 +8160,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
         private string GetOrderStatement(SystemObjects type, int id)
         {
             string sortStatement;
-            var fieldTypes = Company.FieldTypes.Where(x => x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
+            var fieldTypes = Company.FieldTypes.Where(x => x.IsListable == true && x.Object == type.ToString() && x.ObjectID == id && x.SortOrder != 0)
                 .OrderBy(x => x.SortOrder)
                 .ThenBy(x => x.Name)
                 .ToList();
@@ -8326,7 +8192,7 @@ where   T.[Class] in @classes", new { classes }).OrderBy(i => i.ClassName).ThenB
 
                 if (!string.IsNullOrEmpty(ft.DefaultFormattedValue))
                 {
-                    val = $"coalesce({val}, {ft.DefaultFormattedValue})";
+                    val = $"coalesce({val}, '{ft.DefaultFormattedValue}')";
                 }
 
                 if (fieldType == "bit")

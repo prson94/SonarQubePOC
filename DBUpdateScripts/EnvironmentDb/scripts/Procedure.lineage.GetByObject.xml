@@ -1,0 +1,207 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Procedure.lineage.GetByObject-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter procedure [lineage].[GetByObject]
+
+	@Object varchar(50) = 'Artifact',
+	@ObjectID int = 4680,
+	@MaxLevel int = 10
+as
+begin
+	set nocount on;
+	declare @level int = 0
+	
+	DROP TABLE IF EXISTS #usedIntersectIDs;
+	create table #usedIntersectIDs (ID int)
+	CREATE CLUSTERED INDEX IX_temp_usedIntersectIDs ON #usedIntersectIDs ([ID] ASC);
+
+	DROP TABLE IF EXISTS #levelResults;
+	create table #levelResults (IntersectTypeID int, IntersectID int, Subject varchar(50), SubjectID int, Object varchar(50), ObjectID int, [State] int, PredicateName nvarchar(250))
+
+	DROP TABLE IF EXISTS #lineage;
+	create table #lineage (
+							IntersectTypeID int, IntersectID int, Direction char(1), 
+							[SubjectLevel] int, Subject varchar(50), SubjectID int, 
+							[ObjectLevel] int, Object varchar(50), ObjectID int, 
+							[State] int, PredicateName nvarchar(250)
+						  );
+	CREATE INDEX IX_temp_lineage_subject ON #lineage (Direction ASC, [SubjectLevel] ASC, [Subject] ASC, [SubjectID] ASC);
+	CREATE INDEX IX_temp_lineage_object ON #lineage (Direction ASC, [ObjectLevel] ASC, [Object] ASC, [ObjectID] ASC);
+	CREATE INDEX IX_temp_lineage_subjectLevel ON #lineage ([SubjectLevel] ASC);
+	CREATE INDEX IX_temp_lineage_objectLevel ON #lineage ([ObjectLevel] ASC);
+
+	if @MaxLevel > 0
+	begin
+		
+		insert into #lineage
+			select	I.IntersectTypeID,
+					I.IntersectID,
+					'P' as Direction,
+					1 as SubjectLevel,	I.Subject,	I.SubjectID,
+					2 as ObjectLevel,	I.Object,	I.ObjectID,
+					I.State,
+					I.PredicateName
+			from	PredicateIntersect I
+			where	I.Subject = @Object and I.SubjectID = @ObjectID and I.PredicateType = 1
+			union
+			select	I.IntersectTypeID,
+					I.IntersectID,
+					'N' as Direction,
+					2 as SubjectLevel,	I.Subject,	I.SubjectID,
+					1 as ObjectLevel,	I.Object,	I.ObjectID,
+					I.State,
+					I.PredicateName
+			from	PredicateIntersect I
+			where	I.Object = @Object and I.ObjectID = @ObjectID and I.PredicateType = 1
+	end
+
+	set @level = 2
+
+	while exists(select 1 from #lineage where SubjectLevel = @level or ObjectLevel = @level) and @level <= @MaxLevel
+	begin
+		insert into #lineage
+			select	distinct
+					O.IntersectTypeID,
+					O.IntersectID,
+					S.Direction,
+					IIF(S.Direction = 'P', @level, @level+1),
+					O.Subject,
+					O.SubjectID,
+					IIF(S.Direction = 'P', @level+1, @level),
+					O.Object,
+					O.ObjectID,
+					O.State,
+					O.PredicateName
+			from	#lineage S
+					inner join PredicateIntersect O on (
+												(S.[ObjectLevel] = @level and S.Direction = 'P' and O.Subject = S.Object and O.SubjectID = S.ObjectID)
+												or 
+												(S.[SubjectLevel] = @level and S.Direction = 'N' and O.Object = S.Subject and O.ObjectID = S.SubjectID)
+											 ) and O.PredicateType = 1
+			where	O.IntersectID not in (select IntersectID from #lineage)
+
+		set @level = @level + 1
+	end
+
+	
+
+	DROP TABLE IF EXISTS #nodes;
+	create table #nodes (
+		[key] varchar(50), assetId bigint, [object] varchar(50), objectId int, 
+		[name] nvarchar(250), backColor varchar(25), foreColor varchar(25), 
+		objectTypeName nvarchar(250), objectType varchar(50), objectTypeId int, assetTypeId int
+	);
+	DROP TABLE IF EXISTS #edges;
+	create table #edges (
+		[from] varchar(50), [to] varchar(50), intersectId int, [state] int, [predicate] nvarchar(250), intersectTypeId int
+	);
+
+	insert into #nodes
+		select	distinct
+				case 
+					when I.[SubjectLevel] = 1 and I.Subject = @Object and I.SubjectID = @ObjectID then 'C' + cast(I.[SubjectLevel] as varchar) 
+					else Direction + cast(I.[SubjectLevel] as varchar)
+				end + '.' + cast(A.ID as varchar) as [key],
+				A.ID as assetId,
+				I.Subject as [object],
+				I.SubjectID as objectId,
+				A.DisplayValue as [name],
+				A.BackColor as backColor,
+				A.ForeColor as foreColor,
+				A.TypeName as objectTypeName,
+				A.Type as objectType,
+				A.TypeID as objectTypeId,
+				A.AssetTypeID as assetTypeID
+		from	#lineage I
+				inner join AssetDetail A on A.Object = I.Subject and A.ObjectID = I.SubjectID
+		union
+		select	distinct
+				case 
+					when I.[ObjectLevel] = 1 and I.Object = @Object and I.ObjectID = @ObjectID then 'C' + cast(I.[ObjectLevel] as varchar) 
+					else Direction + cast(I.[ObjectLevel] as varchar)
+				end + '.' + cast(A.ID as varchar) as [key],
+				A.ID as assetId,
+				I.Object as [object],
+				I.ObjectID as objectId,
+				A.DisplayValue as [name],
+				A.BackColor as backColor,
+				A.ForeColor as foreColor,
+				A.TypeName as objectTypeName,
+				A.Type as objectType,
+				A.TypeID as objectTypeId,
+				A.AssetTypeID as assetTypeID
+		from	#lineage I
+				inner join AssetDetail A on A.Object = I.Object and A.ObjectID = I.ObjectID
+		;
+
+	
+
+	insert into #edges
+		select	case 
+					when I.[SubjectLevel] = 1 and I.Subject = @Object and I.SubjectID = @ObjectID then 'C' + cast(I.[SubjectLevel] as varchar) 
+					else Direction + cast(I.[SubjectLevel] as varchar)
+				end + '.' + cast(SA.ID as varchar) as [from],
+				case 
+					when I.[ObjectLevel] = 1 and I.Object = @Object and I.ObjectID = @ObjectID then 'C' + cast(I.[ObjectLevel] as varchar) 
+					else Direction + cast(I.[ObjectLevel] as varchar)
+				end + '.' + cast(OA.ID as varchar) as [to],
+				I.IntersectID as intersectId,
+				I.[state],
+				I.PredicateName as [predicate],
+				I.IntersectTypeID as intersectTypeId
+		from	#lineage I
+				inner join Asset SA on SA.Object = I.Subject and SA.ObjectID = I.SubjectID
+				inner join Asset OA on OA.Object = I.Object and OA.ObjectID = I.ObjectID
+
+	if not exists(select 1 from #nodes)
+	begin
+		insert into #nodes
+			select	'C1.' + cast(ID as varchar) as [key],
+					ID as assetId,
+					[object],
+					objectId,
+					DisplayValue as [name],
+					BackColor as backColor,
+					ForeColor as foreColor,
+					TypeName as objectTypeName,
+					Type as objectType,
+					TypeID as objectTypeId,
+					AssetTypeID as assetTypeID
+			from	AssetDetail
+			where	Object = @Object 
+					and ObjectID = @ObjectID
+	end
+
+	
+	select	(
+			select	* 
+			from	#nodes
+					for json path
+			) as nodes,
+			(
+			select	* 
+			from	#edges
+					for json path
+			) as links
+	for json path, WITHOUT_ARRAY_WRAPPER
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -1,0 +1,32 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.RuleResultQualifier-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifier')
+BEGIN
+	exec sp_rename 'dbo.RuleResultQualifier', 'RuleResultQualifier_bak';
+END
+
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifier_RuleResult')
+BEGIN	
+	ALTER TABLE [dbo].[RuleResultQualifier_bak] DROP CONSTRAINT [FK_RuleResultQualifier_RuleResult]
+END
+
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifier_RuleResultQualifierType')
+BEGIN	
+	ALTER TABLE [dbo].[RuleResultQualifier_bak] DROP CONSTRAINT [FK_RuleResultQualifier_RuleResultQualifierType]
+END
+		]]>
+    </sql>
+  </changeSet>
+
+</databaseChangeLog>

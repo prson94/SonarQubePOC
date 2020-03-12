@@ -159,10 +159,18 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
 
-
-            if (allocation.IsExternallyCalculated == false && (model.Weight == 0 || model.Weight > 1))
+        
+            if (allocation.IsExternallyCalculated == false)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
+                if (model.Weight <= 0 || model.Weight > 1)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight must be a value between 0 and 1");
+                }
+                else if (decimal.Round(model.Weight, 2) != model.Weight)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
+                }
+                    
             }
 
             if (model.IsGroup && model.Conditions.Count > 0)
@@ -539,6 +547,7 @@ namespace d360.web.Controllers.V2
         /// Gets a administrative hierarchical structure of metrics associated with the asset Uid provided.
         /// </summary>
         /// <param name="uid">The Uid of the asset.</param>
+        /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
@@ -546,7 +555,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid, DateTime? effectiveDate = null)
         {
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
             if (asset == null)
@@ -554,7 +563,7 @@ namespace d360.web.Controllers.V2
             var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
             if (assetType == null)
                 return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
-            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid);
+            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid, effectiveDate);
         }
 
 
@@ -569,7 +578,8 @@ namespace d360.web.Controllers.V2
             Route("history/{scoreType}/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score history given an asset type Uid and score type .", typeof(ConfirmResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetHistory(ScoreType scoreType, Guid assetUid)
         {

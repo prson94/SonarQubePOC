@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Responsibility_All-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Responsibility_All] AS
+    SELECT S.AssetID
+          ,S.Object
+          ,S.ObjectID
+          ,S.Type
+          ,S.TypeID
+          ,S.Context
+          ,S.ResponsibilityTypeID
+          ,S.ResponsibilityTypeName
+	      ,R.FirstName
+	      ,R.LastName
+          ,S.ResourceID
+          ,S.SecurityAsset
+          ,S.SecurityAssetID
+          ,S.SecurityAssetName
+          ,S.IsVisible
+          ,S.ApplyToType
+          ,S.OverrideID as OverrideItemID
+          ,[PermissionsBitMask]
+      FROM ResponsibilityDetail S inner join reporting.Global_Resource R on R.ResourceID = S.ResourceID and R.[State] = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

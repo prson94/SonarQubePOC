@@ -1,4 +1,4 @@
-﻿import { NgModule }       from '@angular/core';
+﻿import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
@@ -13,21 +13,21 @@ import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 
 @NgModule({
-    declarations: [        
+    declarations: [
+        TooltipComponent,
+        PreviewTooltipComponent,
+        LoadingComponent,
+        LookupTooltipComponent,
+        D3STreeTableToggler
+    ],
+    exports: [
         TooltipComponent,
         PreviewTooltipComponent,
         LoadingComponent,
         LookupTooltipComponent,
         D3STreeTableToggler,
-    ],
-    exports: [        
-        TooltipComponent,        
-        PreviewTooltipComponent,
-        LoadingComponent,
-        LookupTooltipComponent,
-        D3STreeTableToggler,
         D3SSortIconModule,
-        D3SColumnFilterModule,
+        D3SColumnFilterModule
     ]
     , imports: [
         CommonModule,
