@@ -663,6 +663,7 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
+    <Content Include="Scripts\app\components\admin\load\bulk-load-item.component.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
