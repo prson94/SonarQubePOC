@@ -42,7 +42,7 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
         private objectDetailService: ObjectDetailService,
         private changeDetectorRef: ChangeDetectorRef,
         secondaryNavService: SecondaryNavService,
-        breadcrumbService: HeaderBreadcrumbService    
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -62,12 +62,16 @@ export class AuditComponent extends BaseComponent implements OnInit, OnDestroy {
                 this.objectType = params['objectType'];
 
                 this.objectDetailService.getObject(this.objectID,this.objectType).subscribe(res => {
-                            if (res) {
-                                this.objectName = res.Name ? res.Name : res.DisplayValue;
-                            }
-                        }
+                    if (res) {
+                        this.objectName = res.Name ? res.Name : res.DisplayValue;
+                    }
+                }
                 );
                 let reloadNav = params['isAdminPage'] && params['isAdminPage'] == 'false' ? false : true;
+
+                //do not reload 2nd navigation for audit page as both grid pages and config pages share same URL
+                if (this.objectType == 'PolicyType' || this.objectType == 'TaxonomyType')
+                    reloadNav = false;
 
                 if (reloadNav)
                     this.buildSecondaryNavigationForObject(this.objectID, this.objectType);
