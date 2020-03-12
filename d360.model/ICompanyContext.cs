@@ -330,5 +330,6 @@ namespace d360.model
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
+        int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
     }
 }
