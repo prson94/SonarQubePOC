@@ -1702,6 +1702,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return subgraph;
     }
 
+    /**
+     * Sorts go.Parts based on their display names
+     */
+    private sortParts(a: go.Part, b: go.Part): number {
+        if (a == null || b == null || a.data == null || b.data == null)
+            return 0;
+        if (a.data.text > b.data.text)
+            return 1;
+        else if (a.data.text < b.data.text)
+            return -1;
+        else
+            return 0;
+    }
     //#endregion
 
     //#region session storage
@@ -2593,7 +2606,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.sortParts(a, b)
                         }
                     )
             },
@@ -2717,7 +2732,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.sortParts(a, b)
                         }
                     )
             },
@@ -2874,7 +2891,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.sortParts(a, b)
                         }
                     )
             },
