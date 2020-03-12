@@ -763,7 +763,7 @@ export class BaseComponent {
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
-            if (this.objectType == 'FusionAttribute') {
+            if (this.objectType == 'FusionAttribute' || this.objectType == 'Tag') {
                 return;
             }
 

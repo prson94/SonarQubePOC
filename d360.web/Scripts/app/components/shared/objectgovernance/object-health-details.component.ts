@@ -173,6 +173,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                         click: e => {
                                             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
                                             this.loadPoints();
+                                            this.loadDefinition();
                                         }
                                     }
                                 }
@@ -273,7 +274,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private loadDefinition() {
         if (this.uid) {
             this.loadingDefinition = true;
-            this.scoreService.getScoreitemDetails(this.uid).subscribe(res => { this.scoreDefinition = res; this.loadingDefinition = false; });
+            this.scoreService.getScoreitemDetails(this.uid, this.scoreDate).subscribe(res => { this.scoreDefinition = res; this.loadingDefinition = false; });
         }
     }
     hasAnyExpanders() {

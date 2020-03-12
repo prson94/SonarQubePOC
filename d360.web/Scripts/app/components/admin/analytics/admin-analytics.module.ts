@@ -34,6 +34,7 @@ import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
+import { SliderModule } from 'primeng/slider';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
@@ -43,6 +44,7 @@ import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { AdminAllocationEditorComponent } from './admin-allocation-editor.component';
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
+import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 
 @NgModule({
     imports: [
@@ -68,6 +70,7 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
         TreeTableModule,
         TableModule,
         AutoCompleteModule,
+        SliderModule,
 
         //d3s        
         CoreModule,
@@ -80,7 +83,8 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
         SimpleAccordionModule,
         TooltipModule,
         DirectivesModule,
-        SiteModalModule
+        SiteModalModule,
+        InfoTooltipModule
     ],
     declarations: [
         AdminAnalyticsComponent,

@@ -65,22 +65,32 @@ namespace d360.core.entities
     }
 
     [DataContract(Namespace = NAMESPACE)]
-    public class AssetApiModel: BaseObject
+    public class AssetApiModel : BaseObject
     {
         public long ID { get; set; }
 
         public int AssetTypeID { get; set; }
 
         public string SourceID { get; set; }
-                
+
         [DataMember, ForeignKey("AssetID")]
         public virtual ICollection<FieldApiModel> Fields { get; set; }
     }
 
-    public class AssetsApiViewModel: PagedApiBaseViewModel
+    public class AssetsApiViewModel : PagedApiBaseViewModel
     {
         [DataMember]
         public IEnumerable<dynamic> items { get; set; }
+    }
+
+    public class AssetsApiPermissionViewModel
+    {
+        [DataMember]
+        public bool ReadAsset { get; set; }
+        [DataMember]
+        public bool ModifyAsset { get; set; }
+        [DataMember]
+        public bool DeleteAsset { get; set; }
     }
 
 
@@ -122,14 +132,14 @@ namespace d360.core.entities
     }
 
     public enum AssetsByPathItemApiFilterSideOfRelationshipRequestEnum
-    { 
+    {
         Subject,
         Object
     }
 
     #region AssetsController.GetAssetsByPathAsync Return Types
 
-    public class AssetsByPathApiViewModel: PagedApiBaseViewModel
+    public class AssetsByPathApiViewModel : PagedApiBaseViewModel
     {
         [DataMember]
         public IEnumerable<AssetsByPathItemApiViewModel> items { get; set; }
@@ -153,9 +163,10 @@ namespace d360.core.entities
         public string SegmentsXml { get; set; }
 
         [DataMember]
-        public IEnumerable<AssetsByPathItemSegmentApiViewModel> Segments 
-        { 
-            get {
+        public IEnumerable<AssetsByPathItemSegmentApiViewModel> Segments
+        {
+            get
+            {
                 try
                 {
                     return
