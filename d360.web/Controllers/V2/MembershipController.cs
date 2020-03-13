@@ -58,7 +58,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, int _pageSize = 5, int _pageNum = 1, string _order = "ResourceID", string _direction = "asc")
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
@@ -69,18 +69,20 @@ namespace d360.web.Controllers.V2
                 $"when 3 then 'Deleted' end as State ";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
             string orderBySQL = $"";
+            long pageSize;
+            long pageNum;
 
             DynamicParameters dbArgs = new DynamicParameters();
             List<string> queries = new List<string>();
             ResourceApiViewModel model = new ResourceApiViewModel();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize}, { "_pageNum", _pageNum } };
+            string isValid = isPageSizeAndNumValid(pageParams);
 
-            bool isValid = isPageSizeAndNumValid(_pageSize, _pageNum);
-
-            if(isValid == false)
+            if (!string.IsNullOrEmpty(isValid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
             }
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
@@ -89,35 +91,34 @@ namespace d360.web.Controllers.V2
             var queryParams = Request.GetQueryNameValuePairs();
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
-            if (_pageSize > 0 || _pageNum > 0)
-                if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
+            if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
+            {
+                if (Uid != null)
                 {
-                    if (Uid != null)
-                    {
-                        dbArgs.Add("uid", Uid);
-                        queries.Add(" gr.uid = @uid");
-                    }
-                    if (FirstName != null)
-                    {
-                        dbArgs.Add("FirstName", FirstName);
-                        queries.Add(" FirstName = @FirstName");
-                    }
-                    if (LastName != null)
-                    {
-                        dbArgs.Add("LastName", LastName);
-                        queries.Add(" LastName = @LastName");
-                    }
-                    if (State != null)
-                    {
-                        dbArgs.Add("state", State);
-                        queries.Add(" gr.state = @state");
-                    }
-                    if (IsAdministrator != null)
-                    {
-                        dbArgs.Add("isAdministrator", IsAdministrator);
-                        queries.Add(" isAdministrator = @isAdministrator");
-                    }
+                    dbArgs.Add("uid", Uid);
+                    queries.Add(" gr.uid = @uid");
                 }
+                if (FirstName != null)
+                {
+                    dbArgs.Add("FirstName", FirstName);
+                    queries.Add(" FirstName = @FirstName");
+                }
+                if (LastName != null)
+                {
+                    dbArgs.Add("LastName", LastName);
+                    queries.Add(" LastName = @LastName");
+                }
+                if (State != null)
+                {
+                    dbArgs.Add("state", State);
+                    queries.Add(" gr.state = @state");
+                }
+                if (IsAdministrator != null)
+                {
+                    dbArgs.Add("isAdministrator", IsAdministrator);
+                    queries.Add(" isAdministrator = @isAdministrator");
+                }
+            }
             foreach (var col in fieldColumns)
             {
                 selectSql += "," + col;
@@ -162,11 +163,12 @@ namespace d360.web.Controllers.V2
             finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
             countSql += joinsSql + " " + whereSql;
 
-            if (_pageSize < 1) _pageSize = 1;
-            if (_pageNum < 1) _pageNum = 1;
-            model.pageNum = _pageNum;
-            model.pageSize = _pageSize;
-            string offsetSql = $" {orderBySQL} offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
+            long.TryParse(_pageSize, out pageSize);
+            long.TryParse(_pageNum, out pageNum);
+
+            model.pageNum = pageNum;
+            model.pageSize = pageSize;
+            string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
             finalSql += offsetSql;
 
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
@@ -222,8 +224,10 @@ namespace d360.web.Controllers.V2
                                     + groupUid + "'";
             var firstName = "";
             var lastName = "";
-            var pageSize = 5;
-            var pageNum = 1;
+            string pageSize = "5";
+            string pageNum = "1";
+            long _pageSize;
+            long _pageNum;
             DynamicParameters dbArgs = new DynamicParameters();
             ResourceApiViewModel model = new ResourceApiViewModel();
             var queryParams = Request.GetQueryNameValuePairs();
@@ -247,26 +251,21 @@ namespace d360.web.Controllers.V2
                             countSql += " and gr.LastName = @lastName";
                             break;
                         case "_pagesize":
-                            if (int.TryParse(q.Value, out pageSize))
-                            {
-                                if (pageSize < 1) pageSize = 1;
-                            }
+                            pageSize = q.Value;
                             break;
                         case "_pagenum":
-                            if (int.TryParse(q.Value, out pageNum))
-                            {
-                                if (pageNum < 1) pageNum = 1;
-                            }
+                            pageNum = q.Value;
                             break;
                     }
                 }
             });
 
-            bool isValid = isPageSizeAndNumValid(pageSize, pageNum);
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+            string isValid = isPageSizeAndNumValid(pageParams);
 
-            if (isValid == false)
+            if (!string.IsNullOrEmpty(isValid))
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
             }
 
             var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
@@ -295,15 +294,13 @@ namespace d360.web.Controllers.V2
                                       + groupUid + "'" + joinsSql + " where g.ID = AB.ObjectID" + whereSql;
             countSql += joinsSql + " where g.ID = AB.ObjectID" + whereSql;
 
-            if (pageSize > 0 || pageNum > 0)
-            {
-                if (pageSize < 1) pageSize = 1;
-                if (pageNum < 1) pageNum = 1;
-                model.pageNum = pageNum;
-                model.pageSize = pageSize;
-                string offsetSql = $" Order by gr.ResourceID offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-                finalSql += offsetSql;
-            }
+            long.TryParse(pageSize, out _pageSize);
+            long.TryParse(pageNum, out _pageNum);
+
+            model.pageNum = _pageNum;
+            model.pageSize = _pageSize;
+            string offsetSql = $" Order by gr.ResourceID offset {_pageSize * (_pageNum - 1)} rows fetch next {_pageSize} rows only";
+            finalSql += offsetSql;
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var count = await Company.QueryAsync<int>(countSql, dbArgs);
             model.items = results;

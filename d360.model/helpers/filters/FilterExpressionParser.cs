@@ -19,17 +19,24 @@ namespace d360.model.helpers
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private FilterExpressionParseType parseType;
+        private List<Tuple<string, string>> allowedDefaultFields = new List<Tuple<string, string>>();
 
         public FilterExpressionParser(
-            ICompanyContext ctx, 
-            List<FieldType> fields, 
-            List<string> columns, 
-            FilterExpressionParseType type = FilterExpressionParseType.CustomFields)
+            ICompanyContext ctx,
+            List<FieldType> fields,
+            List<string> columns,
+            FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
+            bool includeParent = false)
         {
             this.CompanyContext = ctx;
             this.fieldTypes = fields;
             this.fieldColumns = columns;
             this.parseType = type;
+
+            if (includeParent)
+            {
+                allowedDefaultFields.Add(new Tuple<string, string>("ParentDisplayName", "Parent.DisplayValue"));
+            }
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams)
@@ -126,7 +133,15 @@ namespace d360.model.helpers
                 var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
                 if (fieldType == null)
                 {
-                    throw new Exception("Field with name '" + token.Field + "' does not exist!");
+                    if (allowedDefaultFields.Any(x => x.Item1.ToLower() == token.Field.ToLower()))
+                    {
+                        var val = allowedDefaultFields.FirstOrDefault(x => x.Item1.ToLower() == token.Field.ToLower());
+                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val.Item2));
+                    }
+                    else
+                    {
+                        throw new Exception("Field with name '" + token.Field + "' does not exist!");
+                    }
                 }
                 else
                 {

@@ -51,22 +51,64 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public void CheckMaxPageSize()
         {
-            int pageSize = 500000;
-            int pageNum = 1;
-            bool result = actionsController.isPageSizeAndNumValid(pageSize,pageNum);
+            string pageSize = "500000";
+            string pageNum = "1";
 
-            Assert.False(result);
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageSize value provided. Number is too large",result);
 
         }
 
         [Fact]
         public void CheckMaxPageNum()
         {
-            int pageSize = 5;
-            int pageNum = 50000;
-            bool result = actionsController.isPageSizeAndNumValid(pageSize, pageNum);
+            string pageSize = "5";
+            string pageNum = "50000";
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
 
-            Assert.False(result);
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageNum value provided. Number is too large",result);
+
+        }
+        [Fact]
+        public void CheckNegPageSize()
+        {
+            string pageSize = "-1";
+            string pageNum = "1";
+
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageSize value provided. Value must be greater than 0",result);
+
+        }
+
+        [Fact]
+        public void CheckNegPageNum()
+        {
+            string pageSize = "5";
+            string pageNum = "-1";
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageNum value provided. Value must be greater than 0",result);
+
+        }
+
+        [Fact]
+        public void CheckNonNumericValue()
+        {
+            string pageSize = "abcdef";
+            string pageNum = "-1";
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageSize value provided. Must be a numeric value", result);
 
         }
     }
