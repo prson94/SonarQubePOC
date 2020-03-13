@@ -28,8 +28,5 @@ namespace d360.core.entities
 
         [ForeignKey("RuleImplementationID")]
         public virtual ICollection<RuleResult> Results { get; set; }
-
-        [ForeignKey("RuleImplementationID"), IgnoreDataMember]
-        public virtual ICollection<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
     }
 }
