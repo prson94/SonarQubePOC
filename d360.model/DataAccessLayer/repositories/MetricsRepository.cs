@@ -480,6 +480,11 @@ namespace d360.model.DataAccessLayer
                     											and IA.AssetTypeUid = @assetTypeUid 
                     											and IV.EffectiveDate <= @effectiveDate 
                     											and IA.State = 1
+						where		not exists (select 1 
+												from	metrics.ScoreItem R 
+														inner join metrics.Asset AR on AR.[Uid] = R.MetricAssetUid 
+												where	R.EffectiveDate <= @effectiveDate  
+														and R.MetricAssetUid = IA.[Uid] and AR.ScoreType = @scoreType)
                     	group by	IA.[Uid];
                     
                     drop table if exists #tbl
@@ -513,12 +518,12 @@ namespace d360.model.DataAccessLayer
                                     inner join metrics.Asset A on A.Uid = I.MetricAssetUid
                     				where	AssetUid = @assetUid
                                             and I.EffectiveDate >= @effectiveDate
-                    						 and A.ScoreType = {(int)type} 
+                    						 and A.ScoreType = @scoreType 
                     			) MI on MI.EffectiveDate = I.EffectiveDate
                                 inner join metrics.AssetVersion AV on AV.Uid = I.MetricAssetUid 
 								and AV.EffectiveDate = (select max(EffectiveDate) from metrics.assetVersion AV1 
 								where AV.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
-                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type} 
+                    	where	AssetUid = @assetUid and A.ScoreType = @scoreType 
                         union all
                     	select	I.MetricAssetUid,
                     			A.ParentUid,
@@ -548,7 +553,7 @@ namespace d360.model.DataAccessLayer
                                 inner join metrics.AssetVersion AV on AV.Uid = I.MetricAssetUid 
 								and AV.EffectiveDate = (select max(EffectiveDate) from metrics.assetVersion AV1 
 								where AV.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
-                    	where	AssetUid = @assetUid and A.ScoreType = {(int)type}
+                    	where	AssetUid = @assetUid and A.ScoreType = @scoreType
                     	union all
                     	select	A.[Uid],
                     			A.ParentUid,
@@ -617,7 +622,7 @@ namespace d360.model.DataAccessLayer
 		                        inner join metrics.AssetVersion AV 
 		                        on AV.Uid = ma.uid and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
 		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
-                        where  ma.ScoreType = {(int)type} and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate >= dateadd(day, 1,@effectiveDate) 
+                        where  ma.ScoreType = @scoreType and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate >= dateadd(day, 1,@effectiveDate) 
                         union all 
                         select 
                         ma.[Uid], 
@@ -639,7 +644,8 @@ namespace d360.model.DataAccessLayer
 		                        inner join metrics.AssetVersion AV 
 		                        on AV.Uid = ma.uid and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
 		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
-                        where  ma.ScoreType = {(int)type} and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate is null";
+                        where  ma.ScoreType = @scoreType and ma.AssetTypeUid = @AssetTypeUid and I.EffectiveDate <= @effectiveDate and endDate is null";
+
                     break;
                 case ScoreType.Perceptional:
                     break;
@@ -652,7 +658,7 @@ namespace d360.model.DataAccessLayer
             if (cnn.State != System.Data.ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value }).ToList();
+            var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value, scoreType = (int)type }).ToList();
 
             var model = new MetricAssetHierarchyModels();
 
