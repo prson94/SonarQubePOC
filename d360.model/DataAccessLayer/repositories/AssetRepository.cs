@@ -387,13 +387,8 @@ namespace d360.model.DataAccessLayer
             bool includeParent = false;
             string parentFieldSQL = @" Parent.uid as ParentAssetUid,
 					Parent.DisplayValue as ParentDisplayName,";
-            string parentApplySQL = $@"outer apply (
-					select top 1 AD.uid, AD.DisplayValue from [IntersectType] IT
-						inner join [Intersect] I on I.IntersectTypeId = IT.Id and I.Object = A.Object and I.ObjectID = A.ObjectID
-						inner join [Predicate] P on P.ID = IT.PredicateID
-						inner join AssetDetail AD on AD.Object = I.Subject and AD.ObjectID = I.SubjectID
-					where IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.Type = {(int)PredicateType.InterTypeHierarchy}
-				)Parent";
+            string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
+				left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID";
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
