@@ -20,7 +20,7 @@ namespace d360.web.Controllers
 
         public SearchController(
             ICommunityContext community,
-            ICompanyContext company, 
+            ICompanyContext company,
             ISearchSource searchSource)
             : base(community, company)
         {
@@ -64,6 +64,7 @@ namespace d360.web.Controllers
         }
 
         [HttpGet, Route("Typeahead"), NonNullableParameters]
+        [ValidateInput(false)]
         public JsonNetResult Typeahead(string q, string t, int? num)
         {
             try
