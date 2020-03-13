@@ -194,40 +194,35 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public bool isPageSizeAndNumValid(int _pageSize, int _pageNum)
-        {
-            if (_pageSize > 200000) return false;
-
-            if (_pageNum > 10000) return false;
-
-            return true;
-        }
-
-        public string isPageSizeAndNumValidParma(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public string isPageSizeAndNumValid (IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var parameters = queryParams.ToList();
-            int pageSize = 0;
-            int pageNum = 0;
+            long pageSize = 0;
+            long pageNum = 0;
 
             if (parameters.Any(q => q.Key == "_pageSize"))
             {
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
-                if (int.TryParse(_pageSize, out pageSize))
+                if(_pageSize.Length > 10)
+                    return "Invalid pageSize value provided.";
+                if (long.TryParse(_pageSize, out pageSize))
                 {
                     if (pageSize > 200000) return "Invalid pageSize value provided. Number is too large";
-                    if (pageSize < 0) return "Invalid pageSize value provided. Cannot be a negative value";
+                    if (pageSize <= 0) return "Invalid pageSize value provided. Value must be greater than 0";
                 }
                 else
-                    return "Invalid pageSize value provided. Must be a numeric value ";
+                    return "Invalid pageSize value provided. Must be a numeric value";
             }
 
             if (parameters.Any(q => q.Key == "_pageNum"))
             {
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
-                if (int.TryParse(_pageNum, out pageNum))
+                if(_pageNum.Length > 10)
+                    return "Invalid pageNum value provided.";
+                if (long.TryParse(_pageNum, out pageNum))
                 {
                     if (pageNum > 10000) return "Invalid pageNum value provided. Number is too large";
-                    if (pageNum < 0) return "Invalid pageNum value provided. Cannot be a negative value";
+                    if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
                 }
                 else
                     return "Invalid pageNum value provided. Must be a numeric value ";

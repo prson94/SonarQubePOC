@@ -147,11 +147,14 @@ from	[Load] L
         public IEnumerable<dynamic> GetLoadColumnDetails(int id)
         {
             return Query<dynamic>(@"
-select		'Column' + cast(ColumnIndex as varchar) as datafield,
-			Name as text
-from		LoadColumn
-where		LoadID = @id
-order by	ColumnIndex", new { id });
+	            select		'Column' + cast(LC.ColumnIndex as varchar) as datafield,
+	    		            LC.Name as text,
+			                Lower(FT.[Type]) as type
+                from		LoadColumn LC
+                    inner join Load L on (LC.LoadID = L.ID)
+                    left join FieldType FT on (FT.[Object] = L.[Object] and FT.[ObjectID] = L.[ObjectID] and LC.Name = FT.Name)
+                where		LoadID = @id
+                order by	ColumnIndex", new { id });
         }
 
         public IEnumerable<dynamic> GetLoadItemDetails(int id)

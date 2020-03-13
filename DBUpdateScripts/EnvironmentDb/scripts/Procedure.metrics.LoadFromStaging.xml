@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.metrics.LoadFromStaging-v2">
+  <changeSet author="Core" id="Procedure.metrics.LoadFromStaging-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -344,8 +344,7 @@ begin
 								s2.AdjustedWeight,
 								s2.ScoreType
 					from		#step2 s2
-								inner join metrics.Asset A on A.ScoreType = s2.ScoreType and A.[uid] = s2.MetricAssetUid and A.isGroup = 0
-					where		s2.IsGroup = 0
+								inner join metrics.Asset A on A.ScoreType = s2.ScoreType and A.[uid] = s2.MetricAssetUid
 					) S
 		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = @current_date)
 		when		matched then
@@ -369,7 +368,6 @@ begin
 							inner join metrics.Asset AR on AR.[uid] = R.MetricAssetUid
 							inner join #step2 S on S.AssetUid = R.AssetUid and S.ScoreType = AR.ScoreType
 							and S.MetricAssetUid = R.MetricAssetUid
-							and S.IsGroup = 0
 					where	R.EffectiveDate <> M.EffectiveDate 
 							and R.AssetUid = M.AssetUid
 							and R.EffectiveDate > M.EffectiveDate

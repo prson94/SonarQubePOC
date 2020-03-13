@@ -421,7 +421,7 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
-                string isValid = isPageSizeAndNumValidParma(queryParams);
+                string isValid = isPageSizeAndNumValid(queryParams);
 
                 if (!string.IsNullOrEmpty(isValid))
                 {
