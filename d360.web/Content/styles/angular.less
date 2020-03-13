@@ -5822,6 +5822,7 @@ a.mid-blue {
             width: 103px;
             padding: 5px 10px;
             position: relative;
+            cursor: default;
 
             .fa {
                 font-size: 26px;
@@ -5831,9 +5832,18 @@ a.mid-blue {
             }
 
             .value {
-                &:hover, &.selected {
+                &:hover:not(.selected) {
                     cursor: pointer;
                     font-weight: bold;
+                }
+
+                &.selected {
+                    font-weight: bold;
+                }
+
+                &.selected:hover {
+                    cursor: default;
+                    pointer-events: none;
                 }
             }
         }
@@ -6192,6 +6202,10 @@ a.mid-blue {
     border-radius: 4px;
     background-color: #eff2f6;
     clear: both;
+
+    &.hr-dark {
+        background-color: #dbe2ec;
+    }
 }
 
 .gov-slider {
@@ -6384,6 +6398,7 @@ a.mid-blue {
     position: relative;
     height: 36px;
     transition-duration: 0.3s;
+    margin: 10px 0px;
 
     .navigate-left {
         position: absolute;
@@ -6465,10 +6480,22 @@ a.mid-blue {
         overflow-x: auto;
 
         .row {
-            &:hover, &.selected {
+            cursor: default;
+
+            &:hover {
                 background-color: #dff3f7;
                 font-weight: bold;
                 cursor: pointer;
+            }
+
+            &.selected {
+                background-color: #dff3f7;
+                font-weight: bold;
+            }
+
+            &.selected:hover {
+                cursor: default;
+                pointer-events: none;
             }
         }
 

@@ -110,7 +110,6 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                     }
 
                     this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 0;
-
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
                         chart: {
@@ -118,7 +117,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             style: {
                                 fontFamily: 'Source Sans Pro'
                             },
-                            height: '240px',
+                            height: '240px'
                         },
                         title: {
                             text: ''
@@ -151,6 +150,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     radius: 1
                                 },
                                 lineWidth: 4,
+                                allowPointSelect: true,
                                 states: {
                                     hover: {
                                         lineWidth: 4
@@ -164,6 +164,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     events: {
                                         click: e => {
                                             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
+                                            this.selectPointOnGraph();
                                             this.loadPoints();
                                             this.loadDefinition();
                                         }
@@ -173,14 +174,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         },
                         tooltip: {
                             pointFormatter: function () {
-                                var additionalValue = this.series.userOptions.data[this.index][2];
-                                return '<span style="font-weight: bold">' + additionalValue + ' Score<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
+
+                                var additionalValue = this.series.userOptions.name;
+                                return '<span style="font-weight: bold">' + additionalValue + '<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
                             },
                             headerFormat: '<span>{point.key}</span><br/>',
                             useHTML: 'true',
                             shape: 'square',
                             borderColor: '#c8cfd9',
-                            borderWidth: 2,
+                            borderWidth: 2
                         },
                         series: [{
                             type: 'line',
@@ -188,15 +190,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             marker: {
                                 enabled: false,
                                 symbol: 'circle',
-                                radius: 5,
+                                radius: 9,
                                 states: {
                                     hover: {
                                         fillColor: 'white',
                                         lineColor: '#FF7155',
-                                        lineWidth: 3
+                                        lineWidth: 3,
+                                        opacity: 1
                                     },
                                     select: {
-                                        fillColor: 'white',
+                                        fillColor: '#FF7155',
                                         lineColor: '#FF7155',
                                         lineWidth: 3
                                     }
@@ -211,7 +214,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
 
-    private loadPoints() {
+    private loadPoints(isTabChange: boolean = false) {
         this.loadingPoints = true;
         if (this.uid) {
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
@@ -257,6 +260,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         this.pointBreakdownTree.push(root);
                     });
 
+                    if (isTabChange) {
+                        this.scoreDate = new Date().toDateString();
+                    }
                     this.loadingPoints = false;
                 });
         }
@@ -293,7 +299,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadDefinition();
                 this.loadSeriesData();
-                this.loadPoints();
+                this.loadPoints(true);
                 this.isDQAndNoItems();
                 break;
             case ScoreType.DataQuality:
@@ -302,11 +308,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadDefinition();
                 this.loadSeriesData();
-                this.loadPoints();
+                this.loadPoints(true);
                 this.isDQAndNoItems();
                 break;
             default:
         }
+
     }
     private setCollapsed(val: boolean) {
         if (this.OHDitems && this.OHDitems.length > 0)
@@ -420,29 +427,26 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
 
     //scoring carousel, table and graph interactivity
     private setSelectedPoint: boolean = false;
-    @HostListener('mousemove', ['$event'])
-    onMousemove(event: MouseEvent) {
-        if (!event['chartX']) {
-            this.selectPointOnGraph();
-        }
-    }
-
-    private lastPointCheck: Date = new Date();
     private selectPointOnGraph() {
         var idx = this.getSelectedIndex();
-        var currentTime = new Date();
-        if (idx > -1 && (+currentTime - +this.lastPointCheck) > 1000) {
-            this.lastPointCheck = new Date();
-            var point = this.chartInstance.series[0].data[this.getSelectedIndex()];
-            this.chartInstance.redraw();
-            point.select(true, true);
-            this.chartInstance.redraw();
+        if (idx > -1) {
 
+            for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
+                this.chartInstance.series[0].data[i].select(false, true);
+            }
+            var point = this.chartInstance.series[0].data[this.getSelectedIndex()];
+            if (point)
+                point.select(true, true);
         }
+        this.cdRef.detectChanges();
+        this.cdRef.markForCheck();
     }
 
     private getSelectedIndex() {
         var item = null;
+        if (!this.scoresPoints)
+            return -1;
+
         this.scoresPoints.forEach(p => {
             var date = new Date(this.scoreDate.toString());
             var scoreDate = new Date(p.EffectiveDate.toString());

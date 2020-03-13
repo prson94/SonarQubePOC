@@ -14,7 +14,7 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div class="gov-hr"></div>
+                <div class="gov-hr hr-dark"></div>
                 <d3s-simple-carousel [data]="scoresPoints">
                     <div class="carousel-item" *ngFor="let score of scoresPoints">
                         <span class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
