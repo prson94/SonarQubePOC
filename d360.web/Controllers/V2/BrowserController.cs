@@ -278,10 +278,12 @@ namespace d360.web.Controllers.V2
 
                     for (int i = 0; i < criteria.Hops; i++)
                     {
-                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
                         model.nodes.ForEach(a => { a.reveal = AssetBrowserApiHopDirection.None; }); // Ensure that nodes we are about to traverse to do not have the reveal set, as we are about to expose the reveal.
 
+                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
                         var backModel = await getHop(backwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Backward);
+                        
+                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
                         var forwardModel = await getHop(forwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Forward);
 
                         backwardAssets = getLeafAssets(backModel.nodes);
