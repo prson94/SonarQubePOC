@@ -320,6 +320,9 @@ namespace d360.model.DataAccessLayer.repositories
                                             case "updatedon":
                                                 orderBy = $"A.UpdatedOn {(string.IsNullOrEmpty(orderDirection) ? "DESC" : orderDirection)}";
                                                 break;
+                                            case "parentdisplayname":
+                                                orderBy = $"Parent.DisplayValue {orderDirection}";
+                                                break;
                                             default:
                                                 orderBy = $"A.ID {orderDirection}";
                                                 break;

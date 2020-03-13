@@ -384,10 +384,21 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
+            bool includeParent = false;
+            string parentFieldSQL = @" Parent.uid as ParentAssetUid,
+					Parent.DisplayValue as ParentDisplayName,";
+            string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
+				left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID";
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+            }
+
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns);
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                 whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
 
@@ -457,6 +468,11 @@ namespace d360.model.DataAccessLayer
                         }
                     }
 
+                    if (includeParent)
+                    {
+                        simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+                    }
+
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
                 }
             }
@@ -502,6 +518,7 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", countJoins)}
+                {(includeParent ? parentApplySQL : "")}
                 {whereSql}";
 
 
@@ -514,6 +531,7 @@ namespace d360.model.DataAccessLayer
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
+                    {(includeParent ? parentFieldSQL : "")}
                     A.Code,
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
@@ -529,6 +547,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
                 {(includePermissionDetails ? permissionDetailSQL : "")}
+                {(includeParent ? parentApplySQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
             ";
@@ -603,6 +622,13 @@ namespace d360.model.DataAccessLayer
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
 
+            bool includeParent = false;
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+            }
+
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
@@ -620,6 +646,12 @@ namespace d360.model.DataAccessLayer
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
             fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
             fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+            if (includeParent)
+            {
+                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = "Parent Asset Uid" });
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent Display Name" });
+            }
 
 
             var rowData = results.items.ToList();
