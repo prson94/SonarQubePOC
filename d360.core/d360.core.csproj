@@ -398,6 +398,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Messages.resx</DependentUpon>
     </Compile>
+    <Compile Include="resources\Permissions.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Permissions.resx</DependentUpon>
+    </Compile>
     <Compile Include="resources\Types.Designer.cs">
       <DependentUpon>Types.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -421,6 +426,7 @@
     <EmbeddedResource Include="resources\FieldErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>FieldErrors.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="resources\Fields.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
@@ -430,6 +436,10 @@
     <EmbeddedResource Include="resources\Messages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+    <EmbeddedResource Include="resources\Permissions.resx">
+      <Generator>PublicResXFileCodeGenerator</Generator>
+      <LastGenOutput>Permissions.Designer.cs</LastGenOutput>
     </EmbeddedResource>
     <EmbeddedResource Include="resources\Types.resx">
       <SubType>Designer</SubType>
