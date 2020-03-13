@@ -10,7 +10,7 @@
                 <div class="heading-value">{{item?.data?.Name}}</div>
             </div>
             <div class="heading-item med-lg">
-                <div class="heading-title" title="Effective Dates">Effective Dates</div>
+                <div class="heading-title" title="Measure Effective Dates">Effective Dates</div>
                 <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item med" title="Defined Weight">
@@ -146,7 +146,7 @@
                 <div #DQDescription *ngIf="item?.data?.Description && item?.data?.Description != ''" class="heading-value block-with-text DQ" [ngClass]="{'collapsed': isCollapsed}">{{item?.data?.Description}}</div>
             </div>
             <div class="heading-item med-lg">
-                <div class="heading-title" title="Effective Dates">Effective Dates</div>
+                <div class="heading-title" title="Measure Effective Dates">Effective Dates</div>
                 <div class="heading-value">{{item?.data?.EffectiveDate | utcDate | date:'shortDate'}} - {{item?.data?.EndDate ? (item?.data?.EndDate  | utcDate | date:'shortDate') : 'Current'}}</div>
             </div>
             <div class="heading-item sm badge">

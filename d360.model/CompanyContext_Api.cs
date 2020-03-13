@@ -1970,9 +1970,7 @@ from	IntersectType I
                                                 {
                                                     Connection.Execute($@"
 delete T from RuleResultFusionAttribute T inner join RuleResult R on R.ID = T.RuleResultID inner join RuleImplementation S on S.ID = R.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix}); 
-delete T from RuleResultQualifier T inner join RuleResult R on R.ID = T.RuleResultID inner join RuleImplementation S on S.ID = R.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
 delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
-delete T from RuleResultQualifierType T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
 delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
                                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
                                                     );

@@ -5,23 +5,20 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.RuleResultQualifierType-v2">
+  <changeSet author="Core" id="View.reporting.RuleImplementations_ResultQualifiers-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultQualifierType')
-BEGIN
-  exec sp_rename 'dbo.RuleResultQualifierType', 'RuleResultQualifierType_bak';	
-END
-
-IF EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResultQualifierType_RuleImplementation')
-BEGIN
-	ALTER TABLE [dbo].[RuleResultQualifierType_bak] DROP CONSTRAINT [FK_RuleResultQualifierType_RuleImplementation]
-END
+      drop view if exists [reporting].[RuleImplementations_ResultQualifiers]
 		]]>
     </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
   </changeSet>
 
 </databaseChangeLog>

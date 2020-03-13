@@ -212,10 +212,6 @@ namespace d360.model
 
         public DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
 
-        public DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
-
-        public DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
@@ -3407,6 +3403,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             where AT.class in({string.Join(",",assetClassIds.ToArray())})";
 
             return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
+        }
+        public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
+        {
+            return Query<int>(@"select value
+  from[dbo].[FieldLookupValue]
+  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
+
+new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
         }
     }
 }

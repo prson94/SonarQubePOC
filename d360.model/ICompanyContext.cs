@@ -141,9 +141,7 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
         DbSet<RuleImplementation> RuleImplementations { get; set; }
-        DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
-        DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
-        DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
+        DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }        
         DbSet<RuleResult> RuleResults { get; set; }
         DbSet<Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
@@ -332,5 +330,6 @@ namespace d360.model
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
+        int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
     }
 }

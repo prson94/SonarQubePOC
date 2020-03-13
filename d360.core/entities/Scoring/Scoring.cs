@@ -29,6 +29,10 @@ namespace d360.core.entities.Scoring
 
         [DataMember]
         public bool IsExternallyCalculated { get; set; }
+        [DataMember]
+        public int LowerThreshold { get; set; }
+        [DataMember]
+        public int UpperThreshold { get; set; }
 
     }
 
@@ -50,7 +54,7 @@ namespace d360.core.entities.Scoring
         [DataMember]
         public DateTime? EndDate { get; set; }
 
-        [DataMember, Key, Column(Order = 2), JsonConverter(typeof(StringEnumConverter))]   
+        [DataMember, Key, Column(Order = 2), JsonConverter(typeof(StringEnumConverter))]
         public ScoreType ScoreType { get; set; } = ScoreType.Governance;
     }
 
