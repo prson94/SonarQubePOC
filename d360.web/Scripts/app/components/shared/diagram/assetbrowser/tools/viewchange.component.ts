@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, , Output, EventEmitter } from '@angular/core';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { DiagramType } from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
