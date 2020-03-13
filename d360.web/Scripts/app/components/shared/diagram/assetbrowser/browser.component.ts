@@ -9,7 +9,8 @@ import {
     AssetBrowserTranslationLink,
     AssetBrowserTranslationRelationCount,
     AssetBrowserFilterModel,
-    FilterSelectionsModel,    AssetBrowserApiHopRequestModel,
+    FilterSelectionsModel,
+    AssetBrowserApiHopRequestModel,
     AssetBrowserApiHopAssetRequestModel,
     AssetBrowserTranslationOwnerCount,
     AssetBrowserApiOwnerHopRequestModel,
@@ -996,23 +997,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, existingAssets.assets);
     }
 
-    //private helper_GetTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
-    //    let nodes: TreeNode[] = [];
-    //    source.forEach(s => {
-    //        if (keys.indexOf(s.data) != -1) {
-    //            nodes.push(s);
-    //        }
-    //        if (s.children != null && s.children.length > 0) {
-    //            let childNodes = this.helper_GetTreeNodeSelectionNodes(keys, s.children);
-    //            if (childNodes != null && childNodes.length > 0) {
-    //                nodes = nodes.concat(childNodes);
-    //            }
-    //        }
-    //    });
-
-    //    return nodes;
-    //}
-
     private helper_HideDeselectedAssetTypes(keysToBeConcernedWith: string[]) {
         // Now loop through selected asset types, as those are the ones we need to hide.
         let nodesToHide: AssetBrowserTranslationNode[] = [];
@@ -1817,6 +1801,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
     }
 
+    /**
+     * Sorts go.Parts based on their display names
+     */
+    private helper_SortParts(a: go.Part, b: go.Part): number {
+        if (a == null || b == null || a.data == null || b.data == null)
+            return 0;
+        if (a.data.text > b.data.text)
+            return 1;
+        else if (a.data.text < b.data.text)
+            return -1;
+        else
+            return 0;
+    }
+  
     private helper_UnhideNode(node: AssetBrowserTranslationNode) {
         if (node.template == "HiddenData") {
             this.diagram.startTransaction('unhide');
@@ -2139,7 +2137,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },
@@ -2384,7 +2383,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },
@@ -2808,7 +2809,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },
@@ -2946,7 +2948,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         go.GridLayout,
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4)
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },

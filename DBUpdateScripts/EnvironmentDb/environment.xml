@@ -139,6 +139,8 @@
 	<include file="scripts/Table.dbo.RuleType.xml"/>
 	<include file="scripts/Table.dbo.Rule.xml"/>
 	<include file="scripts/Table.dbo.RuleImplementation.xml"/>
+	<include file="scripts/Table.dbo.AssetResult.xml"/>
+	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>	
 	<include file="scripts/Function.utility.CalculatePassed.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.utility.CalculatePassedWrapper.xml"/>	<!--Function used for computed column-->
 	<include file="scripts/Table.dbo.RuleResult.xml"/>
@@ -318,7 +320,9 @@
 	<include file="scripts/View.reporting.Responsibility_All.xml"/>
 	<include file="scripts/View.reporting.ResponsibilityTypeMap.xml"/>
 	<include file="scripts/View.reporting.RuleImplementations_All.xml"/>
-	<include file="scripts/View.reporting.Rules_All.xml"/>
+  <include file="scripts/View.reporting.RuleImplementations_ResultQualifiers.xml"/>
+  <include file="scripts/View.reporting.RuleImplementations_Results.xml"/>
+  <include file="scripts/View.reporting.Rules_All.xml"/>
 	<include file="scripts/View.reporting.Rules_Fields.xml"/>
 	<include file="scripts/View.reporting.WorkflowForms.xml"/>
 	<include file="scripts/View.reporting.Workflows.xml"/>
@@ -329,6 +333,7 @@
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
   <include file="scripts/Function.dbo.AssetWithAssetsByTypeUserCantRead.xml"/>
+	<include file="scripts/Function.dbo.CalculatePassedPropertyForAssetResult.xml"/>	
 	<include file="scripts/Function.dbo.CheckIfAssetExistsWithParent.xml"/>
 	<include file="scripts/Function.dbo.CheckIfObjectExists.xml"/>
 	<include file="scripts/Function.dbo.CheckIfObjectExistsWithParent.xml"/>

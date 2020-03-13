@@ -547,6 +547,7 @@ namespace d360.web.Controllers.V2
         /// Gets a administrative hierarchical structure of metrics associated with the asset Uid provided.
         /// </summary>
         /// <param name="uid">The Uid of the asset.</param>
+        /// <param name="effectiveDate">The date which you want to pull the metric hierarchy for. If not provided, today's date is used. Optionally, you may also provide a past or future effective date.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
@@ -554,7 +555,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid)
+        public async Task<IHttpActionResult> GetMetricHierarchyByAssetUidAsync(Guid uid, DateTime? effectiveDate = null)
         {
             var asset = Company.Assets.FirstOrDefault(x => x.uid == uid);
             if (asset == null)
@@ -562,7 +563,7 @@ namespace d360.web.Controllers.V2
             var assetType = Company.AssetTypes.FirstOrDefault(x => x.ID == asset.AssetTypeID);
             if (assetType == null)
                 return errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid of {assetType.uid.ToString()} not found.");
-            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid);
+            return await GetMetricHierarchyByAssetTypeAsync(assetType.uid, effectiveDate);
         }
 
 

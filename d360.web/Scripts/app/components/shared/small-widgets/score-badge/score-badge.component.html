@@ -9,16 +9,16 @@
         </span>
         <div class="score-ranges">
             <div class="score-range">
-                <span class="score-box" [style.background-color]="lowColour"></span>
-                <span class="text">0%-{{lowerThreshold*100}}%</span>
+                <span class="score-box score-poor"></span>
+                <span class="text">0%-{{lowerThreshold}}%</span>
             </div>
             <div class="score-range">
-                <span class="score-box" [style.background-color]="mediumColour"></span>
-                <span class="text">>{{lowerThreshold*100}}%-{{upperThreshold*100}}%</span>
+                <span class="score-box score-average"></span>
+                <span class="text">>{{lowerThreshold}}%-{{upperThreshold}}%</span>
             </div>
             <div class="score-range">
-                <span class="score-box" [style.background-color]="goodColour"></span>
-                <span class="text">>{{upperThreshold*100}}%-100%</span>
+                <span class="score-box score-good"></span>
+                <span class="text">>{{upperThreshold}}%-100%</span>
             </div>
         </div>
 
@@ -28,7 +28,7 @@
     </div>
 
     <div *ngIf="score.ScoreType" [class]="displayAsFieldClass">{{getType()}}</div>
-    <div class="d3s-score-pill" [style.background-color]="getBackgroundColor()">
+    <div class="d3s-score-pill {{getScoreCSSClass()}}">
         <d3s-dynamic-percentage *ngIf="!mast && showSparkline" [percentage]="getValuePct()"></d3s-dynamic-percentage>
         <div class="text">{{score.Value | scoreDisplay:1}}</div>
     </div>

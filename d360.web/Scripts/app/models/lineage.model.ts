@@ -721,6 +721,8 @@ export class AssetBrowserDiagramAssetField {
 export class AssetBrowserDiagramAssetScore {
     Name: string;
     Value: number;
+    LowerThreshold: number;
+    UpperThreshold: number;
 }
 
 export class AssetBrowserDiagramAssetOwner {
