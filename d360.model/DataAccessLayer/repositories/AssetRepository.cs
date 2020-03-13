@@ -461,6 +461,29 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_ownedby"))
+            {
+                List<Guid> ownerUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
+
+                if (ownerUids.Any(x => x == Guid.Empty))
+                    throw new Exception("Invalid Owner Uid in parameters!");
+
+                if (ownerUids.Count > 0)
+                {
+                    dbArgs.Add("ownerUids", ownerUids);
+                    whereStatements.Add($@"EXISTS (
+                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.AssetID = a.ID AND rd.ResourceUid in @ownerUids
+                        UNION ALL
+                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd  WHERE rd.AssetID = 0 AND rd.AssetTypeID = a.AssetTypeID AND rd.ResourceUid in @ownerUids
+                    )");
+                }
+            }
 
             var whereSql = "";
             if (whereStatements.Any())
