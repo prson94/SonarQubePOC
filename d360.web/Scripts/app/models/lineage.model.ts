@@ -434,8 +434,8 @@ export class SourceRuleSource {
 // #region ASSET/IMPACT BROWSER
 
 export enum DiagramType {
-    Lineage,
-    Impact
+    Lineage = 1,
+    Impact = 2
 }
 
 export class AssetBrowserModel {
@@ -784,6 +784,36 @@ export class AssetBrowserFilterModel {
     SelectedResponsibilityTypes: number[] = [];
 }
 
+export enum AssetBrowserFilterChangeEventType {
+    AssetType = 1,
+    Predicate = 2,
+    ResponsibilityType = 3,
+    HopCount = 4,
+    Ancestry = 5,
+    AllBadges = 6,
+    AncestorBadges = 7,
+    Icons = 8,
+    Scores = 9,
+    DiagramType = 10
+}
+
+export class AssetBrowserFilterChangeEvent {
+    Type: AssetBrowserFilterChangeEventType;
+    Model: AssetBrowserFilterModel;
+}
+
+export enum AssetBrowserPanelCommand {
+    None = 0,
+    Add = 1,
+    Alerts = 2,
+    Download = 3,
+    Information = 4,
+    Filters = 5,
+    FullScreen = 6,
+    Refresh = 7,
+    Settings = 8
+}
+
 export class FilterSelectionsModel {
     AssetTypeOptions: AssetBrowserAssetTypeFilterModel[];
     PredicateOptions: AssetBrowserPredicateFilterModel[];
@@ -791,8 +821,7 @@ export class FilterSelectionsModel {
 
     AncestryOptions: SelectItem[] = [
         { value: FilterAncestryMode.AllAncestors, label: 'Show all parents/owners' },
-        { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }//,
-        //{ value: FilterAncestryMode.NoAncestor, label: 'Show no parents/owners' }
+        { value: FilterAncestryMode.DirectAncestor, label: 'Show direct parent/owner' }
     ];
 
     HopOptions: SelectItem[] = [
@@ -843,6 +872,7 @@ export class StoredAssetBrowserFilterModel {
     responsibilityTypes: StoredAssetBrowserResponsibilityTypeFilterModel[] = [];
     ancestryMode: number;
     numberOfHops: number;
+    diagramType: number;
     isDefault: boolean;
     createdOn: string;
     updatedOn: string;
