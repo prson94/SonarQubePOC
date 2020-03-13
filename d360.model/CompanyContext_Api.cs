@@ -855,7 +855,7 @@ set		T.LookupValue = LV.Value
 from	{fieldTable} T
 inner join #LookupValues LV on LV.FieldValue = T.FieldValue and T.FieldTypeID = LV.FieldTypeID
 where T.ExecutionId = @executionid;
-", new { executionID }, commandTimeout: timeout);
+", new { executionID }, commandTimeout: timeout, transaction: trans);
         }
 
         private void ResolveRuleTypeLookupValues(Guid executionID, int timeout = 3600)
