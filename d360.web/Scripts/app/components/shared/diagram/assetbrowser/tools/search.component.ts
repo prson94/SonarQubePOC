@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
-import { AssetBrowserDiagramAsset } from '../../../../../models/lineage.model';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
 
 import { BrowserService } from '../../../../../services/browser.service';
 import { PermissionsService } from '../../../../../services/permissions.service';
@@ -12,7 +11,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [BrowserService, PermissionsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserSearchComponent implements OnInit, AfterViewInit, OnChanges {
+export class AssetBrowserSearchComponent implements AfterViewInit {
     @Input() numberOfResults: number;
     @Output() search: EventEmitter<string> = new EventEmitter();
     @Output() previous: EventEmitter<number> = new EventEmitter();
@@ -29,15 +28,8 @@ export class AssetBrowserSearchComponent implements OnInit, AfterViewInit, OnCha
     ) {
     }
 
-    public ngOnInit() {
-    }
-
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-
     }
 
     goToPrevious() {
@@ -51,7 +43,6 @@ export class AssetBrowserSearchComponent implements OnInit, AfterViewInit, OnCha
             }
         }
         this.previous.emit(this.searchCurrentItem);
-        //this.focusCurrentNode();
     }
 
     goToNext() {
@@ -60,7 +51,6 @@ export class AssetBrowserSearchComponent implements OnInit, AfterViewInit, OnCha
             this.searchCurrentItem--;
 
         this.previous.emit(this.searchCurrentItem);
-        //this.focusCurrentNode();
     }
 
     searchDiagram(event) {

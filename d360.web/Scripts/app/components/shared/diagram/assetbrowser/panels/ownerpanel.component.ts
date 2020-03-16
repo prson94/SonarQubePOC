@@ -1,5 +1,4 @@
-import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { AssetBrowserDiagramAsset } from '../../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../../services/browser.service';
@@ -12,7 +11,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [BrowserService, PermissionsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserOwnerPanelComponent implements OnInit, AfterViewInit {
+export class AssetBrowserOwnerPanelComponent implements AfterViewInit {
     @Input() asset: AssetBrowserDiagramAsset;
 
     constructor(
@@ -22,18 +21,11 @@ export class AssetBrowserOwnerPanelComponent implements OnInit, AfterViewInit {
     ) {
     }
 
-    public ngOnInit() {
-    }
-
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
     }
 
     private ownerRowClass(icon: string) {
         return "fa " + icon;
-    }
-
-    private onDoubleClick(e: any) {
-
     }
 } 

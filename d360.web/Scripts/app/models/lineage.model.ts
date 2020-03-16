@@ -607,7 +607,6 @@ export class AssetBrowserAssetsModel {
 }
 
 export class AssetBrowserAssetModel {
-    //hop: number;
     focal: boolean = false;
     assetUid: string;
     assetTypeId: number;

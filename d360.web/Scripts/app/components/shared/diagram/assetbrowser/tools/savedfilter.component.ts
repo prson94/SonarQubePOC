@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel, DiagramType } from '../../../../../models/lineage.model';
+import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel } from '../../../../../models/lineage.model';
 import { BrowserService } from '../../../../../services/browser.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 import { MenuItem } from 'primeng/api';
@@ -11,7 +11,7 @@ import { MenuItem } from 'primeng/api';
     providers: [BrowserService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, OnChanges {
+export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
     @Input() options: FilterSelectionsModel;
     @Input() filterModel: AssetBrowserFilterModel;
     @Output() applySavedFilter: EventEmitter<AssetBrowserFilterModel> = new EventEmitter();
@@ -38,10 +38,6 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
-    }
-
-    ngOnChanges(changes: SimpleChanges): void {
-
     }
 
     private add() {

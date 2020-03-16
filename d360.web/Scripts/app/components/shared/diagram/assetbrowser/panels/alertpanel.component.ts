@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { AssetBrowserAlert, AssetBrowserAlertRequest } from '../../../../../models/lineage.model';
 
@@ -39,20 +38,13 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit {
             this.browserService.getAlertsByAsset(model).subscribe(alerts => {
                 if (alerts) {
                     this.alerts = alerts;
-                    //this.isAlertTabEnabled = (alerts.length > 0);
                 }
                 else {
                     this.alerts = [];
-                    //this.isAlertWindowVisible = false;
-                    //this.isAlertTabEnabled = false;
                 }
                 this.loading = false;
                 this.cdRef.markForCheck();
             });
-        }
-        else {
-            //this.isAlertWindowVisible = false;
-            //this.isAlertTabEnabled = false;
         }
     }
 

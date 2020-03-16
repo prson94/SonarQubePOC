@@ -1,10 +1,7 @@
-import * as _ from 'lodash';
 import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import {
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
     AssetBrowserFilterModel,
-    FilterSelectionsModel,    LoadedFilterTypesModel,
+    FilterSelectionsModel,
     AssetBrowserFilterChangeEvent,
     AssetBrowserFilterChangeEventType
 } from '../../../../../models/lineage.model';
@@ -46,11 +43,9 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        //if (changes['current']) {
-            this.selectedFilterAssetTypes = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedAssetTypes, this.options.FilterAssetTypes);
-            this.selectedFilterPredicates = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedPredicates, this.options.FilterPredicates);
-            this.selectedFilterResponsibilityTypes = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedResponsibilityTypes, this.options.FilterResponsibilityTypes);
-        //}
+        this.selectedFilterAssetTypes = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedAssetTypes, this.options.FilterAssetTypes);
+        this.selectedFilterPredicates = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedPredicates, this.options.FilterPredicates);
+        this.selectedFilterResponsibilityTypes = this.helper_GetTreeNodeSelectionNodes(this.current.SelectedResponsibilityTypes, this.options.FilterResponsibilityTypes);
     }
 
     /**

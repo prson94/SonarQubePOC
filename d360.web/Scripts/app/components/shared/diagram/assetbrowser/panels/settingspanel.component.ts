@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { AssetBrowserFilterModel, AssetBrowserFilterChangeEvent, AssetBrowserFilterChangeEventType } from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
@@ -10,7 +10,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserSettingsPanelComponent implements OnInit, AfterViewInit {
+export class AssetBrowserSettingsPanelComponent implements AfterViewInit {
     @Input() current: AssetBrowserFilterModel;
     @Output() apply: EventEmitter<AssetBrowserFilterChangeEvent> = new EventEmitter();
 
@@ -18,9 +18,6 @@ export class AssetBrowserSettingsPanelComponent implements OnInit, AfterViewInit
         protected messagesService: MessagesObservableService,
         private cdRef: ChangeDetectorRef
     ) {
-    }
-
-    public ngOnInit() {
     }
 
     public ngAfterViewInit() {

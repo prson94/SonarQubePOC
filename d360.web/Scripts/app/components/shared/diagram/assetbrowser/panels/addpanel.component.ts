@@ -1,7 +1,5 @@
 ﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
-import { Observable, forkJoin } from 'rxjs';
-import { delay, take } from 'rxjs/operators';
-import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
+import { forkJoin } from 'rxjs';
 import { RelationshipsService } from '../../../../../services/relationships.service';
 import { AssetBrowserModel, AssetBrowserAssetModel } from '../../../../../models/lineage.model';
 import { CommonComponentAssetResult, CommonComponentAssetSelection, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide } from '../../../../../models/asset-search.model';
