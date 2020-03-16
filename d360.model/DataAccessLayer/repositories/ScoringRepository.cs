@@ -91,10 +91,12 @@ namespace d360.model.DataAccessLayer
 
                     case "isexternallycalculated":
                         bool? isExtern = null;
-                        if ("yes".Contains(kp.Value.ToLower()))
+                        if ("external".Contains(kp.Value.ToLower()))
                             isExtern = true;
-                        if ("no".Contains(kp.Value.ToLower()))
+                        if ("internal".Contains(kp.Value.ToLower()))
                             isExtern = false;
+                        if ("ternal".Contains(kp.Value.ToLower()))
+                            isExtern = null;
 
                         if (isExtern.HasValue)
                         {
@@ -120,15 +122,20 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@filteredScoreTypesGlobal", filteredScoreTypesGlobal);
 
                         bool? isExt = null;
-                        if ("yes".Contains(kp.Value.ToLower()))
+                        if ("external".Contains(kp.Value.ToLower()))
                             isExt = true;
-                        if ("no".Contains(kp.Value.ToLower()))
+                        if ("internal".Contains(kp.Value.ToLower()))
                             isExt = false;
-
+                        if ("ternal".Contains(kp.Value.ToLower()))
+                            isExt = null;
                         if (isExt.HasValue)
                         {
                             globalFilters.Add("AL.IsExternallyCalculated = @isExt");
                             dbArgs.Add("@isExt", isExt);
+                        }
+                        else
+                        {
+                            globalFilters.Add("AL.IsExternallyCalculated IS NOT NULL");
                         }
 
                         whereStatements.Add($"({string.Join(" or ", globalFilters)})");
@@ -154,6 +161,8 @@ namespace d360.model.DataAccessLayer
 	                        AL.scoreType,
 	                        AL.[state],
                             AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold,
                             case 
                                 when Measures.F > 0 then 1
 								else 0
@@ -178,6 +187,8 @@ namespace d360.model.DataAccessLayer
                 alloc.UpdatedBy = companyContext.CurrentResourceID;
                 alloc.IsExternallyCalculated = model.isExternallyCalculated;
                 alloc.UpdatedOn = DateTime.UtcNow;
+                alloc.LowerThreshold = model.lowerThreshold.Value;
+                alloc.UpperThreshold = model.upperThreshold.Value;
                 companyContext.SaveChanges();
             }
             else
@@ -188,6 +199,8 @@ namespace d360.model.DataAccessLayer
                 alloc.CreatedBy = alloc.UpdatedBy = companyContext.CurrentResourceID;
                 alloc.CreatedOn = alloc.UpdatedOn = DateTime.UtcNow;
                 alloc.IsExternallyCalculated = model.isExternallyCalculated;
+                alloc.LowerThreshold = model.lowerThreshold.Value;
+                alloc.UpperThreshold = model.upperThreshold.Value;
                 companyContext.ScoreTypeAllocations.Add(alloc);
                 companyContext.SaveChanges();
 
@@ -220,6 +233,8 @@ namespace d360.model.DataAccessLayer
             alloc.ScoreType = model.scoreType;
             alloc.UpdatedBy = companyContext.CurrentResourceID;
             alloc.IsExternallyCalculated = model.isExternallyCalculated;
+            alloc.LowerThreshold = model.lowerThreshold.Value;
+            alloc.UpperThreshold = model.upperThreshold.Value;
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();
 

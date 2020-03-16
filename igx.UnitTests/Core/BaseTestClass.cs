@@ -97,6 +97,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetById<ShoppingCart>(It.IsAny<int>()))
                 .Returns((int id) => id > 0 ? new ShoppingCart() { ID = id, RequestedOn = new DateTime(2000, 1, 1) } : null);
 
+            mock.Setup(x => x.GetFieldLookupValue(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<string>()))
+                .Returns((string type, int objId, int ftId, string value) => value == "validlookupvalue" ? 1 : 0);
+
 
             var workflowItemSteps = new List<WorkflowItemStep>() {
  new WorkflowItemStep(){

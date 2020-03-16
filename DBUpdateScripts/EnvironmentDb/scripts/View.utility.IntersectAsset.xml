@@ -1,0 +1,39 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.utility.IntersectAsset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter view [utility].[IntersectAsset]
+WITH SCHEMABINDING  
+as  
+	select	I.ID,
+			I.ID as IntersectID,
+			I.IntersectTypeID as IntersectTypeID,
+			P.Type as PredicateType,
+			a_o.ID as ObjectAssetID,
+			I.[Object] as [Object],
+			I.ObjectID as [ObjectID],	
+			I.[Subject] as [Subject],
+			I.SubjectID as [SubjectID]
+	from 	dbo.[Intersect] I
+			inner join dbo.Asset a_o on I.[Object] = a_o.[Object] and I.[ObjectID] = a_o.ObjectID	
+			inner join dbo.[IntersectType] IT on I.IntersectTypeID = IT.ID
+			inner join dbo.[Predicate] P on P.ID = IT.PredicateID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

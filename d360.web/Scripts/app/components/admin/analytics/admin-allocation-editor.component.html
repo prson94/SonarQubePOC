@@ -35,27 +35,66 @@
             </div>
         </div>
         <div class="row">
-            <div *ngIf="disabled" class="warningMessage">
-                Score Type and Asset Type cannot be edited as there are measures related to this allocation.
-            </div>
-        </div>
-        <div class="row">
             <div class="FieldName">
                 <span>&nbsp;</span>
             </div>
             <div class="col s12 no-padding">
-                <p-checkbox label="Externally Calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="isExtCalcDisabled()" binary="true"></p-checkbox>
+                <p-radioButton name="calc-group" [value]="false" label="Internally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled || isExtCalcDisabled()"></p-radioButton>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <p-radioButton name="calc-group" [value]="true" label="Externally calculated" [(ngModel)]="selection.isExternallyCalculated" [disabled]="disabled"></p-radioButton>
             </div>
-            <div class="col s12 light-text">
-                If externally calculated, then all scores and measures must be passed in by an external provider and no conditions may be set on the measures themselves.
+            <div class="col s12 light-text" *ngIf="selection.isExternallyCalculated">
+                Externally calculated scores require the score itself and measure results be passed in from an external provider. Measures for externally calculated scores are intended to provide context and information about the external score.
+            </div>
+            <div class="col s12 light-text" *ngIf="!selection.isExternallyCalculated">
+                Internally calculated scores use measure results to determine the score.
             </div>
         </div>
-
+        <br />
+        <br />
+        <div class="row">
+            <div class="FieldName title-name">
+                <span>Adjust your score threshold</span>
+                <d3s-info-tooltip [titleValue]="'How does this work?'">
+                    <h2>About your score threshold</h2>
+                    Score Threshold indicates the limit or range for the score result.  A negative result (red) indicates a score falls within the low threshold range.  An allowable result (yellow) indicates a score falls within the middle threshold range.  And a positive result (green) indicates a score falls within the high threshold range.<br />
+                    <a [href]="scoringHelpPage" target="_blank">
+                        Read more about scoring&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i>
+                    </a>
+                </d3s-info-tooltip>
+            </div>
+            <div class="col s12 no-padding">
+                <div class="gov-slider">
+                    <p-slider #slider [(ngModel)]="rangeValues" [range]="true" (onChange)="handleChange($event)"></p-slider>
+                    <div class="text-left">0%</div>
+                    <div class="text-right">100%</div>
+                </div>
+            </div>
+            <div class="gov-hr"></div>
+            <div class="col s12 no-padding">
+                <div class="score-range-manual">
+                    <div class="d3s-score-pill editor score-poor"><span class="text">Poor</span></div>
+                    <div class="value-box">0%&nbsp;-&nbsp;</div>
+                    <div class="input-box">
+                        <input #lt type="number" [value]="selection.lowerThreshold" (change)="onUpperThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
+                        <div class="input-overlay">%</div>
+                    </div>
+                    <div class="d3s-score-pill editor score-average"><span class="text">Average</span></div>
+                    <div class="value-box">>&nbsp;{{selection.lowerThreshold}}%&nbsp;-&nbsp;</div>
+                    <div class="input-box">
+                        <input #ut type="number" [value]="selection.upperThreshold" (change)="onUpperThresholdChange($event,ut)" (keyup)="onUpperThresholdChange($event,ut, true)" />
+                        <div class="input-overlay">%</div>
+                    </div>
+                    <div class="d3s-score-pill editor score-good"><span class="text">Good</span></div>
+                    <div class="value-box">>&nbsp;{{selection.upperThreshold}}%&nbsp;-&nbsp;100%</div>
+                </div>
+            </div>
+        </div>
     </div>
+    <br />
     <div class="action-bar">
         <button class="button" (click)="cancel()" [disabled]="savingInProgress">Cancel</button>
         <span class="grow"></span>
-        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid || (disabled && isExtCalcDisabled())">
+        <button class="button primary {{savingInProgress ? 'loading' : ''}}" (click)="save()" [disabled]="savingInProgress || !selection.assetTypeUid">
             {{savingInProgress ? '' : 'Save'}}
             <span class="loader"><span class="spinner light"></span></span>
         </button>

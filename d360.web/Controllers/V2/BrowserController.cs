@@ -20,6 +20,8 @@ using System.Web.Http.Description;
 using System.Security.Cryptography;
 using System.Text;
 using d360.core.entities.Views;
+using d360.model.DataAccessLayer;
+using d360.core.entities.Graph;
 
 namespace d360.web.Controllers.V2
 {
@@ -34,9 +36,14 @@ namespace d360.web.Controllers.V2
     ]
     public class BrowserController : BaseV2ApiController
     {
-        public BrowserController(ICommunityContext community, ICompanyContext company) : base(community, company)
+
+        IGraphFilterRepository GraphFilterRepository;
+
+        public BrowserController(ICommunityContext community, ICompanyContext company, IGraphFilterRepository graphFilterRepository) : base(community, company)
         {
+            GraphFilterRepository = graphFilterRepository;
         }
+
 
         List<T> ParseArrayCount<T>(string json)
         {
@@ -69,7 +76,8 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
-
+                //child.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
+                
                 Recurse(model, hierarchies, child, multiplier+1);
 
                 if (current.items == null)
@@ -111,6 +119,7 @@ namespace d360.web.Controllers.V2
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
+                //current.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
                 Recurse(model, hierarchies, current, multiplier + 1);
 
                 if (!model.assets.Any(r => r.key == current.key))
@@ -430,7 +439,8 @@ select	A.TypeName,
 			        from	utility.FieldValue V
 					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
 			        where	AssetID = A.ID
-					        and F.IsDisplayable = 1
+					        and F.IsDisplayable = 1 
+                            and (F.ShowIfEmpty = 1 OR (F.ShowIfEmpty = 0 AND V.FormattedValue <> '' and V.FormattedValue IS NOT NULL))
                     union all
                     select	F.ColumnOrder,
 							F.FriendlyName as Name,
@@ -458,11 +468,22 @@ select	A.TypeName,
 			for json path
 		) as Fields,
 		(
-			select	    *
-			from	    metrics.Score
-			where	    AssetUid = A.Uid
-                        and EffectiveDate <= getutcdate() 
-                        and EndDate is null
+			select S.AssetUid,
+                S.EffectiveDate,
+                S.EndDate,
+                S.RunDate,
+                case 
+	                when S.ScoreType = 1 then 'Governance'
+	                when S.ScoreType = 2 then 'DataQuality'
+                end as ScoreType,
+                S.Value, 
+                AL.LowerThreshold, 
+                AL.UpperThreshold 
+                from metrics.Score S
+                inner join Asset A on A.Uid = S.AssetUid
+                inner join AssetType AT on AT.Id = A.AssetTypeID
+                inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
+                where S.AssetUid = @uid and EndDate is null and EffectiveDate <= getUtcDate()
 			for json path
 		) as Scores,
 		(
@@ -495,77 +516,6 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
-            }
-        }
-
-        /// <summary>
-        /// Gets detailed field information regarding a specific asset that a user selects from the Asset Browser UI.
-        /// </summary>
-        /// <param name="model">The uid of the asset that we are getting field information for.</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            Route("actions"),
-            ApiExplorerSettings(IgnoreApi = true),
-            HttpPost,
-            MapToApiVersion("2.0"),
-            SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the GET request.", typeof(AssetBrowserDiagramAsset)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetDiagramAlerts(AssetBrowserAlertRequest model)
-        {
-            try
-            {
-                var sql = @"
-select	I.uid as 'uid', 
-        A.uid as 'asset.uid',
-		coalesce(A.icon, 'fa-book') as 'asset.icon',
-		A.TypeName + ' > ' + A.DisplayValue as 'asset.displayValue',
-		IT.name as 'action.name', 
-		reporting.StripHTML(F.FormattedValue) as 'action.description'
-from	AssetDetail A
-        inner join @uids U on U.Uid = A.Uid
-		inner join Issue I on I.Object = A.Object and I.ObjectID = A.ObjectID
-		left join IssueType IT on IT.ID = I.IssueTypeID
-		left join FieldType FT on FT.Object = 'IssueType' and FT.ObjectID = IT.ID and (FT.Name = 'Description' or FT.Name = 'ProblemDesc')
-		left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = 'Issue' and F.ObjectID = I.ID
-where	I.CompletedOn is null
-for json path";
-
-                if (model == null) 
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have passed an empty or invalid set of criteria.");
-                }
-                else if (model.assets.Count == 0) 
-                {
-                    AssetBrowserAlert[] alerts = new AssetBrowserAlert[0];
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.NoContent, alerts)));
-                }
-                
-                var reader = await Company.QueryAsync<string>(sql, 
-                    new {
-                        uids = model.assets.Select(i => i.uid).Distinct().AsTableValuedParameter(
-                            "dbo.UidTable",
-                            new List<string>() { "Uid" }
-                            )
-                    }, timeout: 100);
-                var json = string.Join("", reader);
-
-                var returnModel = JsonConvert.DeserializeObject<AssetBrowserAlert[]>(json);
-
-                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, returnModel)));
-            }
-            catch (Exception ex)
-            {
-                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-
-                SendException(ex, new Dictionary<string, string>() {
-                    { "Endpoint Method", "BrowserController.GetDiagramAlerts" },
-                    { "model", JsonConvert.SerializeObject(model) }
-                });
-
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
 
@@ -683,6 +633,152 @@ order by Name";
             catch (Exception ex)
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
+
+        //
+        /// <summary>
+        /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
+        /// </summary>
+        /// <returns>Lists of filters for the asset browser.</returns>
+        [
+            Route("filters/me"),
+            HttpGet,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetUserAssetBrowserFilters()
+        {
+            try
+            {
+                var fil = GraphFilterRepository.GetGraphFiltersByUser(Company.CurrentResourceID);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, fil)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "BrowserController.GetUserAssetBrowserFilters" },
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Create an asset browser filter
+        /// </summary>
+        /// <returns>The saved filter</returns>
+        [
+            HttpPost,
+            Route("filters"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Created, "Filter created.", typeof(GraphFilter)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request badly formatted.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "Unknown error.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "No permissions.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> CreateAssetBrowserFilter(GraphFilter model)
+        {
+            try
+            {
+                if(GraphFilterRepository.CreateGraphFilter(model))
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+                else
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Save failed", Success = false, Uid = Guid.Empty }));
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Update asset browser filter
+        /// </summary>
+        /// <param name="uid">The public identifier for the filter.</param>
+        /// <param name="model"></param>
+        /// <returns>The saved filter</returns>
+        [
+            HttpPut,
+            Route("filters/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.Created, "Filter updated.", typeof(GraphFilter)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request badly formatted.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "Unknown error.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "No permissions.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> UpdateAssetBrowserFilterById(Guid uid, GraphFilter model)
+        {
+            try
+            {
+                GraphFilter orig = GraphFilterRepository.GetGraphFilterByUid(uid);
+
+                if (orig == null)
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+
+                if (orig.OwnedBy != Company.CurrentResourceID)
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+
+                orig.Name = model.Name;
+                orig.IsPublic = model.IsPublic;
+                orig.Settings = model.Settings;
+
+                GraphFilterRepository.UpdateGraphFilter(orig);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, orig));
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Allows you to remove a user filter based on its Uid.
+        /// </summary>
+        /// <param name="uid">The public identifier for the filter.</param>
+        /// <returns>A status for the DELETE request.</returns>
+        [
+            HttpDelete,
+            Route("filters/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate that the metric was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> DeleteAssetBrowserFilterById(Guid uid)
+        {
+            try
+            {
+                GraphFilter model = GraphFilterRepository.GetGraphFilterByUid(uid);
+
+                if (model == null)
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "Filter not found."));
+
+                if (model.OwnedBy != Company.CurrentResourceID)
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.Unauthorized, "Filter not owned by user."));
+
+                GraphFilterRepository.DeleteGraphFilter(model);
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Filter removed.", Success = true, Uid = Guid.Empty }));
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
     }

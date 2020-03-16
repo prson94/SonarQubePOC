@@ -1122,10 +1122,11 @@ offset 0 rows fetch next 25 rows only
                 {
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
+                List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid" };
 
-                if (!string.IsNullOrEmpty(model.FieldType.Name) && (model.FieldType.Name.ToUpper().Equals("ID") || model.FieldType.Name.ToUpper().Equals("UID")))
+                if (!string.IsNullOrEmpty(model.FieldType.Name) && disallowedFieldNames.Contains(model.FieldType.Name.ToLower()))
                 {
-                    throw new ConflictException("Error Occurred!", "You can not add field with API Name [ID] or [UID].");
+                    throw new ConflictException("Error Occurred!", $"You can not add field with API Name [{model.FieldType.Name.ToUpper()}].");
                 }
 
                 if (model.FieldType.MinimumLength.HasValue && model.FieldType.MaximumLength.HasValue)
@@ -1533,9 +1534,12 @@ offset 0 rows fetch next 25 rows only
                 {
                     throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} can only have uppercase letters, lowercase letters, numbers, dash, or underscore. It must also begin with a letter.");
                 }
-                if (new string[2] { "id", "uid" }.Contains(model.FieldType.Name.Trim().ToLower()))
+
+                List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid" };
+
+                if (!string.IsNullOrEmpty(model.FieldType.Name) && disallowedFieldNames.Contains(model.FieldType.Name.ToLower()))
                 {
-                    throw new ConflictException("Error Occurred!", $"{FieldInfo.ApiName_Name} cannot be ID or UID!");
+                    throw new ConflictException("Error Occurred!", $"You can not add field with API Name [{model.FieldType.Name.ToUpper()}].");
                 }
 
 

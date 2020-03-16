@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Scoring;
 using d360.core.entities.Views;
+using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.exceptions;
@@ -163,6 +164,8 @@ namespace d360.model
 
         public DbSet<FusionAgentError> FusionAgentErrors { get; set; }
 
+        public DbSet<GraphFilter> GraphFilters { get; set; }
+
         public DbSet<Intersect> Intersects { get; set; }
 
         public DbSet<IntersectDetail> IntersectDetails { get; set; }                /* VIEW */
@@ -208,10 +211,6 @@ namespace d360.model
         public DbSet<RuleResult> RuleResults { get; set; }
 
         public DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
-
-        public DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
-
-        public DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
 
         public DbSet<Score> Scores { get; set; }
 
@@ -1149,9 +1148,9 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj)
         {
-
-            var sql = @"select I.ObjectID from IntersectType I
+            var sql = @"select AT.ID from IntersectType I
                     inner join [Predicate] P on P.ID = I.PredicateID
+                    inner join AssetType AT on AT.Object = I.Object and AT.ObjectID = I.ObjectID
                     where P.[Type] = @type and [Subject] = @object and SubjectID = @objectId";
             var childIds = Query<int>(sql, new { type = (int)PredicateType.InterTypeHierarchy, @object = obj.ToString(), objectId = id });
 
@@ -3407,6 +3406,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                             where AT.class in({string.Join(",",assetClassIds.ToArray())})";
 
             return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
+        }
+        public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
+        {
+            return Query<int>(@"select value
+  from[dbo].[FieldLookupValue]
+  where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
+
+new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
         }
     }
 }

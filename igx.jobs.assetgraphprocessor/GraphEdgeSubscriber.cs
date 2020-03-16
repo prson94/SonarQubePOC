@@ -14,7 +14,7 @@ namespace igx.jobs.assetgraphprocessor
     public class GraphEdgeSubscriber
     {
         const string functionName = "AssetGraphProcessor_GraphEdgeSubscriber";
-        const int timeout = 1000 * 60 * 10;
+        const int timeout = 60 * 10;
 
         public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphEdge", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {

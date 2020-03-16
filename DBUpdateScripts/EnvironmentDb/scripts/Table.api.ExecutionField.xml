@@ -1,0 +1,41 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.api.ExecutionField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionField')
+BEGIN
+	CREATE TABLE [api].[ExecutionField](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ItemNumber] [int] NOT NULL,
+		[FieldName] [nvarchar](250) NOT NULL,
+		[FieldValue] [nvarchar](max) NULL,
+		[FieldTypeID] [int] NULL,
+		[LookupValue] [nvarchar](max) NULL,
+		[Ignore] [bit] NULL,
+		CONSTRAINT [PK_ApiExecutionField] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [ItemNumber] ASC, [FieldName] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionField_ItemNumber_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ApiExecutionField_ItemNumber_Include] ON [api].[ExecutionField] ( [ExecutionID] DESC, [ItemNumber] ASC ) INCLUDE([FieldTypeID])
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

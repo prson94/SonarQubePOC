@@ -85,6 +85,12 @@ namespace d360.web.Controllers.V2
             try
             {
                 var queryParams = Request.GetQueryNameValuePairs();
+                string isValid = isPageSizeAndNumValid(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    throw new RestApiException(HttpStatusCode.BadRequest, "Invalid request", isValid);
+                }
                 var results = await FieldsRepository.GetFieldTypes(queryParams);
                 if(results.Item2.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(results.Item2.StatusCode, results.Item2.Error, results.Item2.Message);

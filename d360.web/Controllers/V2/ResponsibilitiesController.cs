@@ -270,6 +270,7 @@ namespace d360.web.Controllers.V2
             Route("assignments"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Ownership rule statistics for the given responsibility type rule uid.", typeof(AssetResponsibilityItemModel)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default is 5 assets per page and max value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
@@ -292,8 +293,10 @@ namespace d360.web.Controllers.V2
                 var assigneeUidFilter = "";
                 var assetUidFilter = "";
                 var assetTypeUidFilter = "";
-                var pageSize = 5;
-                var pageNum = -1;
+                string pageSize = "5";
+                string pageNum = "1";
+                int _pageSize;
+                int _pageNum;
                 var timeout = 300;
 
 
@@ -306,17 +309,10 @@ namespace d360.web.Controllers.V2
                         switch (key)
                         {
                             case "_pagesize":
-                                if (int.TryParse(q.Value, out pageSize))
-                                {
-                                    if (pageSize < 1) pageSize = 1;
-                                }
-                                if (pageSize > 250) pageSize = 250; // max page size is 250 people.
+                                pageSize = q.Value;
                                 break;
                             case "_pagenum":
-                                if (int.TryParse(q.Value, out pageNum))
-                                {
-                                    if (pageNum < 1) pageNum = 1;
-                                }
+                                pageNum = q.Value;
                                 break;
                             case "_responsibilitytypeuid":
                                 responsibilityUidFilter = q.Value;
@@ -340,6 +336,14 @@ namespace d360.web.Controllers.V2
                     }
                 });
 
+                Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+                string isValid = isPageSizeAndNumValid(pageParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, isValid);
+                }
+
                 //validation dont allow assigneeuid filter across entire universe
 
                 if (!string.IsNullOrEmpty(assigneeUidFilter) && string.IsNullOrEmpty(assetTypeUidFilter) && string.IsNullOrEmpty(assetUidFilter))
@@ -347,7 +351,10 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.InternalServerError, "In order to use the _assigneeuid filter the _assetTypeUid or _assetUid filter must also be specified.");
                 }
 
-                AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, pageSize, pageNum, timeout);
+                int.TryParse(pageSize, out _pageSize);
+                int.TryParse(pageNum, out _pageNum);
+
+                AssetResponsibilitiesApiModel res = await ResponsibilityRepository.GetResponsibilities(queryParams, responsibilityUidFilter, assigneeUidFilter, assetUidFilter, assetTypeUidFilter, _pageSize, _pageNum, timeout);
 
                 return Request.CreateResponse(HttpStatusCode.OK, res);
             }

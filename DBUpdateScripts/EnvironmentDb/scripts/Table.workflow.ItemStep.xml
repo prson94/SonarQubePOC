@@ -1,0 +1,63 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.workflow.ItemStep-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'workflow' AND TABLE_NAME = 'ItemStep')
+BEGIN
+	CREATE TABLE [workflow].[ItemStep](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[ItemID] [bigint] NOT NULL,
+		[StepID] [int] NOT NULL,
+		[Settings] [xml] NULL,
+		[Fields] [xml] NULL,
+		[StartedBy] [int] NOT NULL,
+		[StartedOn] [datetime] NOT NULL,
+		[CompletedBy] [int] NULL,
+		[CompletedOn] [datetime] NULL,
+		[ResourceObject] [varchar](50) NULL,
+		[ResourceObjectID] [int] NULL,
+		[UID] [uniqueidentifier] CONSTRAINT [DF_workflow_ItemStep_UID] DEFAULT (newid()) NOT NULL,
+		CONSTRAINT [PK_WorkflowItemStep] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItemStep_WorkflowItem')
+BEGIN
+	ALTER TABLE [workflow].[ItemStep] WITH CHECK ADD CONSTRAINT [FK_WorkflowItemStep_WorkflowItem] FOREIGN KEY([ItemID]) REFERENCES [workflow].[Item] ([ID])
+	ALTER TABLE [workflow].[ItemStep] CHECK CONSTRAINT [FK_WorkflowItemStep_WorkflowItem]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_WorkflowItemStep_WorkflowVersionStep')
+BEGIN
+	ALTER TABLE [workflow].[ItemStep] WITH CHECK ADD CONSTRAINT [FK_WorkflowItemStep_WorkflowVersionStep] FOREIGN KEY([StepID]) REFERENCES [workflow].[VersionStep] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [workflow].[ItemStep] CHECK CONSTRAINT [FK_WorkflowItemStep_WorkflowVersionStep]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ItemStep_CompletedOn')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_ItemStep_CompletedOn] ON [workflow].[ItemStep] ( [CompletedOn] ASC )
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'PXML_WorkflowItemStep_Fields')
+BEGIN
+	CREATE PRIMARY XML INDEX [PXML_WorkflowItemStep_Fields] ON [workflow].[ItemStep] ( [Fields] )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

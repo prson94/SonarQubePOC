@@ -34,70 +34,22 @@ namespace d360.web.Controllers
 
             dbArgs.Add("id", id);
 
-            var querySql = @"select	A.*, coalesce(FA.[TextPath], RF.FusionAttribute) as FusionAttribute 
-{1}
+            var querySql = @"select	A.*
 from	RuleResult A 
-left join RuleResultFusionAttribute RF on RF.RuleResultID = A.ID
-left join FusionAttribute FA on FA.ID = RF.FusionAttributeID
-        {0}
-where   A.RuleImplementationID = @id";
-
-            var ruleQualifiers = Company.Query<RuleQualifierTypeField>(@"select Name as Header, replace(Name, ' ', '') as Field from RuleResultQualifierType where RuleImplementationID = @id order by [Order]", new { id }).ToList();
-            var qualifierFieldsSql = "";
-
-            if (ruleQualifiers.Count > 0)
-            {
-                qualifierFieldsSql = @"
-                        left join
-		                        (select * from
-			                        (select q.RuleResultID as ResID, replace(QT.[Name], ' ', '') as N, Q.[Value] as Val from RuleResultQualifierType QT
-			                        join RuleResultQualifier Q on Q.RuleResultQualifierTypeID = QT.ID
-			                        where QT.RuleImplementationID = @id) as vt
-			                        pivot
-			                        (
-			                        max(Val) for N in (
-			                        {0}
-			                        )
-			                        ) as qr) as RQ on RQ.ResID = A.ID
-                                    ";
-                qualifierFieldsSql = string.Format(qualifierFieldsSql, string.Join(",", ruleQualifiers.Select(q => $"[{q.Field}]")));
-            }
-
-            querySql = string.Format(querySql, qualifierFieldsSql, (ruleQualifiers.Count > 0) ? ",RQ.*" : "");
-
-            //if simple filter specified add that citeria to the sql
-            if (!string.IsNullOrEmpty(filter))
-            {
-                querySql = $@"{querySql} and {addDynamicFieldSimpleFilter(new string[] { 
-                    "A.EffectiveDate", 
-                    "A.RowsPassed",
-                    "A.RowsFailed",
-                    "A.PassFraction",
-                    "A.FailFraction",
-                    "A.Passed",
-                    "F.TextPath"
-                }, "RuleResult", id, filter, dbArgs)}";
-            }
-
-            querySql = applyRelationFilteringExists(querySql, Request, dbArgs);
-
-           
+        inner join RuleImplementation RI on RI.ID = A.RuleImplementationID        
+where   RI.RuleID = @id";
+                       
 
             var countSql = string.Format(@"select count(1) from ({0}) A", querySql);
             var sql = string.Format(@"select * from ({0}) A", querySql);
-
-
-            countSql = applyFilteringSuffixBind(countSql, Request, dbArgs, true);
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, true);
-
-
+                        
             sql = applySortSuffix(sql, sortDataField, sortOrder, "EffectiveDate", "desc");
             sql = applyPagingSuffix(sql, pagenum, pagesize);
 
             int total = Company.Query<int>(countSql, dbArgs).First();
             var query = Company.Query<dynamic>(sql, dbArgs);
 
-            return new JsonNetResult { Data = new { total, results = query, qualifiers = ruleQualifiers }, Formatting = Formatting.None };
+            return new JsonNetResult { Data = new { total, results = query }, Formatting = Formatting.None };
         }
 
         #endregion
@@ -111,18 +63,15 @@ where   A.RuleImplementationID = @id";
 	                              RR.PassFraction,
 	                              RR.RowsPassed,
 	                              RR.RowsFailed,
-	                              RR.Passed,
-	                              FA.TextPath as Fusion
-	                           from [dbo].RuleResult as RR
-	                           left join RuleResultFusionAttribute RRFA on RRFA.RuleResultID = RR.Id
-	                           left join FusionAttribute FA on FA.Id = RRFA.FusionAttributeID
+	                              RR.Passed
+	                           from [dbo].RuleResult as RR	                           	                           
 	                           inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID 
 	                           inner join [Rule] R on R.ID = RI.RuleID
                                inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = R.ID
- 	                           where RuleImplementationID = @ruleImplementationID
+ 	                           where RI.RuleID = @ruleId
 	                           order by RR.EffectiveDate desc";
 
-            var results = Company.Query<dynamic>(sql, new { ruleImplementationID = id }).ToList();
+            var results = Company.Query<dynamic>(sql, new { ruleId = id }).ToList();
 
 
 
@@ -145,8 +94,7 @@ where   A.RuleImplementationID = @id";
             document.SetCellValue(row, 4, "Rows Passed");
             document.SetCellValue(row, 5, "Rows Failed");
             document.SetCellValue(row, 6, "Passed");
-            document.SetCellValue(row, 7, "Fusion");
-
+            
 
             #endregion
 
@@ -159,8 +107,7 @@ where   A.RuleImplementationID = @id";
                 document.SetCellValue(row, 3, item.PassFraction);
                 document.SetCellValue(row, 4, item.RowsPassed);
                 document.SetCellValue(row, 5, item.RowsFailed);
-                document.SetCellValue(row, 6, (item.Passed) ? "Y" : "N");
-                document.SetCellValue(row, 7, item.Fusion ?? "");
+                document.SetCellValue(row, 6, (item.Passed) ? "Y" : "N");                
             }
 
             document.AutoFitColumn(1, 7);

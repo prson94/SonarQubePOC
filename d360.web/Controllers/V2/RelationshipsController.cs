@@ -421,6 +421,12 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
+                string isValid = isPageSizeAndNumValid(queryParams);
+
+                if (!string.IsNullOrEmpty(isValid))
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, isValid);
+                }
                 var items = await RelationshipRepository.GetRelationships(queryParams);
                 return Request.CreateResponse(HttpStatusCode.OK, items);
             }

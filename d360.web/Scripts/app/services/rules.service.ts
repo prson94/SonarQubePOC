@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterFieldType } from '../models/grid-definition.model';
-import { RuleType, Rule, RuleDetail, RuleImplementation, RuleImplementationDetail, RuleResultPagedResults } from '../models/rule.model';
+import { RuleType, Rule, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
 import { HttpClient } from '@angular/common/http';
@@ -30,26 +30,10 @@ export class RulesService extends BaseObservableService {
             );
     }
 
-    getRuleImplementations(id: number): Observable<RuleImplementation[]> {
-        return this.http.get(`api/rules/${id}/implementations`)
-            .pipe(
-                map(response => <RuleImplementation[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
             .pipe(
                 map(response => <RuleDetail>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getRuleImplementation(id: number): Observable<RuleImplementationDetail> {
-        return this.http.get(`api/ruleimplementations/${id}`)
-            .pipe(
-                map(response => <RuleImplementationDetail>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -147,22 +131,6 @@ export class RulesService extends BaseObservableService {
             anchor.href = url;
             anchor.click();
         }
-    }
-
-
-    deleteRuleImplementation(id: number): Observable<JsonResult> {
-        return this.deleteDynamicWithResult(this.http, 'ruleimplementation', id);
-    }
-
-
-    saveRuleImplementation(implementation: RuleImplementation, action: string): Observable<JsonResult> {
-        if (action && action == "Copy") {
-            return this.postDynamic(this.http, 'ruleimplementation', implementation, undefined, true);
-        }
-        else if (implementation.ID == undefined || !implementation.ID) {
-            return this.postDynamic(this.http, 'ruleimplementation', implementation);
-        } else
-            return this.putDynamic(this.http, 'ruleimplementation', implementation);
     }
 
     hasCustomExport(uid: string): Observable<boolean>{

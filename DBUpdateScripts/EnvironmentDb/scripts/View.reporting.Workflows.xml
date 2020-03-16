@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="View.reporting.Workflows-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER VIEW [reporting].[Workflows] AS
+    select	T.Name as WorkflowTypeName,
+		    T.Description as WorkflowTypeDescription,
+		    I.ID as ItemID,
+		    I.Active,
+		    I.StartedBy,
+		    I.StartedOn,
+		    I.CompletedBy,
+		    I.CompletedOn,
+		    I.Object,
+		    I.ObjectID,
+		    V.Version
+    from	workflow.Item I
+		    inner join workflow.[Version] V on V.ID = I.VersionID
+		    inner join workflow.Type T on T.ID = V.TypeID
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

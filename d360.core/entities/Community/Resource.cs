@@ -71,9 +71,9 @@ namespace d360.core.entities
         public class ResourceApiViewModel
         {
             [DataMember]
-            public int pageSize { get; set; } = 25000;
+            public long pageSize { get; set; } = 25000;
             [DataMember]
-            public int pageNum { get; set; } = 1;
+            public long pageNum { get; set; } = 1;
             [DataMember]
             public int total { get; set; } = 0;
             [DataMember]

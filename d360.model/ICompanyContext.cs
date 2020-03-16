@@ -12,6 +12,7 @@ using d360.core.entities.Metric;
 using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
+using d360.core.entities.Graph;
 using d360.core.enums;
 using d360.core.queue;
 using d360.model.DataAccessLayer;
@@ -76,6 +77,7 @@ namespace d360.model
         DbSet<Fusion> FusionTypeConfigurations { get; set; }
         DbSet<FusionType> FusionTypes { get; set; }
         DbSet<GlobalReportingResource> GlobalReportingResources { get; set; }
+        DbSet<GraphFilter> GraphFilters { get; set; }
         DbSet<Group> Groups { get; set; }
         DbSet<IntegrationAssetTypeFieldItem> IntegrationAssetTypeFieldItems { get; set; }
         DbSet<IntegrationAssetTypeRelationItem> IntegrationAssetTypeRelationItems { get; set; }
@@ -139,9 +141,7 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
         DbSet<RuleImplementation> RuleImplementations { get; set; }
-        DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
-        DbSet<RuleResultQualifier> RuleResultQualifiers { get; set; }
-        DbSet<RuleResultQualifierType> RuleResultQualifierTypes { get; set; }
+        DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }        
         DbSet<RuleResult> RuleResults { get; set; }
         DbSet<Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
@@ -266,7 +266,7 @@ namespace d360.model
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
-        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500);
+        List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true);
         List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false);
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
@@ -329,5 +329,7 @@ namespace d360.model
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
+        void SendApiGraphEvent(ApiExecutionInfo info);
+        int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
     }
 }

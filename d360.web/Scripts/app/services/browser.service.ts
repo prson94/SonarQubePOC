@@ -19,7 +19,7 @@ import {
     FilterSelectionsModel,
     AssetBrowserApiHopRequestModel,
     AssetBrowserTranslationOwnerCount,
-    AssetBrowserApiOwnerHopRequestModel,
+    AssetBrowserApiOwnerHopRequestModel,    StoredAssetBrowserFilterModel,
     AssetBrowserAssetsModel,
     AssetBrowserAssetModel,
     AssetBrowserOwnersModel,
@@ -33,6 +33,7 @@ import { BaseObservableService } from "./baseObservable.service";
 import { IconService } from './icon.service';
 import { AssetTypeClass } from '../models/asset.model';
 import { IconProperties } from '../models/icon-properties.model';
+import { ApiResult } from '../models/apiresult.model';
 
 @Injectable()
 export class BrowserService extends BaseObservableService {
@@ -57,7 +58,7 @@ export class BrowserService extends BaseObservableService {
         model: AssetBrowserAlertRequest
 
     ): Observable<AssetBrowserAlert[]> {
-        const url = `api/v2/browser/actions`;
+        const url = `api/v2/actions/alerts`;
 
         return this.http.post(url, model).pipe(
             map(response => response),
@@ -175,6 +176,43 @@ export class BrowserService extends BaseObservableService {
 
         return this.http.get(url).pipe(
             map((response: FilterSelectionsModel) => new FilterSelectionsModel(response.AssetTypeOptions, response.PredicateOptions, response.ResponsibilityTypeOptions)),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    /**
+    * Retrieves a set of options to filter by within the Asset Browser, for use in the filter panel.
+    * @returns A set of filter options, as list properties.
+    */
+    public getUserFilters(): Observable<StoredAssetBrowserFilterModel[]> {
+        const url = `api/v2/browser/filters/me`;
+
+        return this.http.get(url).pipe(
+            map((response: StoredAssetBrowserFilterModel[]) => response),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public saveUserFilter(model: StoredAssetBrowserFilterModel):Observable<StoredAssetBrowserFilterModel> {
+        const url = `api/v2/browser/filters`;
+
+        if (model.uid != undefined)
+            return this.http.put(url+'/'+model.uid, model).pipe(
+                map((response: StoredAssetBrowserFilterModel) => response),
+                catchError(err => this.handleError(err))
+            );
+        else
+            return this.http.post(url, model).pipe(
+                map((response: StoredAssetBrowserFilterModel) => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public deleteUserFilter(model: StoredAssetBrowserFilterModel): Observable<boolean> {
+        const url = `api/v2/browser/filters`;
+
+        return this.http.delete(url + '/' + model.uid).pipe(
+            map((response: ApiResult) => response.Success),
             catchError(err => this.handleError(err))
         );
     }
@@ -411,7 +449,7 @@ export class BrowserService extends BaseObservableService {
         foreColor: string) {
 
         // Create the current node.
-        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, rootTranslationNode, parentKey, backColor, foreColor);
+        let currentNode: AssetBrowserTranslationNode = this.createTranslationNode(current, rootTranslationNode, includeNonLeaf, parentKey, backColor, foreColor);
 
         if (!rootTranslationNode && includeNonLeaf) {
             rootTranslationNode = currentNode;
@@ -436,62 +474,77 @@ export class BrowserService extends BaseObservableService {
     private createTranslationNode(
         a: AssetBrowserAssetModel,
         rootTranslationNode: AssetBrowserTranslationNode,
+        includeNonLeaf: boolean,
         parentKey: string,
         backColor: string,
         foreColor: string): AssetBrowserTranslationNode {
         let n: AssetBrowserTranslationNode = new AssetBrowserTranslationNode();
 
-        a.ownerCounts.forEach(oC => {
-            let thisKey: string = (rootTranslationNode ? rootTranslationNode.key : a.key) + '-O-' + oC.ResponsibilityTypeID.toString();
+        let isThisALeaf: boolean = !a.items || a.items.length == 0;
 
-            let existing = (rootTranslationNode) ?
-                rootTranslationNode.owners.find(i => { return i.key == thisKey; }) :
-                n.owners.find(i => { return i.key == thisKey; });
+        if (isThisALeaf || includeNonLeaf) {
+            a.ownerCounts.forEach(oC => {
+                let thisKey: string = (rootTranslationNode ? rootTranslationNode.key : a.key) + '-O-' + oC.ResponsibilityTypeID.toString();
+
+                let existing = (rootTranslationNode) ?
+                    rootTranslationNode.owners.find(i => { return i.key == thisKey; }) :
+                    n.owners.find(i => { return i.key == thisKey; });
             
-            if (existing) {
-                existing.count += oC.Count;
-            }
-            else {
-                let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
-                assetBrowserTranslationOwnerCount.key = thisKey;
-                assetBrowserTranslationOwnerCount.expanded = false;
-                assetBrowserTranslationOwnerCount.count = oC.Count;
-                assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
-                assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
-                if (rootTranslationNode) {
-                    rootTranslationNode.owners.push(assetBrowserTranslationOwnerCount);
+                if (existing) {
+                    if (oC.Users) {
+                        oC.Users.forEach(u => {
+                            if (!existing.users.find(eu => { return eu == u; })) {
+                                existing.count += 1;
+                            }
+                        });
+                    }
+                    else {
+                        existing.count += oC.Count;
+                    }
                 }
                 else {
-                    n.owners.push(assetBrowserTranslationOwnerCount);
+                    let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
+                    assetBrowserTranslationOwnerCount.key = thisKey;
+                    assetBrowserTranslationOwnerCount.expanded = false;
+                    assetBrowserTranslationOwnerCount.users = oC.Users;
+                    assetBrowserTranslationOwnerCount.count = oC.Count;
+                    assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
+                    assetBrowserTranslationOwnerCount.responsibilityTypeId = oC.ResponsibilityTypeID;
+                    if (rootTranslationNode) {
+                        rootTranslationNode.owners.push(assetBrowserTranslationOwnerCount);
+                    }
+                    else {
+                        n.owners.push(assetBrowserTranslationOwnerCount);
+                    }
                 }
-            }
-        }); 
+            });
 
-        a.relationCounts.forEach(rC => {
-            let existing = (rootTranslationNode) ?
-                rootTranslationNode.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; }) :
-                n.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; });
+            a.relationCounts.forEach(rC => {
+                let existing = (rootTranslationNode) ?
+                    rootTranslationNode.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; }) :
+                    n.relations.find(i => { return i.predicateId == rC.PredicateID && i.direction == rC.Direction; });
 
-            if (existing) {
-                existing.count += rC.Count;
-            }
-            else {
-                let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
-                assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
-                assetBrowserTranslationRelationCount.expanded = false;
-                assetBrowserTranslationRelationCount.count = rC.Count;
-                assetBrowserTranslationRelationCount.direction = rC.Direction;
-                assetBrowserTranslationRelationCount.predicate = rC.Predicate;
-                assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
-                assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
-                if (rootTranslationNode) {
-                    rootTranslationNode.relations.push(assetBrowserTranslationRelationCount);
+                if (existing) {
+                    existing.count += rC.Count;
                 }
                 else {
-                    n.relations.push(assetBrowserTranslationRelationCount);
+                    let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
+                    assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
+                    assetBrowserTranslationRelationCount.expanded = false;
+                    assetBrowserTranslationRelationCount.count = rC.Count;
+                    assetBrowserTranslationRelationCount.direction = rC.Direction;
+                    assetBrowserTranslationRelationCount.predicate = rC.Predicate;
+                    assetBrowserTranslationRelationCount.predicateId = rC.PredicateID;
+                    assetBrowserTranslationRelationCount.predicateUid = rC.PredicateUid;
+                    if (rootTranslationNode) {
+                        rootTranslationNode.relations.push(assetBrowserTranslationRelationCount);
+                    }
+                    else {
+                        n.relations.push(assetBrowserTranslationRelationCount);
+                    }
                 }
-            }
-        });
+            });
+        }
 
         n.actionCount = a.actionCount;
         n.showReveal = AssetBrowserApiHopDirection[a.reveal] as any; //convert string from API to enum value

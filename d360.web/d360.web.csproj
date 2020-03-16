@@ -663,6 +663,7 @@
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-service-namespace.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi.component.html" />
+    <Content Include="Scripts\app\components\admin\load\bulk-load-item.component.html" />
     <Content Include="Scripts\app\components\admin\load\load.form.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-consolidate.component.html" />
     <Content Include="Scripts\app\components\admin\tags\admin-tags-action.component.html" />
@@ -781,6 +782,7 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
     <Content Include="webpack.config.js" />
@@ -1275,8 +1277,6 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation-summary.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifiers.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-form-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-field-change.component.ts" />
@@ -1348,10 +1348,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\ownership\ownership.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-qualifier-grid.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-implementations-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assignments\shared-assignments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-list.component.ts" />
@@ -1722,7 +1718,6 @@
     <TypeScriptCompile Include="Scripts\app\services\allocations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\qualifier.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />

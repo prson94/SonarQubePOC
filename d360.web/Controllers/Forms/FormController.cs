@@ -333,9 +333,7 @@ namespace d360.web.Controllers
                 case "RESOURCETYPE":
                     return Resource_EditFields(oid);
                 case "RULE":
-                    return Rule_EditFields(oid);
-                case "RULEIMPLEMENTATION":
-                    return RuleImplementation_EditFields(oid);
+                    return Rule_EditFields(oid);                
                 case "RULETYPE":
                     return RuleType_EditFields(oid);
                 case "SERVICE":
@@ -419,9 +417,7 @@ namespace d360.web.Controllers
                 case "RESOURCETYPE":
                     return Resource_AddFields(objectID.GetValueOrDefault());
                 case "RULE":
-                    return Rule_AddFields(objectID.GetValueOrDefault());
-                case "RULEIMPLEMENTATION":
-                    return RuleImplementation_AddFields(objectID.GetValueOrDefault());
+                    return Rule_AddFields(objectID.GetValueOrDefault());                
                 case "RULETYPE":
                     return RuleType_AddFields();
                 case "SERVICE":
@@ -517,9 +513,7 @@ namespace d360.web.Controllers
                 case "RESOURCESELF":
                     return EditMyInfo(form);
                 case "RESOURCESELFPASSWORD":
-                    return ChangeMyPassword(form);
-                case "RULEIMPLEMENTATION":
-                    return EditRuleImplementation(form);
+                    return ChangeMyPassword(form);                
                 case "RULETYPE":
                     return EditRuleType(form);
                 case "SERVICE":
@@ -586,9 +580,7 @@ namespace d360.web.Controllers
                 case "RULETYPE":
                     return DeleteRuleType(form);                
                 case "POLICYTYPELEVEL":
-                    return DeletePolicyTypeLevel(form);
-                case "RULEIMPLEMENTATION":
-                    return DeleteRuleImplementation(form);
+                    return DeletePolicyTypeLevel(form);                
                 case "SERVICE":
                     return DeleteCustomAPIService(form);
                 case "SURVEYTYPE":
@@ -667,9 +659,7 @@ namespace d360.web.Controllers
                 case "REPORT":
                     return await AddReport(form);
                 case "RESOURCE":
-                    return AddResource(form);
-                case "RULEIMPLEMENTATION":
-                    return AddRuleImplementation(form);
+                    return AddResource(form);                
                 case "RULETYPE":
                     return AddRuleType(form);
                 case "SERVICE":
@@ -686,38 +676,7 @@ namespace d360.web.Controllers
 
             throw new Exception("Invalid / unsupported create type");
         }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamicedit/copy/{objectType}"), ValidateInput(false)]
-        public JsonResult DynamicCopy(string objectType, string json)
-        {
-            JObject jsonObject = JObject.Parse(json);
-             FormCollection form = new FormCollection();
-
-            foreach (var item in jsonObject)
-            {
-                form.Add(item.Key, item.Value.ToString());
-            }
-
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "RULEIMPLEMENTATION":
-                    return CopyRuleImplementation(form);
-            }
-            throw new Exception("Invalid / unsupported copy type");
-        }
-
-
-        [HttpGet, Route("dynamiceditor/copy/{o}/{oid:int}")]
-        public JsonResult DynamicEditorCopyFields(string o, int oid)
-        {
-            switch ((o ?? "").ToUpper())
-            {
-                case "RULEIMPLEMENTATION":
-                    return RuleImplementation_CopyFields(oid);
-            }
-            throw new Exception("Invalid or non implemented editor type");
-        }
-
+               
         #endregion
 
         #region Style Customizations

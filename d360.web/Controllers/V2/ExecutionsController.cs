@@ -62,6 +62,13 @@ namespace d360.web.Controllers.V2
 
             var queryParams = Request.GetQueryNameValuePairs();
 
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
+
             var executions = await AssetRepository.GetExecutionItems(queryParams);
             if(executions.StatusCode != HttpStatusCode.OK)
             {

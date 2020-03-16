@@ -8,6 +8,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using d360.core.resources;
 
 namespace d360.model.validators
 {
@@ -26,7 +27,7 @@ namespace d360.model.validators
             bool fieldsHaveErrors = false;
             var fieldsHaveErrorsList = new List<string>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
-            bool isValid = true;
+            bool isValid = true;            
 
             foreach (var field in model.Fields)
             {
@@ -76,6 +77,19 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
                     }
+
+                    if (field.Type.Json != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type Json not support for reference item type!");
+                    }
+                    else if (field.Type.Tag != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type Tag not support for reference item type!");
+                    }
+                    else if (field.Type.JsonElement != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type JsonElement not support for reference item type!");
+                    }
                 }
                 if (field.Type.Tag != null)
                 {
@@ -112,16 +126,16 @@ namespace d360.model.validators
                         var jsonAttribute = field.Type.JsonElement.JsonAttribute;
                         if (jsonAttribute == null)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Missing Json attribute definition!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Missing Json attribute definition!");
                         }
                         if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
                         }
                         var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
                         if (!allowedTypes.Contains(jsonAttribute.DataType))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
                         }
 
 
@@ -150,7 +164,7 @@ namespace d360.model.validators
                 {
                     if (!FieldLengthValid(field.Type.Text.Validation, out string validationErrorMsg))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"{validationErrorMsg}");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
                 }
 
@@ -158,29 +172,43 @@ namespace d360.model.validators
                 {
                     if (!FieldLengthValid(field.Type.Html.Validation, out string validationErrorMsg))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"{validationErrorMsg}");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
-                }
+                }                
 
                 if (field?.Type?.Number != null)
                 {
                     if (field.Type.Number.Increment != null && (field.Type.Number.Increment % 1 != 0))
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Increment must be a whole number");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "Increment"));
+                    }
+                   
+                    if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "MaximumValue"));
                     }
 
-                    if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
-                    {                        
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"MaximumValue must be a whole number"); ;
-                    }
                     if (field.Type.Number.Validation?.MinimumValue != null && (field.Type.Number.Validation?.MinimumValue % 1) != 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"MinimumValue must be a whole number"); ;
-                    }                    
-                }
-                #endregion
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "MinimumValue"));
+                    }
 
-                if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
+                    if (!FieldLengthValue(field.Type.Number.Validation, out string validationErrorMsg))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+                    }
+                }
+
+                if (field?.Type?.Decimal != null)
+                {
+                    if (!FieldLengthValue(field.Type.Decimal.Validation, out string validationErrorMsg))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
+                    }
+                }
+                    #endregion
+
+                    if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }
@@ -300,26 +328,84 @@ namespace d360.model.validators
         private static bool IsFieldNameAllowed(string fieldApiName)
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
-            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon" };
+            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon","parentdisplayname","parentassetuid" };
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
 
         private static bool FieldLengthValid(FieldTypeDescriptionApiViewModel_ValidationLength validation, out string errMsg)
         {
+            decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
             errMsg = "";
             if (validation != null)
             {
-                if (validation?.MaximumLength != null && (validation?.MaximumLength % 1) != 0)
+                if (validation?.MaximumLength != null)
                 {
-                    errMsg = "MaximumLength must be a whole number";
-                    return false;
+                    if((validation?.MaximumLength % 1) != 0)
+                    {
+                        errMsg = String.Format(FieldErrors.WholeNumberError, "MaximumLength");
+                        return false;
+                    }
+                    if (validation?.MaximumLength > maxDecimalFieldValue)
+                    {
+                        errMsg = String.Format(FieldErrors.LessThanError, "MaximumLength", FieldErrors.MaxDecimalFieldValue);
+                        return false;
+                    }
+                    
                 }
-                if (validation?.MinimumLength != null && (validation?.MinimumLength % 1) != 0)
+                if (validation?.MinimumLength != null)
                 {
-                    errMsg = "MinimumLength must be a whole number";
+                    if ((validation?.MinimumLength % 1) != 0)
+                    {
+                        errMsg = String.Format(FieldErrors.WholeNumberError, "MinimumLength"); 
+                        return false;
+                    }
+                    if (validation?.MinimumLength < 0)
+                    {
+                        errMsg = String.Format(FieldErrors.GreaterThanError, "MinimumLength", "0");
+                        return false;
+                    }
+                    if (validation?.MinimumLength > maxDecimalFieldValue)
+                    {
+                        errMsg = String.Format(FieldErrors.LessThanError, "MinimumLength", FieldErrors.MaxDecimalFieldValue);
+                        return false;
+                    }
+                }
+                if(validation?.MinimumLength > validation?.MaximumLength)
+                {
+                    errMsg = String.Format(FieldErrors.LessThanError, "MinimumLength", "MaximumLength");
                     return false;
                 }
             }
+            return true;
+        }
+        private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg)
+        {
+            decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
+            errMsg = "";           
+
+            if (validation?.MaximumValue != null)
+            {
+                if (validation?.MaximumValue > maxDecimalFieldValue)
+                {
+                    errMsg = String.Format(FieldErrors.LessThanError, "MaximumValue", FieldErrors.MaxDecimalFieldValue);
+                    return false;
+                }
+            }
+
+            if (validation?.MinimumValue != null)
+            {
+                if (validation?.MinimumValue > maxDecimalFieldValue)
+                {
+                    errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", FieldErrors.MaxDecimalFieldValue);
+                    return false;
+                }
+            }
+
+            if (validation?.MinimumValue > validation?.MaximumValue)
+            {
+                errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", "MaximumValue");
+                return false;
+            }            
             return true;
         }
     }

@@ -70,7 +70,10 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         formatted.state = x.state;
         formatted.uid = x.uid;
         formatted.hasMeasure = x.hasMeasure;
-        formatted.isExternallyCalculated = x.isExternallyCalculated ? 'Yes' : 'No';
+        formatted.isExternallyCalculated = x.isExternallyCalculated ? 'External' : 'Internal';
+        formatted.lowerThreshold = x.lowerThreshold;
+        formatted.upperThreshold = x.upperThreshold;
+        formatted.formattedThreshold = x.lowerThreshold + "," + x.upperThreshold;
         return formatted;
     }
 
@@ -106,6 +109,9 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         this.editTitle = 'Add Score';
         this.selection = new ScoreTypeAllocation();
         this.selection.scoreType = ScoreType.Governance;
+        this.selection.isExternallyCalculated = false;
+        this.selection.lowerThreshold = 50;
+        this.selection.upperThreshold = 90;
         this.showEdit = true;
     }
 

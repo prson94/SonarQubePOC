@@ -1,0 +1,181 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Core" id="Table.dbo.Asset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Asset')
+BEGIN
+	CREATE TABLE [dbo].[Asset](
+		[ID] [bigint] IDENTITY(1,1) NOT NULL,
+		[AssetTypeID] [int] NOT NULL,
+		[State] [int] CONSTRAINT [DF_Asset_State] DEFAULT (1) NOT NULL,
+		[Object] [varchar](50) NOT NULL,
+		[ObjectID] [int] CONSTRAINT [DF_Asset_ObjectId] DEFAULT (NEXT VALUE FOR [dbo].[Asset_ObjectID_Seq]) NOT NULL,
+		[SourceID] [nvarchar](500) NULL,
+		[CreatedOn] [datetime] NULL,
+		[CreatedBy] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[KeyHash] [varchar](50) NULL,
+		[FieldHash] [varchar](50) NULL,
+		[uid] [uniqueidentifier] CONSTRAINT [DF_Asset_uid] DEFAULT (newid()) NOT NULL,
+		[Code] [nvarchar](250) NULL,
+		CONSTRAINT [PK_Asset] PRIMARY KEY NONCLUSTERED ( [ID] ASC ),
+		CONSTRAINT [UC_Asset_Object_ObjectID] UNIQUE NONCLUSTERED ( [Object] ASC, [ObjectID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Asset_AssetType')
+BEGIN
+	ALTER TABLE [dbo].[Asset] WITH CHECK ADD  CONSTRAINT [FK_Asset_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID])
+	ALTER TABLE [dbo].[Asset] CHECK CONSTRAINT [FK_Asset_AssetType]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_Asset')
+BEGIN
+	CREATE CLUSTERED INDEX [CIX_Asset] ON [dbo].[Asset] ( [AssetTypeID] ASC, [State] ASC, [Object] ASC, [ObjectID] ASC, [ID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetType_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC ) INCLUDE([ObjectID],[SourceID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetType_KeyHash_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetType_KeyHash_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC, [KeyHash] ASC ) INCLUDE([ID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_AssetTypeID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_AssetTypeID_Include] ON [dbo].[Asset] ( [AssetTypeID] ASC ) INCLUDE([ID],[Object],[ObjectID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_Object_Include] ON [dbo].[Asset] ( [Object] ASC ) INCLUDE([ID],[AssetTypeID],[ObjectID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_Object_ObjectID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_Object_ObjectID_Include] ON [dbo].[Asset] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID],[AssetTypeID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_ObjectID_Include')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_ObjectID_Include] ON [dbo].[Asset] ( [ObjectID] ASC ) INCLUDE([ID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_SourceID_Object_ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_SourceID_Object_ObjectID] ON [dbo].[Asset] ( [SourceID] ASC, [Object] ASC, [ObjectID] ASC )
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_State_AssetTypeID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_State_AssetTypeID] ON [dbo].[Asset] ( [State] ASC,  [AssetTypeID] ASC ) INCLUDE([ID],[ObjectID])
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Asset_AfterDelete]
+       ON [dbo].[Asset]
+       AFTER DELETE
+AS
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[AssetID])
+		select	'Delete', 
+				Object, 
+				ObjectID,
+				ID
+		from	deleted;
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterInsert-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Asset_AfterInsert]
+   ON  [dbo].[Asset] 
+   AFTER INSERT
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Add', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.CreatedBy, 0)),
+				I.ID
+		from	inserted I where  I.Object not in('FusionAttribute', 'FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterUpdate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Asset_AfterUpdate]
+   ON  [dbo].[Asset] 
+   AFTER UPDATE
+AS 
+	SET NOCOUNT ON;
+	INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID], [Custom], AssetID)
+        select	'Update', 
+				I.Object, 
+				I.ObjectID,
+				[queue].WriteIndexXml('', I.[Object], I.ObjectID, coalesce(I.UpdatedBy, 0)),
+				I.ID
+		from	inserted I where I.Object not in('FusionAttribute','FusionQueryAttribute');
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -169,6 +169,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid maximum depth. Policy level specified must be a value between 1 and 10..
+        /// </summary>
+        public static string InvalidPolicyDepth {
+            get {
+                return ResourceManager.GetString("InvalidPolicyDepth", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid request.
         /// </summary>
         public static string InvalidRequestHttpErrorTitle {

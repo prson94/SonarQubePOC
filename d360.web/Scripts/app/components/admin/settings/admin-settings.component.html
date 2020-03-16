@@ -67,17 +67,17 @@
         <div class="tile tile-detail">
             <header>Search</header>
             <div class="directions">
-                Specify the default value for the initially selected list of object types to search when a user performs a simple search from the Data360 global search functionality.
+                Set the initial scope of any search performed from the header bar or home page search. The scope can then be modified after the initial search from the Search Results page.
             </div>
             <ul>
                 <li *ngFor="let searchType of searchTypes;let i=index">
-                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" />{{searchType.title}}
+                    <input type="checkbox" [(ngModel)]="searchTypes[i].selected" /> {{searchType.title}}
                 </li>
             </ul>
             <div class="directions">
-                Specify if the option 'Match exact phrase' is checked by default.   If selected the 'Match exact phrase' option is checked by default and the search will look for the exact phrase entered in the search criteria.  If unselected the option will not be checked, but the user can still check it once on the Search Results Page
+                Select to enable the 'Match exact phrase' setting by default. When enabled, exact matches are prioritized in search results. This setting can be modified after an initial search from the Search Results page.
             </div>
-            <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" />Enable 'Match exact phrase' by default
+            <input type="checkbox" [(ngModel)]="companySettings.EnableSearchExactMatch" /> Enable 'Match exact phrase' by default
         </div>
         <div class="tile tile-detail">
             <header>Default Route</header>
@@ -98,10 +98,10 @@
                 <div class="col s9">
                     <div class="ui-card-subtitle">Asset Graph</div>
                     <div class="errorMessage">{{graphValidationMessage}}</div>
-                    <div class="directions">You may submit a request to rebuild the Asset Browser graph. This may take up to thirty minutes, depending on the number of assets contained within your environment.</div>
+                    <div class="directions">To submit a request to rebuild the Asset Browser graph click the button to the right. This request may take up to thirty minutes, depending on the number of assets contained within your environment.</div>
                 </div>
                 <div class="right">
-                    <button pButton type="button" (click)="rebuildAssetGraph()" [disabled]="disableRebuildAssetGraph" label="Rebuild"></button>&nbsp;
+                    <button pButton type="button" (click)="rebuildAssetGraph()" [disabled]="disableRebuildAssetGraph" label="Rebuild"></button>&nbsp;                    
                 </div>
             </div>
 
@@ -109,7 +109,7 @@
                 <div class="col s9">
                     <div class="ui-card-subtitle">Display Values</div>
                     <div class="errorMessage">{{displayValueValidationMessage}}</div>
-                    <div class="directions">To submit a request to rebuild the Govern object display values click the below button.</div>
+                    <div class="directions">To submit a request to rebuild the Govern object display values click the button to the right.</div>
                 </div>
                 <div class="right">
                     <button pButton type="button" (click)="rebuildDisplayValues()" [disabled]="disableRebuildDisplayValue" label="Rebuild"></button>&nbsp;
@@ -120,7 +120,7 @@
                 <div class="col s9">
                     <div class="ui-card-subtitle">Search Index</div>
                     <div class="errorMessage">{{indexValidationMessage}}</div>
-                    <div class="directions">To submit a request to refresh/rebuild the search index click the below button.</div>
+                    <div class="directions">To submit a request to refresh/rebuild the search index click the button to the right.</div>
                 </div>
                 <div class="right">
                     <button pButton type="button" (click)="rebuildIndex()" [disabled]="disableRebuildIndex" label="Rebuild"></button>&nbsp;

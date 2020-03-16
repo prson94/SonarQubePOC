@@ -173,6 +173,7 @@ export class SecondaryNavService {
         return JSON.parse(localStorage.getItem('SecondaryNavState')).currentState.currentArea;
     }
     setLocalHomeUrl(url: string): any {
+        this.homeUrlChangeSource.next(url);
         this.secondaryNavState.currentState.currentHome = url;
         this.saveSecondaryNavState(this.secondaryNavState);
     }

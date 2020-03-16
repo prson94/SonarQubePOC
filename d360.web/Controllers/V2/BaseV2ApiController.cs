@@ -25,7 +25,7 @@ namespace d360.web.Controllers.V2
             _company = company;
         }
 
-        public void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns)
+        public void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string joinObjectField = "A.[Object]", string joinObjectIdField = "A.[ObjectID]", string assetIdColumn = "A.ID")
         {
             fieldTypes.ForEach(f =>
             {
@@ -110,19 +110,19 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJoins.Add($@"outer apply (
                         select
-                            STRING_AGG(ISNULL(F1.FormattedValue,F2.FormattedValue),',') as FormattedValue
-                        from [Intersect] I
-                        left join Asset R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
-                        left join Field F1 on F1.FieldTypeID = {f.LookupObjectFieldTypeID} and F1.AssetID = R1.ID
-						left join Asset R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
-                        left join Field F2 on F2.FieldTypeID = {f.LookupObjectFieldTypeID} and F2.AssetID = R2.ID
-                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(F1.FormattedValue,F2.FormattedValue) is not null
+                            STRING_AGG(ISNULL(FFR_F1.FormattedValue,FFR_F2.FormattedValue),',') as FormattedValue
+                        from [Intersect] FFR_I
+                        left join Asset FFR_R1 on FFR_R1.[Object] = FFR_I.[Subject] and FFR_R1.ObjectID = FFR_I.SubjectId and FFR_I.[Object] = {joinObjectField} and FFR_I.ObjectID = {joinObjectIdField}
+                        left join Field FFR_F1 on FFR_F1.FieldTypeID = {f.LookupObjectFieldTypeID} and FFR_F1.AssetID = FFR_R1.ID
+						left join Asset FFR_R2 on FFR_R2.[Object] = I.[Object] and FFR_R2.ObjectID = FFR_I.ObjectId and FFR_I.[Subject] = {joinObjectField} and FFR_I.SubjectID = {joinObjectIdField}
+                        left join Field FFR_F2 on FFR_F2.FieldTypeID = {f.LookupObjectFieldTypeID} and FFR_F2.AssetID = FFR_R2.ID
+                        where FFR_I.IntersectTypeID = {f.LookupObjectID} and ISNULL(FFR_F1.FormattedValue, FFR_F2.FormattedValue) is not null
                     ) {tableAlias} ");
                 }
                 else if (f.Type == "JsonElement")
                 {
                     fieldJoins.Add($@"
-                        {joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
+                        {joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {jsonElementDefinition.FieldTypeID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField}
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
@@ -131,9 +131,9 @@ namespace d360.web.Controllers.V2
                 {
                     fieldJoins.Add($@"outer apply(
                         select FormattedValue = STUFF((
-                            select '|' + T.Value from AssetTag AT
-                                inner join Tag T on AT.TagID = T.ID
-                                where AT.AssetID = A.ID
+                            select '|' + FTag_T.Value from AssetTag FTag_AT
+                                inner join Tag FTag_T on FTag_AT.TagID = FTag_T.ID
+                                where FTag_AT.AssetID = {assetIdColumn}
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
@@ -153,25 +153,25 @@ namespace d360.web.Controllers.V2
                     fieldJoins.Add($@"
                     outer apply (
 		                    SELECT hello = Stuff((
-		                    SELECT  distinct ' | ' + p.TextPath
-			                    from [Intersect] I 
-			                    inner Join Asset RA on 
-			                    I.[IntersectTypeID] = {intersectType.ID} AND 
-			                    (((A.[Object] = I.[Subject] and A.[ObjectID] = I.[SubjectID]) AND (RA.[Object] = I.[Object] and RA.[ObjectID] = I.[ObjectID])) 
-			                    OR (A.[Object] = I.[Object] and A.[ObjectID] = I.[ObjectID]) AND (I.[Subject] = RA.[Object] and I.[SubjectID] = RA.ObjectID))
-			                    cross apply GetAssetTextPathById(RA.ID, '/') P
+		                    SELECT  distinct ' | ' + FRelation_P.TextPath
+			                    from [Intersect] FRelation_I 
+			                    inner Join Asset FRelation_RA on 
+			                    FRelation_I.[IntersectTypeID] = {intersectType.ID} AND 
+			                    ((({joinObjectField} = FRelation_I.[Subject] and {joinObjectIdField} = FRelation_I.[SubjectID]) AND (FRelation_RA.[Object] = FRelation_I.[Object] and FRelation_RA.[ObjectID] = FRelation_I.[ObjectID])) 
+			                    OR ({joinObjectField} = FRelation_I.[Object] and {joinObjectIdField} = FRelation_I.[ObjectID]) AND (FRelation_I.[Subject] = FRelation_RA.[Object] and FRelation_I.[SubjectID] = FRelation_RA.ObjectID))
+			                    cross apply GetAssetTextPathById(FRelation_RA.ID, '/') FRelation_P
 			                    Where 
-			                    I.[IntersectTypeID] = {intersectType.ID} AND
-			                    ((I.[Object] = A.[Object] and I.ObjectID = A.ObjectID) 
+			                    FRelation_I.[IntersectTypeID] = {intersectType.ID} AND
+			                    ((FRelation_I.[Object] = {joinObjectField} and FRelation_I.ObjectID = {joinObjectIdField}) 
 			                    or 
-			                    (I.[Subject] = A.[Object] and I.[SubjectID] = A.ObjectID))
+			                    (FRelation_I.[Subject] = {joinObjectField} and FRelation_I.[SubjectID] = {joinObjectIdField}))
 		                    for xml path ('')
 		                    ), 2, 1, '')
 		                    ){tableAlias}(FormattedValue) ");
                 }
                 else
                 {
-                    fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]");
+                    fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {joinObjectField} and {tableAlias}.[ObjectID] = {joinObjectIdField}");
                 }
             });
         }
@@ -194,13 +194,41 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        public bool isPageSizeAndNumValid(int _pageSize, int _pageNum)
+        public string isPageSizeAndNumValid (IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if (_pageSize > 200000) return false;
+            var parameters = queryParams.ToList();
+            long pageSize = 0;
+            long pageNum = 0;
 
-            if (_pageNum > 10000) return false;
+            if (parameters.Any(q => q.Key == "_pageSize"))
+            {
+                var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
+                if(_pageSize.Length > 10)
+                    return "Invalid pageSize value provided.";
+                if (long.TryParse(_pageSize, out pageSize))
+                {
+                    if (pageSize > 200000) return "Invalid pageSize value provided. Number is too large";
+                    if (pageSize <= 0) return "Invalid pageSize value provided. Value must be greater than 0";
+                }
+                else
+                    return "Invalid pageSize value provided. Must be a numeric value";
+            }
 
-            return true;
+            if (parameters.Any(q => q.Key == "_pageNum"))
+            {
+                var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
+                if(_pageNum.Length > 10)
+                    return "Invalid pageNum value provided.";
+                if (long.TryParse(_pageNum, out pageNum))
+                {
+                    if (pageNum > 10000) return "Invalid pageNum value provided. Number is too large";
+                    if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
+                }
+                else
+                    return "Invalid pageNum value provided. Must be a numeric value ";
+            }
+
+            return "";
         }
 
         protected async Task<T> readRequestJsonContent<T>(HttpRequestMessage request, bool deserializeAsIs = false)

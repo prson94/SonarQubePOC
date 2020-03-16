@@ -21,6 +21,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
+using d360.model.helpers;
 
 namespace d360.model.DataAccessLayer
 {
@@ -46,7 +47,7 @@ namespace d360.model.DataAccessLayer
         {
             return AssetTypeClass.BusinessAsset.GetAsList();
         }
-        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams,AssetTypeClass? Class, Guid? fusionTypeUid,Guid? assetTypeUid)
+        public async Task<IEnumerable<AssetTypeApiViewModel>> GetAssetType(IEnumerable<KeyValuePair<string, string>> queryParams, AssetTypeClass? Class, Guid? fusionTypeUid, Guid? assetTypeUid)
         {
             var dbArgs = new DynamicParameters();
             string condition = string.Empty;
@@ -151,7 +152,7 @@ namespace d360.model.DataAccessLayer
 
             }
 
-            if(assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
+            if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
             {
                 condition += " and A.uid=@assetTypeUid ";
                 dbArgs.Add("assetTypeUid", assetTypeUid.Value);
@@ -194,7 +195,8 @@ namespace d360.model.DataAccessLayer
 
             assetTypeID = assetType.ID;
 
-            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
+            List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
+            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID && !hiddenFieldTypes.Contains(f.Type)).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
@@ -382,6 +384,30 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeSegments);
             }
 
+            bool includeParent = false;
+            string parentFieldSQL = @" Parent.uid as ParentAssetUid,
+					Parent.DisplayValue as ParentDisplayName,";
+            string parentApplySQL = $@"left join [utility].[ArtifactAssetParent] AAP on A.ID = AAP.AssetID 
+				left join AssetDetail Parent on Parent.ID = AAP.ParentAssetID";
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
+
+                foreach(var item in sqlParams)
+                {
+                    dbArgs.Add(item.Key, item.Value);
+                }
+            }
+
             string permissionDetailSQL = @"				outer apply (
 				 select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
 					where AssetID = A.ID
@@ -426,7 +452,7 @@ namespace d360.model.DataAccessLayer
                     dbArgs.Add("@simpleFilter", simpleFilter);
 
                     List<string> simpleFilters = new List<string>();
-                    foreach(var ft in fieldTypes.Where(x=> x.IsListable == true))
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
                     {
                         if (ft.Type == "Tag")
                         {
@@ -442,10 +468,38 @@ namespace d360.model.DataAccessLayer
                         }
                     }
 
+                    if (includeParent)
+                    {
+                        simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+                    }
+
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_ownedby"))
+            {
+                List<Guid> ownerUids = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_ownedby")
+                    .Value.Split(',').Select(x =>
+                    {
+                        var guid = Guid.Empty;
+                        Guid.TryParse(x, out guid);
+                        return guid;
+                    }).ToList();
+
+                if (ownerUids.Any(x => x == Guid.Empty))
+                    throw new Exception("Invalid Owner Uid in parameters!");
+
+                if (ownerUids.Count > 0)
+                {
+                    dbArgs.Add("ownerUids", ownerUids);
+                    whereStatements.Add($@"EXISTS (
+                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.AssetID = a.ID AND rd.ResourceUid in @ownerUids
+                        UNION ALL
+                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd  WHERE rd.AssetID = 0 AND rd.AssetTypeID = a.AssetTypeID AND rd.ResourceUid in @ownerUids
+                    )");
+                }
+            }
 
             var whereSql = "";
             if (whereStatements.Any())
@@ -464,6 +518,7 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", countJoins)}
+                {(includeParent ? parentApplySQL : "")}
                 {whereSql}";
 
 
@@ -476,6 +531,7 @@ namespace d360.model.DataAccessLayer
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
+                    {(includeParent ? parentFieldSQL : "")}
                     A.Code,
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
@@ -491,6 +547,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
                 {(includePermissionDetails ? permissionDetailSQL : "")}
+                {(includeParent ? parentApplySQL : "")}
                 {whereSql}
                 {string.Join("\n", pagingSql)}
             ";
@@ -512,7 +569,16 @@ namespace d360.model.DataAccessLayer
             {
                 foreach (var result in results)
                 {
-                    result.Permissions = JsonConvert.DeserializeObject(result.Permissions);
+                    AssetsApiPermissionViewModel permissionObject = JsonConvert.DeserializeObject<AssetsApiPermissionViewModel>(result.Permissions);
+
+                    //Override responsibilities for Admin users (as in GetAssets procedure)
+                    if (CompanyContext.CurrentResourceIsAdmin)
+                    {
+                        permissionObject.ModifyAsset = true;
+                        permissionObject.DeleteAsset = true;
+                    }
+
+                    result.Permissions = permissionObject;
                 }
             }
 
@@ -556,6 +622,13 @@ namespace d360.model.DataAccessLayer
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
 
+            bool includeParent = false;
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
+                bool.TryParse(value, out includeParent);
+            }
+
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
@@ -573,6 +646,12 @@ namespace d360.model.DataAccessLayer
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
             fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
             fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+            if (includeParent)
+            {
+                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = "Parent Asset Uid" });
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent Display Name" });
+            }
 
 
             var rowData = results.items.ToList();
@@ -893,7 +972,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     };
 
                     if (p.HierarchyMaximumDepth <= 0 || p.HierarchyMaximumDepth > 10)
-                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidModelDepth);
+                        return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Invalid Maximum Depth", AssetTypeErrors.InvalidPolicyDepth);
 
                     CompanyContext.Add(p);
                     parentType = SystemObjects.PolicyType;
@@ -1324,7 +1403,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             {
                 var assetList = CompanyContext.Assets.Include(at => at.AssetType).Where(xx => xx.AssetType.uid == assetTypeUid).Select(xx => new AssetDelete { Uid = xx.uid, Cascade = true }).ToList<AssetDelete>();
                 assets = new AssetDeletes();
-                if(assetList != null)
+                if (assetList != null)
                     assets.AddRange(assetList);
                 execution.Total = assets.Count;
             }
@@ -1460,10 +1539,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
 
             if (queryParams.Any(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)))
-                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum",StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageNum", StringComparison.OrdinalIgnoreCase)).Value, out pageNum))
                     if (pageNum < 1) pageNum = 1;
 
-            if (queryParams.Any(x => x.Key.Equals("_pageSize",StringComparison.OrdinalIgnoreCase)))
+            if (queryParams.Any(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)))
                 if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.Equals("_pageSize", StringComparison.OrdinalIgnoreCase)).Value, out pageSize))
                     if (pageSize < 1) pageSize = 1;
 
@@ -1616,7 +1695,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 WHERE A.ID = @id
             ";
-            var res = new {
+            var res = new
+            {
                 AssetDetail = await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs),
                 Scores = await GetAssetScores(asset.uid)
             };
@@ -1639,9 +1719,28 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return await CompanyContext.QueryFirstOrDefaultAsync<dynamic>(sql, dbArgs);
         }
 
-        private async Task<List<core.entities.Scoring.Score>> GetAssetScores(Guid AssetUid)
+        private async Task<IEnumerable<dynamic>> GetAssetScores(Guid AssetUid)
         {
-            return await CompanyContext.Scores.Where(x => x.AssetUid == AssetUid && x.EffectiveDate <= DateTime.UtcNow && x.EndDate == null).ToListAsync();
+            var scoreSQL = @"select S.AssetUid,
+S.EffectiveDate,
+S.EndDate,
+S.RunDate,
+case 
+	when S.ScoreType = 1 then 'Governance'
+	when S.ScoreType = 2 then 'DataQuality'
+end as ScoreType,
+S.Value, 
+AL.LowerThreshold, 
+AL.UpperThreshold 
+from metrics.Score S
+inner join Asset A on A.Uid = S.AssetUid
+inner join AssetType AT on AT.Id = A.AssetTypeID
+inner join metrics.Allocation AL on AT.uid = AL.AssetTypeUid and AL.ScoreType = s.ScoreType
+where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
+
+
+
+            return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
     }
 }

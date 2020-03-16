@@ -32,7 +32,7 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selectedRow.ID, 'ResponsibilityType');
+        this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.ID : 0,  'ResponsibilityType');
     }
 
     ngOnDestroy() {
