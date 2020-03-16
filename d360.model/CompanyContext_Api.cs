@@ -823,7 +823,6 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             Connection.Execute($@"
 drop table if exists #RelevantLookupValues;
 create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
-CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
 
 ;with field_type_ids as( 
 select distinct F.Id from {fieldTable} T
@@ -831,6 +830,20 @@ select distinct F.Id from {fieldTable} T
 				insert into #RelevantLookupValues
 				select FieldTypeId,[Text],[Value] from field_type_ids fti
 					inner join FieldLookupValue FLV on FLV.FieldTypeID = fti.ID
+
+declare @maxlen int;
+select @maxlen = max(len(text)) from #RelevantLookupValues
+
+if (@maxlen <= 400)
+begin
+	alter table #RelevantLookupValues alter column text nvarchar(440);
+	CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC,[Text] )
+end
+else
+begin
+	CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC )
+end
+
 
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)

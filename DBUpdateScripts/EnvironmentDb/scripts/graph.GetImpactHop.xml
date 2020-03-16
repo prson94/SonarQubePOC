@@ -1,16 +1,16 @@
-<databaseChangeLog
+<databaseChangeLog    
     xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.graph.GetImpactHop-v2">
+  <changeSet author="Pappas" id="graph.GetImpactHop-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+<![CDATA[
 create or alter procedure [graph].[GetImpactHop]
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@self bit,
@@ -203,8 +203,8 @@ begin
 								select	count(1) as ActionCount
 								from	Issue I
 										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
-								where	I.CompletedOn is null
-										and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+										left join workflow.Item W on W.Object = 'Issue' and W.ObjectID = I.ID
+								where	I.CompletedOn is null and W.CompletedOn is null
 										and A.ID = R.AssetID
 								group by A.Uid
 								), 0)
@@ -247,18 +247,17 @@ begin
 	update	R
 	set		R.OwnerCounts =	coalesce(
 									(
-									select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID, '[' + string_Agg(ResourceID, ',') + ']' as UsersList, count(1) as [Count]
+									select	ResponsibilityType, ResponsibilityTypeID, count(1) as [Count]
 									from	(
-											select		ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
-											from		ResponsibilityDetail
-											where		(
-															AssetID = R.AssetID 
-															OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
-														) 
-														and IsVisible = 1
-											group by	ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID
+											from	ResponsibilityDetail
+											where	(
+														AssetID = R.AssetID 
+														OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+													) 
+													and IsVisible = 1
 											) O
-									group by ResponsibilityTypeName, ResponsibilityTypeID
+									group by ResponsibilityType, ResponsibilityTypeID
 									for json path
 									),
 									'[]'
@@ -308,13 +307,13 @@ begin
 	where	[Key] is not null 
 			and ProvidedKey is not null;
 end
-		]]>
+]]>
     </sql>
 	<rollback>
-		<![CDATA[	
-
-		]]>
+<![CDATA[
+drop procedure if exists [graph].[GetImpactHop]
+]]>
 	</rollback>
   </changeSet>
 
-</databaseChangeLog>
+  </databaseChangeLog>

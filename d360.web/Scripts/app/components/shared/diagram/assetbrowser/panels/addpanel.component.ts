@@ -1,12 +1,9 @@
 ﻿import { Component, EventEmitter, ChangeDetectionStrategy, OnInit, HostBinding, Input, OnChanges, SimpleChanges, ChangeDetectorRef, Output } from '@angular/core';
-import { CommonComponentAssetResult, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide, CommonComponentAssetResultExt, CommonComponentAssetSelection } from '../../../../models/asset-search.model';
-import { PredicateType } from '../../../../models/predicate.model';
-import { RelationshipsService } from '../../../../services/relationships.service';
-import { Observable, forkJoin } from 'rxjs';
-import { Predicate } from '../../../../models/predicate.model';
-import { delay, take } from 'rxjs/operators';
-import { createTokenForExternalReference } from '@angular/compiler/src/identifiers';
-import { AssetBrowserModel, AssetBrowserAssetModel } from '../../../../models/lineage.model';
+import { forkJoin } from 'rxjs';
+import { RelationshipsService } from '../../../../../services/relationships.service';
+import { AssetBrowserModel, AssetBrowserAssetModel } from '../../../../../models/lineage.model';
+import { CommonComponentAssetResult, CommonComponentAssetSelection, CommonComponentAssetTypeFilter, CommonComponentAssetTypeFilterSideOfRelationship, CommonComponentAssetTypeFilterRelationshipSide } from '../../../../../models/asset-search.model';
+import { Predicate, PredicateType } from '../../../../../models/predicate.model';
 
 export enum RelationshipEditorType {
     Lineage = 'Lineage',
@@ -22,12 +19,12 @@ export class RelationshipInsertModel {
 }
 
 @Component({
-    selector: 'd3s-diagram-relationships',
-    templateUrl: 'relationships.component.html',
+    selector: 'd3s-assetbrowser-addpanel',
+    templateUrl: 'addpanel.component.html',
     providers: [RelationshipsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class DiagramAssetRelationshipComponent implements OnInit, OnChanges {
+export class AssetBrowserAddPanelComponent implements OnInit, OnChanges {
     @HostBinding('class') class = 'relationship-editor';
 
     @Output() refreshDiagram: EventEmitter<any> = new EventEmitter();
