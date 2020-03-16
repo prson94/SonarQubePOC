@@ -832,6 +832,20 @@ select distinct F.Id from {fieldTable} T
 				select FieldTypeId,[Text],[Value] from field_type_ids fti
 					inner join FieldLookupValue FLV on FLV.FieldTypeID = fti.ID
 
+declare @maxlen int;
+select @maxlen = max(len(text)) from #RelevantLookupValues
+
+if (@maxlen <= 400)
+begin
+	alter table #RelevantLookupValues alter column text nvarchar(440);
+	CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC,[Text] )
+end
+else
+begin
+	CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC )
+end
+
+
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
 
