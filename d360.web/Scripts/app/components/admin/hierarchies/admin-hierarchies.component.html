@@ -87,19 +87,19 @@
     </div>
     <div class="col l8 s12" *ngIf="selected">
         <div class="tile tile-detail">
-            <object-detail [objectType]="objectType" [objectID]="selected?.ID"></object-detail>
+            <object-detail [objectType]="objectType" [objectID]="selectedItemID"></object-detail>
         </div>
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selected?.ID"></d3s-field-definition-tile>
+            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedItemID"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail">
-            <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selected?.ID"></d3s-admin-level-grid>
+            <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>
         </div>
         <div class="tile tile-detail">
             <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail">
-            <d3s-admin-allocation [objectType]="objectType" [objectID]="selected?.ID"></d3s-admin-allocation>
+            <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedItemID"></d3s-admin-allocation>
         </div>
     </div>
 </div>
