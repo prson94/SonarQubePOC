@@ -823,7 +823,6 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             Connection.Execute($@"
 drop table if exists #RelevantLookupValues;
 create table #RelevantLookupValues (FieldTypeID int not null, [Text] nvarchar(max), [Value] nvarchar(max));
-CREATE CLUSTERED INDEX CIX_RelevantLookupValues ON #RelevantLookupValues ( FieldTypeID ASC );
 
 ;with field_type_ids as( 
 select distinct F.Id from {fieldTable} T
