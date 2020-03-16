@@ -479,7 +479,7 @@ namespace d360.model.DataAccessLayer
                         select 
                         ma.[Uid], 
                         ParentUid,
-                        null,
+                        I.AdjustedWeight,
                         ma.Name,
                         ma.Description,
                         ma.IsGroup,
@@ -489,7 +489,7 @@ namespace d360.model.DataAccessLayer
 							                            and AV1.EffectiveDate > @effectiveDate
 	                        order by EffectiveDate) 
                          as [EndDate], 
-                         null,  
+                         I.AdjustedWeight,  
                          I.Value,
                          ma.ScoreType
                         from metrics.asset ma 
