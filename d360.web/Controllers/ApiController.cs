@@ -6778,6 +6778,7 @@ where v.id = {0}", id)).FirstOrDefault();
         {
             var predicateTypeInfo = new PredicateType().GetAsList();
             var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+            if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
             var sql = "";
