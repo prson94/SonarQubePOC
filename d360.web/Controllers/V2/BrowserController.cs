@@ -100,6 +100,7 @@ namespace d360.web.Controllers.V2
             foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.parentKey)))
             {
                 var current = new AssetBrowserAssetModel { 
+                    focal = h.isFocal,
                     key = h.key, 
                     assetUid = h.assetUid, 
                     assetTypeId = h.assetTypeID, 
@@ -225,6 +226,9 @@ namespace d360.web.Controllers.V2
 
                     hopModel.nodes = reader.Read<HopNodeResult>().ToList();
                     hopModel.links = reader.Read<HopLinkResult>().ToList();
+
+                    // Mark as focal if self=true.
+                    hopModel.nodes.ForEach(n => n.isFocal = (hopType == AssetBrowserApiHopType.Self));
 
                     return hopModel;
                 }
@@ -386,6 +390,112 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                                      };
 
                 return Request.CreateResponse(HttpStatusCode.OK, new { owners = distinctOwners, ownerRelations });
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.GetFullExceptionData(false));
+            }
+        }
+
+
+        /// <summary>
+        /// Retrieves relationships for the specified set of assets for use in an impact diagram.
+        /// </summary>
+        /// <remarks>
+        /// While this endpoint is used primarily by the Govern Asset Browser tool, external callers may find some data within this endpoint useful.
+        /// </remarks>
+        /// <param name="criteria">
+        /// An object containing:
+        /// 1. Assets: A set of asset you want to retrieve lineage for. 
+        /// 2. IsReveal: A true/false value indicating whether this call is from clicking a Reveal button, or is from an initial call to get starting lineage.
+        /// 3. Direction: An enumeration value (Backward, Both, Forward) indicating the direction you want to traverse when getting relationships. Backward is upstream, Forward is downstream.
+        /// 4. Hops: The number of hops, or traversals, you want to pull. The more hops, the slower the API response.
+        /// </param>
+        /// <returns>An object containing lineage results, as well as an HTTP status code and message.</returns>
+        [
+            Route("impact"),
+            HttpPost,
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(AssetBrowserApiHopRequestModel), typeof(GetAssetLineagePostModelExample)),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserAssetsModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<HttpResponseMessage> GetImpactDiagramHop(AssetBrowserApiHopRequestModel criteria)
+        {
+            try
+            {
+                Func<string> generateSalt = delegate ()
+                {
+                    Random random = new Random();
+                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+                    return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
+                };
+                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
+                {
+                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
+                };
+
+                var model = new HopModel
+                {
+                    links = new List<HopLinkResult>(),
+                    nodes = new List<HopNodeResult>()
+                };
+
+                // Create initial salt value for Hop 0.
+                string HopSalt = generateSalt();
+
+                string hashKey(string input)
+                {
+                    string returnValue = "";
+
+                    var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
+                    returnValue = string.Concat(hash.Select(b => b.ToString("x2")));
+                    returnValue = returnValue.Substring(2, returnValue.Length - 3);
+
+                    return returnValue;
+                }
+
+                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, bool self, AssetBrowserApiHopDirection direction)
+                {
+                    var hopModel = new HopModel();
+
+                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactHop @assets, @self, @HopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
+                    {
+                        assets = hopAssets.AsTableValuedParameter(
+                            "dbo.AssetBrowserImpactTable",
+                            new List<string>() { "Key", "Uid" }
+                            ),
+                        HopSalt,
+                        self = self,
+                        direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
+                        predicateUid = criteria.PredicateUid,
+                        resourceId = Company.CurrentResourceID,
+                        isAdmin = Company.CurrentResourceIsAdmin
+                    }, timeout: 60);
+
+                    hopModel.nodes = reader.Read<HopNodeResult>().ToList();
+                    hopModel.links = reader.Read<HopLinkResult>().ToList();
+
+                    // Mark as focal if self=true.
+                    hopModel.nodes.ForEach(n => n.isFocal = self);
+
+                    return hopModel;
+                }
+
+                // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
+                criteria.Assets.ForEach(a =>
+                {
+                    if (string.IsNullOrEmpty(a.Key))
+                    {
+                        a.Key = hashKey($"{HopSalt}|{a.Uid}");
+                    }
+                });
+
+                model = await getHop(criteria.Assets, (criteria.HopType == AssetBrowserApiHopType.Self), criteria.Direction);
+
+                return Request.CreateResponse(HttpStatusCode.OK, BuildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
             {

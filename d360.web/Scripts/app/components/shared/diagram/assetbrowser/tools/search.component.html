@@ -1,0 +1,14 @@
+﻿<div class="asset-browser-search">
+    <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
+    <div class="input-actions">
+        <span *ngIf="searchValue.length != 0" class="search-item-location">
+            {{searchCurrentItem}}/{{numberOfResults}}
+        </span>
+        <i *ngIf="searchValue.length != 0" class="fa fa-times-circle ng-star-inserted" (click)="searchDiagram(null);"></i>
+        <i class="fa fa-search ng-star-inserted"></i>
+    </div>
+</div>
+<div class="asset-browser-button-group btn-small">
+    <button (click)="goToPrevious()" type="button" title="Previous" aria-label="Previous" class="{{numberOfResults == 0 || searchCurrentItem == 1 ? 'dark' : ''}}"><i class="fa fa-lg fa-angle-up"></i></button>
+    <button (click)="goToNext()" type="button" title="Next" aria-label="Next" class="{{numberOfResults == 0 || searchCurrentItem == numberOfResults ? 'dark' : ''}}"><i class="fa fa-lg fa-angle-down"></i></button>
+</div>

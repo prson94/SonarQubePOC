@@ -1,0 +1,46 @@
+﻿<div class="saved-filter-controls">
+    <p-dropdown [(ngModel)]="selectedFilter"
+                [options]="savedFilters"
+                [showClear]="true"
+                [style]="{'width':'100%'}"
+                optionLabel="name"
+                placeholder="Select a predefined filter"
+                (onChange)="apply($event)"
+                styleClass="filter-dropdown"
+                style="width:100%"></p-dropdown>
+    <p-menu #filtermenu [popup]="true" [model]="getFilterMenuItems()" appendTo="body"></p-menu>
+    <button type="button" pButton icon="fa fa-ellipsis-v" (click)="filtermenu.toggle($event)"></button>
+</div>
+
+<d3s-modal [title]="'Create New Filter Set'" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
+    <form #createfilterform="ngForm">
+        <div class="content">
+            <div class="row">
+                <label for="name" style="margin-right:10px;">Name</label>
+                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="button" (click)="cancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+            <span class="grow"></span>
+            <button class="button primary" (click)="create()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid">
+                Create
+            </button>
+        </div>
+    </form>
+</d3s-modal>
+
+<d3s-modal [title]="'Delete Filter Set'" additionalClasses="modal-consolidate" [isVisible]="deleteFilterModalVisible">
+    <div class="content">
+        <div class="row">
+            Are you sure you want to delete the <b>{{selectedFilter?.name}}</b> filter?
+        </div>
+    </div>
+    <div class="action-bar">
+        <button class="button" (click)="cancel()" [disabled]="saveFilterModalWorking">Cancel</button>
+        <span class="grow"></span>
+        <button class="button primary" (click)="delete()" [disabled]="filterModalWorking">
+            Delete
+        </button>
+    </div>
+</d3s-modal>
