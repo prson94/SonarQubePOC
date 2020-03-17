@@ -59,7 +59,7 @@ export class AssetBrowserSearchComponent implements AfterViewInit {
         }
         else {
             this.searchValue = event.target.value;
-            this.searchCurrentItem = 1;
+            this.searchCurrentItem = (this.numberOfResults == 0 ? 0 : 1);
 
             if (event.keyCode == 40) {
                 this.goToNext();

@@ -2335,7 +2335,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             this.helper_ShowDetail(obj.part.data.assetUid);
                         }
                     }
-                }
+                },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
             ),
             this.g(
                 "ContextMenuButton",

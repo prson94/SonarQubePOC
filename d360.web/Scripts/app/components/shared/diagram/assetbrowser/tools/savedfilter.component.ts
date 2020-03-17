@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel } from '../../../../../models/lineage.model';
+import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel, DiagramType } from '../../../../../models/lineage.model';
 import { BrowserService } from '../../../../../services/browser.service';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 import { MenuItem } from 'primeng/api';
@@ -11,11 +11,13 @@ import { MenuItem } from 'primeng/api';
     providers: [BrowserService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
+export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, OnChanges {
+    @Input() diagramType: DiagramType;
     @Input() options: FilterSelectionsModel;
     @Input() filterModel: AssetBrowserFilterModel;
     @Output() applySavedFilter: EventEmitter<AssetBrowserFilterModel> = new EventEmitter();
 
+    allFilters: StoredAssetBrowserFilterModel[] = [];
     savedFilters: StoredAssetBrowserFilterModel[] = [];
     selectedFilter: StoredAssetBrowserFilterModel;
     createUserFilter: StoredAssetBrowserFilterModel = new StoredAssetBrowserFilterModel();
@@ -40,6 +42,13 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
         this.cdRef.markForCheck();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["diagramType"]) {
+            this.selectedFilter = null;
+            this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+        }
+    }
+
     private add() {
         this.saveFilterModalVisible = true;
         this.saveFilterModalWorking = false;
@@ -55,7 +64,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
             .map((p) => { return { uid: p.Uid, type: p.Name } });
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
         this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
-        this.createUserFilter.diagramType = this.filterModel.DiagramType;
+        this.createUserFilter.diagramType = this.diagramType;
         this.createUserFilter.name = '';
     }
 
@@ -108,9 +117,8 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
             .subscribe(filter => {
                 this.saveFilterModalVisible = false;
                 this.saveFilterModalWorking = false;
-                var filters = this.savedFilters;
-                filters.push(filter);
-                this.savedFilters = filters.filter(f => true);
+                this.allFilters.push(filter);
+                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
                 this.messagesService.showInfoMessage('Success', 'Filter added successfully');
                 this.cdRef.markForCheck();
@@ -151,12 +159,15 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
     }
 
     private load() {
-        this.browserService
-            .getUserFilters()
-            .subscribe(filters => {
-                this.savedFilters = filters;
-                this.selectedFilter = filters.find(f => f.isDefault == true);
-            });
+        if (this.allFilters.length == 0) {
+            this.browserService
+                .getUserFilters()
+                .subscribe(filters => {
+                    this.allFilters = filters;
+                    this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+                    this.selectedFilter = this.savedFilters.find(f => f.isDefault == true);
+                });
+        }
     }
 
     private showRemove() {
@@ -186,10 +197,9 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit {
         this.browserService
             .saveUserFilter(this.createUserFilter)
             .subscribe(filter => {
-                var filters = this.savedFilters;
-                var idx = filters.findIndex(f => f.uid == filter.uid);
-                filters[idx] = filter;
-                this.savedFilters = filters.filter(f => true);
+                var idx = this.allFilters.findIndex(f => f.uid == filter.uid);
+                this.allFilters[idx] = filter;
+                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
                 this.selectedFilter = filter;
                 this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
                 this.cdRef.markForCheck();
