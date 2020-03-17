@@ -1265,6 +1265,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         oNode.isHighlighted = true;
                         this.helper_HighlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations);
                     }
+                    else {
+                        // You have a possible hidden node to deal with.
+                        this.helper_HighlightViaHiddenNode(AssetBrowserApiHopDirection.Forward, l.from, allRelations);
+                    }
                 }
             }
 
@@ -1275,6 +1279,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (sNode) {
                         sNode.isHighlighted = true;
                         this.helper_HighlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations);
+                    }
+                    else {
+                        // You have a possible hidden node to deal with.
+                        this.helper_HighlightViaHiddenNode(AssetBrowserApiHopDirection.Backward, l.to, allRelations);
                     }
                 }
             }
@@ -1313,6 +1321,44 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         } catch (e) {
 
+        }
+    }
+
+    /**
+    * Determines if a particular node is Hidden, then interrogate its subgraph to determine the path to continue highlighting.
+    * @returns Nothing.
+    */
+    private helper_HighlightViaHiddenNode(direction: AssetBrowserApiHopDirection, key: string, allRelations: Array<AssetBrowserGenericRelationModel>) {
+        let node = this.diagram.findNodeForKey(key);
+        if (node) {
+            let parentGroup: go.Group = node.containingGroup;
+            let fromLinks: go.Iterator<go.Link>;
+            while (parentGroup != null) {
+                fromLinks = (direction == AssetBrowserApiHopDirection.Backward ? parentGroup.findLinksInto() : parentGroup.findLinksOutOf());
+                parentGroup = parentGroup.containingGroup;
+            }
+            if (fromLinks) {
+                fromLinks.each(lnk => {
+                    let data: any = (direction == AssetBrowserApiHopDirection.Backward ? lnk.fromNode.data : lnk.toNode.data);
+                    let templateName: string = data.template;
+                    if (templateName == "HiddenData") {
+                        let subgraph: AssetBrowserTranslation = data.subgraph;
+                        if (subgraph) {
+                            subgraph.nodes.forEach(nd => {
+                                // You have found the node, now traverse the hidden links for this node.
+                                let relevantRelations = allRelations.filter(r => { return nd.key == (direction == AssetBrowserApiHopDirection.Backward ? r.to : r.from) });
+                                relevantRelations.forEach(r => {
+                                    let nodeToHighlight = this.diagram.findNodeForKey((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to));
+                                    if (nodeToHighlight) {
+                                        nodeToHighlight.isHighlighted = true;
+                                    }
+                                    this.helper_HighlightNodeImpacts((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to), direction, allRelations);
+                                });
+                            });
+                        }
+                    }
+                });
+            }
         }
     }
 
