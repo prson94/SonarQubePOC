@@ -91,7 +91,7 @@
 
                             <section *ngIf="panel_SettingsVisible">
                                 <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
-                                <d3s-assetbrowser-settingspanel [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
+                                <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
                             </section>
                         </div>
                     </div>

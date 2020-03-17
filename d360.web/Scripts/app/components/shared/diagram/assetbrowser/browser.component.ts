@@ -1279,7 +1279,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
-
     }
 
     private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {

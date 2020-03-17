@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
-import { AssetBrowserFilterModel, AssetBrowserFilterChangeEvent, AssetBrowserFilterChangeEventType } from '../../../../../models/lineage.model';
+import { AssetBrowserFilterModel, AssetBrowserFilterChangeEvent, AssetBrowserFilterChangeEventType, DiagramType } from '../../../../../models/lineage.model';
 
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 
@@ -11,6 +11,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserSettingsPanelComponent implements AfterViewInit {
+    @Input() allowAncestry: boolean; 
     @Input() current: AssetBrowserFilterModel;
     @Output() apply: EventEmitter<AssetBrowserFilterChangeEvent> = new EventEmitter();
 
@@ -39,5 +40,4 @@ export class AssetBrowserSettingsPanelComponent implements AfterViewInit {
     private scoreChange(): void {
         this.apply.emit({ Type: AssetBrowserFilterChangeEventType.Scores, Model: this.current });
     }
-    
 } 
