@@ -125,6 +125,7 @@ namespace d360.model.DataAccessLayer
         public SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var response = new SurveyTypeApiResponseModel();
+            var sqlParams = new DynamicParameters();
             response.pageSize = 200;
             response.pageNum = 1;
             response.total = 0;
@@ -147,8 +148,20 @@ namespace d360.model.DataAccessLayer
                         }
                         break;
                     case "assettypeuid":
-                        Guid uid = Guid.Parse(param.Value);
-                        whereClauses.Add($"AT.Uid = '{uid}'");
+                        if (Guid.TryParse(param.Value, out Guid assetTypeUid))
+                        {
+                            whereClauses.Add($"AT.Uid = @assetTypeUid");
+                            sqlParams.Add("@assetTypeUid", assetTypeUid);
+                        }
+                        else throw new Exception("Invalid value for assetTypeUid parameter");
+                        break;
+                    case "surveytypeuid":
+                        if (Guid.TryParse(param.Value, out Guid surveyTypeUid))
+                        {
+                            whereClauses.Add($"ST.Uid = @surveyTypeUid");
+                            sqlParams.Add("@surveyTypeUid", surveyTypeUid);
+                        }
+                        else throw new Exception("Invalid value for surveyTypeUid parameter");
                         break;
                     case "_pagesize":
                         int size = 0;
@@ -181,15 +194,18 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            sqlParams.Add("@pageSize", response.pageSize);
+            sqlParams.Add("@pageNum", response.pageNum);
+
             var additionalWhereClause = whereClauses.Count > 0 ? $"where {string.Join(" AND ", whereClauses)}" : "";
 
-            var pagingSql = $"OFFSET {response.pageSize * (response.pageNum - 1)} ROWS FETCH NEXT {response.pageSize} ROWS ONLY";
+            var pagingSql = $"OFFSET (@pageSize * (@pageNum - 1)) ROWS FETCH NEXT @pageSize ROWS ONLY";
 
             var countQuery = $@"select  count(*) from dbo.SurveyType ST 
                                             inner join AssetType AT on AT.Object =ST.Object AND AT.ObjectID = ST.ObjectID 
                                             left join (select SurveyTypeId, Count(*) as Responses from Survey Group by SurveyTypeId)Responses 
                                                 on Responses.SurveyTypeId = ST.Id {additionalWhereClause}";
-            response.total = companyContext.Query<int>(countQuery).FirstOrDefault();
+            response.total = companyContext.Query<int>(countQuery, sqlParams).FirstOrDefault();
 
             string QuestionsCTE = @"select 
 		                                ST.Id as TypeId,
@@ -230,7 +246,7 @@ namespace d360.model.DataAccessLayer
                                 {pagingSql}
                                 for json path";
 
-            var itemsJson = string.Join("", companyContext.Query<string>(query).ToList());
+            var itemsJson = string.Join("", companyContext.Query<string>(query, sqlParams).ToList());
 
             response.items = JsonConvert.DeserializeObject<List<SurveyTypeApiModel>>(itemsJson) ?? new List<SurveyTypeApiModel>();
             return response;
