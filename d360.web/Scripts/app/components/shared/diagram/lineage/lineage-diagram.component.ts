@@ -182,7 +182,9 @@ export class LineageDiagramComponent extends DiagramBaseComponent implements OnI
             this.palette.div = null;
         }
 
-        this.objectSearchSub.unsubscribe();
+        if (this.objectSearchSub) {
+            this.objectSearchSub.unsubscribe();
+        }
     }
 
     //#region helper methods

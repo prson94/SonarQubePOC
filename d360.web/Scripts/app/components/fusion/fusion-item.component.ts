@@ -96,9 +96,15 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
     }   
 
     ngOnDestroy() {
-        this.routeParams.unsubscribe();
-        this.getFusionConfiguration.unsubscribe();
-        this.treeSub.unsubscribe();
+        if (this.routeParams) {
+            this.routeParams.unsubscribe();
+        }
+        if (this.getFusionConfiguration) {
+            this.getFusionConfiguration.unsubscribe();
+        }
+        if (this.treeSub) {
+            this.treeSub.unsubscribe();
+        }
         this.clearSidebar();
     }
 

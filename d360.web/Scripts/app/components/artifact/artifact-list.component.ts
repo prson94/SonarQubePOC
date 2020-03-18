@@ -132,7 +132,9 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
         this.clearSidebar();
     }
 };

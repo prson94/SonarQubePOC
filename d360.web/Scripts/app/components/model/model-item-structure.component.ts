@@ -153,8 +153,12 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.routeParamsSubscription.unsubscribe();
-        this.currentAreaNameSubscription.unsubscribe();
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
+        if (this.currentAreaNameSubscription) {
+            this.currentAreaNameSubscription.unsubscribe();
+        }
     }
 
     private loadModelHierarchy(modelId: number) {

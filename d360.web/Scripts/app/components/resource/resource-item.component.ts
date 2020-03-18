@@ -158,7 +158,9 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     showAssignment(e: any) {

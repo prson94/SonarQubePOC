@@ -160,8 +160,12 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.routeParamsSubscription.unsubscribe();
-        this.currentAreaNameSubscription.unsubscribe();
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
+        if (this.currentAreaNameSubscription) {
+            this.currentAreaNameSubscription.unsubscribe();
+        }
     }
 
     private loadPolicyHierarchy(policyTypeId: number) {

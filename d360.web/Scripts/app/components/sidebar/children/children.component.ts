@@ -69,7 +69,9 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
 
