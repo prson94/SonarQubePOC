@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
 import { Observable } from "rxjs";
 import { catchError, map } from "rxjs/operators";
 
@@ -11,6 +11,7 @@ import { MessagesObservableService } from './messages-observable.service';
 import { AssetEditorModel } from '../models/asset.model';
 import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
 import { URLSearchParams } from 'url';
+import { FormResponseType } from '../models/workflow.model';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -42,10 +43,10 @@ export class AssetService extends BaseObservableService {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
             body: [{ Uid: uid, Cascade: true }]
         };
-                        
+
         return this
             .http
-            .delete(`api/v2/assets/${assetTypeUid}`,httpOptions)
+            .delete(`api/v2/assets/${assetTypeUid}`, httpOptions)
             .pipe(
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
@@ -58,34 +59,34 @@ export class AssetService extends BaseObservableService {
     ): Observable<ApiResult> {
 
         const httpOptions = {
-            headers: new HttpHeaders({ 'Content-Type': 'application/json' })            
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' })
         };
         let assetArray: AssetEditorModel[] = [];
         assetArray.push(asset);
-        
+
         if (asset.Uid) {
 
             return this
                 .http
                 .put(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
                 .pipe(
-                    map((res: ApiResult[]) => {                        
+                    map((res: ApiResult[]) => {
                         return res[0];
-                    }),           
+                    }),
                     catchError(err => this.handleError(err))
                 );
         }
-        else {            
+        else {
             return this
                 .http
                 .post(`api/v2/assets/${assetTypeUid}?triggersWorkflow=true&lookupFieldsPassedByValue=true`, assetArray, httpOptions)
-                .pipe(                    
-                    map((res: ApiResult[]) => {                           
+                .pipe(
+                    map((res: ApiResult[]) => {
                         return res[0];
-                    }),                    
+                    }),
                     catchError(err => this.handleError(err))
                 );
-        }       
+        }
     }
 
     public getAssets(assetTypeUid: string, params: any): Observable<any> {
@@ -102,6 +103,18 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+        this.
+            http
+            .get(`/api/v2/assets/${assetTypeUid}${qString}`, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe(data => this.downloadFile(data, fileName));
+    }
 
     public searchAssetPath(filter: AssetSearchFilter): Observable<AssetSearchApiResponse> {
         const httpOptions = {
@@ -116,5 +129,22 @@ export class AssetService extends BaseObservableService {
             }),
                 catchError(err => this.handleError(err))
             );
+    }
+
+
+    downloadFile(data: Blob, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }

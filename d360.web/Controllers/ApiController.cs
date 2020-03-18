@@ -994,7 +994,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     while (parentRefType != null && loopCount < 20)
                     {
                         columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
-
+                        fields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "ParentDisplayName", type = "string" });
                         parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
                         loopCount++;
                     }

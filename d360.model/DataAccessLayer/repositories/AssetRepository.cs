@@ -393,6 +393,33 @@ namespace d360.model.DataAccessLayer
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
                 bool.TryParse(value, out includeParent);
+
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "usegraphforparent"))
+                {
+                    var useGraph = queryParams.ToList().FirstOrDefault(x => x.Key.ToLower() == "usegraphforparent").Value;
+                    bool useGraphForParent = true;
+                    bool.TryParse(useGraph, out useGraphForParent);
+
+
+                    var hierarchy = CompanyContext.IntersectTypes
+                        .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
+
+                    if (hierarchy == null)
+                    {
+                        includeParent = false;
+                    }
+
+                    if (!useGraphForParent)
+                    {
+                        parentApplySQL = $@"outer apply (
+					            select top 1 AD.uid, AD.DisplayValue from [IntersectType] IT
+						            inner join [Intersect] I on I.IntersectTypeId = IT.Id and I.Object = A.Object and I.ObjectID = A.ObjectID
+						            inner join [Predicate] P on P.ID = IT.PredicateID
+						            inner join AssetDetail AD on AD.Object = I.Subject and AD.ObjectID = I.SubjectID
+					            where IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.Type = {(int)PredicateType.InterTypeHierarchy}
+				            )Parent";
+                    }
+                }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
@@ -402,7 +429,7 @@ namespace d360.model.DataAccessLayer
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                 whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
 
-                foreach(var item in sqlParams)
+                foreach (var item in sqlParams)
                 {
                     dbArgs.Add(item.Key, item.Value);
                 }
@@ -471,6 +498,11 @@ namespace d360.model.DataAccessLayer
                     if (includeParent)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+                    }
+
+                    if (assetType.Class == AssetTypeClass.Reference)
+                    {
+                        simpleFilters.Add($"A.Code like @simpleFilter");
                     }
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
