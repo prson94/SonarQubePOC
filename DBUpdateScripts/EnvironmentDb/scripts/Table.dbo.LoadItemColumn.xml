@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.LoadItemColumn-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.LoadItemColumn-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,6 +25,15 @@ BEGIN
 		CONSTRAINT [PK_LoadItemColumn] PRIMARY KEY CLUSTERED ( [LoadID] ASC, [RowIndex] ASC, [ColumnIndex] ASC )
 	)
 END
+
+-- drop the index so we can alter the lookupvalue length
+IF EXISTS (select * from sys.indexes where name = 'IX_LoadItemColumn_Load_ColumnIndex_Value')
+BEGIN
+	DROP INDEX [IX_LoadItemColumn_Load_ColumnIndex_Value] ON [dbo].[LoadItemColumn]
+END
+
+ALTER TABLE [dbo].[LoadItemColumn] ALTER COLUMN [LookupValue] nvarchar(400) null;
+
 
 IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_LoadItemColumn_LoadColumn')
 BEGIN
