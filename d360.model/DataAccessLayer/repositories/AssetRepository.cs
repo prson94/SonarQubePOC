@@ -400,15 +400,6 @@ namespace d360.model.DataAccessLayer
                     bool useGraphForParent = true;
                     bool.TryParse(useGraph, out useGraphForParent);
 
-
-                    var hierarchy = CompanyContext.IntersectTypes
-                        .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
-
-                    if (hierarchy == null)
-                    {
-                        includeParent = false;
-                    }
-
                     if (!useGraphForParent)
                     {
                         parentApplySQL = $@"outer apply (
@@ -419,6 +410,14 @@ namespace d360.model.DataAccessLayer
 					            where IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.Type = {(int)PredicateType.InterTypeHierarchy}
 				            )Parent";
                     }
+                }
+
+                var hierarchy = CompanyContext.IntersectTypes
+                    .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
+
+                if (hierarchy == null)
+                {
+                    includeParent = false;
                 }
             }
 
