@@ -22,6 +22,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @Input() objectName: string;
     scoreHistory: Object;
     scoresPoints: ScorePoint[];
+    lastScorePoint: Date;
     averageScore: number;
     scoreDate: string = null;
     private showGovernanceScores: boolean = true;
@@ -96,6 +97,9 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         if (a.EffectiveDate > b.EffectiveDate) return -1;
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
                     })
+
+                    this.scoresPoints.shift();
+                    this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 
                     for (var i = 0; i < this.scoresPoints.length - 1; i++) {
                         if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
@@ -415,10 +419,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     }
 
     private isSameDate(date1, date2) {
+        var tempDate = new Date();
+        var today = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
 
         if (date1 && date2) {
             var d1 = new Date(date1.toString());
             var d2 = new Date(date2.toString());
+            if (d2.getTime() == today.getTime() && d1.getTime() == this.lastScorePoint.getTime()) {
+                return true;
+            }
+
             return d1.getTime() === d2.getTime();
         }
         else return false;

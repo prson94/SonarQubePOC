@@ -1,5 +1,5 @@
 ﻿
-import { Component, ChangeDetectionStrategy, ElementRef, Input, OnChanges, OnInit, ContentChild, AfterViewChecked, ChangeDetectorRef } from '@angular/core';
+import { Component, ElementRef, Input, ChangeDetectorRef } from '@angular/core';
 
 
 @Component({
@@ -7,7 +7,7 @@ import { Component, ChangeDetectionStrategy, ElementRef, Input, OnChanges, OnIni
     templateUrl: './simple-carousel.component.html'
 })
 
-export class SimpleCarouselComponent implements OnInit {
+export class SimpleCarouselComponent {
     @Input() data: any[] = [];
 
     private maxContentWidth: number = 1000;
@@ -20,10 +20,6 @@ export class SimpleCarouselComponent implements OnInit {
         private elementRef: ElementRef,
         private cdr: ChangeDetectorRef
     ) {
-    }
-
-    ngOnInit() {
-
     }
 
     ngAfterViewChecked() {
