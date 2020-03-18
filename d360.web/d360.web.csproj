@@ -1508,7 +1508,6 @@
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\export-template.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\header.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\hierarchy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\icon-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\lineage.model.ts" />
@@ -1791,7 +1790,6 @@
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\tag.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\taxonomies.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\object-detail.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\responsibility.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\settings.service.ts" />

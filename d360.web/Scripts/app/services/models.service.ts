@@ -19,9 +19,17 @@ export class ModelsService extends BaseObservableService {
     }
 
     getModels(): Observable<Model[]> {
-        return this.http.get('api/catalogs')
+        return this.http.get('api/v2/assets/types?Class=Model')
             .pipe(
                 map(response => <Model[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getModelTypeObjectAndID(uid: string) {
+        return this.http.get(`api/getAssetTypeObjectAndObjectID/${uid}`)
+            .pipe(
+                map(response => <any>response),
                 catchError(err => this.handleError(err))
             );
     }

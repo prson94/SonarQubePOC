@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
+﻿import { Component, OnInit, OnDestroy, ViewChild, AfterViewInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -35,6 +35,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     levels: any[] = [];
 
     modelId: number;
+    modelUid: string;
     selectedParentId: number;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
@@ -75,67 +76,79 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
 
     private filterQ: any;
     filter(event) {
+
         if (event) {
             this.searchValue = event.target.value;
         }
         window.clearTimeout(this.filterQ);
         this.filterQ = setTimeout(() => {
+            if (!this.treeTable)
+                return;
             this.filterTreeTable(this.treeNodeArray, this.searchValue, this.treeTable);
         }, event ? 600 : 0);
     }
 
+ 
     ngOnInit() {
 
         this.routeParamsSubscription = this.route.params.subscribe(params => {
 
             this.modelId = +params['modelId'];
+            this.modelUid = params['uid']; // for model list page thats using the V2 asset 
 
-            this.setObjectInfo('TaxonomyType', this.modelId);
-            this.setCommonSecondaryNavTabs(true);
-            this.currentAreaNameSubscription =
-                this.headerBreadcrumbService
-                    .getAreaName('TaxonomyType', this.modelId)
-                    .subscribe(result => { this.currentAreaName = result });
+            if (this.modelUid) {
+                this.modelsService.getModelTypeObjectAndID(this.modelUid).subscribe(res => {
+                    this.isLoading = true;
+                    this.modelId = res.ObjectID
+                    this.load();
+                });
+            } else {
+                this.isLoading = true;
+                this.load();
+            }            
+        });
+    }
 
-            this.getFieldsDefinition();
+    load() {
+        this.setObjectInfo('TaxonomyType', this.modelId);
+        this.setCommonSecondaryNavTabs(true);
+        this.currentAreaNameSubscription =
+            this.headerBreadcrumbService
+                .getAreaName('TaxonomyType', this.modelId)
+                .subscribe(result => { this.currentAreaName = result });
 
-
-            this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
-            this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
-
-            this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
-
-            this.modelsService.getModel(this.modelId).subscribe(
-                result => {
-                    this.searchValue = "";
-                    this.model = result;
-                    this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined, true));
-                        this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                            this.secondaryNavService.setCurrentArea(this.model.Name, icon, 'Model');
-                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true));
-                            this.setCommonSecondaryNavTabs(true, false, this.model.HasDashboards);
-                            this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
-                            this.secondaryNavService.showHeader(true);
-                        });
-                         
+        this.getFieldsDefinition();
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectTaxonomyType, this.modelId);
+        this.setObjectInfo(StringConstants.ObjectTaxonomyType, this.modelId);
+        this.headerBreadcrumbService.setCurrentObjectInfo('TaxonomyType', this.modelId);
+        this.modelsService.getModel(this.modelId).subscribe(
+            result => {
+                this.searchValue = "";
+                this.model = result;
+                this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res, `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}`));
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.model.Name, SiteUrlHelpers.getObjectUrl('TAXONOMYTYPE', this.model.ID), undefined, 'TAXONOMYTYPE', this.model.ID, undefined, undefined, true));
+                    this.headerBreadcrumbService.getAssetFolderIcon('TaxonomyType', this.modelId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
+                        this.secondaryNavService.setCurrentArea(this.model.Name, icon, 'Model');
+                        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('TaxonomyType', this.model.ID, this.model.Name, null, true));
+                        this.setCommonSecondaryNavTabs(true, false, this.model.HasDashboards);
+                        this.secondaryNavService.showItem(new SecondaryNavItem('Diagram', 'modeldiagram', ['fa-sitemap'], `/sidebar/visualization/diagram/${this.objectID}`, null, 7))
+                        this.secondaryNavService.showHeader(true);
                     });
 
                     this.loadModelHierarchy(this.modelId);
+                });
 
-                    this.setBrowserTitle(this.titleService, this.model.Name);
+                this.setBrowserTitle(this.titleService, this.model.Name);
+            }
+        );
 
-                }
-            );
-
-            this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType).subscribe(
-                result => {
-                    this.levels = result;
-                }
-            );
-        });
+        this.levelsService.getObjectLevels(this.modelId, StringConstants.ObjectTaxonomyType).subscribe(
+            result => {
+                this.levels = result;
+            }
+        );
     }
 
     ngOnDestroy() {
@@ -145,7 +158,6 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
     }
 
     private loadModelHierarchy(modelId: number) {
-        this.isLoading = true;
 
         this.modelsService.getModelHierarchy(modelId, true, true).subscribe(
             result => {
