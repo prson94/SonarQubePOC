@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
 import { Observable } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { catchError, map, debounceTime } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
@@ -99,7 +99,8 @@ export class AssetService extends BaseObservableService {
         return this.
             http
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
-            .pipe(map(res => { return <any>res }),
+            .pipe(debounceTime(500),
+                map(res => { return <any>res }),
                 catchError(err => this.handleError(err, true)));
     }
 

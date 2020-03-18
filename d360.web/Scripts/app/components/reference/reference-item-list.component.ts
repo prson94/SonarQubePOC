@@ -6,6 +6,7 @@ import { GridDefinitionService } from '../../services/grid-definition.service';
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { debounceTime } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
+import { AdvancedFiltersHelper } from '../../static/advanced-filter-helpers';
 
 @Component({
     selector: 'd3s-reference-item-list',
@@ -13,7 +14,7 @@ import { Subscription } from 'rxjs';
     providers: [AssetService, GridDefinitionService]
 })
 
-export class ReferenceItemGridComponent extends BaseComponent implements OnInit, OnChanges, OnDestroy {
+export class ReferenceItemGridComponent extends BaseComponent implements OnChanges, OnDestroy {
 
     constructor(
         private assetService: AssetService,
@@ -60,11 +61,6 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
         }
     }
-
-    ngOnInit() {
-
-    }
-
     ngOnDestroy() {
         this.getAssetSub.unsubscribe();
     }
@@ -86,24 +82,24 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
 
     private assetTimeout: any;
     private loadItems() {
-        window.clearTimeout(this.assetTimeout);
         if (this.getAssetSub)
             this.getAssetSub.unsubscribe();
-        this.assetTimeout = window.setTimeout(() => {
-            this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
-                this.items = result.items;
-                this.totalRecords = result.total;
 
-                if (this.items.length > 0) {
-                    this.selected = this.items[0];
-                }
+        this.isLoading = true;
+        this.getAssetSub = this.assetService.getAssets(this.assetTypeUid, this.loadParams).subscribe(result => {
+            this.items = result.items;
+            this.totalRecords = result.total;
 
-                if (this.totalRecords < 1000) {
-                    this.loadParams.useGraphForParent = false;
-                }
-                this.isLoading = false;
-            });
-        }, 300)
+            if (this.items.length > 0) {
+                this.selected = this.items[0];
+            }
+
+            if (this.totalRecords < 1000) {
+                this.loadParams.useGraphForParent = false;
+            }
+            this.isLoading = false;
+            this.cdRef.detectChanges();
+        });
 
     }
 
@@ -121,7 +117,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
                 delete this.loadParams['_simpleFilter'];
             }
 
-            var advancedFilter = this.getAdvancedFilter(event.filters);
+            var advancedFilter = AdvancedFiltersHelper.parseFiltersFromTableFilters(event.filters, this.fields);
             if (advancedFilter.length > 0) {
                 this.loadParams['_filter'] = advancedFilter;
             }
@@ -139,24 +135,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnInit,
         this.loadItems();
     }
 
-    private getAdvancedFilter(data): string {
-        var props = Object.keys(data);
-        var ret: string = '';
-        props.forEach(prop => {
-            let fieldName = prop;
-            var value = data[prop];
-            var field = this.fields.filter(x => x.name.toLowerCase() == prop.toLowerCase())[0];
-            if (field)
-                fieldName = field.apiName;
 
-            ret += `${fieldName} ct '${value}'`;
-            if (prop != props[props.length - 1]) {
-                ret += " and ";
-            }
-        });
-
-        return ret;
-    }
 
     private export() {
         this.assetService.downloadAssetsExcel(this.assetTypeUid, this.loadParams, this.typeName);
