@@ -1103,7 +1103,6 @@ order by	f.SortOrder";
                 }
 
             }
-
             if (!Company.CurrentResourceIsAdmin)
             {
                 if (model.AssetUid != null)
@@ -1117,6 +1116,28 @@ order by	f.SortOrder";
                     if (permissions.Any(x => x.ID == Permission.ReadRelationships))
                     {
                         responseModel.Items.HasRelationship = true;
+                    }
+                }
+
+                if (model.AssetId == null && model.AssetTypeUid != null)
+                {
+                    var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
+                    {
+                        responseModel.Items.HasOwnership = true;
+                    }
+                    else
+                    {
+                        responseModel.Items.HasOwnership = false;
+                    }
+
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                    else
+                    {
+                        responseModel.Items.HasRelationship = false;
                     }
                 }
             }
