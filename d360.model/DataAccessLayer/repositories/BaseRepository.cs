@@ -47,7 +47,7 @@ namespace d360.model.DataAccessLayer.repositories
 
         }
         #endregion
-        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql= "A.[ObjectId]")
+        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]")
         {
             fieldTypes.ForEach(f =>
             {
@@ -124,6 +124,11 @@ namespace d360.model.DataAccessLayer.repositories
                                 jsonElementDefinition.DataType = "float";
                             }
                             fieldColumns.Add($"try_cast(FJP{f.ID}.[Value] as {jsonElementDefinition.DataType}) as [{columnName}]");
+                        }
+                        else if (f.Type == "Lookup" && f.AllowAllValue)
+                        {
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
                         else
                         {
