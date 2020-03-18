@@ -327,11 +327,33 @@ namespace igx.jobs.bulkloadprocessor
                             }
 
                             companyConnection.Execute(@"
+                                declare @maxlen int = 0;
+
+                                drop table if exists #TempBulkLookupValues;
+
+                                select fieldtypeid,[Value],[Text] into  #TempBulkLookupValues 
+                                from FieldLookupValue flv
+                                where exists (select 1 from #tempLookupColumns templ
+			                                  where templ.fieldtypeid = flv.fieldtypeid);
+
+                                select @maxlen = max(len(text)) from #TempBulkLookupValues
+
+                                if (@maxlen <= 400)
+	                                begin
+		                                alter table #TempBulkLookupValues alter column text nvarchar(440);
+		                                CREATE CLUSTERED INDEX CIX_TempBulkLookupValues ON #TempBulkLookupValues ( FieldTypeID ASC,[Text])
+	                                end
+                                else
+	                                begin
+		                                CREATE CLUSTERED INDEX CIX_TempBulkLookupValues ON #TempBulkLookupValues ( FieldTypeID ASC)
+	                                end
+
                                 update LIC
                                 set LIC.LookupObjectID = FLV.Value
                                 from LoadItemColumn LIC
                                 inner join #tempLookupColumns T on T.ColumnIndex = LIC.ColumnIndex and T.LoadID = LIC.LoadID
-                                left join FieldLookupValue FLV on FLV.FIeldTypeID = T.FieldTypeID and FLV.Text = LIC.Value
+                                left join #TempBulkLookupValues FLV on FLV.FIeldTypeID = T.FieldTypeID and FLV.Text = LIC.Value
+
                                 ", transaction: trans, commandTimeout: 3600);
 
                             trans.Commit();

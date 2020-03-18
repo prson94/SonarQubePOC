@@ -1,0 +1,208 @@
+import * as _ from 'lodash';
+import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { StoredAssetBrowserFilterModel, AssetBrowserFilterModel, FilterSelectionsModel, DiagramType } from '../../../../../models/lineage.model';
+import { BrowserService } from '../../../../../services/browser.service';
+import { MessagesObservableService } from '../../../../../services/messages-observable.service';
+import { MenuItem } from 'primeng/api';
+
+@Component({
+    selector: 'd3s-assetbrowser-savedfilter',
+    templateUrl: './savedfilter.component.html',
+    providers: [BrowserService],
+    changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, OnChanges {
+    @Input() diagramType: DiagramType;
+    @Input() options: FilterSelectionsModel;
+    @Input() filterModel: AssetBrowserFilterModel;
+    @Output() applySavedFilter: EventEmitter<AssetBrowserFilterModel> = new EventEmitter();
+
+    allFilters: StoredAssetBrowserFilterModel[] = [];
+    savedFilters: StoredAssetBrowserFilterModel[] = [];
+    selectedFilter: StoredAssetBrowserFilterModel;
+    createUserFilter: StoredAssetBrowserFilterModel = new StoredAssetBrowserFilterModel();
+    saveFilterModalVisible: boolean = false;
+    saveFilterModalWorking: boolean = false;
+    deleteFilterModalVisible: boolean = false;
+    deleteFilterModalWorking: boolean = false;
+
+    constructor(
+        private browserService: BrowserService,
+        protected messagesService: MessagesObservableService,
+        private cdRef: ChangeDetectorRef
+    ) {
+        
+    }
+
+    public ngOnInit() {
+        this.load();
+    }
+
+    public ngAfterViewInit() {
+        this.cdRef.markForCheck();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["diagramType"]) {
+            this.selectedFilter = null;
+            this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+        }
+    }
+
+    private add() {
+        this.saveFilterModalVisible = true;
+        this.saveFilterModalWorking = false;
+        this.createUserFilter = new StoredAssetBrowserFilterModel();
+        this.createUserFilter.assetTypes = this.options.AssetTypeOptions
+            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .map((a) => { return { uid: a.Uid, class: a.Class } });
+        this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
+            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .map((r) => { return { uid: r.Uid, type: r.Name } });
+        this.createUserFilter.predicates = this.options.PredicateOptions
+            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .map((p) => { return { uid: p.Uid, type: p.Name } });
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+        this.createUserFilter.diagramType = this.diagramType;
+        this.createUserFilter.name = '';
+    }
+
+    private apply(e) {
+        if (!this.hasSelectedUserFilter())
+            return;
+
+        let model: AssetBrowserFilterModel = this.filterModel;
+
+        var selectedAssetTypes = this.options.AssetTypeOptions
+            .filter(a => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
+            .map((a) => a.AssetTypeId);
+
+        var selectedPredicates = this.options.PredicateOptions
+            .filter(p => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
+            .map((p) => p.Id);
+
+        var selectedResponsibilityTypes = this.options.ResponsibilityTypeOptions
+            .filter(r => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
+            .map((r) => r.Id);
+
+        model.SelectedAssetTypes = selectedAssetTypes;
+        model.SelectedPredicates = selectedPredicates;
+        model.SelectedResponsibilityTypes = selectedResponsibilityTypes;
+
+        if (this.selectedFilter.diagramType) {
+            model.DiagramType = this.selectedFilter.diagramType;
+        }
+
+        if (this.selectedFilter.numberOfHops) {
+            model.NumberOfHops = this.selectedFilter.numberOfHops;
+        }
+
+        if (this.selectedFilter.ancestryMode) {
+            model.AncestryMode = this.selectedFilter.ancestryMode;
+        }
+
+        this.applySavedFilter.emit(model);
+    }
+
+    private cancel() {
+        this.saveFilterModalVisible = false;
+        this.deleteFilterModalVisible = false;
+    }
+
+    private create() {
+        this.saveFilterModalWorking = true;
+        this.browserService
+            .saveUserFilter(this.createUserFilter)
+            .subscribe(filter => {
+                this.saveFilterModalVisible = false;
+                this.saveFilterModalWorking = false;
+                this.allFilters.push(filter);
+                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+                this.selectedFilter = filter;
+                this.messagesService.showInfoMessage('Success', 'Filter added successfully');
+                this.cdRef.markForCheck();
+            });
+    }
+
+    private delete() {
+        this.deleteFilterModalWorking = true;
+        if (this.hasSelectedUserFilter()) {
+            this.browserService
+                .deleteUserFilter(this.selectedFilter)
+                .subscribe(success => {
+                    if (success) {
+                        var filters = this.savedFilters;
+                        var idx = filters.findIndex(f => f.uid == this.selectedFilter.uid);
+                        filters.splice(idx, 1);
+                        this.savedFilters = filters.filter(f => true);
+                        this.selectedFilter = undefined;
+                        this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
+                        this.cdRef.markForCheck();
+                        this.deleteFilterModalWorking = false;
+                        this.deleteFilterModalVisible = false;
+                    }
+                });
+        }
+    }
+
+    private getFilterMenuItems(): MenuItem[] {
+        return [
+            { label: 'Add', command: (event) => { this.add() } },
+            { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.update() } },
+            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.showRemove() } }
+        ];
+    }
+
+    private hasSelectedUserFilter(): boolean {
+        return (this.selectedFilter != undefined && this.selectedFilter != null);
+    }
+
+    private load() {
+        if (this.allFilters.length == 0) {
+            this.browserService
+                .getUserFilters()
+                .subscribe(filters => {
+                    this.allFilters = filters;
+                    this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+                    this.selectedFilter = this.savedFilters.find(f => f.isDefault == true);
+                });
+        }
+    }
+
+    private showRemove() {
+        this.deleteFilterModalVisible = true;
+        this.deleteFilterModalWorking = false;
+    }
+
+    private update() {
+        if (!this.hasSelectedUserFilter())
+            return;
+
+        this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
+        this.createUserFilter.assetTypes = this.options.AssetTypeOptions
+            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
+            .map((a) => { return { uid: a.Uid, class: a.Class } });
+        this.createUserFilter.responsibilityTypes = this.options.ResponsibilityTypeOptions
+            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
+            .map((r) => { return { uid: r.Uid, type: r.Name } });
+        this.createUserFilter.predicates = this.options.PredicateOptions
+            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
+            .map((p) => { return { uid: p.Uid, type: p.Name } });
+
+        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
+        this.createUserFilter.diagramType = this.filterModel.DiagramType;
+        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+
+        this.browserService
+            .saveUserFilter(this.createUserFilter)
+            .subscribe(filter => {
+                var idx = this.allFilters.findIndex(f => f.uid == filter.uid);
+                this.allFilters[idx] = filter;
+                this.savedFilters = this.allFilters.filter(f => { return f.diagramType == this.diagramType; });
+                this.selectedFilter = filter;
+                this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
+                this.cdRef.markForCheck();
+            });
+    }
+} 

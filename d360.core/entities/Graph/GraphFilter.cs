@@ -86,6 +86,7 @@ namespace d360.core.entities.Graph
     {
         public int? AncestryMode { get; set; }
         public int? NumberOfHops { get; set; }
+        public int? DiagramType { get; set; }
         public List<FilterSetttingAssetType> AssetTypes { get; set; }
         public List<FilterSetttingPredicate> Predicates { get; set; }
         public List<FilterSetttingResponsibilityType> ResponsibilityTypes { get; set; }

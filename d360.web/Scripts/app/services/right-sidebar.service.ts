@@ -25,6 +25,7 @@ export class SecondaryNavService {
     private homeUrlChangeSource = new Subject<string>();
     private rebuildHeaderSource = new Subject<any>();
     private secondaryNavState: SecondaryNavState;
+    private refreshStatsSource = new Subject<boolean>();
 
     private crossNavURIS: string[] = [];
 
@@ -81,6 +82,7 @@ export class SecondaryNavService {
     assetActionClear$ = this.assetActionClearSource.asObservable();
     homeUrlChange$ = this.homeUrlChangeSource.asObservable();
     rebuildHeader$ = this.rebuildHeaderSource.asObservable();
+    refreshStats$ = this.refreshStatsSource.asObservable();
 
     private isSidebarCreated: boolean = false;
 
@@ -115,6 +117,10 @@ export class SecondaryNavService {
     }
     clearActions() {
         this.assetActionClearSource.next(true);
+    }
+
+    refreshStats() {
+        this.refreshStatsSource.next(true);
     }
 
     // Service message commands
