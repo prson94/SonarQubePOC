@@ -1,11 +1,11 @@
-import {Injectable} from '@angular/core';
-import {HttpErrorResponse, HttpClient, HttpHeaders} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {catchError, map, tap} from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { HttpErrorResponse, HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
-import {JsonResult} from '../models/jsonresult.model';
+import { JsonResult } from '../models/jsonresult.model';
 
-import {MessagesObservableService} from './messages-observable.service';
+import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
 export class BaseObservableService {
@@ -14,7 +14,6 @@ export class BaseObservableService {
     }
 
     handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false) {
-
         return this.messages.saveClientError(error, handleAsAPI2Error).pipe(
             tap(res => {
                 if (error instanceof Error) {
@@ -42,7 +41,11 @@ export class BaseObservableService {
                             errorMessage = 'An error has occurred.';
                         }
 
-                        this.messages.showError('Error', errorMessage);
+                        //Check if interceptor already handled error
+                        if (!error.error.title || !error.error.message) {
+                            this.messages.showError('Error', errorMessage);
+                        }
+
                     }
                 }
             })
@@ -158,6 +161,6 @@ export class BaseObservableService {
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
             )
-        ;
+            ;
     }
 }

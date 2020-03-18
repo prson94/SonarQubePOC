@@ -147,6 +147,8 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     handleChange(e) {
         this.selection.lowerThreshold = e.values[0];
+        if (this.selection.lowerThreshold == 100)
+            this.selection.lowerThreshold = 99;
         this.selection.upperThreshold = e.values[1];
     }
 
@@ -155,6 +157,10 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
         if (tempVal <= 0) {
             el.value = "0";
+        }
+
+        if (tempVal > 99) {
+            el.value = "99";
         }
         if (tempVal > this.selection.upperThreshold) {
             el.value = this.selection.upperThreshold.toString();
@@ -166,13 +172,14 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     onUpperThresholdChange($event, el: HTMLInputElement, checkFull: boolean = false) {
         var tempVal = +el.value;
+        console.log($event);
 
         if (tempVal < 0) {
             el.value = this.selection.lowerThreshold.toString();
         }
 
-        if (tempVal > 100) {
-            el.value = "100";
+        if (tempVal > 99) {
+            el.value = "99";
         }
         if (tempVal < 10 && checkFull) {
             return;
