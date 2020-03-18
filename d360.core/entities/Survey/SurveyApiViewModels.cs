@@ -114,6 +114,14 @@ namespace d360.core.entities.SurveyModels
         public List<SurveyResultSummaryApiModel> items { get; set; } = new List<SurveyResultSummaryApiModel>();
     }
 
+    public class SurveyAssetApiResponseModel
+    {
+        public Guid SurveyTypeUid { get; set; }
+        public string Name { get; set; }
+    }
+
+
+
     public class DateFormatConverter : IsoDateTimeConverter
     {
         public DateFormatConverter(string format)

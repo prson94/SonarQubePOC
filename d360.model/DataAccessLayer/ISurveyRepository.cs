@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.entities.SurveyModels;
 
@@ -11,6 +12,7 @@ namespace d360.model.DataAccessLayer
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyResultSummaryApiResponseModel GetSurveyResultSummary(Guid surveyTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyType GetSurveyTypeByUid(Guid uid);
+        Task<SurveyAssetApiResponseModel> GetAssetSurvey(Guid assetUid);
         int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

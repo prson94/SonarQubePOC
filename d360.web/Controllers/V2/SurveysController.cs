@@ -333,7 +333,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with Uid {GetUidFromQueryParams(queryParams, "AssetUid")} not found"));
                 }
 
-                if (!this.validator.IsVaidResource(queryParams))
+                if (!this.validator.IsValidResource(queryParams))
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"User with Uid {GetUidFromQueryParams(queryParams, "ResourceUid")} not found"));
                 }
@@ -366,6 +366,48 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        /// <summary>
+        /// Returns a randomly selected survey applicable to an asset
+        /// </summary>
+        /// <param name="assetUid">The asset the survey is for</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid}"),
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "The survey type Uid and name.", typeof(SurveyAssetApiResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetAssetSurveyAsync(string assetUid)
+        {
+            var prefix = "Surveys.GetAssetSurveyAsync => ";
+            string errorMessage;
+
+            if (!Guid.TryParse(assetUid, out Guid parsedAssetUid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid assetUid"));
+            }
+
+            try
+            {
+                var survey = await SurveyRepository.GetAssetSurvey(parsedAssetUid);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, survey)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
 
         private Guid GetUidFromQueryParams(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName)
         {
