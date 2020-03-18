@@ -7511,9 +7511,9 @@ SELECT (
         [Route("getAssetTypeObjectAndObjectID/{uid}")]
         public HttpResponseMessage GetObjectandId(Guid uid)
         {
-            var sql = $@"SELECT top 1 Object, ObjectID from AssetType WHERE Uid = '{uid.ToString()}'";
+            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
             var details = Company.Query<dynamic>(sql).Single();
-            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID  });
+            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID , details.Id });
         }
 
         #endregion
@@ -7713,24 +7713,6 @@ SELECT (
         #endregion
 
         #region Reference - new replaces domain
-
-        [HttpGet, Route("referenceItemTypes")]
-        public IEnumerable<dynamic> GetReferenceItemTypes()
-        {
-            var sql = @"select 
-		                AT.ObjectID as ID,
-		                AT.Name,
-		                AT.Description,
-		                AT.DisplayFormat,
-		                AT.AutoDisplayDescription,
-		                AT.id as AssetTypeID,
-                        AT.uid as AssetTypeUID
-		                from
-                  Assettype AT 
-                  where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";
-
-            return Company.Query<dynamic>(sql);
-        }
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)

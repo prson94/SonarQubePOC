@@ -12,14 +12,14 @@ import { AssetTypeClass } from '../../models/asset.model';
 @Component({
     selector: 'd3s-reference-item-type-list',
     templateUrl: './reference-item-type-list.component.html',
-    providers: [ReferenceService, PermissionsService,AssetTypeService],
+    providers: [ReferenceService, PermissionsService, AssetTypeService],
 })
 
 export class ReferenceItemTypeGridComponent extends BaseComponent implements OnInit {
     @Input() selected: ReferenceItemType;
     @Output() selectedChange = new EventEmitter();
 
-    @Input() initialSelectedListId: number;
+    @Input() initialSelectedListUid: string;
 
     private referenceTypes: ReferenceItemType[];
     private _showEditor: boolean = false;
@@ -36,7 +36,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
         if (value != this._showEditor && value) {
             this.formModeChange.emit(FormMode.Editing | FormMode.Adding);
         }
-            
+
         this._showEditor = value;
 
         if (!this._showDelete && !this._showEditor) {
@@ -62,7 +62,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     }
 
     theDeleteCallback: Function;
-    
+
     constructor(
         private referenceService: ReferenceService,
         private permissionsService: PermissionsService,
@@ -81,13 +81,14 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
     private load() {
         this.isLoading = true;
         this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
-        this.referenceService.getReferenceItemTypes()
-            .subscribe(result => {
+        this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Reference)
+            .subscribe(data => {
+                var result = data.map(x => (x as any) as ReferenceItemType);
                 this.referenceTypes = result.sort((a, b) => a.Name.localeCompare(b.Name));
                 if (this.referenceTypes.length > 0) {
-                    if (this.initialSelectedListId > 0) {                        
-                        let index = this.referenceTypes.findIndex(x => x.ID == this.initialSelectedListId);
-                        this.initialSelectedListId = 0;
+                    if (this.initialSelectedListUid.length > 0) {
+                        let index = this.referenceTypes.findIndex(x => x.uid == this.initialSelectedListUid);
+                        this.initialSelectedListUid = '';
                         if (index >= 0 && index < this.referenceTypes.length) {
                             this.selected = this.referenceTypes[index];
                         }
@@ -98,7 +99,7 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
                     else {
                         this.selected = this.referenceTypes[0];
                     }
-                    this.selectedChange.emit(this.selected);
+                    this.onSelect();
                 }
                 this.isLoading = false;
             });
@@ -129,13 +130,42 @@ export class ReferenceItemTypeGridComponent extends BaseComponent implements OnI
             });
     }
 
-    private saveReferenceItemType(event) {                
+    private saveReferenceItemType(event) {
         this.showEditor = false;
 
         if (event.id) {
-            this.initialSelectedListId = (0 + event.id);
+            this.initialSelectedListUid = (0 + event.id);
         }
 
         this.load();
+    }
+
+    private onSelect() {
+        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+            .subscribe(res => {
+                this.selected.ID = +res.ObjectID;
+                this.selectedChange.emit(this.selected);
+            });
+    }
+
+    private onEdit(item: ReferenceItemType) {
+        this.selected = item;
+        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+            .subscribe(res => {
+                this.selected.ID = +res.ObjectID;
+                this.selected.AssetTypeID = +res.Id;
+                this.showEditor = true;
+            });
+    }
+
+    private onDelete(item: ReferenceItemType) {
+        this.selected = item;
+        this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid)
+            .subscribe(res => {
+                this.selected.ID = +res.ObjectID;
+                this.selected.AssetTypeID = +res.Id;
+                this.showDelete = true;
+            });
+
     }
 }

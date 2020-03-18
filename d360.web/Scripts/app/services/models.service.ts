@@ -26,14 +26,6 @@ export class ModelsService extends BaseObservableService {
             );
     }
 
-    getModelTypeObjectAndID(uid: string) {
-        return this.http.get(`api/getAssetTypeObjectAndObjectID/${uid}`)
-            .pipe(
-                map(response => <any>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getModel(id: number): Observable<Model> {
         return this.http.get(`api/catalogs/${id}`)
             .pipe(
