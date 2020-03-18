@@ -75,7 +75,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         if (this.selected) {
             switch (this.assetTypeClass) {
                 case AssetTypeClass.Model:
-                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                         this.selectedItemID = res.ObjectID;
                         this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
                     });
@@ -92,7 +92,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         if (this.selected) {
             switch (this.assetTypeClass) {
                 case AssetTypeClass.Model:
-                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                         return res.ObjectID;
                     });
                     break;

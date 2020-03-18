@@ -17,10 +17,11 @@ import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/second
 import { GridColumn, GridField } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-model-item-structure',
-    providers: [GridDefinitionService, ModelsService, PermissionsService, LevelsService],
+    providers: [GridDefinitionService, ModelsService, PermissionsService, LevelsService, AssetTypeService],
     templateUrl: './model-item-structure.component.html'
 })
 
@@ -61,7 +62,8 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService,
         protected levelsService: LevelsService,
-        protected gridDefinitionService: GridDefinitionService
+        protected gridDefinitionService: GridDefinitionService,
+        private assetTypeService: AssetTypeService
     ) {
         super();
 
@@ -97,7 +99,7 @@ export class ModelItemStructureComponent extends BaseComponent implements OnInit
             this.modelUid = params['uid']; // for model list page thats using the V2 asset 
 
             if (this.modelUid) {
-                this.modelsService.getModelTypeObjectAndID(this.modelUid).subscribe(res => {
+                this.assetTypeService.getAssetTypeObjectAndID(this.modelUid).subscribe(res => {
                     this.isLoading = true;
                     this.modelId = res.ObjectID
                     this.load();
