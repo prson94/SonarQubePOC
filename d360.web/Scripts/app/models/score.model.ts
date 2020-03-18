@@ -19,6 +19,7 @@ export class ScorePoint {
     EndDate: string;
     EffectiveDate: string;
     ScoreType: ScoreType;
+    ScoreProgression: number;
 }
 
 export class AverageScore { 

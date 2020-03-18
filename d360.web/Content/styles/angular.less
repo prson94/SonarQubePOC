@@ -5817,6 +5817,37 @@ a.mid-blue {
         display: inline-flex;
         width: 100%;
 
+        .carousel-item {
+            display: inline-block;
+            width: 103px;
+            padding: 5px 10px;
+            position: relative;
+            cursor: default;
+
+            .fa {
+                font-size: 26px;
+                position: absolute;
+                left: -7px;
+                top: 2px;
+            }
+
+            .value {
+                &:hover:not(.selected) {
+                    cursor: pointer;
+                    font-weight: bold;
+                }
+
+                &.selected {
+                    font-weight: bold;
+                }
+
+                &.selected:hover {
+                    cursor: default;
+                    pointer-events: none;
+                }
+            }
+        }
+
         .heading {
             color: @igx-grey-light;
             padding: 8px 0 8px 0px !important;
@@ -5892,6 +5923,12 @@ a.mid-blue {
 
                 .highcharts-container {
                     border-radius: 4px;
+                }
+
+                .table-caption {
+                    color: #73808A;
+                    position: relative;
+                    top: 10px;
                 }
             }
         }
@@ -6165,6 +6202,10 @@ a.mid-blue {
     border-radius: 4px;
     background-color: #eff2f6;
     clear: both;
+
+    &.hr-dark {
+        background-color: #dbe2ec;
+    }
 }
 
 .gov-slider {
@@ -6184,7 +6225,7 @@ a.mid-blue {
     }
 
     .ui-slider {
-        cursor:pointer;
+        cursor: pointer;
         height: 16px !important;
         border-radius: 8px !important;
         box-shadow: none;
@@ -6347,5 +6388,125 @@ a.mid-blue {
         display: inline-block;
         color: #646464;
         margin-right: 32px;
+    }
+}
+
+
+
+.simple-carousel {
+    overflow: hidden;
+    position: relative;
+    height: 36px;
+    transition-duration: 0.3s;
+    margin: 10px 0px;
+
+    .navigate-left {
+        position: absolute;
+        left: 0px;
+        top: 4px;
+        font-size: 12px;
+        cursor: pointer;
+        z-index: 1000;
+        padding: 6px;
+        background: #eff2f6;
+    }
+
+    .navigate-right {
+        position: absolute;
+        right: 0px;
+        font-size: 12px;
+        top: 4px;
+        cursor: pointer;
+        z-index: 1000;
+        padding: 6px;
+        background: #eff2f6;
+    }
+
+    .carousel-content {
+        padding: 0px 30px;
+        display: inline-block;
+        position: absolute;
+    }
+}
+
+.score-table {
+    background-color: white;
+    margin-top: 16px;
+    padding: 8px;
+    display: block;
+    border-radius: 4px;
+
+    .score-tbl-header {
+        font-weight: bold;
+
+        .column:last-child {
+            padding-right: 48px;
+        }
+    }
+
+    .row {
+        border-bottom: 1px solid #dbe2ec;
+        line-height: 38px;
+    }
+
+    .column {
+        height: 38px;
+
+        i.fa {
+            font-size: 28px;
+            position: relative;
+            top: 4px;
+            right: 5px;
+        }
+
+        i.fa-circle {
+            font-size: 16px;
+        }
+    }
+
+    .column:first-child {
+        text-align: left;
+        padding-left: 16px;
+    }
+
+    .column:last-child {
+        text-align: right;
+        padding-right: 16px;
+    }
+
+    .body {
+        max-height: 378px;
+        display: block;
+        overflow-x: auto;
+
+        .row {
+            cursor: default;
+
+            &:hover {
+                background-color: #dff3f7;
+                font-weight: bold;
+                cursor: pointer;
+            }
+
+            &.selected {
+                background-color: #dff3f7;
+                font-weight: bold;
+            }
+
+            &.selected:hover {
+                cursor: default;
+                pointer-events: none;
+            }
+        }
+
+        &::-webkit-scrollbar {
+            width: 1em;
+        }
+
+        &::-webkit-scrollbar-thumb {
+            background-color: #dbe2ec;
+            outline: 1px solid #dbe2ec;
+            border-radius: 10px;
+        }
     }
 }
