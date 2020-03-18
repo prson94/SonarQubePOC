@@ -316,15 +316,33 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     ngOnDestroy() {
-        this.subscription.unsubscribe();
-        this.subscriptionClear.unsubscribe();
-        this.areaSub.unsubscribe();
-        this.hideHeaderSub.unsubscribe();
-        this.objectSub.unsubscribe();
-        this.buttonSubscriptionClear.unsubscribe();
-        this.buttonSubscription.unsubscribe();
-        this.homeUrlChangeSub.unsubscribe();
-        this.statsSub.unsubscribe();
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
+        if (this.subscriptionClear) {
+            this.subscriptionClear.unsubscribe();
+        }
+        if (this.areaSub) {
+            this.areaSub.unsubscribe();
+        }
+        if (this.hideHeaderSub) {
+            this.hideHeaderSub.unsubscribe();
+        }
+        if (this.objectSub) {
+            this.objectSub.unsubscribe();
+        }
+        if (this.buttonSubscriptionClear) {
+            this.buttonSubscriptionClear.unsubscribe();
+        }
+        if (this.buttonSubscription) {
+            this.buttonSubscription.unsubscribe();
+        }
+        if (this.homeUrlChangeSub) {
+            this.homeUrlChangeSub.unsubscribe();
+        }
+        if (this.statsSub) {
+            this.statsSub.unsubscribe();
+        }
     }
 
     trackById(index, item) {

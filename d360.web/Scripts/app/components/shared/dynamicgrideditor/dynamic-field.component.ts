@@ -339,10 +339,15 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnDestroy() {
-        this.cascadeSub.unsubscribe();
-        this.relationSub.unsubscribe();
-        if (this.fieldChangeSub != null)
+        if (this.cascadeSub) {
+            this.cascadeSub.unsubscribe();
+        }
+        if (this.relationSub) {
+            this.relationSub.unsubscribe();
+        }
+        if (this.fieldChangeSub != null) {
             this.fieldChangeSub.unsubscribe();
+        }
         this.quill = null;
         this.ed = null;
     }

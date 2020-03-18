@@ -101,7 +101,9 @@ export class PolicyItemComponent extends BaseComponent implements OnInit, OnDest
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.routeParamsSubscription.unsubscribe();
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
     }
 
     buildBreadcrumb() {

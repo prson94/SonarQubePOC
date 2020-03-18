@@ -66,7 +66,9 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     ngOnDestroy() {
-        this.subBreadcrumb.unsubscribe();
+        if (this.subBreadcrumb) {
+            this.subBreadcrumb.unsubscribe();
+        }
     }
 
     handleClick() {

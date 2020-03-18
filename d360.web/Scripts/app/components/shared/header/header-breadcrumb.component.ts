@@ -85,11 +85,18 @@ export class HeaderBreadcrumbComponent {
     } 
 
     ngOnDestroy() {
-        // prevent memory leak when component destroyed
-        this.subscriptionPop.unsubscribe();
-        this.subscriptionClear.unsubscribe();
-        this.subscriptionAdd.unsubscribe();
-        this.subscriptionBuildFromStorage.unsubscribe();
+        if (this.subscriptionPop) {
+            this.subscriptionPop.unsubscribe();
+        }
+        if (this.subscriptionClear) {
+            this.subscriptionClear.unsubscribe();
+        }
+        if (this.subscriptionAdd) {
+            this.subscriptionAdd.unsubscribe();
+        }
+        if (this.subscriptionBuildFromStorage) {
+            this.subscriptionBuildFromStorage.unsubscribe();
+        }
     }
 
     private handleTreeClick(event) {

@@ -63,7 +63,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     load() {

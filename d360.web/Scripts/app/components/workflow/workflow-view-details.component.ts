@@ -166,7 +166,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
 
     ngOnDestroy() {
         this.showHideFollow(true);
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     private getStepName(itemStep: any): string {

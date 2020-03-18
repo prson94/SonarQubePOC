@@ -77,7 +77,9 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     private load(id: number, typeID: number) {

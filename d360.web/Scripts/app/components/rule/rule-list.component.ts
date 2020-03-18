@@ -124,8 +124,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.currentAreaNameSubscription.unsubscribe();
-        this.routeParamsSubscription.unsubscribe();
+        if (this.currentAreaNameSubscription) {
+            this.currentAreaNameSubscription.unsubscribe();
+        }
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
     }
 
     getFieldsDefinition() {

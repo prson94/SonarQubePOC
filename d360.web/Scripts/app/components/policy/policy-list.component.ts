@@ -144,7 +144,9 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
     }
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     loadPolicies() {
