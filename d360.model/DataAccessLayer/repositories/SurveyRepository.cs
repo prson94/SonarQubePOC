@@ -364,6 +364,37 @@ namespace d360.model.DataAccessLayer
             return response;
         }
 
+        public async Task<SurveyAssetApiResponseModel> GetAssetSurvey(Guid assetUid)
+        {
+            var surveys = (await companyContext.QueryAsync<SurveyAssetApiResponseModel>(
+                @"select	ST.[uid] as SurveyTypeUid,
+		                    ST.[Name]
+                    from	SurveyType ST
+		                    inner join AssetType T on T.[Object] = ST.[Object] and T.ObjectID = ST.ObjectID
+		                    inner join Asset A on A.[uid] = @assetUid and A.AssetTypeID = T.ID
+                    where	ST.ID not in (
+			                    select	SurveyTypeID 
+			                    from	Survey S
+					                    inner join Asset B on B.[Object] = S.[Object] and B.ObjectID = S.ObjectID
+			                    where	S.SurveyTypeID = ST.ID
+					                    and S.ResourceID = @resourceId
+					                    and S.CreatedOn > DATEADD(day, (ST.ValidForDays * -1), getdate())
+					                    and B.[uid] = @assetUid
+		                    )"
+            , new { assetUid, resourceId = companyContext.CurrentResourceID})).ToList();
+
+            if (!surveys?.Any() ?? true)
+                return null;
+
+            if (surveys.Count == 1)
+                return surveys.First();
+
+            var rand = new Random();
+            var index = rand.Next(0, surveys.Count);
+
+            return surveys[index];
+        }
+
        public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             List<string> joins = new List<string>();
