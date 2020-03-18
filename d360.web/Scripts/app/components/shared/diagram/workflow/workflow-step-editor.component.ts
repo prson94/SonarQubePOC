@@ -156,7 +156,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     ngOnDestroy() {
         this.quill = null;
         this.ed = null;
-        this.fieldsSub.unsubscribe();
+        if (this.fieldsSub) {
+            this.fieldsSub.unsubscribe();
+        }
     }
 
     appendField(e: string) {

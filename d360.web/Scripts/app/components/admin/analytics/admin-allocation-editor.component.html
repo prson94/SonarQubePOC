@@ -58,7 +58,7 @@
                     <h2>About your score threshold</h2>
                     Score Threshold indicates the limit or range for the score result.  A negative result (red) indicates a score falls within the low threshold range.  An allowable result (yellow) indicates a score falls within the middle threshold range.  And a positive result (green) indicates a score falls within the high threshold range.<br />
                     <a [href]="scoringHelpPage" target="_blank">
-                        Read more about scoring&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i>
+                        Read more about scoring&nbsp;&nbsp;<i class="fa fa-external-link" aria-hidden="true"></i>
                     </a>
                 </d3s-info-tooltip>
             </div>
@@ -75,7 +75,7 @@
                     <div class="d3s-score-pill editor score-poor"><span class="text">Poor</span></div>
                     <div class="value-box">0%&nbsp;-&nbsp;</div>
                     <div class="input-box">
-                        <input #lt type="number" [value]="selection.lowerThreshold" (change)="onUpperThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
+                        <input #lt type="number" [value]="selection.lowerThreshold" (change)="onLowerThresholdChange($event,lt)" (keyup)="onLowerThresholdChange($event,lt)" />
                         <div class="input-overlay">%</div>
                     </div>
                     <div class="d3s-score-pill editor score-average"><span class="text">Average</span></div>

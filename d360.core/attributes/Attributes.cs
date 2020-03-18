@@ -143,6 +143,16 @@ namespace d360.core
         }
     }
 
+    public class AllowEditFromPredicateEditorAttribute : Attribute
+    {
+        public bool Allowed { get; set; }
+
+        public AllowEditFromPredicateEditorAttribute(bool allowed)
+        {
+            Allowed = allowed;
+        }
+    }
+
     public class AllowEditFromRelationshipEditorAttribute : Attribute
     {
         public bool Allowed { get; set; }

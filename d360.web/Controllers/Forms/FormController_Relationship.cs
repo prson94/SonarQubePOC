@@ -33,7 +33,7 @@ namespace d360.web.Controllers
             var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 
@@ -55,7 +55,7 @@ namespace d360.web.Controllers
             var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
 
             var functionalTypes = PredicateType.DataLineage.GetAsList()
-                .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
+                .Where(f => f.AllowEditFromPredicateEditor && f.AllowIntersectTypeAssignment && f.LineageVersionsSupported.Contains(lineageVersion))
                 .Select(i => new SelectListItem { Value = ((int)i.ID).ToString(), Text = i.Name })
                 .ToList();
 

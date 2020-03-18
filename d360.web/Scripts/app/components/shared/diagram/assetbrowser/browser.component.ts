@@ -2,31 +2,29 @@ import * as go from 'gojs';
 import * as _ from 'lodash';
 import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output, AfterViewChecked } from '@angular/core';
 import {
-    DiagramObjectType,
     AssetBrowserTranslation,
     AssetBrowserApiHopDirection,
     AssetBrowserDiagramAsset,
     AssetBrowserTranslationNode,
     AssetBrowserTranslationLink,
     AssetBrowserTranslationRelationCount,
-    FilterAncestryMode,
-    FilterAncestryOption,
     AssetBrowserFilterModel,
-    AssetTypeFilter,
-    FilterSelectionsModel,    StoredAssetBrowserFilterModel,
+    FilterSelectionsModel,
     AssetBrowserApiHopRequestModel,
     AssetBrowserApiHopAssetRequestModel,
     AssetBrowserTranslationOwnerCount,
     AssetBrowserApiOwnerHopRequestModel,
     AssetBrowserAssetsModel,
-    AssetBrowserOwnersModel,
     AssetBrowserModel,
     AssetBrowserAssetModel,
     AssetBrowserGenericRelationModel,
     LoadedFilterTypesModel,
     AssetBrowserApiHopType,
-    AssetBrowserAlertRequest,
-    AssetBrowserAlert
+    AssetBrowserAlert,
+    DiagramType,
+    AssetBrowserFilterChangeEventType,
+    AssetBrowserFilterChangeEvent,
+    AssetBrowserPanelCommand
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -35,10 +33,7 @@ import { MessagesObservableService } from '../../../../services/messages-observa
 
 
 import { DiagramBaseComponent } from '../diagram-base.component';
-import { AssetBrowserLayout } from './assetbrowserlayout.component';
 import { MenuItem, SelectItem, TreeNode } from 'primeng/api';
-import { setTimeout } from 'core-js';
-import { AssetTypeClass } from '../../../../models/asset.model';
 import { Observable } from 'rxjs';
 import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
@@ -63,54 +58,48 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('infoDetailPanel', { static: false }) infoDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
-    DiagramObjectType = DiagramObjectType;
 
     private requestModel: AssetBrowserApiHopRequestModel;
     private responseModel: AssetBrowserModel = new AssetBrowserModel();
     private revealedKeys: string[] = [];
     private originalAssetUid: string;
-    private menuItems: MenuItem[] = [];
 
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
-    private isAlertPanelLoading: boolean = false;
+    private selectedAssetsWithAlerts: string[] = [];
     private totalAlertCount: number = 0;
 
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
     private isFullScreen: boolean = false;
-    private isWindowLoading: boolean = false;
-    private filtersLoading: boolean = false;
-    private fromRefresh: boolean = false;
     private loadingText: string = '';
-    private zoomText: string = '';
 
-    //#region Filters
+    private searchResults: go.Node[] = [];
+    private searchableProps: string[] = ["text"];
 
-    filterModel: AssetBrowserFilterModel = new AssetBrowserFilterModel();
-    private readonly filterKey = 'asset-browser-filter';
+    private panel_Loading: boolean = false;
+
+    private panel_AddVisible: boolean = false;
+    private panel_AlertVisible: boolean = false;
+    private panel_InformationDisabled: boolean = true;
+    private panel_InformationVisible: boolean = false;
+    private panel_FiltersVisible: boolean = false;
+    private panel_SettingsVisible: boolean = false;
+    private panel_TabIndex: number = 0;
+
+    private commandToResetTo: AssetBrowserPanelCommand;
+
+    displayConfiguration: AssetBrowserFilterModel = new AssetBrowserFilterModel();
+    private readonly displayConfigurationKey = 'asset-browser-configuration';
     private storage = window.sessionStorage;
 
-    selectedFilterAssetTypes: TreeNode[] = [];
-    selectedFilterPredicates: TreeNode[] = [];
-    selectedFilterResponsibilityTypes: TreeNode[] = [];
-    filterSelectionsModel: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
-
-    savedFilters: StoredAssetBrowserFilterModel[] = [];
-    selectedFilter: StoredAssetBrowserFilterModel;
-    createUserFilter: StoredAssetBrowserFilterModel = new StoredAssetBrowserFilterModel();
-    saveFilterModalVisible: boolean = false;
-    saveFilterModalWorking: boolean = false;
-    deleteFilterModalVisible: boolean = false;
-    deleteFilterModalWorking: boolean = false;
-    items: MenuItem[];
-
-    //#endregion
+    filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
+    filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
 
     //#region Constants
 
     private readonly emptyUid: string = '00000000-0000-0000-0000-000000000000';
     private readonly fontContextMenu: string = "12px 'Source Sans Pro'";
-    private readonly fontContextMenuShowDetails: string = "bold 12px 'Source Sans Pro'";
+    private readonly fontContextMenuhelper_ShowDetails: string = "bold 12px 'Source Sans Pro'";
 
     private readonly fontOwnerBadge: string = "8pt 'Source Sans Pro'";
     private readonly fontOwnerBackColor: string = "#FEF6F2";
@@ -157,7 +146,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
-    //#region Control Properties
+    //#region Component Base Methods
 
     constructor(
         private route: ActivatedRoute,
@@ -181,24 +170,28 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
 
-        this.menuItems.push(
-            { icon: 'fa fa-search-minus', title: 'Zoom out' },
-            { icon: 'fa fa-search-plus', title: 'Zoom in' },
-            { icon: 'fa fa-refresh', title: 'Refresh' }
-        );
-        this.initializeDiagram();
+        this.helper_InitializeDiagram();
         this.checkSecondaryNavLocalStorage();
+
+        // Do this only on initial load.
+        this.browserService
+            .getFilterOptions()
+            .subscribe(options => {
+                this.filter_AllOptions = options;
+            });
+
+        //this.displayConfiguration = this.loadFilter();
 
         this.route.params.subscribe(
             params => {
                 this.originalAssetUid = params['assetUid']; 
-                this.refreshDiagram();
+                this.helper_RefreshDiagram();
             }
         );
     }
 
     public ngAfterViewInit() {
-        this.resizeDiagram();
+        this.helper_ResizeDiagram();
         this.cdRef.markForCheck();
     }
 
@@ -240,85 +233,74 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     //#endregion
 
-    //#region Panel Configuration
-
-    private isAddRelationshipWindowVisible: boolean = false;
-
-    private isAlertTabEnabled: boolean = true;
-    private isAlertWindowVisible: boolean = false;
-
-    private isInfoTabDisabled: boolean = true;
-    private isInfoWindowVisible: boolean = false;
-
-    private isFilterWindowVisible: boolean = false;
-
-    private isSettingWindowVisible: boolean = false;
-
-    private panelTabIndex: number = 0;
-
+    // UI
     private isWindowVisible(): boolean {
-        return this.isAlertWindowVisible ||
-            this.isAddRelationshipWindowVisible || 
-            this.isFilterWindowVisible ||
-            this.isInfoWindowVisible ||
-            this.isSettingWindowVisible;
+        return this.panel_AlertVisible ||
+            this.panel_AddVisible || 
+            this.panel_FiltersVisible ||
+            this.panel_InformationVisible ||
+            this.panel_SettingsVisible;
     }
 
-    private switchToInfoDetailTab() {
-        this.panelTabIndex = 0;
-        this.cdRef.markForCheck();
+    private ownershipTabEnabled() {
+        let enabled: boolean = false;
+
+        if (this.selectedDiagramAsset) {
+            enabled = (this.selectedDiagramAsset.Owners.length > 0);
+        }
+
+        return enabled;
     }
 
-    private switchToOwnerDetailTab() {
-        this.panelTabIndex = 1;
-        this.cdRef.markForCheck();
+    //#region Session storage
+
+    private saveState(key: string, data: any) {
+        let dataString = JSON.stringify(data);
+        this.storage.setItem(key, dataString);
+    }
+
+    private loadState(key: string): any {
+        let dataString = this.storage.getItem(key);
+        if (dataString) {
+            return JSON.parse(dataString);
+        }
+        return null;
+    }
+
+    private saveFilter() {
+        this.saveState(this.displayConfigurationKey, this.displayConfiguration);
+    }
+
+    private loadFilter() {
+        let m = this.loadState(this.displayConfigurationKey);
+        if (m == null)
+            this.displayConfiguration = new AssetBrowserFilterModel();
+        else
+            this.displayConfiguration = m;
     }
 
     //#endregion
 
-    //#region button commands
-
-    private savePngButtonClickCallback(image_data, assetUid) {
-        var url = window.URL.createObjectURL(image_data);
-        var filename = `${assetUid}.png`;
-        var a = document.createElement("a");
-        //a.style = "display: none";
-        a.href = url;
-        a.download = filename;
-        // IE 11
-        if (window.navigator.msSaveBlob !== undefined) {
-            window.navigator.msSaveBlob(image_data, filename);
-            return;
-        }
-        document.body.appendChild(a);
-        requestAnimationFrame(function () {
-            a.click();
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-        });
+    //Core events
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        this.helper_ResizeDiagram();
     }
 
-    private savePngButtonClick(e) {
-        let image_data = this.diagram.makeImageData({
-            scale: 1,
-            returnType: "blob",
-            background: "#fff",
-            callback: (image_data) => this.savePngButtonClickCallback(image_data, this.assetUid)
-        });
-    }
-
-    private alertButtonClick(e) {
-        this.panelButtonClick('alert');
-        this.panelTabIndex = 0;
-        if (this.selectedDiagramAsset) {
-            this.showAlertsByAsset(this.selectedDiagramAsset.Uid);
-        }
-        else {
-            this.showAlertsByDisplayedAssets();
+    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+        if (event.key === "Escape" || event.key === "Esc") {
+            this.isFullScreen = false;
+            this.helper_ResizeDiagram();
+            this.cdRef.markForCheck();
         }
     }
 
-    private onAlertOpenDetails(alert: AssetBrowserAlert) {
+    /**
+    * Responds to the openDetail event from the shared Asset Browser Alert Panel.
+    * @returns Nothing.
+    */
+    private alert_OpenDetail(alert: AssetBrowserAlert) {
+        this.commandToResetTo = AssetBrowserPanelCommand.Information;
         this.alerts.forEach(a => {
             if (a.uid !== alert.uid) {
                 a.selected = false;
@@ -329,395 +311,395 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.selectedDiagramAsset.Uid = alert.asset.uid;
         this.selectedDiagramAsset.DisplayValue = alert.asset.displayValue;
         this.selectedDiagramAsset.Url = `/asset/${alert.asset.uid}`;
-        this.showDetails(this.selectedDiagramAsset.Uid);
-        this.isInfoWindowVisible = true;
-        this.isAlertWindowVisible = false;
-        this.panelTabIndex = 0;
+        this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
+
+        this.panel_InformationVisible = true;
+        this.panel_AlertVisible = false;
+        this.panel_TabIndex = 0;
     }
 
-    private onAlertOpenInNewTab(alert: AssetBrowserAlert) {
-        window.open(`/asset/${alert.asset.uid}`, "_blank");
-    }
+    private badge_ClickImpact(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let existingIgnoredPredicates: string[] = new Array();
+            let ix = obj.itemIndex;
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
 
-    private panelButtonClick(name: string) {
-        switch (name) {
-            case 'add':
-                this.isAddRelationshipWindowVisible = !this.isAddRelationshipWindowVisible;
-                this.isFilterWindowVisible = false;
-                this.isAlertWindowVisible = false;
-                this.isInfoWindowVisible = false;
-                this.isSettingWindowVisible = false;
-                break;
-            case 'filter':
-                this.isAddRelationshipWindowVisible = false;
-                this.isFilterWindowVisible = !this.isFilterWindowVisible;
-                this.isAlertWindowVisible = false;
-                this.isInfoWindowVisible = false;
-                this.isSettingWindowVisible = false;
-                break;
-            case 'alert':
-                this.panelTabIndex = 0;
-                this.isAlertTabEnabled = true;
-                this.isAddRelationshipWindowVisible = false;
-                this.isFilterWindowVisible = false;
-                this.isAlertWindowVisible = !this.isAlertWindowVisible;
-                this.isInfoWindowVisible = false;
-                this.isSettingWindowVisible = false;
-                break;
-            case 'info':
-                this.panelTabIndex = 0;
-                this.isAddRelationshipWindowVisible = false;
-                this.isFilterWindowVisible = false;
-                this.isAlertWindowVisible = false;
-                this.isInfoWindowVisible = !this.isInfoWindowVisible;
-                this.isSettingWindowVisible = false;
-                break;
-            case 'settings':
-                this.isAddRelationshipWindowVisible = false;
-                this.isFilterWindowVisible = false;
-                this.isAlertWindowVisible = false;
-                this.isInfoWindowVisible = false;
-                this.isSettingWindowVisible = !this.isSettingWindowVisible;
-                break;
-        }
-    }
-
-    private infoButtonClick(e) {
-        this.panelButtonClick('info');
-
-        if (this.isInfoWindowVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
-            this.showDetails(this.selectedDiagramAsset.Uid);
-            this.panelTabIndex = 0;
-        }
-    }
-
-    private setFilterWindow(actOnFilterWindow: boolean) {
-        let loadedTypes: LoadedFilterTypesModel = this.determineLoadedFilterOptions();
-
-        //#region Asset Types
-
-        this.filterSelectionsModel.FilterAssetTypes = [];
-        this.filterSelectionsModel.AssetTypeOptions.forEach(at => {
-            let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
-            if (inLoadedAssetTypes) {
-                this.filterSelectionsModel.FilterAssetTypes.push({
-                    label: at.Path,
-                    data: at.AssetTypeId
-                });
-            } 
-        });
-        this.filterSelectionsModel.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
-
-        //#endregion
-
-        //#region Predicates
-
-        this.filterSelectionsModel.FilterPredicates = [];
-        this.filterSelectionsModel.PredicateOptions.forEach(p => {
-            let inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex(ix => { return ix == p.Id }) > -1;
-            if (inLoadedPredicates) {
-                this.filterSelectionsModel.FilterPredicates.push({
-                    label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
-                    data: p.Id
-                });
-            }
-        });
-        this.filterSelectionsModel.FilterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(this.filterModel.SelectedPredicates, this.filterSelectionsModel.FilterPredicates);
-
-        //#endregion
-
-        //#region Responsibility Types
-
-        this.filterSelectionsModel.FilterResponsibilityTypes = [];
-        this.filterSelectionsModel.ResponsibilityTypeOptions.forEach(p => {
-
-            let inLoadedResponsibilityTypes: boolean = loadedTypes.ResponsibilityTypes.findIndex(ix => { return ix == p.Id }) > -1;
-            if (inLoadedResponsibilityTypes) {
-                let thisResponsibilityTypeNode: TreeNode = {
-                    label: p.Name,
-                    data: p.Id,
-                    children: []
-                };
-                this.filterSelectionsModel.FilterResponsibilityTypes.push(thisResponsibilityTypeNode);
-            }
-
-        });
-        this.filterSelectionsModel.FilterResponsibilityTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
-        this.selectedFilterResponsibilityTypes = this.getTreeNodeSelectionNodes(this.filterModel.SelectedResponsibilityTypes, this.filterSelectionsModel.FilterResponsibilityTypes);
-
-        //#endregion
-
-        if (actOnFilterWindow) {
-            this.filtersLoading = false;
-            this.panelButtonClick('filter');
-        }
-        this.cdRef.markForCheck();
-    }
-
-    private loadSavedFilters() {
-        this.browserService
-            .getUserFilters()
-            .subscribe(filters => {
-                this.savedFilters = filters;
-                this.selectedFilter = filters.find(f => f.isDefault == true);
-            });
-    }
-
-    private getFiltermenuItems(): MenuItem[] {
-        return [
-            { label: 'Add', command: (event) => { this.addUserFilter() } },
-            { label: 'Save', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.updateUserFilter() } },
-            { label: 'Remove', disabled: !this.hasSelectedUserFilter(), command: (event) => { this.showRemoveUserFilter() } }
-        ];
-    }
-
-    private hasSelectedUserFilter(): boolean {
-        return (this.selectedFilter != undefined && this.selectedFilter != null);
-    }
-
-    private applySavedFilter(e) {
-        if (!this.hasSelectedUserFilter())
-            return;
-
-        var selectedAssetTypes = this.filterSelectionsModel.AssetTypeOptions
-            .filter(a => this.selectedFilter.assetTypes.findIndex((f) => f.uid == a.Uid) > -1)
-            .map((a) => a.AssetTypeId);
-
-        var selectedResponsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
-            .filter(r => this.selectedFilter.responsibilityTypes.findIndex((f) => f.uid == r.Uid) > -1)
-            .map((r) => r.Id);
-
-        var selectedPredicates = this.filterSelectionsModel.PredicateOptions
-            .filter(p => this.selectedFilter.predicates.findIndex((f) => f.uid == p.Uid) > -1)
-            .map((p) => p.Id)
-
-        this.selectedFilterAssetTypes = this.getTreeNodeSelectionNodes(selectedAssetTypes, this.filterSelectionsModel.FilterAssetTypes);
-        this.filterAssetTypeChange({ value: this.selectedFilterAssetTypes });
-
-        this.selectedFilterResponsibilityTypes = this.getTreeNodeSelectionNodes(selectedResponsibilityTypes, this.filterSelectionsModel.FilterResponsibilityTypes);
-        this.filterResponsibilityTypeChange({ value: this.selectedFilterResponsibilityTypes });
-
-        this.selectedFilterPredicates = this.getTreeNodeSelectionNodes(selectedPredicates, this.filterSelectionsModel.FilterPredicates);
-        this.filterPredicateChange({ value: this.selectedFilterPredicates });
-
-        if (this.selectedFilter.numberOfHops) {
-            this.filterModel.NumberOfHops = this.selectedFilter.numberOfHops;
-            this.filterNumberOfHopsChange();
-        }
-
-        if (this.selectedFilter.ancestryMode) {
-            this.filterModel.AncestryMode = this.selectedFilter.ancestryMode;
-            this.filterTriggerVisualizationUpdate();
-        }
-    }
-
-    private addUserFilter() {
-        this.saveFilterModalVisible = true;
-        this.saveFilterModalWorking = false;
-        this.createUserFilter = new StoredAssetBrowserFilterModel();
-        this.createUserFilter.assetTypes = this.filterSelectionsModel.AssetTypeOptions
-            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
-            .map((a) => { return { uid: a.Uid, class: a.Class } });
-        this.createUserFilter.responsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
-            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
-            .map((r) => { return { uid: r.Uid, type: r.Name } });
-        this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
-            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
-            .map((p) => { return { uid: p.Uid, type: p.Name } });
-        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
-        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
-        this.createUserFilter.name = '';
-    }
-
-    private createUserFilterSave() {
-        this.saveFilterModalWorking = true;
-        this.browserService
-            .saveUserFilter(this.createUserFilter)
-            .subscribe(filter => {
-                this.saveFilterModalVisible = false;
-                this.saveFilterModalWorking = false;
-                var filters = this.savedFilters;
-                filters.push(filter);
-                this.savedFilters = filters.filter(f => true);
-                this.selectedFilter = filter;
-                this.messagesService.showInfoMessage('Success', 'Filter added successfully');
+            if (relation.expanded) {
+                this.helper_CollapseBadgeDependentNodesAndLinks(relation.key, node.key);
+                relation.expanded = false;
+                this.diagram.model.removeArrayItem(node.relations, ix);
+                this.diagram.model.insertArrayItem(node.relations, ix, relation);
+                this.helper_CalculateAlertCount();
                 this.cdRef.markForCheck();
-            });
-    }
+            }
+            else {
 
-    private filterModalCancel() {
-        this.saveFilterModalVisible = false;
-        this.deleteFilterModalVisible = false;
-    }
+                let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
 
-    private updateUserFilter() {
-        if (!this.hasSelectedUserFilter())
-            return;
+                requestModel.Assets = [];
+                requestModel.PredicateUid = relation.predicateUid;
+                requestModel.Direction = relation.direction;
+                requestModel.HopType = AssetBrowserApiHopType.Impact;
 
-        this.createUserFilter = JSON.parse(JSON.stringify(this.selectedFilter));
-        this.createUserFilter.assetTypes = this.filterSelectionsModel.AssetTypeOptions
-            .filter(a => this.filterModel.SelectedAssetTypes.indexOf(a.AssetTypeId) > -1)
-            .map((a) => { return { uid: a.Uid, class: a.Class } });
-        this.createUserFilter.responsibilityTypes = this.filterSelectionsModel.ResponsibilityTypeOptions
-            .filter(r => this.filterModel.SelectedResponsibilityTypes.indexOf(r.Id) > -1)
-            .map((r) => { return { uid: r.Uid, type: r.Name } });
-        this.createUserFilter.predicates = this.filterSelectionsModel.PredicateOptions
-            .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
-            .map((p) => { return { uid: p.Uid, type: p.Name } });
-        this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
-        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
-
-        this.browserService
-            .saveUserFilter(this.createUserFilter)
-            .subscribe(filter => {
-                var filters = this.savedFilters;
-                var idx = filters.findIndex(f => f.uid == filter.uid);
-                filters[idx] = filter;
-                this.savedFilters = filters.filter(f => true);
-                this.selectedFilter = filter;
-                this.messagesService.showInfoMessage('Success', 'Filter saved successfully');
-                this.cdRef.markForCheck();
-            });
-    }
-
-    private showRemoveUserFilter() {
-        this.deleteFilterModalVisible = true;
-        this.deleteFilterModalWorking = false;
-    }
-
-    private removeUserFilter() {
-        this.deleteFilterModalWorking = true;
-        if (this.hasSelectedUserFilter()) {
-            this.browserService
-                .deleteUserFilter(this.selectedFilter)
-                .subscribe(success => {
-                    if (success) {
-                        var filters = this.savedFilters;
-                        var idx = filters.findIndex(f => f.uid == this.selectedFilter.uid);
-                        filters.splice(idx,1);
-                        this.savedFilters = filters.filter(f => true);
-                        this.selectedFilter = undefined;
-                        this.messagesService.showInfoMessage('Success', 'Filter removed successfully');
-                        this.cdRef.markForCheck();
-                        this.deleteFilterModalWorking = false;
-                        this.deleteFilterModalVisible = false;
+                let n = node;
+                if (n.isGroup) {
+                    // Add the root node's asset information.
+                    if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
+                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
                     }
-                });
+                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
+                        let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
+                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
+
+                            // Get existing ignored predicates so we can continue to skip these along the impact chain.
+                            if (g.data.ignoredPredicates !== undefined) {
+                                g.data.ignoredPredicates.forEach(p => {
+                                    if (existingIgnoredPredicates.findIndex(pix => p == pix) === -1) {
+                                        existingIgnoredPredicates.push(p);
+                                    }
+                                });
+                            }
+
+                            let asset = new AssetBrowserApiHopAssetRequestModel();
+                            asset.Uid = g.data.assetUid;
+                            asset.Key = g.data.key
+                            requestModel.Assets.push(asset);
+                        }
+                    })
+                }
+
+                let subscriber = (response: AssetBrowserAssetsModel) => {
+                    response.assets.forEach(a => {
+                        this.responseModel.assets.assets.push(a);
+                    });
+                    response.assetRelations.forEach(i => {
+                        this.responseModel.assets.assetRelations.push(i);
+                    });
+
+                    let nodeToPull = this.helper_FindInApiModel(node.key, this.responseModel.assets);
+                    if (nodeToPull) {
+                        response.assets.push(nodeToPull);
+                    }
+
+                    response = this.browserService.convertResponseModel(response, this.displayConfiguration.AncestryMode);
+
+                    let keysToBeConcernedWith: string[] = [];
+                    let nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, response.assets);
+                    nodes.forEach(n => {
+
+                        keysToBeConcernedWith.push(n.key);
+
+                        // Transfer ignored predicates to the newly created nodes.
+                        if (this.helper_LineageDiagramApplies()) {
+                            existingIgnoredPredicates.forEach(ep => {
+                                n.ignoredPredicates.push(ep);
+                            });
+                            n.ignoredPredicates.push(relation.predicateUid);
+                        }
+                    });
+
+                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
+                    trans.nodes = nodes;
+                    trans.links = this.browserService.translateAssetLinks(this.helper_GetFullResponseModelAsTranslationNodes(), response.assetRelations);
+
+                    trans.links.forEach(l => {
+                        l.expandedByBadgeKey = relation.key;
+                    });
+
+                    relation.expanded = true;
+                    this.helper_ParseTranslatedData(trans, true);
+
+                    this.helper_SetFilterWindow();
+
+                    this.helper_HideDeselectedAssetTypes(keysToBeConcernedWith);
+                    this.helper_HideDeselectedPredicates(keysToBeConcernedWith);
+                    this.helper_HideDeselectedResponsibilityTypes(keysToBeConcernedWith);
+                };
+
+                if (this.helper_LineageDiagramApplies()) {
+                    this.browserService.getAssetBrowserHop(requestModel).subscribe(subscriber);
+                }
+                else {
+                    this.browserService.getImpactBrowserHop(requestModel).subscribe(subscriber);
+                }
+            }
+        }
+    }
+    
+    private badge_ClickOwner(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let ix = obj.itemIndex;
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
+
+            if (owner.expanded) {
+                this.helper_CollapseBadgeDependentNodesAndLinks(owner.key, node.key);
+                owner.expanded = false;
+                this.diagram.model.removeArrayItem(node.owners, ix);
+                this.diagram.model.insertArrayItem(node.owners, ix, owner);
+                this.helper_CalculateAlertCount();
+                this.cdRef.markForCheck();
+            }
+            else {
+                let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
+
+                requestModel.Assets = [];
+                requestModel.ResponsibilityTypeId = owner.responsibilityTypeId;
+
+                let n = node;
+                if (n.isGroup) {
+                    // Add the root node's asset information.
+                    if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
+                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
+                    }
+                    
+
+                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
+                        let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
+                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
+                            let asset = new AssetBrowserApiHopAssetRequestModel();
+                            asset.Uid = g.data.assetUid;
+                            asset.Key = g.data.key
+                            requestModel.Assets.push(asset);
+                        }
+                    })
+                }
+
+                this.browserService.getAssetOwners(requestModel)
+                    .subscribe(response => {
+
+                        // Some extra data you will need later on during translation.
+                        response.fromKey = node.key;
+                        response.responsibilityType = owner.responsibilityType;
+                        response.responsibilityTypeId = owner.responsibilityTypeId;
+
+                        response.owners.forEach(o => {
+                            this.responseModel.owners.owners.push(o);
+                        });
+                        response.ownerRelations.forEach(r => {
+                            this.responseModel.owners.ownerRelations.push(r);
+                        });
+
+                        let trans: AssetBrowserTranslation = this.browserService.translateOwnersResponseModel(response);
+                        trans.links.forEach(l => {
+                            l.expandedByBadgeKey = owner.key;
+                        });
+                        owner.expanded = true;
+
+                        this.helper_ParseTranslatedData(trans, true);
+
+                        this.helper_SetFilterWindow();
+                    });
+            }
         }
     }
 
-    private filterButtonClick(e) {
-        this.loadSavedFilters();
-        if (this.filterSelectionsModel.AssetTypeOptions.length == 0) {
-            this.filtersLoading = true;
-            this.browserService
-                .getFilterOptions()
-                .subscribe(options => {
-                    this.filterSelectionsModel = options;
-                    this.setFilterWindow(true);
-                });
-        }
-        else {
-            this.setFilterWindow(true);
+    private context_Hide(e, obj, direction: AssetBrowserApiHopDirection = null) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let node: AssetBrowserTranslationNode = obj.part.data;
+
+            if (node.group != null) { //find top level node
+                let n: any = this.diagram.findNodeForKey(node.group).data;
+                while (n.group != null) {
+                    n = this.diagram.findNodeForKey(n.group).data;
+                }
+                node = n;
+            }
+
+            if (node.isGroup) { //top level item
+
+                let group: any = this.diagram.findNodeForKey(node.key); 
+
+                if (direction == null) { //hide the current node
+                    this.helper_HideNode(node, group);
+                }
+                else { //hide upstream or downstream
+                    let subgraph = this.helper_FindSubGraph(group.key, direction);
+
+                    if (subgraph == null || subgraph.nodes.length < 1)
+                        return; //nothing to hide
+                    if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
+                        return; //subgraph already hidden
+
+                    this.diagram.startTransaction('hide');
+
+                    let hideNode = new AssetBrowserTranslationNode();
+
+                    hideNode.subgraph = subgraph;
+                    hideNode.template = "HiddenData";
+                    hideNode.back = node.back;
+
+                    this.diagramModelAsGraph().removeLinkDataCollection(subgraph.links);
+                    this.diagram.model.removeNodeDataCollection(subgraph.nodes);
+
+                    this.diagram.model.addNodeData(hideNode);
+                    if (direction == AssetBrowserApiHopDirection.Forward)
+                        this.diagramModelAsGraph().addLinkData({ from: group.key, to: hideNode.key });
+                    else
+                        this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: group.key });
+
+                    this.diagram.commitTransaction('hide');
+                }
+
+            }
         }
     }
 
-    private settingsButtonClick(e) {
-        this.panelButtonClick('settings');
+    private context_Unhide(e, obj) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let node: AssetBrowserTranslationNode = obj.part.data;
+            this.helper_UnhideNode(node);
+        }
+    }
+
+    private event_DiagramSelectionChanged(e: go.DiagramEvent) {
+        if (e != null && e.subject != null) {
+            if (e.subject instanceof go.Set) {
+                let parts = (e.subject as go.Set<go.Part>);
+
+                if (parts.count == 1) {
+                    let data = parts.first().data;
+                    let uid: string = '';
+
+                    if (data.assetUid != null && data.assetUid != this.emptyUid) {
+                        // selected item is an asset
+                        uid = data.assetUid;
+                    }
+
+                    if (uid !== '' && uid != this.emptyUid) {
+                        this.panel_InformationDisabled = false;
+                        if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
+                            if (this.panel_AlertVisible) {
+                                this.selectedAssetsWithAlerts = [];
+                                this.selectedAssetsWithAlerts.push(uid);
+                            }
+                            else {
+                                this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
+                                this.selectedDiagramAsset.Uid = uid;
+                                this.helper_ShowDetail(uid);
+                                this.cdRef.markForCheck();
+                            }
+                        }
+                    }
+                    else {
+                        this.diagram.nodes.each(n => {
+                            n.isHighlighted = false;
+                        });
+                        this.selectedDiagramAsset = null;
+                        this.panel_InformationDisabled = true;
+                        this.panel_InformationVisible = false;
+                        if (this.panel_AlertVisible) {
+                            this.selectedAssetsWithAlerts = this.assetsWithAlerts;
+                        }
+                        this.cdRef.markForCheck();
+                    }
+
+                } else if (parts.count == 0) {
+                    this.diagram.nodes.each(n => {
+                        n.isHighlighted = false;
+                    });
+                    this.selectedDiagramAsset = null;
+                    this.panel_InformationDisabled = true;
+                    this.panel_TabIndex = 0;
+                    this.panel_InformationVisible = false;
+                    if (this.panel_AlertVisible) {
+                        this.selectedAssetsWithAlerts = this.assetsWithAlerts;
+                    }
+                    this.cdRef.markForCheck();
+                }
+            }
+        }
+    }
+
+    private event_Information_DetailTabClick() {
+        this.panel_TabIndex = 0;
         this.cdRef.markForCheck();
     }
 
-    private addRelationshipsClick(e) {
-        this.panelButtonClick('add');
+    private event_Information_OwnerTabClick() {
+        this.panel_TabIndex = 1;
         this.cdRef.markForCheck();
     }
 
-    private refreshButtonClick(e) {
-        this.diagram.scale = 1;
-        this.refreshDiagram();
-        this.updateZoomText();
-    }
-
-    private zoomInButtonClick(e) {
-        this.diagram.scale += .1;
-
-        if (this.diagram.scale > 2.5) {
-            this.diagram.scale = 2.5;
+    private filterpanel_Apply(e: AssetBrowserFilterChangeEvent) {
+        this.displayConfiguration = e.Model;
+        this.saveFilter();
+        switch (e.Type) {
+            case AssetBrowserFilterChangeEventType.Ancestry:
+                this.helper_RefreshDiagram();
+                break;
+            case AssetBrowserFilterChangeEventType.AssetType:
+                this.helper_HideDeselectedAssetTypes(undefined);
+                break;
+            case AssetBrowserFilterChangeEventType.HopCount:
+                this.helper_RefreshDiagram();
+                break;
+            case AssetBrowserFilterChangeEventType.Predicate:
+                this.helper_HideDeselectedPredicates(undefined);
+                break;
+            case AssetBrowserFilterChangeEventType.ResponsibilityType:
+                this.helper_HideDeselectedResponsibilityTypes(undefined);
+                break;
         }
-
-        this.updateZoomText();
     }
 
-    private zoomOutButtonClick(e) {
-        this.diagram.scale -= .1;
-
-        if (this.diagram.scale < .1) {
-            this.diagram.scale = .1;
+    /**
+    * Calculates the assets Uid array and total alert count by looking at the currently displayed nodes and searching for the actionCount property.
+    * @returns Nothing.
+    */
+    private helper_CalculateAlertCount() {
+        this.totalAlertCount = 0;
+        this.assetsWithAlerts = [];
+        this.diagram.nodes.each(n => {
+            if (n.data) {
+                if (n.data.actionCount) {
+                    // Below condition checks to see if the assetUid has already been accounted for in alert count, so as not to double-count [GOV-9970].
+                    if (this.assetsWithAlerts.findIndex(a => { return a == n.data.assetUid; }) == -1) {
+                        this.totalAlertCount += n.data.actionCount;
+                        this.assetsWithAlerts.push(n.data.assetUid);
+                    }
+                }
+            }
+        });
+        if (this.panel_AlertVisible) {
+            //this.showAlertsByDisplayedAssets();
         }
-        this.updateZoomText();
     }
 
-    private fullScreenButtonClick(e) {
-        this.isFullScreen = !this.isFullScreen;
-        this.resizeDiagram();
-        this.cdRef.markForCheck();
+    private helper_CollapseBadgeDependentNodesAndLinks(badgeKey: string, nodeKey: string) {
+        this.diagram.startTransaction("collapseBadge");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == badgeKey);
+        this.helper_CollapseNodesAndLinks(dm, nodeKey, links);
+        this.diagram.commitTransaction("collapseBadge");
     }
 
-    //#endregion
+    private helper_CollapseNodesAndLinks(dm: go.GraphLinksModel, key: string, links: go.Iterator<go.Link>) {
+        if (links) {
+            let lnks: any[] = [];
+            links.iterator.each(link => {
+                lnks.push({ link: link, node: (link.toNode.key == key) ? link.fromNode : link.toNode });
+            });
+            lnks.forEach(lnk => {
+                if (lnk.node) {
+                    let backLinks: go.Iterator<go.Link> = lnk.node.findLinksInto().filter(b => { return (b.fromNode.key !== key); });
+                    this.helper_CollapseNodesAndLinks(dm, lnk.node.key, backLinks);
 
-    //#region helper methods
+                    let forwardLinks: go.Iterator<go.Link> = lnk.node.findLinksOutOf().filter(b => { return (b.toNode.key !== key); });
+                    this.helper_CollapseNodesAndLinks(dm, lnk.node.key, forwardLinks);
 
-    private OwnershipTabEnabled() {
-        let enabled: boolean = false;
+                    // Remove immediate child.
+                    this.diagram.remove(lnk.node);
+                    dm.removeNodeData(dm.findNodeDataForKey(lnk.node.key));
+                }
 
-        if (this.selectedDiagramAsset) {
-            enabled = (this.selectedDiagramAsset.Owners.length > 0);
+                this.diagram.remove(lnk.link);
+            });
         }
-
-        return enabled;
     }
 
-    private addButtonSelectedClass() {
-        return this.isAddRelationshipWindowVisible ? "selected" : "";
-    }
-
-    private alertButtonClass() {
-        let classes: string = "";
-
-        if (this.isAlertWindowVisible && this.panelTabIndex == 0) {
-            classes += "selected";
-        }
-        if (!this.isAlertTabEnabled) {
-            classes += "disabled";
-        }
-
-        return classes;
-    }
-
-    private alertButtonWidth() {
-        let width: number = 32;
-        if (this.totalAlertCount > 0) {
-            width += (this.totalAlertCount.toLocaleString().length * 6);
-            width += 10;
-        }
-        return width + 'px';
-    }
-
-    private alertCountClass() {
-        return this.totalAlertCount > 0 ? "fa fa-bell has-alerts-label" : "fa fa-bell";
-    }
-
-    private alertCountNumberClass() {
-        return this.totalAlertCount > 0 ? "has-alerts-count" : "";
-    }
-
-    private alertCountNumber() {
-        return this.totalAlertCount > 0 ? this.totalAlertCount : ""; 
-    }
-
-    private determineLoadedFilterOptions(): LoadedFilterTypesModel {
+    private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
         let model: LoadedFilterTypesModel = new LoadedFilterTypesModel();
 
         // Loop through nodes and figure out what is visible.
@@ -767,813 +749,70 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return model;
     }
 
-    private filterButtonSelectedClass() {
-        return this.isFilterWindowVisible ? "right-margin-4 selected" : "right-margin-4";
+    private helper_DiagramScale(): number {
+        return this.diagram.scale;
     }
 
-    private infoButtonSelectedClass() {
-        return (this.isInfoWindowVisible) ? "selected" : (this.isInfoTabDisabled ? "disabled" : "");
-    }
+    private helper_DisableDragging() {
+        let unlockedKeys: string[] = [];
 
-    private settingsButtonSelectedClass() {
-        return this.isSettingWindowVisible ? "selected" : "";
-    }
+        this.diagram.links.each(function (l) {
+            if (!unlockedKeys.some(x => x == l.fromNode.data.key))
+                unlockedKeys.push(l.fromNode.data.key);
 
-    private ownerRowClass(icon: string) {
-        return "fa " + icon;
-    }
-
-    protected scoreBetween(value: number, start: number, end: number): boolean {
-        if (value !== null && value !== undefined) {
-            return +value >= start && +value <= end;
-        }
-        return false;
-    }
-
-    private GetJSON(value: string) {
-        try {
-            return JSON.parse(value);
-        } catch (err) {
-            return "Error";
-        }
-    }
-
-    private hideDeselectedAssetTypes(keysToBeConcernedWith: string[]) {
-        // Now loop through selected asset types, as those are the ones we need to hide.
-        let nodesToHide: AssetBrowserTranslationNode[] = [];
-        this.diagram.model
-            .nodeDataArray
-            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "PortGroup" || tn.template == "HiddenData"; })
-            .forEach((tn: AssetBrowserTranslationNode) => {
-                if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1) {
-                    if (tn.template == "PortGroup") { //only hide if it is already displayed.
-                        nodesToHide.push(tn);
-                    }
-                }
-                else {
-                    if (keysToBeConcernedWith) {
-                        if (keysToBeConcernedWith.findIndex(ix => ix == tn.key) > -1) {
-                            this.unhideNode(tn);
-                        }
-                    }
-                    else {
-                        this.unhideNode(tn);
-                    }
-                }
-            });
-
-        if (nodesToHide.length > 0) {
-            nodesToHide.forEach(n => {
-                let group: any = this.diagram.findNodeForKey(n.key);
-                this.hideIndividualNode(n, group);
-            });
-        }
-    }
-
-    private hideDeselectedPredicates(keysToBeConcernedWith: string[]) {
-        // Now loop through selected asset types, as those are the ones we need to hide.
-        let nodesToHide: AssetBrowserTranslationNode[] = [];
-
-        //#region Hide Badge
-
-        this.diagram.startTransaction('predicateBadge');
-        this.diagram.findTopLevelGroups().each(g => {
-            let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
-
-            let shallWeDealWithNode: boolean = false;
-            if (keysToBeConcernedWith) {
-                if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
-                    shallWeDealWithNode = true;
-                }
-            }
-            else {
-                shallWeDealWithNode = true;
-            }
-
-            //#region Relations badge logic
-            if (shallWeDealWithNode) {
-                topLevelNode.relations.forEach(rC => {
-                    let showBadge: boolean;
-
-                    if (this.filterModel.SelectedPredicates.findIndex(v => { return v == rC.predicateId; }) > -1) {
-                        showBadge = false;
-                    }
-                    else {
-                        showBadge = true;
-                    }
-
-                    if (showBadge) {
-                        // Check to see if we should ignore this predicate based on previouly revealed badges.
-                        if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
-                            showBadge = false;
-                        }
-                    }
-
-                    this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
-                });
-            }
-            //#endregion
-        });
-        this.diagram.commitTransaction('predicateBadge');
-
-        //#endregion Badge
-
-        //#region Hide Node
-
-        this.diagram.links.each(link => {
-            let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
-            if (linkData.predicateIds) {
-                let g: any = this.diagram.findNodeForKey(linkData.to);
-                if (g) {
-                    if (linkData.predicateIds.filter(l => {
-                        return this.filterModel.SelectedPredicates.findIndex(v => { return v == l; }) > -1
-                    }).length > 0) {
-                        this.hideIndividualNode(g.data as AssetBrowserTranslationNode, g);
-                    }
-                    else {
-                        let shallWeDealWithNode: boolean = false;
-                        if (keysToBeConcernedWith) {
-                            if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
-                                shallWeDealWithNode = true;
-                            }
-                        }
-                        else {
-                            shallWeDealWithNode = true;
-                        }
-
-                        if (shallWeDealWithNode) {
-                            if (this.filterModel.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
-                                this.unhideNode(g.data as AssetBrowserTranslationNode);
-                            }
-                        }
-                    }
-                }
-            }
+            if (!unlockedKeys.some(x => x == l.toNode.data.key))
+                unlockedKeys.push(l.toNode.data.key);
         });
 
-        //#endregion
-    }
-
-    private hideDeselectedResponsibilityTypes(keysToBeConcernedWith: string[]) {
-
-        //#region Hide Badge
-
-        this.diagram.startTransaction('ownerBadge');
-        this.diagram.findTopLevelGroups().each(g => {
-            let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
-
-            let shallWeDealWithNode: boolean = false;
-            if (keysToBeConcernedWith) {
-                if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
-                    shallWeDealWithNode = true;
-                }
+        this.diagram.nodes.each(function (n) {
+            if (!n.data.isGroup) {
+                n.movable = false;
             }
-            else {
-                shallWeDealWithNode = true;
+            else if (!unlockedKeys.some(x => x == n.data.key)) {
+                n.movable = false;
             }
-
-            //#region Owners badge logic
-            if (shallWeDealWithNode) {
-                topLevelNode.owners.forEach(rC => {
-                    let showBadge: boolean = true;
-
-                    if (this.filterModel.SelectedResponsibilityTypes.findIndex(v => { return v == rC.responsibilityTypeId; }) > -1) {
-                        showBadge = false;
-                    }
-                    else {
-                        showBadge = true;
-                    }
-
-                    this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
-                });
-            }
-            //#endregion
         });
-        this.diagram.commitTransaction('ownerBadge');
-
-        //#endregion Badge
-
-        //#region Hide Node
-
-        // Now loop through selected asset types, as those are the ones we need to hide.
-        let nodesToHide: AssetBrowserTranslationNode[] = [];
-        this.diagram.model
-            .nodeDataArray
-            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "Owners" || tn.template == "HiddenData"; })
-            .forEach((tn: AssetBrowserTranslationNode) => {
-                if (this.filterModel.SelectedResponsibilityTypes.findIndex(v => { return v == tn.responsibilityTypeId; }) > -1) {
-                    if (tn.template == "Owners") { //only hide if it is already displayed.
-                        nodesToHide.push(tn);
-                    }
-                }
-                else {
-                    let shallWeDealWithNode: boolean = false;
-                    if (keysToBeConcernedWith) {
-                        if (keysToBeConcernedWith.findIndex(ix => ix == tn.key) > -1) {
-                            shallWeDealWithNode = true;
-                        }
-                    }
-                    else {
-                        shallWeDealWithNode = true;
-                    }
-
-                    if (shallWeDealWithNode) {
-                        if (!(this.filterModel.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1)) {
-                            this.unhideNode(tn);
-                        }
-                    }
-                }
-            });
-
-        if (nodesToHide.length > 0) {
-            nodesToHide.forEach(n => {
-                let group: any = this.diagram.findNodeForKey(n.key);
-                this.hideIndividualNode(n, group);
-            });
-        }
-
-        //#endregion
     }
 
-    private hideIndividualNode(node: AssetBrowserTranslationNode, group: any) {
-        this.diagram.startTransaction('hide');
+    private helper_FindInApiItemModel(key: string, model: AssetBrowserAssetModel): boolean {
+        let found: boolean = false;
 
-        let hideNode = new AssetBrowserTranslationNode();
-
-        hideNode.subgraph = new AssetBrowserTranslation();
-        hideNode.template = "HiddenData";
-        hideNode.assetTypeId = node.assetTypeId;
-        hideNode.responsibilityTypeId = node.responsibilityTypeId;
-        hideNode.back = node.back;
-        hideNode.subgraph.nodes = [];
-        hideNode.subgraph.links = [];
-        hideNode.subgraph.nodes.push(node); //add this node to the subgraph so we can unhide it later
-
-        let children = group.findSubGraphParts();
-        children.each(c => {
-            hideNode.subgraph.nodes.push(c.data);
-        });
-
-        this.diagram.model.addNodeData(hideNode);
-
-        let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == group.key);
-        let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == group.key);
-
-        upstreamLinks.forEach(l => {
-            hideNode.subgraph.links.push(l);
-            this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
-        });
-
-        downstreamLinks.forEach(l => {
-            hideNode.subgraph.links.push(l);
-            this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
-        });
-
-        this.diagram.remove(group);
-
-        this.diagram.commitTransaction('hide');
-    }
-
-    private unhideNode(node: AssetBrowserTranslationNode) {
-        if (node.template == "HiddenData") {
-            this.diagram.startTransaction('unhide');
-
-            let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == node.key);
-            let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == node.key);
-
-            this.diagram.model.addNodeDataCollection(node.subgraph.nodes);
-            this.diagramModelAsGraph().addLinkDataCollection(node.subgraph.links);
-
-            this.diagramModelAsGraph().removeLinkDataCollection(upstreamLinks);
-            this.diagramModelAsGraph().removeLinkDataCollection(downstreamLinks);
-
-            this.diagram.model.removeNodeData(node);
-
-            this.diagram.commitTransaction('unhide');
-        }
-    }
-
-    private highlightPath(e: go.InputEvent, obj: go.Part) {
-        //Set all to not highlighted.
-        obj.diagram.nodes.each(n => {
-            n.isHighlighted = false;
-        });
-
-        if (obj.key) {
-            // Highlight the selected node.
-            obj.isHighlighted = true;
-
-            // Recurse through and highlight based on the atomic (non-grouped) links.
-            this.highlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined);
+        if (model.key == key) {
+            found = true;
         }
         else {
-            // You are clicking on a link instead.
-            let link = this.diagram.findLinkForData(obj.data);
-            if (obj.data) {
-                if (obj.data.impacts) {
-                    let keysToHighlight: string[] = obj.data.impacts;
-                    keysToHighlight.forEach(k => {
-                        let node: go.Node = obj.diagram.findNodeForKey(k);
-                        if (node) {
-                            node.isHighlighted = true;
-                        }
-                    });
-                }
-            }
-        }
-    }
-
-    private highlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[]) {
-
-        let fwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Forward));
-        let bwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Backward));
-
-        if (allRelations === undefined) {
-            allRelations = new Array<AssetBrowserGenericRelationModel>();
-
-            this.responseModel.assets.assetRelations.forEach(l => {
-                allRelations.push({ from: l.subjectKey, to: l.objectKey });
-            });
-            this.responseModel.owners.ownerRelations.forEach(l => {
-                allRelations.push({ from: l.ownerKey, to: l.assetKey });
-            });
-        }
-
-        allRelations.forEach(l => {
-
-            // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
-            if (fwd) {
-                if (l.from == key) {
-                    let oNode = this.diagram.findNodeForKey(l.to);
-                    if (oNode) {
-                        oNode.isHighlighted = true;
-                        this.highlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations);
-                    }
-                }
-            }
-
-            // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
-            if (bwd) {
-                if (l.to == key) {
-                    let sNode = this.diagram.findNodeForKey(l.from);
-                    if (sNode) {
-                        sNode.isHighlighted = true;
-                        this.highlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations);
-                    }
-                }
-            }
-        });
-
-    }
-
-    private initializeDiagram() {
-
-        this.initializeCustomShapes();
-
-        this.diagram = this.createDiagram();
-
-        var forelayer = this.diagram.findLayer("Foreground");
-        this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
-
-        this.diagram.groupTemplateMap.add("PortGroup", this.createPortGroupNode());
-        this.diagram.groupTemplateMap.add("Group", this.createGroupNode());
-
-        this.diagram.nodeTemplateMap.add("MoreData", this.createRevealNodeTemplate());
-        this.diagram.nodeTemplateMap.add("HiddenData", this.createHiddenDataNode());
-
-        this.diagram.groupTemplateMap.add("Owners", this.createOwnersGroup());
-        this.diagram.nodeTemplateMap.add("Owner", this.createOwnerNode());
-        this.diagram.nodeTemplate = this.createListItemNode();
-
-        this.diagram.linkTemplateMap.add("", this.createDefaultLink());
-
-        this.diagram.addDiagramListener('ChangedSelection', e => this.ChangedSelection(e));
-
-        this.diagram.grid.visible = false;
-        this.diagram.grid.gridCellSize = new go.Size(8, 8);
-        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
-
-        this.loadFilter();
-        this.populateDiagram().subscribe(bComplete => {
-            this.hideDeselectedAssetTypes(undefined);
-            this.hideDeselectedPredicates(undefined);
-            this.hideDeselectedResponsibilityTypes(undefined);
-        });
-    }
-
-    private populateDiagram(): Observable<boolean> {
-        let dgmObs: Observable<boolean>;
-
-        dgmObs = new Observable(obs => {
-            this.isLoading = true;
-            this.loadingText = "Retrieving lineage from Govern..";
-            this.responseModel.clear();
-            this.revealedKeys = [];
-
-            this.requestModel = new AssetBrowserApiHopRequestModel();
-            this.requestModel.Assets = new Array();
-
-            let assetRequestModel: AssetBrowserApiHopAssetRequestModel = new AssetBrowserApiHopAssetRequestModel();
-            assetRequestModel.Uid = this.assetUid;
-            this.requestModel.Assets.push(assetRequestModel);
-
-            this.requestModel.Direction = AssetBrowserApiHopDirection.Both;
-            this.requestModel.Hops = this.filterModel.NumberOfHops;
-            this.requestModel.HopType = AssetBrowserApiHopType.Self; 
-
-            this.browserService.getAssetLineage(this.requestModel)
-                .subscribe(data => {
-                    this.responseModel.assets.assets = data.assets;
-                    this.responseModel.assets.assetRelations = data.assetRelations;
-                    this.loadingText = "Determining links and meaning...";
-                    data = this.browserService.convertResponseModel(data, this.filterModel.AncestryMode);
-
-                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, data.assets);
-                    trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
-
-                    this.parseData(trans);
-                    this.resizeDiagram();
-                    this.diagram.scale = 1;
-                    this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
-                    this.loadingText = "";
-                    this.isLoading = false;
-
-                    this.cdRef.markForCheck();
-
-                    obs.next(true);
-                    obs.complete();
-                });
-        });
-
-        return dgmObs;
-    }
-
-    private parseData(trans: AssetBrowserTranslation, append: boolean = false) {
-        this.diagram.startTransaction("load_all_data");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-
-        //#region add data to diagram model
-
-        trans.nodes.forEach(n => {
-            n.showIcon = this.filterModel.DisplayIcons;
-        });
-
-        if (append) {
-
-            trans.nodes.forEach(n => {
-                n.showIcon = this.filterModel.DisplayIcons;
-                let x = dm.findNodeDataForKey(n.key);
-                if (x == null) {
-                    //handle case where appended lineage reveals that a leaf node is
-                    //now a parent of another node deeper in the hierarchy
-                    if (n.group != null) {
-                        let r = dm.findNodeDataForKey(n.group);
-                        if (r != null) {
-                            if (r.isGroup != true) {
-                                dm.removeNodeData(r);
-                                r.isGroup = true;
-                                r.template = "Group"
-                                dm.addNodeData(r);
-                            }
-                        }
-                    }
-
-                    dm.addNodeData(n);
-                }
-            });
-
-            trans.links.forEach(l => {
-                if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
-                    dm.addLinkData(l);
-            });
-
-        }
-        else {
-            dm.nodeDataArray = trans.nodes;
-            dm.linkDataArray = trans.links;
-        }
-
-        //#endregion
-
-        this.diagram.nodes.each(n => {
-            n.isHighlighted = false;
-        });
-
-        //#region process dynamic elements like reveal nodes and relation badges
-
-        this.diagram.findTopLevelGroups().each(g => {
-            let children = g.findSubGraphParts();
-            let childAssets: AssetBrowserApiHopAssetRequestModel[] = [];
-            let childOwners = [];
-            let childRelations = [];
-            let backReveal: boolean = false;
-            let forwardReveal: boolean = false;
-
-
-            children.each(c => {
-
-                let data: AssetBrowserTranslationNode = c.data;
-
-                if (data.owners != null && data.owners.length > 0) {
-                    for (let i = 0; i < data.owners.length; i++) {
-                        let r = data.owners[i];
-                        let rel = childOwners.find(c => c.responsibilityTypeId == r.responsibilityTypeId);
-                        if (rel != null) {
-                            rel.count += r.count;
-                        }
-                        else if (g.data.owners.find(c => c.responsibilityTypeId == r.responsibilityTypeId) == null) {
-                            childOwners.push(r);
-                        }
-                    }
-                    data.owners = [];
-                }
-
-                if (data.relations != null && data.relations.length > 0) {
-                    for (let i = 0; i < data.relations.length; i++) {
-                        let r = data.relations[i];
-                        let rel = childRelations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction);
-                        if (rel != null) {
-                            rel.count += r.count;
-                        }
-                        else if (g.data.relations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction) == null) {
-                            childRelations.push(r);
-                        }
-                    }
-                    data.relations = [];
-                }
-
-                if (+data.showReveal !== +AssetBrowserApiHopDirection.None) {
-                    if (+data.showReveal == +AssetBrowserApiHopDirection.Backward) {
-                        backReveal = true; 
-                        childAssets.push({ Uid: data.assetUid, Key: data.key });
-                    }
-                    if (+data.showReveal == +AssetBrowserApiHopDirection.Forward) {
-                        forwardReveal = true;
-                        childAssets.push({ Uid: data.assetUid, Key: data.key });
-                    }
-                }
-
-            });
-
-
-            g.data.owners = g.data.owners.concat(childOwners);
-            this.diagram.model.setDataProperty(g.data, "owners", g.data.owners.slice());
-            g.data.relations = g.data.relations.concat(childRelations);
-            this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
-            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterModel.DisplayBadges);
-
-            if (backReveal) {
-                if (dm.findNodeDataForKey(g.data.key + '_Backward') == null) {
-                    dm.addNodeData({
-                        template: 'MoreData',
-                        key: g.data.key + '_Backward',
-                        back: g.data.back,
-                        showReveal: AssetBrowserApiHopDirection.Backward,
-                        assetUid: g.data.assetUid,
-                        assetUids: childAssets
-                    });
-
-                    dm.addLinkData({
-                        from: g.data.key + '_Backward',
-                        to: g.data.key
-                    });
-                }
-            }
-
-            if (forwardReveal) {
-                if (dm.findNodeDataForKey(g.data.key + '_Forward') == null) {
-                    dm.addNodeData({
-                        template: 'MoreData',
-                        key: g.data.key + '_Forward',
-                        back: g.data.back,
-                        showReveal: AssetBrowserApiHopDirection.Forward,
-                        assetUid: g.data.assetUid,
-                        assetUids: childAssets
-                    });
-
-                    dm.addLinkData({
-                        from: g.data.key,
-                        to: g.data.key + '_Forward'
-                    });
-                }
-            }
-        });
-
-        //#endregion
-
-        this.diagram.commitTransaction("load_all_data");
-        this.reOrderLayout();
-
-        this.recheckAlertCount();
-    }
-
-    private recheckAlertCount() {
-        this.totalAlertCount = 0;
-        this.assetsWithAlerts = [];
-        this.diagram.nodes.each(n => {
-            if (n.data) {
-                if (n.data.actionCount) {
-                    this.totalAlertCount += n.data.actionCount;
-                    this.assetsWithAlerts.push(n.data.assetUid);
-                }
-            }
-        });
-        if (this.isAlertWindowVisible) {
-            this.showAlertsByDisplayedAssets();
-        }
-    }
-
-    /**
-    * Convert the stored raw data set from the API while taking into account the ancestry setting.
-    * @returns A collection of translated nodes.
-    */
-    private getFullResponseModelAsTranslationNodes(): AssetBrowserTranslationNode[] {
-        let existingAssets = this.browserService.convertResponseModel(this.responseModel.assets, this.filterModel.AncestryMode);
-        return this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, existingAssets.assets);
-    }
-
-    /**
-    * Traverses an asset's hierarchy and sets each assets' reveal property to NONE.
-    * @returns Nothing.
-    */
-    private setRevealKeyInHierarchy(models: AssetBrowserAssetModel[]) {
-        models.forEach(t => {
-            t.reveal = AssetBrowserApiHopDirection.None;
-            if (t.items) {
-                this.setRevealKeyInHierarchy(t.items);
-            }
-        });
-    }
-
-    /**
-    * Takes a given asset key and searches for it within a collection of assets (each with its own hierarchy).
-    * @returns The root asset that the given key is located within, regardless of level within ancestry.
-    */
-    private findTrueRootAssetInCollection(keyToFind: string, currentRoot: AssetBrowserAssetModel, currentParentToSearch: AssetBrowserAssetModel): AssetBrowserAssetModel {
-        let foundRootAsset: AssetBrowserAssetModel;
-
-        if (!currentRoot) {
-            this.responseModel.assets.assets.forEach(a => {
-                if (foundRootAsset == undefined) {
-                    foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, a, undefined);
-                }
-            });
-        }
-        else {
-            if (currentRoot.key == keyToFind) {
-                foundRootAsset = currentRoot;
-            }
-            else {
-                if (currentParentToSearch) {
-                    if (currentParentToSearch.key == keyToFind) {
-                        foundRootAsset = currentRoot;
+            model.items.forEach(child => {
+                if (!found) {
+                    if (child.key == key) {
+                        found = true;
                     }
                     else {
-                        if (currentParentToSearch.items) {
-                            currentParentToSearch.items.forEach(i => {
-                                if (foundRootAsset == undefined) {
-                                    foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
-                                }
-                            });
+                        if (child.items) {
+                            found = this.helper_FindInApiItemModel(key, child);
                         }
                     }
                 }
-                else {
-                    if (currentRoot.items) {
-                        currentRoot.items.forEach(i => {
-                            if (foundRootAsset == undefined) {
-                                foundRootAsset = this.findTrueRootAssetInCollection(keyToFind, currentRoot, i);
-                            }
-                        });
-                    }
+            });
+        }
+
+        return found;
+    }
+
+    private helper_FindInApiModel(key: string, model: AssetBrowserAssetsModel): AssetBrowserAssetModel {
+        let found: AssetBrowserAssetModel;
+
+        model.assets.forEach(root => {
+            if (!found) {
+                if (this.helper_FindInApiItemModel(key, root)) {
+                    found = root;
                 }
             }
-        }
-        return foundRootAsset;
-    }
-
-    /**
-    * Based on the reveal node clicked, we determine the leaf asset that the raveal node is attached to, 
-    * then get the next hop of lineage, whether backward or forward.
-    * @returns Nothing
-    */
-    private revealLineageHop(e: go.InputEvent, obj: go.GraphObject) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
-            let data = obj.part.data;
-            let model = new AssetBrowserApiHopRequestModel();
-
-            // This may be a top ancestor key OR a direct parent key.
-            let currentTopGroupKey: string = data.key; 
-            if (currentTopGroupKey.endsWith("_Backward")) {
-                currentTopGroupKey = currentTopGroupKey.replace("_Backward", "");
-                model.Direction = AssetBrowserApiHopDirection.Backward;
-            }
-            else if (currentTopGroupKey.endsWith("_Forward")) {
-                currentTopGroupKey = currentTopGroupKey.replace("_Forward", "");
-                model.Direction = AssetBrowserApiHopDirection.Forward;
-            }
-            this.revealedKeys.push(currentTopGroupKey);
-
-            // Now we need to find the real root asset for this current key.
-            let realRootAsset = this.findTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
-
-            model.Hops = 1;
-            model.HopType = AssetBrowserApiHopType.Lineage;
-            model.Assets = data.assetUids;
-
-            this.browserService.getAssetLineage(model)
-                .subscribe(response => {
-
-                    // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
-                    response.assets.forEach(a => {
-                        if (this.responseModel.assets.assets.find(r => r.key == a.key) == null) {
-                            this.responseModel.assets.assets.push(a);
-                        }
-                    });
-
-                    response.assetRelations.forEach(i => {
-                        if (this.responseModel.assets.assetRelations.find(r => r.subjectKey == i.subjectKey && r.objectKey == i.objectKey) == null) {
-                            this.responseModel.assets.assetRelations.push(i);
-                        }
-                    });
-
-                    response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
-
-                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
-                    trans.links = this.browserService.translateAssetLinks(this.getFullResponseModelAsTranslationNodes(), response.assetRelations);
-
-                    let modelsToSetReveal: AssetBrowserAssetModel[] = [];
-                    modelsToSetReveal.push(realRootAsset);
-                    this.setRevealKeyInHierarchy(modelsToSetReveal);
-
-                    this.parseData(trans, true);
-
-                    // #region Remove the reveal node
-
-                    this.diagram.startTransaction('reveal'); 
-
-                    this.diagram.findTopLevelGroups().each(g => {
-                        if (this.revealedKeys.findIndex(rk => { return g.key == rk; }) > -1) {
-
-                            // Set the reveal value to None in the diagram's existing data model.
-                            let children = g.findSubGraphParts();
-                            children.each(c => {
-                                this.diagram.model.setDataProperty(c.data, "showReveal", AssetBrowserApiHopDirection.None);
-                            });
-
-                        }
-                    });
-
-                    // Remove the link we just clicked on from the reveal node.
-                    this.diagramModelAsGraph().removeNodeData(data);
-                    let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
-                    this.diagramModelAsGraph().removeLinkDataCollection(l);
-
-                    this.diagram.commitTransaction('reveal');
-
-                    // #endregion
-
-                    this.setFilterWindow(false);
-
-                    this.hideDeselectedAssetTypes(undefined);
-                    this.hideDeselectedPredicates(undefined);
-                    this.hideDeselectedResponsibilityTypes(undefined);
-
-                });
-        }
-    }
-
-    private reOrderLayout() {
-        this.diagram.layout.invalidateLayout();
-        this.diagram.requestUpdate();
-    }
-
-    /**
-    * Refreshes the data and diagram to its initially loaded state.
-    * @returns Nothing
-    */
-    private refreshDiagram() {
-        this.assetUid = this.originalAssetUid;
-        this.fromRefresh = true;
-        this.selectedDiagramAsset = null;
-        this.isInfoWindowVisible = false;
-        this.isInfoTabDisabled = true;
-        this.populateDiagram().subscribe(bComplete => {
-            this.fromRefresh = false;
-            this.setFilterWindow(false);
-            this.hideDeselectedAssetTypes(undefined);
-            this.hideDeselectedPredicates(undefined);
-            this.hideDeselectedResponsibilityTypes(undefined);
-            this.showAlertsByDisplayedAssets();
         });
+
+        return found;
     }
 
-    private findSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
+    private helper_FindSubGraph(startKey: string, direction: AssetBrowserApiHopDirection): AssetBrowserTranslation {
         let subgraph = new AssetBrowserTranslation();
 
         subgraph.nodes = [];
@@ -1703,9 +942,915 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     /**
+    * Takes a given asset key and searches for it within a collection of assets (each with its own hierarchy).
+    * @returns The root asset that the given key is located within, regardless of level within ancestry.
+    */
+    private helper_FindTrueRootAssetInCollection(keyToFind: string, currentRoot: AssetBrowserAssetModel, currentParentToSearch: AssetBrowserAssetModel): AssetBrowserAssetModel {
+        let foundRootAsset: AssetBrowserAssetModel;
+
+        if (!currentRoot) {
+            this.responseModel.assets.assets.forEach(a => {
+                if (foundRootAsset == undefined) {
+                    foundRootAsset = this.helper_FindTrueRootAssetInCollection(keyToFind, a, undefined);
+                }
+            });
+        }
+        else {
+            if (currentRoot.key == keyToFind) {
+                foundRootAsset = currentRoot;
+            }
+            else {
+                if (currentParentToSearch) {
+                    if (currentParentToSearch.key == keyToFind) {
+                        foundRootAsset = currentRoot;
+                    }
+                    else {
+                        if (currentParentToSearch.items) {
+                            currentParentToSearch.items.forEach(i => {
+                                if (foundRootAsset == undefined) {
+                                    foundRootAsset = this.helper_FindTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                                }
+                            });
+                        }
+                    }
+                }
+                else {
+                    if (currentRoot.items) {
+                        currentRoot.items.forEach(i => {
+                            if (foundRootAsset == undefined) {
+                                foundRootAsset = this.helper_FindTrueRootAssetInCollection(keyToFind, currentRoot, i);
+                            }
+                        });
+                    }
+                }
+            }
+        }
+        return foundRootAsset;
+    }
+
+    /**
+    * Convert the stored raw data set from the API while taking into account the ancestry setting.
+    * @returns A collection of translated nodes.
+    */
+    private helper_GetFullResponseModelAsTranslationNodes(): AssetBrowserTranslationNode[] {
+        let existingAssets = this.browserService.convertResponseModel(this.responseModel.assets, this.displayConfiguration.AncestryMode);
+        return this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, existingAssets.assets);
+    }
+
+    private helper_HideDeselectedAssetTypes(keysToBeConcernedWith: string[]) {
+        // Now loop through selected asset types, as those are the ones we need to hide.
+        let nodesToHide: AssetBrowserTranslationNode[] = [];
+        this.diagram.model
+            .nodeDataArray
+            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "PortGroup" || tn.template == "HiddenData"; })
+            .forEach((tn: AssetBrowserTranslationNode) => {
+                if (this.displayConfiguration.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1) {
+                    if (tn.template == "PortGroup") { //only hide if it is already displayed.
+                        nodesToHide.push(tn);
+                    }
+                }
+                else {
+                    if (keysToBeConcernedWith) {
+                        if (keysToBeConcernedWith.findIndex(ix => ix == tn.key) > -1) {
+                            this.helper_UnhideNode(tn);
+                        }
+                    }
+                    else {
+                        this.helper_UnhideNode(tn);
+                    }
+                }
+            });
+
+        if (nodesToHide.length > 0) {
+            nodesToHide.forEach(n => {
+                let group: any = this.diagram.findNodeForKey(n.key);
+                this.helper_HideNode(n, group);
+            });
+        }
+    }
+
+    private helper_HideDeselectedPredicates(keysToBeConcernedWith: string[]) {
+        // Now loop through selected asset types, as those are the ones we need to hide.
+        let nodesToHide: AssetBrowserTranslationNode[] = [];
+
+        //#region Hide Badge
+
+        this.diagram.startTransaction('predicateBadge');
+        this.diagram.findTopLevelGroups().each(g => {
+            let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
+
+            let shallWeDealWithNode: boolean = false;
+            if (keysToBeConcernedWith) {
+                if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
+                    shallWeDealWithNode = true;
+                }
+            }
+            else {
+                shallWeDealWithNode = true;
+            }
+
+            //#region Relations badge logic
+            if (shallWeDealWithNode) {
+                topLevelNode.relations.forEach(rC => {
+                    let showBadge: boolean;
+
+                    if (this.displayConfiguration.SelectedPredicates.findIndex(v => { return v == rC.predicateId; }) > -1) {
+                        showBadge = false;
+                    }
+                    else {
+                        showBadge = true;
+                    }
+
+                    if (showBadge) {
+                        // Check to see if we should ignore this predicate based on previouly revealed badges.
+                        if (topLevelNode.ignoredPredicates.findIndex(v => { return v == rC.predicateUid; }) > -1) {
+                            showBadge = false;
+                        }
+                    }
+
+                    this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
+                });
+            }
+            //#endregion
+        });
+        this.diagram.commitTransaction('predicateBadge');
+
+        //#endregion Badge
+
+        //#region Hide Node
+
+        this.diagram.links.each(link => {
+            let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
+            if (linkData.predicateIds) {
+                let g: any = this.diagram.findNodeForKey(linkData.to);
+                if (g) {
+                    if (linkData.predicateIds.filter(l => {
+                        return this.displayConfiguration.SelectedPredicates.findIndex(v => { return v == l; }) > -1
+                    }).length > 0) {
+                        this.helper_HideNode(g.data as AssetBrowserTranslationNode, g);
+                    }
+                    else {
+                        let shallWeDealWithNode: boolean = false;
+                        if (keysToBeConcernedWith) {
+                            if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
+                                shallWeDealWithNode = true;
+                            }
+                        }
+                        else {
+                            shallWeDealWithNode = true;
+                        }
+
+                        if (shallWeDealWithNode) {
+                            if (this.displayConfiguration.SelectedAssetTypes.findIndex(v => { return v == (g.data as AssetBrowserTranslationNode).assetTypeId; }) == -1) {
+                                this.helper_UnhideNode(g.data as AssetBrowserTranslationNode);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        //#endregion
+    }
+
+    private helper_HideDeselectedResponsibilityTypes(keysToBeConcernedWith: string[]) {
+
+        //#region Hide Badge
+
+        this.diagram.startTransaction('ownerBadge');
+        this.diagram.findTopLevelGroups().each(g => {
+            let topLevelNode: AssetBrowserTranslationNode = g.data as AssetBrowserTranslationNode;
+
+            let shallWeDealWithNode: boolean = false;
+            if (keysToBeConcernedWith) {
+                if (keysToBeConcernedWith.findIndex(ix => ix == g.key) > -1) {
+                    shallWeDealWithNode = true;
+                }
+            }
+            else {
+                shallWeDealWithNode = true;
+            }
+
+            //#region Owners badge logic
+            if (shallWeDealWithNode) {
+                topLevelNode.owners.forEach(rC => {
+                    let showBadge: boolean = true;
+
+                    if (this.displayConfiguration.SelectedResponsibilityTypes.findIndex(v => { return v == rC.responsibilityTypeId; }) > -1) {
+                        showBadge = false;
+                    }
+                    else {
+                        showBadge = true;
+                    }
+
+                    this.diagram.model.setDataProperty(rC, "showBadge", showBadge);
+                });
+            }
+            //#endregion
+        });
+        this.diagram.commitTransaction('ownerBadge');
+
+        //#endregion Badge
+
+        //#region Hide Node
+
+        // Now loop through selected asset types, as those are the ones we need to hide.
+        let nodesToHide: AssetBrowserTranslationNode[] = [];
+        this.diagram.model
+            .nodeDataArray
+            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "Owners" || tn.template == "HiddenData"; })
+            .forEach((tn: AssetBrowserTranslationNode) => {
+                if (this.displayConfiguration.SelectedResponsibilityTypes.findIndex(v => { return v == tn.responsibilityTypeId; }) > -1) {
+                    if (tn.template == "Owners") { //only hide if it is already displayed.
+                        nodesToHide.push(tn);
+                    }
+                }
+                else {
+                    let shallWeDealWithNode: boolean = false;
+                    if (keysToBeConcernedWith) {
+                        if (keysToBeConcernedWith.findIndex(ix => ix == tn.key) > -1) {
+                            shallWeDealWithNode = true;
+                        }
+                    }
+                    else {
+                        shallWeDealWithNode = true;
+                    }
+
+                    if (shallWeDealWithNode) {
+                        if (!(this.displayConfiguration.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1)) {
+                            this.helper_UnhideNode(tn);
+                        }
+                    }
+                }
+            });
+
+        if (nodesToHide.length > 0) {
+            nodesToHide.forEach(n => {
+                let group: any = this.diagram.findNodeForKey(n.key);
+                this.helper_HideNode(n, group);
+            });
+        }
+
+        //#endregion
+    }
+
+    private helper_HideNode(node: AssetBrowserTranslationNode, group: any) {
+        this.diagram.startTransaction('hide');
+
+        let hideNode = new AssetBrowserTranslationNode();
+
+        hideNode.subgraph = new AssetBrowserTranslation();
+        hideNode.template = "HiddenData";
+        hideNode.assetTypeId = node.assetTypeId;
+        hideNode.responsibilityTypeId = node.responsibilityTypeId;
+        hideNode.back = node.back;
+        hideNode.subgraph.nodes = [];
+        hideNode.subgraph.links = [];
+        hideNode.subgraph.nodes.push(node); //add this node to the subgraph so we can unhide it later
+
+        try {
+            let children = group.findSubGraphParts();
+            children.each(c => {
+                hideNode.subgraph.nodes.push(c.data);
+            });
+        } catch (e) {
+            console.log(group);
+        }
+
+        this.diagram.model.addNodeData(hideNode);
+
+        let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == group.key);
+        let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == group.key);
+
+        upstreamLinks.forEach(l => {
+            hideNode.subgraph.links.push(l);
+            this.diagramModelAsGraph().removeLinkData(l);
+            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
+        });
+
+        downstreamLinks.forEach(l => {
+            hideNode.subgraph.links.push(l);
+            this.diagramModelAsGraph().removeLinkData(l);
+            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds, expandedByBadgeKey: l.expandedByBadgeKey });
+        });
+
+        this.diagram.remove(group);
+
+        this.diagram.commitTransaction('hide');
+    }
+
+    private helper_HighlightNodeImpacts(key: string, direction: AssetBrowserApiHopDirection, allRelations: AssetBrowserGenericRelationModel[]) {
+
+        let fwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Forward));
+        let bwd: boolean = ((direction == AssetBrowserApiHopDirection.Both) || (direction == AssetBrowserApiHopDirection.Backward));
+
+        if (allRelations === undefined) {
+            allRelations = new Array<AssetBrowserGenericRelationModel>();
+
+            this.responseModel.assets.assetRelations.forEach(l => {
+                allRelations.push({ from: l.subjectKey, to: l.objectKey });
+            });
+            this.responseModel.owners.ownerRelations.forEach(l => {
+                allRelations.push({ from: l.ownerKey, to: l.assetKey });
+            });
+        }
+
+        allRelations.forEach(l => {
+
+            // Loop through the links to find ones where this node is subject, then traverse each one and do the same thing, recursively.
+            if (fwd) {
+                if (l.from == key) {
+                    let oNode = this.diagram.findNodeForKey(l.to);
+                    if (oNode) {
+                        oNode.isHighlighted = true;
+                        this.helper_HighlightNodeImpacts(l.to, AssetBrowserApiHopDirection.Forward, allRelations);
+                    }
+                    else {
+                        // You have a possible hidden node to deal with.
+                        this.helper_HighlightViaHiddenNode(AssetBrowserApiHopDirection.Forward, l.from, allRelations);
+                    }
+                }
+            }
+
+            // Loop through the links to find ones where this node is object, then traverse each one and do the same thing, recursively.
+            if (bwd) {
+                if (l.to == key) {
+                    let sNode = this.diagram.findNodeForKey(l.from);
+                    if (sNode) {
+                        sNode.isHighlighted = true;
+                        this.helper_HighlightNodeImpacts(l.from, AssetBrowserApiHopDirection.Backward, allRelations);
+                    }
+                    else {
+                        // You have a possible hidden node to deal with.
+                        this.helper_HighlightViaHiddenNode(AssetBrowserApiHopDirection.Backward, l.to, allRelations);
+                    }
+                }
+            }
+        });
+
+    }
+
+    private helper_HighlightPath(e: go.InputEvent, obj: go.Part) {
+        try {
+            //Set all to not highlighted.
+            obj.diagram.nodes.each(n => {
+                n.isHighlighted = false;
+            });
+
+            if (obj.key) {
+                // Highlight the selected node.
+                obj.isHighlighted = true;
+
+                // Recurse through and highlight based on the atomic (non-grouped) links.
+                this.helper_HighlightNodeImpacts(obj.key.toString(), AssetBrowserApiHopDirection.Both, undefined);
+            }
+            else {
+                // You are clicking on a link instead.
+                let link = this.diagram.findLinkForData(obj.data);
+                if (obj.data) {
+                    if (obj.data.impacts) {
+                        let keysToHighlight: string[] = obj.data.impacts;
+                        keysToHighlight.forEach(k => {
+                            let node: go.Node = obj.diagram.findNodeForKey(k);
+                            if (node) {
+                                node.isHighlighted = true;
+                            }
+                        });
+                    }
+                }
+            }
+        } catch (e) {
+
+        }
+    }
+
+    /**
+    * Determines if a particular node is Hidden, then interrogate its subgraph to determine the path to continue highlighting.
+    * @returns Nothing.
+    */
+    private helper_HighlightViaHiddenNode(direction: AssetBrowserApiHopDirection, key: string, allRelations: Array<AssetBrowserGenericRelationModel>) {
+        let node = this.diagram.findNodeForKey(key);
+        if (node) {
+            let parentGroup: go.Group = node.containingGroup;
+            let fromLinks: go.Iterator<go.Link>;
+            while (parentGroup != null) {
+                fromLinks = (direction == AssetBrowserApiHopDirection.Backward ? parentGroup.findLinksInto() : parentGroup.findLinksOutOf());
+                parentGroup = parentGroup.containingGroup;
+            }
+            if (fromLinks) {
+                fromLinks.each(lnk => {
+                    let data: any = (direction == AssetBrowserApiHopDirection.Backward ? lnk.fromNode.data : lnk.toNode.data);
+                    let templateName: string = data.template;
+                    if (templateName == "HiddenData") {
+                        let subgraph: AssetBrowserTranslation = data.subgraph;
+                        if (subgraph) {
+                            subgraph.nodes.forEach(nd => {
+                                // You have found the node, now traverse the hidden links for this node.
+                                let relevantRelations = allRelations.filter(r => { return nd.key == (direction == AssetBrowserApiHopDirection.Backward ? r.to : r.from) });
+                                relevantRelations.forEach(r => {
+                                    let nodeToHighlight = this.diagram.findNodeForKey((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to));
+                                    if (nodeToHighlight) {
+                                        nodeToHighlight.isHighlighted = true;
+                                    }
+                                    this.helper_HighlightNodeImpacts((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to), direction, allRelations);
+                                });
+                            });
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    private helper_InitializeDiagram() {
+        this.template_BadgeShapes();
+
+        this.loadFilter();
+
+        this.diagram = this.template_Diagram();
+
+        var forelayer = this.diagram.findLayer("Foreground");
+        this.diagram.addLayerBefore(this.g(go.Layer, { name: "Links" }), forelayer);
+
+        this.diagram.groupTemplateMap.add("FocalPortGroup", this.template_FocalRootNode());
+        this.diagram.groupTemplateMap.add("PortGroup", this.template_RootNode());
+        this.diagram.groupTemplateMap.add("Group", this.template_AncestorNode());
+
+        this.diagram.nodeTemplateMap.add("MoreData", this.template_RevealNode());
+        this.diagram.nodeTemplateMap.add("HiddenData", this.template_HiddenNode());
+
+        this.diagram.groupTemplateMap.add("Owners", this.template_OwnersRootNode());
+        this.diagram.nodeTemplateMap.add("Owner", this.template_LeafOwnerNode());
+        this.diagram.nodeTemplate = this.template_LeafAssetNode();
+
+        if (this.helper_LineageDiagramApplies()) {
+            this.diagram.linkTemplateMap.add("", this.template_LineageLink());
+        }
+        else {
+            this.diagram.linkTemplateMap.add("", this.template_ImpactLink());
+        }
+
+        this.diagram.addDiagramListener('ChangedSelection', e => this.event_DiagramSelectionChanged(e));
+
+        this.diagram.grid.visible = false;
+        this.diagram.grid.gridCellSize = new go.Size(8, 8);
+        this.diagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.diagram.toolManager.resizingTool.isGridSnapEnabled = false;
+
+        //this.loadFilter();
+        this.helper_PopulateDiagram().subscribe(bComplete => {
+            this.helper_HideDeselectedAssetTypes(undefined);
+            this.helper_HideDeselectedPredicates(undefined);
+            this.helper_HideDeselectedResponsibilityTypes(undefined);
+        });
+    }
+
+    /**
+    * Determines whether the Lineage view is currently selected.
+    * @returns A boolean value on whether the lineage view is selected.
+    */
+    private helper_LineageDiagramApplies(): boolean {
+        return (this.displayConfiguration.DiagramType == DiagramType.Lineage);
+    }
+
+    private helper_ParseTranslatedData(trans: AssetBrowserTranslation, append: boolean = false) {
+        this.diagram.startTransaction("load_all_data");
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+
+        //#region add data to diagram model
+
+        trans.nodes.forEach(n => {
+            n.showIcon = this.displayConfiguration.DisplayIcons;
+        });
+
+        if (append) {
+
+            trans.nodes.forEach(n => {
+                n.showIcon = this.displayConfiguration.DisplayIcons;
+                let x = dm.findNodeDataForKey(n.key);
+                if (x == null) {
+                    //handle case where appended lineage reveals that a leaf node is
+                    //now a parent of another node deeper in the hierarchy
+                    if (n.group != null) {
+                        let r = dm.findNodeDataForKey(n.group);
+                        if (r != null) {
+                            if (r.isGroup != true) {
+                                dm.removeNodeData(r);
+                                r.isGroup = true;
+                                r.template = "Group"
+                                dm.addNodeData(r);
+                            }
+                        }
+                    }
+
+                    dm.addNodeData(n);
+                }
+            });
+
+            trans.links.forEach(l => {
+                if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
+                    dm.addLinkData(l);
+            });
+
+        }
+        else {
+            dm.nodeDataArray = trans.nodes;
+            dm.linkDataArray = trans.links;
+        }
+
+        //#endregion
+
+        this.diagram.nodes.each(n => {
+            n.isHighlighted = false;
+        });
+
+        //#region process dynamic elements like reveal nodes and relation badges
+
+        this.diagram.findTopLevelGroups().each(g => {
+            let children = g.findSubGraphParts();
+            let childAssets: AssetBrowserApiHopAssetRequestModel[] = [];
+            let childOwners = [];
+            let childRelations = [];
+            let backReveal: boolean = false;
+            let forwardReveal: boolean = false;
+
+
+            children.each(c => {
+
+                let data: AssetBrowserTranslationNode = c.data;
+
+                if (data.owners != null && data.owners.length > 0) {
+                    for (let i = 0; i < data.owners.length; i++) {
+                        let r = data.owners[i];
+                        let rel = childOwners.find(c => c.responsibilityTypeId == r.responsibilityTypeId);
+                        if (rel != null) {
+                            rel.count += r.count;
+                        }
+                        else if (g.data.owners.find(c => c.responsibilityTypeId == r.responsibilityTypeId) == null) {
+                            childOwners.push(r);
+                        }
+                    }
+                    data.owners = [];
+                }
+
+                if (data.relations != null && data.relations.length > 0) {
+                    for (let i = 0; i < data.relations.length; i++) {
+                        let r = data.relations[i];
+                        let rel = childRelations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction);
+                        if (rel != null) {
+                            rel.count += r.count;
+                        }
+                        else if (g.data.relations.find(c => c.predicateUid == r.predicateUid && c.direction == r.direction) == null) {
+                            childRelations.push(r);
+                        }
+                    }
+                    data.relations = [];
+                }
+
+                if (+data.showReveal !== +AssetBrowserApiHopDirection.None) {
+                    if (+data.showReveal == +AssetBrowserApiHopDirection.Backward) {
+                        backReveal = true;
+                        childAssets.push({ Uid: data.assetUid, Key: data.key });
+                    }
+                    if (+data.showReveal == +AssetBrowserApiHopDirection.Forward) {
+                        forwardReveal = true;
+                        childAssets.push({ Uid: data.assetUid, Key: data.key });
+                    }
+                }
+
+            });
+
+
+            g.data.owners = g.data.owners.concat(childOwners);
+            this.diagram.model.setDataProperty(g.data, "owners", g.data.owners.slice());
+            g.data.relations = g.data.relations.concat(childRelations);
+            this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
+            this.diagram.model.setDataProperty(g.data, "showBadges", this.displayConfiguration.DisplayBadges);
+
+            if (backReveal) {
+                if (dm.findNodeDataForKey(g.data.key + '_Backward') == null) {
+                    dm.addNodeData({
+                        template: 'MoreData',
+                        key: g.data.key + '_Backward',
+                        back: g.data.back,
+                        showReveal: AssetBrowserApiHopDirection.Backward,
+                        assetUid: g.data.assetUid,
+                        assetUids: childAssets
+                    });
+
+                    dm.addLinkData({
+                        from: g.data.key + '_Backward',
+                        to: g.data.key
+                    });
+                }
+            }
+
+            if (forwardReveal) {
+                if (dm.findNodeDataForKey(g.data.key + '_Forward') == null) {
+                    dm.addNodeData({
+                        template: 'MoreData',
+                        key: g.data.key + '_Forward',
+                        back: g.data.back,
+                        showReveal: AssetBrowserApiHopDirection.Forward,
+                        assetUid: g.data.assetUid,
+                        assetUids: childAssets
+                    });
+
+                    dm.addLinkData({
+                        from: g.data.key,
+                        to: g.data.key + '_Forward'
+                    });
+                }
+            }
+        });
+
+        //#endregion
+
+        this.diagram.commitTransaction("load_all_data");
+        this.helper_UpdateDiagramLayout();
+
+        this.helper_CalculateAlertCount();
+    }
+
+    private helper_PopulateDiagram(): Observable<boolean> {
+        let dgmObs: Observable<boolean>;
+
+        dgmObs = new Observable(obs => {
+            this.isLoading = true;
+            this.loadingText = "Retrieving lineage from Govern..";
+            this.responseModel.clear();
+            this.revealedKeys = [];
+
+            this.requestModel = new AssetBrowserApiHopRequestModel();
+            this.requestModel.Assets = new Array();
+
+            let assetRequestModel: AssetBrowserApiHopAssetRequestModel = new AssetBrowserApiHopAssetRequestModel();
+            assetRequestModel.Uid = this.assetUid;
+            this.requestModel.Assets.push(assetRequestModel);
+
+            this.requestModel.Direction = AssetBrowserApiHopDirection.Both;
+            this.requestModel.Hops = this.displayConfiguration.NumberOfHops;
+            this.requestModel.HopType = AssetBrowserApiHopType.Self;
+
+            let subscriber = (data: AssetBrowserAssetsModel) => {
+                this.responseModel.assets.assets = data.assets;
+                this.responseModel.assets.assetRelations = data.assetRelations;
+                this.loadingText = "Determining links and meaning...";
+                data = this.browserService.convertResponseModel(data, this.displayConfiguration.AncestryMode);
+
+                let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
+                trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, data.assets);
+                trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
+
+                this.helper_ParseTranslatedData(trans);
+                this.helper_ResizeDiagram();
+                this.diagram.scale = 1;
+                this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
+                this.loadingText = "";
+                this.isLoading = false;
+
+                this.cdRef.markForCheck();
+
+                obs.next(true);
+                obs.complete();
+            };
+
+            if (this.helper_LineageDiagramApplies()) {
+                this.browserService.getAssetBrowserHop(this.requestModel).subscribe(subscriber);
+            }
+            else {
+                this.browserService.getImpactBrowserHop(this.requestModel).subscribe(subscriber);
+            }
+        });
+
+        return dgmObs;
+    }
+
+    /**
+    * Refreshes the data and diagram to its initially loaded state.
+    * @returns Nothing
+    */
+    private helper_RefreshDiagram() {
+        this.assetUid = this.originalAssetUid;
+        this.isLoading = true;
+        this.selectedDiagramAsset = null;
+        this.panel_InformationVisible = false;
+        this.panel_InformationDisabled = true;
+        this.helper_PopulateDiagram().subscribe(bComplete => {
+            this.isLoading = false;
+            this.helper_SetFilterWindow();
+            this.helper_HideDeselectedAssetTypes(undefined);
+            this.helper_HideDeselectedPredicates(undefined);
+            this.helper_HideDeselectedResponsibilityTypes(undefined);
+            if (this.panel_AlertVisible) {
+                this.helper_CalculateAlertCount();
+            }
+        });
+    }
+
+    /**
+    * Resizes the diagram according to the current height of the containing HTML element.
+    * @returns Nothing
+    */
+    private helper_ResizeDiagram() {
+        let height = window.innerHeight;
+        if (this.isFullScreen)
+            this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
+        else
+            this.diagramRef.nativeElement.style.height = (height - 235) + 'px';
+
+        this.helper_DisableDragging();
+    }
+
+    /**
+    * Based on the reveal node clicked, we determine the leaf asset that the reveal node is attached to, 
+    * then get the next hop of lineage, whether backward or forward.
+    * @returns Nothing
+    */
+    private helper_RevealLineageHop(e: go.InputEvent, obj: go.GraphObject) {
+        if (obj != null && obj.part != null && obj.part.data != null) {
+            let data = obj.part.data;
+            let model = new AssetBrowserApiHopRequestModel();
+
+            // This may be a top ancestor key OR a direct parent key.
+            let currentTopGroupKey: string = data.key;
+            if (currentTopGroupKey.endsWith("_Backward")) {
+                currentTopGroupKey = currentTopGroupKey.replace("_Backward", "");
+                model.Direction = AssetBrowserApiHopDirection.Backward;
+            }
+            else if (currentTopGroupKey.endsWith("_Forward")) {
+                currentTopGroupKey = currentTopGroupKey.replace("_Forward", "");
+                model.Direction = AssetBrowserApiHopDirection.Forward;
+            }
+            this.revealedKeys.push(currentTopGroupKey);
+
+            // Now we need to find the real root asset for this current key.
+            let realRootAsset = this.helper_FindTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
+
+            model.Hops = 1;
+            model.HopType = AssetBrowserApiHopType.Lineage;
+            model.Assets = data.assetUids;
+
+            this.browserService.getAssetBrowserHop(model)
+                .subscribe(response => {
+
+                    // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
+                    response.assets.forEach(a => {
+                        if (this.responseModel.assets.assets.find(r => r.key == a.key) == null) {
+                            this.responseModel.assets.assets.push(a);
+                        }
+                    });
+
+                    response.assetRelations.forEach(i => {
+                        if (this.responseModel.assets.assetRelations.find(r => r.subjectKey == i.subjectKey && r.objectKey == i.objectKey) == null) {
+                            this.responseModel.assets.assetRelations.push(i);
+                        }
+                    });
+
+                    response = this.browserService.convertResponseModel(response, this.displayConfiguration.AncestryMode);
+
+                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
+                    trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, response.assets);
+                    trans.links = this.browserService.translateAssetLinks(this.helper_GetFullResponseModelAsTranslationNodes(), response.assetRelations);
+
+                    let modelsToSetReveal: AssetBrowserAssetModel[] = [];
+                    modelsToSetReveal.push(realRootAsset);
+                    this.helper_SetRevealKeyInHierarchy(modelsToSetReveal);
+
+                    this.helper_ParseTranslatedData(trans, true);
+
+                    // #region Remove the reveal node
+
+                    this.diagram.startTransaction('reveal');
+
+                    this.diagram.findTopLevelGroups().each(g => {
+                        if (this.revealedKeys.findIndex(rk => { return g.key == rk; }) > -1) {
+
+                            // Set the reveal value to None in the diagram's existing data model.
+                            let children = g.findSubGraphParts();
+                            children.each(c => {
+                                this.diagram.model.setDataProperty(c.data, "showReveal", AssetBrowserApiHopDirection.None);
+                            });
+
+                        }
+                    });
+
+                    // Remove the link we just clicked on from the reveal node.
+                    this.diagramModelAsGraph().removeNodeData(data);
+                    let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
+                    this.diagramModelAsGraph().removeLinkDataCollection(l);
+
+                    this.diagram.commitTransaction('reveal');
+
+                    // #endregion
+
+                    this.helper_SetFilterWindow();
+
+                    this.helper_HideDeselectedAssetTypes(undefined);
+                    this.helper_HideDeselectedPredicates(undefined);
+                    this.helper_HideDeselectedResponsibilityTypes(undefined);
+
+                });
+        }
+    }
+
+    private helper_SetFilterWindow() {
+        let loadedTypes: LoadedFilterTypesModel = this.helper_DetermineLoadedFilterOptions();
+
+        this.filter_AvailableOptions = new FilterSelectionsModel([], [], []);
+        this.filter_AvailableOptions.AncestryOptions = this.filter_AllOptions.AncestryOptions;
+        this.filter_AvailableOptions.AssetTypeOptions = this.filter_AllOptions.AssetTypeOptions;
+        this.filter_AvailableOptions.HopOptions = this.filter_AllOptions.HopOptions;
+        this.filter_AvailableOptions.PredicateOptions = this.filter_AllOptions.PredicateOptions;
+        this.filter_AvailableOptions.ResponsibilityTypeOptions = this.filter_AllOptions.ResponsibilityTypeOptions;
+
+        //#region Asset Types
+
+        this.filter_AvailableOptions.FilterAssetTypes = [];
+        this.filter_AvailableOptions.AssetTypeOptions.forEach(at => {
+            let inLoadedAssetTypes: boolean = loadedTypes.AssetTypes.findIndex(ix => { return ix == at.AssetTypeId }) > -1;
+            if (inLoadedAssetTypes) {
+                this.filter_AvailableOptions.FilterAssetTypes.push({
+                    label: at.Path,
+                    data: at.AssetTypeId
+                });
+            } 
+        });
+        this.filter_AvailableOptions.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
+        //this.selectedFilterAssetTypes = this.helper_GetTreeNodeSelectionNodes(this.displayConfiguration.SelectedAssetTypes, this.filter_AvailableOptions.FilterAssetTypes);
+
+        //#endregion
+
+        //#region Predicates
+
+        this.filter_AvailableOptions.FilterPredicates = [];
+        this.filter_AvailableOptions.PredicateOptions.forEach(p => {
+            let inLoadedPredicates: boolean = loadedTypes.Predicates.findIndex(ix => { return ix == p.Id }) > -1;
+            if (inLoadedPredicates) {
+                this.filter_AvailableOptions.FilterPredicates.push({
+                    label: p.Name.substring(0, 50) + ' / ' + p.Inverse.substring(0, 50),
+                    data: p.Id
+                });
+            }
+        });
+        this.filter_AvailableOptions.FilterPredicates.sort((a, b) => (a.label > b.label) ? 1 : -1);
+        //this.selectedFilterPredicates = this.helper_GetTreeNodeSelectionNodes(this.displayConfiguration.SelectedPredicates, this.filter_AvailableOptions.FilterPredicates);
+
+        //#endregion
+
+        //#region Responsibility Types
+
+        this.filter_AvailableOptions.FilterResponsibilityTypes = [];
+        this.filter_AvailableOptions.ResponsibilityTypeOptions.forEach(p => {
+
+            let inLoadedResponsibilityTypes: boolean = loadedTypes.ResponsibilityTypes.findIndex(ix => { return ix == p.Id }) > -1;
+            if (inLoadedResponsibilityTypes) {
+                let thisResponsibilityTypeNode: TreeNode = {
+                    label: p.Name,
+                    data: p.Id,
+                    children: []
+                };
+                this.filter_AvailableOptions.FilterResponsibilityTypes.push(thisResponsibilityTypeNode);
+            }
+
+        });
+        this.filter_AvailableOptions.FilterResponsibilityTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
+        //this.selectedFilterResponsibilityTypes = this.helper_GetTreeNodeSelectionNodes(this.displayConfiguration.SelectedResponsibilityTypes, this.filter_AvailableOptions.FilterResponsibilityTypes);
+
+        //#endregion
+
+        this.cdRef.markForCheck();
+    }
+
+    /**
+    * Traverses an asset's hierarchy and sets each assets' reveal property to NONE.
+    * @returns Nothing.
+    */
+    private helper_SetRevealKeyInHierarchy(models: AssetBrowserAssetModel[]) {
+        models.forEach(t => {
+            t.reveal = AssetBrowserApiHopDirection.None;
+            if (t.items) {
+                this.helper_SetRevealKeyInHierarchy(t.items);
+            }
+        });
+    }
+
+    private helper_ShowDetail(assetUid: string) {
+        this.panel_Loading = true;
+        this.browserService.getDetailByAsset(assetUid).subscribe(response => {
+            this.selectedDiagramAsset = response;
+            this.selectedDiagramAsset.Loaded = true;
+            this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
+            this.panel_Loading = false;
+            this.panel_TabIndex = 0;
+            this.cdRef.markForCheck();
+        });
+    }
+
+    /**
      * Sorts go.Parts based on their display names
      */
-    private sortParts(a: go.Part, b: go.Part): number {
+    private helper_SortParts(a: go.Part, b: go.Part): number {
         if (a == null || b == null || a.data == null || b.data == null)
             return 0;
         if (a.data.text > b.data.text)
@@ -1715,1015 +1860,321 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else
             return 0;
     }
-    //#endregion
+  
+    private helper_UnhideNode(node: AssetBrowserTranslationNode) {
+        if (node.template == "HiddenData") {
+            this.diagram.startTransaction('unhide');
 
-    //#region session storage
+            let upstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == node.key);
+            let downstreamLinks = this.diagramModelAsGraph().linkDataArray.filter(l => l.from == node.key);
 
-    private saveState(key: string, data: any) {
-        let dataString = JSON.stringify(data);
-        this.storage.setItem(key, dataString);
-    }
+            this.diagram.model.addNodeDataCollection(node.subgraph.nodes);
+            this.diagramModelAsGraph().addLinkDataCollection(node.subgraph.links);
 
-    private loadState(key: string): any {
-        let dataString = this.storage.getItem(key);
-        if (dataString) {
-            return JSON.parse(dataString);
-        }
-        return null;
-    }
+            this.diagramModelAsGraph().removeLinkDataCollection(upstreamLinks);
+            this.diagramModelAsGraph().removeLinkDataCollection(downstreamLinks);
 
-    private saveFilter() {
-        this.saveState(this.filterKey, this.filterModel);
-    }
+            this.diagram.model.removeNodeData(node);
 
-    private loadFilter() {
-        let m = this.loadState(this.filterKey);
-        if (m == null)
-            this.filterModel = new AssetBrowserFilterModel();
-        else
-            this.filterModel = m;
-    }
-
-    //#endregion
-
-    //#region events
-
-    @HostListener('window:resize', ['$event'])
-    private onResize(event) {
-        this.resizeDiagram();
-    }
-
-    @HostListener('document:keydown', ['$event']) onKeydownHandler(event: KeyboardEvent) {
-        if (event.key === "Escape" || event.key === "Esc") {
-            this.isFullScreen = false;
-            this.resizeDiagram();
-            this.cdRef.markForCheck();
+            this.diagram.commitTransaction('unhide');
         }
     }
 
-    private resizeDiagram() {
-        let height = window.innerHeight;
-        if (this.isFullScreen)
-            this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
-        else
-            this.diagramRef.nativeElement.style.height = (height - 235) + 'px';
-
-        this.disableDragging();
+    private helper_UpdateDiagramLayout() {
+        this.diagram.layout.invalidateLayout();
+        this.diagram.requestUpdate();
     }
 
-    private disableDragging() {
-        let unlockedKeys: string[] = [];
-
-        this.diagram.links.each(function (l) {
-            if (!unlockedKeys.some(x => x == l.fromNode.data.key))
-                unlockedKeys.push(l.fromNode.data.key);
-
-            if (!unlockedKeys.some(x => x == l.toNode.data.key))
-                unlockedKeys.push(l.toNode.data.key);
-        });
-
-        this.diagram.nodes.each(function (n) {
-            if (!n.data.isGroup) {
-                n.movable = false;
-            }
-            else if (!unlockedKeys.some(x => x == n.data.key)) {
-                n.movable = false;
-            }
-        });
-    }
-
-    private updateZoomText() {
-        this.zoomText = Math.round(this.diagram.scale * 100) + '%';
-        this.cdRef.markForCheck();
-    }
-
-    private onMouseEnterNode(e: any, node: go.Node) {
-        node.isShadowed = true;
-    }
-
-    private onMouseLeaveNode(e: any, node: go.Node) {
-        node.isShadowed = false;
-    }
-
-    private zoomDiagram(v: number) {
-        this.diagram.scale = v;
-    }
-
-    private ChangedSelection(e: go.DiagramEvent) {
-        if (e != null && e.subject != null) {
-            if (e.subject instanceof go.Set) {
-                let parts = (e.subject as go.Set<go.Part>);
-
-                if (parts.count == 1) {
-                    let data = parts.first().data;
-                    let uid: string = '';
-
-                    if (data.assetUid != null && data.assetUid != this.emptyUid) {
-                        // selected item is an asset
-                        uid = data.assetUid;
-                    }
-
-                    if (uid !== '' && uid != this.emptyUid) {
-                        this.isInfoTabDisabled = false;
-                        if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
-                            //this.isInfoWindowVisible = false;
-                            if (this.isAlertWindowVisible) {
-                                this.showAlertsByAsset(uid);
-                            }
-                            else {
-                                this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
-                                this.selectedDiagramAsset.Uid = uid;
-                                this.showDetails(uid);
-                                this.cdRef.markForCheck();
-                            }
-                        }
-                    }
-                    else {
-                        this.diagram.nodes.each(n => {
-                            n.isHighlighted = false;
-                        });
-                        this.selectedDiagramAsset = null;
-                        this.isInfoTabDisabled = true;
-                        this.isInfoWindowVisible = false;
-                        if (this.isAlertWindowVisible) {
-                            this.showAlertsByDisplayedAssets();
-                        }
-                        this.cdRef.markForCheck();
-                    }
-
-                } else if (parts.count == 0) {
-                    this.diagram.nodes.each(n => {
-                        n.isHighlighted = false;
-                    });
-                    this.selectedDiagramAsset = null;
-                    this.isInfoTabDisabled = true;
-                    this.panelTabIndex = 0;
-                    this.isInfoWindowVisible = false;
-                    if (this.isAlertWindowVisible) {
-                        this.showAlertsByDisplayedAssets();
-                    }
-                    this.cdRef.markForCheck();
-                }
-            }
-        }
-    }
-
-    private filterTriggerVisualizationUpdate(): void {
+    private helper_UpdateVisualization(): void {
         this.saveFilter();
         this.isLoading = true;
         this.loadingText = "Determining links and meaning...";
-        let assetData = this.browserService.convertResponseModel(this.responseModel.assets, this.filterModel.AncestryMode);
+        let assetData = this.browserService.convertResponseModel(this.responseModel.assets, this.displayConfiguration.AncestryMode);
 
         let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-        trans.nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, assetData.assets);
+        trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, assetData.assets);
         trans.links = this.browserService.translateAssetLinks(trans.nodes, assetData.assetRelations);
 
-        this.parseData(trans);
+        this.helper_ParseTranslatedData(trans);
 
-        this.resizeDiagram();
+        this.helper_ResizeDiagram();
         this.diagram.zoomToFit();
         this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
         this.loadingText = "";
         this.isLoading = false;
-        this.fromRefresh = false;
 
-        this.setFilterWindow(false);
+        this.helper_SetFilterWindow();
 
-        this.cdRef.markForCheck();
-
-        this.hideDeselectedAssetTypes(undefined);
-        this.hideDeselectedPredicates(undefined);
-        this.hideDeselectedResponsibilityTypes(undefined);
+        this.helper_HideDeselectedAssetTypes(undefined);
+        this.helper_HideDeselectedPredicates(undefined);
+        this.helper_HideDeselectedResponsibilityTypes(undefined);
     }
 
-    private filterBadgesChange(): void {
-        this.diagram.startTransaction();
-        this.diagram.findTopLevelGroups().each(g => {
-            this.diagram.model.setDataProperty(g.data, "showBadges", this.filterModel.DisplayBadges);
-        });
-        this.saveFilter();
-        this.diagram.commitTransaction();
-    }
+    private panels_Click(e: AssetBrowserPanelCommand) {
+        switch (e) {
+            case AssetBrowserPanelCommand.Add:
+                this.panel_AddVisible = !this.panel_AddVisible;
+                this.panel_FiltersVisible = false;
+                this.panel_AlertVisible = false;
+                this.panel_InformationVisible = false;
+                this.panel_SettingsVisible = false;
 
-    private filterDisplayAncestorBadgesChange(): void {
-        this.refreshDiagram();
-    }
+                this.cdRef.markForCheck();
+                break;
+            case AssetBrowserPanelCommand.Alerts:
+                this.panel_TabIndex = 0;
+                this.panel_AddVisible = false;
+                this.panel_FiltersVisible = false;
+                this.panel_AlertVisible = !this.panel_AlertVisible;
+                this.panel_InformationVisible = false;
+                this.panel_SettingsVisible = false;
 
-    private filterDisplayIconsChange(): void {
-        this.diagram.startTransaction();
-        this.diagram.model.nodeDataArray.forEach(d => {
-            this.diagram.model.setDataProperty(d, "showIcon", this.filterModel.DisplayIcons);
-        });
-        this.saveFilter();
-        this.diagram.commitTransaction();
-    }
-
-    private filterAssetTypeChange(e) {
-        this.filterModel.SelectedAssetTypes = this.getTreeNodeSelectionKeys(e.value);
-        this.saveFilter();
-        this.hideDeselectedAssetTypes(undefined);
-    }
-
-    private filterNumberOfHopsChange() {
-        this.saveFilter();
-        this.diagram.scale = 1;
-        this.refreshDiagram();
-        this.updateZoomText();
-    }
-
-    private filterPredicateChange(e) {
-        this.filterModel.SelectedPredicates = this.getTreeNodeSelectionKeys(e.value);
-        this.saveFilter();
-        this.hideDeselectedPredicates(undefined);
-    }
-
-    private filterResponsibilityTypeChange(e) {
-        this.filterModel.SelectedResponsibilityTypes = this.getTreeNodeSelectionKeys(e.value);
-        this.saveFilter();
-        this.hideDeselectedResponsibilityTypes(undefined);
-    }
-
-    private getTreeNodeSelectionNodes(keys: number[], source: TreeNode[]) {
-        let nodes: TreeNode[] = [];
-        source.forEach(s => {
-            if (keys.indexOf(s.data) != -1) {
-                nodes.push(s);
-            }
-            if (s.children != null && s.children.length > 0) {
-                let childNodes = this.getTreeNodeSelectionNodes(keys, s.children);
-                if (childNodes != null && childNodes.length > 0) {
-                    nodes = nodes.concat(childNodes);
-                }
-            }
-        });
-
-        return nodes;
-    }
-
-    private getTreeNodeSelectionKeys(selection: TreeNode[]): number[] {
-        let keys: number[] = [];
-
-        selection.forEach(s => {
-            keys.push(+s.data);
-        });
-
-        return keys;
-    }
-
-    //#endregion
-
-    //#region Context menu actions
-
-    private showAlertsByDisplayedAssets() {
-        if (this.assetsWithAlerts.length > 0) {
-            this.isAlertPanelLoading = true;
-
-            let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
-
-            this.assetsWithAlerts.forEach(a => {
-                model.assets.push({ uid: a });
-            });
-            this.browserService.getAlertsByAsset(model).subscribe(alerts => {
-                if (alerts) {
-                    this.alerts = alerts;
-                    this.isAlertTabEnabled = (alerts.length > 0);
+                if (this.selectedDiagramAsset) {
+                    this.selectedAssetsWithAlerts.push(this.selectedDiagramAsset.Uid);
                 }
                 else {
-                    this.alerts = [];
-                    this.isAlertWindowVisible = false;
-                    this.isAlertTabEnabled = false;
+                    this.selectedAssetsWithAlerts = this.assetsWithAlerts;
                 }
-                this.isAlertPanelLoading = false;
+                break;
+            case AssetBrowserPanelCommand.Download:
+                let image_data = this.diagram.makeImageData({
+                    scale: 1,
+                    returnType: "blob",
+                    background: "#fff",
+                    callback: (image_data) => this.panels_Download_Callback(image_data, this.assetUid)
+                });
+                break;
+            case AssetBrowserPanelCommand.Filters:
+                //this.loadSavedFilters();
+                this.panel_AddVisible = false;
+                this.panel_FiltersVisible = !this.panel_FiltersVisible;
+                this.panel_AlertVisible = false;
+                this.panel_InformationVisible = false;
+                this.panel_SettingsVisible = false;
+                if (this.panel_FiltersVisible) {
+                    this.helper_SetFilterWindow();
+                }
+                break;
+            case AssetBrowserPanelCommand.FullScreen:
+                this.isFullScreen = !this.isFullScreen;
+                this.helper_ResizeDiagram();
                 this.cdRef.markForCheck();
-            });
+                break;
+            case AssetBrowserPanelCommand.Information:
+                this.panel_TabIndex = 0;
+                this.panel_AddVisible = false;
+                this.panel_FiltersVisible = false;
+                this.panel_AlertVisible = false;
+                this.panel_InformationVisible = !this.panel_InformationVisible;
+                this.panel_SettingsVisible = false;
+
+                if (this.panel_InformationVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
+                    this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
+                }
+                break;
+            case AssetBrowserPanelCommand.Refresh:
+                this.diagram.scale = 1;
+                this.helper_RefreshDiagram();
+                break;
+            case AssetBrowserPanelCommand.Settings:
+                this.panel_AddVisible = false;
+                this.panel_FiltersVisible = false;
+                this.panel_AlertVisible = false;
+                this.panel_InformationVisible = false;
+                this.panel_SettingsVisible = !this.panel_SettingsVisible;
+
+                this.cdRef.markForCheck();
+                break;
+        }
+
+    }
+
+    private panels_Download_Callback(image_data, assetUid) {
+        var url = window.URL.createObjectURL(image_data);
+        var filename = `${assetUid}.png`;
+        var a = document.createElement("a");
+        //a.style = "display: none";
+        a.href = url;
+        a.download = filename;
+        // IE 11
+        if (window.navigator.msSaveBlob !== undefined) {
+            window.navigator.msSaveBlob(image_data, filename);
+            return;
+        }
+        document.body.appendChild(a);
+        requestAnimationFrame(function () {
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        });
+    }
+
+    private savedfilter_Apply(e: AssetBrowserFilterModel) {
+        let diagramTypeChanged: boolean = (this.displayConfiguration.DiagramType !== e.DiagramType);
+        this.displayConfiguration = new AssetBrowserFilterModel();
+        this.displayConfiguration = e;
+
+        if (diagramTypeChanged) {
+            this.diagram.div = null;
+            this.helper_InitializeDiagram();
         }
         else {
-            this.isAlertWindowVisible = false;
-            this.isAlertTabEnabled = false;
+            this.helper_RefreshDiagram();
         }
+        this.cdRef.markForCheck();
     }
 
-    private showAlertsByAsset(assetUid: string) {
-        let model: AssetBrowserAlertRequest = new AssetBrowserAlertRequest();
-        model.assets.push({ uid: assetUid });
+    search_AddHighlightToNode(node: go.Node, phrase: string) {
+        this.diagram.model.commit(function (m) {
+            var data = m.findNodeDataForKey(node.key);
 
-        this.isAlertPanelLoading = true;
-        this.browserService.getAlertsByAsset(model).subscribe(alerts => {
-            if (alerts) {
-                this.alerts = alerts;
-                this.isAlertTabEnabled = (alerts.length > 0);
+            var idx = phrase.length;
+            var highlight = data.text.substring(0, idx);
+            var text = data.text.substring(idx, data.text.length);
+
+            if (data.text.length > idx && (data.text[idx] == ' ' || phrase[idx - 1] == ' ')) {
+                m.set(data, 'spacer_visible', true);
             }
-            else {
-                this.alerts = [];
-                this.isAlertTabEnabled = false;
-            }
-            this.isAlertPanelLoading = false;
-            this.cdRef.markForCheck();
+            m.set(data, 'highlight', highlight);
+            m.set(data, 'highlight_visible', true);
+            m.set(data, 'text', text);
+        }, 'update_highlight');
+    }
+
+    /**
+    * Responds to the search event from the shared Asset Browser Searchbar control.
+    * @returns Nothing
+    */
+    private search_Execute(phrase: string) {
+
+        // Clear highlights of exisitng search results
+        this.searchResults.forEach(n => {
+            this.search_RemoveHighlightFromNode(n);
         });
-    }
 
-    private showDetails(assetUid: string) {
-        this.isWindowLoading = true;
-        this.browserService.getDetailByAsset(assetUid).subscribe(response => {
-            this.selectedDiagramAsset = response;
-            this.selectedDiagramAsset.Loaded = true;
-            this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
-            this.isWindowLoading = false;
-            this.panelTabIndex = 0;
-            this.cdRef.markForCheck();
-        });
-    }
+        this.searchResults = [];
 
-    private hide(e, obj, direction: AssetBrowserApiHopDirection = null) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
-            let node: AssetBrowserTranslationNode = obj.part.data;
+        this.diagram.zoomToFit();
+        var self = this;
 
-            if (node.group != null) { //find top level node
-                let n: any = this.diagram.findNodeForKey(node.group).data;
-                while (n.group != null) {
-                    n = this.diagram.findNodeForKey(n.group).data;
+        this.diagram.nodes.each(function (node) {
+            if (node instanceof go.Node) {
+                var nodeData = node.data;
+                node.isHighlighted = false;
+                if (nodeData.isGroup) {
+                    //This is grouping, do nothing with it (AssetType grouping)
                 }
-                node = n;
-            }
-
-            if (node.isGroup) { //top level item
-
-                let group: any = this.diagram.findNodeForKey(node.key);
-
-                if (direction == null) { //hide the current node
-                    this.hideIndividualNode(node, group);
-                }
-                else { //hide upstream or downstream
-                    let subgraph = this.findSubGraph(group.key, direction);
-
-                    if (subgraph == null || subgraph.nodes.length < 1)
-                        return; //nothing to hide
-                    if (subgraph.nodes.length == 1 && subgraph.nodes[0].template == "HiddenData")
-                        return; //subgraph already hidden
-
-                    this.diagram.startTransaction('hide');
-
-                    let hideNode = new AssetBrowserTranslationNode();
-
-                    hideNode.subgraph = subgraph;
-                    hideNode.template = "HiddenData";
-                    hideNode.back = node.back;
-
-                    this.diagramModelAsGraph().removeLinkDataCollection(subgraph.links);
-                    this.diagram.model.removeNodeDataCollection(subgraph.nodes);
-
-                    this.diagram.model.addNodeData(hideNode);
-                    if (direction == AssetBrowserApiHopDirection.Forward)
-                        this.diagramModelAsGraph().addLinkData({ from: group.key, to: hideNode.key });
-                    else
-                        this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: group.key });
-
-                    this.diagram.commitTransaction('hide');
-                }
-
-            }
-        }
-    }
-
-    private unhide(e, obj) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            this.unhideNode(node);
-        }
-    }
-
-    private collapseNodesAndLinks(dm: go.GraphLinksModel, key: string, links: go.Iterator<go.Link>) {
-        if (links) {
-            let lnks: any[] = [];
-            links.iterator.each(link => {
-                lnks.push({ link: link, node: (link.toNode.key == key) ? link.fromNode : link.toNode });
-            });
-            lnks.forEach(lnk => {
-                if (lnk.node) {
-                    let backLinks: go.Iterator<go.Link> = lnk.node.findLinksInto().filter(b => { return (b.fromNode.key !== key); });
-                    this.collapseNodesAndLinks(dm, lnk.node.key, backLinks);
-
-                    let forwardLinks: go.Iterator<go.Link> = lnk.node.findLinksOutOf().filter(b => { return (b.toNode.key !== key); });
-                    this.collapseNodesAndLinks(dm, lnk.node.key, forwardLinks);
-
-                    // Remove immediate child.
-                    this.diagram.remove(lnk.node);
-                    dm.removeNodeData(dm.findNodeDataForKey(lnk.node.key));
-                }
-
-                this.diagram.remove(lnk.link);
-            });
-        }
-    }
-
-    private collapseBadgeDependentNodesAndLinks(badgeKey: string, nodeKey: string) {
-        this.diagram.startTransaction("collapseBadge");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        var links = this.diagram.links.filter(l => l.data.expandedByBadgeKey == badgeKey);
-        this.collapseNodesAndLinks(dm, nodeKey, links);
-        this.diagram.commitTransaction("collapseBadge");
-    }
-
-    private clickOwnerBadge(e, obj) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
-            let ix = obj.itemIndex;
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
-
-            if (owner.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(owner.key, node.key);
-                owner.expanded = false;
-                this.diagram.model.removeArrayItem(node.owners, ix);
-                this.diagram.model.insertArrayItem(node.owners, ix, owner);
-                this.recheckAlertCount();
-                this.cdRef.markForCheck();
-            }
-            else {
-                let requestModel: AssetBrowserApiOwnerHopRequestModel = new AssetBrowserApiOwnerHopRequestModel();
-
-                requestModel.Assets = [];
-                requestModel.ResponsibilityTypeId = owner.responsibilityTypeId;
-
-                let n = node;
-                if (n.isGroup) {
-                    // Add the root node's asset information.
-                    if (this.filterModel.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
-                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
-                    }
-                    
-
-                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                        let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
-                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
-                            let asset = new AssetBrowserApiHopAssetRequestModel();
-                            asset.Uid = g.data.assetUid;
-                            asset.Key = g.data.key
-                            requestModel.Assets.push(asset);
+                else if (phrase != '') {
+                    self.searchableProps.forEach(prop => {
+                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
+                            self.searchResults.push(node);
+                            self.search_AddHighlightToNode(node, phrase);
+                            self.search_ExpandGroups(node.data.group);
                         }
-                    })
-                }
-
-                this.browserService.getAssetOwners(requestModel)
-                    .subscribe(response => {
-
-                        // Some extra data you will need later on during translation.
-                        response.fromKey = node.key;
-                        response.responsibilityType = owner.responsibilityType;
-                        response.responsibilityTypeId = owner.responsibilityTypeId;
-
-                        response.owners.forEach(o => {
-                            this.responseModel.owners.owners.push(o);
-                        });
-                        response.ownerRelations.forEach(r => {
-                            this.responseModel.owners.ownerRelations.push(r);
-                        });
-
-                        let trans: AssetBrowserTranslation = this.browserService.translateOwnersResponseModel(response);
-                        trans.links.forEach(l => {
-                            l.expandedByBadgeKey = owner.key;
-                        });
-                        owner.expanded = true;
-
-                        this.parseData(trans, true);
-
-                        this.setFilterWindow(false);
                     });
-            }
-        }
-    }
-
-    private clickRelationBadge(e, obj) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
-            let existingIgnoredPredicates: string[] = new Array();
-            let ix = obj.itemIndex;
-            let node: AssetBrowserTranslationNode = obj.part.data;
-            let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
-
-            if (relation.expanded) {
-                this.collapseBadgeDependentNodesAndLinks(relation.key, node.key);
-                relation.expanded = false;
-                this.diagram.model.removeArrayItem(node.relations, ix);
-                this.diagram.model.insertArrayItem(node.relations, ix, relation);
-                this.recheckAlertCount();
-                this.cdRef.markForCheck();
-            }
-            else {
-
-                let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
-
-                requestModel.Assets = [];
-                requestModel.PredicateUid = relation.predicateUid;
-                requestModel.Direction = relation.direction;
-                requestModel.HopType = AssetBrowserApiHopType.Impact;
-
-                let n = node;
-                if (n.isGroup) {
-
-                    // Add the root node's asset information.
-                    if (this.filterModel.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
-                        requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
-                    }
-                    
-                    (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                        let shouldInclude: boolean = this.filterModel.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
-                        if (shouldInclude && g.data.assetUid !== this.emptyUid) {
-
-                            // Get existing ignored predicates so we can continue to skip these along the impact chain.
-                            if (g.data.ignoredPredicates !== undefined) {
-                                g.data.ignoredPredicates.forEach(p => {
-                                    if (existingIgnoredPredicates.findIndex(pix => p == pix) === -1) {
-                                        existingIgnoredPredicates.push(p);
-                                    }
-                                });
-                            }
-
-                            let asset = new AssetBrowserApiHopAssetRequestModel();
-                            asset.Uid = g.data.assetUid;
-                            asset.Key = g.data.key
-                            requestModel.Assets.push(asset);
-                        }
-                    })
-                }
-
-                this.browserService.getAssetImpacts(requestModel)
-                    .subscribe(response => {
-
-                        response.assets.forEach(a => {
-                            this.responseModel.assets.assets.push(a);
-                        });
-                        response.assetRelations.forEach(i => {
-                            this.responseModel.assets.assetRelations.push(i);
-                        });
-
-                        let nodeToPull = this.findInApiModel(node.key, this.responseModel.assets);
-                        if (nodeToPull) {
-                            response.assets.push(nodeToPull);
-                        }
-
-                        response = this.browserService.convertResponseModel(response, this.filterModel.AncestryMode);
-
-                        let keysToBeConcernedWith: string[] = [];
-                        let nodes = this.browserService.translateAssetNodes(this.filterModel.IncludeNonLeaf, response.assets);
-                        nodes.forEach(n => {
-
-                            keysToBeConcernedWith.push(n.key);
-
-                            // Transfer ignored predicates to the newly created nodes.
-                            existingIgnoredPredicates.forEach(ep => {
-                                n.ignoredPredicates.push(ep);
-                            });
-                            n.ignoredPredicates.push(relation.predicateUid);
-                        });
-
-                        let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                        trans.nodes = nodes;
-                        trans.links = this.browserService.translateAssetLinks(this.getFullResponseModelAsTranslationNodes(), response.assetRelations);
-
-                        trans.links.forEach(l => {
-                            l.expandedByBadgeKey = relation.key;
-                        });
-
-                        relation.expanded = true;
-                        this.parseData(trans, true);
-
-                        this.setFilterWindow(false);
-
-                        this.hideDeselectedAssetTypes(keysToBeConcernedWith);
-                        this.hideDeselectedPredicates(keysToBeConcernedWith);
-                        this.hideDeselectedResponsibilityTypes(keysToBeConcernedWith);
-                    });
-            }
-        }
-    }
-
-    private findInApiModel(key: string, model: AssetBrowserAssetsModel): AssetBrowserAssetModel {
-        let found: AssetBrowserAssetModel;
-
-        model.assets.forEach(root => {
-            if (!found) {
-                if (this.findInApiItemModel(key, root)) {
-                    found = root;
                 }
             }
         });
 
-        return found;
+        this.search_GoToResult(1);
+
+        this.cdRef.markForCheck();
     }
 
-    private findInApiItemModel(key: string, model: AssetBrowserAssetModel): boolean {
-        let found: boolean = false;
-
-        if (model.key == key) {
-            found = true;
+    search_ExpandGroups(groupName) {
+        if (groupName) {
+            var group = this.diagram.findPartForKey(groupName) as go.Group;
+            group.expandSubGraph();
+            this.search_ExpandGroups(group.data.group);
         }
-        else {
-            model.items.forEach(child => {
-                if (!found) {
-                    if (child.key == key) {
-                        found = true;
+    }
+
+    /**
+    * Responds to the next/previous event from the shared Asset Browser Searchbar control.
+    * @returns Nothing
+    */
+    private search_GoToResult(position: number) {
+        var node = this.searchResults[position - 1];
+        if (node) {
+            this.diagram.centerRect(node.actualBounds);
+            this.diagram.select(node);
+            this.search_SetFocusedNodeHighlight(node);
+        }
+    }
+
+    search_RemoveHighlightFromNode(node: go.Node) {
+        try {
+            this.diagram.model.commit(function (m) {
+                var data = m.findNodeDataForKey(node.key);
+                var fullText = (data) ? data.text : "";
+                if (data.highlight) {
+                    fullText = data.highlight + data.text;
+                }
+
+                m.set(data, 'highlight', '');
+                m.set(data, 'highlight_visible', false);
+                m.set(data, 'spacer_visible', false);
+                m.set(data, 'text', fullText);
+            }, 'update_highlight');
+        } catch (e) {
+
+        }
+    }
+
+    search_SetFocusedNodeHighlight(node: go.Node) {
+        var self = this;
+        this.diagram.model.commit(function (m) {
+            self.diagram.nodes.each(function (n) {
+                if (n instanceof go.Node) {
+                    var data = m.findNodeDataForKey(n.key);
+
+                    if (n.key == node.key) {
+                        m.set(data, 'highlight_background', self.searchHighlightColourFocused);
                     }
                     else {
-                        if (child.items) {
-                            found = this.findInApiItemModel(key, child);
-                        }
+                        m.set(data, 'highlight_background', self.searchHighlightColour);
                     }
                 }
-            });
+            })
+        });
+    }
+
+    private settingspanel_Apply(e: AssetBrowserFilterChangeEvent) {
+        this.displayConfiguration = e.Model;
+        this.saveFilter();
+        switch (e.Type) {
+            case AssetBrowserFilterChangeEventType.AllBadges:
+                this.diagram.startTransaction();
+                this.diagram.findTopLevelGroups().each(g => {
+                    this.diagram.model.setDataProperty(g.data, "showBadges", this.displayConfiguration.DisplayBadges);
+                });
+                this.diagram.commitTransaction();
+                break;
+            case AssetBrowserFilterChangeEventType.AncestorBadges:
+                this.helper_UpdateVisualization();
+                break;
+            case AssetBrowserFilterChangeEventType.Icons:
+                this.diagram.startTransaction();
+                this.diagram.model.nodeDataArray.forEach(d => {
+                    this.diagram.model.setDataProperty(d, "showIcon", this.displayConfiguration.DisplayIcons);
+                });
+                this.diagram.commitTransaction();
+                break;
+            case AssetBrowserFilterChangeEventType.Scores:
+                
+                break;
         }
-
-        return found;
     }
 
-    //#endregion
-
-    //#region Templates
-
-    private initializeCustomShapes() {
-        go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
-            let p1 = 5;
-            if (shape !== null) {
-                var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;
-            }
-            p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2);
-            let geo = new go.Geometry();
-
-            geo.add(new go.PathFigure(0, p1)
-                .add(new go.PathSegment(go.PathSegment.Arc, 180, 90, p1, p1, p1, p1))
-                .add(new go.PathSegment(go.PathSegment.Line, w, 0))
-                .add(new go.PathSegment(go.PathSegment.Line, w, h))
-                .add(new go.PathSegment(go.PathSegment.Line, p1, h))
-                .add(new go.PathSegment(go.PathSegment.Arc, 90, 90, p1, h - p1, p1, p1).close()));
-
-            geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
-            geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
-            return geo;
-        });
-
-        go.Shape.defineFigureGenerator("RoundedRectRight", (shape, w, h) => {
-            let p1 = 5;
-            if (shape !== null) {
-                var param1 = shape.parameter1;
-                if (!isNaN(param1) && param1 >= 0) p1 = param1;
-            }
-            p1 = Math.min(p1, w / 2);
-            p1 = Math.min(p1, h / 2);
-            let geo = new go.Geometry();
-
-
-            geo.add(new go.PathFigure(0, 0)
-                .add(new go.PathSegment(go.PathSegment.Line, w - p1, 0))
-                .add(new go.PathSegment(go.PathSegment.Arc, 270, 90, w - p1, p1, p1, p1))
-                .add(new go.PathSegment(go.PathSegment.Line, w, h - p1))
-                .add(new go.PathSegment(go.PathSegment.Arc, 0, 90, w - p1, h - p1, p1, p1))
-                .add(new go.PathSegment(go.PathSegment.Line, 0, h).close()));
-
-
-            geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
-            geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
-            return geo;
-        });
-    }
-
-    private createOwnersBadge(): go.Panel {
-        return this.g(go.Panel, "TableRow", {
-            alignment: go.Spot.TopCenter,
-            alignmentFocus: go.Spot.Bottom,
-            padding: 0,
-            cursor: "pointer",
-            click: (e, obj) => this.clickOwnerBadge(e, obj),
-        },
-            this.g(go.Panel, "Horizontal",
-                new go.Binding("visible", "showBadge"),
-                { alignment: go.Spot.Center },
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBorderColor_Disabled : this.fontOwnerBadgeLabelBorderColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBackColor_Disabled : this.fontOwnerBadgeLabelBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            editable: false,
-                            font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeLabelForeColor
-                        },
-                        new go.Binding("text", "responsibilityType")
-                    ),
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, strokeWidth: 1 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: this.fontOwnerBadge,
-                            stroke: this.fontOwnerBadgeCountForeColor
-                        },
-                        new go.Binding("text", "count")
-                    ),
-                )
-            )
-        );
-    }
-
-    private createRelationsBadge(): go.Panel {
-        return this.g(go.Panel, "TableRow", {
-            alignment: go.Spot.TopCenter,
-            alignmentFocus: go.Spot.Bottom,
-            padding: 0,
-            cursor: "pointer",
-            click: (e, obj) => this.clickRelationBadge(e, obj),
-        },
-            this.g(go.Panel, "Horizontal",
-                new go.Binding("visible", "showBadge"),
-                { alignment: go.Spot.Center },
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape,
-                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
-                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Left,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeLabelForeColor
-                        },
-                        new go.Binding("text", "predicate")
-                    ),
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(go.Shape, "RoundedRectRight",
-                        { parameter1: 2, stroke: this.fontRelationBadgeCountForeColor, strokeWidth: 1 },
-                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
-                    ),
-                    this.g(
-                        go.TextBlock,
-                        {
-                            row: 0,
-                            margin: 2,
-                            alignment: go.Spot.Center,
-                            editable: false,
-                            font: this.fontRelationBadge,
-                            stroke: this.fontRelationBadgeCountForeColor
-                        },
-                        new go.Binding("text", "count")
-                    ),
-                )
-            )
-        );
-    }
-
-    private createContextMenu(): go.Adornment {
-        return this.g(
-            "ContextMenu",
-            { areaBackground: "#ffffff", background: "#ffffff" },
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.navigateTo(e, obj) },
-                new go.Binding("visible", "", function (o) {
-                    return o.part.data.hasAssetReadAccess;
-                }).ofObject()
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuShowDetails }),
-                {
-                    click: (e, obj) => {
-                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != this.emptyUid) {
-                            this.isFilterWindowVisible = false;
-                            this.isInfoWindowVisible = true;
-                            this.showDetails(obj.part.data.assetUid);
-                        }
-                    }
-                }
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj) }
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Backward) }
-            ),
-            this.g(
-                "ContextMenuButton",
-                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-                { click: (e, obj) => this.hide(e, obj, AssetBrowserApiHopDirection.Forward) }
-            )//,
-            //this.g(
-            //    "ContextMenuButton",
-            //    this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
-            //    { click: function (e, obj) { alert("Not yet implemented") } }
-            //)
-        );
-    }
-
-    private assetUidRedirect: string = '';
-    private navigateTo(e, obj) {
-        this.assetUidRedirect = obj.part.data.assetUid;
-
-        if (this.assetUidRedirect == this.assetUid)
-            return;
-
-        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
-            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', this.assetUidRedirect]);
-        });
-    }
-
-    private createTooltip(): go.Adornment {
-        return this.g("ToolTip",
-            this.g(go.TextBlock,
-                {
-                    maxSize: new go.Size(this.textMaxSize.width * 2, Infinity),
-                    wrap: go.TextBlock.WrapFit
-                },
-                new go.Binding("text", "text")
-            )
-        );
-    }
-
-    private createDiagram(): go.Diagram {
-        let dg = this.g(go.Diagram, 'LineageDiagram', {
-            initialContentAlignment: go.Spot.Center,
-            allowDrop: true,
-            initialAutoScale: go.Diagram.UniformToFill,
-            scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
-            layout: this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false }), //direction: 270, 
-            //layout: this.g(AssetBrowserLayout, {}),//layout: this.g(go.LayeredDigraphLayout, {direction: 0, columnSpacing: 50, layerSpacing: 50}),
-            "undoManager.isEnabled": true,
-            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
-        });
-
-        let model = (dg.model as go.GraphLinksModel);
-
-        //TODO: Get this looking good with the ports. 
-        //model.linkFromPortIdProperty = "fromPort";
-        //model.linkToPortIdProperty = "toPort",
-        model.nodeCategoryProperty = "template";
-        model.nodeDataArray = [];
-        model.linkDataArray = [];
-        dg.toolManager.hoverDelay = 250;
-        dg.toolManager.linkingTool.isEnabled = !this.readonly;
-        dg.model.isReadOnly = this.readonly;
-
-        return dg;
-    }
-
-    private createPortGroupNode(): go.Group {
-        return this.g(
-            go.Group,
-            "Auto",
-            {
-                background: "transparent",
-                contextMenu: this.createContextMenu(),
-                click: (e, obj) => this.highlightPath(e, obj as any), 
-                computesBoundsAfterDrag: true,
-                handlesDragDropForMembers: true,
-                layout:
-                    this.g(
-                        go.GridLayout,
-                        {
-                            wrappingColumn: 1, alignment: go.GridLayout.Position,
-                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
-                            sorting: go.GridLayout.Ascending,
-                            comparer: (a, b) => this.sortParts(a, b)
-                        }
-                    )
-            },
-            this.g(
-                go.Panel,
-                "Vertical",
-                this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "relations"),
-                    new go.Binding("visible", "showBadges"),
-                    {
-                        itemTemplate: this.createRelationsBadge()
-                    }
-                ),
-                this.g(go.Panel, "Table",
-                    new go.Binding("itemArray", "owners"),
-                    new go.Binding("visible", "showBadges"),
-                    {
-                        itemTemplate: this.createOwnersBadge()
-                    }
-                ),
-                this.g(
-                    go.Shape,  // the "top" port
-                    { width: 0, height: 0, portId: "T", toSpot: go.Spot.TopCenter, toLinkable: true, stroke: 'transparent' }
-                ),
-                this.g(go.Panel, "Auto",
-                    this.g(
-                        go.Shape,
-                        "Rectangle",
-                        { strokeWidth: 2, isPanelMain: true },
-                        new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
-                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
-                    ),
-                    this.g(go.Panel, "Vertical",
-                        this.g(
-                            go.Panel,
-                            "Horizontal",
-                            // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
-                            //new go.Binding("background", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount)),
-                            new go.Binding("background", "", v => (v.isHighlighted) ?
-                                go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
-                                go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
-                            ).ofObject(),
-                            this.g(
-                                "SubGraphExpanderButton",
-                                { alignment: go.Spot.Right, margin: 5 }
-                            ),
-                            //icon
-                            this.g(
-                                go.TextBlock,
-                                {
-                                    row: 0,
-                                    margin: 0,
-                                    alignment: go.Spot.Center,
-                                    editable: false,
-                                    font: this.fontLabelIcon
-                                },
-                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
-                                new go.Binding("text", "icon"),
-                                new go.Binding("visible", "showIcon")
-                            ),
-                            this.g(
-                                go.TextBlock,
-                                {
-                                    alignment: go.Spot.Left,
-                                    editable: false,
-                                    margin: 5,
-                                    font: this.fontLabel,
-                                    maxLines: this.textMaxLines,
-                                    maxSize: this.textMaxSize,
-                                    overflow: this.textOverflowStyle,
-                                    toolTip: this.createTooltip()
-                                },
-                                new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
-                                new go.Binding("text", "text").makeTwoWay()
-                            )
-                        ),  // end Horizontal Panel
-                        this.g(
-                            go.Panel,
-                            "Horizontal",
-                            // button next to TextBlock
-                            { stretch: go.GraphObject.Horizontal },
-                            this.g(
-                                go.Shape,  // the "left" port
-                                { width: 0, height: 0, portId: "L", toSpot: go.Spot.LeftCenter, toLinkable: true, stroke: "transparent" }
-                            ),
-                            this.g(
-                                go.Placeholder,
-                                { padding: 2, alignment: go.Spot.TopLeft },
-                            ),
-                            this.g(
-                                go.Shape,  // the "right" port
-                                { width: 0, height: 0, portId: "R", toSpot: go.Spot.RightCenter, toLinkable: true, stroke: "transparent" }
-                            )
-                        ),  //end Horizontal Panel
-
-                        this.g(
-                            go.Shape,  // the "bottom" port
-                            { width: 0, height: 0, portId: "B", toSpot: go.Spot.BottomCenter, toLinkable: true, stroke: "transparent" }
-                        ),
-                    ) //end Vertical Panel,
-                ) //end Auto Panel (main group Panel),
-            ), //end Vertical Panel
-        );
-    }
-
-    private createGroupNode(): go.Group {
+    private template_AncestorNode(): go.Group {
 
         return this.g(
             go.Group,
             "Auto",
             {
                 background: "transparent",
-                contextMenu: this.createContextMenu(),
-                click: (e, obj) => this.highlightPath(e, obj as any),
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 stretch: go.GraphObject.Horizontal,
@@ -2733,8 +2184,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
                             cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
-                            sorting: go.GridLayout.Ascending,
-                            comparer: (a, b) => this.sortParts(a, b)
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },
@@ -2787,7 +2237,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             maxLines: this.textMaxLines,
                             maxSize: this.textMaxSize,
                             overflow: this.textOverflowStyle,
-                            toolTip: this.createTooltip()
+                            toolTip: this.template_Tooltip()
                         },
                         new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
                         new go.Binding("text", "text").makeTwoWay()
@@ -2803,11 +2253,352 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private createListItemNode(): go.Node {
+    private template_BadgeShapes() {
+        go.Shape.defineFigureGenerator("RoundedRectLeft", (shape, w, h) => {
+            let p1 = 5;
+            if (shape !== null) {
+                var param1 = shape.parameter1;
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
+            }
+            p1 = Math.min(p1, w / 2);
+            p1 = Math.min(p1, h / 2);
+            let geo = new go.Geometry();
+
+            geo.add(new go.PathFigure(0, p1)
+                .add(new go.PathSegment(go.PathSegment.Arc, 180, 90, p1, p1, p1, p1))
+                .add(new go.PathSegment(go.PathSegment.Line, w, 0))
+                .add(new go.PathSegment(go.PathSegment.Line, w, h))
+                .add(new go.PathSegment(go.PathSegment.Line, p1, h))
+                .add(new go.PathSegment(go.PathSegment.Arc, 90, 90, p1, h - p1, p1, p1).close()));
+
+            geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
+            geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
+            return geo;
+        });
+
+        go.Shape.defineFigureGenerator("RoundedRectRight", (shape, w, h) => {
+            let p1 = 5;
+            if (shape !== null) {
+                var param1 = shape.parameter1;
+                if (!isNaN(param1) && param1 >= 0) p1 = param1;
+            }
+            p1 = Math.min(p1, w / 2);
+            p1 = Math.min(p1, h / 2);
+            let geo = new go.Geometry();
+
+
+            geo.add(new go.PathFigure(0, 0)
+                .add(new go.PathSegment(go.PathSegment.Line, w - p1, 0))
+                .add(new go.PathSegment(go.PathSegment.Arc, 270, 90, w - p1, p1, p1, p1))
+                .add(new go.PathSegment(go.PathSegment.Line, w, h - p1))
+                .add(new go.PathSegment(go.PathSegment.Arc, 0, 90, w - p1, h - p1, p1, p1))
+                .add(new go.PathSegment(go.PathSegment.Line, 0, h).close()));
+
+
+            geo.spot1 = new go.Spot(0, 0, 0.3 * p1, 0.3 * p1);
+            geo.spot2 = new go.Spot(1, 1, -0.3 * p1, 0);
+            return geo;
+        });
+    }
+
+    private template_ContextMenu(): go.Adornment {
+        return this.g(
+            "ContextMenu",
+            { areaBackground: "#ffffff", background: "#ffffff" },
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Navigate to", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                {
+                    click: (e, obj) => {
+                        let assetUidRedirect: string = '';
+                        assetUidRedirect = obj.part.data.assetUid;
+                        if (assetUidRedirect == this.assetUid)
+                            return;
+
+                        this.router.navigateByUrl('/bla', { skipLocationChange: true }).then(() => {
+                            this.router.navigate([SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT, 'browser', assetUidRedirect]);
+                        });
+                    }
+                },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Show Details", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenuhelper_ShowDetails }),
+                {
+                    click: (e, obj) => {
+                        if (obj.part.data.assetUid != null && obj.part.data.assetUid != this.emptyUid) {
+                            this.panel_FiltersVisible = false;
+                            this.panel_InformationVisible = true;
+                            this.helper_ShowDetail(obj.part.data.assetUid);
+                        }
+                    }
+                },
+                new go.Binding("visible", "", function (o) {
+                    return o.part.data.hasAssetReadAccess;
+                }).ofObject()
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.context_Hide(e, obj) }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide Upstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.context_Hide(e, obj, AssetBrowserApiHopDirection.Backward) }
+            ),
+            this.g(
+                "ContextMenuButton",
+                this.g(go.TextBlock, { text: "Hide Downstream", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+                { click: (e, obj) => this.context_Hide(e, obj, AssetBrowserApiHopDirection.Forward) }
+            )//,
+            //this.g(
+            //    "ContextMenuButton",
+            //    this.g(go.TextBlock, { text: "Isolate", background: "transparent", alignment: go.Spot.Left, margin: 8, font: this.fontContextMenu }),
+            //    { click: function (e, obj) { alert("Not yet implemented") } }
+            //)
+        );
+    }
+
+    private template_Diagram(): go.Diagram {
+
+        let layout: go.Layout;
+
+        if (this.helper_LineageDiagramApplies()) {
+            layout = this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false });
+        }
+        else {
+            layout = this.g(go.ForceDirectedLayout, {
+                defaultSpringLength: 50,
+                defaultElectricalCharge: 250,
+                arrangementSpacing: new go.Size(250, 250)
+            });
+        }
+
+        let dg = this.g(go.Diagram, 'LineageDiagram', {
+            initialContentAlignment: go.Spot.Center,
+            allowDrop: true,
+            initialAutoScale: go.Diagram.UniformToFill,
+            scrollMode: go.Diagram.DocumentScroll,
+            initialPosition: new go.Point(125, 125),
+            layout: layout,
+            "undoManager.isEnabled": true,
+            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
+        });
+
+        let model = (dg.model as go.GraphLinksModel);
+
+        //TODO: Get this looking good with the ports. 
+        //model.linkFromPortIdProperty = "fromPort";
+        //model.linkToPortIdProperty = "toPort",
+        model.nodeCategoryProperty = "template";
+        model.nodeDataArray = [];
+        model.linkDataArray = [];
+        dg.toolManager.hoverDelay = 250;
+        dg.toolManager.linkingTool.isEnabled = !this.readonly;
+        dg.model.isReadOnly = this.readonly;
+
+        return dg;
+    }
+
+    private template_FocalPositioningHelper(spot, row, col, textprop, visprop) {
+        return this.g(go.Panel, "Auto",
+            { row: row, column: col },
+            this.g(go.Shape,
+                "Circle",
+                { fill: "transparent", stroke: "transparent" },
+                new go.Binding("visible", visprop)),
+            this.g(go.TextBlock,
+                new go.Binding("text", textprop),
+                new go.Binding("visible", visprop))
+        );
+    }
+
+    private template_FocalRootNode(): go.Group {
+        return this.g(
+            go.Group,
+            "Auto",
+            {
+                background: "transparent",
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            sorting: go.GridLayout.Ascending,
+                            comparer: (a, b) => this.helper_SortParts(a, b)
+                        }
+                    )
+            },
+            this.g(go.Panel,
+                "Auto",
+
+                this.g(
+                    go.Shape,
+                    "Border",
+                    { strokeWidth: 2, isPanelMain: true, spot1: go.Spot.TopLeft, spot2: go.Spot.BottomRight },
+                    new go.Binding("fill", "", (v) => go.Brush.mix("#ebebeb", this.lightenBoxColor, 0.7)),
+                    new go.Binding("stroke", "", (v) => this.linkBackColor) //go.Brush.mix("#cccccc", this.lightenBoxColor, 0.7)
+                ),
+
+                this.g(go.Panel, "Table",
+                    this.g(go.RowColumnDefinition, { width: 10 }),
+                    this.template_FocalPositioningHelper(go.Spot.Top, 0, 1, "topNodeText", "hasTop"),
+                    this.template_FocalPositioningHelper(go.Spot.Left, 2, 0, "leftNodeText", "hasLeft"),
+                    this.g(go.Panel,
+                        "Auto",
+                        { row: 2, column: 1 },
+                        this.template_RootNodeContent()
+                    ),
+                    this.template_FocalPositioningHelper(go.Spot.Right, 2, 2, "rightNodeText", "hasRight"),
+                    this.template_FocalPositioningHelper(go.Spot.Bottom, 3, 1, "bottomNodeText", "hasBottom")
+                )
+            )
+        );
+    }
+
+    private template_HiddenNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
-                contextMenu: this.createContextMenu(),
-                click: (e, obj) => this.highlightPath(e, obj as any)
+                click: (e, obj) => this.context_Unhide(e, obj),
+                cursor: 'pointer'
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
+                this.g(
+                    "Shape",
+                    {
+                        alignment: go.Spot.Center,
+                        width: 25,
+                        height: 25
+                    },
+                    new go.Binding("fill", "back"),
+                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v, this.lightenBoxColor, .15))
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor,
+                        text: this.plusIcon
+                    },
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
+    private template_ImpactBadges(): go.Panel {
+        return this.g(go.Panel, "TableRow", {
+            alignment: go.Spot.TopCenter,
+            alignmentFocus: go.Spot.Bottom,
+            padding: 0,
+            cursor: "pointer",
+            click: (e, obj) => this.badge_ClickImpact(e, obj),
+        },
+            this.g(go.Panel, "Horizontal",
+                new go.Binding("visible", "showBadge"),
+                { alignment: go.Spot.Center },
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape,
+                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontRelationBadgeLabelBorderColor_Disabled : this.fontRelationBadgeLabelBorderColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeLabelBackColor_Disabled : this.fontRelationBadgeLabelBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Left,
+                            editable: false,
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeLabelForeColor
+                        },
+                        new go.Binding("text", "predicate")
+                    ),
+                ),
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape, "RoundedRectRight",
+                        { parameter1: 2, stroke: this.fontRelationBadgeCountForeColor, strokeWidth: 1 },
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontRelationBadgeCountBackColor_Disabled : this.fontRelationBadgeCountBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Center,
+                            editable: false,
+                            font: this.fontRelationBadge,
+                            stroke: this.fontRelationBadgeCountForeColor
+                        },
+                        new go.Binding("text", "count")
+                    ),
+                )
+            )
+        );
+    }
+
+    private template_ImpactLink(): go.Link {
+        return this.g(
+            go.Link,
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    {
+                        visible: false,
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor
+                    },
+                    new go.Binding("background", "back"),
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private template_LeafAssetNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any)
             },
             this.g(
                 go.Panel,
@@ -2847,7 +2638,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.createTooltip()
+                        toolTip: this.template_Tooltip()
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -2868,7 +2659,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.createTooltip()
+                        toolTip: this.template_Tooltip()
                     },
                     new go.Binding("text", "text").makeTwoWay(),
                     new go.Binding("stroke", "actionCount", (v) => (v > 0) ? this.fontLabelAlertColor : this.fontLabelColor)
@@ -2877,13 +2668,189 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private createOwnersGroup(): go.Group {
+    private template_LeafOwnerNode(): go.Node {
+        return this.g(go.Node, "Auto",
+            {
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any)
+            },
+            this.g(
+                go.Panel,
+                "Horizontal",
+                { stretch: go.GraphObject.Horizontal, padding: 5 },
+                new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
+                this.g(
+                    go.Shape,
+                    { width: 10, height: 0, stroke: "transparent" }
+                ),
+                //icon
+                this.g(
+                    go.TextBlock,
+                    {
+                        row: 0,
+                        alignment: go.Spot.Center,
+                        editable: false,
+                        font: this.fontLabelIcon,
+                        stroke: this.fontLabelColor
+                    },
+                    new go.Binding("text", "icon"),
+                    new go.Binding("visible", "showIcon")
+                ),
+                this.g(
+                    go.Shape,
+                    { width: 10, height: 0, stroke: "transparent" }
+                ),
+                //This TextBlock is placeholder for highlighted text
+                this.g(
+                    go.TextBlock,
+                    {
+                        stretch: go.GraphObject.Fill,
+                        editable: false,
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor,
+                        visible: false,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.template_Tooltip()
+                    },
+                    new go.Binding("text", "highlight").makeTwoWay(),
+                    new go.Binding("visible", "highlight_visible").makeTwoWay(),
+                    new go.Binding("background", "highlight_background").makeTwoWay()
+                ),
+                //This shape block is for ensuring space between highlighted text and rest of the text
+                //We need this as TextBlock trims spaces
+                this.g(
+                    go.Shape,
+                    { width: 2, height: 0, stroke: "transparent", visible: false },
+                    new go.Binding("visible", "spacer_visible").makeTwoWay()
+                ),
+                this.g(
+                    go.TextBlock,
+                    {
+                        editable: false,
+                        font: this.fontLabel,
+                        stroke: this.fontLabelColor,
+                        maxLines: this.textMaxLines,
+                        maxSize: this.textMaxSize,
+                        overflow: this.textOverflowStyle,
+                        toolTip: this.template_Tooltip()
+                    },
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )  // end Horizontal Panel
+        );
+    }
+
+    private template_LineageLink(): go.Link {
+        return this.g(
+            go.Link, {
+            routing: go.Link.AvoidsNodes,
+            corner: 5,
+            relinkableFrom: false,
+            relinkableTo: false,
+            click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+            zOrder: 1000
+        },
+            // the whole link panel
+            this.g(go.Shape,
+                { stroke: this.linkBackColor, strokeWidth: 1 },
+                new go.Binding("strokeWidth", "hasProperties", function (h) {
+                    return h ? 3 : 2;
+                }),
+                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
+            ), // the link shape
+            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            this.g(go.Panel, "Auto",
+                this.g(
+                    go.Shape,
+                    {
+                        visible: false,
+                        fill: this.linkDefaultBackColor,
+                        stroke: this.linkDefaultBorderColor
+                    },
+                    new go.Binding("background", "back"),
+                    //only visible if there's a label
+                    new go.Binding("visible", "text", function (a) {
+                        return !!a
+                    })
+                ), // the link shape
+                this.g(go.TextBlock, {
+                    textAlign: "center",
+                    font: this.fontLink,
+                    stroke: this.fontLinkColor,
+                    margin: 4,
+                    overflow: go.TextBlock.OverflowEllipsis,
+                    wrap: go.TextBlock.WrapFit,
+                    maxSize: new go.Size(100, 70)
+                },
+                    // the label
+                    new go.Binding("text", "text").makeTwoWay()
+                )
+            )
+        );
+    }
+
+    private template_OwnerBadges(): go.Panel {
+        return this.g(go.Panel, "TableRow", {
+            alignment: go.Spot.TopCenter,
+            alignmentFocus: go.Spot.Bottom,
+            padding: 0,
+            cursor: "pointer",
+            click: (e, obj) => this.badge_ClickOwner(e, obj),
+        },
+            this.g(go.Panel, "Horizontal",
+                new go.Binding("visible", "showBadge"),
+                { alignment: go.Spot.Center },
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape,
+                        { figure: "RoundedRectLeft", parameter1: 2, strokeWidth: 0.5 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBorderColor_Disabled : this.fontOwnerBadgeLabelBorderColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeLabelBackColor_Disabled : this.fontOwnerBadgeLabelBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Left,
+                            editable: false,
+                            font: this.fontOwnerBadge,
+                            stroke: this.fontOwnerBadgeLabelForeColor
+                        },
+                        new go.Binding("text", "responsibilityType")
+                    ),
+                ),
+                this.g(go.Panel, "Auto",
+                    this.g(go.Shape, "RoundedRectRight",
+                        { parameter1: 2, strokeWidth: 1 },
+                        new go.Binding("stroke", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
+                        new go.Binding("fill", "expanded", (h) => (h ? this.fontOwnerBadgeCountBackColor_Disabled : this.fontOwnerBadgeCountBackColor)),
+                    ),
+                    this.g(
+                        go.TextBlock,
+                        {
+                            row: 0,
+                            margin: 2,
+                            alignment: go.Spot.Center,
+                            editable: false,
+                            font: this.fontOwnerBadge,
+                            stroke: this.fontOwnerBadgeCountForeColor
+                        },
+                        new go.Binding("text", "count")
+                    ),
+                )
+            )
+        );
+    }
+
+    private template_OwnersRootNode(): go.Group {
         return this.g(
             go.Group,
             "Auto",
             {
                 background: "transparent",
-                contextMenu: this.createContextMenu(),
+                contextMenu: this.template_ContextMenu(),
                 computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 layout:
@@ -2892,8 +2859,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         {
                             wrappingColumn: 1, alignment: go.GridLayout.Position,
                             cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
-                            sorting: go.GridLayout.Ascending,
-                            comparer: (a, b) => this.sortParts(a, b)
+                            comparer: (a, b) => this.helper_SortParts(a, b)
                         }
                     )
             },
@@ -2904,7 +2870,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     new go.Binding("itemArray", "relations"),
                     new go.Binding("visible", "showBadges"),
                     {
-                        itemTemplate: this.createRelationsBadge()
+                        itemTemplate: this.template_ImpactBadges()
                     }
                 ),
                 this.g(
@@ -2951,7 +2917,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     maxLines: this.textMaxLines,
                                     maxSize: this.textMaxSize,
                                     overflow: this.textOverflowStyle,
-                                    toolTip: this.createTooltip()
+                                    toolTip: this.template_Tooltip()
                                 },
                                 new go.Binding("text", "text").makeTwoWay()
                             )
@@ -2985,84 +2951,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private createOwnerNode(): go.Node {
+    private template_RevealNode(): go.Node {
         return this.g(go.Node, "Auto",
             {
-                contextMenu: this.createContextMenu(),
-                click: (e, obj) => this.highlightPath(e, obj as any)
-            },
-            this.g(
-                go.Panel,
-                "Horizontal",
-                { stretch: go.GraphObject.Horizontal, padding: 5 },
-                new go.Binding("background", "isHighlighted", (h) => (h ? this.selectionPathHighlightColor : this.leafBackColor)).ofObject(),
-                this.g(
-                    go.Shape,
-                    { width: 10, height: 0, stroke: "transparent" }
-                ),
-                //icon
-                this.g(
-                    go.TextBlock,
-                    {
-                        row: 0,
-                        alignment: go.Spot.Center,
-                        editable: false,
-                        font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor
-                    },
-                    new go.Binding("text", "icon"),
-                    new go.Binding("visible", "showIcon")
-                ),
-                this.g(
-                    go.Shape,
-                    { width: 10, height: 0, stroke: "transparent" }
-                ),
-                //This TextBlock is placeholder for highlighted text
-                this.g(
-                    go.TextBlock,
-                    {
-                        stretch: go.GraphObject.Fill,
-                        editable: false,
-                        font: this.fontLabel,
-                        stroke: this.fontLabelColor,
-                        visible: false,
-                        maxLines: this.textMaxLines,
-                        maxSize: this.textMaxSize,
-                        overflow: this.textOverflowStyle,
-                        toolTip: this.createTooltip()
-                    },
-                    new go.Binding("text", "highlight").makeTwoWay(),
-                    new go.Binding("visible", "highlight_visible").makeTwoWay(),
-                    new go.Binding("background", "highlight_background").makeTwoWay()
-                ),
-                //This shape block is for ensuring space between highlighted text and rest of the text
-                //We need this as TextBlock trims spaces
-                this.g(
-                    go.Shape,
-                    { width: 2, height: 0, stroke: "transparent", visible: false },
-                    new go.Binding("visible", "spacer_visible").makeTwoWay()
-                ),
-                this.g(
-                    go.TextBlock,
-                    {
-                        editable: false,
-                        font: this.fontLabel,
-                        stroke: this.fontLabelColor,
-                        maxLines: this.textMaxLines,
-                        maxSize: this.textMaxSize,
-                        overflow: this.textOverflowStyle,
-                        toolTip: this.createTooltip()
-                    },
-                    new go.Binding("text", "text").makeTwoWay()
-                )
-            )  // end Horizontal Panel
-        );
-    }
-
-    private createRevealNodeTemplate(): go.Node {
-        return this.g(go.Node, "Auto",
-            {
-                click: (e, obj) => this.revealLineageHop(e, obj),
+                click: (e, obj) => this.helper_RevealLineageHop(e, obj),
                 cursor: 'pointer'
             },
             this.g(
@@ -3090,248 +2982,150 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         );
     }
 
-    private createHiddenDataNode(): go.Node {
-        return this.g(go.Node, "Auto",
+    private template_RootNode(): go.Group {
+        return this.g(
+            go.Group,
+            "Auto",
             {
-                click: (e, obj) => this.unhide(e, obj),
-                cursor: 'pointer'
+                background: "transparent",
+                contextMenu: this.template_ContextMenu(),
+                click: (e, obj) => this.helper_HighlightPath(e, obj as any),
+                computesBoundsAfterDrag: true,
+                handlesDragDropForMembers: true,
+                layout:
+                    this.g(
+                        go.GridLayout,
+                        {
+                            wrappingColumn: 1, alignment: go.GridLayout.Position,
+                            cellSize: new go.Size(1, 1), spacing: new go.Size(4, 4),
+                            comparer: (a, b) => this.helper_SortParts(a, b)
+                        }
+                    )
             },
-            this.g(
-                go.Panel,
-                "Horizontal",
-                { stretch: go.GraphObject.Horizontal, padding: 10, type: go.Panel.Spot },
-                this.g(
-                    "Shape",
-                    {
-                        alignment: go.Spot.Center,
-                        width: 25,
-                        height: 25
-                    },
-                    new go.Binding("fill", "back"),
-                    new go.Binding("stroke", "back", (v) => go.Brush.mix(v, this.lightenBoxColor, .15))
-                ),
-                this.g(
-                    go.TextBlock,
-                    {
-                        row: 0,
-                        alignment: go.Spot.Center,
-                        editable: false,
-                        font: this.fontLabelIcon,
-                        stroke: this.fontLabelColor,
-                        text: this.plusIcon
-                    },
-                )
-            )  // end Horizontal Panel
+            this.template_RootNodeContent()
         );
     }
 
-    private createDefaultLink(): go.Link {
+    private template_RootNodeContent(): go.Panel {
         return this.g(
-            go.Link, {
-            routing: go.Link.AvoidsNodes,
-            corner: 5,
-            relinkableFrom: false,
-            relinkableTo: false,
-            click: (e, obj) => this.highlightPath(e, obj as any),
-            zOrder: 1000
-        },
-            // the whole link panel
-            this.g(go.Shape,
-                { stroke: this.linkBackColor, strokeWidth: 1 },
-                new go.Binding("strokeWidth", "hasProperties", function (h) {
-                    return h ? 3 : 2;
-                }),
-                new go.Binding("stroke", "hasProperties", (h) => (h ? "black" : this.linkBackColor))
-            ), // the link shape
-            this.g(go.Shape, { toArrow: "Triangle", fill: this.linkBackColor, stroke: this.linkBackColor }), // the arrowhead
+            go.Panel,
+            "Vertical",
+            this.g(go.Panel, "Table",
+                new go.Binding("itemArray", "relations"),
+                new go.Binding("visible", "showBadges"),
+                {
+                    itemTemplate: this.template_ImpactBadges()
+                }
+            ),
+            this.g(go.Panel, "Table",
+                new go.Binding("itemArray", "owners"),
+                new go.Binding("visible", "showBadges"),
+                {
+                    itemTemplate: this.template_OwnerBadges()
+                }
+            ),
             this.g(go.Panel, "Auto",
                 this.g(
                     go.Shape,
-                    {
-                        visible: false,
-                        fill: this.linkDefaultBackColor,
-                        stroke: this.linkDefaultBorderColor
-                    },
-                    new go.Binding("background", "back"),
-                    //only visible if there's a label
-                    new go.Binding("visible", "text", function (a) {
-                        return !!a
-                    })
-                ), // the link shape
-                this.g(go.TextBlock, {
-                    textAlign: "center",
-                    font: this.fontLink,
-                    stroke: this.fontLinkColor,
-                    margin: 4,
-                    overflow: go.TextBlock.OverflowEllipsis,
-                    wrap: go.TextBlock.WrapFit,
-                    maxSize: new go.Size(100, 70)
+                    "Rectangle",
+                    { strokeWidth: 2, isPanelMain: true },
+                    new go.Binding("fill", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, 0.9)),
+                    new go.Binding("stroke", "", (v) => go.Brush.mix(v.back, this.lightenBoxColor, v.backAmount))
+                ),
+                this.g(go.Panel, "Vertical",
+                    this.g(
+                        go.Panel,
+                        "Horizontal",
+                        // button next to TextBlock
+                        { stretch: go.GraphObject.Horizontal, alignment: go.Spot.Top },
+                        new go.Binding("background", "", v => (v.isHighlighted) ?
+                            go.Brush.mix(this.selectionPathHighlightColor, this.selectionPathHighlightColor, v.backAmount) :
+                            go.Brush.mix(v.data.back, this.lightenBoxColor, v.data.backAmount)
+                        ).ofObject(),
+                        this.g(
+                            "SubGraphExpanderButton",
+                            { alignment: go.Spot.Right, margin: 5 }
+                        ),
+                        //icon
+                        this.g(
+                            go.TextBlock,
+                            {
+                                row: 0,
+                                margin: 0,
+                                alignment: go.Spot.Center,
+                                editable: false,
+                                font: this.fontLabelIcon
+                            },
+                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                            new go.Binding("text", "icon"),
+                            new go.Binding("visible", "showIcon")
+                        ),
+                        this.g(
+                            go.TextBlock,
+                            {
+                                alignment: go.Spot.Left,
+                                editable: false,
+                                margin: 5,
+                                font: this.fontLabel,
+                                maxLines: this.textMaxLines,
+                                maxSize: this.textMaxSize,
+                                overflow: this.textOverflowStyle,
+                                toolTip: this.template_Tooltip()
+                            },
+                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                            new go.Binding("text", "text").makeTwoWay()
+                        )
+                    ),  // end Horizontal Panel
+                    this.g(
+                        go.Panel,
+                        "Horizontal",
+                        // button next to TextBlock
+                        { stretch: go.GraphObject.Horizontal },
+                        this.g(
+                            go.Placeholder,
+                            { padding: 2, alignment: go.Spot.TopLeft },
+                        )
+                    )  //end Horizontal Panel
+                ) //end Vertical Panel,
+            ) //end Auto Panel (main group Panel),
+        ); //end Vertical Panel
+    }
+
+    private template_Tooltip(): go.Adornment {
+        return this.g("ToolTip",
+            this.g(go.TextBlock,
+                {
+                    maxSize: new go.Size(this.textMaxSize.width * 2, Infinity),
+                    wrap: go.TextBlock.WrapFit
                 },
-                    // the label
-                    new go.Binding("text", "text").makeTwoWay()
-                )
+                new go.Binding("text", "text")
             )
         );
     }
 
-    //#endregion
-
-    //#region Search
-
-    private searchResults: go.Node[] = [];
-    private searchableProps: string[] = ["text"];
-    private searchCurrentItem: number = 0;
-    private searchValue: string = '';
-    private searchTimer;
-
-    searchDiagram(event) {
-        if (event == null) {
-            this.searchValue = '';
-        }
-        else {
-            this.searchValue = event.target.value;
-
-            if (event.keyCode == 40) {
-                this.goToNext();
-                return;
-            }
-            if (event.keyCode == 38) {
-                this.goToPrevious();
-                return;
-            }
-        }
-        clearTimeout(this.searchTimer);
-        this.searchTimer = setTimeout(() => {
-            this.doSearch();
-        }, 100);
-
-
+    /**
+    * Responds to the change event from the shared Asset Browser ViewChange control.
+    * @returns The DiagramType.
+    */
+    private viewchange_Apply(e: DiagramType) {
+        let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
+        model.DiagramType = e;
+        this.displayConfiguration = model;
+        //this.displayConfiguration = e.Model;
+        this.saveFilter();
+        //switch (e.Type) {
+        //    case AssetBrowserFilterChangeEventType.DiagramType:
+                this.diagram.div = null;
+                this.helper_InitializeDiagram();
+        //        break;
+        //}
     }
 
-    private doSearch() {
-        //Clear highlights of exisitng search results
-        this.searchResults.forEach(n => {
-            this.removeHighlightFromNode(n);
-        });
-
-        this.searchResults = [];
-
-        this.searchCurrentItem = 0;
-        this.diagram.zoomToFit();
-        var self = this;
-
-        this.diagram.nodes.each(function (node) {
-            if (node instanceof go.Node) {
-                var nodeData = node.data;
-                node.isHighlighted = false;
-                if (nodeData.isGroup) {
-                    //This is grouping, do nothing with it (AssetType grouping)
-                }
-                else if (self.searchValue != '') {
-                    self.searchableProps.forEach(prop => {
-                        if (node.data[prop] && node.data[prop].toLowerCase().indexOf(self.searchValue.toLowerCase()) == 0) {
-                            self.searchResults.push(node);
-                            self.addHighlightToNode(node);
-                            self.expandGroups(node.data.group);
-                        }
-                    });
-                }
-            }
-        });
-
-
-        this.goToNext();
-
-        this.cdRef.markForCheck();
+    /**
+    * Responds to the change event from the shared Asset Browser Zoom control.
+    * @returns Nothing.
+    */
+    private zoom_Change(scale: number) {
+        this.diagram.scale = scale;
     }
-
-    removeHighlightFromNode(node: go.Node) {
-        this.diagram.model.commit(function (m) {
-            var data = m.findNodeDataForKey(node.key);
-            var fullText = (data) ? data.text : "";
-            if (data.highlight) {
-                fullText = data.highlight + data.text;
-            }
-            m.set(data, 'highlight', '');
-            m.set(data, 'highlight_visible', false);
-            m.set(data, 'spacer_visible', false);
-            m.set(data, 'text', fullText);
-        }, 'update_highlight');
-    }
-
-    addHighlightToNode(node: go.Node) {
-        var self = this;
-        this.diagram.model.commit(function (m) {
-            var data = m.findNodeDataForKey(node.key);
-
-            var idx = self.searchValue.length;
-            var highlight = data.text.substring(0, idx);
-            var text = data.text.substring(idx, data.text.length);
-
-            if (data.text.length > idx && (data.text[idx] == ' ' || self.searchValue[idx - 1] == ' ')) {
-                m.set(data, 'spacer_visible', true);
-            }
-            m.set(data, 'highlight', highlight);
-            m.set(data, 'highlight_visible', true);
-            m.set(data, 'text', text);
-        }, 'update_highlight');
-    }
-
-    goToPrevious() {
-        this.searchCurrentItem--;
-        if (this.searchCurrentItem <= 0) {
-            if (this.searchResults.length > 0) {
-                this.searchCurrentItem = 1;
-            }
-            else {
-                this.searchCurrentItem = 0;
-            }
-        }
-        this.focusCurrentNode();
-    }
-
-    goToNext() {
-        this.searchCurrentItem++;
-        if (this.searchCurrentItem > this.searchResults.length)
-            this.searchCurrentItem--;
-        this.focusCurrentNode();
-
-    }
-
-    expandGroups(groupName) {
-        if (groupName) {
-            var group = this.diagram.findPartForKey(groupName) as go.Group;
-            group.expandSubGraph();
-            this.expandGroups(group.data.group);
-        }
-    }
-
-    focusCurrentNode() {
-        var node = this.searchResults[this.searchCurrentItem - 1];
-        if (node) {
-            this.diagram.centerRect(node.actualBounds);
-            this.diagram.select(node);
-            this.setFocusedNodeHighlight(node);
-        }
-    }
-
-    setFocusedNodeHighlight(node: go.Node) {
-        var self = this;
-        this.diagram.model.commit(function (m) {
-            self.diagram.nodes.each(function (n) {
-                if (n instanceof go.Node) {
-                    var data = m.findNodeDataForKey(n.key);
-
-                    if (n.key == node.key) {
-                        m.set(data, 'highlight_background', self.searchHighlightColourFocused);
-                    }
-                    else {
-                        m.set(data, 'highlight_background', self.searchHighlightColour);
-                    }
-                }
-            })
-        });
-    }
-
-    //#endregion
 } 

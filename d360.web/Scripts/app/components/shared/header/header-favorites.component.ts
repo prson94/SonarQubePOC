@@ -75,7 +75,9 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     }
 
     ngOnDestroy() {
-        this.subBreadcrumb.unsubscribe();
+        if (this.subBreadcrumb) {
+            this.subBreadcrumb.unsubscribe();
+        }
     }
 
     handleClick() {

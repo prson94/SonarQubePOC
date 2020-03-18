@@ -68,7 +68,9 @@ export class SurveyComponent extends BaseComponent implements AfterViewInit, OnD
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     handleComplete(res) {

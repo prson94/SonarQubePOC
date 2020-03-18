@@ -1,8 +1,6 @@
 ﻿import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { HierarchyType } from '../../../models/hierarchy.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { TaxonomiesService } from '../../../services/taxonomies.service';
 import { PoliciesService } from '../../../services/policies.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { StateService } from '../../../services/state.service';
@@ -11,22 +9,24 @@ import { Title } from '@angular/platform-browser';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { ModelsService } from '../../../services/models.service';
 
 @Component({
     selector: 'd3s-admin-models-component',
-    providers: [TaxonomiesService, AssetTypeService, PoliciesService],
+    providers: [ModelsService, AssetTypeService, PoliciesService],
     templateUrl: './admin-hierarchies.component.html'
 })
 
 export class AdminHierarchiesComponent extends AdminBaseComponent implements OnInit, OnDestroy {
-    types: HierarchyType[] = [];
+    types: any[] = [];
     error: any;
-    selected: HierarchyType = null;
+    selected: any = null;
     showEditor: boolean = false;
     showDelete: boolean = false;
     theDeleteCallback: Function;
     assetTypeClass: AssetTypeClass;
     AssetTypeClass = AssetTypeClass;
+    selectedItemID: number;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -34,7 +34,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         protected assetTypeService: AssetTypeService,
         protected policiesService: PoliciesService,
         secondaryNavService: SecondaryNavService,
-        private taxonomiesService: TaxonomiesService,
+        private modelService: ModelsService,
         private messagesService: MessagesObservableService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         titleService: Title
@@ -72,8 +72,36 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
+        if (this.selected) {
+            switch (this.assetTypeClass) {
+                case AssetTypeClass.Model:
+                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
+                        this.selectedItemID = res.ObjectID;
+                        this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
+                    });
+                    break;
+                case AssetTypeClass.Policy:
+                    this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
+                    break;
+                default:
+            }
+        }
+    }
 
+    getSelectedItemID() {
+        if (this.selected) {
+            switch (this.assetTypeClass) {
+                case AssetTypeClass.Model:
+                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
+                        return res.ObjectID;
+                    });
+                    break;
+                case AssetTypeClass.Policy:
+                    return this.selected.ID;
+                    break;
+                default:
+            }
+        }
     }
 
     ngOnInit() {
@@ -81,13 +109,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     }
 
     ngOnDestroy() {
-        this.clearSidebar();
+        this.clearSidebar(); 
     }
 
     getModelTypes() {
         this.isLoading = true;
-        this.taxonomiesService
-            .getTaxonomies()
+        this.modelService
+            .getModels()
             .subscribe(results => {
                 this.types = results.sort((a, b) => a.Name.localeCompare(b.Name));
 

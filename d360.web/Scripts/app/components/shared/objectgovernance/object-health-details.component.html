@@ -1,6 +1,6 @@
 ﻿<div class="scoring">
     <div class="score-breakdown">
-        <div class="row" *ngIf="!loadingPoints && !loadingDefinition; else pointsLoading">
+        <div class="row">
             <div class="col s12">
                 <div class="heading breakdown">
                     <button *ngIf="hasAnyScoreType(ScoreType.Governance)" [ngClass]="{'selected': showGovernanceScores}" (click)="setSelectedButton(ScoreType.Governance)" class="button ng-star-inserted"><span>Governance Score</span></button>
@@ -10,6 +10,28 @@
                     <ng-template #expand><div *ngIf="!showEmptyMessage && showExpandAndCollapse" (click)="setCollapsed(false)" class="collapse-btn">Expand All</div></ng-template>
 
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div class="gov-hr hr-dark"></div>
+                <d3s-simple-carousel [data]="scoresPoints">
+                    <div class="carousel-item" *ngFor="let score of scoresPoints">
+                        <span class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
+                            <ng-container [ngSwitch]="score.ScoreProgression">
+                                <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
+                                <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                <i *ngSwitchDefault></i>
+                            </ng-container>
+                            {{score.EffectiveDate | date:'shortDate'}}
+                        </span>
+                    </div>
+                </d3s-simple-carousel>
+            </div>
+        </div>
+
+        <div class="row" *ngIf="!loadingPoints && !loadingDefinition; else pointsLoading">
+            <div class="col s12">
                 <div class="scorecards-container" *ngIf="!showEmptyMessage; else emptyMessage">
                     <d3s-object-health-details-item *ngFor="let item of pointBreakdownTree" [item]="item" [definition]="scoreDefinition" [showtype]="selectedScoreType" [isloading]="loadingPoints" (checkExpander)="hasAnyExpanders()"></d3s-object-health-details-item>
                 </div>
@@ -27,14 +49,43 @@
         </ng-template>
         <div class="row">&nbsp;</div>
     </div>
-    <div class="score-chart-container"  *ngIf="!loadingHistory; else chartLoading">
+    <div class="score-chart-container" *ngIf="!loadingHistory; else chartLoading">
         <div class="heading">
             <div class="heading-text" [innerHTML]="calculatedScoreText | safeHtml"></div>
         </div>
         <div class="score-chart">
             <div class="chart-header">{{getScoreType()}} Score History</div>
-            <chart [options]="scoreHistory"></chart>
+            <chart (load)="getChartInstance($event.context)" [options]="scoreHistory"></chart>
+            <div #scoreTable class="score-table">
+                <div class="col s12">
+                    <div class="row score-tbl-header">
+                        <div class="col s6 column">Score Change Date</div>
+                        <div class="col s6 column">Score</div>
+                    </div>
+                    <div class="body">
+                        <div class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
+                            <div class="col s6 column">{{item.EffectiveDate | date:'shortDate'}}</div>
+                            <div class="col s6 column">
+                                <ng-container [ngSwitch]="item.ScoreProgression">
+                                    <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
+                                    <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                    <i *ngSwitchDefault></i>
+                                </ng-container>
+                                {{item.Score}}%
+                            </div>
+                        </div>
+                        <div class="row">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+            <div class="table-caption">
+                All dates are based on UTC
+            </div>
         </div>
+
     </div>
     <ng-template #chartLoading>
         <d3s-loading [isLoading]="chartLoading"></d3s-loading>

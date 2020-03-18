@@ -91,7 +91,9 @@ export class HeaderProfileComponent implements OnInit , OnDestroy{
     }
 
     ngOnDestroy(): void {
-        this.isAdminSub.unsubscribe();
+        if (this.isAdminSub) {
+            this.isAdminSub.unsubscribe();
+        }
     }
     public resourceUrl() {
         return SiteUrlHelpers.getObjectUrl('Resource', this.resourceId);

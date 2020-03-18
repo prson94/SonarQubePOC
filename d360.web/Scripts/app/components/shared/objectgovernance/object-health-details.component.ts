@@ -1,7 +1,7 @@
-﻿import {Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, } from '@angular/core';
+﻿import { Component, Input, OnChanges, SimpleChange, ViewChildren, QueryList, ChangeDetectorRef, ViewChild, ElementRef, AfterViewChecked, HostListener, } from '@angular/core';
 import { BaseComponent } from '../base.component';
 import { ScoreService } from '../../../services/score.service';
-import { PointBreakdown } from '../../../models/score.model';
+import { PointBreakdown, ScorePoint } from '../../../models/score.model';
 import { TreeNode } from 'primeng/api';
 import * as Highcharts from 'highcharts';
 import { ScoreType } from '../../../models/metrics.model';
@@ -12,15 +12,17 @@ import { ObjectStatisticsService } from '../../../services/object-statistics.ser
 
 
 @Component({
-    selector: 'd3s-object-health-details',    
+    selector: 'd3s-object-health-details',
     templateUrl: `./object-health-details.component.html`,
     providers: [ScoreService, ObjectStatisticsService],
 })
 
-export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges{
+export class ObjectHealthDetailsComponent extends BaseComponent implements OnChanges, AfterViewChecked {
     @Input() uid: string;
     @Input() objectName: string;
     scoreHistory: Object;
+    scoresPoints: ScorePoint[];
+    lastScorePoint: Date;
     averageScore: number;
     scoreDate: string = null;
     private showGovernanceScores: boolean = true;
@@ -33,7 +35,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     private scoreDefinition: any;
     private ScoreType = ScoreType;
     private selectedScoreType = ScoreType.Governance;
-    private scoreTypes :number[] = [];
+    private scoreTypes: number[] = [];
     private showEmptyMessage: boolean = false;
     private searchDetails: SearchDetail;
     private handle: any;
@@ -43,8 +45,12 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
     @ViewChildren(ObjectHealthDetailsItemComponent) OHDitems: QueryList<ObjectHealthDetailsItemComponent>;
     private showExpandAndCollapse: boolean = true;
 
-    constructor(protected scoreService: ScoreService, protected objectStatisticsService: ObjectStatisticsService) {
+    constructor(protected scoreService: ScoreService,
+        protected objectStatisticsService: ObjectStatisticsService,
+        private cdRef: ChangeDetectorRef
+    ) {
         super();
+        this.scoreDate = new Date().toDateString();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -74,15 +80,40 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             );
         }
     }
+
     private loadSeriesData() {
         if (this.uid) {
             this.historicalData = [];
             this.loadingHistory = true;
             this.scoreService.getScoreHistory(this.selectedScoreType, this.uid)
                 .subscribe(res => {
+
                     this.historicalData = res.map(val => {
                         return [Date.parse(val.EffectiveDate), val.Score, this.getScoreType()];
                     });
+
+                    this.scoresPoints = null;
+                    this.scoresPoints = res.sort(function (a, b) {
+                        if (a.EffectiveDate > b.EffectiveDate) return -1;
+                        if (a.EffectiveDate < b.EffectiveDate) return 1;
+                    })
+
+                    this.scoresPoints.shift();
+                    this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
+
+                    for (var i = 0; i < this.scoresPoints.length - 1; i++) {
+                        if (this.scoresPoints[i].Score > this.scoresPoints[i + 1].Score)
+                            this.scoresPoints[i].ScoreProgression = 1;
+
+                        if (this.scoresPoints[i].Score < this.scoresPoints[i + 1].Score)
+                            this.scoresPoints[i].ScoreProgression = -1;
+
+                        if (this.scoresPoints[i].Score == this.scoresPoints[i + 1].Score)
+                            this.scoresPoints[i].ScoreProgression = 0;
+
+                    }
+
+                    this.scoresPoints[this.scoresPoints.length - 1].ScoreProgression = 0;
                     this.getCurrentScoreDateText();
                     this.scoreHistory = {
                         chart: {
@@ -90,7 +121,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             style: {
                                 fontFamily: 'Source Sans Pro'
                             },
-                            height: '240px',
+                            height: '240px'
                         },
                         title: {
                             text: ''
@@ -123,6 +154,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     radius: 1
                                 },
                                 lineWidth: 4,
+                                allowPointSelect: true,
                                 states: {
                                     hover: {
                                         lineWidth: 4
@@ -136,6 +168,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                                     events: {
                                         click: e => {
                                             this.scoreDate = Highcharts.dateFormat('%Y-%m-%d', e.point.x);
+                                            this.selectPointOnGraph();
                                             this.loadPoints();
                                             this.loadDefinition();
                                         }
@@ -145,14 +178,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         },
                         tooltip: {
                             pointFormatter: function () {
-                                var additionalValue = this.series.userOptions.data[this.index][2];
-                                return '<span style="font-weight: bold">' + additionalValue + ' Score<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
+
+                                var additionalValue = this.series.userOptions.name;
+                                return '<span style="font-weight: bold">' + additionalValue + '<span style="padding-left: 4px;font-weight: normal;">' + this.y + '%</span></span>';
                             },
                             headerFormat: '<span>{point.key}</span><br/>',
                             useHTML: 'true',
                             shape: 'square',
                             borderColor: '#c8cfd9',
-                            borderWidth: 2,
+                            borderWidth: 2
                         },
                         series: [{
                             type: 'line',
@@ -160,10 +194,16 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                             marker: {
                                 enabled: false,
                                 symbol: 'circle',
-                                radius: 5,
+                                radius: 9,
                                 states: {
                                     hover: {
                                         fillColor: 'white',
+                                        lineColor: '#FF7155',
+                                        lineWidth: 3,
+                                        opacity: 1
+                                    },
+                                    select: {
+                                        fillColor: '#FF7155',
                                         lineColor: '#FF7155',
                                         lineWidth: 3
                                     }
@@ -178,60 +218,63 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         }
     }
 
-    private loadPoints() {
+    private loadPoints(isTabChange: boolean = false) {
         this.loadingPoints = true;
         if (this.uid) {
             this.scoreService.getPointBreakdown(this.uid, this.selectedScoreType, this.scoreDate)
-            .subscribe(res => {
-                this.pointBreakdown = res;
-                this.isDQAndNoItems();
-                this.pointBreakdownTree = [];
-                let tree = (node: any) => {
-                    let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
+                .subscribe(res => {
+                    this.pointBreakdown = res;
+                    this.isDQAndNoItems();
+                    this.pointBreakdownTree = [];
+                    let tree = (node: any) => {
+                        let childItems = this.pointBreakdown.filter(p => p.ParentUid == node.data.Uid && p.ParentUid != null);
 
-                    node.leaf = true;
-                    node.children = null;
+                        node.leaf = true;
+                        node.children = null;
 
-                    if (childItems != null && childItems.length > 0) {
+                        if (childItems != null && childItems.length > 0) {
 
-                        node.leaf = false;
-                        node.children = [];
+                            node.leaf = false;
+                            node.children = [];
 
-                        childItems.forEach(c => {
+                            childItems.forEach(c => {
 
-                            var child = {
-                                data: c,
-                                expanded: true,
-                                leaf: true
-                            };
+                                var child = {
+                                    data: c,
+                                    expanded: true,
+                                    leaf: true
+                                };
 
-                            tree(child);
+                                tree(child);
 
-                            node.children.push(child);
-                        });
-                    }
-                };
-
-                this.pointBreakdown.filter(p => !p.ParentUid).forEach(p => {
-                    var root = {
-                        data: p,
-                        leaf: false,
-                        expanded: true,
-                        children: []
+                                node.children.push(child);
+                            });
+                        }
                     };
 
-                    tree(root);
-                    this.pointBreakdownTree.push(root);
-                });
+                    this.pointBreakdown.filter(p => !p.ParentUid).forEach(p => {
+                        var root = {
+                            data: p,
+                            leaf: false,
+                            expanded: true,
+                            children: []
+                        };
 
-                this.loadingPoints = false;
-            });
+                        tree(root);
+                        this.pointBreakdownTree.push(root);
+                    });
+
+                    if (isTabChange) {
+                        this.scoreDate = new Date().toDateString();
+                    }
+                    this.loadingPoints = false;
+                });
         }
     }
 
     private isDQAndNoItems() {
         if (this.pointBreakdown) {
-            this.showEmptyMessage =  this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
+            this.showEmptyMessage = this.pointBreakdown.filter(x => { return x.ScoreType == ScoreType.DataQuality; }).length == 0
                 && this.selectedScoreType == ScoreType.DataQuality;
         }
     }
@@ -260,7 +303,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.selectedScoreType = ScoreType.Governance;
                 this.loadDefinition();
                 this.loadSeriesData();
-                this.loadPoints();
+                this.loadPoints(true);
                 this.isDQAndNoItems();
                 break;
             case ScoreType.DataQuality:
@@ -269,14 +312,15 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                 this.selectedScoreType = ScoreType.DataQuality;
                 this.loadDefinition();
                 this.loadSeriesData();
-                this.loadPoints();
+                this.loadPoints(true);
                 this.isDQAndNoItems();
                 break;
             default:
         }
+
     }
     private setCollapsed(val: boolean) {
-        if (this.OHDitems && this.OHDitems.length > 0) 
+        if (this.OHDitems && this.OHDitems.length > 0)
             this.OHDitems.forEach(x => { x.setCollapsed(val); })
     }
     private isAllCollapsed() {
@@ -284,7 +328,7 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
             let any = this.OHDitems.filter(x => { return !x.isCollapsed; });
             if (any && any.length > 0)
                 return false;
-            else 
+            else
                 return true;
         }
     }
@@ -372,5 +416,101 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         if (s.startsWith('0'))
             s = s.substr(1, s.length);
         return s;
+    }
+
+    private isSameDate(date1, date2) {
+        var tempDate = new Date();
+        var today = new Date(tempDate.getFullYear(), tempDate.getMonth(), tempDate.getDate());
+
+        if (date1 && date2) {
+            var d1 = new Date(date1.toString());
+            var d2 = new Date(date2.toString());
+            if (d2.getTime() == today.getTime() && d1.getTime() == this.lastScorePoint.getTime()) {
+                return true;
+            }
+
+            return d1.getTime() === d2.getTime();
+        }
+        else return false;
+    }
+
+
+    //scoring carousel, table and graph interactivity
+    private setSelectedPoint: boolean = false;
+    private selectPointOnGraph() {
+        var idx = this.getSelectedIndex();
+        if (idx > -1) {
+
+            for (var i = 0; i < this.chartInstance.series[0].data.length; i++) {
+                this.chartInstance.series[0].data[i].select(false, true);
+            }
+            var point = this.chartInstance.series[0].data[this.getSelectedIndex()];
+            if (point)
+                point.select(true, true);
+        }
+        this.cdRef.detectChanges();
+        this.cdRef.markForCheck();
+    }
+
+    private getSelectedIndex() {
+        var item = null;
+        if (!this.scoresPoints)
+            return -1;
+
+        this.scoresPoints.forEach(p => {
+            var date = new Date(this.scoreDate.toString());
+            var scoreDate = new Date(p.EffectiveDate.toString());
+            if (date.toString() == scoreDate.toString()) {
+                item = p;
+            }
+        });
+        return this.scoresPoints.length - 1 - this.scoresPoints.indexOf(item);
+    }
+
+    private scoreTableClick(item: ScorePoint) {
+        this.scoreDate = item.EffectiveDate;
+        this.tableSelectedIDX = this.scoresPoints.indexOf(item);
+        this.loadPoints();
+    }
+
+    private onCarouselScoreClick(item: ScorePoint) {
+        this.scoreDate = item.EffectiveDate;
+        this.loadPoints();
+    }
+
+    private chartInstance: Highcharts.ChartObject;
+    getChartInstance(chartInstance) {
+        this.chartInstance = chartInstance;
+    }
+
+    @ViewChild('scoreTable', { static: false }) scoreTable: ElementRef;
+    private tableSelectedIDX: number = 0;
+    ngAfterViewChecked() {
+        this.selectPointOnGraph()
+        //table autoscroll to selected item
+        if (this.scoreTable) {
+            var tblBody = (this.scoreTable.nativeElement as Element).querySelector('.body');
+            var height = tblBody.clientHeight;
+
+            for (var i = 0; i < tblBody.children.length - 1; i++) {
+                var selected = tblBody.children[i].className.toLowerCase().indexOf('selected') > -1 ? tblBody.children[i] : null;
+
+                if (!selected)
+                    continue;
+
+                if (selected && this.tableSelectedIDX != i) {
+                    this.tableSelectedIDX = i;
+                    var scrollFor = (tblBody.scrollTop + selected.getBoundingClientRect().top) - tblBody.getBoundingClientRect().top;
+                    if (scrollFor < 0) {
+                        tblBody.scrollTop = tblBody.scrollTop + Math.round(scrollFor);
+                    }
+                    else {
+                        tblBody.scrollTop = (scrollFor - height) + selected.clientHeight;
+                    }
+                }
+            }
+        }
+        this.cdRef.detectChanges();
+
     }
 }

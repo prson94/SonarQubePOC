@@ -131,6 +131,7 @@ namespace d360.web.Controllers.V2
             HttpGet, MapToApiVersion("2.0"), Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerParameter("AssetTypeUid", "Asset type this survey is assigned", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("SurveyTypeUid", "This querystring parameter is optional and if specified it returns the properties of a single survey", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("HasResponses", "Default value(blank) returns all types. Set to true to return only those survey types to which users have responded, and set to false to return survey types without responses", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),

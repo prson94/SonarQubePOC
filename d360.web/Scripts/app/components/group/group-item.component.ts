@@ -73,7 +73,9 @@ export class GroupItemComponent extends BaseComponent implements OnInit {
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
         this.clearSidebar();
     }
 

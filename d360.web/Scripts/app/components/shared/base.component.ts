@@ -722,6 +722,10 @@ export class BaseComponent {
         return false;
     }
 
+    refreshObjectStats() {
+        this.secondaryNavService.refreshStats();
+    }
+
     buildSecondaryNavigation(assetUid: any = null, objectId: number = null, objectType: string = null, assetId: number = null, assetTypeUid: string = null, buildBreadcrumbOverride: Function = null, assetClass: AssetTypeClass = null) {
         var data = new SecondaryNavPostModel();
         data.PreloadData = false;
@@ -750,6 +754,7 @@ export class BaseComponent {
             return;
         }
         if (this.isSidebarLoadedForCurrentObject(data)) {
+            this.refreshObjectStats();
             return;
         }
 

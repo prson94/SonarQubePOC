@@ -15,6 +15,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION + '/:group', component: ModelListComponent },
             { path: SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION, component: ModelListComponent },
             { path: ':modelId/structure', component: ModelItemStructureComponent },
+            { path: 'structure/:uid', component: ModelItemStructureComponent },
             { path: ':modelId', component: ModelItemComponent },
             { path: ':modelId/id/:id', component: ModelItemComponent }
         ]

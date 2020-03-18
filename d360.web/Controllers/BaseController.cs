@@ -1020,7 +1020,10 @@ namespace d360.web.Controllers
                         if (ft.Type == DataType.Lookup.ToString())
                             fld.Required = (ft.MinimumLength > 0 || ft.Length > 0 || ft.IsRequired);
                         else
-                            fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+                            if (!new[] { "Number", "Decimal", "Text" }.Contains(ft.Type))
+                            {
+                                fld.Required = (ft.MinimumLength > 0 || ft.Length > 0);
+                            }
 
 
 

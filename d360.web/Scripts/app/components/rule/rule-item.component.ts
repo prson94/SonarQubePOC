@@ -75,7 +75,9 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {
-        this.routeParamsSubscription.unsubscribe();
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
     }
 
     load(ruleId: number) {

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.graph.GetXmlSegment-v1">
+  <changeSet author="Core" id="Function.graph.GetXmlSegment-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -29,15 +29,27 @@ BEGIN
 	declare @segment xml;  
 	
 	set @segment =	(
-					select		@level as '@level',
-								ROW_NUMBER() over (order by T.ColumnOrder) as '@position',--T.ColumnOrder as '@position',
-								@assetTypeId as '@assetTypeId',
-								@id as '@assetId',
-								FormattedValue as 'data()'
-					from		Field F
-								inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
-					order by	T.ColumnOrder
-					for xml path('segment')
+					select * from
+						(
+							select		top 100
+										@level as '@level',
+										ROW_NUMBER() over (order by T.ColumnOrder) as '@position',
+										@assetTypeId as '@assetTypeId',
+										@id as '@assetId',
+										FormattedValue as 'data()'
+							from		Field F
+										inner join FieldType T on T.ID = F.FieldTypeID and T.IsPartOfKey = 1 and F.AssetID = @id
+							order by	T.ColumnOrder
+							union all
+							select		top 100
+										@level as '@level',
+										1 as '@position',
+										@assetTypeID as '@assetTypeId',
+										@id as '@assetId',
+										Code as 'data()'
+							from		Asset A
+							where		id = @id and [Object] = 'ReferenceItem'
+						) X for xml path('segment')
 					)
 
 	SET @xml.modify('             

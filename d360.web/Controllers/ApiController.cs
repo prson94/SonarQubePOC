@@ -6778,6 +6778,7 @@ where v.id = {0}", id)).FirstOrDefault();
         {
             var predicateTypeInfo = new PredicateType().GetAsList();
             var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
+            if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
             var sql = "";
@@ -7479,20 +7480,6 @@ SELECT (
 
         #region Taxonomy
 
-        [Route("catalogs")]
-        public HttpResponseMessage GetTaxonomyTypes()
-        {
-            var query = Company.Query<dynamic>(@"
-select	    T.ObjectId as ID,
-		    T.Name,
-            ISNULL(T.Description,'') as Description,
-		    T.HierarchyMaximumDepth as MaximumDepth,
-            T.ID as AssetTypeID
-from	    AssetType T where T.Object = 'TaxonomyType' ");
-
-            return Request.CreateResponse<dynamic>(HttpStatusCode.OK, query);
-        }
-
         [Route("TaxonomyType/{id:int}/levels")]
         public IQueryable<dynamic> GetTaxonomyTypeLevels(int id)
         {
@@ -7519,6 +7506,14 @@ from	    AssetType T where T.Object = 'TaxonomyType' ");
                     { "AssetTypeUID", row.Uid }
                 }
             );
+        }
+
+        [Route("getAssetTypeObjectAndObjectID/{uid}")]
+        public HttpResponseMessage GetObjectandId(Guid uid)
+        {
+            var sql = $@"SELECT top 1 Object, ObjectID from AssetType WHERE Uid = '{uid.ToString()}'";
+            var details = Company.Query<dynamic>(sql).Single();
+            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID  });
         }
 
         #endregion

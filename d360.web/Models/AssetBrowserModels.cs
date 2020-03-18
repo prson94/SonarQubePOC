@@ -55,6 +55,8 @@ namespace d360.web.Models
     public class AssetBrowserAssetModel
     {
         [DataMember]
+        public bool focal { get; set; } = false;
+        [DataMember]
         public int hop { get; set; }
         [DataMember]
         public int assetTypeId { get; set; }
@@ -214,6 +216,7 @@ namespace d360.web.Models
 
     internal class HopNodeResult
     {
+        public bool isFocal { get; set; } = false;
         public Guid assetUid { get; set; }
         public long assetID { get; set; }
         public string key { get; set; }
