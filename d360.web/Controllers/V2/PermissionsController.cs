@@ -17,6 +17,7 @@ using d360.web.Models;
 using Microsoft.Web.Http;
 using Swashbuckle.Swagger.Annotations;
 using d360.core.resources;
+using d360.core.entities.Permissions;
 
 namespace d360.web.Controllers.V2
 {
@@ -51,12 +52,12 @@ namespace d360.web.Controllers.V2
             Route("asset/{assetUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Assets of this Type do not support permissions.", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.BadRequest, "Assets of this Type do not support permissions.", typeof(ErrorResponse)),            
             SwaggerResponse(HttpStatusCode.OK, "A list of asset permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetAssetPermissionsByUid(Guid assetUid)
-        {
+        {            
             Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
             if(asset != null)
@@ -73,7 +74,7 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.UID_not_Found, "Asset")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, String.Format(Permissions.UID_not_Found, "Asset")));
             }
 
         }
@@ -88,7 +89,7 @@ namespace d360.web.Controllers.V2
             Route("assettype/{assetTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "AssetType not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "AssetType does not support permissions.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "AssetType does not support permissions.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of assettype permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
@@ -111,7 +112,7 @@ namespace d360.web.Controllers.V2
             }
             else
             {
-                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.UID_not_Found, "AssetType")));
+                return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.NotFound, String.Format(Permissions.UID_not_Found, "AssetType")));
             }
         }
 
@@ -127,10 +128,11 @@ namespace d360.web.Controllers.V2
 
             Dictionary<string, bool> permissionsList = new Dictionary<string, bool>();
             // mark true for any matching entries in the passed permissions list.
+            bool isAdmin = Company.CurrentResourceIsAdmin;
             permissions.ForEach(p =>
             {
                 p.Selected = objectPermissions.Exists(t => t.ID == p.ID);
-                permissionsList.Add(p.ID.ToString(), p.Selected);
+                permissionsList.Add(p.ID.ToString(), isAdmin ? isAdmin : p.Selected);
             });
 
             return permissionsList;
@@ -152,48 +154,6 @@ namespace d360.web.Controllers.V2
                 return true;
             }
         }
-    }
-
-    /// <summary>
-    /// Model for example swagger response (swagger doesn't like simple dictionary)
-    /// </summary>
-    public class PermissionsResponseModel
-    {
-        [DataMember]
-        public bool ReadAsset { get; set; }
-
-        [DataMember]
-        public bool ModifyAsset { get; set; }
-
-        [DataMember]
-        public bool DeleteAsset { get; set; }
-
-        [DataMember]
-        public bool ReadAttributes { get; set; }
-
-        [DataMember]
-        public bool ModifyAttributes { get; set; }
-
-        [DataMember]
-        public bool DeleteAttributes { get; set; }
-
-        [DataMember]
-        public bool ReadResponsibilities { get; set; }
-
-        [DataMember]
-        public bool ModifyResponsibilities { get; set; }
-
-        [DataMember]
-        public bool DeleteResponsibilities { get; set; }
-
-        [DataMember]
-        public bool ReadRelationships { get; set; }
-
-        [DataMember]
-        public bool ModifyRelationships { get; set; }
-
-        [DataMember]
-        public bool DeleteRelationships { get; set; }
     }
 
 }
