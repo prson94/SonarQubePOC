@@ -37,7 +37,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [assetTypeUid]="selectedReferenceItemType?.AssetTypeUID" [sortField]="'Code'" [title]="'Items'" [showEditButton]="canEditReferenceItem" [showAddButton]="canAddReferenceItem && canReadSelectedType" [showDeleteButton]="canRemoveReferenceItem" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'" [useV2Api]="true"></d3s-dynamic-grid>                                                                       
+                                    <d3s-reference-item-list [assetTypeUid]="selectedReferenceItemType?.AssetTypeUID" [typeName]="selectedReferenceItemType?.Name"></d3s-reference-item-list>                                                                       
                                 </div>
                             </div>
                         </div>

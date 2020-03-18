@@ -33,6 +33,8 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
             this.parseType = type;
 
+            allowedDefaultFields.Add(new Tuple<string, string>("Code", "Code"));
+
             if (includeParent)
             {
                 allowedDefaultFields.Add(new Tuple<string, string>("ParentDisplayName", "Parent.DisplayValue"));

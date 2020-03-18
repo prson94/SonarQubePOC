@@ -11,11 +11,12 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
-export class DynamicFieldValueComponent extends BaseComponent implements OnInit {       
+export class DynamicFieldValueComponent extends BaseComponent implements OnInit {
     @Input() column: GridColumn;
     @Input() fields: GridField[] = [];
     @Input() item: any;
     @Input() isComplex: boolean = false;
+    @Input() useApiName: boolean = false;
 
     public fieldType: string;
     private fieldValue: any;
@@ -30,9 +31,19 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
+        if (this.useApiName && this.item && this.column && this.column.datafield) {
+            var field = this.fields.filter(x => x.name.toLowerCase() == this.column.datafield.toLowerCase())[0];
+            if (field && field.apiName) {
+                this.fieldValue = this.item[field.apiName];
+            }
+            else {
+                this.fieldValue = this.item[this.column.datafield];
+            }
 
-        if (this.item && this.column && this.column.datafield)
+        }
+        else if (this.item && this.column && this.column.datafield) {
             this.fieldValue = this.item[this.column.datafield];
+        }
 
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
             this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.        
@@ -40,17 +51,18 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         if (this.fieldType == 'bool' && this.fieldValue) {
             this.fieldValue = this.fieldValue.toUpperCase(); //fix for miXeD CaSe booleans!
-        }   
+        }
 
         if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
             this.fieldValue = null;
+
     }
 
-    private formatAsNumber(): string {        
+    private formatAsNumber(): string {
         return this.fieldValue !== '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 
-    private columnDataType(column: GridColumn): string {      
+    private columnDataType(column: GridColumn): string {
         var fields = this.fields.filter(x => x.name == column.datafield);
 
         if (column.type == 'preview')
@@ -61,7 +73,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             else
                 return 'string';
         }
-            
+
 
         if (fields.length > 0)
             return fields[0].type;
