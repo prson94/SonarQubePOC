@@ -783,9 +783,6 @@ button.ui-button:disabled {
 .ui-treetable table tbody tr{
     cursor: pointer;
 }
-.ui-treetable table tbody tr:hover{
-    background: 
-}
 .ui-treetable .ui-treetable-thead > tr > th,
 .ui-treetable .ui-treetable-tbody > tr > td,
 .ui-treetable .ui-treetable-tfoot > tr > td {
