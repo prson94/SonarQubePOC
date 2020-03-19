@@ -190,16 +190,24 @@ namespace d360.model.helpers
                 {
                     condition = "not in";
                 }
+                var basicSqlExpression = string.Empty;
 
                 if (!string.IsNullOrEmpty(fieldType.DefaultValue))
                 {
-                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))");
+                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
                     sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
                 }
                 else
                 {
-                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))");
+                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
                 }
+
+                if (fieldType.AllowAllValue)
+                {
+                    basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                }
+
+                stringBuilder.Append(basicSqlExpression);
             }
 
             if (fieldType.Type == "Relationship")
