@@ -2,7 +2,7 @@
 declare var ResourceHomePage;
 
 export class SiteUrlHelpers {
-    
+
     //main site routes
     // WARNING!! - SOME URLS SUCH AS TOOLTIPS ARE BURNED IN THE DB DO NOT CHANGES THE BELOW WITHOUT 
     // UPDATING BOTH!!
@@ -54,18 +54,18 @@ export class SiteUrlHelpers {
 
     //workflow child routes
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
-    static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';    
+    static SITE_URL_WORKFLOW_VIEW_ITEM = 'work';
     static SITE_URL_WORKFLOW_VIEW_STATUS = 'status';
     static SITE_URL_WORKFLOW_V2_VIEW_STATUS = 'details';
     static SITE_URL_WORKFLOW_LIST = 'workflowlist';
     static SITE_URL_WORKFLOW_LIST_V2 = 'workflowlistnew';
     static SITE_URL_WORKFLOW_FORM = 'form';
-    
+
     //fusion child routes
     static SITE_URL_FUSION_BY_FUSIONATTRIBUTEID = 'fusionattribute';
     static SITE_URL_FUSION_LIST = '';
     static SITE_URL_FUSION_ATTRIBUTE_DETAILS = 'details';
- 
+
     //admin child routes
     static SITE_URL_ADMIN_BULK_LOAD = `load`;
     static SITE_URL_ADMIN_FUSION = `fusion`;
@@ -87,8 +87,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_GROUPS = 'groups';
     static SITE_URL_ADMIN_RESPONSIBILITIES = 'responsibilities';
     static SITE_URL_ADMIN_RESOURCES = 'resources';
-    static SITE_URL_ADMIN_SETTINGS = 'settings';    
-    static SITE_URL_ADMIN_WORKFLOW = 'workflow';    
+    static SITE_URL_ADMIN_SETTINGS = 'settings';
+    static SITE_URL_ADMIN_WORKFLOW = 'workflow';
     static SITE_URL_ADMIN_ISSUE_TYPES = 'issuetypes';
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
@@ -107,7 +107,7 @@ export class SiteUrlHelpers {
         }
     }
 
-    static getUrl(objectType: string, objectId: number, parentId: number, areaName: string) {
+    static getUrl(objectType: string, objectId: number, parentId: number, areaName: string, uid: string) {
         if (objectType.toLowerCase() == "referenceitemtype") {
             return "/reference;referenceListId=" + objectId;
         }
@@ -144,12 +144,18 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() == "fusiontype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_FUSION}`;
         }
+        if (objectType.toLowerCase() == "tag" && uid && uid != '00000000-0000-0000-0000-000000000000') {
+            return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${uid}`;
+        }
+        if (objectType.toLowerCase() == "tag" && !objectId) {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`;
+        }
 
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }
 
     // getObjectUrl - Generates the url for an object based on its type
-    static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string) : string {
+    static getObjectUrl(objectType: string, objectId: number, parentId?: number, objectName?: string): string {
         switch (objectType.toUpperCase()) {
             case 'ARTIFACTTYPE':
                 return `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${objectId}`;
@@ -170,9 +176,9 @@ export class SiteUrlHelpers {
             case 'TAXONOMY':
                 return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'TAXONOMYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;              
+                return `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${objectId}/structure`;
             case 'POLICYTYPE':
-                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;                
+                return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${objectId}/structure`;
             case 'POLICY':
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'RULE':
@@ -203,7 +209,7 @@ export class SiteUrlHelpers {
     // output - the converted url
     // CURRENT USES mainly used by search as elastic search stores the url of the results but doesnt store the parent type
     // of objects making it not posible to get the object url by building it
-    static convertClassicUrl(url) : string {
+    static convertClassicUrl(url): string {
         if (url.startsWith('#/artifacts'))
             return url.replace('#/artifacts', SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT);
         else if (url.startsWith('#/resources'))
@@ -244,5 +250,5 @@ export class SiteUrlHelpers {
 
             return url;
         }
-    }    
+    }
 }

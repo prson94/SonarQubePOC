@@ -76,7 +76,6 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
                 this.getFusionConfiguration = this.fusionService.getFusionConfiguration(this.fusionId).subscribe(
                     result => {
                         this.fusion = result;
-                        console.log(result);
                         this.setBrowserTitle(this.titleService, `Fusion - ${this.fusion.Name}`);
                         this.setObjectInfo('Fusion', this.fusionId, undefined, this.fusion.AssetID);
                         this.treeSub = this.headerBreadcrumbService.breadcrumbTreeSource$.subscribe(
@@ -138,8 +137,10 @@ export class FusionItemComponent extends BaseComponent implements OnInit, OnDest
             }
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.setRightSideBar(this.fusion.HasDashboards, this.fusion.Manual);
+                this.secondaryNavService.setLocalHomeUrl(this.router.url);
                 this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Configuration');
                 this.secondaryNavService.showHeader(true);
+
             });
         });
     }
