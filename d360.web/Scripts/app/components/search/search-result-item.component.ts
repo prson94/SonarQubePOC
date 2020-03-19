@@ -32,7 +32,7 @@ declare var CompanySettings;
                         <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
                             <i class="fa fa-cart-plus"></i>
                         </button>
-                        <span *ngIf="result.Uid" class="d3s-icon smallmed-icon light">
+                        <span *ngIf="result.Uid" class="d3s-icon smallmed-icon light clickable">
                             <d3s-preview-tooltip [uid]="result.Uid" icon="info-circle"></d3s-preview-tooltip>
                         </span>
                     </span>
