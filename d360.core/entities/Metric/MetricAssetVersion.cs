@@ -22,6 +22,12 @@ namespace d360.core.entities.Metric
         [DataMember, StringLength(1)]
         public string ConditionAndOr { get; set; }
 
+        [DataMember]
+        public DateTime? EffectiveEndDate { get; set; }
+
+        [DataMember]
+        public State State { get; set; }
+
         [DataMember, ForeignKey("Uid")]
         public virtual MetricAsset Asset { get; set; }
 

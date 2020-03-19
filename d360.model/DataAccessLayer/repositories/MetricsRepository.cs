@@ -31,9 +31,14 @@ namespace d360.model.DataAccessLayer
 
         public void DeleteMetric(MetricAsset model)
         {
-            model.State = State.Deleted;
 
+            var currentAssetVersion = model.Versions.OrderBy(x => x.EffectiveDate).FirstOrDefault();
+            currentAssetVersion.State = State.Deleted;
+            currentAssetVersion.EffectiveEndDate = DateTime.Now.Date;
+            model.State = State.Deleted;
+            model.UpdatedOn = DateTime.Now;
             var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
+
             if (children.Count > 0)
             {
                 children.ForEach(c => c.State = State.Deleted);
@@ -155,7 +160,8 @@ namespace d360.model.DataAccessLayer
                 metricAsset.Description = model.Description;
                 metricAsset.Name = model.Name.Trim();
                 metricAsset.ScoreType = model.ScoreType.Value;
-
+                metricAsset.UpdatedBy = Company.CurrentResourceID;
+                metricAsset.UpdatedOn = DateTime.Now;
                 // If results, then you cannot change. 
                 if (existingResultCount > 0 && model.IsGroup)
                 {
@@ -237,7 +243,9 @@ namespace d360.model.DataAccessLayer
                     CreatedOn = DateTime.UtcNow,
                     ConditionAndOr = model.ConditionAndOr,
                     EffectiveDate = effectiveDate,
-                    Weight = model.Weight
+                    Weight = model.Weight,
+                    State = metricAsset.State,
+                    EffectiveEndDate = null
                 };
 
                 if (model.Conditions.Count > 0)
@@ -384,7 +392,7 @@ namespace d360.model.DataAccessLayer
                     								inner join metrics.Asset IA on IA.[Uid] = IV.[Uid] 
                     															and IA.AssetTypeUid = @assetTypeUid 
                     															and IV.EffectiveDate <= @effectiveDate 
-                    															and IA.State = 1
+                    															and ((IA.State = 1 and EffectiveEndDate is null) or (IA.State = 3 and EffectiveEndDate >= @effectiveDate))
                     					group by	IA.[Uid]
                     			) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
                     			inner join metrics.Asset A on A.[Uid] = V.[Uid];
@@ -466,17 +474,19 @@ namespace d360.model.DataAccessLayer
                         ma.Description,
                         ma.IsGroup,
                         AV.EffectiveDate, 
-                        (SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
+                        COALESCE((SELECT top 1 AV1.EffectiveDate FROM metrics.AssetVersion AV1
 							                            WHERE AV1.Uid = ma.Uid 
 							                            and AV1.EffectiveDate > @effectiveDate
-	                        order by EffectiveDate) 
+	                        order by EffectiveDate), AV.EffectiveEndDate) 
                          as [EndDate], 
                          I.AdjustedWeight as [Weight],
                          I.Value,
                          ma.ScoreType
                         from metrics.asset ma 
 		                        inner join metrics.AssetVersion AV 
-		                        on AV.Uid = ma.uid and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
+		                        on AV.Uid = ma.uid
+								and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
+								AND (AV.EffectiveEndDate is null or AV.EffectiveEndDate >= @EffectiveDate)
 		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
                         where  
 						ma.ScoreType = @scoreType 
