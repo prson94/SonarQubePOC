@@ -1063,6 +1063,19 @@ order by	f.SortOrder";
 
             }
 
+
+            if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
+            {
+                execProcedure = false;
+                var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
+                responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = tag.Value;
+                responseModel.MainTabTitle = "Tagged Assets";
+                responseModel.Items.HasAudit = true;
+                responseModel.Uid = tag.uid;
+            }
+
             if (execProcedure)
             {
                 if (model.ObjectId != null && model.ObjectType != null)
