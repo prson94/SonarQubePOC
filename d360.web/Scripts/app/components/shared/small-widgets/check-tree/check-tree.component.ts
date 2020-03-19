@@ -181,7 +181,7 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
         return this.filter && this.filteredNodes && this.filteredNodes.length;
     }
 
-    getNodeWithKey(key: string, nodes: CheckTreeNode[]) {
+    getNodeWithKey(key: string, nodes: CheckTreeNode[]): CheckTreeNode {
         for (let node of nodes) {
             if (node.key === key) {
                 return node;
@@ -190,6 +190,8 @@ export class CheckTree implements OnInit, OnChanges, AfterContentInit, OnDestroy
             if (node.children) {
                 let matchedNode = this.getNodeWithKey(key, node.children);
                 if (matchedNode) {
+                    if (matchedNode.parent == undefined)
+                        matchedNode.parent = node;
                     return matchedNode;
                 }
             }
