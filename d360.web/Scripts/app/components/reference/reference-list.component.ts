@@ -37,7 +37,7 @@ import { AssetTypeService } from '../../services/asset-type.service';
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-reference-item-list [assetTypeUid]="selectedReferenceItemType?.AssetTypeUID" [typeName]="selectedReferenceItemType?.Name"></d3s-reference-item-list>                                                                       
+                                    <d3s-reference-item-list [assetTypeUid]="selectedReferenceItemType?.uid" [typeName]="selectedReferenceItemType?.Name"></d3s-reference-item-list>                                                                       
                                 </div>
                             </div>
                         </div>
