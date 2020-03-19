@@ -84,6 +84,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                     break;
                 case AssetTypeClass.Policy:
                     this.selectedAssetTypeID = this.selected.AssetTypeID;
+                    this.selectedItemID = this.selected.ID;
                     this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
                     break;
                 default:
