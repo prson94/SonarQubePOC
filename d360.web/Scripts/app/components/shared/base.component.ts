@@ -15,11 +15,7 @@ import { TreeNode } from 'primeng/api';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteMenuService } from '../../services/site-menu.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { OnDestroy, OnInit } from '@angular/core';
-import { Policy } from '../../models/policy.model';
-import { Router } from '@angular/router';
 import { ScoreType } from '../../models/metrics.model';
 
 declare var CompanySettings;
@@ -183,14 +179,24 @@ export class BaseComponent {
         let currentTab = this.secondaryNavService.getLocalActiveItem();
         let homeUrl = this.secondaryNavService.getLocalHomeUrl();
         let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-        if (currentObject && currentArea && tabs.length > 0 && currentTab && homeUrl) {
+
+        console.log(currentArea);
+        console.log(currentTab);
+        console.log(homeUrl);
+        console.log(crumbs);
+
+        if (currentArea && tabs.length > 0 && currentTab && homeUrl) {
             this.secondaryNavService.clearItems();
-            this.secondaryNavService.setCurrentObject(currentObject);
+            if (currentObject)
+                this.secondaryNavService.setCurrentObject(currentObject);
             this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
+
             tabs.forEach(tab => {
-                if (tab.title == currentTab.title)
+                if (tab.title == currentTab.title) {
                     tab.active = true;
+                    this.secondaryNavService.setLocalActiveItem(tab);
+                }
                 else
                     tab.active = false;
                 this.secondaryNavService.showItem(tab);
@@ -768,7 +774,8 @@ export class BaseComponent {
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
-            if (this.objectType == 'FusionAttribute' || this.objectType == 'Tag') {
+            if (this.objectType == 'FusionAttribute' || this.objectType == 'Fusion' || this.objectType == 'Tag') {
+                this.checkSecondaryNavLocalStorage();
                 return;
             }
 
