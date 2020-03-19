@@ -115,7 +115,9 @@ export class HomeComponent extends BaseComponent implements OnInit, OnDestroy {
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     public onShowActivityDetails(event) {

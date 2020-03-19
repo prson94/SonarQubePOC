@@ -145,10 +145,18 @@ export class HeaderActionsComponent {
         this.resizeTimer = window.setTimeout(() => this.calculateControlWidth(), 250)
     }
     ngOnDestroy() {
-        this.routerSub.unsubscribe();
-        this.subFavorites.unsubscribe();
-        this.subObjectChange.unsubscribe();
-        this.headerActionsSub.unsubscribe();
+        if (this.routerSub) {
+            this.routerSub.unsubscribe();
+        }
+        if (this.subFavorites) {
+            this.subFavorites.unsubscribe();
+        }
+        if (this.subObjectChange) {
+            this.subObjectChange.unsubscribe();
+        }
+        if (this.headerActionsSub) {
+            this.headerActionsSub.unsubscribe();
+        }
     }
 }
 

@@ -65,7 +65,9 @@ export class PreviewTooltipComponent {
     }
 
     ngOnDestroy() {
-        this.subscriptions.unsubscribe();
+        if (this.subscriptions) {
+            this.subscriptions.unsubscribe();
+        }
     }
 
     private load(item, tip) {

@@ -12,7 +12,7 @@
                                size="100"
                                type="text">
                         <p-table #dt
-                                 (selectionChange)="selected=$event;selectedChange.emit(selected);"
+                                 (selectionChange)="selected=$event;onSelect();"
                                  [globalFilterFields]="['Name']"
                                  [metaKeySelection]="true"
                                  [pageLinks]="3"
@@ -47,13 +47,13 @@
                                 <td>{{item.Name}}</td>
                                 <td *ngIf="hasModifyAssetPermissions()">
                                     <div class="RowTools">
-                                        <a (click)="selected=item;showEditor=true;"
+                                        <a (click)="onEdit(item);"
                                            style="cursor:pointer;"><i class="fa fa-pencil"></i></a>
                                     </div>
                                 </td>
                                 <td *ngIf="hasDeleteAssetPermissions()">
                                     <div class="RowTools">
-                                        <a (click)="selected=item;showDelete=true;"
+                                        <a (click)="onDelete(item)"
                                            style="cursor:pointer;"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>

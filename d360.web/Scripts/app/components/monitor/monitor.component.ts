@@ -206,9 +206,12 @@ export class MonitorComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnDestroy() {
-        //this.clearSidebar();
-        this.sub.unsubscribe();
-        this.querySub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.querySub) {
+            this.querySub.unsubscribe();
+        }
     }
 
     loadComplete(e: any) {

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.graph.AssetEdge-v1">
+  <changeSet author="TDuric" id="Table.graph.AssetEdge-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -54,11 +54,21 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_Uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_Uid] ON [graph].[AssetEdge] ( [Uid] ASC )
 END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_ToFromPredicate')
+BEGIN
+CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_ToFromPredicate] ON [graph].[AssetEdge]
+(
+    $to_id,
+    $from_id,
+    [PredicateType]
+)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF) ON [PRIMARY]
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+DROP INDEX IF EXISTS IX_GraphAssetEdge_ToFromPredicate ON [graph].[AssetEdge];
 		]]>
 	</rollback>
   </changeSet>

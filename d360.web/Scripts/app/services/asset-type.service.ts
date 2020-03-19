@@ -1,14 +1,14 @@
-﻿import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
-import {Observable} from "rxjs";
-import {catchError, map} from "rxjs/operators";
+﻿import { Injectable } from '@angular/core';
+import { HttpClient } from "@angular/common/http";
+import { Observable } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 
-import {JsonResult} from '../models/jsonresult.model';
-import {AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel} from "../models/asset.model";
+import { JsonResult } from '../models/jsonresult.model';
+import { AssetTypeEditorModel, AssetTypeClass, AssetType, AssetTypeApiModel } from "../models/asset.model";
 
 
-import {BaseObservableService} from "./baseObservable.service";
-import {MessagesObservableService} from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
+import { MessagesObservableService } from './messages-observable.service';
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { Response } from 'powerbi-router';
 
@@ -67,7 +67,25 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get('api/v2/assets/types')
             .pipe(
-                map(response => <AssetTypeApiModel[]  & ErrorResponse>response),
+                map(response => <AssetTypeApiModel[] & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getAssetTypesByClass(cs: AssetTypeClass): Observable<AssetTypeApiModel[] & ErrorResponse> {
+        return this
+            .http
+            .get('api/v2/assets/types?class=' + cs.toString())
+            .pipe(
+                map(response => <AssetTypeApiModel[] & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    public getAssetTypeObjectAndID(uid: string) {
+        return this.http.get(`api/getAssetTypeObjectAndObjectID/${uid}`)
+            .pipe(
+                map(response => <any>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -77,7 +95,7 @@ export class AssetTypeService extends BaseObservableService {
             .http
             .get(`api/v2/assets/types?assetTypeUid=${uid}`)
             .pipe(
-            map((response) => { return <AssetTypeApiModel>response[0] }),
+                map((response) => { return <AssetTypeApiModel>response[0] }),
                 catchError(err => this.handleError(err))
             );
     }

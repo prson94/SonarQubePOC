@@ -13,6 +13,7 @@ export class Model {
     P_CanDelete: boolean;
     P_CanEdit: boolean;
     AssetTypeUID: string;
+    uid: string;
 }
 
 export class ModelHierarchy {

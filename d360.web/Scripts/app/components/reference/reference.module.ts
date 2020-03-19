@@ -27,6 +27,9 @@ import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+import { ReferenceItemGridComponent } from './reference-item-list.component';
+import { DirectivesModule } from '../../directives/directives.module';
+import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
 
 @NgModule({
     imports: [
@@ -45,9 +48,11 @@ import { TableModule } from 'primeng/table';
         TooltipModule,
         TableModule,
         
+        
         //d3s        
         CoreModule,      
-        PipesModule,    
+        PipesModule,
+        DirectivesModule,
             
         SharedDeleteFormModule,
         SharedFieldDefinitionModule,        
@@ -55,10 +60,12 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,        
         SharedObjectDetailsModule,
         SharedAssetTypeEditorModule,
+        SharedAssetEditorsModule,
         TilesModule,
     ],
     declarations: [                
         ReferenceItemTypeGridComponent,
+        ReferenceItemGridComponent,
         ReferenceListComponent,
         ReferenceComponent,
     ],

@@ -43,6 +43,8 @@ export class ItemFollowComponent extends BaseComponent implements OnInit, OnDest
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 }

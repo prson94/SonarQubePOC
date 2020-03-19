@@ -15,6 +15,7 @@ import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
 import { StringConstants } from '../../static/string-constants';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -23,7 +24,7 @@ import { ResponsibilityTypeRelationPermission, Permission } from '../../models/r
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
                     <div [ngClass]="showDefault ? 'col s12 l3' : 'col s12 l8'">
-                        <d3s-reference-item-type-list [initialSelectedListId]="selectedReferenceListId" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
+                        <d3s-reference-item-type-list [initialSelectedListUid]="selectedReferenceListUid" [selected]="selectedReferenceItemType" (formModeChange)="changeFormMode($event)"  (selectedChange)="changeType($event)"></d3s-reference-item-type-list>
                     </div>
                     <div class="col s12 l9" *ngIf="selectedReferenceItemType && showDefault">
                         <div class="row">
@@ -36,20 +37,21 @@ import { ResponsibilityTypeRelationPermission, Permission } from '../../models/r
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">           
-                                    <d3s-dynamic-grid #itemsGrid [assetTypeUid]="selectedReferenceItemType?.AssetTypeUID" [sortField]="'Code'" [title]="'Items'" [showEditButton]="canEditReferenceItem" [showAddButton]="canAddReferenceItem && canReadSelectedType" [showDeleteButton]="canRemoveReferenceItem" [itemName]="'Reference'" [objectType]="'ReferenceItemType'" [objectID]="selectedReferenceItemType?.ID" [createUri]="'form/dynamicedit/create/referenceitem/'" [editUri]="'form/dynamicedit/edit/referenceitem/'" [dataUri]="referenceItemUri()" [showExportButton]="true" (exportClick)="exportDataToExcel()" [deleteUri]="'form/dynamicedit/delete/referenceitem/'" [useV2Api]="true"></d3s-dynamic-grid>                                                                       
+                                    <d3s-reference-item-list [assetTypeUid]="selectedReferenceItemType?.uid" [typeName]="selectedReferenceItemType?.Name"></d3s-reference-item-list>                                                                       
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
                `,
-    providers: [PermissionsService, ReferenceService, UriBasedService],
+    providers: [PermissionsService, ReferenceService, UriBasedService, AssetTypeService],
 })
 
 export class ReferenceListComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private selectedReferenceItemType: ReferenceItemType;
     private selectedReferenceListId: number = 0;
+    private selectedReferenceListUid: string = '';
     private canReadSelectedType = true;
 
     private showDefault: boolean = true;
@@ -67,7 +69,8 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected referenceService: ReferenceService,
         protected authenticationService: AuthenticationService,
-        private uriBasedService: UriBasedService
+        private uriBasedService: UriBasedService,
+        private assetTypeService: AssetTypeService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -86,28 +89,41 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             this.loadPermissions(this.permissionsService, "ReferenceItemType", 0);
 
             this.selectedReferenceListId = +params['referenceListId']; // (+) converts string 'id' to a number
-            //check if the user has permission to read the selected type
-            if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
-                this.referenceService.canReadReferenceType(this.selectedReferenceListId)
-                    .subscribe(r => {
-                        this.canReadSelectedType = r;
-
-                        this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {
-                            this.canAddReferenceItem = this.hasModifyAssetPermissions();
-                            this.canEditReferenceItem = this.hasModifyAssetPermissions();
-                            this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-
-                            this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
-                                this.headerBreadcrumbService.clearBreadcrumbs();
-                                this.headerBreadcrumbService.clearCurrentObjectInfo();
-                                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
-                            });
-                        });
-                        this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
-                    });
+            if (params['referenceListId']) {
+                if (params['referenceListId'].toString().length == 36) {
+                    this.selectedReferenceListUid = params['referenceListId'];
+                    this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe(res => {
+                        this.selectedReferenceListId = +res.ObjectID;
+                        this.load();
+                    })
+                }
+                else if (this.selectedReferenceListId != null && !isNaN(this.selectedReferenceListId)) {
+                    this.load();
+                }
             }
         });
 
+    }
+
+    private load() {
+        //check if the user has permission to read the selected type
+        this.referenceService.canReadReferenceType(this.selectedReferenceListId)
+            .subscribe(r => {
+                this.canReadSelectedType = r;
+
+                this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {
+                    this.canAddReferenceItem = this.hasModifyAssetPermissions();
+                    this.canEditReferenceItem = this.hasModifyAssetPermissions();
+                    this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
+
+                    this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
+                        this.headerBreadcrumbService.clearBreadcrumbs();
+                        this.headerBreadcrumbService.clearCurrentObjectInfo();
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                    });
+                });
+                this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
+            });
     }
 
     ngOnDestroy() {
@@ -141,11 +157,11 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         this.selectedReferenceItemType = e;
         this.selectedReferenceListId = e.ID;
         this.setSecondaryNavItems();
-        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.ID}`);
+        this.router.navigateByUrl(`/${SiteUrlHelpers.SITE_URL_REFERENCE_ROOT};referenceListId=${e.uid}`);
     }
 
     setSecondaryNavItems() {
-        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null,null,null,null,true,null,null));
+        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(null, null, null, null, true, null, null));
         if (this.auditSidebar) {
             this.auditSidebar.url = `/sidebar/audit/ReferenceItemType/${this.selectedReferenceListId}`;
         }

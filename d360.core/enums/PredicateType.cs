@@ -20,20 +20,21 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true)
         ]
         Simple = 7,
         [
-            Name("Data Lineage"),
-            Description("Allows you to define source paths between objects."),
+            Name("Simple Data Lineage"),
+            Description("Allows you to define simple data lineage relationships."),
             ReadOnly(false),
             SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
-            AllowEditFromRelationshipEditor(true),
-            LineageVersionsSupported(1, 2)
+            AllowEditFromPredicateEditor(true),
+            AllowEditFromRelationshipEditor(true)
         ]
         DataLineage = 1,
         [
@@ -45,6 +46,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(false),
             AllowEditFromRelationshipEditor(false),
             LineageVersionsSupported(2),
             Obsolete
@@ -54,11 +56,12 @@ namespace d360.core.enums
             Name("Inter-type Hierarchy"),
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing different asset types at each level."),
             ReadOnly(false),
-            SingleRelationshipByFunctionalType(false),
+            SingleRelationshipByFunctionalType(true),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(false)
         ]
         InterTypeHierarchy = 3,
@@ -66,11 +69,12 @@ namespace d360.core.enums
             Name("Intra-type Hierarchy"),
             Description("This hierarchy allows for creating a tree structure or hierarchy referencing the same asset type at each level."),
             ReadOnly(false),
-            SingleRelationshipByFunctionalType(false),
+            SingleRelationshipByFunctionalType(true),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(false),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(false)
         ]
         IntraTypeHierarchy = 4,
@@ -83,6 +87,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(false),
             AllowEditFromRelationshipEditor(false),
             LineageVersionsSupported(1),
             Obsolete
@@ -97,6 +102,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true)
         ]
         Grammar = 6,
@@ -109,6 +115,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(false),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1, 2)
         ]
@@ -122,6 +129,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true)
         ]
         SeeAlso = 9,
@@ -134,6 +142,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1)
         ]
@@ -147,6 +156,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(false),
             AllowEditFromRelationshipEditor(false),
             LineageVersionsSupported(1, 2),
             Obsolete
@@ -161,6 +171,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3)
         ]
@@ -174,6 +185,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3)
         ]
@@ -187,6 +199,7 @@ namespace d360.core.enums
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(false),
             ForceDifferentSubjectObject(false),
+            AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3)
         ]
@@ -216,6 +229,9 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool ForceDifferentSubjectObject { get; set; }
+
+        [JsonIgnore]
+        public bool AllowEditFromPredicateEditor { get; set; }
 
         [JsonIgnore]
         public bool AllowEditFromRelationshipEditor { get; set; }
@@ -283,6 +299,7 @@ namespace d360.core.enums
                         AllowIntersectTypeAssignment = ((AllowIntersectTypeAssignmentAttribute)tm.GetCustomAttribute(typeof(AllowIntersectTypeAssignmentAttribute))).Allowed,
                         AllowMultiplePredicates = ((AllowMultiplePredicatesAttribute)tm.GetCustomAttribute(typeof(AllowMultiplePredicatesAttribute))).Allowed,
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
+                        AllowEditFromPredicateEditor = ((AllowEditFromPredicateEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromPredicateEditorAttribute))).Allowed,
                         AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
                         SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)tm.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,

@@ -72,6 +72,8 @@ export class AdminCustomAPIEndpointDetailComponent extends AdminBaseComponent im
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 }

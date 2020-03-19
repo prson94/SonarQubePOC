@@ -19,7 +19,7 @@ export class ModelsService extends BaseObservableService {
     }
 
     getModels(): Observable<Model[]> {
-        return this.http.get('api/catalogs')
+        return this.http.get('api/v2/assets/types?Class=Model')
             .pipe(
                 map(response => <Model[]>response),
                 catchError(err => this.handleError(err))

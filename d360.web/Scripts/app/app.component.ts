@@ -88,7 +88,9 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         }, 200);
     }
 
-    ngOnDestroy() {        
-        this.subscription.unsubscribe();
+    ngOnDestroy() {
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
     }
 }

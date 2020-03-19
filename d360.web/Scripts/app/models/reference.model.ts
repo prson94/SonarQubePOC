@@ -1,5 +1,6 @@
 ﻿export class ReferenceItemType{
     ID: number;
+    uid: string;
     Name: string;
     DisplayFormat: string;
     Description: string;

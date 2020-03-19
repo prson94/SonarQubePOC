@@ -63,6 +63,7 @@
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
+	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.AttributeTypeCategory.xml"/>
 	<include file="scripts/Table.dbo.AttributeType.xml"/>
 	<include file="scripts/Table.dbo.AttributeTypeRelation.xml"/>
@@ -139,8 +140,6 @@
 	<include file="scripts/Table.dbo.RuleType.xml"/>
 	<include file="scripts/Table.dbo.Rule.xml"/>
 	<include file="scripts/Table.dbo.RuleImplementation.xml"/>
-	<include file="scripts/Table.dbo.AssetResult.xml"/>
-	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>	
 	<include file="scripts/Function.utility.CalculatePassed.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/Function.utility.CalculatePassedWrapper.xml"/>	<!--Function used for computed column-->
 	<include file="scripts/Table.dbo.RuleResult.xml"/>
@@ -177,6 +176,7 @@
 	<include file="scripts/Table.fusion.StagingRelationUnresolved.xml"/>
 	<include file="scripts/Table.graph.AssetNode.xml"/>
 	<include file="scripts/Table.graph.AssetEdge.xml"/>
+	<include file="scripts/Table.dbo.AssetResultEdge.xml"/>						<!-- Dependent on graph.AssetNode -->
 	<include file="scripts/Table.graph.Filter.xml"/>
 	<include file="scripts/Function.integration.GetObjectByAssetTypeId.xml"/>	<!--Function used for computed column-->
 	<include file="scripts/Function.integration.GetObjectIDByAssetTypeId.xml"/>	<!--Function used for computed column-->

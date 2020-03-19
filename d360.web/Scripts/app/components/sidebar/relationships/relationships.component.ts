@@ -63,6 +63,8 @@ export class RelationshipsComponent extends BaseComponent implements OnInit, OnD
 
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 }

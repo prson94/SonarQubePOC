@@ -40,6 +40,20 @@ import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.comp
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
 import { LineageInfoComponent } from './lineage/lineage-info.component';
 import { LineageEditorComponent } from './lineage/lineage-editor.component';
+
+import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.component';
+import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
+import { AssetBrowserFilterPanelComponent } from './assetbrowser/panels/filterpanel.component';
+import { AssetBrowserInfoPanelComponent } from './assetbrowser/panels/infopanel.component';
+import { AssetBrowserOwnerPanelComponent } from './assetbrowser/panels/ownerpanel.component';
+import { AssetBrowserSettingsPanelComponent } from './assetbrowser/panels/settingspanel.component';
+
+import { AssetBrowserPanelsComponent } from './assetbrowser/tools/panels.component';
+import { AssetBrowserSavedFilterComponent } from './assetbrowser/tools/savedfilter.component';
+import { AssetBrowserSearchComponent } from './assetbrowser/tools/search.component';
+import { AssetBrowserViewChangeComponent } from './assetbrowser/tools/viewchange.component';
+import { AssetBrowserZoomComponent } from './assetbrowser/tools/zoom.component';
+
 import { AssetBrowserComponent } from './assetbrowser/browser.component';
 
 import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
@@ -55,13 +69,14 @@ import { SharedFormMessageModule } from '../form-message.part'
 import { SharedObjectDetailsModule } from '../objectdetails/shared-object-details.module';
 import { NgxJsonViewModule } from 'ng-json-view';
 import { IconService } from '../../../services/icon.service';
-import { DiagramAssetRelationshipComponent } from './tools/relationships.component';
+
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { AssetTypeModalEditorModule } from '../assetmodaleditor/asset-type-modal-editor.module';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -104,7 +119,21 @@ import { PipesModule } from '../../../pipes/pipes.module';
         TagViewModule
     ],
     declarations: [
+        AssetBrowserAddPanelComponent,
+        AssetBrowserAlertPanelComponent,
+        AssetBrowserFilterPanelComponent,
+        AssetBrowserInfoPanelComponent,
+        AssetBrowserOwnerPanelComponent,
+        AssetBrowserSettingsPanelComponent,
+
+        AssetBrowserPanelsComponent,
+        AssetBrowserSavedFilterComponent,
+        AssetBrowserSearchComponent,
+        AssetBrowserViewChangeComponent,
+        AssetBrowserZoomComponent,
+
         AssetBrowserComponent,
+
         ImpactComponent,        
         LineageComponent,
         LineageBusinessEditorComponent,
@@ -122,8 +151,7 @@ import { PipesModule } from '../../../pipes/pipes.module';
         LineageEditorComponent,
         ModelDiagramComponent,
 
-        LineageDiagramComponent,
-        DiagramAssetRelationshipComponent
+        LineageDiagramComponent
     ],
     exports: [
         AssetBrowserComponent,

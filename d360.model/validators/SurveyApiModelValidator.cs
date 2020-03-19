@@ -20,7 +20,7 @@ namespace d360.model.validators
         }
        
 
-        public bool IsVaidResource(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public bool IsValidResource(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             bool isValid = true;
             if (queryParams.ToList().Any(q => q.Key.ToLower() == "resourceuid"))

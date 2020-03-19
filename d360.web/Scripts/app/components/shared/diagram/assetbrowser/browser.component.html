@@ -2,39 +2,13 @@
 <div class="row asset-browser" [ngClass]="{'full-screen-ab': isFullScreen}">
     <div class="asset-browser-body col s12">
         <div class="tile tile-detail" style="padding: 0">
-            <div [hidden]="isLoading && !fromRefresh" class="asset-browser-header">
+            <div [hidden]="isLoading" class="asset-browser-header">
                 <div class="controls-left">
-                    <div class="asset-browser-search">
-                        <input type="text" maxlength="100" class="{{searchValue.length != 0 ? 'has-text' : ''}}" (keyup)="searchDiagram($event);" [(ngModel)]="searchValue" pInputText placeholder="Find in diagram...">
-                        <div class="input-actions">
-                            <span *ngIf="searchValue.length != 0" class="search-item-location">
-                                {{searchCurrentItem}}/{{searchResults.length}}
-                            </span>
-                            <i *ngIf="searchValue.length != 0" class="fa fa-times-circle ng-star-inserted" (click)="searchDiagram(null);"></i>
-                            <i class="fa fa-search ng-star-inserted"></i>
-                        </div>
-                    </div>
-                    <div class="asset-browser-button-group btn-small">
-                        <button (click)="goToPrevious()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == 1 ? 'light' : ''}}"><i class="fa fa-chevron-up"></i></button>
-                        <button (click)="goToNext()" type="button" class="{{searchResults.length == 0 || searchCurrentItem == searchResults.length ? 'light' : ''}}"><i class="fa fa-chevron-down"></i></button>
-                    </div>
+                    <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)"></d3s-assetbrowser-viewchange>
+                    <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
                 </div>
                 <div class="controls-right">
-                    <div class="asset-browser-button-group">
-                        <button type="button" title="Asset Browser Settings" (click)="settingsButtonClick($event)" [class]="settingsButtonSelectedClass()"><i class="fa fa-gear"></i></button>
-                        <button type="button" title="Filter asset browser" (click)="filterButtonClick($event)" [class]="filterButtonSelectedClass()"><i class="fa fa-filter"></i></button>
-                        <div class="button-spacer"></div>
-                        <button type="button" title="Information window" (click)="infoButtonClick($event)" [class]="infoButtonSelectedClass()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
-                        <button type="button" title="Refresh asset browser" (click)="refreshButtonClick($event)"><i class="fa fa-refresh"></i></button>
-                        <button type="button" title="Add Lineage" (click)="addRelationshipsClick($event)" [class]="addButtonSelectedClass()"><i class="fa fa-plus"></i></button>
-                        <button type="button" title="Download to PNG" (click)="savePngButtonClick($event)" class="right-margin-4"><i class="fa fa-download"></i></button>
-                        <div class="button-spacer"></div>
-                        <button type="button" [class]="alertButtonClass()" [ngStyle]="{'width': alertButtonWidth()}" title="Alerts" (click)="alertButtonClick($event)" [disabled]="totalAlertCount == 0">
-                            <i [class]="alertCountClass()"></i>
-                            <div [class]="alertCountNumberClass()" [innerText]="alertCountNumber()"></div>
-                        </button>
-                        <button type="button" title="{{isFullScreen ? 'Minimize':'Full screen'}}" (click)="fullScreenButtonClick($event)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
-                    </div>
+                    <d3s-assetbrowser-panels (click)="panels_Click($event)" [commandToResetTo]="commandToResetTo" [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!this.panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"></d3s-assetbrowser-panels>
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
@@ -51,261 +25,79 @@
                         <div class="asset-browser-window-header">
                             <div class="info">
                                 <div class="class-name">
-                                    <span *ngIf="isInfoWindowVisible">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</span>
+                                    <span *ngIf="panel_InformationVisible">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</span>
                                 </div>
                                 <div class="asset-name">
-                                    <span *ngIf="isInfoWindowVisible"><a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a></span>
-                                    <span *ngIf="isFilterWindowVisible">Apply Filters</span>
-                                    <span *ngIf="isAlertWindowVisible">Active Alerts</span>
-                                    <span *ngIf="isAddRelationshipWindowVisible">Add Lineage</span>
-                                    <span *ngIf="isSettingWindowVisible">Settings</span>
+                                    <span *ngIf="panel_InformationVisible"><a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a></span>
+                                    <span *ngIf="panel_FiltersVisible">Apply Filters</span>
+                                    <span *ngIf="panel_AlertVisible">Active Alerts</span>
+                                    <span *ngIf="panel_AddVisible">Add Lineage</span>
+                                    <span *ngIf="panel_SettingsVisible">Settings</span>
                                 </div>
                             </div>
                             <div class="scores">
-                                <span class="d3s-score-container" *ngIf="isInfoWindowVisible && filterModel.DisplayScores && selectedDiagramAsset?.Scores">
-                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" [showSparkline]="false">
-                                    </d3s-score-badge>
+                                <span class="d3s-score-container" *ngIf="panel_InformationVisible && displayConfiguration.DisplayScores && selectedDiagramAsset?.Scores">
+                                    <d3s-score-badge *ngFor="let score of selectedDiagramAsset?.Scores" [score]="score" [showSparkline]="false"></d3s-score-badge>
                                 </span>
                             </div>
                             <div class="clearfix"></div>
                             <div class="windowtabs">
-                                <button *ngIf="isInfoWindowVisible" [class]="(panelTabIndex == 0) ? 'tab-selected' : 'tab'" (click)="switchToInfoDetailTab()">Details</button>
-                                <button *ngIf="isInfoWindowVisible" [class]="(panelTabIndex == 1) ? 'tab-selected' : 'tab'" [disabled]="!OwnershipTabEnabled()" (click)="switchToOwnerDetailTab()">Ownership</button>
+                                <button *ngIf="panel_InformationVisible" [class]="(panel_TabIndex == 0) ? 'tab-selected' : 'tab'" (click)="event_Information_DetailTabClick()">Details</button>
+                                <button *ngIf="panel_InformationVisible" [class]="(panel_TabIndex == 1) ? 'tab-selected' : 'tab'" (click)="event_Information_OwnerTabClick()" [disabled]="!ownershipTabEnabled()">Ownership</button>
 
-                                <!--button *ngIf="isFilterWindowVisible" class="tab-selected">Filters</button-->
-                                <div class="saved-filter-controls" *ngIf="isFilterWindowVisible">
-                                    <p-dropdown [(ngModel)]="selectedFilter"
-                                                [options]="savedFilters"
-                                                [showClear]="true"
-                                                [style]="{'width':'100%'}"
-                                                optionLabel="name"
-                                                placeholder="Select a predefined filter"
-                                                optionLabel="name"
-                                                (onChange)="applySavedFilter($event)"
-                                                styleClass="filter-dropdown"
-                                                style="width:100%"></p-dropdown>
-                                    <p-menu #filtermenu [popup]="true" [model]="getFiltermenuItems()" appendTo="body"></p-menu>
-                                    <button type="button" pButton icon="fa fa-ellipsis-v" (click)="filtermenu.toggle($event)"></button>
-                                </div>
+                                <!--button *ngIf="panel_FiltersVisible" class="tab-selected">Filters</button-->
+                                <d3s-assetbrowser-savedfilter *ngIf="panel_FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
 
-                                <button *ngIf="isAlertWindowVisible" class="tab-selected">Alerts</button>
+                                <button *ngIf="panel_AlertVisible" class="tab-selected">Alerts</button>
 
-                                <button *ngIf="isAddRelationshipWindowVisible" class="tab-selected">Lineage</button>
+                                <button *ngIf="panel_AddVisible" class="tab-selected">Lineage</button>
 
-                                <button *ngIf="isSettingWindowVisible" class="tab-selected">General</button>
+                                <button *ngIf="panel_SettingsVisible" class="tab-selected">General</button>
                             </div>
                         </div>
-                        <article class="content" *ngIf="isWindowLoading">
-                            <section>
-                                <d3s-loading [(isLoading)]="isWindowLoading"></d3s-loading>
-                            </section>
-                        </article>
-                        <div class="asset-browser-window-content" *ngIf="!isWindowLoading">
-                            <section *ngIf="isAddRelationshipWindowVisible">
+                        <div class="asset-browser-window-content">
+                            <section *ngIf="panel_AddVisible">
                                 <div #addLineagePanel class="scroll-panel">
-                                    <d3s-diagram-relationships [assetBrowserData]="responseModel" (refreshDiagram)="refreshButtonClick($event)"></d3s-diagram-relationships>
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-addpanel [assetBrowserData]="responseModel" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="isAlertWindowVisible">
-                                <d3s-loading [(isLoading)]="isAlertPanelLoading"></d3s-loading>
-                                <div #alertPanel [(hidden)]="isAlertPanelLoading" class="scroll-panel">
-                                    <div *ngIf="alerts.length == 0" class="error-msg">
-                                        No alerts displayed.
-                                    </div>
-                                    <div class="asset-browser-window-tabs-content-alert" *ngFor="let alert of alerts" [ngClass]="alert.selected ? 'alert-selected' : ''">
-                                        <div class="asset">
-                                            <span [className]="'icon fa ' + alert.asset.icon"></span>
-                                            <span>{{alert.asset.displayValue}}</span>
-                                            <div class="settings-menu">
-                                                <i style="opacity: 1" class="fa fa-ellipsis-v"></i>
-                                                <div class="popup-menu place-right">
-                                                    <ul>
-                                                        <li (click)="onAlertOpenDetails(alert)"><span style="font-weight: 700;">Show Details</span></li>
-                                                        <li (click)="onAlertOpenInNewTab(alert)"><span>Open in New Tab</span></li>
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="action" *ngIf="alert.action">
-                                            <div>
-                                                <span class="label">Action Alert:</span>
-                                                <span class="type">{{alert.action.name}}</span>
-                                            </div>
-                                            <div class="content" [innerHTML]="alert.action.description"></div>
-                                        </div>
-                                        <div class="score" *ngIf="alert.score">
-                                            <div>
-                                                <span class="label">Quality Alert:</span>
-                                                <span class="type">{{alert.score.name}}</span>
-                                            </div>
-                                        </div>
-                                    </div>
+                            <section *ngIf="panel_AlertVisible">
+                                <div #alertPanel class="scroll-panel">
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-alertpanel [assets]="selectedAssetsWithAlerts" (openDetail)="alert_OpenDetail($event)"></d3s-assetbrowser-alertpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="isFilterWindowVisible">
+                            <section *ngIf="panel_FiltersVisible">
                                 <div #filterDetailPanel class="scroll-panel">
-                                    <table>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label">Asset Ancestry:</td>
-                                            <td class="filter-row-control">
-                                                <p-dropdown [options]="filterSelectionsModel?.AncestryOptions" [ngModel]="filterModel.AncestryMode" (ngModelChange)="filterModel.AncestryMode = $event; filterTriggerVisualizationUpdate()" styleClass="filter-dropdown"></p-dropdown>
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label"># Hops To Load:</td>
-                                            <td class="filter-row-control">
-                                                <p-dropdown [options]="filterSelectionsModel?.HopOptions" [ngModel]="filterModel.NumberOfHops" (ngModelChange)="filterModel.NumberOfHops = $event; filterNumberOfHopsChange()" styleClass="filter-dropdown"></p-dropdown>
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label">Hide by Asset Type:</td>
-                                            <td class="filter-row-control">
-                                                <p-listbox [options]="filterSelectionsModel?.FilterAssetTypes"
-                                                           [(ngModel)]="selectedFilterAssetTypes"
-                                                           multiple="multiple"
-                                                           [showToggleAll]="false"
-                                                           styleClass="filter-dropdown"
-                                                           checkbox="checkbox"
-                                                           optionLabel="label"
-                                                           (onChange)="selectedFilterAssetTypes = $event.value; filterAssetTypeChange($event)">
-                                                </p-listbox>
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label" *ngIf="filterSelectionsModel?.FilterPredicates && filterSelectionsModel?.FilterPredicates.length > 0">Hide by Impact Predicate:</td>
-                                            <td class="filter-row-control">
-                                                <p-listbox [options]="filterSelectionsModel?.FilterPredicates"
-                                                           [(ngModel)]="selectedFilterPredicates"
-                                                           multiple="multiple"
-                                                           [showToggleAll]="false"
-                                                           styleClass="filter-dropdown"
-                                                           checkbox="checkbox"
-                                                           optionLabel="label"
-                                                           (onChange)="selectedFilterPredicates = $event.value; filterPredicateChange($event)">
-                                                </p-listbox>
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label" *ngIf="filterSelectionsModel?.FilterResponsibilityTypes && filterSelectionsModel?.FilterResponsibilityTypes.length > 0">Hide by Responsible Party:</td>
-                                            <td class="filter-row-control">
-                                                <p-listbox [options]="filterSelectionsModel?.FilterResponsibilityTypes"
-                                                           [(ngModel)]="selectedFilterResponsibilityTypes"
-                                                           multiple="multiple"
-                                                           [showToggleAll]="false"
-                                                           styleClass="filter-dropdown"
-                                                           checkbox="checkbox"
-                                                           optionLabel="label"
-                                                           (onChange)="selectedFilterResponsibilityTypes = $event.value; filterResponsibilityTypeChange($event)">
-                                                </p-listbox>
-                                            </td>
-                                        </tr>
-                                    </table>
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-filterpanel [allowAncestry]="helper_LineageDiagramApplies()" [options]="filter_AvailableOptions" [current]="displayConfiguration" (apply)="filterpanel_Apply($event)"></d3s-assetbrowser-filterpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="isInfoWindowVisible">
-                                <div #infoDetailPanel *ngIf="panelTabIndex == 0" class="scroll-panel">
-                                    <table>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label">Path</td>
-                                            <td class="filter-row-control" style="word-break:break-word">
-                                                {{selectedDiagramAsset?.Path}}
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row">
-                                            <td class="filter-row-label">Type</td>
-                                            <td class="filter-row-control">
-                                                {{selectedDiagramAsset?.TypeName}}
-                                            </td>
-                                        </tr>
-                                        <tr class="filter-row" *ngFor="let field of selectedDiagramAsset?.Fields">
-                                            <td class="filter-row-label">{{ field.Name }}</td>
-                                            <td class="filter-row-control">
-                                                <ng-container [ngSwitch]="field.Type">
-                                                    <ng-container *ngSwitchCase="'Date'">
-                                                        <span>{{(field.Value | date:'shortDate')}}</span>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'DateTime'">
-                                                        <span>{{(field.Value | date:'medium')}}</span>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'Boolean'">
-                                                        <span>
-                                                            <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
-                                                            <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
-                                                        </span>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'JSON'">
-                                                        <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
-                                                        <ng-template #showJSON>
-                                                            <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
-                                                        </ng-template>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'Html'">
-                                                        <span [innerHtml]="field.Value | safeHtml"></span>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'Link'">
-                                                        <span class="FieldDisplayContent" [innerHtml]="field.Value"></span>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchCase="'Tag'">
-                                                        <d3s-tag-view [data]="field.Values" [assetUID]="selectedDiagramAsset.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>
-                                                    </ng-container>
-                                                    <ng-container *ngSwitchDefault>
-                                                        <span [innerHtml]="field.Value"></span>
-                                                    </ng-container>
-                                                </ng-container>
-                                            </td>
-                                        </tr>
-                                    </table>
+                            <section *ngIf="panel_InformationVisible">
+                                <div #infoDetailPanel *ngIf="panel_TabIndex == 0" class="scroll-panel">
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-infopanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-infopanel>
                                 </div>
 
-                                <div class="fields" *ngIf="panelTabIndex == 1">
-                                    <p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
-                                        <ng-template pTemplate="header">
-                                            <tr>
-                                                <th style="width: 50%">Responsibility</th>
-                                                <th style="width: 45%">Resource</th>
-                                                <th style="width: 5%"></th>
-                                            </tr>
-                                        </ng-template>
-                                        <ng-template pTemplate="body" let-item>
-                                            <tr (dblclick)="onDoubleClick(item)" [pSelectableRow]="item">
-                                                <td>
-                                                    <d3s-preview-tooltip objectType="ResponsibilityType" [objectId]="item.ResponsibilityTypeID">{{item.ResponsibilityTypeName}}</d3s-preview-tooltip>
-                                                </td>
-                                                <td>
-                                                    <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
-                                                </td>
-                                                <td><i [class]="ownerRowClass(item.Icon)" [title]="item.SecurityAssetName"></i></td>
-                                            </tr>
-                                        </ng-template>
-                                    </p-table>
+                                <div class="fields" *ngIf="panel_TabIndex == 1">
+                                    <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                    <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="isSettingWindowVisible">
-                                <table>
-                                    <tr class="filter-row">
-                                        <td class="filter-row-short-label">Display:</td>
-                                        <td class="filter-row-control">
-                                            <div><p-checkbox [(ngModel)]="filterModel.DisplayBadges" binary="true" label="All Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterBadgesChange()"></p-checkbox></div>
-                                            <div><p-checkbox [(ngModel)]="filterModel.IncludeNonLeaf" binary="true" label="Ancestor Badges" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayAncestorBadgesChange()"></p-checkbox></div>
-                                            <div><p-checkbox [(ngModel)]="filterModel.DisplayIcons" binary="true" label="Icons" labelStyleClass="filter-checkbox-label" (ngModelChange)="filterDisplayIconsChange()"></p-checkbox></div>
-                                            <div><p-checkbox [(ngModel)]="filterModel.DisplayScores" binary="true" label="Scores" labelStyleClass="filter-checkbox-label" (ngModelChange)="saveFilter()"></p-checkbox></div>
-                                        </td>
-                                    </tr>
-                                </table>
+                            <section *ngIf="panel_SettingsVisible">
+                                <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
+                                <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
                             </section>
                         </div>
                     </div>
 
                     <div class="asset-browser-controls-bottom">
-                        <div class="asset-browser-button-group zoom-controls">
-                            <button type="button" title="Zoom out" (click)="zoomOutButtonClick($event)"><i class="fa fa-minus-circle"></i></button>
-                            <span class="diagram-zoom">{{zoomText}}</span>
-                            <button type="button" title="Zoom in" (click)="zoomInButtonClick($event)"><i class="fa fa-plus-circle"></i></button>
-                        </div>
+                        <d3s-assetbrowser-zoom [scale]="helper_DiagramScale()" (change)="zoom_Change($event)"></d3s-assetbrowser-zoom>
                     </div>
 
                 </div>
@@ -313,35 +105,3 @@
         </div>
     </div>
 </div>
-
-<d3s-modal [title]="'Create New Filter Set'" additionalClasses="modal-consolidate" [isVisible]="saveFilterModalVisible">
-    <form #createfilterform="ngForm">
-        <div class="content">
-            <div class="row">
-                <label for="name" style="margin-right:10px;">Name</label>
-                <input type="text" pInputText [(ngModel)]="createUserFilter.name" required name="name" maxlength="250" class="field" />
-            </div>
-        </div>
-        <div class="action-bar">
-            <button class="button" (click)="filterModalCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
-            <span class="grow"></span>
-            <button class="button primary" (click)="createUserFilterSave()" [disabled]="saveFilterModalWorking || !createfilterform.form.valid">
-                Create
-            </button>
-        </div>
-    </form>
-</d3s-modal>
-<d3s-modal [title]="'Delete Filter Set'" additionalClasses="modal-consolidate" [isVisible]="deleteFilterModalVisible">
-    <div class="content">
-        <div class="row">
-            Are you sure you want to delete the <b>{{selectedFilter?.name}}</b> filter?
-        </div>
-    </div>
-    <div class="action-bar">
-        <button class="button" (click)="filterModalCancel()" [disabled]="saveFilterModalWorking">Cancel</button>
-        <span class="grow"></span>
-        <button class="button primary" (click)="removeUserFilter()" [disabled]="filterModalWorking">
-            Delete
-        </button>
-    </div>
-</d3s-modal>

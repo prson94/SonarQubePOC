@@ -112,7 +112,9 @@ export class WorkflowFormComponent extends BaseComponent implements OnInit, OnDe
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
         if (this.searchSub) this.searchSub.unsubscribe();
     }
 

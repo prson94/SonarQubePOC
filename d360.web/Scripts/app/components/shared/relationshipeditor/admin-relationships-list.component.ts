@@ -3,6 +3,7 @@ import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipType } from '../../../models/relationship.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { PredicateFriendlyType } from '../../../models/predicate.model';
 
 @Component({
     selector: 'd3s-admin-relationships-list',
@@ -20,7 +21,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                             (selectionChange)="selected=$event;selectedChange.emit(selected)">
                             <ng-template pTemplate="header">
                                 <tr>
-                                    <th [pSortableColumn]="'Id'" style="width: 10%;">
+                                    <th [pSortableColumn]="'Id'" style="width: 70px;">
                                         ID
                                         <d3s-sortIcon [field]="'Id'"></d3s-sortIcon>
                                     </th>
@@ -59,7 +60,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                         <span>{{item?.Subject.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Subject.Class}})</span></span>
                                     </td>
                                     <td>
-                                        <span *ngIf="item.Predicate.Name && item.Predicate.Inverse">{{item.Predicate.Name}} / {{item.Predicate.Inverse}}</span>
+                                        <span *ngIf="item.Predicate.Name && item.Predicate.Inverse">{{item.Predicate.Name}} / {{item.Predicate.Inverse}} <span style="color: #999;font-size:75%;">({{getFriendlyNameForFunctionalType(item.Predicate.Type)}})</span></span>
                                     </td>
                                     <td>
                                         <span>{{item?.Object.Name}}<span style="color: #999;font-size:75%;"> ({{item?.Object.Class}})</span></span>
@@ -147,6 +148,14 @@ export class AdminRelationshipsListComponent extends BaseComponent implements On
                 item.Subject && item.Subject.Name && item.Subject.Name.toLowerCase().includes(search)
             );
         }
+    }
+
+    getFriendlyNameForFunctionalType(type: string): string {
+        let friendly: string = type;
+
+        friendly = PredicateFriendlyType[type];
+
+        return friendly;
     }
 
     getRelationships() {

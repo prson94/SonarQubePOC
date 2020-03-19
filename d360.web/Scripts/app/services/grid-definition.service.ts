@@ -16,7 +16,7 @@ export class GridDefinitionService extends BaseObservableService {
     }
 
     getGridDefinition(
-        objectID: number,
+        objectID: number | string,
         objectType: string,
         parentID?: number,
         parentType?: string

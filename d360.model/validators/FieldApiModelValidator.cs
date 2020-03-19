@@ -345,6 +345,11 @@ namespace d360.model.validators
                         errMsg = String.Format(FieldErrors.WholeNumberError, "MaximumLength");
                         return false;
                     }
+                    if (validation?.MaximumLength < 0)
+                    {
+                        errMsg = String.Format(FieldErrors.GreaterThanError, "MaximumLength", "0");
+                        return false;
+                    }
                     if (validation?.MaximumLength > maxDecimalFieldValue)
                     {
                         errMsg = String.Format(FieldErrors.LessThanError, "MaximumLength", FieldErrors.MaxDecimalFieldValue);
@@ -390,6 +395,11 @@ namespace d360.model.validators
                     errMsg = String.Format(FieldErrors.LessThanError, "MaximumValue", FieldErrors.MaxDecimalFieldValue);
                     return false;
                 }
+                else if (validation?.MaximumValue < -maxDecimalFieldValue)
+                {
+                    errMsg = String.Format(FieldErrors.GreaterThanError, "MaximumValue", $"-{FieldErrors.MaxDecimalFieldValue}");
+                    return false;
+                }
             }
 
             if (validation?.MinimumValue != null)
@@ -397,6 +407,10 @@ namespace d360.model.validators
                 if (validation?.MinimumValue > maxDecimalFieldValue)
                 {
                     errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", FieldErrors.MaxDecimalFieldValue);
+                    return false;
+                }else if(validation?.MinimumValue < -maxDecimalFieldValue)
+                {
+                    errMsg = String.Format(FieldErrors.GreaterThanError, "MinimumValue", $"-{FieldErrors.MaxDecimalFieldValue}");
                     return false;
                 }
             }

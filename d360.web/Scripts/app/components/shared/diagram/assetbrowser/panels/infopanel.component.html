@@ -1,0 +1,51 @@
+﻿<table>
+    <tr class="filter-row">
+        <td class="filter-row-label">Path</td>
+        <td class="filter-row-control" style="word-break:break-word">
+            {{asset?.Path}}
+        </td>
+    </tr>
+    <tr class="filter-row">
+        <td class="filter-row-label">Type</td>
+        <td class="filter-row-control">
+            {{asset?.TypeName}}
+        </td>
+    </tr>
+    <tr class="filter-row" *ngFor="let field of asset?.Fields">
+        <td class="filter-row-label">{{ field.Name }}</td>
+        <td class="filter-row-control">
+            <ng-container [ngSwitch]="field.Type">
+                <ng-container *ngSwitchCase="'Date'">
+                    <span>{{(field.Value | date:'shortDate')}}</span>
+                </ng-container>
+                <ng-container *ngSwitchCase="'DateTime'">
+                    <span>{{(field.Value | date:'medium')}}</span>
+                </ng-container>
+                <ng-container *ngSwitchCase="'Boolean'">
+                    <span>
+                        <i *ngIf="(field.Value || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
+                        <i *ngIf="(field.Value || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
+                    </span>
+                </ng-container>
+                <ng-container *ngSwitchCase="'JSON'">
+                    <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
+                    <ng-template #showJSON>
+                        <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
+                    </ng-template>
+                </ng-container>
+                <ng-container *ngSwitchCase="'Html'">
+                    <span [innerHtml]="field.Value | safeHtml"></span>
+                </ng-container>
+                <ng-container *ngSwitchCase="'Link'">
+                    <span class="FieldDisplayContent" [innerHtml]="field.Value"></span>
+                </ng-container>
+                <ng-container *ngSwitchCase="'Tag'">
+                    <d3s-tag-view [data]="field.Values" [assetUID]="selectedDiagramAsset.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>
+                </ng-container>
+                <ng-container *ngSwitchDefault>
+                    <span [innerHtml]="field.Value"></span>
+                </ng-container>
+            </ng-container>
+        </td>
+    </tr>
+</table>

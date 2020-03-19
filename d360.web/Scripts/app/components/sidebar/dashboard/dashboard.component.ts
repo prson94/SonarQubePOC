@@ -88,7 +88,9 @@ export class DashboardComponent extends BaseComponent implements OnInit, OnDestr
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     private loadAvailableDashboards() {
