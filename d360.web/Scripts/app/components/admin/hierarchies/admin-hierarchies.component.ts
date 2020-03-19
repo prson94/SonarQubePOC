@@ -27,6 +27,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     assetTypeClass: AssetTypeClass;
     AssetTypeClass = AssetTypeClass;
     selectedItemID: number;
+    selectedAssetTypeID: number;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -77,10 +78,12 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 case AssetTypeClass.Model:
                     this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                         this.selectedItemID = res.ObjectID;
+                        this.selectedAssetTypeID = res.Id;
                         this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
                     });
                     break;
                 case AssetTypeClass.Policy:
+                    this.selectedAssetTypeID = this.selected.AssetTypeID;
                     this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
                     break;
                 default:

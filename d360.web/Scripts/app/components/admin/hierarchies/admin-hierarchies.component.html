@@ -1,12 +1,12 @@
 ﻿<div *ngIf="showEditor || showDelete && !isLoading" class="row">
     <div class="tile tile-detail">
-        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID"
+        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selectedAssetTypeID"
                                [title]="(selected == null ? 'New' : 'Edit') + ' ' + ( assetTypeClass == AssetTypeClass.Model ? 'Model':'Policy') + ' Type'"
                                (onCancel)="closeEditor()"
                                (onComplete)="save($event)"></d3s-asset-type-editor>
         <d3s-delete-form *ngIf="showDelete"
                          [callback]="theDeleteCallback"
-                         [itemId]="selected?.AssetTypeID"
+                         [itemId]="selectedAssetTypeID"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to delete the model [' + [selected?.Name] + ']?'"
                          (onCancel)="showDelete=false;"></d3s-delete-form>
@@ -96,7 +96,7 @@
             <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>
         </div>
         <div class="tile tile-detail">
-            <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="A" [id]="selectedAssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedItemID"></d3s-admin-allocation>
