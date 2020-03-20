@@ -140,8 +140,7 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-        DbSet<RuleImplementation> RuleImplementations { get; set; }
-        DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }        
+        DbSet<RuleImplementation> RuleImplementations { get; set; }     
         DbSet<RuleResult> RuleResults { get; set; }
         DbSet<Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
