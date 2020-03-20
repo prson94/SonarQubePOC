@@ -124,7 +124,10 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         this.modelService
             .getModels()
             .subscribe(results => {
-                this.types = results.sort((a, b) => a.Name.localeCompare(b.Name));
+                let t = results.sort((a, b) => a.Name.localeCompare(b.Name));
+                this.types = t.map((item) => {
+                    return { MaximumDepth: item.HierarchyMaximumDepth, ...item };
+                });
 
                 if (this.types.length && this.types.length > 0) {
                     this.selected = this.types[0];
@@ -178,7 +181,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
         this.stateService.reloadLeftNavMenu();
     }
-
+    
     deleteType(id: number) {
         this
             .assetTypeService
@@ -187,7 +190,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.showMessageForResult(this.messagesService, res);
 
                 if (res.type != 'error') {
-                    this.types = this.types.filter(x => x.AssetTypeID != id);
+                    if (this.assetTypeClass == AssetTypeClass.Model) {
+                        this.types = this.types.filter(x => x.uid != this.selected.uid);
+                    } else {
+                        this.types = this.types.filter(x => x.AssetTypeID != id);
+                    }
                     this.selected = this.types.length > 0 ? this.types[0] : null;
                     this.selectedItemChange();
                     this.stateService.reloadLeftNavMenu();
