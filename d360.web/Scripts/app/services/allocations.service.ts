@@ -49,12 +49,12 @@ export class AllocationService extends BaseObservableService {
         if (allocation.uid == undefined) {
             return this.http.post(url, allocation)
                 .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                    catchError(err => this.handleError(err, true, true)));
         }
         else {
             return this.http.put(url + "/" + allocation.uid, allocation)
                 .pipe(map(response => <any>response),
-                    catchError(err => this.handleError(err, true)));
+                    catchError(err => this.handleError(err, true, true)));
         }
 
     }
