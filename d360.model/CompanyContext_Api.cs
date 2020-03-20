@@ -1122,6 +1122,10 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters.");
                                 }
                                 break;
+                            case "Tag":
+                                success = false;
+                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request.");
+                                break;
                             default: // Html, Text
                                 if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
                                 {
