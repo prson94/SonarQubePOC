@@ -141,8 +141,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-                        //countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";                        
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
                     }
                 }
@@ -163,12 +162,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(predicateUidString, out predicateUid))
                     {
                         dbArgs.Add("@predicateuid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
-                        //if (!countSql.Contains("inner join IntersectType T"))
-                        //{
-                        //    countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
-                        //}
-                        //countSql += $" inner join [Predicate] P on P.ID = T.PredicateID and P.[Uid] = @predicateuid";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";                        
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -244,9 +238,9 @@ end = @f{fieldType.ID}Value";
             {
                 pageNumber = 1;
             }
-            if (pageSize < 0 || pageSize > 100000)
+            if (pageSize < 0 || pageSize > 5000)
             {
-                pageSize = 250;
+                pageSize = 5000;
             }
 
             dbArgs.Add("@pageNum", pageNumber);
