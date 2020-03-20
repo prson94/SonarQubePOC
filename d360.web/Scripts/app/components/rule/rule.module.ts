@@ -87,6 +87,9 @@ import { RuleCustomExportComponent } from './rule-custom-export.component';
         RuleColumnFilterComponent,           
         RuleCustomExportComponent,
     ],
+    exports: [
+        RuleResultsGridComponent
+    ],
     providers: [
         {
             provide: HTTP_INTERCEPTORS,

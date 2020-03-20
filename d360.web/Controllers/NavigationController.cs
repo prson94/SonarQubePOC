@@ -1154,8 +1154,6 @@ order by	f.SortOrder";
                     }
                 }
             }
-
-
             return new JsonNetResult
             {
                 Data = responseModel,

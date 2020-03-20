@@ -450,6 +450,7 @@ namespace d360.core.entities
         public bool HasWorkflow { get; set; }
         public bool HasField { get; set; }
         public bool HasChild { get; set; }
+        public bool HasRuleResult { get; set; }
     }
 
 }
