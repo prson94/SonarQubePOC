@@ -13,7 +13,7 @@ export class BaseObservableService {
     constructor(protected messages: MessagesObservableService) {
     }
 
-    handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false) {
+    handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false, handleInterceptorDuplicate: boolean = false) {
         return this.messages.saveClientError(error, handleAsAPI2Error).pipe(
             tap(res => {
                 if (error instanceof Error) {
@@ -42,10 +42,12 @@ export class BaseObservableService {
                         }
 
                         //Check if interceptor already handled error
-                        if (!error.error.title || !error.error.message) {
+                        if (!handleInterceptorDuplicate) {
                             this.messages.showError('Error', errorMessage);
                         }
-
+                        else if (!error.error.title || !error.error.message) {
+                            this.messages.showError('Error', errorMessage);
+                        }
                     }
                 }
             })
