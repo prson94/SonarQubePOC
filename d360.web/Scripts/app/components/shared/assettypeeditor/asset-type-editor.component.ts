@@ -100,7 +100,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
         }
 
-        if (this.useUid) {
+        if (this.useUid && this.assetTypeUid) {
             this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
                 this.id = res.Id;
                 this.loadEditor();
