@@ -374,7 +374,7 @@ namespace d360.web.Controllers.V2
         /// <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
         /// <param name="State">Filter on the state, or status, of a relationship.</param>
         /// <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
-        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
+        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.</param>
         /// <returns></returns>
         [
             HttpGet,
