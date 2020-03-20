@@ -343,11 +343,9 @@ namespace d360.model.DataAccessLayer
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
-            if (!CompanyContext.CurrentResourceIsAdmin)
-            {
-                whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
-                whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
-            }
+            //Add read permission check for admin and non-admin users as in GetAssets procedure
+            whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
+            whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
