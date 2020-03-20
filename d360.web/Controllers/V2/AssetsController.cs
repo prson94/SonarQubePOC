@@ -599,6 +599,11 @@ namespace d360.web.Controllers.V2
                 var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
+                if(ex.Message == "The name is taken. Please try another name.")
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Error", errorMessage));
+                }
+
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
             }
         }
