@@ -1124,7 +1124,7 @@ where T.ExecutionId = @executionid;
                                 break;
                             case "Tag":
                                 success = false;
-                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated/created on this request.");
+                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request.");
                                 break;
                             default: // Html, Text
                                 if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
