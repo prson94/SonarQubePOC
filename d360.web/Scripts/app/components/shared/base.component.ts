@@ -254,7 +254,6 @@ export class BaseComponent {
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
-            console.log("call set");
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
@@ -387,7 +386,6 @@ export class BaseComponent {
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}`
                 ,null,1);
-                console.log("showrr");
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
 
@@ -783,7 +781,6 @@ export class BaseComponent {
         }
         if (this.isSidebarLoadedForCurrentObject(data)) {
             this.refreshObjectStats();
-            console.log("preload");
             return;
         }
 
@@ -794,7 +791,7 @@ export class BaseComponent {
         }
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
-            console.log(data);
+        
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -860,8 +857,6 @@ export class BaseComponent {
             var areaIcon = area === 'Configuration' ? 'fa-sliders' : "fa-cog";
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
-            console.log("nav pre build");
-            console.log(r.Items);
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
             this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule');
             var isType = this.IsType(r.Object);
@@ -901,7 +896,6 @@ export class BaseComponent {
     }
 
     private activateComponent() {
-        console.log("activate");
         var currentComponentUrl = '';
         if (this.breadcrumbsService) {
             currentComponentUrl = this.breadcrumbsService.getCurrentUrl();
