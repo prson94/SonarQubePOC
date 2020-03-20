@@ -244,7 +244,7 @@ end = @f{fieldType.ID}Value";
             {
                 pageNumber = 1;
             }
-            if (pageSize < 0 || pageSize > 250)
+            if (pageSize < 0 || pageSize > 100000)
             {
                 pageSize = 250;
             }
