@@ -10,6 +10,7 @@ import { SharedFormMessageModule } from './form-message.part';
 @Component({
     selector: 'd3s-delete-form',
     templateUrl: './delete.form.html',
+    providers: [AssetTypeService]
 })
 
 export class DeleteForm implements OnChanges {
@@ -20,6 +21,8 @@ export class DeleteForm implements OnChanges {
     @Input() prompt: string;
     @Input() callback: Function;
     @Input() itemId: number;
+    @Input() assetTypeUid: string;
+    @Input() useUid: boolean = false;
     @Input() items: any[];
     @Input() hideDeleteButton: boolean = false;
     @Input() modalCssClasses: string = 'modal-delete-form';
@@ -41,7 +44,7 @@ export class DeleteForm implements OnChanges {
 
     http: HttpClient;
 
-    constructor(http: HttpClient) {
+    constructor(http: HttpClient, assetTypeService: AssetTypeService) {
         this.http = http;
     }
 
@@ -66,7 +69,13 @@ export class DeleteForm implements OnChanges {
                     this.callback(this.items);
                 }
                 else {
-                    this.callback(this.itemId);
+                    if (this.useUid) {
+                        this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
+                            this.callback(res.Id);
+                        });
+                    } else {
+                        this.callback(this.itemId);
+                    }
                 }
                 break;
             case 'post':
@@ -148,6 +157,7 @@ export class DeleteForm implements OnChanges {
 
 import { ButtonModule } from 'primeng/button';
 import { SiteModalModule } from '../shared/modal/gov-modal.module';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 @NgModule({
     declarations: [

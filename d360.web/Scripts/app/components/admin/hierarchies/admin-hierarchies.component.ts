@@ -76,11 +76,18 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         if (this.selected) {
             switch (this.assetTypeClass) {
                 case AssetTypeClass.Model:
+                    this.isLoading = true;
                     this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                         this.selectedItemID = res.ObjectID;
                         this.selectedAssetTypeID = res.Id;
                         this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
-                    });
+                        
+                    }, err => {
+                        this.isLoading = false;    
+                        },
+                     () => {
+                         this.isLoading = false;
+                     });
                     break;
                 case AssetTypeClass.Policy:
                     this.selectedAssetTypeID = this.selected.AssetTypeID;
@@ -92,20 +99,16 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         }
     }
 
-    getSelectedItemID() {
-        if (this.selected) {
-            switch (this.assetTypeClass) {
-                case AssetTypeClass.Model:
-                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
-                        return res.ObjectID;
-                    });
-                    break;
-                case AssetTypeClass.Policy:
-                    return this.selected.ID;
-                    break;
-                default:
-            }
-        }
+    openEditor(item) {
+        this.selected = item;
+        this.selectedItemChange();
+        this.showEditor = true;
+    }
+
+    openDelete(item) {
+        this.selected = item;
+        this.selectedItemChange();
+        this.showDelete = true;
     }
 
     ngOnInit() {
