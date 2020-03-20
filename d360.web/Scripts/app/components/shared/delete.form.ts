@@ -44,7 +44,7 @@ export class DeleteForm implements OnChanges {
 
     http: HttpClient;
 
-    constructor(http: HttpClient, assetTypeService: AssetTypeService) {
+    constructor(http: HttpClient, private assetTypeService: AssetTypeService) {
         this.http = http;
     }
 
