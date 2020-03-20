@@ -23,7 +23,7 @@
                                 <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
                                 <i *ngSwitchDefault></i>
                             </ng-container>
-                            {{score.EffectiveDate | date:'shortDate'}}
+                            {{score.EffectiveDate | utcDate | date:'shortDate'}}
                         </span>
                     </div>
                 </d3s-simple-carousel>
@@ -64,7 +64,7 @@
                     </div>
                     <div class="body">
                         <div class="row {{isSameDate(item.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="scoreTableClick(item)" *ngFor="let item of scoresPoints">
-                            <div class="col s6 column">{{item.EffectiveDate | date:'shortDate'}}</div>
+                            <div class="col s6 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
                             <div class="col s6 column">
                                 <ng-container [ngSwitch]="item.ScoreProgression">
                                     <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
