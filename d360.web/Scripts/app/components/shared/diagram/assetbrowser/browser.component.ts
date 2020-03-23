@@ -1852,9 +1852,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_SortParts(a: go.Part, b: go.Part): number {
         if (a == null || b == null || a.data == null || b.data == null)
             return 0;
-        if (a.data.text > b.data.text)
+
+        let al = a.data.text.toLowerCase();
+        let bl = b.data.text.toLowerCase();
+
+        if (al > bl)
             return 1;
-        else if (a.data.text < b.data.text)
+        else if (al < bl)
             return -1;
         else
             return 0;
