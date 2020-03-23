@@ -1,12 +1,14 @@
 ﻿<div *ngIf="showEditor || showDelete && !isLoading" class="row">
     <div class="tile tile-detail">
-        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID"
+        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID" [assetTypeUid]="selected?.uid" [useUid]="assetTypeClass == AssetTypeClass.Model"
                                [title]="(selected == null ? 'New' : 'Edit') + ' ' + ( assetTypeClass == AssetTypeClass.Model ? 'Model':'Policy') + ' Type'"
                                (onCancel)="closeEditor()"
                                (onComplete)="save($event)"></d3s-asset-type-editor>
         <d3s-delete-form *ngIf="showDelete"
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.AssetTypeID"
+                         [assetTypeUid]="selected?.uid" 
+                         [useUid]="assetTypeClass == AssetTypeClass.Model"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to delete the model [' + [selected?.Name] + ']?'"
                          (onCancel)="showDelete=false;"></d3s-delete-form>
@@ -56,13 +58,13 @@
                         </tr>
                     </ng-template>
                     <ng-template pTemplate="body" let-item>
-                        <tr (dblclick)="selected=item;showEditor=true;" [pSelectableRow]="item">
+                        <tr (dblclick)="openEditor(item)" [pSelectableRow]="item">
                             <td>{{item.Name}}</td>
                             <td>{{item.MaximumDepth}}</td>
                             <td>
                                 <div class="RowTools">
                                     <a style="cursor:pointer;"
-                                       (click)="selected=item;showEditor=true">
+                                       (click)="openEditor(item)">
                                         <i class="fa fa-pencil"></i>
                                     </a>
                                 </div>
@@ -70,7 +72,7 @@
                             <td>
                                 <div class="RowTools">
                                     <a style="cursor:pointer;"
-                                       (click)="selected=item;showDelete=true">
+                                       (click)="openDelete(item)">
                                         <i class="fa fa-trash-o"></i>
                                     </a>
                                 </div>
@@ -96,7 +98,7 @@
             <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>
         </div>
         <div class="tile tile-detail">
-            <d3s-responsibility-relations queryType="A" [id]="selected?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+            <d3s-responsibility-relations queryType="A" [id]="selectedAssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedItemID"></d3s-admin-allocation>

@@ -16,6 +16,8 @@ declare var CompanySettings: any;
 export class AssetTypeEditorComponent extends BaseComponent implements OnChanges {
     @Input() title: string = "Add Asset Type";
     @Input() id: number;
+    @Input() assetTypeUid: string;
+    @Input() useUid: boolean = false;
     @Input() parentID: number;
     @Input() assetTypeClass: AssetTypeClass;
     @Input() showDisplayFormat: boolean = true;
@@ -98,38 +100,37 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
         }
 
+        if (this.useUid && this.assetTypeUid) {
+            this.assetTypeService.getAssetTypeObjectAndID(this.assetTypeUid).subscribe(res => {
+                this.id = res.Id;
+                this.loadEditor();
+            });
+        } else {
+            this.loadEditor();
+        }
+    }
+
+    private loadEditor() {
         this
             .assetTypeService
-            .getAssetTypeEditor(
-                this.assetTypeClass,
-                this.id,
-                this.parentID
-            )
+            .getAssetTypeEditor(this.assetTypeClass, this.id, this.parentID)
             .subscribe(data => {
-
                 this.model = data;
                 if (this.model.AssetType.Hierarchy.MaximumDepth == 0) {
                     this.model.AssetType.Hierarchy.MaximumDepth = 1;
                 }
-
                 if (this.model.Predicates) {
                     this.model.Predicates.unshift({ label: '', value: '' });
                 }
-
                 if (this.model.Tokens) {
                     this.model.Tokens.unshift({ label: '', value: '' });
                 }
-
-
                 if (this.model.AssetType.ParentUid == null || this.model.Predicates == null || this.model.Predicates.length < 2) {
                     this.showParentPredicates = false;
                 }
-
                 if (this.assetTypeClass == AssetTypeClass.Reference || this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy) {
                     this.showParentPredicates = true;
                 }
-
-
                 this.isLoading = false;
             });
     }

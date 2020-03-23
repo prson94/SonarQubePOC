@@ -4,6 +4,7 @@ export class Model {
     Name: string;
     Description: string;
     MaximumDepth: number;
+    HierarchyMaximumDepth: number;
     TaxonomyTypeClass: string;    
     HasDashboards: boolean;
     AllowAttributes: boolean;
