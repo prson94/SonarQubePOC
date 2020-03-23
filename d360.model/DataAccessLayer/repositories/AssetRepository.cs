@@ -1687,7 +1687,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         public bool IsReachedTransformationLimit(AssetTypeUpsert model)
         {
             bool reached = false;
-            if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)
+            if ( (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset ) && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
