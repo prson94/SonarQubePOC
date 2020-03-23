@@ -157,7 +157,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private getData() {
-        this.isLoading = true;
+
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
@@ -180,7 +180,7 @@ export class RuleResultsGridComponent extends BaseComponent {
                     this.items = this.results.results;
 
                 }
-                this.isLoading = false;
+
             });
 
     }
