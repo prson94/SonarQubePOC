@@ -159,9 +159,6 @@ namespace d360.web.Controllers.V2
                     // build a structure of the asset ids and the rule result ids that we need to store mappings for
                     List<DataQualityRuleAssetMapping> AssetIDRuleMapping = GenerateAssetIDRuleMapping(ruleResults.Results);
 
-                    // store ruleresultfusionattribute mappings
-                    if (AssetIDRuleMapping.Count > 0)
-                        await StoreRuleResultFusionMappings(AssetIDRuleMapping, timeout, transaction);
 
                     transaction.Commit();
                 }
@@ -297,79 +294,6 @@ namespace d360.web.Controllers.V2
                         ", new { u = Company.CurrentResourceID }, transaction: transaction, commandTimeout: timeout);
         }
 
-
-        private async Task StoreRuleResultFusionMappings(List<DataQualityRuleAssetMapping> assetIDRuleMapping, int timeout, SqlTransaction transaction)
-        {
-            await Company.Database.Connection.ExecuteAsync(@"IF OBJECT_ID('tempdb..#AssetUIRuleResultMap') IS NOT NULL
-			                                DROP TABLE #AssetUIRuleResultMap;
-
-		                                create table #AssetUIRuleResultMap (    
-                                            ID int identity not null,
-			                                AssetUID uniqueidentifier not null, 
-                                            RuleResultID int not null
-                                        );
-                                ", transaction: transaction);
-
-            using (var bulkCopy = new SqlBulkCopy(Company.Database.Connection as SqlConnection, SqlBulkCopyOptions.Default, transaction))
-            {
-                bulkCopy.BatchSize = assetIDRuleMapping.Count;
-                bulkCopy.DestinationTableName = "#AssetUIRuleResultMap";
-                bulkCopy.BulkCopyTimeout = timeout;
-                bulkCopy.EnableStreaming = true;
-
-                var table = new DataTable();
-                var columnName = "AssetUID";
-                table.Columns.Add(columnName, typeof(Guid));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                columnName = "RuleResultID";
-                table.Columns.Add(columnName, typeof(int));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
-
-                foreach (var item in assetIDRuleMapping)
-                {
-                    var row = table.NewRow();
-
-                    row["RuleResultID"] = item.RuleID;
-                    row["AssetUID"] = item.AssetUID;
-
-                    table.Rows.Add(row);
-                }
-
-                await bulkCopy.WriteToServerAsync(table);
-            }
-
-            //check for invalid AssetUIDs
-            var invalidAssetUIDs = await Company.Database.Connection.QueryAsync<Guid>(@"select map.AssetUID from #AssetUIRuleResultMap map where
-                                                not exists (select 1 from Asset a inner join RuleResult rr on (rr.ID = map.RuleResultID) where a.uid = map.AssetUID and a.[Object] = 'FusionAttribute')
-                                          ", transaction:transaction);
-
-            if (invalidAssetUIDs.Any())
-            {
-                var invalid = string.Join(",", invalidAssetUIDs.ToArray());
-
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Invalid asset uid mappings: [{invalid}]"));
-            }
-
-            //merge into ruleresultfusion table
-            await Company.Database.Connection.ExecuteAsync(@"
-                            MERGE
-	                            INTO    RuleResultFusionAttribute d
-	                            USING   (
-			                            select
-									        map.RuleResultID,
-                                            a.ObjectID as FusionAttributeID
-								        from
-									        #AssetUIRuleResultMap map
-                                            inner join Asset a on (map.AssetUID = a.uid and a.[Object] = 'FusionAttribute')
-                                            inner join RuleResult rr on (rr.ID = map.RuleResultID)
-			                            ) S
-	                            ON      (1 != 1)
-	                            WHEN NOT MATCHED THEN
-	                                INSERT  (RuleResultID, FusionAttribute, FusionAttributeID)
-	                                VALUES  (S.RuleResultID, '', S.FusionAttributeID);                                                       
-                        ", transaction: transaction, commandTimeout: timeout);
-        }
 
         private List<DataQualityRuleAssetMapping> GenerateAssetIDRuleMapping(List<DataQualityResultItem> results)
         {
