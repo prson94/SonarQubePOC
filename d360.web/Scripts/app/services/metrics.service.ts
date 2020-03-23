@@ -6,6 +6,7 @@ import { AssetTypeMetricModel } from '../models/asset.model';
 import { Observable } from 'rxjs';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from './baseObservable.service';
+import { catchError } from 'rxjs/operators';
 
 
 
@@ -16,21 +17,25 @@ export class MetricsService extends BaseObservableService {
 
     public getAssetTypes(): Observable<AssetTypeMetricModel[]> {
         return this.http
-            .get<AssetTypeMetricModel[]>(`/api/metrics/assettypes`);
+            .get<AssetTypeMetricModel[]>(`/api/metrics/assettypes`)
+            .pipe(catchError(err => this.handleError(err)));
     }
 
     public getFieldTypeViewModelsByAssetType(assetTypeUid: string): Observable<MetricFieldTypeViewModel[]> {
         return this.http
-            .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/fields/${assetTypeUid}`);
+            .get<MetricFieldTypeViewModel[]>(`/api/v2/metrics/fields/${assetTypeUid}`)
+            .pipe(catchError(err => this.handleError(err)));
     }
 
     public getMetricsByAssetType(assetTypeUid: string, scoreType: ScoreType): Observable<MetricAssetViewModel[]> {
         return this.http
-            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${assetTypeUid}?_scoreType=${scoreType.toString()}`);
+            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${assetTypeUid}?_scoreType=${scoreType.toString()}`)
+            .pipe(catchError(err => this.handleError(err)));
     }
 
     public saveMetric(model: MetricAssetViewModel): Observable<JsonResult> {
         return this.http
-            .post<JsonResult>(`/api/v2/metrics`, model);
+            .post<JsonResult>(`/api/v2/metrics`, model)
+            .pipe(catchError(err => this.handleError(err)));
     }
 }

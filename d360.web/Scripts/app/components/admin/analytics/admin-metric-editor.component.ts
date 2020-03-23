@@ -93,16 +93,15 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         this.model.ScoreType = this.scoreType;
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, r);
-                this.onSave.emit();
-            },
-            e => {
-                this.model.EffectiveDate = prevDate;
-                this.isLoading = false;
-            },
-            () => {
-                console.log('complete');
+                if (r) {
+                    this.isLoading = false;
+                    this.showMessageForResult(this.messagesService, r);
+                    this.onSave.emit();
+                }
+                else {
+                    this.model.EffectiveDate = prevDate;
+                    this.isLoading = false;
+                }
             });
     }
 
