@@ -409,6 +409,66 @@ namespace d360.web.Controllers.V2
         }
 
 
+        [
+            HttpPost,
+            Route("{surveyTypeUid}"),
+            MapToApiVersion("2.0"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Created, "The survey results were created successfully"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Survey Type for the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Asset for the provided uid was not found.", typeof(ErrorResponse)),
+
+        ]
+        public async Task<IHttpActionResult> PostSurveyAsync(string surveyTypeUid, SurveyResultsApiModel model)
+        {
+            var prefix = "Surveys.PostSurveyAsync => ";
+            string errorMessage;
+
+            if (model == null || model.Questions == null || model.Questions.Count == 0)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Request body is not formatted correctly"));
+            }
+
+            if (!Guid.TryParse(surveyTypeUid, out Guid uid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid format for surveyTypeUid"));
+            }
+
+            var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
+
+            if (surveyType == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found"));
+            }
+
+            var asset = AssetRepository.GetAssetByUID(model.AssetUid);
+
+            if (asset == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset for uid {model.AssetUid} not found"));
+            }
+
+            try
+            {
+                await SurveyRepository.PostSurveyResults(model, asset, surveyType);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+
+            }
+        }
+
         private Guid GetUidFromQueryParams(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName)
         {
             Guid uid = Guid.Empty;
