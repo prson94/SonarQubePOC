@@ -13,5 +13,6 @@ namespace d360.model.validators
         bool IsValidSurveyType(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsRequiredGuidExistForDeleteSurveyResult(IEnumerable<KeyValuePair<string, string>> queryParams);
         bool IsValidDate(IEnumerable<KeyValuePair<string, string>> queryParams, string parameterName);
+        WorkHttpStatus ValidateGetSurveyTypesRequest(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }

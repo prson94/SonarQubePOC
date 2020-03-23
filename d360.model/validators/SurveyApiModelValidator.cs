@@ -139,5 +139,48 @@ namespace d360.model.validators
 
             return (count > 0);
         }
+
+        public WorkHttpStatus ValidateGetSurveyTypesRequest(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+
+            foreach (var param in queryParams)
+            {
+                switch (param.Key.ToLower())
+                {
+                    case "assettypeuid":
+                        if (!Guid.TryParse(param.Value, out Guid _))
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for assetTypeUid parameter");
+                        break;
+                    case "surveytypeuid":
+                        if (!Guid.TryParse(param.Value, out Guid _))
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for surveyTypeUid parameter");
+                        break;
+                    case "_pagesize":
+                        if (!int.TryParse(param.Value, out int _))
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for page size parameter");
+                        break;
+                    case "_pagenum":
+                        if (!int.TryParse(param.Value, out _))
+                            return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for page num parameter");
+                        break;
+                    case "_order":
+                        switch (param.Value.ToLower())
+                        {
+                            case "name":
+                            case "validfordays":
+                            case "createdon":
+                            case "updatedon":
+                            case "numberofresponses":
+                                break;
+                            default:
+                                return new WorkHttpStatus(System.Net.HttpStatusCode.BadRequest, "Bad Request", "Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses");
+                        }
+                        break;
+                }
+            }
+
+            return null;
+        }
+
     }
 }
