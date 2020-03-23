@@ -5,12 +5,44 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetScoreHistoryByObject-v1">
+  <changeSet author="TDuric" id="Procedure.dbo.GetScoreHistoryByObject-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter   procedure [dbo].[GetScoreHistoryByObject]
+	@assetUid uniqueidentifier, 
+	@scoreType int
+AS
+begin
+	declare @date date = getutcdate()
+
+	select	EffectiveDate as [EffectiveDate],
+			[EndDate] as [EndDate],
+			cast(Value * 100 as decimal(18,1)) as Score,
+			ScoreType
+	from	metrics.Score
+	where	AssetUid = @assetUid
+			and EffectiveDate <= @date
+			and ScoreType = @scoreType
+	union
+	select	cast(@date as date) as [EffectiveDate],
+			null as [EndDate],
+			cast(Value * 100 as decimal(18,1)) as Score,
+			ScoreType
+	from	metrics.Score S
+			inner join (
+				select	max(EffectiveDate) as EffectiveDate
+				from	metrics.Score
+				where	AssetUid = @assetUid
+						and EffectiveDate <= @date and ScoreType = @scoreType
+			) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid and ScoreType = @scoreType
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[GetScoreHistoryByObject]
 	@assetUid uniqueidentifier, 
 	@scoreType int
@@ -39,11 +71,6 @@ begin
 						and EffectiveDate <= @date and ScoreType = @scoreType
 			) M on M.EffectiveDate = S.EffectiveDate and S.AssetUid = @assetUid and ScoreType = @scoreType
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
