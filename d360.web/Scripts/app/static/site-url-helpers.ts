@@ -44,6 +44,7 @@ export class SiteUrlHelpers {
     static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_SURVEY_ROOT = 'sidebar/survey';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
+    static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
 
 
     //model child routes

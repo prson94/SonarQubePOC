@@ -1458,6 +1458,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />

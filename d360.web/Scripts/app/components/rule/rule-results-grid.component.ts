@@ -157,6 +157,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private getData() {
+
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
@@ -177,6 +178,7 @@ export class RuleResultsGridComponent extends BaseComponent {
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
                     this.items = this.results.results;
+
                 }
 
             });
