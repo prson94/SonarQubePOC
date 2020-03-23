@@ -37,7 +37,6 @@ namespace d360.model.validators
                 {
                     isValid = false;
                 }
-
             }
             return isValid;
         }
