@@ -153,7 +153,6 @@ namespace d360.model.DataAccessLayer
                             whereClauses.Add($"AT.Uid = @assetTypeUid");
                             sqlParams.Add("@assetTypeUid", assetTypeUid);
                         }
-                        else throw new Exception("Invalid value for assetTypeUid parameter");
                         break;
                     case "surveytypeuid":
                         if (Guid.TryParse(param.Value, out Guid surveyTypeUid))
@@ -161,7 +160,6 @@ namespace d360.model.DataAccessLayer
                             whereClauses.Add($"ST.Uid = @surveyTypeUid");
                             sqlParams.Add("@surveyTypeUid", surveyTypeUid);
                         }
-                        else throw new Exception("Invalid value for surveyTypeUid parameter");
                         break;
                     case "_pagesize":
                         int size = 0;
@@ -169,7 +167,6 @@ namespace d360.model.DataAccessLayer
                         {
                             response.pageSize = int.Parse(param.Value);
                         }
-                        else throw new Exception("Invalid value for page size parametar!");
                         break;
                     case "_pagenum":
                         int num = 0;
@@ -178,7 +175,6 @@ namespace d360.model.DataAccessLayer
                             response.pageNum = int.Parse(param.Value);
                             if (response.pageNum <= 0) response.pageNum = 1;
                         }
-                        else throw new Exception("Invalid value for page number parametar!");
                         break;
                     case "_order":
                         switch (param.Value.ToLower())
@@ -188,7 +184,6 @@ namespace d360.model.DataAccessLayer
                             case "createdon": orderByClause = "order by ST.CreatedOn"; break;
                             case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
                             case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
-                            default: throw new Exception("Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses!");
                         }
                         break;
                 }

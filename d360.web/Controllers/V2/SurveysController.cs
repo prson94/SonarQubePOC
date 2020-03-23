@@ -159,6 +159,13 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
                 }
 
+                var status = validator.ValidateGetSurveyTypesRequest(queryParams);
+
+                if (status != null)
+                {
+                    return await Task.FromResult(errorMessageResponse(status.StatusCode, status.Error, status.Message));
+                }
+
                 if (queryParams.Any(x => x.Key.ToLower() == "assettypeuid"))
                 {
                     Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "assettypeuid").Value);
@@ -169,6 +176,18 @@ namespace d360.web.Controllers.V2
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type with Uid {uid} not found."));
                     }
                 }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "surveytypeuid"))
+                {
+                    Guid uid = Guid.Parse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "surveytypeuid").Value);
+
+                    var surveyType = SurveyRepository.GetSurveyTypeByUid(uid);
+                    if (surveyType == null)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Survey type with Uid {uid} not found."));
+                    }
+                }
+
 
                 var response = SurveyRepository.GetSurveyTypes(queryParams);
 
