@@ -120,7 +120,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
 
-    private rowsPerPage: number = 5;
+    private rowsPerPage: number = 25;
     private totalRecords: number = 0;
     private results: RuleResultPagedResults;
     private items;
