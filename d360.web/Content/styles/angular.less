@@ -2955,7 +2955,7 @@ button.button, a.link-button {
 
 button.tab, button.tab-scroller {
     box-sizing: border-box;
-    padding: 0 15px;
+    padding: 0 16px;
     height: 40px;
     cursor: pointer;
     flex-shrink: 0;
@@ -2977,8 +2977,9 @@ button.tab, button.tab-scroller {
     }
 
     &.selected {
-        border-bottom: 3px solid @igx-blue;
+        border-bottom: 3px solid black;
         cursor: default;
+        color:black;
         background: none;
 
         &:hover {
@@ -3007,6 +3008,21 @@ button.tab-scroller {
     justify-content: center;
     padding: 0;
     width: 40px;
+
+    &:disabled, &.disabled {
+        cursor: default;
+        opacity: 0.33;
+    }
+
+    &:not(:disabled) {
+        &:hover {
+            background: rgba(20,20,20, 0.05);
+        }
+
+        &:active {
+            background: rgba(20,20,20, 0.10);
+        }
+    }
 }
 
 .tab-bar.below {

@@ -59,21 +59,22 @@
     </div>
     <div *ngIf="items && items.length > 0" class="tab-view">
         <div class="tab-bar-outer">
-            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')">
+            <button *ngIf="showScrollButtons" class="left tab-scroller" (click)="scroll('L')" [ngClass]="{'disabled':disableScrollLeft}" [disabled]="disableScrollLeft">
                 <i class="fa fa-chevron-circle-left"></i>
             </button>
             <div #tabScroller class="tab-bar can-overflow" [ngStyle]="{'margin-left.px': showScrollButtons ? 40 : 0,'margin-right.px': showScrollButtons ? 40 : 0}">
                 <button *ngIf="!isScoringScreen" class="tab" [ngClass]="{'selected':AllClosed()}" (click)="itemClicked({active:false,title:'homeClick', url: 'blank'})">{{area.tabTitle}}</button>
                 <button class="tab"
+                        title="{{getTitle(item)}}"
                         [ngClass]="{'selected':item.active}"
                         *ngFor="let item of items | genericFilter: filterScoringTabHasNoValue; trackBy: trackById;"
                         (click)="itemClicked(item);">
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
+                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon"  [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
                 </button>
             </div>
-            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')">
+            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"  [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
                 <i class="fa fa-chevron-circle-right"></i>
             </button>
         </div>
