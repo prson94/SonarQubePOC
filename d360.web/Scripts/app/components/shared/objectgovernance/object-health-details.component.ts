@@ -475,11 +475,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.scoreDate = item.EffectiveDate;
         this.tableSelectedIDX = this.scoresPoints.indexOf(item);
         this.loadPoints();
+        this.loadDefinition();
     }
 
     private onCarouselScoreClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.loadPoints();
+        this.loadDefinition();
     }
 
     private chartInstance: Highcharts.ChartObject;
