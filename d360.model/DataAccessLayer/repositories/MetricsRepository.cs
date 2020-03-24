@@ -214,22 +214,23 @@ namespace d360.model.DataAccessLayer
             }
             
             var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
+
+            var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where [Uid] = @Uid", new { model.Uid }).SingleOrDefault();
+
+            if (maxEffectiveDate.HasValue)
+            {
+                if (maxEffectiveDate.Value > effectiveDate.Date)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
+                }
+            }
+
             var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
 
             string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
             newConditionHash = newConditionHash.GetD3sHashString();
             if (metricAssetVersion == null)
             {
-                var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where [Uid] = @Uid", new { model.Uid }).SingleOrDefault();
-
-                if (maxEffectiveDate.HasValue)
-                {
-                    if (maxEffectiveDate.Value > effectiveDate.Date)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not backdate the effective date for this metric. You must provide date more recent than {maxEffectiveDate.Value.ToShortDateString()}");
-                    }
-                }
-
                 //Set the default to a = And.
                 if (string.IsNullOrEmpty(model.ConditionAndOr))
                 {
