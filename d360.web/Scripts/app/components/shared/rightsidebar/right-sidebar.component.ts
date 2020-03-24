@@ -189,7 +189,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
 
     getTitle(item: SecondaryNavItem) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
-            return this.statistics.IssueCount + " outstanding actions are assigned to you";
+            let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
+            return this.statistics.IssueCount + " outstanding action" + plurality +" assigned to you";
         } else {
             return "";
         }
