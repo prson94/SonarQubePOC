@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,7 +50,7 @@ namespace d360.model.helpers
             }
             catch (Exception ex)
             {
-                throw new Exception("Invalid filter expression: ", ex);
+                throw new FilterExpressionParserException("Invalid filter expression: ", ex);
             }
         }
 
