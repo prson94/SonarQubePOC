@@ -25,6 +25,11 @@ namespace d360.model.DataAccessLayer
             return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
         }
 
+        public QuestionType GetSurveyQuestionTypeByUid(Guid uid)
+        {
+            return companyContext.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
+        }
+
         public SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var response = new SurveyApiResponseModel();

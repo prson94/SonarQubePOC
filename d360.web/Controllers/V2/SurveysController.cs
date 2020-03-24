@@ -409,6 +409,12 @@ namespace d360.web.Controllers.V2
         }
 
 
+        /// <summary>
+        /// Posts a set of survey results for a specific survey type and asset
+        /// </summary>
+        /// <param name="surveyTypeUid">Uid of the survey type</param>
+        /// <param name="model"></param>
+        /// <returns>A response code indicating the status of the request</returns>
         [
             HttpPost,
             Route("{surveyTypeUid}"),
@@ -418,6 +424,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request is invalid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Survey Type for the provided uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Question Survey Type for the provided uid was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Asset for the provided uid was not found.", typeof(ErrorResponse)),
 
         ]
@@ -441,6 +448,15 @@ namespace d360.web.Controllers.V2
             if (surveyType == null)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found"));
+            }
+
+            foreach (var question in model.Questions)
+            {
+                var questionType = SurveyRepository.GetSurveyQuestionTypeByUid(question.SurveyQuestionUid);
+                if (questionType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Question Type for uid {question.SurveyQuestionUid} not found"));
+                }
             }
 
             var asset = AssetRepository.GetAssetByUID(model.AssetUid);
