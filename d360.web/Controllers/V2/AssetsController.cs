@@ -28,6 +28,7 @@ using System.Web.Http.Description;
 using d360.core.resources;
 using Resources;
 using System.IO;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -229,7 +230,7 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                if(!validator.IsValidOwnersGetAssets(queryParams))
+                if (!validator.IsValidOwnersGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
 
                 HttpResponseMessage response;
@@ -252,6 +253,11 @@ namespace d360.web.Controllers.V2
 
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
             }
             catch (Exception ex)
             {
