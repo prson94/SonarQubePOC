@@ -1268,7 +1268,7 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate.</param>
+        /// <param name="assetTags">Collection of assets and tags to associate. Use TagUID to associate existing tag with an asset. Use TagName when creating a new tag and associating with an asset.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
