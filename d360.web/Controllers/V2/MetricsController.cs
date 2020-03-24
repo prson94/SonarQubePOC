@@ -207,6 +207,7 @@ namespace d360.web.Controllers.V2
 
 
             var isNew = true;
+            model.EffectiveDate = model.EffectiveDate.Date;
 
             var result = MetricsRepository.AddOrUpdateMetrics(model, out isNew);
             if (result.StatusCode != HttpStatusCode.OK)
