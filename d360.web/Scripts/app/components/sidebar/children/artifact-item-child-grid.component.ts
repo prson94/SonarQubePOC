@@ -2,7 +2,8 @@
 import {Router} from '@angular/router';
 
 import {BaseComponent} from '../../shared/base.component';
-import {ArtifactService} from '../../../services/artifacts.service';
+import { ArtifactService } from '../../../services/artifacts.service';
+import { AssetService } from '../../../services/asset.service';
 import {GridDefinitionService} from '../../../services/grid-definition.service';
 import {GridColumn, GridField} from '../../../models/grid-definition.model';
 import {SortOrder} from '../../../models/enums.model';
@@ -23,6 +24,8 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     @Input() artifactTypeId: number;
     @Input() parentId: number;
     @Input() showFilter: boolean;
+    @Input() assetTypeUid: string;
+    @Input() objectTypeUid: string;
 
     private columns: GridColumn[] = [];
     private fields: GridField[] = [];
@@ -43,7 +46,8 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     constructor(
         protected router: Router,
         protected gridDefinitionService: GridDefinitionService,
-        protected artifactService: ArtifactService
+        protected artifactService: ArtifactService,
+        protected assetService: AssetService,
     ) {
         super();
     }
@@ -78,24 +82,15 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getData() {
-        this
-            .artifactService
-            .getArtifactByParentAndArtifactType(
-                this.parentId,
-                this.artifactTypeId,
-                this.filter,
-                this.numberOfRows,
-                this.currentPage,
-                this.sortField,
-                this.sortOrder
-            )
-            .pipe(debounceTime(this.searchDelayMilliSeconds))
-            .subscribe(
-                res => {
-                    this.artifacts = res;
-                }
-            )
-        ;
+        this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
+            let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
+            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter };
+            this.assetService.getAssets(i.uid, params).subscribe(res => {
+                console.log(res);
+                console.log(res.items[0]);
+                this.artifacts = res;
+            });
+        });
     }
 
     getFieldsDefinition() {
@@ -140,8 +135,8 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 'Artifact',
                 artifact.ID,
                 this.artifactTypeId
-                )
             )
-        ;
+            )
+            ;
     }
 }

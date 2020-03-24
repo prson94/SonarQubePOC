@@ -8,7 +8,7 @@
         placeholder="Search..."
         class="grid-simple-filter">
     <p-table #dt
-        [value]="artifacts?.results"
+        [value]="artifacts?.items"
         [lazy]="true"
         [totalRecords]="artifacts?.total"
         (onLazyLoad)="loadArtifactsLazy($event)"

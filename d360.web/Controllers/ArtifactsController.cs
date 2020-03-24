@@ -714,12 +714,6 @@ where   A.Type = 'ArtifactType'
 
         #region Json
 
-        [HttpGet, Route("artifactsbyparent"), NonNullableParameters]
-        public JsonNetResult ArtifactsByParent(int parentID, int childArtifactTypeID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20)
-        {
-            return ByParent(parentID, sortDataField, sortOrder, filter, pagenum, pagesize, childArtifactTypeID);
-        }
-
         [HttpPost, Route("byparent"), NonNullableParameters]
         public JsonNetResult ByParent(int parentID, string sortDataField, string sortOrder, string filter, int pagenum = 0, int pagesize = 20, int childArtifactTypeID = 0)
         {

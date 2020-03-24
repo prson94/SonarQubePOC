@@ -1514,6 +1514,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
         }
+        public AssetType GetArtifactTypeByID(int artifactTypeId)
+        {
+            return CompanyContext.Filter<AssetType>(i => i.Object.Equals("ArtifactType") && i.ObjectID == artifactTypeId).SingleOrDefault();
+        }
 
         public AssetType GetAssetTypeByModel(AssetTypeUpsert model)
         {
