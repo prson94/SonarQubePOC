@@ -25,6 +25,11 @@ namespace d360.model.DataAccessLayer
             return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
         }
 
+        public QuestionType GetSurveyQuestionTypeByUid(Guid uid)
+        {
+            return companyContext.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
+        }
+
         public SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var response = new SurveyApiResponseModel();
@@ -406,7 +411,7 @@ namespace d360.model.DataAccessLayer
             return surveys[index];
         }
 
-       public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             List<string> joins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -509,6 +514,46 @@ namespace d360.model.DataAccessLayer
             return result;
 
 
+        }
+
+        public async Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType)
+        {
+
+            var survey = new Survey()
+            {
+                SurveyTypeID = surveyType.ID,
+                Object = asset.Object,
+                ObjectID = asset.ObjectID,
+                ResourceID = companyContext.CurrentResourceID,
+                CreatedOn = DateTime.UtcNow
+            };
+
+
+            companyContext.SaveOrUpdate(survey);
+
+            foreach (var question in model.Questions)
+            {
+                var q = new d360.core.entities.Question()
+                {
+                    SurveyID = survey.ID,
+                    Comment = question.Comments
+                };
+
+                companyContext.SaveOrUpdate(q);
+
+                foreach(var value in question.Responses)
+                {
+                    (await companyContext.QueryAsync<int>(
+                        @"insert into QuestionOption (QuestionID, QuestionTypeOptionID)
+                            select  @questionId, 
+                                    O.ID 
+                            from    QuestionType T 
+                                    inner join QuestionTypeOption O on O.QuestionTypeID = T.ID
+                        where       T.Uid = @SurveyQuestionUid 
+                                    and O.Value = @value
+                        ", new { questionId = q.ID, question.SurveyQuestionUid, value })).FirstOrDefault();
+                }
+            }
         }
     }
 }
