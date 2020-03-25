@@ -17,7 +17,7 @@ import {  debounceTime } from 'rxjs/operators';
 @Component({
     selector: 'd3s-artifact-item-child-grid',
     templateUrl: './artifact-item-child-grid.component.html',
-    providers: [ArtifactService, GridDefinitionService],
+    providers: [ArtifactService, GridDefinitionService, AssetService],
 })
 
 export class ArtifactItemChildGridComponent extends BaseComponent implements OnChanges {
