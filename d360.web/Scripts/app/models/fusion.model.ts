@@ -5,6 +5,7 @@
     Description: string;
     UpdatedOn: string;
     UpdatedBy: number;
+    uid: string;
 }
 
 export class FusionAttributeType {

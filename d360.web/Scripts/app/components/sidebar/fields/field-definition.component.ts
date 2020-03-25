@@ -17,6 +17,8 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                 <div class="tile tile-detail">
                     <d3s-field-definition-tile [objectID]="objectID"
                                                [objectType]="objectType"
+                                               [assetTypeUid]="assetTypeUid"
+                                               [relationshipTypeUid]="relationshipTypeUid"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>
             </div>
@@ -30,6 +32,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
     objectID: number;
     objectType: string;
     objectName: string;
+    assetTypeUid: string;
+    relationshipTypeUid: string;
 
     constructor(
         private objectDetailService: ObjectDetailService,
@@ -53,6 +57,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                     res => {
                         if (res) {
                             this.objectName = 'Field Definitions for ' + (res.Name ? res.Name : res.DisplayValue);
+                            if (this.objectType.toLowerCase() === 'intersecttype') {
+                                this.relationshipTypeUid = res.UID;
+                            }
+                            else {
+                                this.assetTypeUid = res.AssetTypeUid;
+                            }
+
                         }
                     }
                 );

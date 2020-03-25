@@ -87,7 +87,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
         <div class="col s12" *ngIf="!isLoading && !showDelete && !showEditor && selected">
             <div class="tile tile-detail">
                 <d3s-field-definition-tile [objectType]="'FusionQueryAttributeType'"
-                                           [objectID]="selected.ID"></d3s-field-definition-tile>
+                                           [objectID]="selected.ID" [assetTypeUid]="selected.uid"></d3s-field-definition-tile>
             </div>
         </div>
     `,
