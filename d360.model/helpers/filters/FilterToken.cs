@@ -22,6 +22,9 @@ namespace d360.model.helpers
         private StringBuilder stringBuilder = new StringBuilder();
         private Dictionary<string, object> sqlParamsRef;
 
+        private AssetType assetType { get; set; }
+        private IntersectType intersectType { get; set; }
+
         public bool IsOnlyOperator
         {
             get
@@ -35,6 +38,13 @@ namespace d360.model.helpers
             get
             {
                 return field;
+            }
+        }
+        public string ValueAsString
+        {
+            get
+            {
+                return value.ToString();
             }
         }
 
@@ -97,12 +107,51 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
+        public string GetSQLForRelationship(ref Dictionary<string, object> sqlParams)
+        {
+
+            if (assetType == null || intersectType == null)
+            {
+                throw new MethodAccessException("Method can be used only when Intersect Type and Asset Type are loaded. Use LoadRelationshipData() method before.");
+            }
+
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+
+            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+            }
+
+            var condition = @operator == "eq" ? " exists" : " not exists";
+
+
+            stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx}
+                    UNION
+                    SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S - (E) -> O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx})");
+
+            sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
+            sqlParams.Add($"@intersectAssetFilter{this.parameterIdx}", Guid.Parse(ValueAsString));
+
+            return stringBuilder.ToString();
+        }
+
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
             fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
         }
-
+        public void LoadRelationshipData(IntersectType it, AssetType at)
+        {
+            this.intersectType = it;
+            this.assetType = at;
+        }
         private void UpdateTokenValueForType()
         {
             switch (fieldType.Type.ToLower())
