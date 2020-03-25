@@ -2,6 +2,7 @@
 using d360.model.helpers.filters;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -24,14 +25,10 @@ namespace d360.model.helpers
 
         public FilterExpressionParser(
             ICompanyContext ctx,
-            List<FieldType> fields,
-            List<string> columns,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
             bool includeParent = false)
         {
             this.CompanyContext = ctx;
-            this.fieldTypes = fields;
-            this.fieldColumns = columns;
             this.parseType = type;
 
             allowedDefaultFields.Add(new Tuple<string, string>("Code", "Code"));
@@ -40,6 +37,12 @@ namespace d360.model.helpers
             {
                 allowedDefaultFields.Add(new Tuple<string, string>("ParentDisplayName", "Parent.DisplayValue"));
             }
+        }
+
+        public void LoadFieldTypes(List<FieldType> fields, List<string> columns)
+        {
+            this.fieldTypes = fields;
+            this.fieldColumns = columns;
         }
 
         public string Parse(string filterString, out Dictionary<string, object> sqlParams)
@@ -109,12 +112,20 @@ namespace d360.model.helpers
                 i = tokens.Length;
             }
 
+            if (parseType == FilterExpressionParseType.Relationships)
+            {
+                CheckRelationshipTokens(FilterTokens);
+            }
 
             foreach (var token in FilterTokens)
             {
                 if (parseType == FilterExpressionParseType.CustomFields)
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
+                }
+                else if (parseType == FilterExpressionParseType.Relationships)
+                {
+                    ParseTokensForRelationships(sqlParams, sb, token);
                 }
                 else
                 {
@@ -124,6 +135,19 @@ namespace d360.model.helpers
 
             return sb.ToString();
         }
+
+        private void ParseTokensForRelationships(Dictionary<string, object> sqlParams, StringBuilder sb, FilterToken token)
+        {
+            if (token.IsOnlyOperator)
+            {
+                sb.Append(token.GetSQLForOperator());
+            }
+            else
+            {
+                sb.Append(token.GetSQLForRelationship(ref sqlParams));
+            }
+        }
+
 
         private void ParseTokensForCustomFields(Dictionary<string, object> sqlParams, StringBuilder sb, FilterToken token)
         {
@@ -199,6 +223,67 @@ namespace d360.model.helpers
                 if (s[i] == c) indx.Add(i);
             }
             return indx.ToArray();
+        }
+
+        private void CheckRelationshipTokens(List<FilterToken> tokens)
+        {
+            List<Guid> IntersectUids = new List<Guid>();
+            List<Guid> AssetUids = new List<Guid>();
+            foreach (var token in tokens.Where(x => x.IsOnlyOperator == false))
+            {
+                var intersectUid = Guid.Empty;
+                var assetUid = Guid.Empty;
+
+                if (!Guid.TryParse(token.Field, out intersectUid))
+                {
+                    throw new Exception($"Invalid Relationship Type UID Provided ({token.Field}).");
+                }
+
+                if (!Guid.TryParse(token.ValueAsString, out assetUid))
+                {
+                    throw new Exception($"Invalid Asset UID Provided ({token.ValueAsString}).");
+                }
+
+                IntersectUids.Add(intersectUid);
+                AssetUids.Add(assetUid);
+            }
+
+            var intersectTypes = CompanyContext.IntersectTypes.Where(x => IntersectUids.Contains(x.uid)).ToList();
+            var filterAssets = CompanyContext.Assets.Where(x => AssetUids.Contains(x.uid)).Include(x => x.AssetType).ToList();
+            var filterAssetTypes = CompanyContext.AssetTypes.Where(x => AssetUids.Contains(x.uid)).ToList();
+
+            foreach (var itUid in IntersectUids)
+            {
+                if (!intersectTypes.Any(x => x.uid == itUid))
+                {
+                    throw new Exception($"Relationship Type with UID '{itUid.ToString()}' does not exist.");
+                }
+            }
+
+            foreach (var assetUid in AssetUids)
+            {
+                if (!filterAssets.Any(x => x.uid == assetUid) && !filterAssetTypes.Any(x => x.uid == assetUid))
+                {
+                    throw new Exception($"Asset with UID '{assetUid.ToString()}' does not exist.");
+                }
+            }
+
+            //Load data to tokens
+            foreach (var token in tokens.Where(x => x.IsOnlyOperator == false))
+            {
+                var intersectUid = Guid.Empty;
+                var assetUid = Guid.Empty;
+
+                Guid.TryParse(token.Field, out intersectUid);
+                Guid.TryParse(token.ValueAsString, out assetUid);
+
+                token.LoadRelationshipData(
+                    intersectTypes.FirstOrDefault(x => x.uid == intersectUid),
+                    filterAssets.FirstOrDefault(x => x.uid == assetUid)?.AssetType ?? filterAssetTypes.FirstOrDefault(x=> x.uid == assetUid));
+
+
+            }
+
         }
 
     }

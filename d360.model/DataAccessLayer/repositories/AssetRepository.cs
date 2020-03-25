@@ -422,9 +422,23 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                foreach (var item in sqlParams)
+                {
+                    dbArgs.Add(item.Key, item.Value);
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
 
                 foreach (var item in sqlParams)
                 {
@@ -1687,7 +1701,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         public bool IsReachedTransformationLimit(AssetTypeUpsert model)
         {
             bool reached = false;
-            if ( (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset ) && model.UseAsTransformation == true)
+            if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();
