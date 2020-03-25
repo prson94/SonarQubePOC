@@ -51,6 +51,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
             if (this.model.EffectiveDate != null) {
                 this.model.EffectiveDate = new Date(<string>this.model.EffectiveDate);
+                this.model.EffectiveDate.setMinutes(this.model.EffectiveDate.getMinutes() + this.model.EffectiveDate.getTimezoneOffset());
             }
         } else {
             this.model = new MetricAssetViewModel();
@@ -88,8 +89,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         if (this.model.EffectiveDate != null) {
             prevDate = this.model.EffectiveDate;
             let d = new Date(<string>this.model.EffectiveDate);
-            var datestr = [this.pad(d.getMonth() + 1), this.pad(d.getDate()), this.pad(d.getFullYear())].join('/');
-            var condate = new Date(datestr);
+            var condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate.toISOString();
         }
@@ -121,8 +121,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
     }
-
-    public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     private clamp(val: any, min: number, max: number, precision: number): any {
         let newVal = FormHelpers.clamp(val, min, max, precision);
