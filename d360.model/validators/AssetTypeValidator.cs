@@ -258,5 +258,14 @@ namespace d360.core.validators
 
             return true;
         }
+
+        public bool IsValidRelationFilter(IEnumerable<KeyValuePair<string,string>> queryParams)
+        {
+            if(queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLower() == "_relationfilter"))
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }

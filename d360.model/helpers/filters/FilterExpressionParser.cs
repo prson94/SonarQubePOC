@@ -123,7 +123,7 @@ namespace d360.model.helpers
                 {
                     ParseTokensForCustomFields(sqlParams, sb, token);
                 }
-                if (parseType == FilterExpressionParseType.Relationships)
+                else if (parseType == FilterExpressionParseType.Relationships)
                 {
                     ParseTokensForRelationships(sqlParams, sb, token);
                 }
@@ -250,6 +250,7 @@ namespace d360.model.helpers
 
             var intersectTypes = CompanyContext.IntersectTypes.Where(x => IntersectUids.Contains(x.uid)).ToList();
             var filterAssets = CompanyContext.Assets.Where(x => AssetUids.Contains(x.uid)).Include(x => x.AssetType).ToList();
+            var filterAssetTypes = CompanyContext.AssetTypes.Where(x => AssetUids.Contains(x.uid)).ToList();
 
             foreach (var itUid in IntersectUids)
             {
@@ -261,7 +262,7 @@ namespace d360.model.helpers
 
             foreach (var assetUid in AssetUids)
             {
-                if (!filterAssets.Any(x => x.uid == assetUid))
+                if (!filterAssets.Any(x => x.uid == assetUid) && !filterAssetTypes.Any(x => x.uid == assetUid))
                 {
                     throw new Exception($"Asset with UID '{assetUid.ToString()}' does not exist.");
                 }
@@ -278,7 +279,7 @@ namespace d360.model.helpers
 
                 token.LoadRelationshipData(
                     intersectTypes.FirstOrDefault(x => x.uid == intersectUid),
-                    filterAssets.FirstOrDefault(x => x.uid == assetUid).AssetType);
+                    filterAssets.FirstOrDefault(x => x.uid == assetUid)?.AssetType ?? filterAssetTypes.FirstOrDefault(x=> x.uid == assetUid));
 
 
             }

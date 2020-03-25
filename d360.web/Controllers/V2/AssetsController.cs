@@ -174,7 +174,11 @@ namespace d360.web.Controllers.V2
         /// 
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct Lo.
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        /// 
+        /// Relationship filtering is done using _relationFilter parameter and filter expressions are specified using relationship type UID, operator and Asset UID. IE. {Relationship Type UID} eq {Asset UID}.
+        /// *  For comparison operators you can use eq (equal), ne (not equal)
+        /// *  Chaining of relationship filter expressions is done using 'and' or 'or' logical operator.
         /// 
         /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
@@ -233,6 +237,9 @@ namespace d360.web.Controllers.V2
 
                 if (!validator.IsValidOwnersGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
+
+                if (!validator.IsValidRelationFilter(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
                 HttpResponseMessage response;
 
