@@ -1274,7 +1274,7 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate. Use TagUID to associate existing tag with an asset. Use TagName when creating a new tag and associating with an asset.</param>
+        /// <param name="assetTags">Collection of assets and tags to associate. Use TagUID or TagName to associate an asset with existing tag.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -1291,6 +1291,18 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
+                if(assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Only TagUid OR TagName can be specified.",
+                        Success = false
+                    };
+
+                    resultList.Add(result);
+                    continue;
+                }
+
                 if (assetTagApi.TagUID == Guid.Empty)
                 {
                     currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
@@ -1299,6 +1311,7 @@ namespace d360.web.Controllers.V2
                 {
                     currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
                 }
+                
                 if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1306,6 +1319,12 @@ namespace d360.web.Controllers.V2
                         Message = $"Invalid TagUid provided, no tag exists with the specified uid.",
                         Success = false
                     };
+
+                    if (!string.IsNullOrEmpty(assetTagApi.TagName))
+                    {
+                        result.Message = $"Invalid TagName provided, no tag exists with the specified Tag name.";
+                    }
+
 
                     resultList.Add(result);
                     continue;
@@ -1376,6 +1395,7 @@ namespace d360.web.Controllers.V2
                 }
 
             }
+            
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
         }
 
