@@ -138,22 +138,45 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     deleteFieldType(id: number) {
-        this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
-            res => {
-                this.showMessageForResult(this.messagesService, res);
-                if (!res.isError) {
-                    let index = this.fieldDefinitions.findIndex(f => f.ID == id);
+        if (this.objectType == 'LookupType') {    // has to be left in until lookuptypes are removed from govern as these are not assets...         
+            this.fieldsService.deleteLookupFieldType(id).subscribe(
+                res => {
+                    this.showMessageForResult(this.messagesService, res);
+                    if (!res.isError) {
+                        let index = this.fieldDefinitions.findIndex(f => f.ID == id);
 
-                    this.isDeleting = false;
+                        this.isDeleting = false;
 
-                    if (index >= 0 && index < this.fieldDefinitions.length) {
-                        this.fieldDefinitions.splice(index, 1);
+                        if (index >= 0 && index < this.fieldDefinitions.length) {
+                            this.fieldDefinitions.splice(index, 1);
+                        }
+
+                        this.onFieldsChanged.emit();
                     }
-
-                    this.onFieldsChanged.emit();
                 }
-            }
-        );
+            );
+        }
+        else {
+            this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
+                res => {                    
+                    //this.showMessageForApiResponse(this.messagesService, res);
+                    if (res != null && res.Success === true) {
+                        this.messagesService.showInfoMessage('Success','Field definition successfully removed.');
+                        let index = this.fieldDefinitions.findIndex(f => f.ID == id);
+
+                        this.isDeleting = false;
+
+                        if (index >= 0 && index < this.fieldDefinitions.length) {
+                            this.fieldDefinitions.splice(index, 1);
+                        }
+
+                        this.onFieldsChanged.emit();
+                    } else {                       
+                        this.isDeleting = false;
+                    }                    
+                }
+            );
+        }
     }
 
     moveUp(field: FieldDefinition) {

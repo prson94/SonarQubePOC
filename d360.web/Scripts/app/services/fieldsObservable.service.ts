@@ -11,6 +11,7 @@ import {JsonResult} from '../models/jsonresult.model';
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {IFieldsObservableService} from "../models/fields-observable.model";
+import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 @Injectable()
 export class FieldsObservableService extends BaseObservableService implements IFieldsObservableService {
@@ -262,9 +263,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<JsonResult> {
-        console.log(name);
-        
+    deleteLookupFieldType(id: number): Observable<JsonResult> { 
+        return this
+            .http
+            .delete(`form/DeleteFieldTypeByID?id=${id}`)
+            .pipe(
+                map(response => <JsonResult>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {                
         const options = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',
