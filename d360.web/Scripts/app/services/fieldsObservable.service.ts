@@ -1,7 +1,7 @@
 import {Observable} from 'rxjs';
 import {catchError, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {SelectItem} from 'primeng/components/common/api';
 
 import {FieldDefinition, FieldTypeEditorModel, Lookups} from '../models/fields.model';
@@ -262,15 +262,30 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    deleteFieldType(id: number): Observable<JsonResult> {
+    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<JsonResult> {
+        console.log(name);
+        
+        const options = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+            }),
+            body: {                
+                Fields: [{ Name: name }],
+                ActionTypeUid: actionTypeUid,
+                AssetTypeUid: assetTypeUid,
+                RelationshipTypeUid: relationshipTypeUid
+            },
+        };
+
         return this
             .http
-            .delete(`form/DeleteFieldTypeByID?id=${id}`)
+            .delete('api/v2/fields', options)
             .pipe(
-                map(response => <JsonResult>response),
+                map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))
             );
     }
+
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();

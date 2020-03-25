@@ -794,7 +794,8 @@ select	AT.ObjectID as ID,
         AT.ID as AssetTypeID,
         AT.[Class],
         K.[Count],
-        cast(1 as bit) as expanded
+        cast(1 as bit) as expanded,
+        cast(AT.UID as nvarchar(200)) as uid
 from    AssetType AT
 		cross apply (
                     SELECT  count(1) as [Count]

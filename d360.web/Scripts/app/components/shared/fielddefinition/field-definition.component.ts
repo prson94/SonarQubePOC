@@ -18,6 +18,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() objectID: number;
     @Input() title: string = 'Field Definition';
 
+    @Input() actionTypeUid: string;
+    @Input() assetTypeUid: string;
+    @Input() relationshipTypeUid: string;
+
     @Input() showAddButton: boolean = true;
     @Input() showEditButton: boolean = true;
     @Input() showDeleteButton: boolean = true;
@@ -134,7 +138,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     deleteFieldType(id: number) {
-        this.fieldsService.deleteFieldType(id).subscribe(
+        this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             res => {
                 this.showMessageForResult(this.messagesService, res);
                 if (!res.isError) {
