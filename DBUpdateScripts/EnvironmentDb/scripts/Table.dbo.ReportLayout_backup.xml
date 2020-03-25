@@ -31,4 +31,36 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.dbo.ReportLayout_backup-v2">
+    <comment>GOV-9629</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+            IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ReportLayout_backup')
+BEGIN
+DROP TABLE [dbo].[ReportLayout_backup]
+END
+
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+      IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ReportLayout_backup')
+BEGIN
+	CREATE TABLE [dbo].[ReportLayout_backup](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[Name] [nvarchar](250) NOT NULL,
+		[Description] [nvarchar](1000) NULL,
+		[Template] [nvarchar](1000) NOT NULL,
+		[NumberOfContentAreas] [int] NOT NULL,
+		CONSTRAINT [PK_ReportLayout] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+		]]>
+    </rollback>
+  </changeSet>
+
 </databaseChangeLog>
