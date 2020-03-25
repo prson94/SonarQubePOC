@@ -107,6 +107,7 @@ namespace d360.model.DataAccessLayer
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
+            bool includeTotal = true;
 
             var baseTableSql = @"from [Intersect] I 
 inner join IntersectType T on T.ID = I.IntersectTypeID 
@@ -202,6 +203,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
                 }
 
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
+                {                    
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
+                    {
+                        includeTotal = true;
+                    }
+                }
+
                 // Now deal with dynamic field filters
                 if (fieldTypes != null)
                 {
@@ -264,9 +273,11 @@ end = @f{fieldType.ID}Value";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
+            var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
+
             var sql = $@"
 declare @total int
-select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}
+{(includeTotal ? countFullSql : "")}
 
 select	@pageSize as 'pageSize',
 		@pageNum as 'pageNum',
