@@ -60,6 +60,10 @@ namespace d360.core.validators
 
             if (!isInsert)
             {
+                var anyDupeNames = CompanyContext.Filter<AssetType>(x => x.Name != model.Name && x.Object == "ArtifactType");
+                if (anyDupeNames.Any())
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ErrorNameTaken);
+
                 if (assetType == null)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
                 else if (assetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
