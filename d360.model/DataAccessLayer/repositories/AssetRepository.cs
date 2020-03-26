@@ -446,12 +446,13 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            string permissionDetailSQL = @"				outer apply (
-				 select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+            string permissionDetailSQL = @"	outer apply (
+                 select top 1 * from
+				 (select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
 					where AssetID = A.ID
 				union all 	
 					select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
-					where AssetID = 0 and AssetTypeID = A.AssetTypeID
+					where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
 				   )Permission(mask)";
 
             string includePermissionFields = @",(SELECT case 
