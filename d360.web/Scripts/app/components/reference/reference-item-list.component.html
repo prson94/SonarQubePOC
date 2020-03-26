@@ -98,5 +98,6 @@
                          [uid]="selected?.AssetUid"
                          [assetTypeUid]="assetTypeUid"
                          (onCancel)="showDelete = false"
-                         (onDeleted)="onDeleted()">
+                         (onDeleted)="onDeleted()"
+                         [displayValue]="selected?.Code">
 </d3s-asset-delete-editor>
