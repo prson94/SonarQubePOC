@@ -500,6 +500,10 @@ namespace d360.model.DataAccessLayer
 
                             simpleFilters.Add(simpleFilterTagSql);
                         }
+                        else if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
