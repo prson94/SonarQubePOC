@@ -84,7 +84,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     getData() {
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter };
+            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter, _includeParent: true };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
                 console.log(res);
                 console.log(res.items[0]);
