@@ -4317,22 +4317,6 @@ order by C.DisplayValue";
                 .AsQueryable();
         }
 
-        [Route("ownership/admintypes")]
-        public IQueryable<dynamic> GetAdminResponsibilityTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-            return Company.Table<ResponsibilityType>()
-                .Select(i => new
-                {
-                    i.ID,
-                    i.Name,
-                    i.Description
-                })
-                .OrderBy(i => i.Name)
-                .AsQueryable();
-        }
-
         [Route("ownership/types/{id:int}/relations")]
         public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByResponsibilityType(int id)
         {
