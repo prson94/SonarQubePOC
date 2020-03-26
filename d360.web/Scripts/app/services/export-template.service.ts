@@ -29,7 +29,8 @@ export class ExportTemplateService extends BaseObservableService {
     }
 
     public deleteExportTemplates(id: number): Observable<any> {
-       return this.http.delete(`/api/v2/exporttemplates/${id}`);            
+        return this.http.delete(`/api/v2/exporttemplates/${id}`)
+            .pipe(catchError(err => this.handleError(err)));            
     }
 
     public saveExportTemplate(exportTemplate: ExportTemplate): Observable<ExportTemplate> {
@@ -47,7 +48,8 @@ export class ExportTemplateService extends BaseObservableService {
     }
 
     public saveTemplateFile(exportTemplate: ExportTemplate): Observable<any> {        
-        return this.http.post(`/api/v2/exporttemplates/templatefile/${exportTemplate.ID}`,'');
+        return this.http.post(`/api/v2/exporttemplates/templatefile/${exportTemplate.ID}`, '')
+            .pipe(catchError(err => this.handleError(err)));
     }
 
     public getExportTemplateStyles(templateId:number): Observable<ExportTemplateStyle[]> {
@@ -71,6 +73,7 @@ export class ExportTemplateService extends BaseObservableService {
     }
 
     public deleteExportTemplateStyle(id: number): Observable<any> {
-        return this.http.delete(`/api/v2/exporttemplates/Style/${id}`);
+        return this.http.delete(`/api/v2/exporttemplates/Style/${id}`)
+            .pipe(catchError(err => this.handleError(err)));
     }
 }
