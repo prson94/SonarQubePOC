@@ -92,7 +92,11 @@
             <object-detail [objectType]="objectType" [objectID]="selectedItemID"></object-detail>
         </div>
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedItemID"></d3s-field-definition-tile>
+            <d3s-field-definition-tile 
+                                       [objectType]="objectType" 
+                                       [objectID]="selectedItemID"
+                                       [assetTypeUid]="selected?.uid"
+                                       ></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail">
             <d3s-admin-level-grid [objectType]="objectType" [maxDepth]="selected?.MaximumDepth" [objectId]="selectedItemID"></d3s-admin-level-grid>

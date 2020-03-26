@@ -4463,9 +4463,10 @@ from    ResponsibilityTypeRelationRule R
 	                    AT.CreatedOn,
 	                    AT.UpdatedBy,
 	                    AT.UpdatedOn,
-	                    AT.ID as AssetTypeID
+	                    AT.ID as AssetTypeID,
+                        AT.uid as uid
 	                    from	    AssetType AT where AT.Object = 'PolicyType'"))
-            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
+            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID, i.uid })
             );
         }
 
@@ -4868,7 +4869,8 @@ select      ID as AssetTypeID,
             CreatedBy, 
             UpdatedOn, 
             UpdatedBy, 
-            DisplayFormat 
+            DisplayFormat,
+            uid
 from        AssetType 
 where       Object = 'RuleType'
 order by    Name

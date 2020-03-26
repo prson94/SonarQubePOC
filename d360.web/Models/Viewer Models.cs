@@ -77,6 +77,7 @@ namespace d360.web.Models
         public string ClassName { get { return Class.GetName(); } }
         public int Count { get; set; }
         public bool expanded { get; set; }
+        public string uid { get; set; }
     }
 
     public class AttributeNode

@@ -1,8 +1,6 @@
-﻿import { Component, NgZone, OnInit } from '@angular/core';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
+﻿import { Component, OnInit } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { AdminBaseComponent } from '../admin-base.component';
-import { FormMode } from '../../../models/form.model';
 import { Title } from '@angular/platform-browser';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 
@@ -12,7 +10,7 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
     templateUrl: './admin-resources.component.html'
 })
 
-export class AdminResourcesComponent extends AdminBaseComponent {    
+export class AdminResourcesComponent extends AdminBaseComponent implements OnInit {    
     constructor(headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, secondaryNavService: SecondaryNavService,) {
         super(headerBreadcrumbService, titleService);        
         this.areaName = "Users";

@@ -77,7 +77,7 @@
         </p-treeTable>
     </div>
     <div class="col hide-on-small-and-down m12 l7">
-        <d3s-field-definition-tile [objectType]="'FusionAttributeType'" [objectID]="selectedRow?.data?.ID" [title]="'Fields for ' + selectedRow?.data?.Name"></d3s-field-definition-tile>
+        <d3s-field-definition-tile [objectType]="'FusionAttributeType'" [objectID]="selectedRow?.data?.ID" [title]="'Fields for ' + selectedRow?.data?.Name" [assetTypeUid]="selectedRow?.data?.uid"></d3s-field-definition-tile>
     </div>
 
 </div>
