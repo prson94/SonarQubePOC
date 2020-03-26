@@ -114,7 +114,7 @@ namespace d360.web.Controllers.V2
                         from [Intersect] FFR_I
                         left join Asset FFR_R1 on FFR_R1.[Object] = FFR_I.[Subject] and FFR_R1.ObjectID = FFR_I.SubjectId and FFR_I.[Object] = {joinObjectField} and FFR_I.ObjectID = {joinObjectIdField}
                         left join Field FFR_F1 on FFR_F1.FieldTypeID = {f.LookupObjectFieldTypeID} and FFR_F1.AssetID = FFR_R1.ID
-						left join Asset FFR_R2 on FFR_R2.[Object] = I.[Object] and FFR_R2.ObjectID = FFR_I.ObjectId and FFR_I.[Subject] = {joinObjectField} and FFR_I.SubjectID = {joinObjectIdField}
+						left join Asset FFR_R2 on FFR_R2.[Object] = FFR_I.[Object] and FFR_R2.ObjectID = FFR_I.ObjectId and FFR_I.[Subject] = {joinObjectField} and FFR_I.SubjectID = {joinObjectIdField}
                         left join Field FFR_F2 on FFR_F2.FieldTypeID = {f.LookupObjectFieldTypeID} and FFR_F2.AssetID = FFR_R2.ID
                         where FFR_I.IntersectTypeID = {f.LookupObjectID} and ISNULL(FFR_F1.FormattedValue, FFR_F2.FormattedValue) is not null
                     ) {tableAlias} ");
