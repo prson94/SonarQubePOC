@@ -158,8 +158,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         }
         else {
             this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
-                res => {                    
-                    //this.showMessageForApiResponse(this.messagesService, res);
+                res => {                                        
                     if (res != null && res.Success === true) {
                         this.messagesService.showInfoMessage('Success','Field definition successfully removed.');
                         let index = this.fieldDefinitions.findIndex(f => f.ID == id);
