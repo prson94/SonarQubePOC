@@ -114,8 +114,13 @@ namespace igx.jobs.apiexecutionprocessor
 
             try
             {
-                //check if this client should / can run an api load
-                if (!(await ShouldRunApiJob(company)))
+                bool jobAlreadyRunning = false;
+
+                if (dbExecutionItem != null && dbExecutionItem.ProcessingStartedOn.HasValue)
+                    jobAlreadyRunning = true;
+
+                //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
+                if (!jobAlreadyRunning && !(await ShouldRunApiJob(company)))
                 {
                     int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay")??"30");
 
