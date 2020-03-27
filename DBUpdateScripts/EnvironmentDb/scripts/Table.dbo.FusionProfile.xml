@@ -234,7 +234,7 @@ END
       <![CDATA[
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
 BEGIN
-	exec sp_rename '[dbo].[FusionProfile]', '[dbo].[FusionProfile_backup]'
+	exec sp_rename '[dbo].[FusionProfile]', 'FusionProfile_backup'
 END
 		]]>
     </sql>
@@ -242,7 +242,7 @@ END
       <![CDATA[	
 IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile_backup')
 BEGIN
-		exec sp_rename '[dbo].[FusionProfile_backup]', '[dbo].[FusionProfile]'
+		exec sp_rename '[dbo].[FusionProfile_backup]', 'FusionProfile'
 END
 		]]>
     </rollback>
