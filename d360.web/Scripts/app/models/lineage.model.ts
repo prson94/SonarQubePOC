@@ -727,11 +727,8 @@ export class AssetBrowserDiagramAssetScore {
 export class AssetBrowserDiagramAssetOwner {
     ResponsibilityTypeID: number;
     ResponsibilityTypeName: string;
-    Icon: string;
     ResourceID: number;
     ResourceName: string;
-    SecurityAssetName: string;
-    Context: string;
 }
 
 //#endregion
@@ -803,6 +800,9 @@ export class AssetBrowserFilterChangeEvent {
     Model: AssetBrowserFilterModel;
 }
 
+export class AssetBrowserPanelModel {
+    commandToResetTo: AssetBrowserPanelCommand;
+}
 export enum AssetBrowserPanelCommand {
     None = 0,
     Add = 1,

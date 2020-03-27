@@ -1,4 +1,4 @@
-﻿<p-table #dt [value]="selectedDiagramAsset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}">
+﻿<p-table #dt [value]="asset?.Owners" [metaKeySelection]="true" [style]="{'width':'450px'}" [paginator]="true" [rows]="10">
     <ng-template pTemplate="header">
         <tr>
             <th style="width: 50%">Responsibility</th>
@@ -14,7 +14,6 @@
             <td>
                 <d3s-preview-tooltip objectType="Resource" [objectId]="item.ResourceID">{{item.ResourceName}}</d3s-preview-tooltip>
             </td>
-            <td><i [class]="ownerRowClass(item.Icon)" [title]="item.SecurityAssetName"></i></td>
         </tr>
     </ng-template>
 </p-table>

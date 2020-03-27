@@ -599,16 +599,11 @@ select	A.TypeName,
 			for json path
 		) as Scores,
 		(
-			select	ResponsibilityTypeID,
+			select	distinct
+                    ResponsibilityTypeID,
 					ResponsibilityTypeName,
-					case SecurityAsset
-						when 'G' then 'fa-users'
-						else 'fa-user'
-					end as Icon,
 					ResourceID,
-					ResourceName,
-					SecurityAssetName,
-					Context
+					ResourceName
 			from	ResponsibilityDetail
 			where	IsVisible = 1 
 					and AssetID = A.ID
