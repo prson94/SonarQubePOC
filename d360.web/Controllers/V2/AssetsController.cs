@@ -1289,6 +1289,7 @@ namespace d360.web.Controllers.V2
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Asset / Tag Association failed. Tag field may not be assigned to Asset. ", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
@@ -1394,12 +1395,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    result = new AssetTagSuccessApiModel()
-                    {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association",
-                        Success = false
-                    };
-                    resultList.Add(result);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Requst", "Asset / Tag Association failed. Tag field may not be assigned to Asset.");
                 }
 
             }
