@@ -463,6 +463,13 @@ namespace d360.model.DataAccessLayer
                     from	dbo.Asset A
                     		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
+                    declare @lastScoredDate date = (select top 1 RunDate from metrics.score where AssetUid = @assetUid order by RunDate desc)
+
+                    if @effectiveDate > @lastScoredDate
+                    begin
+	                    set @effectiveDate = @lastScoredDate
+                    end
+
                     select 
                         ma.[Uid], 
                         ParentUid,
