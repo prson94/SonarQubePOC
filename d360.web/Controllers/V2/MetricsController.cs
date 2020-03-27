@@ -23,6 +23,8 @@ using d360.core.exceptions;
 using d360.model.DataAccessLayer;
 using d360.model.validators;
 using System.ComponentModel.DataAnnotations;
+using Resources;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -608,5 +610,296 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(Request.CreateResponse<dynamic>(HttpStatusCode.OK, model));
         }
 
+        /// <summary>
+        /// Gets the data quality results for an asset
+        /// </summary>        
+        /// <param name="_owningAssetUid">The unique identifier of a rule type</param>
+        /// <param name="_evaluatedAssetUid">The unique identifier of an asset</param>
+        /// <param name="_pageSize">The size of the page if there are many results. [Defaults to 250]</param>
+        /// <param name="_pageNum">The page number to page through results. [Defaults to 1]</param>
+        /// <param name="_order">The column to sort by</param>
+        /// <param name="_direction ">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
+        /// <param name="_effectiveDateStart">Start Date</param>
+        /// <param name="_effectiveDateEnd">End date</param>
+        /// <returns>List of data quality results</returns>
+        [
+            HttpGet,
+            Route("quality/results/"),
+            SwaggerParameter("_owningAssetUid", "The unique identifier of a rule.", DataType = "string", ParameterType = "query", Required = true),
+            SwaggerParameter("_evaluatedAssetUid", "The unique identifier of an asset.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by (Default ascending).", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateStart", "Return results with effective date after this date", DataType = "date-time", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateEnd", "Return results with effective date before this date", DataType = "date-time", ParameterType = "query", Required = false),            
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetDataQualityResults(Guid _owningAssetUid, Guid? _evaluatedAssetUid = null, int _pageSize = 250, int _pageNum = 1, string _order = null, string _direction = "asc", DateTime? _effectiveDateStart = null, DateTime? _effectiveDateEnd = null)
+        {
+            Asset asset = null;
+
+            Asset ruleAsset = AssetRepository.GetAssetByUID(_owningAssetUid);
+
+            if (_evaluatedAssetUid.HasValue)
+            {
+                asset = AssetRepository.GetAssetByUID(_evaluatedAssetUid.Value);
+            }
+
+            #region Model Validation
+            if (_evaluatedAssetUid.HasValue)
+            {
+                if (asset == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_evaluatedAssetUid} could not be found."));
+                }
+                else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {_evaluatedAssetUid.ToString()} is not valid"));
+                }
+            }
+            
+
+            if(!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset) && (_evaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+            }
+
+            if(ruleAsset.AssetType.Class != AssetTypeClass.Rule)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"_owningAssetUid {_owningAssetUid.ToString()} is not valid");
+            }
+            
+            if (!string.IsNullOrWhiteSpace(_order))
+            {
+                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EffectiveDate", "RunDate", "Passcount", "FailCount", "Passed" };
+                if (!_orderColumns.Contains(_order))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_order value '{_order}' is not valid. Value must be one of the following: {string.Join(",", _orderColumns.ToArray())}.");
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(_direction))
+            {                
+                if (!_direction.Equals("asc", StringComparison.InvariantCultureIgnoreCase) && !_direction.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_direction value '{_direction}' is not valid. Value must be one of the following: asc, desc.");
+                }                
+            }
+            
+            if (_effectiveDateStart != null)
+            {
+                if (_effectiveDateStart == DateTime.MinValue)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateStart is not valid.");
+                }
+            }            
+
+            if (_effectiveDateEnd != null)
+            {                                
+                if (_effectiveDateEnd == DateTime.MinValue)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd is not valid.");
+                }
+                if(_effectiveDateStart != null && _effectiveDateEnd < _effectiveDateStart)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd must be after _effectiveDateStart.");
+                }
+            }
+            
+            #endregion
+            try
+            {
+                d360.core.entities.Metric.DataQualityResult dataQualityResult = new d360.core.entities.Metric.DataQualityResult();
+
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
+                
+                if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    SLDocument document = CreateResponseDocument(dataQualityResult);                    
+                    var stream = new System.IO.MemoryStream();
+                    document.SaveAs(stream);
+
+                    var result = new HttpResponseMessage(HttpStatusCode.OK)
+                    {
+                        Content = new ByteArrayContent(stream.GetBuffer())
+                    };
+                    result.Content.Headers.ContentLength = stream.Length;                    
+
+                    result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+                    {
+                        FileName = $"Data_Quality_Results_{System.DateTime.Now.ToString("yyyy-MM-dd")}.xlsx"
+                };
+                    result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+                    return ResponseMessage(result);
+                }
+                else
+                {
+                    return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataQualityResult));
+                }
+                
+            }
+            catch(Exception ex)
+            {
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+            }
+        }
+
+
+
+        /// <summary>
+        /// Create the data quality result for an asset / Rule
+        /// </summary>
+        /// <returns>A response containing the Uid of the new data quality result.</returns>
+        [
+            HttpPost,
+            Route("quality/results/"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(DataQualityResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> PostDataQualityResultAsync(DataQualityInsertModel model)
+        {
+            Asset asset = null;
+
+            Asset ruleAsset = AssetRepository.GetAssetByUID(model.OwningAssetUid);
+
+            if (model.EvaluatedAssetUid.HasValue)
+            {
+                asset = AssetRepository.GetAssetByUID(model.EvaluatedAssetUid.Value);
+            }
+
+            #region Model Validation
+            if (model.EvaluatedAssetUid.HasValue)
+            {
+                if (asset == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.EvaluatedAssetUid} could not be found."));
+                }
+                else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {model.EvaluatedAssetUid.ToString()} is not valid"));
+                }
+            }
+
+            if (ruleAsset == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.OwningAssetUid} could not be found."));
+            } else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"OwningAssetUid {model.OwningAssetUid.ToString()} is not valid"));
+            }
+
+
+            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ModifyAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ModifyAsset)))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+            }
+
+            if (model.EffectiveDate > DateTime.Now)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"EffectiveDate must not be greater than today’s date."));
+            }
+            if (model.RunDate > DateTime.Now)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"RunDate must not be greater than today’s date."));
+            }
+
+            List<ValidationResult> validationResults = new List<ValidationResult>();
+            bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+            if (!isValid)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", validationResults.First().ErrorMessage));
+            }
+
+            if (model.PassCount < 0)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", "PassCount must be greater than or equal to 0"));
+            }
+
+            if (model.FailCount < 0)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", "FailCount must be greater than or equal to 0"));
+            }
+
+            if (model.PassCount == 0 && model.FailCount == 0)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"FailCount and PassCount are both 0"));
+            }
+
+            #endregion
+
+            DataQualityResponseModel response = await Task.FromResult(MetricsRepository.AddDataQualityResult(model));
+
+            if(!response.Success)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request {validationResults.First().MemberNames.First()}", response.Message);
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+        }
+
+        /// <summary>
+        /// Create the Excel document for export
+        /// </summary>
+        /// <returns>A spreadsheet populated with the details of the data quality results</returns>
+        private SLDocument CreateResponseDocument(core.entities.Metric.DataQualityResult dataQualityResult)
+        {
+            SLDocument doc = new SLDocument();
+            doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Results");
+
+            #region Create the list sheet
+
+            #region Header
+
+            int index = 1;
+            int rowNumber = 1;
+            doc.SetCellValue(rowNumber, 1, "pageSize");
+            doc.SetCellValue(rowNumber++, 2, dataQualityResult.pageSize);
+            doc.SetCellValue(rowNumber, 1, "pageNum");
+            doc.SetCellValue(rowNumber++, 2, dataQualityResult.pageNum);
+            doc.SetCellValue(rowNumber, 1, "total");
+            doc.SetCellValue(rowNumber++, 2, dataQualityResult.total);
+
+            doc.SetCellValue(rowNumber, index++, "ResultUid");
+            doc.SetCellValue(rowNumber, index++, "OwningAssetUid");
+            doc.SetCellValue(rowNumber, index++, "EvaluatedAssetUid");
+            doc.SetCellValue(rowNumber, index++, "EffectiveDate");
+            doc.SetCellValue(rowNumber, index++, "RunDate");
+            doc.SetCellValue(rowNumber, index++, "PassCount");
+            doc.SetCellValue(rowNumber, index++, "FailCount");
+            doc.SetCellValue(rowNumber, index++, "Passed");
+
+            #endregion
+            #region Body
+            foreach (var row in dataQualityResult.items)
+            {
+                index = 1;
+                rowNumber++;
+                doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.OwningAssetUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.PassCount);
+                doc.SetCellValue(rowNumber, index++, row.FailCount);
+                doc.SetCellValue(rowNumber, index++, row.Passed);
+            }
+            doc.AutoFitColumn(1, 8);
+            #endregion
+            #endregion
+            return doc;
+        }
     }
 }

@@ -15,6 +15,7 @@ using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json;
 using d360.core.entities.Scoring;
+using System.Data;
 
 namespace d360.model.DataAccessLayer
 {
@@ -729,6 +730,144 @@ namespace d360.model.DataAccessLayer
             return Company.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
         }
 
+        public DataQualityResponseModel AddDataQualityResult(DataQualityInsertModel model)
+        {            
+            #region Build Parameters
+        var parameters = new DynamicParameters();
+            parameters.Add("EffectiveDate", model.EffectiveDate, dbType: DbType.DateTime);
+            parameters.Add("RunDate", model.RunDate, dbType: DbType.DateTime);
+            parameters.Add("PassCount", model.PassCount, dbType: DbType.Int32);
+            parameters.Add("FailCount", model.FailCount, dbType: DbType.Int32);
+            parameters.Add("UserId", Company.CurrentResourceID, dbType: DbType.Int32);
+            parameters.Add("evaluatedAssetUid", model.EvaluatedAssetUid, dbType: DbType.Guid);
+            parameters.Add("ownedAssetUid", model.OwningAssetUid, dbType: DbType.Guid);
 
+            #endregion
+
+            var result = Company.Query<DataQualityResponseModel>("EXEC [graph].[CreateAssetResult] @EffectiveDate, @RunDate, @PassCount, @FailCount, @UserId, @evaluatedAssetUid, @ownedAssetUid", parameters);            
+
+            return result.First();
+        }
+
+        public DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
+        {
+            var result = new DataQualityResult();
+            var parameters = new DynamicParameters();
+            string orderBy;
+            string effectiveSQL = "";
+            string evaluatedAssetSQL;
+            
+            
+            if (effectiveDateStart.HasValue)
+            {
+                effectiveSQL = $@"and EffectiveDate > @effectiveStartDate";
+                parameters.Add("@effectiveStartDate", effectiveDateStart.Value);
+            }
+            if (effectiveDateEnd.HasValue)
+            {
+                effectiveSQL = $@"{effectiveSQL} and EffectiveDate < @effectiveEndDate";
+                parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
+            }
+
+            string owningAssetSQL = $@"(
+	                                select 
+		                                AR.Uid resultUid, AR.Passcount, AR.FailCount, AR.EffectiveDate, AR.RunDate, AN.Uid owningAssetUid
+                                    from 
+		                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+	                                where 
+		                                Match (AN -(ARE)-> AR)
+		                                and 
+                                        AN.Uid = @owningAssetUid
+		                                and 
+		                                ARE.Class = {(int)ResultRelationClass.Owns}
+                                        {effectiveSQL}
+	                                ) DQR";
+
+            if(!string.IsNullOrWhiteSpace(sort))
+            {
+                orderBy = $"Order by {sort} {direction ?? ""}";
+            }
+            else
+            {
+                orderBy = $"Order by EffectiveDate {direction ?? ""}";
+            }
+            
+
+            if (evaluatedAssetUid != null)
+            {
+                evaluatedAssetSQL = $@"inner Join 
+	                            (		
+		                            select 
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid
+		                            from 
+			                            AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+		                            where 
+			                            Match (AN -(ARE)-> AR)
+			                            and 
+			                            AN.Uid = @evaluatedAssetUid
+			                            and
+			                            ARE.Class = {(int)ResultRelationClass.EvaluatedBy}	
+	                            ) DQA on DQA.resultUid=DQR.resultUid";
+                
+            }
+            else {
+                evaluatedAssetSQL = $@"left Join
+	                            (		
+		                            select 
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid
+		                            from 
+			                            AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+		                            where 
+			                            Match (AN -(ARE)-> AR)
+			                            and
+			                            ARE.Class = {(int)ResultRelationClass.EvaluatedBy}	
+				                        and 
+				                        AR.UID in ( 
+							                        select 
+								                        AR1.Uid
+							                        from 
+								                        AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1 
+							                        where 
+								                        Match (AN1 -(ARE1)-> AR1) 
+								                        and 
+								                        AN1.Uid = @owningAssetUid 
+								                        and 
+								                        ARE1.Class = {(int)ResultRelationClass.Owns}
+                                                        {effectiveSQL}
+                                                        )
+	                            ) DQA on DQA.resultUid=DQR.resultUid";
+            }
+            var countSql = $@"select 
+	                            Count(distinct DQR.resultUid)
+                            from 
+	                            {owningAssetSQL}
+	                            {evaluatedAssetSQL}";
+
+            var dataQualityResultSql = $@"select 
+	                        distinct DQR.resultUid as ResultUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQR.OwningAssetUid as OwningAssetUid, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount, P.Passed as Passed
+                        from 
+	                        {owningAssetSQL}
+	                        {evaluatedAssetSQL}
+	                        cross apply 
+	                        CalculatePassedPropertyForAssetResult(DQR.resultUid) P
+	                        {orderBy}
+	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
+
+            result.pageNum = pageNum;
+            result.pageSize = pageSize;
+
+            parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
+            parameters.Add("@owningAssetUid", owningAssetUid);
+            parameters.Add("@pageNum", result.pageNum);
+            parameters.Add("@pageSize", result.pageSize);            
+
+            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
+            
+            //var itemsJson = string.Join("", Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList());
+
+            result.items = Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList();
+            if (result.items == null) result.items = new List<DataQualityResultItem>();
+            return result;
+        }
     }
 }

@@ -124,6 +124,8 @@
     <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
     <Compile Include="entities\Issue\IssueTypeRelation.cs" />
     <Compile Include="entities\Membership\GroupApiModel.cs" />
+    <Compile Include="entities\Metric\DataQualityResponseModels.cs" />
+    <Compile Include="entities\Metric\DataQualityUpsertModels.cs" />
     <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />

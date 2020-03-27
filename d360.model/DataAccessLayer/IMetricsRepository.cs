@@ -21,5 +21,7 @@ namespace d360.model.DataAccessLayer
         List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreType);
         ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
+        DataQualityResponseModel AddDataQualityResult(DataQualityInsertModel model);
+        DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd);
     }
 }

@@ -425,6 +425,7 @@
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetNode.xml"/>
+	<include file="scripts/Procedure.graph.CreateAssetResult.xml"/>
 	<include file="scripts/Procedure.integration.CompleteExecution.xml"/>
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
