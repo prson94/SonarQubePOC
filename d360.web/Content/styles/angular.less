@@ -2979,7 +2979,7 @@ button.tab, button.tab-scroller {
     &.selected {
         border-bottom: 3px solid black;
         cursor: default;
-        color:black;
+        color: black;
         background: none;
 
         &:hover {
@@ -6404,23 +6404,51 @@ a.mid-blue {
     }
 }
 
-.threshold-table {
-    .score-pill-small {
-        display: inline-block;
-        width: 24px;
-        height: 10px;
-        border-radius: 8px;
-        margin-right: 4px;
+.threshold-holder {
+    position: relative;
+    max-width: 115px;
+
+    .threshold-values {
+        .left-align, .right-align {
+            width: 50px;
+            display: inline-block;
+        }
+
+        &:hover {
+            .threshold-table {
+                display: block;
+            }
+        }
     }
 
-    .score-pill-small-label {
-        display: inline-block;
-        color: #646464;
-    }
+    .threshold-table {
+        display: none;
+        position: absolute;
+        width: 127px;
+        padding: 8px;
+        border: 1px solid #dde0e3;
+        background-color: rgb(255,251,226);
+        z-index: 100;
+        top: -72px;
+        right: -62px;
 
-    .threshold-table-item {
-        display: inline-block;
-        min-width: 134px;
+        .score-pill-small {
+            display: inline-block;
+            width: 24px;
+            height: 10px;
+            border-radius: 8px;
+            margin-right: 4px;
+        }
+
+        .score-pill-small-label {
+            display: inline-block;
+            color: #646464;
+        }
+
+        .threshold-table-item {
+            display: inline-block;
+            min-width: 134px;
+        }
     }
 }
 
