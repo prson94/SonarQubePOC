@@ -638,7 +638,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetDataQualityResults(Guid _owningAssetUid, Guid? _evaluatedAssetUid = null, int _pageSize = 250, int _pageNum = 1, string _order = null, string _direction = "asc", DateTime? _effectiveDateStart = null, DateTime? _effectiveDateEnd = null)
@@ -766,7 +766,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(DataQualityResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(DataQualityInsertModel model)
