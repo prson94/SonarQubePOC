@@ -85,6 +85,12 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
     doDelete() {
         this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe(res => {
+            if (res && res.Success) {
+                this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+            }
+            else {
+                this.messagesService.showError('Error', 'An error occurred');
+            }
             this.formMode = FormMode.Default;
             this.load();
         });
