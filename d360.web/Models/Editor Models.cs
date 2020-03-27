@@ -764,28 +764,45 @@ namespace d360.web.Models
 
     public enum AssetBrowserApiHopType
     { 
-        Self = 1,
-        Lineage = 2,
-        Impact = 3
+        Lineage = 1,
+        Impact = 2
+    }
+
+    public enum AssetBrowserDiagramType
+    {
+        Lineage = 1,
+        Impact = 2
     }
 
     [DataContract]
     public class AssetBrowserApiHopRequestModel
     {
         [DataMember]
+        public bool Initial { get; set; }
+
+        [DataMember]
         public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+
+        [DataMember]
+        public List<AssetBrowserApiHopIgnoreAssetRequestModel> AssetsToIgnore { get; set; }
 
         [DataMember]
         public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
 
         [DataMember]
-        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Self;
+        public AssetBrowserDiagramType DiagramType { get; set; } = AssetBrowserDiagramType.Impact;
+
+        [DataMember]
+        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Impact;
 
         [DataMember]
         public Guid? PredicateUid { get; set; }
         
         [DataMember]
         public int Hops { get; set; } = 3;
+
+        [DataMember]
+        public bool LeafOnly { get; set; } = true;
     }
 
     [DataContract]
@@ -806,6 +823,13 @@ namespace d360.web.Models
         
         [DataMember]
         public string Key { get; set; }
+    }
+
+    [DataContract]
+    public class AssetBrowserApiHopIgnoreAssetRequestModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
     }
 
     #endregion
