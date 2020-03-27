@@ -18,5 +18,6 @@ namespace d360.model.DataAccessLayer
         List<ResponsibilityTypeUpsertResult> UpsertResponsibilityTypes(List<ResponsibilityTypeUpsertModel> responsibilityTypeUpserts, ApiExecution execution);
         ResponsibilityTypeDeleteResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypeDelete);
         Task<IEnumerable<ClaimsViewModel>> GetClaims();
+        Task<dynamic> GetResponsibilityType(Guid uid);
     }
 }
