@@ -44,7 +44,7 @@ namespace d360.core.entities
         [DataMember]
         public string Route { get; set; }
 
-        [DataMember]
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime? ProcessingStartedOn { get; set; }
     }
 
