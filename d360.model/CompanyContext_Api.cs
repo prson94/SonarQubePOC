@@ -5749,7 +5749,7 @@ where   ER.ExecutionID = @ExecutionID
         }
         public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
         {
-            Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId",
+            Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null",
                 new { startedOn = DateTime.UtcNow, ExecutionId }).FirstOrDefault();
         }
 
