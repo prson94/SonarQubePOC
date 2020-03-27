@@ -159,7 +159,7 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
 
-        
+
             if (allocation.IsExternallyCalculated == false)
             {
                 if (model.Weight <= 0 || model.Weight > 1)
@@ -170,7 +170,7 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
                 }
-                    
+
             }
 
             if (model.IsGroup && model.Conditions.Count > 0)
@@ -307,11 +307,6 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetMetricHierarchyByAssetAsync(ScoreType scoreType, Guid assetUid, DateTime? effectiveDate = null)
         {
-            /*
-                         declare @effectiveDate date = '10/3/2018',
-                                @assetTypeUid uniqueidentifier = '8371C4C6-E17E-4620-BA8B-AE0301966E0E',
-                                @assetUid uniqueidentifier = '5DFA86D6-9DFE-4BB6-B417-F75E3BC9E095';
-            */
             var prefix = "Metrics.GetMetricHierarchyByAssetAsync => ";
 
             try
