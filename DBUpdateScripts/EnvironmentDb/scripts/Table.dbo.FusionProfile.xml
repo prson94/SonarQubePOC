@@ -5,20 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="Table.dbo.FusionProfile-v2">
+  <changeSet author="Core" id="Table.dbo.FusionProfile-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-      <![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
-BEGIN
-	DROP TABLE [dbo].[FusionProfile]
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
+		<![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
 BEGIN
 	CREATE TABLE [dbo].[FusionProfile](
@@ -227,6 +219,12 @@ BEGIN
 	)
 END
 		]]>
-    </rollback>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
   </changeSet>
+
 </databaseChangeLog>
