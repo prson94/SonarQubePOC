@@ -861,9 +861,7 @@ namespace d360.model.DataAccessLayer
             parameters.Add("@pageNum", result.pageNum);
             parameters.Add("@pageSize", result.pageSize);            
 
-            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
-            
-            //var itemsJson = string.Join("", Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList());
+            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();                        
 
             result.items = Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList();
             if (result.items == null) result.items = new List<DataQualityResultItem>();
