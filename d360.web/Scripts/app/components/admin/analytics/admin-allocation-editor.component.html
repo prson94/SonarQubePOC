@@ -25,7 +25,7 @@
                     <ng-template let-item pTemplate="item">
                         <span *ngIf="item.class">
                             <span class="option-class">{{item.class}}</span>&nbsp;|&nbsp;
-                            <span class="option-name">{{item.name}}</span>
+                            <span class="option-name">{{reverseElipsis(item.name,60)}}</span>
                         </span>
                         <span *ngIf="!item.class">
                             {{item.label}}
