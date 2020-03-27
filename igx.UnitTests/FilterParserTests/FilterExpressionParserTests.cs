@@ -42,7 +42,8 @@ namespace igx.UnitTests.FilterExpressionTests
             });
 
 
-            this.filterParser = new FilterExpressionParser(GetCompany(), fieldTypes, columns);
+            this.filterParser = new FilterExpressionParser(GetCompany());
+            this.filterParser.LoadFieldTypes(fieldTypes, columns);
 
         }
 

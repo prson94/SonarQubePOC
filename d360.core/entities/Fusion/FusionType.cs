@@ -23,6 +23,10 @@ namespace d360.core.entities
         [DataMember, NotMapped]
         public int? AssetTypeID { get; set; }
 
+
+        [DataMember, NotMapped]
+        public Guid? uid { get; set; }
+
         public DateTime? UpdatedOn { get; set; }
         public int? UpdatedBy { get; set; }
 

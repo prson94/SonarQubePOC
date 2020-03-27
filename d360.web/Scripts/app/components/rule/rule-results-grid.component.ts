@@ -120,7 +120,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
 
-    private rowsPerPage: number = 5;
+    private rowsPerPage: number = 25;
     private totalRecords: number = 0;
     private results: RuleResultPagedResults;
     private items;
@@ -157,6 +157,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private getData() {
+
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
@@ -177,6 +178,7 @@ export class RuleResultsGridComponent extends BaseComponent {
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
                     this.items = this.results.results;
+
                 }
 
             });

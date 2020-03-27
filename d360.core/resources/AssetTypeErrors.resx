@@ -165,6 +165,9 @@
   <data name="NotFoundBasedOnClass" xml:space="preserve">
     <value>Asset Type not found based on Class provided.</value>
   </data>
+  <data name="ErrorNameTaken" xml:space="preserve">
+    <value>The name is taken. Please try another name.</value>
+  </data>
   <data name="NotFoundBasedOnUid" xml:space="preserve">
     <value>Asset Type not found based on Uid provided.</value>
   </data>

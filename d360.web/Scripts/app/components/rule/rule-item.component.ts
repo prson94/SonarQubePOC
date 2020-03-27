@@ -26,13 +26,6 @@ declare var CompanySettings;
                             <d3s-object-definition-tile [objectType]="'Rule'" [useV2Api]="true" [objectID]="rule?.ID" [objectPermissions]="permissions" [hasAttributes]="ruleType?.AllowAttributes" (onEditComplete)="editRule($event)"></d3s-object-definition-tile>
                         </div>
                     </div>
-                </div>
-                <div class="row" *ngIf="!isLoading">
-                    <div class="col s12">
-                        <div class="tile tile-detail">
-                            <d3s-rule-results-grid [ruleId]="rule?.ID" [showTitle]="true"></d3s-rule-results-grid> 
-                        </div>
-                    </div>
                 </div>`
 })
 
@@ -75,7 +68,9 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {
-        this.routeParamsSubscription.unsubscribe();
+        if (this.routeParamsSubscription) {
+            this.routeParamsSubscription.unsubscribe();
+        }
     }
 
     load(ruleId: number) {

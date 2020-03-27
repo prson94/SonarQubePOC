@@ -8,7 +8,6 @@ import { StateService } from '../../../services/state.service';
 import { AdminBaseComponent } from '../admin-base.component';
 import { Organization, OrganizationType } from '../../../models/organization.model';
 import { Title } from '@angular/platform-browser';
-import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
@@ -27,7 +26,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
     <div class="row" *ngIf="selectedType">
         <div class="col s12">
             <div class="tile tile-detail">  
-                <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID" [showIsListable]="false" [showIsPartOfKey]="false"></d3s-field-definition-tile>
+                <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID" [showIsListable]="false" [showIsPartOfKey]="false" [assetTypeUid]="selectedType?.uid"></d3s-field-definition-tile>
             </div>
         </div>
         <div class="col s12">

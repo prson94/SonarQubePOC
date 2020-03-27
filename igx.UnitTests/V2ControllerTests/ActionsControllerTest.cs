@@ -111,5 +111,31 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.Matches("Invalid pageSize value provided. Must be a numeric value", result);
 
         }
+
+        [Fact]
+        public void CheckMaxLengthOfPageSize()
+        {
+            string pageSize = "12345678901";
+            string pageNum = "1";
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageSize value provided.", result);
+
+        }
+
+        [Fact]
+        public void CheckMaxLengthOfPageNum()
+        {
+            string pageNum = "12345678901";
+            string pageSize = "1";
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", pageSize }, { "_pageNum", pageNum } };
+
+            string result = actionsController.isPageSizeAndNumValid(pageParams);
+
+            Assert.Matches("Invalid pageNum value provided.", result);
+
+        }
     }
 }

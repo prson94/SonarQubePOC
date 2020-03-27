@@ -25,8 +25,8 @@
                     Score Calculation
                     <d3s-sortIcon [field]="'isExternallyCalculated'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'formattedThreshold'" style="width: 400px">
-                    Score Threshold
+                <th [pSortableColumn]="'formattedThreshold'">
+                    Scoring Bands
                     <d3s-sortIcon [field]="'formattedThreshold'"></d3s-sortIcon>
                 </th>
                 <th></th>
@@ -47,13 +47,30 @@
                 <td (click)="openMeasures(item)">{{item.scoreType}}</td>
                 <td (click)="openMeasures(item)">{{item.isExternallyCalculated}}</td>
                 <td (click)="openMeasures(item)">
-                    <div class="threshold-table">
-                        <div class="score-pill-small score-poor"></div>
-                        <div class="score-pill-small-label">0% - {{item.lowerThreshold}}%</div>
-                        <div class="score-pill-small score-average"></div>
-                        <div class="score-pill-small-label">>&nbsp;{{item.lowerThreshold}}% - {{item.upperThreshold}}%</div>
-                        <div class="score-pill-small score-good"></div>
-                        <div class="score-pill-small-label">>&nbsp;{{item.upperThreshold}}% - 100%</div>
+                    <div class="threshold-holder">
+                        <div class="threshold-values">
+                            <div class="right-align">
+                                {{item.lowerThreshold}}%
+                            </div>
+                            |
+                            <div class="left-align">
+                                {{item.upperThreshold}}%
+                            </div>
+                            <div class="threshold-table">
+                                <div class="threshold-table-item">
+                                    <div class="score-pill-small score-poor"></div>
+                                    <div class="score-pill-small-label">0% - {{item.lowerThreshold}}%</div>
+                                </div>
+                                <div class="threshold-table-item">
+                                    <div class="score-pill-small score-average"></div>
+                                    <div class="score-pill-small-label">{{item.lowerThreshold}}.% - {{item.upperThreshold}}%</div>
+                                </div>
+                                <div class="threshold-table-item">
+                                    <div class="score-pill-small score-good"></div>
+                                    <div class="score-pill-small-label">{{item.upperThreshold}}.% - 100%</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </td>
                 <td>

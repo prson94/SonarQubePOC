@@ -99,7 +99,9 @@ export class AssetTypeModalEditorComponent extends BaseComponent implements OnIn
         this.assetType = null;
         this.assetTypeClass = null;
         this.isModelLoading = false;
-        this.asSub.unsubscribe();
+        if (this.asSub) {
+            this.asSub.unsubscribe();
+        }
         this.closeEvent.emit();
     }
 }

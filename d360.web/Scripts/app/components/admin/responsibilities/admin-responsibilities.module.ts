@@ -33,6 +33,7 @@ import { EditorModule } from 'primeng/editor';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
+import { DirectivesModule } from '../../../directives/directives.module';
 
 @NgModule({
     imports: [
@@ -60,7 +61,7 @@ import { TableModule } from 'primeng/table';
         SharedGridPagingInfoModule,
         SharedObjectDetailsModule,
         SharedResponsibilitiesModule,
-
+        DirectivesModule,
         SimpleAccordionModule,
         TilesModule,
         AdminModule,

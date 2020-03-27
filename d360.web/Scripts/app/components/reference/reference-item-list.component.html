@@ -1,0 +1,103 @@
+<header *ngIf="!showEditor && !showDelete">
+    {{title}}
+    <d3s-tile-actions [hasAdd]="hasAdd" (addClick)="add()" hasFilterMode="true"
+                      [(filterMode)]="showSimpleFilter" [hasExport]="true"
+                      (exportClick)="export()"></d3s-tile-actions>
+</header>
+<d3s-loading [isLoading]="isLoading && showDelete && showEditor"></d3s-loading>
+<span *ngIf="!showDelete && !showEditor">
+    <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
+           (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..."
+           class="grid-simple-filter">
+    <p-table #dt [value]="items" selectionMode="single"
+             [metaKeySelection]="true"
+             [globalFilterFields]="globalFilterFields"
+             [sortField]="sortField"
+             [pageLinks]="3"
+             [paginator]="true"
+             [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
+             [totalRecords]="totalRecords"
+             [lazy]="true"
+             (onLazyLoad)="loadAssets($event)"
+             [(selection)]="selected"
+             [loading]="isLoading"
+             [loadingIcon]="'fa fa-spinner fa-spin'">
+        <ng-template pTemplate="header">
+            <tr>
+                <th *ngFor="let column of columns"
+                    [pSortableColumn]="column.sortable ? column.datafield : null">
+                    {{column.text}}
+                    <d3s-sortIcon *ngIf="column.sortable" [field]="column.datafield"></d3s-sortIcon>
+                </th>
+                <th style="width: 40px"></th>
+                <th style="width: 40px"></th>
+                <th style="width: 40px"></th>
+            </tr>
+            <tr [hidden]="showSimpleFilter">
+                <th *ngFor="let column of columns">
+                    <d3s-column-filter [field]="column.datafield"
+                                       [datatype]="'text'"></d3s-column-filter>
+                </th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-item>
+            <tr (dblclick)="selected=item;editItemClick.emit(selected)" [pSelectableRow]="item">
+                <td *ngFor="let column of columns">
+                    <d3s-dynamic-field-value [column]="column" [fields]="fields"
+                                             [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                </td>
+                <td>
+                    <div class="RowTools" *ngIf="item.AssetUid">
+                        <a style="cursor:pointer;" (click)="selected=item;">
+                            <i [copy-clipboard]="item.AssetUid"
+                               [pTooltip]="'UID: \n' + item.AssetUid + '\n\n (click to copy)\n'"
+                               tooltipPosition="top" class="fa fa-info"></i>
+                        </a>
+                    </div>
+                </td>
+                <td>
+                    <div class="RowTools" *ngIf="showEditButton || item.Permissions.ModifyAsset">
+                        <a style="cursor:pointer;" (click)="selected=item;showEditor=true;">
+                            <i class="fa fa-pencil"></i>
+                        </a>
+                    </div>
+                </td>
+                <td>
+                    <div class="RowTools" *ngIf="showDeleteButton || item.Permissions.DeleteAsset">
+                        <a style="cursor:pointer;" (click)="selected=item;showDelete=true;">
+                            <i class="fa fa-trash-o"></i>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template *ngIf="dt.totalRecords" pTemplate="summary">
+            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                  [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+        </ng-template>
+    </p-table>
+
+</span>
+<d3s-dynamic-editor *ngIf="showEditor"
+                    [objectID]="selected?.AssetUid"
+                    [objectType]="'ReferenceItem'"
+                    [objectTypeUid]="assetTypeUid"
+                    [title]="'New Reference Item'"
+                    [useTypeUidForDefinition]="!selected"
+                    [selection]="selected"
+                    (saveClick)="saveReferenceItem($event)"
+                    (closeClick)="showEditor=false"
+                    [isV2API]="true">
+</d3s-dynamic-editor>
+
+
+<d3s-asset-delete-editor *ngIf="showDelete && assetTypeUid"
+                         [uid]="selected?.AssetUid"
+                         [assetTypeUid]="assetTypeUid"
+                         (onCancel)="showDelete = false"
+                         (onDeleted)="onDeleted()"
+                         [displayValue]="selected?.Code">
+</d3s-asset-delete-editor>

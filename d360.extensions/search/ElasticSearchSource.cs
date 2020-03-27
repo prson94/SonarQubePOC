@@ -1120,6 +1120,7 @@ namespace d360.extensions.search
                     sReq.Aggregations = new TermsAggregation("all_types")
                     {
                         Field = fldCategory,
+                        Size = 20,
                         Aggregations = new TermsAggregation("category")
                         {
                             Field = fldAssetType,

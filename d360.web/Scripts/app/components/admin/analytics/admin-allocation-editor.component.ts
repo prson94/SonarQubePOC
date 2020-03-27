@@ -152,44 +152,59 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
         this.selection.upperThreshold = e.values[1];
     }
 
+    private thresholdCheckLower: any;
+
     onLowerThresholdChange($event, el: HTMLInputElement) {
-        var tempVal = +el.value;
 
-        if (tempVal <= 0) {
-            el.value = "0";
-        }
+        if (this.thresholdCheckLower)
+            window.clearTimeout(this.thresholdCheckLower);
 
-        if (tempVal > 99) {
-            el.value = "99";
-        }
-        if (tempVal > this.selection.upperThreshold) {
-            el.value = this.selection.upperThreshold.toString();
-        }
+        this.thresholdCheckLower = window.setTimeout(() => {
+            var tempVal = +el.value;
 
-        this.selection.lowerThreshold = +el.value;
-        this.updateRanges();
+            if (tempVal <= 0) {
+                el.value = "0";
+            }
+
+            if (tempVal > 99) {
+                el.value = "99";
+            }
+            if (tempVal > this.selection.upperThreshold) {
+                el.value = this.selection.upperThreshold.toString();
+            }
+
+            this.selection.lowerThreshold = +el.value;
+            this.updateRanges();
+        }, 500)
+
     }
+    private thresholdCheckUpper: any;
 
-    onUpperThresholdChange($event, el: HTMLInputElement, checkFull: boolean = false) {
-        var tempVal = +el.value;
-        console.log($event);
+    onUpperThresholdChange($event, el: HTMLInputElement) {
 
-        if (tempVal < 0) {
-            el.value = this.selection.lowerThreshold.toString();
-        }
 
-        if (tempVal > 99) {
-            el.value = "99";
-        }
-        if (tempVal < 10 && checkFull) {
-            return;
-        }
-        if (tempVal < this.selection.lowerThreshold) {
-            el.value = this.selection.lowerThreshold.toString();
-        }
+        if (this.thresholdCheckUpper)
+            window.clearTimeout(this.thresholdCheckUpper);
 
-        this.selection.upperThreshold = +el.value;
-        this.updateRanges();
+        this.thresholdCheckUpper = window.setTimeout(() => {
+            var tempVal = +el.value;
+
+            if (tempVal < 0) {
+                el.value = this.selection.lowerThreshold.toString();
+            }
+
+            if (tempVal > 99) {
+                el.value = "99";
+            }
+
+            if (tempVal < this.selection.lowerThreshold) {
+                el.value = this.selection.lowerThreshold.toString();
+            }
+
+            this.selection.upperThreshold = +el.value;
+            this.updateRanges();
+        }, 500);
+
     }
 
     ngAfterViewChecked() {
@@ -222,6 +237,16 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
             }
         });
 
+    }
+
+    reverseElipsis(str: string, length: number) {
+
+        var startIndex = str.length - length;
+        if (startIndex < 0) {
+            return str;
+        }
+
+        return '...' + str.substring(startIndex);
     }
 
 };

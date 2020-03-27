@@ -780,7 +780,9 @@ button.ui-button:disabled {
     width: 100%;
     table-layout: fixed;
 }
-
+.ui-treetable table tbody tr{
+    cursor: pointer;
+}
 .ui-treetable .ui-treetable-thead > tr > th,
 .ui-treetable .ui-treetable-tbody > tr > td,
 .ui-treetable .ui-treetable-tfoot > tr > td {

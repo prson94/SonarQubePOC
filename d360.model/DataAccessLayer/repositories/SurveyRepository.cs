@@ -25,6 +25,11 @@ namespace d360.model.DataAccessLayer
             return companyContext.SurveyTypes.FirstOrDefault(x => x.Uid == uid);
         }
 
+        public QuestionType GetSurveyQuestionTypeByUid(Guid uid)
+        {
+            return companyContext.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
+        }
+
         public SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var response = new SurveyApiResponseModel();
@@ -153,7 +158,6 @@ namespace d360.model.DataAccessLayer
                             whereClauses.Add($"AT.Uid = @assetTypeUid");
                             sqlParams.Add("@assetTypeUid", assetTypeUid);
                         }
-                        else throw new Exception("Invalid value for assetTypeUid parameter");
                         break;
                     case "surveytypeuid":
                         if (Guid.TryParse(param.Value, out Guid surveyTypeUid))
@@ -161,7 +165,6 @@ namespace d360.model.DataAccessLayer
                             whereClauses.Add($"ST.Uid = @surveyTypeUid");
                             sqlParams.Add("@surveyTypeUid", surveyTypeUid);
                         }
-                        else throw new Exception("Invalid value for surveyTypeUid parameter");
                         break;
                     case "_pagesize":
                         int size = 0;
@@ -169,7 +172,6 @@ namespace d360.model.DataAccessLayer
                         {
                             response.pageSize = int.Parse(param.Value);
                         }
-                        else throw new Exception("Invalid value for page size parametar!");
                         break;
                     case "_pagenum":
                         int num = 0;
@@ -178,7 +180,6 @@ namespace d360.model.DataAccessLayer
                             response.pageNum = int.Parse(param.Value);
                             if (response.pageNum <= 0) response.pageNum = 1;
                         }
-                        else throw new Exception("Invalid value for page number parametar!");
                         break;
                     case "_order":
                         switch (param.Value.ToLower())
@@ -188,7 +189,6 @@ namespace d360.model.DataAccessLayer
                             case "createdon": orderByClause = "order by ST.CreatedOn"; break;
                             case "updatedon": orderByClause = "order by ST.UpdatedOn"; break;
                             case "numberofresponses": orderByClause = "order by NumberOfResponses desc"; break;
-                            default: throw new Exception("Invalid value for order parameter. Use Name|ValidForDays|CreatedOn|UpdatedOn|NumberOfResponses!");
                         }
                         break;
                 }
@@ -380,7 +380,38 @@ namespace d360.model.DataAccessLayer
             return response;
         }
 
-       public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
+        public async Task<SurveyAssetApiResponseModel> GetAssetSurvey(Guid assetUid)
+        {
+            var surveys = (await companyContext.QueryAsync<SurveyAssetApiResponseModel>(
+                @"select	ST.[uid] as SurveyTypeUid,
+		                    ST.[Name]
+                    from	SurveyType ST
+		                    inner join AssetType T on T.[Object] = ST.[Object] and T.ObjectID = ST.ObjectID
+		                    inner join Asset A on A.[uid] = @assetUid and A.AssetTypeID = T.ID
+                    where	ST.ID not in (
+			                    select	SurveyTypeID 
+			                    from	Survey S
+					                    inner join Asset B on B.[Object] = S.[Object] and B.ObjectID = S.ObjectID
+			                    where	S.SurveyTypeID = ST.ID
+					                    and S.ResourceID = @resourceId
+					                    and S.CreatedOn > DATEADD(day, (ST.ValidForDays * -1), getdate())
+					                    and B.[uid] = @assetUid
+		                    )"
+            , new { assetUid, resourceId = companyContext.CurrentResourceID})).ToList();
+
+            if (!surveys?.Any() ?? true)
+                return null;
+
+            if (surveys.Count == 1)
+                return surveys.First();
+
+            var rand = new Random();
+            var index = rand.Next(0, surveys.Count);
+
+            return surveys[index];
+        }
+
+        public int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             List<string> joins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -483,6 +514,46 @@ namespace d360.model.DataAccessLayer
             return result;
 
 
+        }
+
+        public async Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType)
+        {
+
+            var survey = new Survey()
+            {
+                SurveyTypeID = surveyType.ID,
+                Object = asset.Object,
+                ObjectID = asset.ObjectID,
+                ResourceID = companyContext.CurrentResourceID,
+                CreatedOn = DateTime.UtcNow
+            };
+
+
+            companyContext.SaveOrUpdate(survey);
+
+            foreach (var question in model.Questions)
+            {
+                var q = new d360.core.entities.Question()
+                {
+                    SurveyID = survey.ID,
+                    Comment = question.Comments
+                };
+
+                companyContext.SaveOrUpdate(q);
+
+                foreach(var value in question.Responses)
+                {
+                    (await companyContext.QueryAsync<int>(
+                        @"insert into QuestionOption (QuestionID, QuestionTypeOptionID)
+                            select  @questionId, 
+                                    O.ID 
+                            from    QuestionType T 
+                                    inner join QuestionTypeOption O on O.QuestionTypeID = T.ID
+                        where       T.Uid = @SurveyQuestionUid 
+                                    and O.Value = @value
+                        ", new { questionId = q.ID, question.SurveyQuestionUid, value })).FirstOrDefault();
+                }
+            }
         }
     }
 }

@@ -46,7 +46,9 @@ export class LookupTooltipComponent implements OnDestroy  {
     }
 
     ngOnDestroy() {
-        this.toolTipSub.unsubscribe();
+        if (this.toolTipSub) {
+            this.toolTipSub.unsubscribe();
+        }
     }
     
     private load(item, tip) {

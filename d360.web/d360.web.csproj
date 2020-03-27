@@ -330,6 +330,7 @@
     <Compile Include="Controllers\V2\HealthController.cs" />
     <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
+    <Compile Include="Controllers\V2\PermissionsController.cs" />
     <Compile Include="Controllers\V2\ScoringController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
     <Compile Include="Controllers\V2\ProfilesController.cs" />
@@ -685,6 +686,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
     <Content Include="Scripts\app\components\mapping\mapping.component.html" />
+    <Content Include="Scripts\app\components\reference\reference-item-list.component.html" />
     <Content Include="Scripts\app\components\reference\reference-item-type-list.component.html" />
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
@@ -739,6 +741,7 @@
     <Content Include="Scripts\app\components\shared\search\typeahead-search.component.html" />
     <Content Include="Scripts\app\components\shared\shortcuts\shortcut-list.component.html" />
     <Content Include="Scripts\app\components\admin\tags\tags-usage-info.component.html" />
+    <Content Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
@@ -1152,6 +1155,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-custom-export.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
@@ -1301,6 +1305,8 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.module.ts" />
@@ -1452,6 +1458,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
@@ -1497,7 +1506,6 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
-    <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
@@ -1741,6 +1749,7 @@
     <TypeScriptCompile Include="Scripts\app\services\tooltip.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow-fields.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflowmonitor.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\static\advanced-filter-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\environment-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\company-settings.ts" />
     <TypeScriptCompile Include="Scripts\app\static\d3s-object-helpers.ts" />

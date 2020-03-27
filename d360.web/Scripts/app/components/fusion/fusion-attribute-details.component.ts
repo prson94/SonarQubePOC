@@ -82,8 +82,12 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
-        this.getFusionConfiguration.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.getFusionConfiguration) {
+            this.getFusionConfiguration.unsubscribe();
+        }
     }
     private buildBreadcrumb() {
         this.headerBreadcrumbService.getFolderTitle('#Fusion').then((res) => {

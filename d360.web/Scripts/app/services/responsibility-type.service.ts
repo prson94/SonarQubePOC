@@ -35,7 +35,15 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
     }
 
     getAdminResponsibilityTypes(): Observable<ResponsibilityType[]> {
-        return this.http.get('api/ownership/admintypes')
+        return this.http.get('api/v2/responsibilities/types')
+            .pipe(
+                map(response => <ResponsibilityType[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getAdminResponsibilityTypeDetails(uid: string): Observable<any> {
+        return this.http.get(`api/v2/responsibilities/type/${uid}`)
             .pipe(
                 map(response => <ResponsibilityType[]>response),
                 catchError(err => this.handleError(err))
@@ -76,8 +84,11 @@ export class ResponsibilityTypeService extends BaseObservableService implements 
             );
     }
 
-    deleteResponsibilityType(id: number): Observable<any> {
-        return this.http.delete(`form/DeleteResponsibilityTypeByID?id=${id}`)
+    deleteResponsibilityType(Uid: string, Cascade: boolean = true): Observable<any> {
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: {Uid,Cascade}
+        };        
+        return this.http.delete(`api/v2/responsibilities/types`, httpHeaders)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

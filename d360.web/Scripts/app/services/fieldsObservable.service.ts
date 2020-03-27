@@ -1,7 +1,7 @@
 import {Observable} from 'rxjs';
 import {catchError, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
 import {Injectable} from '@angular/core';
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {SelectItem} from 'primeng/components/common/api';
 
 import {FieldDefinition, FieldTypeEditorModel, Lookups} from '../models/fields.model';
@@ -11,6 +11,7 @@ import {JsonResult} from '../models/jsonresult.model';
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {IFieldsObservableService} from "../models/fields-observable.model";
+import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 @Injectable()
 export class FieldsObservableService extends BaseObservableService implements IFieldsObservableService {
@@ -262,7 +263,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    deleteFieldType(id: number): Observable<JsonResult> {
+    deleteLookupFieldType(id: number): Observable<JsonResult> { 
         return this
             .http
             .delete(`form/DeleteFieldTypeByID?id=${id}`)
@@ -271,6 +272,29 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 catchError(err => this.handleError(err))
             );
     }
+
+    deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {                
+        const options = {
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+            }),
+            body: {                
+                Fields: [{ Name: name }],
+                ActionTypeUid: actionTypeUid,
+                AssetTypeUid: assetTypeUid,
+                RelationshipTypeUid: relationshipTypeUid
+            },
+        };
+
+        return this
+            .http
+            .delete('api/v2/fields', options)
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 
     private ftItemToSelectItem(items: FtItem[]): SelectItem[] {
         let s = new Array<SelectItem>();

@@ -136,7 +136,9 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     loadModels() {

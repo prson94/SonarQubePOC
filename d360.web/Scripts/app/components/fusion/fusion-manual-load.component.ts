@@ -1,17 +1,19 @@
-﻿import {Component, OnInit} from '@angular/core';
-import {ActivatedRoute, Router} from '@angular/router';
-import {takeUntil} from "rxjs/operators";
-import {Subject} from "rxjs";
+﻿import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
+import { takeUntil } from "rxjs/operators";
+import { Subject } from "rxjs";
 
-import {JsonResult} from '../../models/jsonresult.model';
-import {FusionConfigurationDetails} from '../../models/fusion.model';
+import { JsonResult } from '../../models/jsonresult.model';
+import { FusionConfigurationDetails } from '../../models/fusion.model';
 
-import {FusionService} from '../../services/fusion.service';
+import { FusionService } from '../../services/fusion.service';
 
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
-import {BaseComponent} from '../shared/base.component';
+import { BaseComponent } from '../shared/base.component';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 
 
 @Component({
@@ -37,9 +39,13 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private fusionService: FusionService,
-        private messagesService: MessagesObservableService
+        private messagesService: MessagesObservableService,
+        secondaryNavService: SecondaryNavService,
+        breadcrumbService: HeaderBreadcrumbService
     ) {
         super();
+        this.secondaryNavService = secondaryNavService;
+        this.breadcrumbsService = breadcrumbService;
     }
 
     ngOnInit() {
@@ -58,8 +64,9 @@ export class FusionManualLoadComponent extends BaseComponent implements OnInit {
                                 this.fusionName = res.Name;
                                 this.fusionTypeID = res.FusionTypeID;
                             }
-                        )
-                    ;
+                        );
+
+                    this.buildSecondaryNavigationForObject(this.fusionID, 'Fusion');
                 }
             );
     }

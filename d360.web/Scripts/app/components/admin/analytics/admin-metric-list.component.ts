@@ -87,7 +87,7 @@ import { AllocationService } from '../../../services/allocations.service';
 
                 </div>
                 `,
-    providers: [MetricsService, MessagesObservableService, AllocationService]
+    providers: [MetricsService, AllocationService]
 })
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {

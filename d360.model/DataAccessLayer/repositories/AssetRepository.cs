@@ -343,11 +343,9 @@ namespace d360.model.DataAccessLayer
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
-            if (!CompanyContext.CurrentResourceIsAdmin)
-            {
-                whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
-                whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
-            }
+            //Add read permission check for admin and non-admin users as in GetAssets procedure
+            whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
+            whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
@@ -393,27 +391,68 @@ namespace d360.model.DataAccessLayer
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
                 bool.TryParse(value, out includeParent);
+
+                if (queryParams.ToList().Any(x => x.Key.ToLower() == "usegraphforparent"))
+                {
+                    var useGraph = queryParams.ToList().FirstOrDefault(x => x.Key.ToLower() == "usegraphforparent").Value;
+                    bool useGraphForParent = true;
+                    bool.TryParse(useGraph, out useGraphForParent);
+
+                    if (!useGraphForParent)
+                    {
+                        parentApplySQL = $@"outer apply (
+					            select top 1 AD.uid, AD.DisplayValue from [IntersectType] IT
+						            inner join [Intersect] I on I.IntersectTypeId = IT.Id and I.Object = A.Object and I.ObjectID = A.ObjectID
+						            inner join [Predicate] P on P.ID = IT.PredicateID
+						            inner join AssetDetail AD on AD.Object = I.Subject and AD.ObjectID = I.SubjectID
+					            where IT.Object = T.Object and IT.ObjectID = T.ObjectID and P.Type = {(int)PredicateType.InterTypeHierarchy}
+				            )Parent";
+                    }
+                }
+
+                var hierarchy = CompanyContext.IntersectTypes
+                    .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
+
+                if (hierarchy == null)
+                {
+                    includeParent = false;
+                }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
 
-                foreach(var item in sqlParams)
+                foreach (var item in sqlParams)
                 {
                     dbArgs.Add(item.Key, item.Value);
                 }
             }
 
-            string permissionDetailSQL = @"				outer apply (
-				 select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                foreach (var item in sqlParams)
+                {
+                    dbArgs.Add(item.Key, item.Value);
+                }
+            }
+
+            string permissionDetailSQL = @"	outer apply (
+                 select top 1 * from
+				 (select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
 					where AssetID = A.ID
 				union all 	
 					select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
-					where AssetID = 0 and AssetTypeID = A.AssetTypeID
+					where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
 				   )Permission(mask)";
 
             string includePermissionFields = @",(SELECT case 
@@ -462,6 +501,10 @@ namespace d360.model.DataAccessLayer
 
                             simpleFilters.Add(simpleFilterTagSql);
                         }
+                        else if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
@@ -471,6 +514,11 @@ namespace d360.model.DataAccessLayer
                     if (includeParent)
                     {
                         simpleFilters.Add($"Parent.DisplayValue like @simpleFilter");
+                    }
+
+                    if (assetType.Class == AssetTypeClass.Reference)
+                    {
+                        simpleFilters.Add($"A.Code like @simpleFilter");
                     }
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
@@ -1658,7 +1706,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         public bool IsReachedTransformationLimit(AssetTypeUpsert model)
         {
             bool reached = false;
-            if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)
+            if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();

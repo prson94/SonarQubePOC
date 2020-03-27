@@ -42,6 +42,8 @@ export class MemberGroupComponent extends BaseComponent implements OnInit, OnDes
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }    
 }

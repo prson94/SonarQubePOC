@@ -322,6 +322,8 @@
                     <input name="minLength"
                            type="number"
                            step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
+                           min="{{model.FieldType.Type == 'Text' ? minLengthLowerText : minLengthLowerNumeric }}"
+                           max="{{model.FieldType.Type == 'Text' ? minLengthUpperText : minLengthUpperNumeric }}"
                            [disabled]="CheckMinRequired(model) || model.FieldType.Pattern?.length > 0 "
                            [(ngModel)]="model.FieldType.MinimumLength"
                            (input)="validate('MinimumLength')"
@@ -333,6 +335,8 @@
                     <input name="maxLength"
                            type="number"
                            step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
+                           min="{{model.FieldType.Type == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
+                           max="{{model.FieldType.Type == 'Text' ? maxLengthUpperText : maxLengthUpperNumeric }}"
                            [(ngModel)]="model.FieldType.MaximumLength"
                            (input)="validate('MaximumLength')"
                            style="width: 98%; display: block;" />

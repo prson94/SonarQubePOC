@@ -59,6 +59,10 @@ export class SecondaryNavService {
 
     }
 
+    public getCurrentUrl() {
+        return this.router.url;
+    }
+
     public setLoadedKey(_key: string) {
         localStorage.setItem('loadedNavItem', _key);
     }

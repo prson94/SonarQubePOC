@@ -37,7 +37,6 @@ import { TableModule } from 'primeng/table';
 import { SliderModule } from 'primeng/slider';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
-import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 import { DirectivesModule } from '../../../directives/directives.module';
 import { GovernRequestInterceptor } from "../../../http-interceptors/govern-request.interceptor";
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
@@ -97,11 +96,6 @@ import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
         AdminAnalyticsDetailsComponent
     ],
     providers: [
-        {
-            provide: HTTP_INTERCEPTORS,
-            useClass: ErrorNotifyInterceptor,
-            multi: true
-        },
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,

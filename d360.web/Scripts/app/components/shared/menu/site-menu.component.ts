@@ -78,8 +78,12 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     ngOnDestroy() {
-        this.subSiteNav.unsubscribe();
-        this.subFavorites.unsubscribe();
+        if (this.subSiteNav) {
+            this.subSiteNav.unsubscribe();
+        }
+        if (this.subFavorites) {
+            this.subFavorites.unsubscribe();
+        }
     }
 
     clearSearches($event) {

@@ -1122,6 +1122,10 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters.");
                                 }
                                 break;
+                            case "Tag":
+                                success = false;
+                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request.");
+                                break;
                             default: // Html, Text
                                 if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
                                 {
@@ -1915,7 +1919,6 @@ from	IntersectType I
                                                 if (legacyTable == "[Rule]") //You need to also remove rule implementations, results, and other legacy dependent tables.
                                                 {
                                                     Connection.Execute($@"
-delete T from RuleResultFusionAttribute T inner join RuleResult R on R.ID = T.RuleResultID inner join RuleImplementation S on S.ID = R.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix}); 
 delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
 delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
                                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout

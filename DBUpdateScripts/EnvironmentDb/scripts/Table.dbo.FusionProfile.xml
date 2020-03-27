@@ -226,5 +226,25 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
+  <changeSet author="Bhoward" id="Table.dbo.FusionProfile-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
+BEGIN
+	exec sp_rename '[dbo].[FusionProfile]', 'FusionProfile_backup'
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile_backup')
+BEGIN
+		exec sp_rename '[dbo].[FusionProfile_backup]', 'FusionProfile'
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

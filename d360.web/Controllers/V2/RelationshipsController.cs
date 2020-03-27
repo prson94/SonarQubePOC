@@ -374,7 +374,8 @@ namespace d360.web.Controllers.V2
         /// <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
         /// <param name="State">Filter on the state, or status, of a relationship.</param>
         /// <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
-        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 250.</param>
+        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.</param>
+        /// <param name="_includeTotal">Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -385,7 +386,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse))
        ]
-        public async Task<HttpResponseMessage> GetRelationshipsAsync(Guid? RelationshipTypeUid = null, Guid? PredicateUid = null, Guid? SubjectUid = null, Guid? ObjectUid = null, core.enums.State? State = null, int? _pageSize = null, int? _pageNum = null)
+        public async Task<HttpResponseMessage> GetRelationshipsAsync(Guid? RelationshipTypeUid = null, Guid? PredicateUid = null, Guid? SubjectUid = null, Guid? ObjectUid = null, core.enums.State? State = null, int? _pageSize = null, int? _pageNum = null, bool? _includeTotal = true)
         {
             var prefix = "Relationships.GetRelationshipsAsync => ";
             var errorMessage = "";

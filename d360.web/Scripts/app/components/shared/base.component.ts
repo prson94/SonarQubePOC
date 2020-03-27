@@ -15,11 +15,7 @@ import { TreeNode } from 'primeng/api';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { SiteMenuService } from '../../services/site-menu.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { OnDestroy, OnInit } from '@angular/core';
-import { Policy } from '../../models/policy.model';
-import { Router } from '@angular/router';
 import { ScoreType } from '../../models/metrics.model';
 
 declare var CompanySettings;
@@ -58,6 +54,7 @@ export class BaseComponent {
     scoreSidebar: SecondaryNavItem;
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
+    ruleResultSidebar: SecondaryNavItem;
 
 
     scoringDataQualitySidebar: SecondaryNavItem;
@@ -183,21 +180,28 @@ export class BaseComponent {
         let currentTab = this.secondaryNavService.getLocalActiveItem();
         let homeUrl = this.secondaryNavService.getLocalHomeUrl();
         let crumbs = this.breadcrumbsService.getBreadcrumbsFromStorage();
-        if (currentObject && currentArea && tabs.length > 0 && currentTab && homeUrl) {
+
+        let isValidNav: boolean = tabs.some(x => x.url.toLowerCase() == this.secondaryNavService.getCurrentUrl().toLowerCase());
+
+        if (isValidNav && currentArea && tabs.length > 0 && currentTab && homeUrl) {
             this.secondaryNavService.clearItems();
-            this.secondaryNavService.setCurrentObject(currentObject);
+            if (currentObject)
+                this.secondaryNavService.setCurrentObject(currentObject);
             this.secondaryNavService.setCurrentArea(currentArea.title, currentArea.icon, currentArea.tabTitle);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
+
             tabs.forEach(tab => {
-                if (tab.title == currentTab.title)
+                if (tab.title == currentTab.title) {
                     tab.active = true;
+                    this.secondaryNavService.setLocalActiveItem(tab);
+                }
                 else
                     tab.active = false;
                 this.secondaryNavService.showItem(tab);
             });
             this.secondaryNavService.showHeader(true);
         }
-        if (crumbs.length > 0)
+        if (isValidNav && crumbs.length > 0)
             this.breadcrumbsService.buildFromStorage();
     }
 
@@ -245,11 +249,11 @@ export class BaseComponent {
         hasFollowers?: boolean,
         hasMonitor?: boolean,
         hasField?: boolean,
-        hasChild?: boolean
+        hasChild?: boolean,
+        hasRuleResult?:boolean
     ) {
         if (this.secondaryNavService) {
             this.clearSidebar();
-
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
             if (hasLineage && CompanySettings.ShowLineageSidebar != 'false') {
@@ -375,6 +379,15 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
+            if (hasRuleResult) {
+                this.ruleResultSidebar = new SecondaryNavItem(
+                    'Rule Results',
+                    'Rule Results',
+                    ['fa-sitemap'],
+                    `/sidebar/ruleResults/${this.objectID}`
+                ,null,1);
+                this.secondaryNavService.showItem(this.ruleResultSidebar);
+            }
 
             if (isCommonAsset) {
                 this.scoreSidebar = new SecondaryNavItem(
@@ -449,6 +462,15 @@ export class BaseComponent {
 
     objectContextUrl(): string {
         const url = '';
+
+        if (this.objectType == 'Tag') {
+            if (this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+                return `/${this.objectType}/${this.uid}`;
+            }
+            else if (!this.objectID) {
+                return `/${this.objectType}/0`;
+            }
+        }
 
         if (!this.objectType || !this.objectID) {
             return url;
@@ -733,8 +755,12 @@ export class BaseComponent {
         if (assetUid != null)
             data.AssetUid = assetUid.toString().toLowerCase();
 
-        if (objectId)
+        if (objectId) {
             data.ObjectId = objectId;
+            if (objectId.toString().length == 36) {
+                data.AssetUid = objectId.toString();
+            }
+        }
 
         if (objectType)
             data.ObjectType = objectType;
@@ -758,7 +784,14 @@ export class BaseComponent {
             return;
         }
 
+        //For legacy fusion use local storage way of restoring secondary navigation and breadcrumbs
+        if (data.ObjectType == 'FusionAttribute' || data.ObjectType == 'Fusion') {
+            this.checkSecondaryNavLocalStorage();
+            return;
+        }
+
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
+        
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -767,10 +800,6 @@ export class BaseComponent {
 
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
-
-            if (this.objectType == 'FusionAttribute' || this.objectType == 'Tag') {
-                return;
-            }
 
             this.clearSidebar();
             this.breadcrumbsService.clearBreadcrumbs();
@@ -788,8 +817,11 @@ export class BaseComponent {
             area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Attributes', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
-            var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName);
+            if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
+                area = 'Tags';
+            }
 
+            var homeUrl = SiteUrlHelpers.getUrl(r.Object, r.ObjectID, r.ObjectTypeId, areaName, this.uid);
             this.secondaryNavService.setLocalHomeUrl(homeUrl);
             this.breadcrumbsService.setCurrentObjectInfo(r.Object, r.ObjectID);
             if (buildBreadcrumbOverride == null) {
@@ -821,8 +853,12 @@ export class BaseComponent {
 
             this.secondaryNavService.clearItems();
             this.secondaryNavService.clearButtons();
-            this.secondaryNavService.setCurrentArea(areaName, area === 'Configuration' ? 'fa-sliders' : "fa-cog", mainTabTitle);
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild);
+
+            var areaIcon = area === 'Configuration' ? 'fa-sliders' : "fa-cog";
+            if (r.Object == 'Tag')
+                areaIcon = 'fa-tag';
+            this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule');
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
@@ -832,6 +868,9 @@ export class BaseComponent {
     }
 
     private IsType(objectName: string): boolean {
+        if (objectName == 'Tag')
+            return true;
+
         if (objectName.length <= 4)
             return false;
         if (objectName.substr(objectName.length - 4).toLowerCase() == "type") {
@@ -874,6 +913,7 @@ export class BaseComponent {
         components.push(this.auditSidebar);
         components.push(this.childSidebar);
         components.push(this.fieldNav);
+        components.push(this.ruleResultSidebar);
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {

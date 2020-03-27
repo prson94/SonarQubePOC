@@ -65,6 +65,8 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     showSurvey: boolean = false;
     showSurveyPopup: boolean = false;
     showScrollButtons: boolean = false;
+    disableScrollLeft: boolean = false;
+    disableScrollRight: boolean = false;
     showCertifyModal: boolean = false;
     assetAction: AssetAction;
 
@@ -149,6 +151,20 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             let lastTab = this.tabScroller.first.nativeElement.lastChild.getBoundingClientRect().right;
             this.showScrollButtons = lastTab > maxWidth;
         }
+        this.checkScrollPos();
+    }
+
+    checkScrollPos() {
+        if (this.tabScroller && this.tabScroller.length > 0) {
+            let currentPosition = this.tabScroller.first.nativeElement.scrollLeft;
+            this.disableScrollLeft = currentPosition == 0;
+
+            let maxWidth = this.tabScroller.first.nativeElement.parentElement.getBoundingClientRect().right;
+            let lastTab = this.tabScroller.first.nativeElement.lastChild.getBoundingClientRect().right;
+            this.disableScrollRight = lastTab <= maxWidth;
+
+            this.ref.markForCheck();
+        }
     }
 
     scroll(direction: string) {
@@ -162,12 +178,22 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
             }
             scrollAmount += 10;
             if (scrollAmount >= scrollDistance) {
+                this.checkScrollPos();
                 window.clearInterval(id);
             }
+            this.checkScrollPos();
         };
 
         let id = window.setInterval(move, 5);
+    }
 
+    getTitle(item: SecondaryNavItem) {
+        if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
+            let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
+            return this.statistics.IssueCount + " outstanding action" + plurality +" assigned to you";
+        } else {
+            return "";
+        }
     }
 
     load() {
@@ -316,15 +342,33 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     }
 
     ngOnDestroy() {
-        this.subscription.unsubscribe();
-        this.subscriptionClear.unsubscribe();
-        this.areaSub.unsubscribe();
-        this.hideHeaderSub.unsubscribe();
-        this.objectSub.unsubscribe();
-        this.buttonSubscriptionClear.unsubscribe();
-        this.buttonSubscription.unsubscribe();
-        this.homeUrlChangeSub.unsubscribe();
-        this.statsSub.unsubscribe();
+        if (this.subscription) {
+            this.subscription.unsubscribe();
+        }
+        if (this.subscriptionClear) {
+            this.subscriptionClear.unsubscribe();
+        }
+        if (this.areaSub) {
+            this.areaSub.unsubscribe();
+        }
+        if (this.hideHeaderSub) {
+            this.hideHeaderSub.unsubscribe();
+        }
+        if (this.objectSub) {
+            this.objectSub.unsubscribe();
+        }
+        if (this.buttonSubscriptionClear) {
+            this.buttonSubscriptionClear.unsubscribe();
+        }
+        if (this.buttonSubscription) {
+            this.buttonSubscription.unsubscribe();
+        }
+        if (this.homeUrlChangeSub) {
+            this.homeUrlChangeSub.unsubscribe();
+        }
+        if (this.statsSub) {
+            this.statsSub.unsubscribe();
+        }
     }
 
     trackById(index, item) {

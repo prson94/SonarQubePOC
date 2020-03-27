@@ -163,6 +163,11 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
             if (this.selection.uid)
                 id = this.selection.uid;
+
+            //For ones recieved from GET V2 Asset API
+            if (this.isV2API && this.selection.AssetUid) {
+                id = this.selection.AssetUid;
+            }
         }
 
         this.isLoading = true;

@@ -103,9 +103,15 @@ export class ModelItemComponent extends BaseComponent implements OnInit, OnDestr
 
     ngOnDestroy() {
         this.clearSidebar();
-        this.sub.unsubscribe();
-        this.treeSub.unsubscribe();
-        this.currentAreaNameSubscription.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
+        if (this.treeSub) {
+            this.treeSub.unsubscribe();
+        }
+        if (this.currentAreaNameSubscription) {
+            this.currentAreaNameSubscription.unsubscribe();
+        }
     }
 
     private buildBreadcrumb() {

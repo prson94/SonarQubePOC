@@ -35,8 +35,6 @@ namespace d360.core.entities
 
         [IgnoreDataMember]
         public virtual RuleImplementation RuleImplementation { get; set; }
-                
-        [ForeignKey("RuleResultID"), IgnoreDataMember]
-        public virtual ICollection<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
+     
     }
 }

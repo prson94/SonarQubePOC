@@ -19,7 +19,8 @@
                  [paginator]="true"
                  [rows]="10"
                  [value]="versions"
-                 selectionMode="single">
+                 [selection]="selected" (selectionChange)="selectedChange.emit($event)"
+                 selectionMode="single" dataKey="ID">
             <ng-template pTemplate="header">
                 <tr>
                     <th [pSortableColumn]="'UriPrefix'">

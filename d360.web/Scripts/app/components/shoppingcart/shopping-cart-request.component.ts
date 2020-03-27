@@ -49,7 +49,9 @@ export class ShoppingCartRequestComponent extends BaseComponent implements OnIni
     }
 
     ngOnDestroy() {
-        this.sub.unsubscribe();
+        if (this.sub) {
+            this.sub.unsubscribe();
+        }
     }
 
     load() {

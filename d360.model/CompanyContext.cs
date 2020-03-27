@@ -210,8 +210,6 @@ namespace d360.model
 
         public DbSet<RuleResult> RuleResults { get; set; }
 
-        public DbSet<RuleResultFusionAttribute> RuleResultFusionAttributes { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
@@ -3300,8 +3298,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.IssueType:
                     objectId = IssueTypes.FirstOrDefault(x => x.uid == objectUid).ID;
                     break;
+                case SystemObjects.ReferenceItemType:
+                    objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
+                    break;
                 default:
-                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString()).ObjectID;
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
                     if (objectId <= 0)
                         throw new Exception($"Method not implemented for object type '{objectType.ToString()}'");
                     break;

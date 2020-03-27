@@ -59,7 +59,9 @@ export class SimilarItemsComponent implements OnChanges, OnInit, OnDestroy {
     }
 
     ngOnDestroy() {
-        this.searchSub.unsubscribe();
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+        }
     }
 }
 

@@ -35,5 +35,25 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
+  <changeSet author="BHoward" id="Table.dbo.RuleResultFusionAttribute-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultFusionAttribute')
+BEGIN
+	exec sp_rename '[dbo].[RuleResultFusionAttribute]', '[dbo].[RuleResultFusionAttribute_backup]'
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResultFusionAttribute_backup')
+BEGIN
+	exec sp_rename '[dbo].[RuleResultFusionAttribute_backup]', '[dbo].[RuleResultFusionAttribute]'
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

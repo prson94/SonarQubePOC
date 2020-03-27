@@ -41,11 +41,7 @@ export class BaseObservableService {
                             errorMessage = 'An error has occurred.';
                         }
 
-                        //Check if interceptor already handled error
-                        if (!error.error.title || !error.error.message) {
-                            this.messages.showError('Error', errorMessage);
-                        }
-
+                        this.messages.showError('Error', errorMessage);
                     }
                 }
             })

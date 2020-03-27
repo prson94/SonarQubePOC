@@ -110,6 +110,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     public defaultLinkName: any;
     public defaultLinkAdress: any;
 
+    private minLengthLowerText = 0;
+    private minLengthUpperText = 999999;
+
+    private maxLengthLowerText = 0;
+    private maxLengthUpperText = 1000000;
+
+    private minLengthLowerNumeric = -9999999999;
+    private minLengthUpperNumeric = 9999999999;
+
+    private maxLengthLowerNumeric = -9999999999;
+    private maxLengthUpperNumeric = 9999999999;
+
+
     constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
@@ -1179,19 +1192,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.model.FieldType.Type == 'Number' || this.model.FieldType.Type == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength') {
                 this.setValidation('MinimumLength_toobig', 'Please enter a smaller Minimum Value.', (() => {
-                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > 9999999999);
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > this.minLengthUpperNumeric);
                 })());
                 this.setValidation('MinimumLength_toosmall', 'Please enter a larger Minimum Value.', (() => {
-                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < -9999999999);
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < this.minLengthLowerNumeric);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 this.setValidation('MaximumLength_toobig', 'Please enter a smaller Maximum Value.', (() => {
-                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > 9999999999);
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > this.maxLengthUpperNumeric);
                 })());
                 this.setValidation('MaximumLength_toosmall', 'Please enter a larger Maximum Value.', (() => {
-                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < -9999999999);
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < this.maxLengthLowerNumeric);
                 })());
             }
 
@@ -1299,6 +1312,31 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 })());
             }
 
+            if (fieldname == '*' || fieldname == 'MinimumLength') {
+                this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength % 1 != 0);
+                })());
+                this.setValidation('MinimumLength_toolong', 'Please enter a Minimum Length shorter than ' + this.minLengthUpperNumeric + '.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength > this.minLengthUpperNumeric);
+                })());
+                this.setValidation('MinimumLength_tooshort', 'Minimum Length must be a positive numnber.', (() => {
+                    return (this.model.FieldType.MinimumLength && this.model.FieldType.MinimumLength < this.minLengthLowerText);
+                })());
+            }
+
+            if (fieldname == '*' || fieldname == 'MaximumLength') {
+                var m
+                this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength % 1 != 0);
+                })());
+                this.setValidation('MaximumLength_toolong', 'Please enter Maximum Length shorter than ' + this.maxLengthUpperText + '.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength > this.maxLengthUpperText);
+                })());
+                this.setValidation('MaximumLength_tooshort', 'Maximum Length must be a positive numnber.', (() => {
+                    return (this.model.FieldType.MaximumLength && this.model.FieldType.MaximumLength < this.maxLengthLowerText);
+                })());
+            }
+
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
                 this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.MinimumLength + '.', (() => {
                     if (this.model.FieldType.DefaultValue) {
@@ -1318,6 +1356,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     }
                 })());
             }
+
+            if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
+                this.setValidation('MinimumLengthMaximumLength_text', 'Maximum Lenght is shorter than Minimum Length.', (() => {
+                    if (this.model.FieldType.MinimumLength && FormHelpers.isNumber(this.model.FieldType.MinimumLength)) {
+                        return (FormHelpers.isNumber(this.model.FieldType.MaximumLength) && this.model.FieldType.MinimumLength > this.model.FieldType.MaximumLength);
+                    } else {
+                        return false;
+                    }
+                })());
+            }
+
         }
 
         this.errorMessage = Array.from(this.validationErrors.values()).join('\n');

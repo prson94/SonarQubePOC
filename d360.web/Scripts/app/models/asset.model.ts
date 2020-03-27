@@ -1,4 +1,5 @@
-﻿
+﻿import { ReferenceItemType } from "./reference.model";
+
 
 export enum State {
     Unknown = -1,

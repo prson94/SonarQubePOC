@@ -40,5 +40,8 @@ namespace d360.core.entities
 
         [DataMember]
         public string OrganizationCount { get; set; }
+
+        [DataMember]
+        public Guid uid { get; set; }
     }
 }

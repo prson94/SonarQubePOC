@@ -27,6 +27,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
     assetTypeClass: AssetTypeClass;
     AssetTypeClass = AssetTypeClass;
     selectedItemID: number;
+    selectedAssetTypeID: number;
 
     constructor(
         private activatedRoute: ActivatedRoute,
@@ -75,12 +76,22 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         if (this.selected) {
             switch (this.assetTypeClass) {
                 case AssetTypeClass.Model:
-                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
+                    this.isLoading = true;
+                    this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                         this.selectedItemID = res.ObjectID;
+                        this.selectedAssetTypeID = res.Id;
                         this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
-                    });
+                        
+                    }, err => {
+                        this.isLoading = false;    
+                        },
+                     () => {
+                         this.isLoading = false;
+                     });
                     break;
                 case AssetTypeClass.Policy:
+                    this.selectedAssetTypeID = this.selected.AssetTypeID;
+                    this.selectedItemID = this.selected.ID;
                     this.buildSecondaryNavigationForObject(this.selected ? this.selected.ID : 0, this.objectType);
                     break;
                 default:
@@ -88,20 +99,16 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         }
     }
 
-    getSelectedItemID() {
-        if (this.selected) {
-            switch (this.assetTypeClass) {
-                case AssetTypeClass.Model:
-                    this.modelService.getModelTypeObjectAndID(this.selected.uid).subscribe(res => {
-                        return res.ObjectID;
-                    });
-                    break;
-                case AssetTypeClass.Policy:
-                    return this.selected.ID;
-                    break;
-                default:
-            }
-        }
+    openEditor(item) {
+        this.selected = item;
+        this.selectedItemChange();
+        this.showEditor = true;
+    }
+
+    openDelete(item) {
+        this.selected = item;
+        this.selectedItemChange();
+        this.showDelete = true;
     }
 
     ngOnInit() {
@@ -117,7 +124,10 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
         this.modelService
             .getModels()
             .subscribe(results => {
-                this.types = results.sort((a, b) => a.Name.localeCompare(b.Name));
+                let t = results.sort((a, b) => a.Name.localeCompare(b.Name));
+                this.types = t.map((item) => {
+                    return { MaximumDepth: item.HierarchyMaximumDepth, ...item };
+                });
 
                 if (this.types.length && this.types.length > 0) {
                     this.selected = this.types[0];
@@ -171,7 +181,7 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
         this.stateService.reloadLeftNavMenu();
     }
-
+    
     deleteType(id: number) {
         this
             .assetTypeService
@@ -180,7 +190,11 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
                 this.showMessageForResult(this.messagesService, res);
 
                 if (res.type != 'error') {
-                    this.types = this.types.filter(x => x.AssetTypeID != id);
+                    if (this.assetTypeClass == AssetTypeClass.Model) {
+                        this.types = this.types.filter(x => x.uid != this.selected.uid);
+                    } else {
+                        this.types = this.types.filter(x => x.AssetTypeID != id);
+                    }
                     this.selected = this.types.length > 0 ? this.types[0] : null;
                     this.selectedItemChange();
                     this.stateService.reloadLeftNavMenu();

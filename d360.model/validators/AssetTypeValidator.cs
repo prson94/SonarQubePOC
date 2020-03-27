@@ -60,6 +60,10 @@ namespace d360.core.validators
 
             if (!isInsert)
             {
+                var anyDupeNames = CompanyContext.Any<AssetType>(x => x.Name == model.Name && x.Class == model.Class);
+                if (anyDupeNames)
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ErrorNameTaken);
+
                 if (assetType == null)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
                 else if (assetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
@@ -256,6 +260,15 @@ namespace d360.core.validators
                 }
             }
 
+            return true;
+        }
+
+        public bool IsValidRelationFilter(IEnumerable<KeyValuePair<string,string>> queryParams)
+        {
+            if(queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLower() == "_relationfilter"))
+            {
+                return false;
+            }
             return true;
         }
     }

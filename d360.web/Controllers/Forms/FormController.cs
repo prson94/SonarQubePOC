@@ -324,7 +324,7 @@ namespace d360.web.Controllers
                     return Policy_EditFields(oid);
                 case "PREDICATE":
                     return Predicate_EditFields(oid);
-                case "REFERENCEITEMTYPE":
+                case "REFERENCEITEM":
                     return ReferenceItem_EditFields(oid);
                 case "RESOURCESELF":
                     return Resource_EditMyInfoFields();
@@ -412,7 +412,7 @@ namespace d360.web.Controllers
                     return Policy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "PREDICATE":
                     return Predicate_AddFields();
-                case "REFERENCEITEMTYPE":
+                case "REFERENCEITEM":
                     return ReferenceItem_AddFields(objectID.GetValueOrDefault());
                 case "RESOURCETYPE":
                     return Resource_AddFields(objectID.GetValueOrDefault());

@@ -994,7 +994,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     while (parentRefType != null && loopCount < 20)
                     {
                         columns.Insert(0, new GridColumn { text = parentRefType.Name, datafield = $"Rel{parentRefType.ObjectID}" });
-
+                        fields.Add(new GridField { name = $"Rel{parentRefType.ObjectID}", apiName = "ParentDisplayName", type = "string" });
                         parentRefType = Company.GetParentType(parentRefType.ObjectID, SystemObjects.ReferenceItemType);
                         loopCount++;
                     }
@@ -4317,22 +4317,6 @@ order by C.DisplayValue";
                 .AsQueryable();
         }
 
-        [Route("ownership/admintypes")]
-        public IQueryable<dynamic> GetAdminResponsibilityTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-            return Company.Table<ResponsibilityType>()
-                .Select(i => new
-                {
-                    i.ID,
-                    i.Name,
-                    i.Description
-                })
-                .OrderBy(i => i.Name)
-                .AsQueryable();
-        }
-
         [Route("ownership/types/{id:int}/relations")]
         public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByResponsibilityType(int id)
         {
@@ -4463,9 +4447,10 @@ from    ResponsibilityTypeRelationRule R
 	                    AT.CreatedOn,
 	                    AT.UpdatedBy,
 	                    AT.UpdatedOn,
-	                    AT.ID as AssetTypeID
+	                    AT.ID as AssetTypeID,
+                        AT.uid as uid
 	                    from	    AssetType AT where AT.Object = 'PolicyType'"))
-            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
+            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID, i.uid })
             );
         }
 
@@ -4868,7 +4853,8 @@ select      ID as AssetTypeID,
             CreatedBy, 
             UpdatedOn, 
             UpdatedBy, 
-            DisplayFormat 
+            DisplayFormat,
+            uid
 from        AssetType 
 where       Object = 'RuleType'
 order by    Name
@@ -7511,9 +7497,9 @@ SELECT (
         [Route("getAssetTypeObjectAndObjectID/{uid}")]
         public HttpResponseMessage GetObjectandId(Guid uid)
         {
-            var sql = $@"SELECT top 1 Object, ObjectID from AssetType WHERE Uid = '{uid.ToString()}'";
+            var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
             var details = Company.Query<dynamic>(sql).Single();
-            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID  });
+            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID , details.Id });
         }
 
         #endregion
@@ -7713,24 +7699,6 @@ SELECT (
         #endregion
 
         #region Reference - new replaces domain
-
-        [HttpGet, Route("referenceItemTypes")]
-        public IEnumerable<dynamic> GetReferenceItemTypes()
-        {
-            var sql = @"select 
-		                AT.ObjectID as ID,
-		                AT.Name,
-		                AT.Description,
-		                AT.DisplayFormat,
-		                AT.AutoDisplayDescription,
-		                AT.id as AssetTypeID,
-                        AT.uid as AssetTypeUID
-		                from
-                  Assettype AT 
-                  where  AT.[object] = 'ReferenceItemType' and AT.ObjectID > 0";
-
-            return Company.Query<dynamic>(sql);
-        }
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)

@@ -76,7 +76,9 @@ export class WorkflowTransitionEditorComponent extends BaseComponent implements 
     }
 
     ngOnDestroy() {
-        this.fieldsSub.unsubscribe();
+        if (this.fieldsSub) {
+            this.fieldsSub.unsubscribe();
+        }
     }
 
     add() {

@@ -1063,6 +1063,19 @@ order by	f.SortOrder";
 
             }
 
+
+            if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
+            {
+                execProcedure = false;
+                var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
+                responseModel.Object = responseModel.ObjectType = SystemObjects.Tag.ToString();
+                responseModel.ObjectID = model.ObjectId ?? 0;
+                responseModel.DisplayValue = tag.Value;
+                responseModel.MainTabTitle = "Tagged Assets";
+                responseModel.Items.HasAudit = true;
+                responseModel.Uid = tag.uid;
+            }
+
             if (execProcedure)
             {
                 if (model.ObjectId != null && model.ObjectType != null)
@@ -1103,7 +1116,6 @@ order by	f.SortOrder";
                 }
 
             }
-
             if (!Company.CurrentResourceIsAdmin)
             {
                 if (model.AssetUid != null)
@@ -1119,9 +1131,29 @@ order by	f.SortOrder";
                         responseModel.Items.HasRelationship = true;
                     }
                 }
+
+                if (model.AssetId == null && model.AssetTypeUid != null)
+                {
+                    var permissions = Company.GetTypePermissions(responseModel.ObjectType, responseModel.ObjectTypeId);
+                    if (permissions.Any(x => x.ID == Permission.ReadAsset))
+                    {
+                        responseModel.Items.HasOwnership = true;
+                    }
+                    else
+                    {
+                        responseModel.Items.HasOwnership = false;
+                    }
+
+                    if (permissions.Any(x => x.ID == Permission.ReadRelationships))
+                    {
+                        responseModel.Items.HasRelationship = true;
+                    }
+                    else
+                    {
+                        responseModel.Items.HasRelationship = false;
+                    }
+                }
             }
-
-
             return new JsonNetResult
             {
                 Data = responseModel,

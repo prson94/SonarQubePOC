@@ -304,31 +304,6 @@ namespace d360.web.Controllers
 
         #region Form Get/Post
 
-        [HttpDelete, Route("DeleteResponsibilityTypeByID"), NonNullableParameters]
-        public JsonResult DeleteResponsibilityTypeByID(int id)
-        {
-            try
-            {
-                if (!Company.CurrentResourceIsAdmin)
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var model = Company.GetById<ResponsibilityType>(id);
-                if (model == null) throw new NotFoundException("ownership type");
-
-                Company.Delete(SystemObjects.ResponsibilityType, id);
-
-                return jsonSuccess("Item successfully removed.", id.ToString(), "delete", HttpStatusCode.OK);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
 
         [HttpGet, ActionName("ResponsibilityType"), Route("ResponsibilityType"), NonNullableParameters]
         public JsonNetResult GetResponsibilityType(int id)

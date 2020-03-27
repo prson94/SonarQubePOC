@@ -88,21 +88,23 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         var prevDate: string | Date = null;
         if (this.model.EffectiveDate != null) {
             prevDate = this.model.EffectiveDate;
-            this.model.EffectiveDate = new Date(<string>this.model.EffectiveDate).toISOString();
+            let d = new Date(<string>this.model.EffectiveDate);
+            var condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+            condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
+            this.model.EffectiveDate = condate.toISOString();
         }
         this.model.ScoreType = this.scoreType;
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {
-                this.isLoading = false;
-                this.showMessageForResult(this.messagesService, r);
-                this.onSave.emit();
-            },
-            e => {
-                this.model.EffectiveDate = prevDate;
-                this.isLoading = false;
-            },
-            () => {
-                console.log('complete');
+                if (r) {
+                    this.isLoading = false;
+                    this.showMessageForResult(this.messagesService, r);
+                    this.onSave.emit();
+                }
+                else {
+                    this.model.EffectiveDate = prevDate;
+                    this.isLoading = false;
+                }
             });
     }
 

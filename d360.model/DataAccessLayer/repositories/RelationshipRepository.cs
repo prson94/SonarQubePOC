@@ -107,6 +107,7 @@ namespace d360.model.DataAccessLayer
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
             var dbArgs = new DynamicParameters();
+            bool includeTotal = true;
 
             var baseTableSql = @"from [Intersect] I 
 inner join IntersectType T on T.ID = I.IntersectTypeID 
@@ -141,8 +142,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
-                        //countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";                        
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
                     }
                 }
@@ -163,12 +163,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(predicateUidString, out predicateUid))
                     {
                         dbArgs.Add("@predicateuid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
-                        //if (!countSql.Contains("inner join IntersectType T"))
-                        //{
-                        //    countSql += $" inner join IntersectType T on T.ID = I.IntersectTypeID";
-                        //}
-                        //countSql += $" inner join [Predicate] P on P.ID = T.PredicateID and P.[Uid] = @predicateuid";
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";                        
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -208,6 +203,14 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
                 }
 
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
+                {                    
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
+                    {
+                        includeTotal = true;
+                    }
+                }
+
                 // Now deal with dynamic field filters
                 if (fieldTypes != null)
                 {
@@ -244,9 +247,9 @@ end = @f{fieldType.ID}Value";
             {
                 pageNumber = 1;
             }
-            if (pageSize < 0 || pageSize > 250)
+            if (pageSize < 0 || pageSize > 5000)
             {
-                pageSize = 250;
+                pageSize = 5000;
             }
 
             dbArgs.Add("@pageNum", pageNumber);
@@ -270,9 +273,11 @@ end = @f{fieldType.ID}Value";
             if (fieldColumns.Count > 0)
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
+            var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
+
             var sql = $@"
 declare @total int
-select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}
+{(includeTotal ? countFullSql : "")}
 
 select	@pageSize as 'pageSize',
 		@pageNum as 'pageNum',

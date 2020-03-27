@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,6 +23,9 @@ namespace d360.model.helpers
         private StringBuilder stringBuilder = new StringBuilder();
         private Dictionary<string, object> sqlParamsRef;
 
+        private AssetType assetType { get; set; }
+        private IntersectType intersectType { get; set; }
+
         public bool IsOnlyOperator
         {
             get
@@ -35,6 +39,13 @@ namespace d360.model.helpers
             get
             {
                 return field;
+            }
+        }
+        public string ValueAsString
+        {
+            get
+            {
+                return value.ToString();
             }
         }
 
@@ -97,12 +108,86 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
+        public string GetSQLForRelationship(ref Dictionary<string, object> sqlParams)
+        {
+
+            if (assetType == null || intersectType == null)
+            {
+                throw new MethodAccessException("Method can be used only when Intersect Type and Asset Type are loaded. Use LoadRelationshipData() method before.");
+            }
+
+            this.sqlParamsRef = sqlParams;
+            stringBuilder.Clear();
+
+            if (!new string[] { "eq", "ne" }.Contains(@operator))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid when filtering relationship. Use 'eq' or 'ne'.");
+            }
+
+            var condition = @operator == "eq" ? " exists" : " not exists";
+
+            var filterCond = GetSplitFilterCriteriaRelationship();
+            var hasRefList = (intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0) || (intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0);
+
+            if (!hasRefList)
+            {
+                AddRelationshipFilterWithGraphTables(condition, filterCond);
+            }
+            else
+            {
+                stringBuilder.Append($@"{condition} (select AT.Uid from [IntersectType] IT
+	            left join [Intersect] I1 on I1.IntersectTypeID = IT.ID and I1.Object = A.Object and I1.ObjectId = A.ObjectID
+	            left join [Intersect] I2 on I2.IntersectTypeID = IT.ID and I2.Subject = A.Object and I2.SubjectID = A.ObjectID
+	            inner join AssetType AT on AT.Object = ISNULL(I1.Subject,I2.Object) and AT.ObjectID = ISNULL(I1.SubjectId, I2.ObjectID)
+	            where IT.Uid = @intersectFilter{this.parameterIdx} and AT.Uid = @intersectAssetFilter{this.parameterIdx})");
+            }
+
+
+            sqlParams.Add($"@intersectFilter{this.parameterIdx}", Guid.Parse(field));
+            sqlParams.Add($"@intersectAssetFilter{this.parameterIdx}", Guid.Parse(ValueAsString));
+            return stringBuilder.ToString();
+        }
+
+        private void AddRelationshipFilterWithGraphTables(string condition, SplitFilterCriteriaRelationship filterCond)
+        {
+            if (filterCond == SplitFilterCriteriaRelationship.Subject)
+            {
+                stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx})");
+            }
+            else if (filterCond == SplitFilterCriteriaRelationship.Object)
+            {
+                stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S - (E) -> O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx})");
+            }
+            else
+            {
+                stringBuilder.Append($@"{condition}(SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S <- (E) - O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx}
+                    UNION
+                    SELECT       O.Uid as TargetAssetId
+                    FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
+                    WHERE        MATCH(S - (E) -> O)  AND IntersectTypeUid = @intersectFilter{this.parameterIdx}
+				              AND S.Uid = A.Uid and O.Uid = @intersectAssetFilter{this.parameterIdx})");
+            }
+        }
+
         public void LoadFieldType(FieldType ft, List<string> fieldColumns)
         {
             fieldType = ft;
             fieldColumn = fieldColumns.FirstOrDefault(x => x.Contains($"F" + fieldType.ID));
         }
-
+        public void LoadRelationshipData(IntersectType it, AssetType at)
+        {
+            this.intersectType = it;
+            this.assetType = at;
+        }
         private void UpdateTokenValueForType()
         {
             switch (fieldType.Type.ToLower())
@@ -190,16 +275,24 @@ namespace d360.model.helpers
                 {
                     condition = "not in";
                 }
+                var basicSqlExpression = string.Empty;
 
                 if (!string.IsNullOrEmpty(fieldType.DefaultValue))
                 {
-                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))");
+                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
                     sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
                 }
                 else
                 {
-                    stringBuilder.Append($"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))");
+                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
                 }
+
+                if (fieldType.AllowAllValue)
+                {
+                    basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                }
+
+                stringBuilder.Append(basicSqlExpression);
             }
 
             if (fieldType.Type == "Relationship")
@@ -285,6 +378,22 @@ namespace d360.model.helpers
                 case "or": return " or ";
                 default: throw new Exception($"Invalid logical operator '{value}'");
             }
+        }
+
+        private SplitFilterCriteriaRelationship GetSplitFilterCriteriaRelationship()
+        {
+            if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID
+               && intersectType.Subject == assetType.Object && intersectType.SubjectID == assetType.ObjectID)
+            {
+                return SplitFilterCriteriaRelationship.Both;
+            }
+            if (intersectType.Object == assetType.Object && intersectType.ObjectID == assetType.ObjectID)
+            {
+                return SplitFilterCriteriaRelationship.Object;
+            }
+            else
+                return SplitFilterCriteriaRelationship.Subject;
+
         }
     }
 }
