@@ -1259,13 +1259,15 @@ order by wi.StartedOn desc";
             var workflow = Company.WorkflowTypes.Where(x => x.ID == item.Version.TypeID).FirstOrDefault();
 
             ObjectDetail objectDetails = null;
-
+            var actionAsset = new Asset();
             switch (item.Object)
             {
                 case "Issue":
                     var issue = Company.Issues.Where(x => x.ID == item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
                     var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+                    actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
+
                     if (issue != null)
                     {
                         objectDetails = new ObjectDetail
@@ -1288,7 +1290,8 @@ order by wi.StartedOn desc";
                     Workflow = workflow,
                     ItemSteps = itemSteps,
                     Steps = steps,
-                    ObjectDetails = objectDetails
+                    ObjectDetails = objectDetails,
+                    ActionAsset = actionAsset
                 });
         }
 
@@ -1352,7 +1355,7 @@ order by wi.StartedOn desc";
 
 
             var currentVersion = Company.WorkflowVersions.Where(v => v.TypeID == type.ID).OrderByDescending(v => v.Version).First();
-            var model = GetWorkflowDiagram(id, uid,currentVersion?.Version);
+            var model = GetWorkflowDiagram(id, uid, currentVersion?.Version);
 
             model.Type = type;
             model.CurrentVersion = currentVersion;
@@ -2172,7 +2175,7 @@ order by wi.StartedOn desc";
             if (uid.HasValue && uid.Value != Guid.Empty)
                 type= Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault();
             else
-                 type = Company.WorkflowTypes.Find(id);
+                type = Company.WorkflowTypes.Find(id);
 
             if (type == null)
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Workflow type ID {id} could not be found");
@@ -3372,7 +3375,7 @@ order by wi.StartedOn desc";
                                 if (ix > -1) users.RemoveAt(ix);
 
                                 var dx = users.FindIndex(u => u.ResourceID == res.ToResourceID);
-                                if (dx == -1) { 
+                                if (dx == -1) {
                                     var assignee = Company.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == res.ToResourceID);
                                     if (assignee != null)
                                         users.Add(assignee);
