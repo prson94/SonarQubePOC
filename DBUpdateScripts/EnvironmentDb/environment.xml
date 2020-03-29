@@ -126,7 +126,8 @@
 	<include file="scripts/Table.dbo.Contract.xml"/>
 	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
-	<include file="scripts/Table.dbo.ReportLayout_backup.xml"/>
+  <include file="scripts/Table.dbo.ReportTile_backup.xml"/>
+  <include file="scripts/Table.dbo.ReportLayout_backup.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
