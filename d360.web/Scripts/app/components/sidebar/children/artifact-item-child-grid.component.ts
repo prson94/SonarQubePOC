@@ -13,6 +13,8 @@ import { Table } from 'primeng/table';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
 import {  debounceTime } from 'rxjs/operators';
+import { ObjectStatistics } from '../../../models/object-statistics.model';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
@@ -38,6 +40,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private sortField: string;
     private sortOrder: SortOrder;
     private filter: string;
+    private statistics: ObjectStatistics;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -48,6 +51,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         protected gridDefinitionService: GridDefinitionService,
         protected artifactService: ArtifactService,
         protected assetService: AssetService,
+        protected objectStatisticsService: ObjectStatisticsService,
     ) {
         super();
     }
@@ -82,12 +86,16 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getData() {
+        this.objectStatisticsService.getObjectStatistics(this.artifactTypeId, "ArtifactType").subscribe(
+            result => {
+                console.log(result);
+                this.statistics = result;
+            }
+        );
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
             var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter, _includeParent: true };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
-                console.log(res);
-                console.log(res.items[0]);
                 this.artifacts = res;
             });
         });
@@ -133,7 +141,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .router
             .navigateByUrl(SiteUrlHelpers.getObjectUrl(
                 'Artifact',
-                artifact.ID,
+                artifact.AssetId,
                 this.artifactTypeId
             )
             )
