@@ -24,7 +24,8 @@ import {
     DiagramType,
     AssetBrowserFilterChangeEventType,
     AssetBrowserFilterChangeEvent,
-    AssetBrowserPanelCommand
+    AssetBrowserPanelCommand,
+    AssetBrowserPanelModel
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -56,6 +57,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
     @ViewChild('alertPanel', { static: false }) alertPanelRef;
     @ViewChild('infoDetailPanel', { static: false }) infoDetailPanelRef;
+    @ViewChild('ownerDetailPanel', { static: false }) ownerDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
 
@@ -86,7 +88,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private panel_SettingsVisible: boolean = false;
     private panel_TabIndex: number = 0;
 
-    private commandToResetTo: AssetBrowserPanelCommand;
+    private panelModel: AssetBrowserPanelModel = { commandToResetTo: AssetBrowserPanelCommand.None };
 
     displayConfiguration: AssetBrowserFilterModel = new AssetBrowserFilterModel();
     private readonly displayConfigurationKey = 'asset-browser-configuration';
@@ -223,6 +225,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             if (this.infoDetailPanelRef) {
                 this.infoDetailPanelRef.nativeElement.style.height = innerPanelHeight;
             }
+            if (this.ownerDetailPanelRef) {
+                this.ownerDetailPanelRef.nativeElement.style.height = innerPanelHeight;
+            }
         });
 
     }
@@ -300,7 +305,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing.
     */
     private alert_OpenDetail(alert: AssetBrowserAlert) {
-        this.commandToResetTo = AssetBrowserPanelCommand.Information;
+        this.panelModel = { commandToResetTo: AssetBrowserPanelCommand.Information };
         this.alerts.forEach(a => {
             if (a.uid !== alert.uid) {
                 a.selected = false;
@@ -1835,13 +1840,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_ShowDetail(assetUid: string) {
+        this.panel_TabIndex = 0;
+        this.panel_AddVisible = false;
+        this.panel_FiltersVisible = false;
+        this.panel_AlertVisible = false;
+        this.panel_SettingsVisible = false;
+        this.panelModel = { commandToResetTo: AssetBrowserPanelCommand.Information };
+
         this.panel_Loading = true;
         this.browserService.getDetailByAsset(assetUid).subscribe(response => {
             this.selectedDiagramAsset = response;
             this.selectedDiagramAsset.Loaded = true;
             this.selectedDiagramAsset.Url = "/" + this.selectedDiagramAsset.Url;
             this.panel_Loading = false;
-            this.panel_TabIndex = 0;
             this.cdRef.markForCheck();
         });
     }
@@ -1921,7 +1932,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.panel_AlertVisible = false;
                 this.panel_InformationVisible = false;
                 this.panel_SettingsVisible = false;
-
                 this.cdRef.markForCheck();
                 break;
             case AssetBrowserPanelCommand.Alerts:
@@ -1931,7 +1941,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.panel_AlertVisible = !this.panel_AlertVisible;
                 this.panel_InformationVisible = false;
                 this.panel_SettingsVisible = false;
-
                 if (this.selectedDiagramAsset) {
                     this.selectedAssetsWithAlerts.push(this.selectedDiagramAsset.Uid);
                 }
@@ -1964,15 +1973,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.cdRef.markForCheck();
                 break;
             case AssetBrowserPanelCommand.Information:
-                this.panel_TabIndex = 0;
-                this.panel_AddVisible = false;
-                this.panel_FiltersVisible = false;
-                this.panel_AlertVisible = false;
-                this.panel_InformationVisible = !this.panel_InformationVisible;
-                this.panel_SettingsVisible = false;
-
-                if (this.panel_InformationVisible && this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
-                    this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
+                if (this.selectedDiagramAsset.Uid == this.emptyUid) {
+                    this.panel_InformationVisible = false;
+                    this.panelModel = { commandToResetTo: AssetBrowserPanelCommand.None };
+                }
+                else {
+                    this.panel_InformationVisible = !this.panel_InformationVisible;
+                    if (this.selectedDiagramAsset != null && this.selectedDiagramAsset.Loaded == false) {
+                        this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
+                    }
                 }
                 break;
             case AssetBrowserPanelCommand.Refresh:
@@ -1985,9 +1994,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.panel_AlertVisible = false;
                 this.panel_InformationVisible = false;
                 this.panel_SettingsVisible = !this.panel_SettingsVisible;
-
                 this.cdRef.markForCheck();
                 break;
+        }
+
+        if (!this.panel_AddVisible && !this.panel_AlertVisible && !this.panel_FiltersVisible && !this.panel_InformationVisible && !this.panel_SettingsVisible) {
+            this.panelModel = { commandToResetTo: AssetBrowserPanelCommand.None };
         }
 
     }
