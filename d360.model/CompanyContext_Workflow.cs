@@ -1185,7 +1185,7 @@ namespace d360.model
                          date = DateTime.UtcNow,
                          ParentObjectID = objectInfo.ObjectID,
                          ResourceID = 0,
-                         op = "Update"
+                         op = "Updated" 
                      });
         }
 
