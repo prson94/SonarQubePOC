@@ -629,7 +629,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Return results with effective date after this date", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Return results with effective date before this date", DataType = "date-time", ParameterType = "query", Required = false),            
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
@@ -716,7 +716,7 @@ namespace d360.web.Controllers.V2
 
                 dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
                 
-                if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase))
+                if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
                     SLDocument document = CreateResponseDocument(dataQualityResult);                    
                     var stream = new System.IO.MemoryStream();
