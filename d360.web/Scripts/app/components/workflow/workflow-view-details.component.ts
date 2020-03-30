@@ -154,7 +154,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                     this.workflowTypeId = res.Workflow.ID;
                 this.isLoading = false;
 
-                this.checkSecondaryNavLocalStorage();
+                if (res.ActionAsset) {
+                    this.buildSecondaryNavigationForObject(res.ActionAsset.ObjectID, res.ActionAsset.Object);
+                }
             });
     }
 
