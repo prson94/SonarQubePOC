@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.metrics.LoadFromStaging-v4">
+  <changeSet author="MDonato" id="Procedure.metrics.LoadFromStaging-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -310,7 +310,10 @@ begin
 								and IsRelevant = 1
 					group by	AssetUid, ScoreType
 					) S
-		on			(T.AssetUid = S.AssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and S.[Value] = T.[Value] and T.ScoreType = S.ScoreType)
+		on			(
+						(T.AssetUid = S.AssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and T.[Value] = S.[Value] and T.ScoreType = S.ScoreType)
+						or (T.AssetUid = S.AssetUid and T.EffectiveDate = @current_date and T.EndDate is not null and T.ScoreType = S.ScoreType)
+					)
 		when		matched then
 			update	set
 					T.Value = S.Value,
@@ -347,7 +350,10 @@ begin
 					from		#step2 s2
 								inner join metrics.Asset A on A.ScoreType = s2.ScoreType and A.[uid] = s2.MetricAssetUid
 					) S
-		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and T.[Value] = S.[Value])
+		on			(
+						(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and T.[Value] = S.[Value])
+						or (T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = @current_date and T.EndDate is not null)
+					)
 		when		matched then
 			update	set
 					T.AdjustedWeight = S.AdjustedWeight,
