@@ -196,7 +196,8 @@ namespace d360.model.DataAccessLayer
             assetTypeID = assetType.ID;
 
             List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
-            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID && !hiddenFieldTypes.Contains(f.Type)).ToList();
+            var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
+            var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
@@ -423,7 +424,7 @@ namespace d360.model.DataAccessLayer
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
+                filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                 whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
 
