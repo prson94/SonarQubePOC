@@ -83,7 +83,6 @@ export class RuleResultsGridComponent extends BaseComponent {
                 }
 
             });
-
     }
 
     private loadRuleResultsLazy(event: LazyLoadEvent) {
@@ -109,7 +108,6 @@ export class RuleResultsGridComponent extends BaseComponent {
             }
 
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-
         }
     }
 
