@@ -203,11 +203,8 @@ namespace d360.web.Models
     {
         public int ResponsibilityTypeID { get; set; }
         public string ResponsibilityTypeName { get; set; }
-        public string Icon { get; set; }
         public int ResourceID { get; set; }
         public string ResourceName { get; set; }
-        public string SecurityAssetName { get; set; }
-        public string Context { get; set; }
     }
 
     #endregion

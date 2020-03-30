@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { SecondaryNavItem, DynamicButton, AssetAction, SecondaryNavCurrentObject, SecondaryNavState, NavState } from '../models/secondaryNav.model';
-import { AssetTypeClass } from '../models/asset.model';
-import { BaseComponent } from '../components/shared/base.component';
+
 import { SiteMenuService } from './site-menu.service';
 import { PlatformLocation } from '@angular/common'
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
@@ -43,10 +42,10 @@ export class SecondaryNavService {
                     this.invalidateKey();
                 }
             }
-            
+
             if (event instanceof NavigationEnd) {
                 var homeUrl = this.secondaryNavState.currentState.currentHome ? this.secondaryNavState.currentState.currentHome : '';
-                
+
                 if (!this.crossNavURIS.some(x => x == homeUrl)) {
                     this.crossNavURIS.push(homeUrl);
                 }

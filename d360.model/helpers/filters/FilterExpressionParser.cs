@@ -22,6 +22,7 @@ namespace d360.model.helpers
         private List<string> fieldColumns = new List<string>();
         private FilterExpressionParseType parseType;
         private List<Tuple<string, string>> allowedDefaultFields = new List<Tuple<string, string>>();
+        private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         public FilterExpressionParser(
             ICompanyContext ctx,
@@ -50,6 +51,10 @@ namespace d360.model.helpers
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
+            }
+            catch (IndexOutOfRangeException ex)
+            {
+                throw new FilterExpressionParserException("Invalid filter expression: ", new Exception("One or more filter expressions has missing operator or value."));
             }
             catch (Exception ex)
             {
@@ -158,6 +163,12 @@ namespace d360.model.helpers
             else
             {
                 var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
+
+                if (disallowedFieldTypes.Contains(fieldType.Type))
+                {
+                    throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
+                }
+
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.Item1.ToLower() == token.Field.ToLower()))
@@ -279,7 +290,7 @@ namespace d360.model.helpers
 
                 token.LoadRelationshipData(
                     intersectTypes.FirstOrDefault(x => x.uid == intersectUid),
-                    filterAssets.FirstOrDefault(x => x.uid == assetUid)?.AssetType ?? filterAssetTypes.FirstOrDefault(x=> x.uid == assetUid));
+                    filterAssets.FirstOrDefault(x => x.uid == assetUid)?.AssetType ?? filterAssetTypes.FirstOrDefault(x => x.uid == assetUid));
 
 
             }

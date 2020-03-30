@@ -137,7 +137,7 @@ export class ScoreTypeAllocationFormatted {
     isExternallyCalculated: string;
     lowerThreshold: number;
     upperThreshold: number;
-    formattedThreshold: string;
+    formattedThreshold: number;
 }
 
 export enum ScoreType {

@@ -385,7 +385,7 @@ export class BaseComponent {
                     'Rule Results',
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}`
-                ,null,1);
+                    ,null,1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
 
@@ -791,7 +791,7 @@ export class BaseComponent {
         }
 
         this.secondaryNavService.getSiteMenuService().getSecondaryNav(data).subscribe(r => {
-        
+
             this.assetID = r.AssetId;
             this.assetTypeID = r.AssetTypeId;
             this.uid = r.Uid;
@@ -920,8 +920,6 @@ export class BaseComponent {
                 cmp.active = true;
             }
         });
-
-
     }
 
     private setArtifactBreadcrumbs(data) {
@@ -1010,9 +1008,11 @@ export class BaseComponent {
                                     )
                                     ;
                             }
+
+                            this.checkIfWorkflowActionIsSelected();
+
                         }
                     });
-
                 });
         });
 
@@ -1079,6 +1079,7 @@ export class BaseComponent {
                                 this.buildTreeNodeArrayBase(this.preloadedTreeData, selected.ParentID),
                                 this.findSelectedTreeNodeBase(selected.ID)));
                     }
+                    this.checkIfWorkflowActionIsSelected();
 
                 });
             });
@@ -1111,12 +1112,18 @@ export class BaseComponent {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
 
                     });
+                    this.checkIfWorkflowActionIsSelected();
 
                 });
             });
 
     }
 
+    private checkIfWorkflowActionIsSelected() {
+        if (this.breadcrumbsService.getCurrentUrl().toLowerCase().indexOf('workflow/details') != -1) {
+            this.actionsSidebar.active = true;
+        }
+    }
 
     private GetIDFromUrl(url: string) {
         return +url.split("/")[url.split.length - 1];

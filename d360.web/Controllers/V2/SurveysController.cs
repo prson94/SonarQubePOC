@@ -407,7 +407,14 @@ namespace d360.web.Controllers.V2
 
             if (!Guid.TryParse(assetUid, out Guid parsedAssetUid))
             {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Not a valid assetUid"));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided"));
+            }
+
+            var asset = AssetRepository.GetAssetByUID(parsedAssetUid);
+
+            if (asset == null)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid", $"Invalid asset uid provided"));
             }
 
             try
@@ -432,7 +439,7 @@ namespace d360.web.Controllers.V2
         /// Posts a set of survey results for a specific survey type and asset
         /// </summary>
         /// <param name="surveyTypeUid">Uid of the survey type</param>
-        /// <param name="model"></param>
+        /// <param name="model">A list of responses to the survey questions, where the response is indicated by the number that was defined in the Question Options on the Configuration > Surveys page in the application.</param>
         /// <returns>A response code indicating the status of the request</returns>
         [
             HttpPost,
@@ -469,12 +476,21 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey type for uid {uid} not found"));
             }
 
+
             foreach (var question in model.Questions)
             {
                 var questionType = SurveyRepository.GetSurveyQuestionTypeByUid(question.SurveyQuestionUid);
                 if (questionType == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Survey Question Type for uid {question.SurveyQuestionUid} not found"));
+                }
+
+                var responses = await SurveyRepository.GetSurveyQuestionResponses(questionType.Uid);
+                var invalidResponses = question.Responses.Where(r => !responses.Contains(r));
+
+                if (invalidResponses.Any())
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey Question Type for uid {question.SurveyQuestionUid} contains invalid responses: [{string.Join(", ", invalidResponses)}]"));
                 }
             }
 
@@ -483,6 +499,11 @@ namespace d360.web.Controllers.V2
             if (asset == null)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset for uid {model.AssetUid} not found"));
+            }
+
+            if (surveyType.Object != asset.AssetType.Object || surveyType.ObjectID != asset.AssetType.ObjectID)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Bad Request", $"Survey not valid for this asset type"));
             }
 
             try

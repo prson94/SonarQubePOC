@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 import { AssetBrowserPanelCommand } from '../../../../../models/lineage.model';
 
@@ -56,9 +56,12 @@ export class AssetBrowserPanelsComponent implements OnChanges {
     }
 
     private button_Css(selected: boolean, disabled: boolean) {
-        let css: string = selected ? "selected" : "";        
+        let css: string = "icon mr8 " + (selected ? "selected" : "");        
         if (disabled) {
-            css = "disabled";
+            css += " disabled";
+        }
+        else {
+            css += " dark";
         }
         return css;
     }
@@ -87,7 +90,7 @@ export class AssetBrowserPanelsComponent implements OnChanges {
 
     selected_Alert: boolean = false;
     private button_Css_Alert() {
-        return "icon " + this.button_Css(this.selected_Alert, this.totalAlertCount == 0);
+        return this.button_Css(this.selected_Alert, this.totalAlertCount == 0);
     }
     private execute_Alert() {
         this.reset_Selected();
@@ -97,7 +100,7 @@ export class AssetBrowserPanelsComponent implements OnChanges {
 
     selected_Filter: boolean = false;
     private button_Css_Filter() {
-        return "icon right-margin-4 " + this.button_Css(this.selected_Filter, false);
+        return this.button_Css(this.selected_Filter, false);
     }
     private execute_Filter() {
         this.reset_Selected();
@@ -107,7 +110,7 @@ export class AssetBrowserPanelsComponent implements OnChanges {
 
     selected_Information: boolean = false;
     private button_Css_Information() {
-        return "icon " + this.button_Css(this.selected_Information, !this.enableInformation);
+        return this.button_Css(this.selected_Information, !this.enableInformation);
     }
     private execute_Information() {
         this.reset_Selected();
@@ -117,7 +120,7 @@ export class AssetBrowserPanelsComponent implements OnChanges {
 
     selected_Settings: boolean = false;
     private button_Css_Settings() {
-        return "icon " + this.button_Css(this.selected_Settings, false);
+        return this.button_Css(this.selected_Settings, false);
     }
     private execute_Settings() {
         this.reset_Selected();

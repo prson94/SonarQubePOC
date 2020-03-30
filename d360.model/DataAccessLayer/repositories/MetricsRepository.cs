@@ -459,14 +459,17 @@ namespace d360.model.DataAccessLayer
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
 
-            string sql = sql = $@"declare @assetTypeUid uniqueidentifier;
+            string sql = $@"declare @assetTypeUid uniqueidentifier;
                     select	@assetTypeUid = T.[Uid]
                     from	dbo.Asset A
                     		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
 
-                    select	@assetTypeUid = T.[Uid]
-                    from	dbo.Asset A
-                    		inner join AssetType T on T.ID = A.AssetTypeID and A.[Uid] = @assetUid;
+                    declare @lastScoredDate date = (select top 1 RunDate from metrics.score where AssetUid = @assetUid and ScoreType = @scoreType order by RunDate desc)
+
+                    if @effectiveDate > @lastScoredDate
+                    begin
+	                    set @effectiveDate = @lastScoredDate
+                    end
 
                     select 
                         ma.[Uid], 
@@ -489,7 +492,7 @@ namespace d360.model.DataAccessLayer
 		                        on AV.Uid = ma.uid
 								and AV.EffectiveDate = (select max(av1.EffectiveDate) from metrics.assetVersion AV1 where ma.Uid = AV1.Uid and AV1.EffectiveDate <= @effectiveDate)
 								AND (AV.EffectiveEndDate is null or AV.EffectiveEndDate >= @EffectiveDate)
-		                        inner join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
+		                        left join metrics.scoreitem I on ma.Uid = I.MetricAssetUid AND I.AssetUid = @assetUid 
                         where  
 						ma.ScoreType = @scoreType 
 						and ma.AssetTypeUid = @AssetTypeUid 
