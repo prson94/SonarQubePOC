@@ -25,6 +25,7 @@ using d360.model.validators;
 using System.ComponentModel.DataAnnotations;
 using Resources;
 using SpreadsheetLight;
+using d360.core.resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -752,97 +753,140 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Create the data quality result for an asset / Rule
         /// </summary>
-        /// <returns>A response containing the Uid of the new data quality result.</returns>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
+        /// </remarks>
+        /// <returns>A list of data quality results including any error messages.</returns>
         [
             HttpPost,
             Route("quality/results/"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(DataQualityResponseModel)),
+            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(List<DataQualityResponseModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> PostDataQualityResultAsync(DataQualityInsertModel model)
+        public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
-            Asset asset = null;
+            Asset asset;
 
-            Asset ruleAsset = AssetRepository.GetAssetByUID(model.OwningAssetUid);
+            Asset ruleAsset;
 
-            if (model.EvaluatedAssetUid.HasValue)
-            {
-                asset = AssetRepository.GetAssetByUID(model.EvaluatedAssetUid.Value);
-            }
+            List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
 
             #region Model Validation
-            if (model.EvaluatedAssetUid.HasValue)
+            foreach (var model in request)
             {
-                if (asset == null)
+                asset = null;
+                ruleAsset = AssetRepository.GetAssetByUID(model.OwningAssetUid);
+                
+                DataQualityResponseModel response = new DataQualityResponseModel() { ExecutionItemUid = model.ExecutionItemUid.Value };
+
+                if (model.EvaluatedAssetUid.HasValue)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.EvaluatedAssetUid} could not be found."));
+                    asset = AssetRepository.GetAssetByUID(model.EvaluatedAssetUid.Value);
                 }
-                else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+
+                if (model.ExecutionItemUid.HasValue && request.Count(x => x.ExecutionItemUid == model.ExecutionItemUid)>1)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {model.EvaluatedAssetUid.ToString()} is not valid"));
+                    response.Message = String.Format(DataQualityErrors.DuplicateFieldError, "ExecutionItemUid", model.ExecutionItemUid);
+                    responseList.Add(response);
+                    continue;
+                }                
+
+                if (ruleAsset == null)
+                {
+                    response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.OwningAssetUid);
+                    responseList.Add(response);
+                    continue;                   
                 }
+                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
+                {
+                    response.Message = String.Format(DataQualityErrors.AssetNotValidError, model.OwningAssetUid);
+                    responseList.Add(response);
+                    continue;
+                }
+
+                if (model.EvaluatedAssetUid.HasValue)
+                {
+                    if (asset == null)
+                    {
+                        response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid);
+                        responseList.Add(response);
+                        continue;
+                    }
+                    else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+                    {
+                        response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid);
+                        responseList.Add(response);
+                        continue;
+                    }
+                }
+
+                if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ModifyAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ModifyAsset)))
+                {
+                    response.Message = ApiMessages.EndpointNotAuthorizedMessage;
+                    responseList.Add(response);
+                    continue;
+                }
+
+                if (model.EffectiveDate > DateTime.Now)
+                {
+                    response.Message = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+                    responseList.Add(response);
+                    continue;
+                }
+                if (model.RunDate > DateTime.Now)
+                {
+                    response.Message = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                    responseList.Add(response);
+                    continue;
+                }
+
+                List<ValidationResult> validationResults = new List<ValidationResult>();
+                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+
+                if (!isValid)
+                {
+                    response.Message = validationResults.First().ErrorMessage;
+                    responseList.Add(response);
+                    continue;
+                }
+
+                if (model.PassCount < 0)
+                {
+                    response.Message = String.Format(DataQualityErrors.MustBeGreaterThanError, "PassCount");
+                    responseList.Add(response);
+                    continue;
+                }
+
+                if (model.FailCount < 0)
+                {
+                    response.Message = String.Format(DataQualityErrors.MustBeGreaterThanError, "FailCount"); 
+                    responseList.Add(response);
+                    continue;
+                }
+
+                if (model.PassCount == 0 && model.FailCount == 0)
+                {
+                    response.Message = String.Format(DataQualityErrors.BothValuesMinimumError, "FailCount", "PassCount", 0);
+                    responseList.Add(response);
+                    continue;
+                }
+                #endregion
+
+                response = await Task.FromResult(MetricsRepository.AddDataQualityResult(model));
+
+                responseList.Add(response);
             }
-
-            if (ruleAsset == null)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {model.OwningAssetUid} could not be found."));
-            } else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"OwningAssetUid {model.OwningAssetUid.ToString()} is not valid"));
-            }
-
-
-            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ModifyAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ModifyAsset)))
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-            }
-
-            if (model.EffectiveDate > DateTime.Now)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"EffectiveDate must not be greater than today’s date."));
-            }
-            if (model.RunDate > DateTime.Now)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"RunDate must not be greater than today’s date."));
-            }
-
-            List<ValidationResult> validationResults = new List<ValidationResult>();
-            bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-            if (!isValid)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", validationResults.First().ErrorMessage));
-            }
-
-            if (model.PassCount < 0)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", "PassCount must be greater than or equal to 0"));
-            }
-
-            if (model.FailCount < 0)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request", "FailCount must be greater than or equal to 0"));
-            }
-
-            if (model.PassCount == 0 && model.FailCount == 0)
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"FailCount and PassCount are both 0"));
-            }
-
-            #endregion
-
-            DataQualityResponseModel response = await Task.FromResult(MetricsRepository.AddDataQualityResult(model));
-
-            if(!response.Success)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, $"Invalid Request {validationResults.First().MemberNames.First()}", response.Message);
-            }
-
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
         /// <summary>

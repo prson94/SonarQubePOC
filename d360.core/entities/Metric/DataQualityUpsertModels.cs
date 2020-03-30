@@ -9,16 +9,17 @@ namespace d360.core.entities.Metric
 {
     public class DataQualityInsertModel
     {
-        public Guid OwningAssetUid;
-        public Guid? EvaluatedAssetUid;
-        public DateTime EffectiveDate;
-        public DateTime RunDate;
+        public Guid? ExecutionItemUid { get; set; }
+        public Guid OwningAssetUid { get; set; }        
+        public Guid? EvaluatedAssetUid { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public DateTime RunDate { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-        public long PassCount;
+        public long PassCount { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-        public long FailCount;
+        public long FailCount { get; set; }
     }
 
 }

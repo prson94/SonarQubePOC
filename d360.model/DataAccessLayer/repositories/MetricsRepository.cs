@@ -737,18 +737,85 @@ namespace d360.model.DataAccessLayer
         {            
             #region Build Parameters
         var parameters = new DynamicParameters();
-            parameters.Add("EffectiveDate", model.EffectiveDate, dbType: DbType.DateTime);
-            parameters.Add("RunDate", model.RunDate, dbType: DbType.DateTime);
-            parameters.Add("PassCount", model.PassCount, dbType: DbType.Int32);
-            parameters.Add("FailCount", model.FailCount, dbType: DbType.Int32);
-            parameters.Add("UserId", Company.CurrentResourceID, dbType: DbType.Int32);
-            parameters.Add("evaluatedAssetUid", model.EvaluatedAssetUid, dbType: DbType.Guid);
-            parameters.Add("ownedAssetUid", model.OwningAssetUid, dbType: DbType.Guid);
+            parameters.Add("@EffectiveDate", model.EffectiveDate, dbType: DbType.DateTime);
+            parameters.Add("@RunDate", model.RunDate, dbType: DbType.DateTime);
+            parameters.Add("@PassCount", model.PassCount, dbType: DbType.Int32);
+            parameters.Add("@FailCount", model.FailCount, dbType: DbType.Int32);
+            parameters.Add("@UserId", Company.CurrentResourceID, dbType: DbType.Int32);
+            parameters.Add("@evaluatedAssetUid", model.EvaluatedAssetUid, dbType: DbType.Guid);
+            parameters.Add("@ownedAssetUid", model.OwningAssetUid, dbType: DbType.Guid);
+            parameters.Add("@executionItemUid", model.ExecutionItemUid, dbType: DbType.Guid);
+            parameters.Add("@createdDate", DateTime.UtcNow, dbType: DbType.DateTime);
 
             #endregion
 
-            var result = Company.Query<DataQualityResponseModel>("EXEC [graph].[CreateAssetResult] @EffectiveDate, @RunDate, @PassCount, @FailCount, @UserId, @evaluatedAssetUid, @ownedAssetUid", parameters);            
+            string sql = $@"declare @fromAssetResultNodeId NVARCHAR(MAX), @toAssetNodeId NVARCHAR(MAX), @Uid UNIQUEIDENTIFIER = null, @success INT, @message varchar(200)
+	                        set @success = 0
+	
+	                        set @Uid = NEWID();
+		
+				                INSERT INTO [dbo].[AssetResult]
+						                ([Uid]
+						                ,[EffectiveDate]
+						                ,[RunDate]
+						                ,[PassCount]
+						                ,[FailCount]
+						                ,[CreatedOn]
+						                ,[CreatedBy]
+						                ,[UpdatedOn]
+						                ,[UpdatedBy])
+					                VALUES
+						                (@Uid
+						                ,@EffectiveDate
+						                ,@RunDate
+						                ,@PassCount
+						                ,@FailCount
+						                ,@createdDate
+						                ,@UserId
+						                ,@createdDate
+						                ,@UserId)
+					   
+				                -- if node record was created then create edge record.
+				                IF @@ROWCOUNT >= 1
+				                BEGIN		
 
+					                SELECT @fromAssetResultNodeId = $node_id FROM AssetResult WHERE [Uid] = @Uid
+
+					                SELECT @toAssetNodeId = $node_Id FROM graph.AssetNode WHERE [Uid] = @ownedAssetUid
+
+					                INSERT INTO [dbo].[AssetResultEdge]
+								                ($from_id           
+								                ,$to_id
+								                ,[Class])
+							                VALUES
+								                (@toAssetNodeId,
+								                @fromAssetResultNodeId,
+								                1)
+
+						
+					                --if evaluated Uid Passed then create additional edge record
+					                IF (@evaluatedAssetUid is not null)
+					                BEGIN
+						                SELECT @toAssetNodeId = $node_Id FROM graph.AssetNode WHERE [Uid] = @evaluatedAssetUid
+
+						                INSERT INTO [dbo].[AssetResultEdge]
+								                ($from_id           
+								                ,$to_id
+								                ,[Class])
+							                VALUES
+								                (@toAssetNodeId,
+								                @fromAssetResultNodeId,
+								                2)
+					                END
+						
+					                SET @success = 1
+						
+				                END
+			                        
+		                        select @executionItemUid as 'ExecutionItemUid',  @Uid as 'Uid', @success as 'Success', @message as 'Message'";
+                        
+            var result = Company.Query<DataQualityResponseModel>(sql, parameters);
+            
             return result.First();
         }
 
