@@ -116,7 +116,7 @@ export class FusionAttributeDetailsComponent extends BaseComponent implements On
 
             this.headerBreadcrumbService.getFolderIcon(areaBreadcrumb.text).subscribe(icon => {
                 this.secondaryNavService.setCurrentArea(areaBreadcrumb.text, icon, 'Definition');
-                this.setCommonSecondaryNavTabs(true, true, false, true, true, true, false);
+                this.setCommonSecondaryNavTabs(true, true, false, false, false, true, false);
                 this.secondaryNavService.showHeader(true);
             });
 
