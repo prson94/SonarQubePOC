@@ -30,6 +30,16 @@ namespace d360.model.DataAccessLayer
             return companyContext.QuestionTypes.FirstOrDefault(x => x.Uid == uid);
         }
 
+        public async Task<List<int>> GetSurveyQuestionResponses(Guid uid)
+        {
+             return (await companyContext.QueryAsync<int>("" +
+                 @" select distinct [value] 
+                    from    QuestionTypeOption O 
+                            inner join QuestionType T on T.ID = O.QuestionTypeID 
+                            and T.UID = @uid", new { uid })).ToList();
+        }
+
+
         public SurveyApiResponseModel GetSurveysResult(Guid surveyUid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var response = new SurveyApiResponseModel();
