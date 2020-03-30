@@ -91,8 +91,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-        console.log(event);
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
