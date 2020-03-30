@@ -1122,7 +1122,6 @@ export class BaseComponent {
     private checkIfWorkflowActionIsSelected() {
         if (this.breadcrumbsService.getCurrentUrl().toLowerCase().indexOf('workflow/details') != -1) {
             this.actionsSidebar.active = true;
-            this.breadcrumbsService.showBreadcrumb(new Breadcrumb('Workflow Item Status'));
         }
     }
 
