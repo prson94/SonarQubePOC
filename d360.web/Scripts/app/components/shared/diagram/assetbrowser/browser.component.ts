@@ -644,7 +644,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             case AssetBrowserFilterChangeEventType.AssetType:
                 this.helper_HideDeselectedAssetTypes(undefined);
                 break;
-            case AssetBrowserFilterChangeEventType.HopCount:
+            case AssetBrowserFilterChangeEventType.ImpactHopCount:
+            case AssetBrowserFilterChangeEventType.LineageHopCount:
                 this.helper_RefreshDiagram();
                 break;
             case AssetBrowserFilterChangeEventType.Predicate:
@@ -1438,6 +1439,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return (this.displayConfiguration.DiagramType == DiagramType.Lineage);
     }
 
+    /**
+    * Determines whether the Lineage view is currently selected.
+    * @returns A boolean value on whether the lineage view is selected.
+    */
+    private helper_NumberOfHops(): number {
+        let isLineage: boolean = this.helper_LineageDiagramApplies();
+        return isLineage ? this.displayConfiguration.NumberOfLineageHops : this.displayConfiguration.NumberOfImpactHops
+    }
+
     private helper_ParseTranslatedData(trans: AssetBrowserTranslation, append: boolean = false) {
         this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
@@ -1618,7 +1628,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.requestModel.Assets.push(assetRequestModel);
 
             this.requestModel.Direction = AssetBrowserApiHopDirection.Both;
-            this.requestModel.Hops = this.displayConfiguration.NumberOfHops;
+            this.requestModel.Hops = this.helper_NumberOfHops();
             this.requestModel.LeafOnly = !this.displayConfiguration.IncludeNonLeaf;
 
             let subscriber = (data: AssetBrowserAssetsModel) => {

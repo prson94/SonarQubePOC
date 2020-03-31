@@ -786,7 +786,8 @@ export class AssetBrowserFilterModel {
     DisplayIcons: boolean = true;
     DisplayScores: boolean = true;
     IncludeNonLeaf: boolean = true;
-    NumberOfHops: number = 3;
+    NumberOfImpactHops: number = 1;
+    NumberOfLineageHops: number = 3;
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
@@ -796,13 +797,14 @@ export enum AssetBrowserFilterChangeEventType {
     AssetType = 1,
     Predicate = 2,
     ResponsibilityType = 3,
-    HopCount = 4,
+    ImpactHopCount = 4,
     Ancestry = 5,
     AllBadges = 6,
     AncestorBadges = 7,
     Icons = 8,
     Scores = 9,
-    DiagramType = 10
+    DiagramType = 10,
+    LineageHopCount = 11,
 }
 
 export class AssetBrowserFilterChangeEvent {

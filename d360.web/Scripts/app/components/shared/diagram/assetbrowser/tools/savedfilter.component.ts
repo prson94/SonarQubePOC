@@ -49,6 +49,14 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         }
     }
 
+    private numberOfHops() {
+        let numberOfHops: number = this.filterModel.NumberOfImpactHops;
+        if (this.diagramType == DiagramType.Lineage) {
+            numberOfHops = this.filterModel.NumberOfLineageHops;
+        }
+        return numberOfHops;   
+    }
+
     private add() {
         this.saveFilterModalVisible = true;
         this.saveFilterModalWorking = false;
@@ -63,7 +71,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
             .filter(p => this.filterModel.SelectedPredicates.indexOf(p.Id) > -1)
             .map((p) => { return { uid: p.Uid, type: p.Name } });
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
-        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+        this.createUserFilter.numberOfHops = this.numberOfHops();
         this.createUserFilter.diagramType = this.diagramType;
         this.createUserFilter.name = '';
     }
@@ -95,7 +103,12 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
         }
 
         if (this.selectedFilter.numberOfHops) {
-            model.NumberOfHops = this.selectedFilter.numberOfHops;
+            if (model.DiagramType == DiagramType.Impact) {
+                model.NumberOfImpactHops = this.selectedFilter.numberOfHops;
+            }
+            else {
+                model.NumberOfLineageHops = this.selectedFilter.numberOfHops;
+            }
         }
 
         if (this.selectedFilter.ancestryMode) {
@@ -192,7 +205,7 @@ export class AssetBrowserSavedFilterComponent implements OnInit, AfterViewInit, 
 
         this.createUserFilter.ancestryMode = this.filterModel.AncestryMode;
         this.createUserFilter.diagramType = this.filterModel.DiagramType;
-        this.createUserFilter.numberOfHops = this.filterModel.NumberOfHops;
+        this.createUserFilter.numberOfHops = this.numberOfHops();
 
         this.browserService
             .saveUserFilter(this.createUserFilter)
