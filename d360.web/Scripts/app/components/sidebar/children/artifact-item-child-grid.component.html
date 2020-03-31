@@ -17,6 +17,8 @@
         [globalFilterFields]="globalFilterFields"
         [pageLinks]="3"
         [paginator]="true"
+        [loading]="isLoading"
+        [loadingIcon]="'fa fa-spinner fa-spin'"
         [rows]="numberOfRows"
         [rowsPerPageOptions]="defaultPagingOptions">
         <ng-template pTemplate="header">

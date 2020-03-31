@@ -41,6 +41,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private sortOrder: SortOrder;
     private filter: string;
     private statistics: ObjectStatistics;
+    isLoading: boolean = false;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -86,23 +87,18 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getData() {
-        this.objectStatisticsService.getObjectStatistics(this.artifactTypeId, "ArtifactType").subscribe(
-            result => {
-                console.log(result);
-                this.statistics = result;
-            }
-        );
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
+            console.log(i);
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
             var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter, _includeParent: true };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
                 this.artifacts = res;
+                this.isLoading = false;
             });
         });
     }
 
     getFieldsDefinition() {
-        this.isLoading = true;
         this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType").subscribe(
             result => {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
@@ -141,7 +137,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .router
             .navigateByUrl(SiteUrlHelpers.getObjectUrl(
                 'Artifact',
-                artifact.AssetId,
+                this.parentId,
                 this.artifactTypeId
             )
             )
