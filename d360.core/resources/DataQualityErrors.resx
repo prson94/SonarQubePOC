@@ -121,7 +121,7 @@
     <value>Asset with Uid {0} could not be found.</value>
   </data>
   <data name="AssetNotValidError" xml:space="preserve">
-    <value>OwningAssetUid {0} is not valid</value>
+    <value>{0} {1} is not valid</value>
   </data>
   <data name="BothValuesMinimumError" xml:space="preserve">
     <value>{0} and {1} are both {2}</value>

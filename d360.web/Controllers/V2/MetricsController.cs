@@ -807,9 +807,9 @@ namespace d360.web.Controllers.V2
                     responseList.Add(response);
                     continue;                   
                 }
-                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
+                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule || ruleAsset.State == State.InActive)
                 {
-                    response.Message = String.Format(DataQualityErrors.AssetNotValidError, model.OwningAssetUid);
+                    response.Message = String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid);
                     responseList.Add(response);
                     continue;
                 }
@@ -822,9 +822,9 @@ namespace d360.web.Controllers.V2
                         responseList.Add(response);
                         continue;
                     }
-                    else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
+                    else if ((asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset) || asset.State == State.InActive)
                     {
-                        response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid);
+                        response.Message = String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid);
                         responseList.Add(response);
                         continue;
                     }

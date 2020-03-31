@@ -70,7 +70,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to OwningAssetUid {0} is not valid.
+        ///   Looks up a localized string similar to {0} {1} is not valid.
         /// </summary>
         public static string AssetNotValidError {
             get {
