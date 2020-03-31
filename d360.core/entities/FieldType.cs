@@ -404,9 +404,9 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
-        public bool IsDisplayable { get; set; }
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
         [DataMember]
-        public bool IsRequired { get; set; }
+        public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
     }
