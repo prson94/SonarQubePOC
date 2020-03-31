@@ -8,7 +8,8 @@
     <tr class="filter-row">
         <td class="filter-row-label"># Hops To Load:</td>
         <td class="filter-row-control">
-            <p-dropdown [options]="options?.HopOptions" [ngModel]="current.NumberOfHops" (ngModelChange)="current.NumberOfHops = $event; numberOfHopsChange()" styleClass="filter-dropdown"></p-dropdown>
+            <p-dropdown *ngIf="!allowAncestry" [options]="options?.HopOptions" [ngModel]="current.NumberOfImpactHops" (ngModelChange)="current.NumberOfImpactHops = $event; numberOfImpactHopsChange()" styleClass="filter-dropdown"></p-dropdown>
+            <p-dropdown *ngIf="allowAncestry" [options]="options?.HopOptions" [ngModel]="current.NumberOfLineageHops" (ngModelChange)="current.NumberOfLineageHops = $event; numberOfLineageHopsChange()" styleClass="filter-dropdown"></p-dropdown>
         </td>
     </tr>
     <tr class="filter-row">
