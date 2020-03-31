@@ -387,15 +387,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         keysToBeConcernedWith.push(n.key);
                     });
 
-                    // Remove the assets that should not display when expanding the badge, due to them showing previously.
-                    //ignoredAssetUids.forEach(ig => {
-                    //    let idxToRemove: number = -1;
-                    //    idxToRemove = nodes.findIndex(n => { return n.assetUid == ig; });
-                    //    if (idxToRemove > -1) {
-                    //        nodes.splice(idxToRemove, 1);
-                    //    }
-                    //});
-
                     let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
                     trans.nodes = nodes;
                     trans.links = this.browserService.translateAssetLinks(this.helper_GetFullResponseModelAsTranslationNodes(), response.assetRelations);
@@ -1895,8 +1886,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (a == null || b == null || a.data == null || b.data == null)
             return 0;
 
-        let al = a.data.text.toLowerCase();
-        let bl = b.data.text.toLowerCase();
+        let al = a.data.text ? a.data.text.toLowerCase() : '';
+        let bl = b.data.text ? b.data.text.toLowerCase() : '';
 
         if (al > bl)
             return 1;
@@ -2196,7 +2187,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.commitTransaction();
                 break;
             case AssetBrowserFilterChangeEventType.AncestorBadges:
-                this.helper_RefreshDiagram(); //this.helper_UpdateVisualization();
+                this.helper_RefreshDiagram();
                 break;
             case AssetBrowserFilterChangeEventType.Icons:
                 this.diagram.startTransaction();
