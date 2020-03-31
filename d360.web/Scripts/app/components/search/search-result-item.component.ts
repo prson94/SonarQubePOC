@@ -9,46 +9,13 @@ import { ObjectStatistics } from '../../models/object-statistics.model';
 import { TagService } from '../../services/tag.service';
 import { Tag, TagItem } from '../../models/tag.model';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
+import { MenuItem } from 'primeng/api';
 
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-search-result-item',
-    template: `       
-                <div class="card-res">
-                    <span class="title">
-                        <span *ngIf="result?.Icon" class="d3s-icon large-icon title-icon"><i class="fa {{result?.Icon}}"></i></span>
-                        <span *ngIf="result?.ImageUrl" class="d3s-icon large-icon title-icon"><img [src]="result.ImageUrl" /></span> 
-                        <span (click)="navigateLink()" class="name"><span class="inner" [innerHtml]="result?.Name"></span></span>
-                        <d3s-status-badge
-                            *ngIf="showStatus"
-                            [status]="status"
-                        >
-                        </d3s-status-badge>
-                        <span #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
-                            <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
-                            </d3s-score-badge>
-                        </span>
-                        <button *ngIf="showShoppingCart && result.Group != 'Synonym' && result.Group != 'Attribute'" class="button icon" (click)="add()">
-                            <i class="fa fa-cart-plus"></i>
-                        </button>
-                        <span *ngIf="result.Uid" class="d3s-icon smallmed-icon light clickable">
-                            <d3s-preview-tooltip [uid]="result.Uid" icon="info-circle"></d3s-preview-tooltip>
-                        </span>
-                    </span>
-                    <span class="category">
-                        {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
-                    </span>
-                    <span class="asset-path" *ngIf="searchDetails && searchDetails?.AssetDetail?.Path">
-                        {{formattedPath}}
-                    </span>
-                    <span class="description" *ngIf="result?.Description" [innerHtml]="result.Description"></span>
-                    <div *ngIf="result?.Tags" class="tags tagsnomanagewidth">
-                        <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
-                    </div>
-                    <div *ngIf="result?.Explaination"><explain-widget [json]="result?.Explaination"></explain-widget></div>
-                </div>        
-                `,
+    templateUrl: './search-result-item.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [ShoppingCartService, ObjectStatisticsService]
 })
@@ -65,6 +32,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private objID: number;
     private searchDetails: SearchDetail;
     private formattedPath: string;
+    private displayInfopopup: boolean = false;
 
     parseTagResult(tags: any[]) {
         return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });
@@ -95,7 +63,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.showShoppingCart = true;
 
         this.loadDetails();
-
     }
 
   
@@ -121,7 +88,34 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                 }
             );  
         }
+    }
 
+    private showBadges(): boolean {
+        return this.showStatus || (this.searchDetails && this.searchDetails.Scores.length > 0)
+    }
+
+    private showInfo() {
+        this.displayInfopopup = true;
+    }
+
+    private getCardMenuItems(): MenuItem[] {
+        var menu: MenuItem[] = [
+            { label: 'More Information', command: (event) => { this.showInfo() } },
+        ];
+        if (this.result.Uid && CompanySettings.LineageVersion == 3 && ['Reference', 'Resource', 'Group', 'Grammatic type', 'Attribute', 'Fusion'].indexOf(this.result.Group) == -1) {
+            menu.push({
+                label: 'View Visualization',
+                command: (event) => { this.navigateVisualization(); }
+            });
+        }
+        if (this.showShoppingCart && ['Synonym', 'Attribute', 'Grammatic type'].indexOf(this.result.Group) == -1) {
+            menu.push({
+                label: '',
+                icon: 'fa fa-cart-plus',
+                command: (event) => { this.add(); }
+            });
+        }
+        return menu;
     }
 
     private formatPath(Path: string): string {
@@ -141,10 +135,25 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(this.result.Url));
     }
 
+    private navigateVisualization() {
+        var url = '/sidebar/visualization/browser/'+this.result.Uid
+        this.router.navigateByUrl(url);
+    }
+
     private add() {
         var type = this.result.ID.toString().split('|')[0];
         var id = this.result.ID.toString().split('|')[1];
         this.shoppingCartService.addShoppingCartItem(this.type, +id, 1)
             .subscribe(r => this.showMessageForResult(this.messagesService, r));
+    }
+
+    private getDataForPreview() {
+        return {
+            DisplayName: this.result.DisplayName,
+            TypeName: this.result.Type,
+            Description: this.result.Description,
+            AssetID: this.result.ID,
+            UID: this.result.Uid
+        }
     }
 };

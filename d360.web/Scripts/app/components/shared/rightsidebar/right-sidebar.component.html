@@ -1,7 +1,7 @@
 <div *ngIf="showHeader" class="title-bar" [ngClass]="{'menu-open': menuOpen}">
     <div class="title {{searchDetails && searchDetails.Scores.length > 0 ? 'has-scoring' : ''}}">
-        <img class="icon" *ngIf="!IsIcon(area.icon)" [src]="GetURL(area.icon)" height="20" width="20" />
-        <i *ngIf="IsIcon(area.icon)" [class]="'icon fa ' + area.icon"></i>
+        <span *ngIf="!IsIcon(area.icon)" class="d3s-icon asset-icon"><img [src]="GetURL(area.icon)" /></span>
+        <span *ngIf="IsIcon(area.icon)" class="d3s-icon asset-icon"><i class="fa {{area.icon}}"></i></span>
         <h1 title="{{area.title ? area.title: 'D3S'}}">{{area.title ? area.title: 'D3S'}}</h1>
         <d3s-status-badge *ngIf="showStatus"
                           [status]="status">
