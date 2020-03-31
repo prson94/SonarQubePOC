@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Procedure.metrics.LoadFromStaging-v5">
+  <changeSet author="MDonato" id="Procedure.metrics.LoadFromStaging-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -379,6 +379,7 @@ begin
 							and R.AssetUid = M.AssetUid
 							and R.EffectiveDate > M.EffectiveDate
 							and A.ScoreType = S.ScoreType 
+							and R.MetricAssetUid = M.MetricAssetUid
 					order by R.EffectiveDate asc
 				) R;
 
