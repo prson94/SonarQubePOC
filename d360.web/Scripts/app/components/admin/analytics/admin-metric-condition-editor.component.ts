@@ -3,6 +3,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import {  Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { FormHelpers } from '../../../static/form-helpers';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -88,6 +89,14 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 case "Lookup":
                     this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
                     break;
+                case "Date":
+                case "DateTime":
+                    if (this.condition.Values) {
+                        this.condition.Values = new Date(<string>this.condition.Values);
+                        this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
+                        this.condition.ValuesText = this.condition.Values.toString();
+                    }
+                    break;
                 default:
                     this.condition.ValuesText = this.condition.Values;
                     break;
@@ -128,5 +137,9 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 }
             }
         }
+    }
+
+    getLocaleDateString(): string {
+        return FormHelpers.getLocaleDateString();
     }
 };
