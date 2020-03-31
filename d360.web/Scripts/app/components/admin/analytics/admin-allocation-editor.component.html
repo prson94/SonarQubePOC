@@ -79,13 +79,13 @@
                         <div class="input-overlay">%</div>
                     </div>
                     <div class="d3s-score-pill editor score-average"><span class="text">Average</span></div>
-                    <div class="value-box">>&nbsp;{{selection.lowerThreshold}}%&nbsp;-&nbsp;</div>
+                    <div class="value-box">{{selection.lowerThreshold}}.%&nbsp;-&nbsp;</div>
                     <div class="input-box">
                         <input #ut type="number" [value]="selection.upperThreshold" (change)="onUpperThresholdChange($event,ut)" (blur)="onUpperThresholdChange($event,ut)" (keyup)="onUpperThresholdChange($event,ut)" />
                         <div class="input-overlay">%</div>
                     </div>
                     <div class="d3s-score-pill editor score-good"><span class="text">Good</span></div>
-                    <div class="value-box">>&nbsp;{{selection.upperThreshold}}%&nbsp;-&nbsp;100%</div>
+                    <div class="value-box">{{selection.upperThreshold}}%.&nbsp;-&nbsp;100%</div>
                 </div>
             </div>
         </div>
