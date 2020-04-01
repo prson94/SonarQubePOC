@@ -18,7 +18,7 @@ declare var CompanySettings;
     template: ` <div class="search-page-full">
                     <div #title class="title-bar search">
                         <div class="title">
-                            <span class="large icon badge"><i class="fa fa-search"></i></span>
+                            <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
                             <h1>Search Results</h1>
                             <d3s-search-input
                                 (search)="inputSearch($event)"
