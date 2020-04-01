@@ -1,10 +1,11 @@
 ﻿import {SelectItem} from 'primeng/components/common/api';
 import {Observable} from "rxjs";
+import { FieldTypeAPIModelField } from './fieldtype-api.model';
 
 export interface IFieldsObservableService {
     getFields(objectID: number, objectType: string): Observable<FieldDefinition[]>;
 
-    getFieldTypeEditor(id: number): Observable<FieldTypeEditorModel>;
+    getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField>;
 
     getFusionLookupDisplayFields(id: number): Observable<SelectItem[]>;
 

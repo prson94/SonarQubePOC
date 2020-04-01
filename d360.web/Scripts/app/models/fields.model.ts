@@ -1,5 +1,6 @@
 ﻿import {SelectItem} from 'primeng/components/common/api';
 import {Observable} from "rxjs";
+import { FieldTypeAPIModelField } from './fieldtype-api.model';
 
 export interface IFieldsService {
     getFields(objectID: number, objectType: string): Observable<FieldDefinition[]>;
@@ -45,7 +46,7 @@ export class FieldDefinition {
 
 export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
-    FieldType: FieldType;
+    FieldType: FieldTypeAPIModelField;
     FusionItems: FieldTypeFusionItemEditorModel[] = new Array<FieldTypeFusionItemEditorModel>();
     RelationItems: FieldTypeRelationItemEditorModel[] = [];
     RelationItem: FieldTypeRelationItemEditorModel;

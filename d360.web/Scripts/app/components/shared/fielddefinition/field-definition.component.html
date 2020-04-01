@@ -7,7 +7,10 @@
     </div>    
     <div *ngIf="isEditing">
         <d3s-field-type-form
-            [id]="selectedRow != null? selectedRow.ID : 0"
+            [name]="selectedRow != null? selectedRow.Name : ''"
+            [actionTypeUid]="actionTypeUid"
+            [assetTypeUid]="assetTypeUid"
+            [relationshipTypeUid]="relationshipTypeUid"
             [objectType]="objectType"
             [objectID]="objectID"
             [showIsListable]="showIsListable"
@@ -17,7 +20,7 @@
     </div>    
     <d3s-delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
-                     [itemId]="selectedRow?.ID"
+                     [itemId]="selectedRow?.Name"
                      [method]="'callback'"
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
@@ -126,12 +129,12 @@
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showEditButton">
-                            <a (click)="edit(item.ID)" style="cursor:pointer;margin:0px;"><i class="fa fa-pencil"></i></a>
+                            <a (click)="edit(item.Name)" style="cursor:pointer;margin:0px;"><i class="fa fa-pencil"></i></a>
                         </div>
                     </td>
                     <td>
                         <div class="RowTools" *ngIf="showDeleteButton">
-                            <a (click)="delete(item.ID)" style="cursor:pointer;margin:0px;"><i class="fa fa-trash-o"></i></a>
+                            <a (click)="delete(item.Name)" style="cursor:pointer;margin:0px;"><i class="fa fa-trash-o"></i></a>
                         </div>
                     </td>
                 </tr>

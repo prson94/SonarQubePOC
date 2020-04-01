@@ -5,10 +5,6 @@ export class FieldTypeAPIModel {
     ActionTypeUid: string;
     AssetTypeUid: string;
     RelationshipTypeUid: string;
-
-    hasAnyKeyFields() {
-        return this.Field.Type.IsPartyOfKey();
-    }
 }
 
 export class FieldTypeAPIModelField {
@@ -300,12 +296,3 @@ export interface TextValidation {
     IsRequired: boolean;
 }
 
-export class Convert {
-    public static toFieldTypeAPiModel(json: string): FieldTypeAPIModel {
-        return JSON.parse(json);
-    }
-
-    public static fieldTypeAPiModelToJson(value: FieldTypeAPIModel): string {
-        return JSON.stringify(value);
-    }
-}
