@@ -379,7 +379,6 @@ namespace d360.web.Controllers
 
         internal List<string> limitedFieldTypes = new List<string> {
             DataType.Attribute.ToString(),
-            DataType.FilteredLookup.ToString(),
             DataType.ComplexRelationLookup.ToString(),
             DataType.FieldFromRelationship.ToString(),
             DataType.DataTableSelect.ToString(),

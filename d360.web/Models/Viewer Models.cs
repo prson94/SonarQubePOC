@@ -200,7 +200,7 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                if (ft.Type != DataType.ComplexRelationLookup.ToString() && ft.Type != DataType.FilteredLookup.ToString())
+                if (ft.Type != DataType.ComplexRelationLookup.ToString())
                 {
                     string value = "";
 

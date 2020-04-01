@@ -16,7 +16,6 @@ namespace d360.core.helpers
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
                 DataType.JsonElement.ToString()
@@ -32,7 +31,6 @@ namespace d360.core.helpers
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.JSON.ToString()
             };

@@ -682,7 +682,6 @@ namespace d360.model.DataAccessLayer
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
 

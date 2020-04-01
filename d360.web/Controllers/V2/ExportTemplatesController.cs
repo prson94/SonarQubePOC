@@ -549,7 +549,6 @@ namespace d360.web.Controllers.V2
                     DataType.Attribute.ToString(),
                     DataType.ComplexRelationLookup.ToString(),
                     DataType.DataTableSelect.ToString(),
-                    DataType.FilteredLookup.ToString(),
                     DataType.OwnershipLookup.ToString()
                 };
 

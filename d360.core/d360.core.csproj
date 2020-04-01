@@ -163,8 +163,6 @@
     <Compile Include="entities\Shortcut.cs" />
     <Compile Include="entities\Social\Favorite.cs" />
     <Compile Include="entities\FieldTypeLookup.cs" />
-    <Compile Include="entities\FieldTypeFilteredLookupDefinition.cs" />
-    <Compile Include="entities\FieldTypeFilteredLookupDisplayField.cs" />
     <Compile Include="entities\Relation\MapRuleItemMapItem.cs" />
     <Compile Include="entities\Relation\MapRule.cs" />
     <Compile Include="entities\Relation\MapRuleItem.cs" />
