@@ -609,14 +609,14 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Gets the data quality results for an asset
         /// </summary>        
-        /// <param name="_owningAssetUid">The unique identifier of a rule type</param>
+        /// <param name="_owningAssetUid">The unique identifier of a rule.</param>
         /// <param name="_evaluatedAssetUid">The unique identifier of an asset</param>
         /// <param name="_pageSize">The size of the page if there are many results. [Defaults to 250]</param>
         /// <param name="_pageNum">The page number to page through results. [Defaults to 1]</param>
-        /// <param name="_order">The column to sort by</param>
-        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
-        /// <param name="_effectiveDateStart">Start Date</param>
-        /// <param name="_effectiveDateEnd">End date</param>
+        /// <param name="_order">The name of the field to order results by.</param>
+        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order. [Default asc]</param>
+        /// <param name="_effectiveDateStart">Return results with effective date after this date</param>
+        /// <param name="_effectiveDateEnd">Return results with effective date before this date</param>
         /// <returns>List of data quality results</returns>
         [
             HttpGet,
