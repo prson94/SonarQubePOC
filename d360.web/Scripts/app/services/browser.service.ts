@@ -504,7 +504,7 @@ export class BrowserService extends BaseObservableService {
                 else {
                     let assetBrowserTranslationOwnerCount: AssetBrowserTranslationOwnerCount = new AssetBrowserTranslationOwnerCount();
                     assetBrowserTranslationOwnerCount.key = thisKey;
-                    assetBrowserTranslationOwnerCount.expanded = false;
+                    assetBrowserTranslationOwnerCount.expanded = oC.Expanded;
                     assetBrowserTranslationOwnerCount.users = oC.Users;
                     assetBrowserTranslationOwnerCount.count = oC.Count;
                     assetBrowserTranslationOwnerCount.responsibilityType = oC.ResponsibilityType;
@@ -528,8 +528,7 @@ export class BrowserService extends BaseObservableService {
                 }
                 else {
                     let assetBrowserTranslationRelationCount: AssetBrowserTranslationRelationCount = new AssetBrowserTranslationRelationCount();
-                    assetBrowserTranslationRelationCount.key = a.key + '-R-' + a.reveal + '-' + rC.PredicateID.toString();
-                    assetBrowserTranslationRelationCount.expanded = false;
+                    assetBrowserTranslationRelationCount.expanded = rC.Expanded;
                     assetBrowserTranslationRelationCount.count = rC.Count;
                     assetBrowserTranslationRelationCount.direction = rC.Direction;
                     assetBrowserTranslationRelationCount.predicate = rC.Predicate;

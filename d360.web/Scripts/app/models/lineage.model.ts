@@ -478,7 +478,7 @@ export class AssetBrowserTranslationLink {
     text: string;
     back: string;
     predicateIds: number[];
-    expandedByBadgeKey: string;
+    responsibilityTypeId: number;
 }
 
 export class AssetBrowserTranslationNode {
@@ -504,7 +504,7 @@ export class AssetBrowserTranslationNode {
     actionCount: number;
     owners: AssetBrowserTranslationOwnerCount[] = new Array();
     relations: AssetBrowserTranslationRelationCount[] = new Array();
-    ignoredPredicates: string[] = new Array();
+    ignoredAssetUids: string[] = new Array();
 }
 
 export class AssetBrowserTranslation {
@@ -529,9 +529,8 @@ export enum AssetBrowserApiHopDirection {
 }
 
 export enum AssetBrowserApiHopType {
-    Self = 1,
-    Lineage = 2,
-    Impact = 3
+    Lineage = 1,
+    Impact = 2
 }
 
 export class AssetBrowserApiOwnerHopRequestModel {
@@ -541,15 +540,23 @@ export class AssetBrowserApiOwnerHopRequestModel {
 
 export class AssetBrowserApiHopRequestModel {
     Assets: AssetBrowserApiHopAssetRequestModel[];
-    Direction: AssetBrowserApiHopDirection;
-    HopType: AssetBrowserApiHopType;
-    PredicateUid: string;
+    AssetsToIgnore: AssetBrowserApiHopIgnoreAssetRequestModel[];
+    Initial: boolean;
     Hops: number;
+    DiagramType: DiagramType;
+    HopType: AssetBrowserApiHopType;
+    Direction: AssetBrowserApiHopDirection;
+    PredicateUid: string;
+    LeafOnly: boolean;
 }
 
 export class AssetBrowserApiHopAssetRequestModel {
     Uid: string;
     Key: string;
+}
+
+export class AssetBrowserApiHopIgnoreAssetRequestModel {
+    Uid: string;
 }
 
 // #endregion Request
@@ -570,6 +577,7 @@ export class AssetBrowserOwnerCountModel {
     ResponsibilityTypeID: number;
     Users: number[];
     Count: number;
+    Expanded: boolean;
 }
 
 export class AssetBrowserOwnerRelationModel {
@@ -639,6 +647,8 @@ export class AssetBrowserAssetRelationCountModel {
     PredicateUid: string;
     Direction: AssetBrowserApiHopDirection;
     Count: number;
+    Expanded: boolean;
+    Key: string;
 }
 
 export class AssetBrowserAssetRelationModel {
@@ -776,7 +786,8 @@ export class AssetBrowserFilterModel {
     DisplayIcons: boolean = true;
     DisplayScores: boolean = true;
     IncludeNonLeaf: boolean = true;
-    NumberOfHops: number = 3;
+    NumberOfImpactHops: number = 1;
+    NumberOfLineageHops: number = 3;
     SelectedAssetTypes: number[] = [];
     SelectedPredicates: number[] = [];
     SelectedResponsibilityTypes: number[] = [];
@@ -786,13 +797,14 @@ export enum AssetBrowserFilterChangeEventType {
     AssetType = 1,
     Predicate = 2,
     ResponsibilityType = 3,
-    HopCount = 4,
+    ImpactHopCount = 4,
     Ancestry = 5,
     AllBadges = 6,
     AncestorBadges = 7,
     Icons = 8,
     Scores = 9,
-    DiagramType = 10
+    DiagramType = 10,
+    LineageHopCount = 11,
 }
 
 export class AssetBrowserFilterChangeEvent {

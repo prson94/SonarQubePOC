@@ -31,9 +31,13 @@ import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
+import { MenuModule } from 'primeng/menu';
+
 import { TypeaheadSearchModule } from '../shared/search/typeahead-search.component';
 import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
+import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
+
 
 @NgModule({
     imports: [
@@ -54,6 +58,8 @@ import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
         PaginatorModule,
         SharedModule,
         CheckTreeModule,
+        MenuModule,
+        PreviewpopupModule,
 
         //d3s        
         CoreModule,

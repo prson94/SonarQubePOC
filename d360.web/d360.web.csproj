@@ -700,6 +700,7 @@
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.css" />
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
+    <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
@@ -796,6 +797,9 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
+    <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
@@ -1306,7 +1310,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-homepage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+	<TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.ts" />
@@ -1744,6 +1748,7 @@
     <TypeScriptCompile Include="Scripts\app\services\allocations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\previewpopup-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />

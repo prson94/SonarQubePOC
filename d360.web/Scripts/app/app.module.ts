@@ -24,6 +24,7 @@ import { WebAnalyticsService } from './services/web-analytics.service';
 import { ApplicationInsightsService } from './services/application-insights.service';
 
 import { TooltipSingletonService } from './services/tooltip-singleton.service'
+import { PreviewpopupSingletonService } from './services/previewpopup-singleton.service'
 import { GovernRequestInterceptor } from "./http-interceptors/govern-request.interceptor";
 import { CookieService } from './services/cookie.service';
 import { SiteMenuService } from './services/site-menu.service';
@@ -104,6 +105,7 @@ export function localeInitializer(localeId: string) {
         AssetStyleService,
         WebAnalyticsService,
         TooltipSingletonService,
+        PreviewpopupSingletonService,
         StateService,
         CookieService,
         SiteMenuService,        

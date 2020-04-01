@@ -66,11 +66,12 @@ export class ScoreBadgeComponent implements OnInit, AfterViewInit, OnChanges {
     }
 
     getCurrentScoreThreshold() {
-        if (this.score.Value <= this.lowerThreshold)
+        var score = this.score.Value * 100;
+        if (score <= this.lowerThreshold)
             return `0% - ${this.lowerThreshold}%`;
-        if (this.score.Value <= this.upperThreshold)
-            return `>${this.lowerThreshold}% - ${this.upperThreshold}%`;
-        return `>${this.upperThreshold}% - 100%`;;
+        if (score <= this.upperThreshold)
+            return `${this.lowerThreshold}.% - ${this.upperThreshold}%`;
+        return `${this.upperThreshold}.% - 100%`;;
     }
 
 
