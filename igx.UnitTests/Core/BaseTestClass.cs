@@ -61,6 +61,14 @@ namespace igx.UnitTests
 
                  );
 
+            var assetTypes = new List<AssetType> { new AssetType { ID = 1, Name = "unit test" } }.AsQueryable();
+            var assetTypeMock = CreateDbSetMock<AssetType>(assetTypes);
+            mock.Setup(x => x.Filter<AssetType>(It.IsAny<Expression<Func<AssetType, bool>>>()))
+                .Returns(assetTypeMock.Object);
+            var fieldTypes = new List<FieldType> { new FieldType { ID = 1, Name = "unit test", Type = "not a tag", AssetTypeID = 1 } }.AsQueryable();
+            var fieldTypeMock = CreateDbSetMock<FieldType>(fieldTypes);
+            mock.Setup(x => x.FieldTypes).Returns(fieldTypeMock.Object);
+
 
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
