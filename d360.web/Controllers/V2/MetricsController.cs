@@ -621,13 +621,21 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("quality/results/"),
+            SwaggerParameter("_owningAssetUid", "The unique identifier of a rule.", DataType = "string", ParameterType = "query", Required = true),
+            SwaggerParameter("_evaluatedAssetUid", "The unique identifier of an asset.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by (Default ascending).", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateStart", "Return results with effective date after this date", DataType = "date-time", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateEnd", "Return results with effective date before this date", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            //ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetDataQualityResults()
         {            
