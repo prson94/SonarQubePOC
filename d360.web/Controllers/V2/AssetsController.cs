@@ -1361,15 +1361,16 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
+                var assetType = Company.Filter<AssetType>(x => x.ID == asset.AssetTypeID).FirstOrDefault();
+                var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID);
+                if (!fieldTypes.Any(x => x.Type.ToLower() == "tag"))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Requst", $"No Tag Fields found for AssetUID {assetTagApi.AssetUID}, Cannot add an association without a Tag field");
+                }
+
                 if (this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
-                    result = new AssetTagSuccessApiModel()
-                    {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association",
-                        Success = false
-                    };
-                    resultList.Add(result);
-                    continue;
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Requst", $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association");
                 }
                 if (!Company.HasAssetDefaultReadPermission(asset.Object, asset.ObjectID))
                 {
