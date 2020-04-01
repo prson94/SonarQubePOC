@@ -733,93 +733,32 @@ namespace d360.model.DataAccessLayer
             return Company.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
         }
 
-        public DataQualityResponseModel AddDataQualityResult(DataQualityInsertModel model)
+
+        public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
         {            
-            #region Build Parameters
-        var parameters = new DynamicParameters();
-            parameters.Add("@EffectiveDate", model.EffectiveDate, dbType: DbType.DateTime);
-            parameters.Add("@RunDate", model.RunDate, dbType: DbType.DateTime);
-            parameters.Add("@PassCount", model.PassCount, dbType: DbType.Int32);
-            parameters.Add("@FailCount", model.FailCount, dbType: DbType.Int32);
-            parameters.Add("@UserId", Company.CurrentResourceID, dbType: DbType.Int32);
-            parameters.Add("@evaluatedAssetUid", model.EvaluatedAssetUid, dbType: DbType.Guid);
-            parameters.Add("@ownedAssetUid", model.OwningAssetUid, dbType: DbType.Guid);
-            parameters.Add("@executionItemUid", model.ExecutionItemUid, dbType: DbType.Guid);
-            parameters.Add("@createdDate", DateTime.UtcNow, dbType: DbType.DateTime);
+            Company.Add(execution);
 
-            #endregion
+            List<DataQualityResponseModel> results = null;
+            try
+            {
+                results = Company.UpsertAssetResults(request, execution);
 
-            string sql = $@"declare @fromAssetResultNodeId NVARCHAR(MAX), @toAssetNodeId NVARCHAR(MAX), @Uid UNIQUEIDENTIFIER = null, @success INT, @message varchar(200)
-	                        set @success = 0
-	
-	                        set @Uid = NEWID();
-		
-				                INSERT INTO [dbo].[AssetResult]
-						                ([Uid]
-						                ,[EffectiveDate]
-						                ,[RunDate]
-						                ,[PassCount]
-						                ,[FailCount]
-						                ,[CreatedOn]
-						                ,[CreatedBy]
-						                ,[UpdatedOn]
-						                ,[UpdatedBy])
-					                VALUES
-						                (@Uid
-						                ,@EffectiveDate
-						                ,@RunDate
-						                ,@PassCount
-						                ,@FailCount
-						                ,@createdDate
-						                ,@UserId
-						                ,@createdDate
-						                ,@UserId)
-					   
-				                -- if node record was created then create edge record.
-				                IF @@ROWCOUNT >= 1
-				                BEGIN		
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
 
-					                SELECT @fromAssetResultNodeId = $node_id FROM AssetResult WHERE [Uid] = @Uid
-
-					                SELECT @toAssetNodeId = $node_Id FROM graph.AssetNode WHERE [Uid] = @ownedAssetUid
-
-					                INSERT INTO [dbo].[AssetResultEdge]
-								                ($from_id           
-								                ,$to_id
-								                ,[Class])
-							                VALUES
-								                (@toAssetNodeId,
-								                @fromAssetResultNodeId,
-								                1)
-
-						
-					                --if evaluated Uid Passed then create additional edge record
-					                IF (@evaluatedAssetUid is not null)
-					                BEGIN
-						                SELECT @toAssetNodeId = $node_Id FROM graph.AssetNode WHERE [Uid] = @evaluatedAssetUid
-
-						                INSERT INTO [dbo].[AssetResultEdge]
-								                ($from_id           
-								                ,$to_id
-								                ,[Class])
-							                VALUES
-								                (@toAssetNodeId,
-								                @fromAssetResultNodeId,
-								                2)
-					                END
-						
-					                SET @success = 1
-						
-				                END
-			                        
-		                        select @executionItemUid as 'ExecutionItemUid',  @Uid as 'Uid', @success as 'Success', @message as 'Message'";
-                        
-            var result = Company.Query<DataQualityResponseModel>(sql, parameters);
-            
-            return result.First();
+            return results;
         }
-
-        public DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
+            public DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
         {
             var result = new DataQualityResult();
             var parameters = new DynamicParameters();

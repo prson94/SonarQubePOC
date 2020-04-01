@@ -614,21 +614,13 @@ namespace d360.web.Controllers.V2
         /// <param name="_pageSize">The size of the page if there are many results. [Defaults to 250]</param>
         /// <param name="_pageNum">The page number to page through results. [Defaults to 1]</param>
         /// <param name="_order">The column to sort by</param>
-        /// <param name="_direction ">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
+        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order.</param>
         /// <param name="_effectiveDateStart">Start Date</param>
         /// <param name="_effectiveDateEnd">End date</param>
         /// <returns>List of data quality results</returns>
         [
             HttpGet,
             Route("quality/results/"),
-            SwaggerParameter("_owningAssetUid", "The unique identifier of a rule.", DataType = "string", ParameterType = "query", Required = true),
-            SwaggerParameter("_evaluatedAssetUid", "The unique identifier of an asset.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by (Default ascending).", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_effectiveDateStart", "Return results with effective date after this date", DataType = "date-time", ParameterType = "query", Required = false),
-            SwaggerParameter("_effectiveDateEnd", "Return results with effective date before this date", DataType = "date-time", ParameterType = "query", Required = false),            
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
@@ -642,6 +634,13 @@ namespace d360.web.Controllers.V2
             Asset asset = null;
 
             Asset ruleAsset = AssetRepository.GetAssetByUID(_owningAssetUid);
+
+            string isValid = isPageSizeAndNumValid(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>( "_pageSize", _pageSize.ToString() ), new KeyValuePair<string, string>("_pageNum", _pageNum.ToString()) });
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
 
             if (_evaluatedAssetUid.HasValue)
             {
@@ -675,7 +674,7 @@ namespace d360.web.Controllers.V2
             if (!string.IsNullOrWhiteSpace(_order))
             {
                 List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EffectiveDate", "RunDate", "Passcount", "FailCount", "Passed" };
-                if (!_orderColumns.Contains(_order))
+                if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_order value '{_order}' is not valid. Value must be one of the following: {string.Join(",", _orderColumns.ToArray())}.");
                 }
@@ -775,117 +774,12 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
-            Asset asset;
-
-            Asset ruleAsset;
-
             List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
+            
 
-            #region Model Validation
-            foreach (var model in request)
-            {
-                asset = null;
-                ruleAsset = AssetRepository.GetAssetByUID(model.OwningAssetUid);
-                
-                DataQualityResponseModel response = new DataQualityResponseModel() { ExecutionItemUid = model.ExecutionItemUid.Value };
+            var execution = getApiExecution(request.Count);
 
-                if (model.EvaluatedAssetUid.HasValue)
-                {
-                    asset = AssetRepository.GetAssetByUID(model.EvaluatedAssetUid.Value);
-                }
-
-                if (model.ExecutionItemUid.HasValue && request.Count(x => x.ExecutionItemUid == model.ExecutionItemUid)>1)
-                {
-                    response.Message = String.Format(DataQualityErrors.DuplicateFieldError, "ExecutionItemUid", model.ExecutionItemUid);
-                    responseList.Add(response);
-                    continue;
-                }                
-
-                if (ruleAsset == null)
-                {
-                    response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.OwningAssetUid);
-                    responseList.Add(response);
-                    continue;                   
-                }
-                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule || ruleAsset.State == State.InActive)
-                {
-                    response.Message = String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid);
-                    responseList.Add(response);
-                    continue;
-                }
-
-                if (model.EvaluatedAssetUid.HasValue)
-                {
-                    if (asset == null)
-                    {
-                        response.Message = String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid);
-                        responseList.Add(response);
-                        continue;
-                    }
-                    else if ((asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset) || asset.State == State.InActive)
-                    {
-                        response.Message = String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid);
-                        responseList.Add(response);
-                        continue;
-                    }
-                }
-
-                if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ModifyAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ModifyAsset)))
-                {
-                    response.Message = ApiMessages.EndpointNotAuthorizedMessage;
-                    responseList.Add(response);
-                    continue;
-                }
-
-                if (model.EffectiveDate > DateTime.Now)
-                {
-                    response.Message = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
-                    responseList.Add(response);
-                    continue;
-                }
-                if (model.RunDate > DateTime.Now)
-                {
-                    response.Message = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
-                    responseList.Add(response);
-                    continue;
-                }
-
-                List<ValidationResult> validationResults = new List<ValidationResult>();
-                bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
-
-                if (!isValid)
-                {
-                    response.Message = validationResults.First().ErrorMessage;
-                    responseList.Add(response);
-                    continue;
-                }
-
-                if (model.PassCount < 0)
-                {
-                    response.Message = String.Format(DataQualityErrors.MustBeGreaterThanError, "PassCount");
-                    responseList.Add(response);
-                    continue;
-                }
-
-                if (model.FailCount < 0)
-                {
-                    response.Message = String.Format(DataQualityErrors.MustBeGreaterThanError, "FailCount"); 
-                    responseList.Add(response);
-                    continue;
-                }
-
-                if (model.PassCount == 0 && model.FailCount == 0)
-                {
-                    response.Message = String.Format(DataQualityErrors.BothValuesMinimumError, "FailCount", "PassCount", 0);
-                    responseList.Add(response);
-                    continue;
-                }
-                #endregion
-
-                response = await Task.FromResult(MetricsRepository.AddDataQualityResult(model));
-
-                responseList.Add(response);
-            }
+            responseList = await Task.FromResult(MetricsRepository.InsertDataQualityResult(request, execution));
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
@@ -904,13 +798,6 @@ namespace d360.web.Controllers.V2
 
             int index = 1;
             int rowNumber = 1;
-            doc.SetCellValue(rowNumber, 1, "pageSize");
-            doc.SetCellValue(rowNumber++, 2, dataQualityResult.pageSize);
-            doc.SetCellValue(rowNumber, 1, "pageNum");
-            doc.SetCellValue(rowNumber++, 2, dataQualityResult.pageNum);
-            doc.SetCellValue(rowNumber, 1, "total");
-            doc.SetCellValue(rowNumber++, 2, dataQualityResult.total);
-
             doc.SetCellValue(rowNumber, index++, "ResultUid");
             doc.SetCellValue(rowNumber, index++, "OwningAssetUid");
             doc.SetCellValue(rowNumber, index++, "EvaluatedAssetUid");

@@ -113,5 +113,14 @@ namespace d360.core.resources {
                 return ResourceManager.GetString("MustBeGreaterThanError", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Value for {0} must be between {1} and {2}..
+        /// </summary>
+        public static string ValueBetweenError {
+            get {
+                return ResourceManager.GetString("ValueBetweenError", resourceCulture);
+            }
+        }
     }
 }

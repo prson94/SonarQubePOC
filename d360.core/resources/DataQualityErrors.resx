@@ -135,4 +135,7 @@
   <data name="MustBeGreaterThanError" xml:space="preserve">
     <value>{0} must be greater than or equal to {1}</value>
   </data>
+  <data name="ValueBetweenError" xml:space="preserve">
+    <value>Value for {0} must be between {1} and {2}.</value>
+  </data>
 </root>
