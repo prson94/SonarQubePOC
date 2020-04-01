@@ -1,4 +1,4 @@
-﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, SimpleChange, OnInit, OnChanges } from '@angular/core';
+﻿import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, Output, SimpleChange, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject, Subscription } from "rxjs";
 import { TooltipInfo } from '../../../models/tooltip-info.model';
@@ -12,7 +12,7 @@ import { ToolTipService } from '../../../services/tooltip.service';
     providers: [ToolTipService]
 })
 
-export class PreviewPopupComponent implements OnInit, OnChanges {
+export class PreviewPopupComponent implements OnInit {
     @Input() icon: string;
     @Input() class: string;
     @Input() uid: string;
@@ -29,6 +29,7 @@ export class PreviewPopupComponent implements OnInit, OnChanges {
         this._display = value;
         if (this._display && !this.displaydialog) {
             this.displaydialog = true;
+            this.showpreview();
         }
     }
     @Output() displayChange: EventEmitter<any> = new EventEmitter();
@@ -52,20 +53,17 @@ export class PreviewPopupComponent implements OnInit, OnChanges {
     ) {
         this.popupSingletonService.popupMessage$.subscribe(
             info => {
-                if (info.uid == this.uid || !this.display) return;
-                this.closeDialog(undefined);
+                if (info.uid == this.uid || !this.displaydialog) return;
+                setTimeout(() => {
+                    this.closeDialog(undefined);
+                }, 10);
+                
             });
     }
 
     ngOnInit() {
         if (this.data == undefined && this.seed != undefined) {
             this.data = this.seed;
-        }
-    }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['display'] && this.display) {
-            this.showpreview();
         }
     }
 
@@ -84,7 +82,6 @@ export class PreviewPopupComponent implements OnInit, OnChanges {
             if (this.uid) {
                 this.toolTipService.getTooltipInfoByUid(this.uid)
                     .subscribe(res => {
-
                         this.data = res;
                         this.loading = false;
                         this.ref.markForCheck();
@@ -106,7 +103,7 @@ export class PreviewPopupComponent implements OnInit, OnChanges {
     }
 
     private getTop(): number {
-        return Math.min(this.elRef.nativeElement.offsetTop, (window.innerHeight/2)-30);
+        return Math.min(this.elRef.nativeElement.offsetTop, (document.documentElement.clientHeight/2)-30);
     }
 
     repositionMenuToFit(windowHeight, windowWidth, element) {
@@ -150,8 +147,10 @@ export class PreviewPopupComponent implements OnInit, OnChanges {
     }
 
     closeDialog($event) {
-        this.displaydialog = false;
-        this.displayChange.emit(false);
+        if (this.displaydialog) {
+            this.displaydialog = false;
+            this.displayChange.emit(false);
+        }
     }
 
 }
