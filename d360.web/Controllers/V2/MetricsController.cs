@@ -635,7 +635,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            //ApiExplorerSettings(IgnoreApi = true)
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetDataQualityResults()
         {            
