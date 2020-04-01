@@ -2707,6 +2707,7 @@ where   ExecutionID = @ExecutionID
             const string METHOD_NAME = "ImportAssets";
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
+            var importFields = new Dictionary<int, List<string>>();
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -2920,8 +2921,8 @@ where   ExecutionID = @ExecutionID
                                 }
 
                                 if (success)
-                                {                                    
-
+                                {
+                                    importFields.Add(i, model.Fields.Keys.ToList());
                                     fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
                                     var row = table.NewRow();
@@ -3648,12 +3649,25 @@ select [uid] from #ParentChildRelationships",
 
                             try
                             {
-                                var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+
+                                var changedFields = new Dictionary<Guid, List<string>>();
+                                foreach(var key in importFields.Keys)
+                                {
+                                    var r = results.SingleOrDefault(i => i.ItemNumber == key);
+                                    if (r != null && !changedFields.ContainsKey(r.uid))
+                                    {
+                                        changedFields.Add(r.uid, importFields[key]);
+                                    }
+                                }
+
                                 sw.Restart();
                                 SendAssetGraphEvents(graphResults, changedFields, true);
                                 this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                             }
-                            catch { }
+                            catch
+                            { 
+
+                            }
                         }
                        
 
