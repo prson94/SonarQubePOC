@@ -3,6 +3,7 @@
         <d3s-status-badge *ngIf="showStatus"
                           [status]="status">
         </d3s-status-badge>
+        <span><!--space-between-spacer ensures scores ends up to the right--></span>
         <span #scorecontainer *ngIf="searchDetails && searchDetails.Scores.length > 0" class="d3s-score-container">
             <d3s-score-badge *ngFor="let score of searchDetails.Scores" [score]="score">
             </d3s-score-badge>
