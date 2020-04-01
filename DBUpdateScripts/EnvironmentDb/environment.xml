@@ -449,4 +449,5 @@
 	
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
+	<include file="scripts/Data.Corrections.xml"/>
 </databaseChangeLog>

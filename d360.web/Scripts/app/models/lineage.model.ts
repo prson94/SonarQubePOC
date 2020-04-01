@@ -468,6 +468,7 @@ export class AssetBrowserTranslationRelationCount {
     direction: AssetBrowserApiHopDirection;
     count: number;
     expanded: boolean;
+    disabled: boolean = false; //Used by the AB to determine whether to disable the badge while loading data. Prevents double-click issue.
 }
 
 export class AssetBrowserTranslationLink {
@@ -813,7 +814,12 @@ export class AssetBrowserFilterChangeEvent {
 }
 
 export class AssetBrowserPanelModel {
-    commandToResetTo: AssetBrowserPanelCommand;
+    selectedCommand: AssetBrowserPanelCommand;
+    AddVisible: boolean = false;
+    AlertVisible: boolean = false;
+    FiltersVisible: boolean = false;
+    InformationVisible: boolean = false;
+    SettingsVisible: boolean = false;
 }
 export enum AssetBrowserPanelCommand {
     None = 0,

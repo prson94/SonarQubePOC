@@ -8,7 +8,9 @@
                     <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
                 </div>
                 <div class="controls-right">
-                    <d3s-assetbrowser-panels (click)="panels_Click($event)" [commandToResetTo]="panelModel.commandToResetTo" [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!this.panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"></d3s-assetbrowser-panels>
+                    <d3s-assetbrowser-panels (click)="panels_Click($event)" 
+                        [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount" 
+                        [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
@@ -25,14 +27,14 @@
                         <div class="asset-browser-window-header">
                             <div class="info">
                                 <div class="class-name">
-                                    <span *ngIf="panel_InformationVisible">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</span>
+                                    <span *ngIf="panelModel.InformationVisible">{{selectedDiagramAsset?.AssetTypeClassDisplayName}}</span>
                                 </div>
                                 <div class="asset-name">
-                                    <span *ngIf="panel_InformationVisible"><a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a></span>
-                                    <span *ngIf="panel_FiltersVisible">Apply Filters</span>
-                                    <span *ngIf="panel_AlertVisible">Active Alerts</span>
-                                    <span *ngIf="panel_AddVisible">Add Lineage</span>
-                                    <span *ngIf="panel_SettingsVisible">Settings</span>
+                                    <span *ngIf="panelModel.InformationVisible"><a [routerLink]="selectedDiagramAsset?.Url">{{selectedDiagramAsset?.DisplayValue}}</a></span>
+                                    <span *ngIf="panelModel.FiltersVisible">Apply Filters</span>
+                                    <span *ngIf="panelModel.AlertVisible">Active Alerts</span>
+                                    <span *ngIf="panelModel.AddVisible">Add Lineage</span>
+                                    <span *ngIf="panelModel.SettingsVisible">Settings</span>
                                 </div>
                             </div>
                             <div class="scores">
@@ -42,42 +44,42 @@
                             </div>
                             <div class="clearfix"></div>
                             <div class="windowtabs">
-                                <button *ngIf="panel_InformationVisible" [class]="(panel_TabIndex == 0) ? 'tab-selected' : 'tab'" (click)="event_Information_DetailTabClick()">Details</button>
-                                <button *ngIf="panel_InformationVisible" [class]="(panel_TabIndex == 1) ? 'tab-selected' : 'tab'" (click)="event_Information_OwnerTabClick()" [disabled]="!ownershipTabEnabled()">Ownership</button>
+                                <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 0) ? 'tab-selected' : 'tab'" (click)="event_Information_DetailTabClick()">Details</button>
+                                <button *ngIf="panelModel.InformationVisible" [class]="(panel_TabIndex == 1) ? 'tab-selected' : 'tab'" (click)="event_Information_OwnerTabClick()" [disabled]="!ownershipTabEnabled()">Ownership</button>
 
-                                <!--button *ngIf="panel_FiltersVisible" class="tab-selected">Filters</button-->
-                                <d3s-assetbrowser-savedfilter *ngIf="panel_FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
+                                <!--button *ngIf="panelModel.FiltersVisible" class="tab-selected">Filters</button-->
+                                <d3s-assetbrowser-savedfilter *ngIf="panelModel.FiltersVisible" [diagramType]="displayConfiguration.DiagramType" [options]="filter_AvailableOptions" [filterModel]="displayConfiguration" (applySavedFilter)="savedfilter_Apply($event)"></d3s-assetbrowser-savedfilter>
 
-                                <button *ngIf="panel_AlertVisible" class="tab-selected">Alerts</button>
+                                <button *ngIf="panelModel.AlertVisible" class="tab-selected">Alerts</button>
 
-                                <button *ngIf="panel_AddVisible" class="tab-selected">Lineage</button>
+                                <button *ngIf="panelModel.AddVisible" class="tab-selected">Lineage</button>
 
-                                <button *ngIf="panel_SettingsVisible" class="tab-selected">General</button>
+                                <button *ngIf="panelModel.SettingsVisible" class="tab-selected">General</button>
                             </div>
                         </div>
                         <div class="asset-browser-window-content">
-                            <section *ngIf="panel_AddVisible">
+                            <section *ngIf="panelModel.AddVisible">
                                 <div #addLineagePanel class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-addpanel [assetBrowserData]="responseModel" (refreshDiagram)="helper_RefreshDiagram($event)"></d3s-assetbrowser-addpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="panel_AlertVisible">
+                            <section *ngIf="panelModel.AlertVisible">
                                 <div #alertPanel class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-alertpanel [assets]="selectedAssetsWithAlerts" (openDetail)="alert_OpenDetail($event)"></d3s-assetbrowser-alertpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="panel_FiltersVisible">
+                            <section *ngIf="panelModel.FiltersVisible">
                                 <div #filterDetailPanel class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-filterpanel [allowAncestry]="helper_LineageDiagramApplies()" [options]="filter_AvailableOptions" [current]="displayConfiguration" (apply)="filterpanel_Apply($event)"></d3s-assetbrowser-filterpanel>
                                 </div>
                             </section>
 
-                            <section *ngIf="panel_InformationVisible">
+                            <section *ngIf="panelModel.InformationVisible">
                                 <div #infoDetailPanel *ngIf="panel_TabIndex == 0" class="scroll-panel">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-infopanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-infopanel>
@@ -89,7 +91,7 @@
                                 </div>
                             </section>
 
-                            <section *ngIf="panel_SettingsVisible">
+                            <section *ngIf="panelModel.SettingsVisible">
                                 <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                 <d3s-assetbrowser-settingspanel [allowAncestry]="helper_LineageDiagramApplies()" [current]="displayConfiguration" (apply)="settingspanel_Apply($event)"></d3s-assetbrowser-settingspanel>
                             </section>
