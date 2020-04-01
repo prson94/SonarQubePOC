@@ -3696,9 +3696,13 @@ select [uid] from #ParentChildRelationships",
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
             bool checkCircularRelationships = false;
-            if (rt.Predicate.Type == PredicateType.Transformation)
+            bool checkSemanticRelation = false;
+
+            if ( (rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation )
                 checkCircularRelationships = true;
-            bool checkSemanticRelation = rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType;
+
+            if ( (rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType )
+                checkSemanticRelation = true;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
