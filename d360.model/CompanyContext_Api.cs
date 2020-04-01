@@ -5964,13 +5964,39 @@ insert into #Keys
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            row["OwningAssetUid"] = model.OwningAssetUid;
-                            row["EvaluatedAssetUid"] = model.EvaluatedAssetUid;
-                            row["EffectiveDate"] = model.EffectiveDate.Date;
-                            row["RunDate"] = model.RunDate;
+                            row["OwningAssetUid"] = model.OwningAssetUid;                            
                             row["PassCount"] = model.PassCount;
                             row["FailCount"] = model.FailCount;
                             row["Uid"] = Guid.NewGuid();
+
+                            if (model.EvaluatedAssetUid.HasValue)
+                            {
+                                row["EvaluatedAssetUid"] = model.EvaluatedAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["EvaluatedAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EffectiveDate != null && model.EffectiveDate != DateTime.MinValue)
+                            {
+                                row["EffectiveDate"] = model.EffectiveDate.Date;
+                            }
+                            else
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "EffectiveDate");
+                                row["Success"] = 0;
+                            }
+
+                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            {
+                                row["RunDate"] = model.RunDate;
+                            }
+                            else
+                            {                                
+                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
+                                row["Success"] = 0;
+                            }
 
                             if (model.EffectiveDate > DateTime.Now)
                             {
@@ -6104,7 +6130,7 @@ insert into #Keys
                                     where 		                               
 		                                EAR.ExecutionID = @ExecutionID 		
 		                                And
-		                                EAR.OwningAssetUid is not null
+		                                EAR.EvaluatedAssetUid is not null
 		                                and 
 		                                (
 			                                a.ID is null -- no match
@@ -6237,8 +6263,6 @@ insert into #Keys
                                     }
                                 }
                             }
-
-                            
                         }
 
                         results.AddRange(

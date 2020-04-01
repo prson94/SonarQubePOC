@@ -20,7 +20,7 @@ BEGIN
 		[ExecutionItemUid] [uniqueidentifier] NULL,
 		[OwningAssetUid] [uniqueidentifier] NOT NULL,
 		[EvaluatedAssetUid] [uniqueidentifier] NULL,
-		[EffectiveDate] [date] NOT NULL,
+		[EffectiveDate] [date] NULL,
 		[RunDate] [datetime],
 		[PassCount] [int],
 		[FailCount] [int],

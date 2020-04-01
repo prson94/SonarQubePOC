@@ -629,34 +629,66 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetDataQualityResults(Guid _owningAssetUid, Guid? _evaluatedAssetUid = null, int _pageSize = 250, int _pageNum = 1, string _order = null, string _direction = "asc", DateTime? _effectiveDateStart = null, DateTime? _effectiveDateEnd = null)
-        {
+        public async Task<IHttpActionResult> GetDataQualityResults()
+        {            
+            var queryParams = Request.GetQueryNameValuePairs();
+
             Asset asset = null;
 
-            Asset ruleAsset = AssetRepository.GetAssetByUID(_owningAssetUid);
+            Asset ruleAsset = null;
 
-            string isValid = isPageSizeAndNumValid(new List<KeyValuePair<string, string>>() { new KeyValuePair<string, string>( "_pageSize", _pageSize.ToString() ), new KeyValuePair<string, string>("_pageNum", _pageNum.ToString()) });
-
-            if (!string.IsNullOrEmpty(isValid))
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
-            }
-
-            if (_evaluatedAssetUid.HasValue)
-            {
-                asset = AssetRepository.GetAssetByUID(_evaluatedAssetUid.Value);
-            }
+            Guid _owningAssetUid;
+            Guid? _evaluatedAssetUid = null;                        
+            string _order = null;
+            string _direction = "asc";
+            DateTime? _effectiveDateStart = null;
+            DateTime? _effectiveDateEnd = null;
+            int _pageSize = 250;
+            int _pageNum = 1;
 
             #region Model Validation
-            if (_evaluatedAssetUid.HasValue)
+            if (queryParams.Any(q => q.Key == "_owningAssetUid"))
+            {                
+                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value, out _owningAssetUid))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"OwningAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_owningAssetUid").Value} is not a valid Uid"));
+                }
+
+                ruleAsset = AssetRepository.GetAssetByUID(_owningAssetUid);
+
+                if (ruleAsset == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_owningAssetUid} could not be found."));
+                }
+                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"_owningAssetUid {_owningAssetUid} is not valid");
+                }
+            }
+            else
             {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", $"_owningAssetUid is a required parameter"));
+            }                                 
+            
+            if(queryParams.Any(q => q.Key == "_evaluatedAssetUid"))
+            {
+                Guid tempEvaluatedUid;
+                if (!Guid.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value, out tempEvaluatedUid))                    
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {queryParams.ToList().FirstOrDefault(q => q.Key == "_evaluatedAssetUid").Value} is not a valid Uid"));
+                }
+
+                _evaluatedAssetUid = tempEvaluatedUid;
+
+                asset = AssetRepository.GetAssetByUID(_evaluatedAssetUid.Value);
+
                 if (asset == null)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_evaluatedAssetUid} could not be found."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with Uid {_evaluatedAssetUid.Value} could not be found."));
                 }
                 else if (asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {_evaluatedAssetUid.ToString()} is not valid"));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"EvaluatedAssetUid {_evaluatedAssetUid.Value} is not valid"));
                 }
             }
             
@@ -664,15 +696,11 @@ namespace d360.web.Controllers.V2
             if(!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset) && (_evaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
-            }
-
-            if(ruleAsset.AssetType.Class != AssetTypeClass.Rule)
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid", $"_owningAssetUid {_owningAssetUid.ToString()} is not valid");
-            }
+            }            
             
-            if (!string.IsNullOrWhiteSpace(_order))
+            if (queryParams.Any(q => q.Key == "_order"))
             {
+                _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
                 List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EffectiveDate", "RunDate", "Passcount", "FailCount", "Passed" };
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
@@ -680,24 +708,38 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            if (!string.IsNullOrWhiteSpace(_direction))
-            {                
+            if (queryParams.Any(q => q.Key == "_direction"))
+            {
+                _direction = queryParams.ToList().FirstOrDefault(q => q.Key == "_direction").Value;
                 if (!_direction.Equals("asc", StringComparison.InvariantCultureIgnoreCase) && !_direction.Equals("desc", StringComparison.InvariantCultureIgnoreCase))
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_direction value '{_direction}' is not valid. Value must be one of the following: asc, desc.");
                 }                
             }
             
-            if (_effectiveDateStart != null)
+            if (queryParams.Any(q => q.Key == "_effectiveDateStart"))
             {
+                DateTime _tempEffectiveDateStart;
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateStart").Value, out _tempEffectiveDateStart))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateStart is not valid.");
+                }
+                _effectiveDateStart = _tempEffectiveDateStart;
+
                 if (_effectiveDateStart == DateTime.MinValue)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateStart is not valid.");
                 }
             }            
 
-            if (_effectiveDateEnd != null)
-            {                                
+            if (queryParams.Any(q => q.Key == "_effectiveDateEnd"))
+            {
+                DateTime _tempEffectiveDateEnd;
+                if (!DateTime.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_effectiveDateEnd").Value, out _tempEffectiveDateEnd))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd is not valid.");
+                }
+                _effectiveDateEnd = _tempEffectiveDateEnd;
                 if (_effectiveDateEnd == DateTime.MinValue)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd is not valid.");
@@ -707,8 +749,25 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd must be after _effectiveDateStart.");
                 }
             }
-            
+            string isValid = isPageSizeAndNumValid(queryParams);
+
+            if (!string.IsNullOrEmpty(isValid))
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", isValid));
+            }
+            else
+            {
+                if (queryParams.Any(q => q.Key == "_pageNum"))
+                {
+                    _pageNum = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value);
+                }
+                if (queryParams.Any(q => q.Key == "_pageSize"))
+                {
+                    _pageSize = int.Parse(queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value);
+                }
+            }
             #endregion
+
             try
             {
                 d360.core.entities.Metric.DataQualityResult dataQualityResult = new d360.core.entities.Metric.DataQualityResult();
