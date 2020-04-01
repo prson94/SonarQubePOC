@@ -52,8 +52,6 @@ export class FieldTypeEditorModel {
     selectedLookup: string;
     cardinalRelationship: number;
     LookupTokens: SelectItem[] = new Array<SelectItem>();
-    FilteredLookupItems: FilteredLookupItem[] = [];
-    FilteredLookupItem: FilteredLookupItem;
     OwnershipLookupSettings: OwnershipLookupSettings;
     IsPrimaryFilter: boolean;
 }
@@ -67,24 +65,6 @@ export class OwnershipLookupSettings {
     ObjectID: number;
     DisplayAssignmentSource: boolean;
     ExpandGroupMembership: boolean;
-}
-
-export class FilteredLookupItem {
-    HideFooter: boolean;
-    HideHeader: boolean;
-    ID: number;
-    Object: string;
-    ObjectID: number;
-    DisplayFields: FilteredLookupDisplayField[] = [];
-}
-
-export class FilteredLookupDisplayField {
-    Filter: boolean;
-    Show: boolean;
-    SortOrder: number;
-    value: string;
-    FieldTypeID: number;
-    FieldTypeName: string;
 }
 
 export class FieldType {

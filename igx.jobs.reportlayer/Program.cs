@@ -49,7 +49,7 @@ namespace igx.jobs.reportlayer
 
             var typesToIgnore = new List<string> {
                 DataType.Attribute.ToString(), DataType.Color.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(), DataType.FilteredLookup.ToString(), DataType.Hidden.ToString(), DataType.OwnershipLookup.ToString(),
+                DataType.File.ToString(), DataType.Hidden.ToString(), DataType.OwnershipLookup.ToString(),
                 DataType.Password.ToString(), DataType.RefListRelationship.ToString(), DataType.UncLink.ToString(), DataType.JsonElement.ToString()
             };
 

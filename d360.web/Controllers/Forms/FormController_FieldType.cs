@@ -119,36 +119,6 @@ namespace d360.web.Controllers
         }
 
         /// <summary>
-        /// Gets a list of display fields that match a lookup.
-        /// </summary>
-        /// <param name="type">The type of object we are adding field type to.</param>
-        /// <param name="id">The type Id of object we are adding field type to.</param>
-        /// <param name="listType">The type of list to pull fields for.</param>
-        /// <param name="listID">The type Id of the list to pull fields for.</param>
-        /// <returns>A list of relevant fusion attribute types.</returns>
-        [Route("FieldType_FilteredLookup_DisplayFields"), NonNullableParameters]
-        public JsonNetResult FieldType_FilteredLookup_DisplayFields(string type, int id, string listType, int listID)
-        {
-            var list = Company.GetFieldTypesByObject(SystemObjects.LookupType, listID)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
-                .OrderBy(i => i.Name)
-                .Select(i => new { i.ID, i.Name, i.FriendlyName, i.LookupObjectType, i.LookupObjectID })
-                .ToList()
-                .Select(i => new
-                {
-                    title = i.FriendlyName,
-                    value = $"{i.ID}|{i.Name}",
-                    AllowFilter = ($"{i.LookupObjectType}|{i.LookupObjectID}" == $"{type.Replace("Type", "")}|{id}")
-                });
-
-            return new JsonNetResult
-            {
-                Data = list,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-
-        /// <summary>
         /// Gets a list of fusion attribute types that meet the criteria based on the reference type and source fusion attribute type ID.
         /// </summary>
         /// <param name="id">The Source FusionAttributeType ID</param>
@@ -241,7 +211,6 @@ namespace d360.web.Controllers
                         && i.Type != DataType.Relationship.ToString()
                         && i.Type != DataType.OwnershipLookup.ToString()
                         && i.Type != DataType.RefListRelationship.ToString()
-                        && i.Type != DataType.FilteredLookup.ToString()
                         && i.Type != DataType.ComplexRelationLookup.ToString()
                         && i.Type != DataType.JSON.ToString()
                         && i.Type != DataType.Tag.ToString())
@@ -854,8 +823,6 @@ namespace d360.web.Controllers
                 dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
             }
 
-            dataTypeOptions = dataTypeOptions.Where(x => x.value != "FilteredLookup").ToList();
-
             var jsonFieldType = new Dictionary<string, string>()
             {
                 { "Boolean", "bit" },
@@ -912,26 +879,6 @@ namespace d360.web.Controllers
             if (id > 0)
             {
                 ft = Company.GetById<FieldType>(id);
-
-                if (ft.FieldTypeFilteredLookupDefinitions != null)
-                {
-                    if (ft.FieldTypeFilteredLookupDefinitions.Count > 0)
-                    {
-                        filteredLookupItems = new List<dynamic>();
-                        foreach (var i in ft.FieldTypeFilteredLookupDefinitions)
-                        {
-                            filteredLookupItems.Add(new
-                            {
-                                i.ID,
-                                i.Object,
-                                i.ObjectID,
-                                DisplayFields = (i.FieldTypeFilteredLookupDisplayFields != null) ? i.FieldTypeFilteredLookupDisplayFields.Select(df => new { value = $"{df.FieldTypeID}|{df.FieldTypeName}", Filter = df.Filter, Show = df.Show, SortOrder = df.SortOrder }).ToList() : null,
-                                i.HideHeader,
-                                i.HideFooter
-                            });
-                        }
-                    }
-                }
 
                 if (ft.Type == DataType.JsonElement.ToString())
                 {
@@ -1182,7 +1129,6 @@ offset 0 rows fetch next 25 rows only
                 if (!new[] { "Lookup"
                     , "FieldFromRelationship"
                     , "Relationship"
-                    , "FilteredLookup"
                     , "OwnershipLookup"
                     , "RefListRelationship"
                     , "FusionLookup" }.Contains(model.FieldType.Type.ToString()))
@@ -1240,59 +1186,6 @@ offset 0 rows fetch next 25 rows only
                             throw new ConflictException("Error Occurred!", $"{FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
                         Company.Add<FieldType>(model.FieldType);
-                        break;
-                    #endregion
-                    case "FilteredLookup":
-                        #region
-                        if (model.FilteredLookupItem != null)
-                        {
-                            val = model.FilteredLookupItem.Validation();
-                            if (!val.Valid)
-                            {
-                                throw new ConflictException("Error Occurred!", val.Message);
-                            }
-
-                            var def = new FieldTypeFilteredLookupDefinition
-                            {
-                                Object = model.FilteredLookupItem.Object,
-                                ObjectID = model.FilteredLookupItem.ObjectID,
-                                HideHeader = model.FilteredLookupItem.HideHeader,
-                                HideFooter = model.FilteredLookupItem.HideFooter
-                            };
-
-                            if (model.FilteredLookupItem.DisplayFields != null)
-                            {
-                                if (model.FilteredLookupItem.DisplayFields.Count > 0)
-                                {
-                                    def.FieldTypeFilteredLookupDisplayFields = new List<FieldTypeFilteredLookupDisplayField>();
-
-                                    foreach (var df in model.FilteredLookupItem.DisplayFields)
-                                    {
-                                        var ndf = new FieldTypeFilteredLookupDisplayField
-                                        {
-                                            FieldTypeFilteredLookupDefinitionID = def.ID,
-                                            FieldTypeName = df.FieldTypeName,
-                                            FieldTypeID = df.FieldTypeID,
-                                            Filter = df.Filter,
-                                            SortOrder = df.SortOrder,
-                                            Show = df.Show
-                                        };
-
-                                        if (ndf.Show || ndf.Filter || ndf.SortOrder.HasValue)
-                                            def.FieldTypeFilteredLookupDisplayFields.Add(ndf);
-                                    }
-                                }
-                            }
-
-                            model.FieldType.IsPartOfKey = false;
-                            model.FieldType.IsDisplayable = true;
-                            model.FieldType.IsEditable = false;
-                            model.FieldType.IsListable = false;
-                            model.FieldType.IsRequired = false;
-                            model.FieldType.FieldTypeFilteredLookupDefinitions = new List<FieldTypeFilteredLookupDefinition>() { def };
-
-                            Company.Add<FieldType>(model.FieldType);
-                        }
                         break;
                     #endregion
                     case "ComplexRelationLookup":
@@ -1596,7 +1489,6 @@ offset 0 rows fetch next 25 rows only
 
                 if (
                     (model.FieldType.Type == DataType.ComplexRelationLookup.ToString()) ||
-                    (model.FieldType.Type == DataType.FilteredLookup.ToString()) ||
                     (model.FieldType.Type == DataType.OwnershipLookup.ToString())
                     )
                 {
@@ -1652,7 +1544,6 @@ offset 0 rows fetch next 25 rows only
 
                 bool isNew;
 
-                var efli = Company.Filter<FieldTypeFilteredLookupDefinition>(i => i.FieldTypeID == ft.ID, i => i.FieldTypeFilteredLookupDisplayFields).FirstOrDefault();
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
 
                 if (ft.Type == "Date")
@@ -1698,15 +1589,6 @@ offset 0 rows fetch next 25 rows only
                     ft.LookupObjectID = null;
                     ft.LookupDisplayFormat = null;
 
-                    if (efli != null && ft.Type != DataType.FilteredLookup.ToString())
-                    {
-
-                        var d = Company.FieldTypeFilteredLookupDisplayFields.Where(j => j.FieldTypeFilteredLookupDefinitionID == efli.ID).ToList();
-                        if (d != null && d.Count > 0)
-                            Company.FieldTypeFilteredLookupDisplayFields.RemoveRange(d);
-                        Company.FieldTypeFilteredLookupDefinitions.Remove(efli);
-                    }
-
                     if (fl != null && ft.Type != DataType.ComplexRelationLookup.ToString())
                     {
                         Company.FieldTypeLookups.Remove(fl);
@@ -1744,111 +1626,6 @@ offset 0 rows fetch next 25 rows only
                         ft.MinimumLength = (!ft.IsRequired) ? (int?)null : 1;
                         ft.MaximumLength = null;
                         break;
-                    case "FilteredLookup":
-                        #region
-                        isNew = false;
-                        if (model.FilteredLookupItem != null)
-                        {
-                            val = model.FilteredLookupItem.Validation();
-                            if (!val.Valid)
-                            {
-                                throw new ConflictException("Error Occurred!", val.Message);
-                            }
-
-                            var listToRemove = new List<FieldTypeFilteredLookupDisplayField>();
-
-                            if (efli == null)
-                            {
-                                isNew = true;
-                                efli = new FieldTypeFilteredLookupDefinition
-                                {
-                                    FieldTypeID = model.FieldType.ID,
-                                    Object = model.FilteredLookupItem.Object,
-                                    ObjectID = model.FilteredLookupItem.ObjectID,
-                                    HideHeader = model.FilteredLookupItem.HideHeader,
-                                    HideFooter = model.FilteredLookupItem.HideFooter,
-                                    FieldTypeFilteredLookupDisplayFields = new List<FieldTypeFilteredLookupDisplayField>()
-                                };
-                            }
-                            else
-                            {
-                                efli.Object = model.FilteredLookupItem.Object;
-                                efli.ObjectID = model.FilteredLookupItem.ObjectID;
-                                efli.HideHeader = model.FilteredLookupItem.HideHeader;
-                                efli.HideFooter = model.FilteredLookupItem.HideFooter;
-                            }
-
-                            if (model.FilteredLookupItem.DisplayFields != null)
-                            {
-                                // Add those that do not yet exist.
-                                foreach (var df in model.FilteredLookupItem.DisplayFields)
-                                {
-                                    if (!efli.FieldTypeFilteredLookupDisplayFields.Any(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName))
-                                    {
-                                        var ndf = new FieldTypeFilteredLookupDisplayField
-                                        {
-                                            FieldTypeFilteredLookupDefinitionID = efli.ID,
-                                            FieldTypeID = df.FieldTypeID,
-                                            FieldTypeName = df.FieldTypeName,
-                                            Filter = df.Filter,
-                                            SortOrder = df.SortOrder,
-                                            Show = df.Show
-                                        };
-
-                                        if (ndf.Show || ndf.Filter || ndf.SortOrder.HasValue)
-                                            efli.FieldTypeFilteredLookupDisplayFields.Add(ndf);
-                                    }
-                                    else
-                                    {
-                                        var edf = efli.FieldTypeFilteredLookupDisplayFields.Single(i => i.FieldTypeID == df.FieldTypeID && i.FieldTypeName == df.FieldTypeName);
-
-                                        edf.Filter = df.Filter;
-                                        edf.SortOrder = df.SortOrder;
-                                        edf.Show = df.Show;
-
-                                        if (!edf.Show && !edf.Filter && !edf.SortOrder.HasValue)
-                                            efli.FieldTypeFilteredLookupDisplayFields.Remove(edf);
-                                    }
-                                }
-
-                                // Remove those that no longer exist.
-                                foreach (var edf in efli.FieldTypeFilteredLookupDisplayFields)
-                                {
-                                    if (!model.FilteredLookupItem.DisplayFields.Any(i => i.FieldTypeID == edf.FieldTypeID && i.FieldTypeName == edf.FieldTypeName))
-                                    {
-                                        listToRemove.Add(edf);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                if (efli.FieldTypeFilteredLookupDisplayFields != null)
-                                {
-                                    listToRemove.AddRange(efli.FieldTypeFilteredLookupDisplayFields);
-                                }
-                            }
-
-                            if (listToRemove.Count > 0)
-                            {
-                                Company.FieldTypeFilteredLookupDisplayFields.RemoveRange(listToRemove);
-                            }
-
-                            listToRemove = null;
-
-                            if (isNew)
-                                Company.Add<FieldTypeFilteredLookupDefinition>(efli);
-                            else
-                                Company.Update<FieldTypeFilteredLookupDefinition>(efli);
-                        }
-                        else
-                        {
-                            if (efli != null)
-                            {
-                                ft.FieldTypeFilteredLookupDefinitions.Remove(efli);
-                            }
-                        }
-                        break;
-                    #endregion
                     case "Lookup":
                         #region
                         ft.LookupObjectType = model.FieldType.LookupObjectType;
@@ -1859,10 +1636,6 @@ offset 0 rows fetch next 25 rows only
                         {
                             throw new ConflictException("Error Occurred!", $"{FieldInfo.ListDisplayFormat_Name} is required if the field type is List.");
                         }
-
-                        //Clean up previous stuff
-                        if (efli != null)
-                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
 
                         ft.FilterPredicateID = model.FieldType.FilterPredicateID;
                         if (model.FieldType.FilterPredicateID != null) //Filtered lists should not have default values
@@ -1989,9 +1762,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupDisplayFormat = null;
                         ft.LookupEditFormat = null;
 
-                        //Clean up previous stuff
-                        if (efli != null)
-                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                     #endregion
                     case "FieldFromRelationship":
@@ -2002,9 +1772,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupDisplayFormat = null;
                         ft.LookupEditFormat = null;
 
-                        //Clean up previous stuff
-                        if (efli != null)
-                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                     #endregion
                     case "RefListRelationship":
@@ -2014,9 +1781,6 @@ offset 0 rows fetch next 25 rows only
                         ft.LookupDisplayFormat = null;
                         ft.LookupEditFormat = null;
 
-                        //Clean up previous stuff
-                        if (efli != null)
-                            Company.Set<FieldTypeFilteredLookupDefinition>().Remove(efli);
                         break;
                         #endregion
                 }

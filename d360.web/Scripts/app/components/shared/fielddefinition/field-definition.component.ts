@@ -93,9 +93,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     if (d.Type == 'DateTime') {
                         d.Type = 'Date Time';
                     }
-                    if (d.Type == 'FilteredLookup') {
-                        d.Type = 'Filtered Lookup';
-                    }
                     if (d.IsPartOfKey) {
                         this.hasKeyFields = true;
                     }
