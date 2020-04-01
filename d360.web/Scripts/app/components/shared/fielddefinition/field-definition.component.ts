@@ -1,11 +1,12 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 
-import { FieldDefinition, IFieldsService } from '../../../models/fields.model';
+import { FieldDefinition, IFieldsService, FieldType } from '../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -16,6 +17,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
+    @Input() Uid: string;
     @Input() title: string = 'Field Definition';
 
     @Input() actionTypeUid: string;
@@ -39,8 +41,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() isAdding = false;
     @Input() isDeleting = false;
 
-    private fieldDefinitions = new Array<FieldDefinition>();
-    private selectedRow = new FieldDefinition();
+    private fieldDefinitions = new Array<FieldTypeAPIModelField>();
+    private selectedRow = new FieldTypeAPIModelField();
 
     private theDeleteCallback: Function;
     public hasKeyFields: boolean = false;
@@ -52,14 +54,14 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'objectType') {
-                this.objectType = changes['objectType'].currentValue;
+            if (p == 'Uid') {
+                this.objectType = changes['Uid'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
             }
-            if (p == 'objectID') {
-                this.objectID = changes['objectID'].currentValue;
+            if (p == 'Uid') {
+                this.objectID = changes['Uid'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
@@ -69,36 +71,25 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     load(): void {
-        if (this.objectType == null || this.objectID == null)
+        if (this.Uid == null)
             return;
 
         if (this.objectType == "IntersectType")
             this.showIsPartOfKey = false;
         this.isLoading = true;
         this.hasKeyFields = false
-        this.fieldsService.getFields(this.objectID, this.objectType).subscribe(
+        this.fieldsService.getFieldsV2(this.Uid).subscribe(
             data => {
                 this.fieldDefinitions = data;
-
+                
                 this.fieldDefinitions.forEach(d => {
-                    if (d.Type == 'ComplexRelationLookup') {
-                        d.Type = 'Relation Lookup';
-                    }
-                    if (d.Type == 'RelationLookup') {
-                        d.Type = 'Relation Lookup';
-                    }
-                    if (d.Type == 'FusionLookup') {
-                        d.Type = 'Fusion Lookup';
-                    }
-                    if (d.Type == 'DateTime') {
-                        d.Type = 'Date Time';
-                    }
-                    if (d.Type == 'FilteredLookup') {
-                        d.Type = 'Filtered Lookup';
-                    }
-                    if (d.IsPartOfKey) {
-                        this.hasKeyFields = true;
-                    }
+                    let foundKeyField = false;
+                    this.fieldDefinitions.forEach(x => {
+                        if (this.IsPartyOfKey(x.Type)) {
+                            foundKeyField = true;
+                        }
+                    });
+                    this.hasKeyFields = foundKeyField;
                 });
 
                 this.selectedRow = null;
@@ -107,8 +98,43 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         );
     }
 
-    edit(id: number): void {
-        this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
+    currentFieldType(item: FieldTypeAPIModelField): string {
+        return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
+    }
+
+    IsPartyOfKey(itemType): boolean {
+        let partOfKey = false;
+        if (itemType.Boolean != null) partOfKey = itemType.Boolean.IsPartOfKey;
+        if (itemType.Date != null) partOfKey = itemType.Date.IsPartOfKey;
+        if (itemType.DateTime != null) partOfKey = itemType.DateTime.IsPartOfKey;
+        if (itemType.Decimal != null) partOfKey = itemType.Decimal.IsPartOfKey;
+        if (itemType.Html != null) partOfKey = itemType.Html.IsPartOfKey;
+        if (itemType.Link != null) partOfKey = itemType.Link.IsPartOfKey;
+        if (itemType.Lookup != null) partOfKey = itemType.Lookup.IsPartOfKey;
+        if (itemType.Number != null) partOfKey = itemType.Number.IsPartOfKey;
+        if (itemType.Text != null) partOfKey = itemType.Text.IsPartOfKey;
+
+        return partOfKey;
+    }
+
+    getDisplayTypeName(item: FieldTypeAPIModelField): string {
+        switch (this.currentFieldType(item)) {
+            case "ComputedRelationshipField":
+                return "Field from Relationship";
+            case "ComputedFusionLookup":
+                return "Fusion Lookup";
+            case "DateTime":
+                return "Date Time";
+            case "ComputedOwnershipLookup":
+                return "Ownership Lookup";
+            case "ComputedRelationshipLookup":
+                return "Relation Lookup";
+            default:
+                return this.currentFieldType(item);
+        }
+    }
+    edit(name: string): void {
+        this.selectedRow = this.fieldDefinitions.find(f => f.Name == name);
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;
@@ -122,8 +148,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.onAdd.emit();
     }
 
-    delete(id: number): void {
-        this.selectedRow = this.fieldDefinitions.find(f => f.ID == id);
+    delete(name: string): void {
+        this.selectedRow = this.fieldDefinitions.find(f => f.Name == name);
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
@@ -143,7 +169,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 res => {
                     this.showMessageForResult(this.messagesService, res);
                     if (!res.isError) {
-                        let index = this.fieldDefinitions.findIndex(f => f.ID == id);
+                        let index = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
 
                         this.isDeleting = false;
 
@@ -160,8 +186,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
                 res => {                                        
                     if (res != null && res.Success === true) {
-                        this.messagesService.showInfoMessage('Success','Field definition successfully removed.');
-                        let index = this.fieldDefinitions.findIndex(f => f.ID == id);
+                        this.messagesService.showInfoMessage('Success', 'Field definition successfully removed.');
+                        let index = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
 
                         this.isDeleting = false;
 

@@ -12,6 +12,7 @@ import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
 import {IFieldsObservableService} from "../models/fields-observable.model";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
 
 @Injectable()
 export class FieldsObservableService extends BaseObservableService implements IFieldsObservableService {
@@ -31,6 +32,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
             .get<FieldDefinition[]>(`/fields/${objectType}/${objectID}/full`)
             .pipe(
                 map(response => <FieldDefinition[]>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getFieldsV2(
+        uid: string
+    ): Observable<FieldTypeAPIModelField[]> {
+        return this
+            .http
+            .get<any>(`api/v2/fields?AssetTypeUid=${uid}`)
+            .pipe(
+                map(response => <FieldTypeAPIModel[]>response.items),
                 catchError(err => this.handleError(err))
             );
     }
