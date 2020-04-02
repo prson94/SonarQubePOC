@@ -908,6 +908,10 @@ from	IntersectType I
                     }
                     newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
+                    if (f.Type.Json.Validation != null)
+                    {
+                        newFieldType.IsRequired = f.Type.Json.Validation.IsRequired;
+                    }
                 }
                 else if (f.Type.JsonElement != null)
                 {
