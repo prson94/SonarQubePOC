@@ -115,7 +115,7 @@ nav.top, .left-side-nav {
     text-align: center;
     white-space: nowrap;
     background: #f0f0f0;
-    color: #202020;
+    color: @ig-black;
     border: none;
     border-radius: 3px;
 
@@ -142,7 +142,7 @@ nav.top, .left-side-nav {
 
     &.primary {
         background: #006FBA;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: #4093CB;
@@ -155,7 +155,7 @@ nav.top, .left-side-nav {
 
     &.accent {
         background: coral;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: mix(black, coral, 7%)
@@ -168,7 +168,7 @@ nav.top, .left-side-nav {
 
     &.negative {
         background: red;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: mix(black, red, 7%)
@@ -206,7 +206,7 @@ nav.top, .left-side-nav {
         width: 40px;
         height: 40px;
         background: none;
-        color: #ffffff;
+        color: @ig-white;
         font-size: 16px;
         border-radius: 0;
 
@@ -219,7 +219,7 @@ nav.top, .left-side-nav {
         }
 
         &.light {
-            color: #202020;
+            color: @ig-black;
 
             &:not(:disabled):hover, &.hover {
                 background: rgba(0, 0, 0, 0.07);
@@ -503,7 +503,7 @@ nav.top, .left-side-nav {
         text-transform: none;
         font-size: 100%;
         z-index: 1001;
-        color: #ffffff;
+        color: @ig-white;
         background: #878b97;
         display: flex;
         height: 40px;
@@ -530,7 +530,7 @@ nav.top, .left-side-nav {
             box-shadow: none;
             width: 80%;
             margin-right: -10px;
-            color: #ffffff;
+            color: @ig-white;
             z-index: 1002;
             line-height: 30px;
             outline: none !important;
@@ -1042,7 +1042,7 @@ div.relationship .name {
 }
 
 div.relationship .count, div.relationship .empty-count {
-    color: #ffffff;
+    color: @ig-white;
     font-weight: bold;
     padding: 2px;
     border-radius: 3px;
@@ -1082,7 +1082,7 @@ div.child .name {
 }
 
 div.child .count, div.child .empty-count {
-    color: #ffffff;
+    color: @ig-white;
     font-weight: bold;
     padding: 2px;
     border-radius: 3px;
@@ -1677,7 +1677,7 @@ a.breadcrumb {
     input {
         display: inline-block;
         border: none;
-        color: #202020;
+        color: @ig-black;
         background: none;
         flex-grow: 1;
         outline: none;
@@ -1695,7 +1695,7 @@ a.breadcrumb {
 
     i.fa {
         display: inline-block;
-        color: #202020;
+        color: @ig-black;
         font-size: 16px;
         padding-left: 10px;
 
@@ -2101,7 +2101,7 @@ li.shortcut div.shortcut-name {
     letter-spacing: normal;
     text-align: center;
     padding: 7px 16px 3px 16px;
-    color: #ffffff;
+    color: @ig-white;
 }
 
 li.shortcut .shortcut-desc {
@@ -2116,7 +2116,7 @@ li.shortcut .shortcut-desc {
     letter-spacing: normal;
     text-align: center;
     padding: 0 16px;
-    color: #ffffff;
+    color: @ig-white;
     margin: auto;
     display: block;
     display: -webkit-box;
@@ -2292,7 +2292,7 @@ div.home-image-title-text {
         text-align: center;
         white-space: nowrap;
         background: #f0f0f0;
-        color: #202020;
+        color: @ig-black;
         border: none;
         border-radius: 3px;
         line-height: normal;
@@ -2320,7 +2320,7 @@ div.home-image-title-text {
 
     button.button.primary {
         background: #0971b9;
-        color: #ffffff;
+        color: @ig-white;
         line-height: normal;
     }
 
@@ -2334,7 +2334,7 @@ div.home-image-title-text {
 
     button.button.accent {
         background: #ff7155;
-        color: #ffffff;
+        color: @ig-white;
     }
 
     button.button.accent:not(:disabled):hover, button.button.accent.hover {
@@ -2347,7 +2347,7 @@ div.home-image-title-text {
 
     button.button.negative {
         background: #d11f49;
-        color: #ffffff;
+        color: @ig-white;
     }
 
     button.button.negative:not(:disabled):hover, button.button.negative.hover {
@@ -2405,7 +2405,7 @@ div.home-image-title-text {
         width: 40px;
         height: 40px;
         background: none;
-        color: #ffffff;
+        color: @ig-white;
         font-size: 16px;
         border-radius: 0;
     }
@@ -2419,7 +2419,7 @@ div.home-image-title-text {
     }
 
     button.button.bar.light {
-        color: #202020;
+        color: @ig-black;
     }
 
     button.button.bar.light:not(:disabled):hover, button.button.bar.light.hover {
@@ -2434,7 +2434,7 @@ div.home-image-title-text {
         width: 40px;
         height: 40px;
         background: none;
-        color: #ffffff;
+        color: @ig-white;
         font-size: 16px;
         border-radius: 0;
     }
@@ -2448,7 +2448,7 @@ div.home-image-title-text {
     }
 
     button.button.bar.light {
-        color: #202020;
+        color: @ig-black;
     }
 
     button.button.bar.light:not(:disabled):hover, button.button.bar.light.hover {
@@ -2534,7 +2534,7 @@ div.home-image-title-text {
 }
 
 .modal-overlay .modal-dialog .modal-title-bar h1 {
-    color: #202020;
+    color: @ig-black;
     font-size: 18px;
     font-weight: 600;
     width: 100%;
@@ -2559,7 +2559,7 @@ div.home-image-title-text {
 }
 
 .modal-overlay .modal-dialog .content {
-    background: #ffffff;
+    background: @ig-white;
     padding: 0px 24px 24px 24px;
     flex-grow: 1;
     flex-shrink: 1;
@@ -2617,7 +2617,7 @@ div.home-image-title-text {
 .about-info li {
     font-weight: normal;
     font-size: 14px;
-    color: #202020;
+    color: @ig-black;
     float: none;
     cursor: text;
 
@@ -2634,7 +2634,7 @@ div.home-image-title-text {
 .about-info p {
     font-weight: normal;
     font-size: 14px;
-    color: #202020;
+    color: @ig-black;
     line-height: 1.2;
     margin: 0;
     margin-top: 15px;
@@ -2732,7 +2732,7 @@ button.button, a.link-button {
     text-align: center;
     white-space: nowrap;
     background: #f0f0f0;
-    color: #202020;
+    color: @ig-black;
     border: none;
     border-radius: 3px;
 
@@ -2764,7 +2764,7 @@ button.button, a.link-button {
 
     &.primary {
         background: @igx-blue;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: mix(black, @igx-blue, 7%)
@@ -2781,7 +2781,7 @@ button.button, a.link-button {
 
     &.accent {
         background: @igx-coral;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: mix(black, @igx-coral, 7%)
@@ -2798,7 +2798,7 @@ button.button, a.link-button {
 
     &.negative {
         background: @igx-red;
-        color: #ffffff;
+        color: @ig-white;
 
         &:not(:disabled):hover, &.hover {
             background: mix(black, @igx-red, 7%)
@@ -2840,7 +2840,7 @@ button.button, a.link-button {
         width: 40px;
         height: 40px;
         background: none;
-        color: #ffffff;
+        color: @ig-white;
         font-size: 16px;
         border-radius: 0;
 
@@ -2853,7 +2853,7 @@ button.button, a.link-button {
         }
 
         &.light {
-            color: #202020;
+            color: @ig-black;
 
             &:not(:disabled):hover, &.hover {
                 background: rgba(0, 0, 0, 0.07);
@@ -2893,7 +2893,7 @@ button.button, a.link-button {
             justify-content: center;
             align-items: center;
             font-size: 14px;
-            color: #202020;
+            color: @ig-black;
 
             &.selected {
                 display: inline-flex;
@@ -3176,7 +3176,7 @@ button.tab-scroller {
 }
 
 .d3s-circular-chart.white .circle {
-    stroke: #ffffff;
+    stroke: @ig-white;
 }
 
 
@@ -3368,7 +3368,7 @@ button.tab-scroller {
                 border-radius: 2px;
                 box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
                 border: solid 1px #b9c0c5;
-                background-color: #ffffff;
+                background-color: @ig-white;
 
                 .ui-dropdown-label {
                     line-height: 25px;
@@ -3400,7 +3400,7 @@ button.tab-scroller {
                     border-radius: 2px;
                     box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
                     border: solid 1px #b9c0c5;
-                    background-color: #ffffff;
+                    background-color: @ig-white;
 
                     .ui-dropdown-filter {
                         height: 32px;
@@ -3437,7 +3437,7 @@ button.tab-scroller {
         p-checkbox {
             .ui-chkbox-box.ui-state-active {
                 border: 1px solid #0971b9;
-                background: #ffffff;
+                background: @ig-white;
                 color: #0971b9;
                 line-height: 1px;
             }
@@ -3573,7 +3573,7 @@ button.tab-scroller {
 
         .ui-tooltip-text {
             padding: .125em .5em;
-            background-color: #ffffff;
+            background-color: @ig-white;
             color: #000;
             white-space: pre-line;
             max-width: 500px;
@@ -3615,7 +3615,7 @@ button.tab-scroller {
 
 
         .ui-tooltip-arrow {
-            border-right-color: #ffffff;
+            border-right-color: @ig-white;
         }
     }
 }
@@ -3798,7 +3798,7 @@ button.tab-scroller {
                     color: #b9c0c5;
 
                     i {
-                        color: #202020;
+                        color: @ig-black;
                     }
                 }
             }
@@ -3894,7 +3894,7 @@ button.tab-scroller {
         border: none;
 
         input {
-            color: #202020;
+            color: @ig-black;
 
             &::placeholder {
                 color: #6c7884;
@@ -3982,7 +3982,7 @@ button.tab-scroller {
         height: 26px;
         width: 50px;
         text-align: center;
-        color: #202020;
+        color: @ig-black;
         cursor: pointer;
         transition: color 150ms ease;
 
@@ -4392,7 +4392,7 @@ button.tab-scroller {
                         .d3s-badge {
                             margin-left: auto;
                             background: @igx-grey-lightbadge;
-                            color: #202020;
+                            color: @ig-black;
                             position: relative;
                             top: -3px;
                         }
@@ -4425,7 +4425,7 @@ button.tab-scroller {
                     padding: 0px 16px 16px;
                     border: solid 1px rgba(185, 192, 197, 0.7);
                     border-radius: 4px;
-                    background-color: #ffffff;
+                    background-color: @ig-white;
                     box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
 
                     div.card-row {
@@ -4459,7 +4459,7 @@ button.tab-scroller {
                             }
 
                             &.category {
-                                color: #202020;
+                                color: @ig-black;
 
                                 i.fa {
                                     padding: 0 7px;
@@ -4497,7 +4497,7 @@ button.tab-scroller {
                                 justify-content: center;
                                 align-items: center;
                                 background: #f1f1f3;
-                                color: #202020;
+                                color: @ig-black;
                                 border: none;
                                 border-radius: 4px;
                                 height: 32px;
@@ -4615,7 +4615,7 @@ button.tab-scroller {
     border-radius: 4px !important;
     box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05) !important;
     border: solid 1px rgba(185, 192, 197, 0.7) !important;
-    background-color: #ffffff !important;
+    background-color: @ig-white !important;
     max-height: 50%;
     overflow: auto !important;
     display: flex;
@@ -4717,7 +4717,7 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
         border-radius: 4px;
         box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
         border: solid 2px #c8cfd9;
-        background-color: #ffffff;
+        background-color: @ig-white;
         position: absolute;
         left: -178px;
         top: 23px;
@@ -4807,7 +4807,7 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
             vertical-align: middle;
             font-size: 14px;
             font-weight: 600;
-            color: #ffffff;
+            color: @ig-white;
 
             .nomast& {
                 width: 80px;
@@ -4902,7 +4902,7 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
             }
 
             &.selected {
-                color: #202020;
+                color: @ig-black;
                 font-weight: bold;
                 cursor: default;
             }
@@ -5010,7 +5010,7 @@ a.mid-blue {
             font-stretch: normal;
             line-height: 1.14;
             letter-spacing: normal;
-            color: #202020;
+            color: @ig-black;
 
             &:focus {
                 outline: none;
@@ -5051,7 +5051,7 @@ a.mid-blue {
             border-radius: 2px;
             box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
             border: solid 1px #b9c0c5;
-            background-image: linear-gradient(to bottom, #ffffff, #f9fafb);
+            background-image: linear-gradient(to bottom, @ig-white, #f9fafb);
 
             .ui-chkbox-icon {
                 padding-left: 0px !important;
@@ -5075,7 +5075,7 @@ a.mid-blue {
                 font-stretch: normal;
                 line-height: 1.14;
                 letter-spacing: normal;
-                color: #202020;
+                color: @ig-black;
             }
 
             a.ui-multiselect-close {
@@ -5862,7 +5862,7 @@ a.mid-blue {
 
 .request-cert {
     .content {
-        background: #ffffff !important;
+        background: @ig-white !important;
         padding: 20px 20px 0px 20px !important;
         min-height: 20px !important;
         margin: auto !important;
@@ -6030,7 +6030,7 @@ a.mid-blue {
                 color: #515667;
 
                 &.selected {
-                    background-color: #ffffff;
+                    background-color: @ig-white;
                     font-weight: 600;
                 }
             }
@@ -6081,7 +6081,7 @@ a.mid-blue {
     border-radius: 4px;
     box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
     border: solid 1px rgba(185, 192, 197, 0.7);
-    background-color: #ffffff;
+    background-color: @ig-white;
     max-height: initial;
     margin-bottom: 8px;
 
@@ -6142,7 +6142,7 @@ a.mid-blue {
             display: flex;
             flex-direction: row;
             flex-grow: 1;
-            color: #202020;
+            color: @ig-black;
 
             .heading-item {
                 padding: 8px 8px 8px 0px;
@@ -6203,7 +6203,7 @@ a.mid-blue {
 
                     .d3s-badge {
                         line-height: 24px;
-                        color: #ffffff;
+                        color: @ig-white;
                         width: 47px;
                         height: 24px;
                         border-radius: 16px;
@@ -6386,14 +6386,14 @@ a.mid-blue {
         height: 24px !important;
         border-radius: 4px !important;
         box-shadow: 1px 1px 1px 0 rgba(0, 0, 0, 0.25) !important;
-        border: solid 1px #202020 !important;
-        background-color: #202020 !important;
+        border: solid 1px @ig-black !important;
+        background-color: @ig-black !important;
     }
 
     .slider-tooltip {
         width: 38px;
         height: 26px;
-        background-color: #202020;
+        background-color: @ig-black;
         color: white;
         position: relative;
         top: 32px;
@@ -6414,14 +6414,14 @@ a.mid-blue {
             height: 0;
             border-left: 10px solid transparent;
             border-right: 10px solid transparent;
-            border-bottom: 10px solid #202020;
+            border-bottom: 10px solid @ig-black;
         }
     }
 }
 
 .score-range-manual {
     margin-top: 16px;
-    color: #202020;
+    color: @ig-black;
 
 
     .d3s-score-pill {
@@ -6454,7 +6454,7 @@ a.mid-blue {
             border-radius: 2px;
             box-shadow: 0 1px 0 0 rgba(22, 29, 37, 0.05);
             border: solid 1px #b9c0c5;
-            background-color: #ffffff;
+            background-color: @ig-white;
             margin-right: 22px;
         }
 
@@ -6501,7 +6501,7 @@ a.mid-blue {
             padding: 2px 0px;
         }
 
-        color: #202020;
+        color: @ig-black;
         display: none;
         z-index: 1000;
         width: 304px;
@@ -6510,7 +6510,7 @@ a.mid-blue {
         border-radius: 4px;
         box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
         border: solid 1px #c8cfd9;
-        background-color: #ffffff;
+        background-color: @ig-white;
         font-weight: normal;
         transform: translateY(-50%);
     }
