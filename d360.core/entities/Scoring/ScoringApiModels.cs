@@ -96,7 +96,7 @@ namespace d360.core.entities.Scoring
         public bool IsSuccess { get; set; }
         public string ErrorMessage { get; set; }
         public List<ExternalScoreResultMeasureModel> Measures { get; set; }
-
+        [JsonIgnore]
         public string measuresJson { get; set; }
     }
 
