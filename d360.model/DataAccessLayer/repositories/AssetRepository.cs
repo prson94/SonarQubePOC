@@ -457,7 +457,7 @@ namespace d360.model.DataAccessLayer
 				   )Permission(mask)";
 
             string includePermissionFields = @",(SELECT case 
-					   when permission.mask is null then @isAdmin
+					   when permission.mask is null then 1
 					   when permission.mask is not null and permission.mask & 1 = 1 then 1
 					 else 0
 					 end as 'ReadAsset',

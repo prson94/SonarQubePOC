@@ -52,12 +52,12 @@ namespace d360.web.Controllers.V2
             Route("asset/{assetUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Assets of this Type do not support permissions.", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.BadRequest, "Assets of this Type do not support permissions.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset permissions.", typeof(PermissionsResponseModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetAssetPermissionsByUid(Guid assetUid)
-        {            
+        {
             Asset asset = AssetRepository.GetAssetByUID(assetUid);
 
             if(asset != null)
@@ -65,6 +65,12 @@ namespace d360.web.Controllers.V2
                 if (SupportsPermissions(asset.AssetType.Class))
                 {
                     List<PermissionInfo> permissions = Company.GetPermissions(asset.ID, asset.AssetTypeID);
+                    if (!Company.CurrentResourceIsAdmin && permissions.Count == 0)
+                    {
+                        //If there are no set responsibilities, non admin by default has ReadAccess rights to an asset
+                        permissions.Add(Permission.ReadAsset.GetPermissionInfo());
+                    }
+
                     return await Task.FromResult(Request.CreateResponse(HttpStatusCode.OK, CreatePermissionsResponse(permissions)));
                 }
                 else
@@ -94,7 +100,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetAssetTypePermissionsByUid(Guid assetTypeUid)
-        {          
+        {
             AssetType assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
             if (assetType != null)
             {
@@ -106,7 +112,7 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name)));                   
+                    return await Task.FromResult(Request.CreateErrorResponse(HttpStatusCode.BadRequest, String.Format(Permissions.AssetType_Permissions_Not_Supported, assetType.Name)));
                 }
 
             }
