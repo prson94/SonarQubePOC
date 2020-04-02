@@ -34,6 +34,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private artifacts: Artifacts;
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
+    private totalRecords: number = 10000;
 
     private numberOfRows: number = this.defaultInitialItemsPerPage;
     private currentPage: number = 0;
@@ -88,11 +89,16 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     getData() {
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
-            console.log(i);
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, sortDataField: this.sortField, sortOrderText: sortOrderText, _simpleFilter: this.filter, _includeParent: true };
+            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, order: 'Code', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: true };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
+                this.totalRecords = res.total;
                 this.artifacts = res;
+
+                if (this.totalRecords < 1000) {
+                    params.useGraphForParent = false;
+                }
+
                 this.isLoading = false;
             });
         });
