@@ -234,6 +234,7 @@
 	<include file="scripts/Table.api.ExecutionAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetCrossReference.xml"/>
 	<include file="scripts/Table.api.ExecutionAssetError.xml"/>
+	<include file="scripts/Table.api.ExecutionAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
@@ -246,6 +247,7 @@
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
+	
 
   
 	<!-- Views (object-based naming) -->
