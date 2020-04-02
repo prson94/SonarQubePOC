@@ -6166,8 +6166,8 @@ insert into #Keys
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
                     int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
 
-                    string assetResultSQL = $@"create table #ObjectMergeTableResult (Uid uniqueidentifier, ItemNumber int, [Operation] varchar(10));
-                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableResult ON #ObjectMergeTableResult ( ItemNumber ASC );
+                    string assetResultSQL = $@"create table #ObjectMergeTableAssetResult (Uid uniqueidentifier, ItemNumber int, [Operation] varchar(10));
+                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableAssetResult ON #ObjectMergeTableAssetResult ( ItemNumber ASC );
 
                                                 Merge into AssetResult
                                                 using (
@@ -6203,7 +6203,7 @@ insert into #Keys
 			                                                ,@userId
 			                                                ,@requestDate
 			                                                ,@userId)
-	                                                output  inserted.[Uid], S.ItemNumber, $action into #ObjectMergeTableResult;
+	                                                output  inserted.[Uid], S.ItemNumber, $action into #ObjectMergeTableAssetResult;
 
 	                                                INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
 	                                                select 
@@ -6211,7 +6211,7 @@ insert into #Keys
 	                                                from 
 		                                                AssetResult AR 
 		                                                inner join
-		                                                #ObjectMergeTableResult MTR on MTR.Uid = AR.Uid
+		                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
 		                                                inner join 
 		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
 		                                                inner join 
@@ -6223,7 +6223,7 @@ insert into #Keys
 	                                                from 
 		                                                AssetResult AR 
 		                                                inner join 
-		                                                #ObjectMergeTableResult MTR on MTR.Uid = AR.Uid
+		                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
 		                                                inner join 
 		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
 		                                                inner join 
@@ -6234,7 +6234,7 @@ insert into #Keys
 	                                                FROM 
 	                                                api.ExecutionAssetResult EAR
 	                                                inner join 
-	                                                #ObjectMergeTableResult MTR on MTR.Uid = EAR.Uid";
+	                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = EAR.Uid";
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
                         bool runCompleted = false;
