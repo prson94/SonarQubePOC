@@ -27,7 +27,8 @@ import { NgxJsonViewModule } from 'ng-json-view';
         LookupTooltipComponent,
         D3STreeTableToggler,
         D3SSortIconModule,
-        D3SColumnFilterModule
+        D3SColumnFilterModule,
+        DirectivesModule
     ]
     , imports: [
         CommonModule,

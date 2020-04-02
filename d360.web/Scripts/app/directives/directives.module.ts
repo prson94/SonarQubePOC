@@ -2,6 +2,7 @@
 import { TextHighlightDirective } from './text-highlight-directive';
 import { CopyClipboardDirective } from './copy-clipboard-directive';
 import { ClickOutsideDirective } from './click-outside-directive';
+import { ButtonDirective } from './ig-button-directive';
 
 
 @NgModule({ 
@@ -10,11 +11,13 @@ import { ClickOutsideDirective } from './click-outside-directive';
         TextHighlightDirective,
         CopyClipboardDirective,
         ClickOutsideDirective,
+        ButtonDirective,
     ],
     exports: [
         TextHighlightDirective,
         CopyClipboardDirective,
         ClickOutsideDirective,
+        ButtonDirective,
     ]
 })
 export class DirectivesModule { }
