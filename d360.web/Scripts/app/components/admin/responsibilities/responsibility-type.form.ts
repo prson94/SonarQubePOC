@@ -15,8 +15,8 @@ export class ResponsibilityTypeForm implements OnInit {
     @Output() onLoadComplete = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    private isLoading = false;
-    private item: ResponsibilityType;
+    private isLoading = true;
+    private item: ResponsibilityType = new ResponsibilityType();
 
     private selectedAllocations: string[] = [];
 
@@ -29,9 +29,17 @@ export class ResponsibilityTypeForm implements OnInit {
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        let reloadRequired = false;
         for (let p in changes) {
             if (p == 'id') {
-                this.load();
+                if (changes[p].currentValue == 0) {
+                    this.load();
+                }
+                if (changes[p].currentValue && (changes[p].currentValue != changes[p].previousValue)) {
+                    reloadRequired = true;
+                }
+                if (reloadRequired)
+                    this.load();
             }
         }
     }

@@ -1,6 +1,6 @@
 <header *ngIf="!showEditor && !showDelete">
     {{title}}
-    <d3s-tile-actions [hasAdd]="true" (addClick)="add()" hasFilterMode="true"
+    <d3s-tile-actions [hasAdd]="hasAdd" (addClick)="add()" hasFilterMode="true"
                       [(filterMode)]="showSimpleFilter" [hasExport]="true"
                       (exportClick)="export()"></d3s-tile-actions>
 </header>
@@ -98,5 +98,6 @@
                          [uid]="selected?.AssetUid"
                          [assetTypeUid]="assetTypeUid"
                          (onCancel)="showDelete = false"
-                         (onDeleted)="onDeleted()">
+                         (onDeleted)="onDeleted()"
+                         [displayValue]="selected?.Code">
 </d3s-asset-delete-editor>

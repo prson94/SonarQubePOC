@@ -21,7 +21,6 @@ import { AdminExportTemplateFieldsComponent } from './admin-export-template-fiel
 import { AdminExportTemplatesRoutingModule } from './admin-export-templates.routes';
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
-import { ErrorNotifyInterceptor } from '../../../http-interceptors/error-notify-interceptor';
 
 import { SharedModule } from 'primeng/shared';
 import { InputTextModule } from 'primeng/inputtext';
@@ -38,6 +37,7 @@ import { FileUploadModule } from 'primeng/fileupload';
 import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
 import { AdminExportTemplateStylesComponent } from './admin-export-template-styles.component';
 import { AdminExportTemplateStyleFormComponent } from './admin-export-template-style-form.component';
+import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 
 
 @NgModule({
@@ -88,7 +88,7 @@ import { AdminExportTemplateStyleFormComponent } from './admin-export-template-s
     providers: [
         {
             provide: HTTP_INTERCEPTORS,
-            useClass: ErrorNotifyInterceptor,
+            useClass: GovernRequestInterceptor,
             multi: true
         }
     ]

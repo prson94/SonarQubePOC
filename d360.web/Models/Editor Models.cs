@@ -275,48 +275,7 @@ namespace d360.web.Models
         public bool Valid { get; set; }
         public string Message { get; set; }
     }
-
-    public class FieldTypeFilteredLookupItemEditorModel
-    {
-        public int ID { get; set; }
-        public string Object { get; set; }
-        public int ObjectID { get; set; }
-        public ICollection<FieldTypeItemDisplayFieldEditorModel> DisplayFields { get; set; }
-        public bool HideHeader { get; set; }
-        public bool HideFooter { get; set; }
-
-
-        public FieldValidity Validation()
-        {
-            var prefix = "You are missing a";
-            var valid = new FieldValidity();
-            if (string.IsNullOrEmpty(Object) || ObjectID <= 0)
-            {
-                valid.Valid = false;
-                valid.Message = $"{prefix} field.";
-            }
-
-            if (valid.Valid)
-            {
-                if (DisplayFields == null)
-                {
-                    valid.Valid = false;
-                    valid.Message = $"{prefix} reference column.";
-                }
-                else
-                {
-                    if (DisplayFields.Count == 0)
-                    {
-                        valid.Valid = false;
-                        valid.Message = $"{prefix} reference column.";
-                    }
-                }
-            }
-
-            return valid;
-        }
-    }
-
+ 
     public class FieldTypeFusionItemEditorModel
     {
         public int ID { get; set; }
@@ -475,8 +434,6 @@ namespace d360.web.Models
         public bool FieldIsUsed { get; set; }
 
         public FieldType FieldType { get; set; }
-
-        public FieldTypeFilteredLookupItemEditorModel FilteredLookupItem { get; set; }
 
         public ICollection<FieldTypeFusionItemEditorModel> FusionItems { get; set; }
 
@@ -764,28 +721,45 @@ namespace d360.web.Models
 
     public enum AssetBrowserApiHopType
     { 
-        Self = 1,
-        Lineage = 2,
-        Impact = 3
+        Lineage = 1,
+        Impact = 2
+    }
+
+    public enum AssetBrowserDiagramType
+    {
+        Lineage = 1,
+        Impact = 2
     }
 
     [DataContract]
     public class AssetBrowserApiHopRequestModel
     {
         [DataMember]
+        public bool Initial { get; set; }
+
+        [DataMember]
         public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
+
+        [DataMember]
+        public List<AssetBrowserApiHopIgnoreAssetRequestModel> AssetsToIgnore { get; set; }
 
         [DataMember]
         public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
 
         [DataMember]
-        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Self;
+        public AssetBrowserDiagramType DiagramType { get; set; } = AssetBrowserDiagramType.Impact;
+
+        [DataMember]
+        public AssetBrowserApiHopType HopType { get; set; } = AssetBrowserApiHopType.Impact;
 
         [DataMember]
         public Guid? PredicateUid { get; set; }
         
         [DataMember]
         public int Hops { get; set; } = 3;
+
+        [DataMember]
+        public bool LeafOnly { get; set; } = true;
     }
 
     [DataContract]
@@ -806,6 +780,13 @@ namespace d360.web.Models
         
         [DataMember]
         public string Key { get; set; }
+    }
+
+    [DataContract]
+    public class AssetBrowserApiHopIgnoreAssetRequestModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
     }
 
     #endregion

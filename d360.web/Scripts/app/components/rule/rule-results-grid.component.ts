@@ -10,105 +10,7 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 
 @Component({
     selector: 'd3s-rule-results-grid',
-    template: `                 
-                <header>
-                    <span *ngIf="showTitle; else noTitle">Results</span>
-                    <ng-template #noTitle>&nbsp;</ng-template>
-                    <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
-                </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                <span *ngIf="!isLoading">
-                        <div *ngIf="showSimpleFilter">                                                
-                            <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />                            
-                        </div>
-                        <d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-                        <p-table #dt 
-                            [value]="items" 
-                            selectionMode="single" 
-                            [metaKeySelection]="true" 
-                            [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']" 
-                            [pageLinks]="3" 
-                            [paginator]="true" 
-                            [rows]="rowsPerPage" 
-                            [rowsPerPageOptions]="[5,10,20]"  
-                            [lazy]="true"  
-                            (onLazyLoad)="loadRuleResultsLazy($event)" 
-                            [totalRecords]="totalRecords" 
-                            [scrollable]="true" 
-                            scrollWidth="100%">
-                            <ng-template pTemplate="colgroup" >
-                                <colgroup>
-                                    <col style="width: 150px">
-                                    <col style="width: 120px">
-                                    <col style="width: 150px">
-                                    <col style="width: 150px">
-                                    <col style="width: 150px">
-                                    <col style="width: 150px">
-                                    <col style="width: 200px">
-                                </colgroup>
-                            </ng-template> 
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th [pSortableColumn]="'RunDate'">
-                                        Run Date
-                                        <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'EffectiveDate'">
-                                        Effective Date
-                                        <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'PassFraction'">
-                                        Pass Fraction
-                                        <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'RowsPassed'">
-                                        Rows Passed
-                                        <d3s-sortIcon [field]="'RowsPassed'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'RowsFailed'">
-                                        Rows Failed
-                                        <d3s-sortIcon [field]="'RowsFailed'"></d3s-sortIcon>
-                                    </th>
-                                    <th [pSortableColumn]="'Passed'">
-                                        Passed
-                                        <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
-                                    </th>                                    
-                                    <th [pSortableColumn]="''"></th>
-                                </tr>
-                                <tr [hidden]="showSimpleFilter">
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                    <th></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-item>
-                                <tr [pSelectableRow]="item">
-                                    <td>
-                                            <span>{{item.RunDate | date : 'short'}}</span>
-                                    </td>
-                                    <td>
-                                            <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
-                                    </td>
-                                    <td>{{item.PassFraction}}</td>
-                                    <td>{{item.RowsPassed}}</td>
-                                    <td>{{item.RowsFailed}}</td>
-                                    <td>
-                                            <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                                            <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="summary">
-                                <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-                            </ng-template>
-                        </p-table>
-                </span>                
-                `,
+    templateUrl: './rule-results-grid.component.html',
     providers: [RulesService],
 })
 
@@ -120,7 +22,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
 
-    private rowsPerPage: number = 5;
+    private rowsPerPage: number = 25;
     private totalRecords: number = 0;
     private results: RuleResultPagedResults;
     private items;
@@ -150,13 +52,13 @@ export class RuleResultsGridComponent extends BaseComponent {
         }
     }
 
-
     public filterGridData(filterData) {
         this.currentPageNumber = 0;
         this.getData();
     }
 
     private getData() {
+
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
@@ -177,10 +79,10 @@ export class RuleResultsGridComponent extends BaseComponent {
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
                     this.items = this.results.results;
+
                 }
 
             });
-
     }
 
     private loadRuleResultsLazy(event: LazyLoadEvent) {
@@ -188,8 +90,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value
-        console.log(event);
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
@@ -207,7 +108,6 @@ export class RuleResultsGridComponent extends BaseComponent {
             }
 
             this.simpleSearchID = window.setTimeout(() => this.doSimpleSearch(dt), this.searchDelayMilliSeconds);
-
         }
     }
 

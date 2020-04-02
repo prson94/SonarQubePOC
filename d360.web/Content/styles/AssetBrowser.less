@@ -17,7 +17,7 @@
         .controls-right {
             position: absolute;
             z-index: 50;
-            right: 16px;
+            right: 0px;
 
             span {
                 padding: 8px;
@@ -417,6 +417,14 @@
             margin-left: 5px;
         }
 
+        &:not(.icon) {
+            padding: 0 16px;
+
+            i.fa {
+                padding-right: 8px;
+            }
+        }
+
         &.icon {
             font-size: 16px;
             width: 32px;
@@ -492,10 +500,10 @@
         }
 
         .button-spacer {
-            display: inline-flex;
-            margin: 0px 10px 0px 10px;
+            display: inline-block;
+            margin: 0px 16px 0px 16px;
             width: 1px;
-            height: 20px;
+            height: 32px;
             background-color: #b9c0c5;
             line-height: 32px;
             vertical-align: middle;
@@ -509,19 +517,25 @@
     }
 
     .asset-browser-search {
-        border-radius: 4px;
         position: relative;
-        display: inline-block;
-        margin-right: 4px;
+        display: inline-flex;
+        flex-direction: row;
+        align-items: center;
+        box-sizing: border-box;
+        background: white;
+        border: 1px solid #cccccc;
+        border-radius: 4px;
+        height: 32px;
+        width: 300px;
 
         input {
-            height: 32px;
-            width: 295px;
-            border-radius: 2px;
-            border: solid 1px #b9c0c5;
-            background-color: white;
-            color: #73808a;
-            padding: 0px 11px;
+            background: none;
+            border: none;
+            flex-grow: 1;
+            padding-right: 10px;
+            outline: none;
+            min-width: 50px;
+            padding: 0 10px;
 
             &.has-text {
                 padding-right: 80px;
@@ -530,12 +544,12 @@
 
         .input-actions {
             position: absolute;
-            top: 6px;
+            top: 5px;
             right: 28px;
 
             .fa-times-circle {
                 margin: 0px 8px;
-                color: #006fc0;
+                color: #006fba;
                 cursor: pointer;
             }
 

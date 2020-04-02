@@ -41,7 +41,8 @@ namespace d360.web.Controllers.Services
 			                T.Name,
 			                T.Description,
 			                A.ID as AssetTypeID,
-			                (select count(1) from organization o where organizationtypeid = t.id and o.state = 1) as OrganizationCount
+			                (select count(1) from organization o where organizationtypeid = t.id and o.state = 1) as OrganizationCount,
+                            A.uid
                 from		OrganizationType T
 			                inner join AssetType A on A.Object = 'OrganizationType' and A.ObjectID = T.ID
                 where       T.State = 1

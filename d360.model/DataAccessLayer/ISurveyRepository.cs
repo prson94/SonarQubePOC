@@ -12,7 +12,10 @@ namespace d360.model.DataAccessLayer
         SurveyTypeApiResponseModel GetSurveyTypes(IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyResultSummaryApiResponseModel GetSurveyResultSummary(Guid surveyTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         SurveyType GetSurveyTypeByUid(Guid uid);
+        QuestionType GetSurveyQuestionTypeByUid(Guid uid);
         Task<SurveyAssetApiResponseModel> GetAssetSurvey(Guid assetUid);
         int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType);
+        Task<List<int>> GetSurveyQuestionResponses(Guid uid);
     }
 }

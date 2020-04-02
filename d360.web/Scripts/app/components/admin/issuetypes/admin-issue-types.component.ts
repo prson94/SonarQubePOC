@@ -82,7 +82,11 @@ import { MessagesObservableService } from '../../../services/messages-observable
                         <div class="row">
                             <div class="col s12">
                                 <div class="tile tile-detail">                                              
-                                    <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" [showIsListable]="false" [showIsPartOfKey]="false"></d3s-field-definition-tile>     
+                                    <d3s-field-definition-tile [objectType]="'IssueType'" [objectID]="selected?.ID" 
+                                        [showIsListable]="false" 
+                                        [showIsPartOfKey]="false"
+                                        [actionTypeUid]="selected?.Uid"
+                                    ></d3s-field-definition-tile>     
                                 </div>
                             </div>
                         </div> 

@@ -69,8 +69,16 @@ export class AssetBrowserFilterPanelComponent extends BaseComponent implements A
     * Called by the Hop Count dropdown control when selected value is updated.
     * @returns Nothing
     */
-    private numberOfHopsChange() {
-        this.apply.emit({ Type: AssetBrowserFilterChangeEventType.HopCount, Model: this.current });
+    private numberOfImpactHopsChange() {
+        this.apply.emit({ Type: AssetBrowserFilterChangeEventType.ImpactHopCount, Model: this.current });
+    }
+
+    /**
+    * Called by the Hop Count dropdown control when selected value is updated.
+    * @returns Nothing
+    */
+    private numberOfLineageHopsChange() {
+        this.apply.emit({ Type: AssetBrowserFilterChangeEventType.LineageHopCount, Model: this.current });
     }
 
     /**

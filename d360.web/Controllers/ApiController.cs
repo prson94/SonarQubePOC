@@ -234,11 +234,6 @@ namespace d360.web.Controllers
                             Category = ft.Category
                         });
                     }
-                    else if (ft.Type == DataType.FilteredLookup.ToString())
-                    {
-                        //look at fusionlookup field and figure out what to show
-                        list.AddRange(RenderFilteredLookupField(type.ToString(), id, ft.ID));
-                    }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
                         list.AddRange(RenderTagField(ft, type, id));
@@ -1729,241 +1724,6 @@ order by 'Name'";
 
         #endregion
 
-        #region Filtered Lookup Fields
-
-        private List<DetailReadOnlyRowModel> RenderFilteredLookupField(string type, int id, int fieldTypeID)
-        {
-            var list = new List<DetailReadOnlyRowModel>();
-
-            var ft = Company.GetById<FieldType>(fieldTypeID, i => i.FieldTypeFilteredLookupDefinitions);
-
-            if (ft.FieldTypeFilteredLookupDefinitions != null)
-            {
-                if (ft.FieldTypeFilteredLookupDefinitions.Count > 0)
-                {
-                    var def = ft.FieldTypeFilteredLookupDefinitions.First();
-                    list.Add(new DetailReadOnlyRowModel
-                    {
-                        columns = 1,
-                        FirstColumnFields = new List<ReadOnlyField> {
-                            new ReadOnlyField {
-                                Column = 1,
-                                Name = ft.FriendlyName,
-                                FieldDescription = ft.DisplayDescription,
-                                FieldName = ft.Name,
-                                HideHeader = def.HideHeader,
-                                HideFooter = def.HideFooter,
-                                HideFilter = true,
-                                LookupGridUrl = $"/api/FilteredLookupField/{type}/{id}/{def.ID}/values",
-                                LookupFieldTypeID = def.ID,
-                                LookupObjectID = id,
-                                LookupObjectType = type,
-                                LookupType = (int)DataType.FilteredLookup,
-                                ShowIfEmpty = ft.ShowIfEmpty,
-                            }
-                        },
-                        Category = ft.Category
-                    });
-                }
-                else if (ft.ShowIfEmpty)
-                {
-                    var ro = new ReadOnlyField
-                    {
-                        Name = ft.FriendlyName,
-                        Value = "",
-                        FieldDescription = ft.DisplayDescription,
-                        FieldName = ft.Name,
-                        Values = null,
-                        DataType = !string.IsNullOrEmpty(ft.Type) ? ft.Type : "",
-                        ShowIfEmpty = ft.ShowIfEmpty
-                    };
-
-                    list.Add(new DetailReadOnlyRowModel
-                    {
-                        columns = 1,
-                        FirstColumnFields = new List<ReadOnlyField> { ro },
-                        Category = ft.Category
-                    });
-                }
-            }
-
-            return list;
-        }
-
-        [Route("FilteredLookupField/{type}/{id:int}/{definitionID:int}/values")]
-        public HttpResponseMessage GetFilteredLookupGridField(string type, int id, int definitionID)
-        {
-            var gridFields = new List<GridField>();
-            var columns = new List<GridColumn>();
-            IEnumerable<dynamic> results = null;
-
-            try
-            {
-                var def = Company.GetById<FieldTypeFilteredLookupDefinition>(definitionID, i => i.FieldTypeFilteredLookupDisplayFields);
-                if (def == null) throw new Exception("Invalid filtered lookup field is specified");
-
-                var displayFields = def.FieldTypeFilteredLookupDisplayFields.ToList();
-                var fieldTypeIDs = displayFields.Where(i => i.FieldTypeID != 0).Select(x => x.FieldTypeID).ToList();
-                var fieldTypes = Company.Filter<FieldType>(i => fieldTypeIDs.Contains(i.ID)).ToList();
-
-                var sqlColumns = new List<string>();
-                var sqlJoins = new List<string>();
-                var sqlWhere = "";
-                var sqlOrderBy = "";
-
-                #region Load Columns/Fields
-
-                foreach (var fieldType in fieldTypes)
-                {
-                    var displayField = displayFields.Single(i => i.FieldTypeID == fieldType.ID);
-                    if (displayField.Show)
-                    {
-                        var cellsformat = "";
-                        var columntype = GridColumn.COLUMN_TYPE_STRING;
-                        var gridfieldType = "string";
-                        switch (fieldType.Type)
-                        {
-                            case "Boolean":
-                                columntype = GridColumn.COLUMN_TYPE_CHECKBOX;
-                                gridfieldType = "bool";
-                                break;
-                            case "Date":
-                                cellsformat = "MM/dd/yyyy";
-                                columntype = GridColumn.COLUMN_TYPE_DATE;
-                                gridfieldType = "date";
-                                break;
-                            case "DateTime":
-                                cellsformat = "MM/dd/yyyy hh:mm tt";
-                                columntype = GridColumn.COLUMN_TYPE_DATE;
-                                gridfieldType = "date";
-                                break;
-                            case "Decimal":
-                                cellsformat = "d";
-                                columntype = GridColumn.COLUMN_TYPE_NUMBER;
-                                gridfieldType = "number";
-                                break;
-                            case "Number":
-                                cellsformat = "n";
-                                columntype = GridColumn.COLUMN_TYPE_NUMBER;
-                                gridfieldType = "number";
-                                break;
-                        }
-
-                        if (!gridFields.Any(i => i.name == fieldType.Name) && !columns.Any(i => i.datafield == fieldType.Name))
-                        {
-                            gridFields.Add(new GridField { name = fieldType.Name, type = gridfieldType });
-                            var gc = new GridColumn { text = fieldType.FriendlyName, columntype = columntype, datafield = fieldType.Name };
-                            if (!string.IsNullOrEmpty(cellsformat))
-                            {
-                                gc.cellsformat = cellsformat;
-                            }
-                            columns.Add(gc);
-                        }
-
-                        sqlColumns.Add($"F{fieldType.ID}.FormattedValue as [{fieldType.Name}]");
-                    }
-
-                    sqlJoins.Add($"left join Field F{fieldType.ID} on F{fieldType.ID}.FieldTypeID = {fieldType.ID} and F{fieldType.ID}.ObjectType = 'Lookup' and F{fieldType.ID}.ObjectID = I.ID ");
-                }
-
-                gridFields.Add(new GridField { name = "Object", type = "string" });
-                gridFields.Add(new GridField { name = "Url", type = "string" });
-                gridFields.Add(new GridField { name = "ID", type = "number" });
-
-                #region Where
-
-                foreach (var df in displayFields.Where(i => i.Filter))
-                {
-                    sqlWhere += (string.IsNullOrEmpty(sqlWhere) ? "" : "AND ");
-                    sqlWhere += $" F{df.FieldTypeID}.Value = {id}";
-                }
-
-                #endregion
-
-                #region OrderBy
-
-                foreach (var df in displayFields.Where(i => i.SortOrder.HasValue).OrderBy(i => i.SortOrder).ThenBy(i => i.FieldTypeName))
-                {
-                    sqlOrderBy += (string.IsNullOrEmpty(sqlOrderBy) ? "" : ", ");
-                    if (df.FieldTypeID > 0)
-                    {
-                        var fieldTypeInfo = fieldTypes.SingleOrDefault(i => i.ID == df.FieldTypeID);
-                        if (fieldTypeInfo != null)
-                        {
-                            switch (fieldTypeInfo.Type)
-                            {
-                                case "Date":
-                                case "DateTime":
-                                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as datetime) asc";
-                                    break;
-                                case "Decimal":
-                                case "Number":
-                                    sqlOrderBy += $" cast(F{df.FieldTypeID}.FormattedValue as decimal) asc";
-                                    break;
-                                default:
-                                    sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            sqlOrderBy += $" F{df.FieldTypeID}.FormattedValue asc";
-                        }
-                    }
-                }
-
-                #endregion
-
-                #endregion
-
-                #region Calculate SQL statement
-
-                string sql = string.Empty;
-                string sqlColumnString = string.Join(",", sqlColumns);
-                if (!string.IsNullOrEmpty(sqlColumnString)) sqlColumnString = "," + sqlColumnString;
-                string sqlJoinString = string.Join(" ", sqlJoins);
-
-                sql = $@"
-select  'Lookup' as Object,
-        I.ID as ObjectID,
-        I.ID,
-        dbo.GenerateUrlByTypeName('Lookup', I.LookupTypeID, I.ID) as Url
-        {sqlColumnString}
-from    [Lookup] I
-        {sqlJoinString}";
-
-                #endregion
-
-                if (!string.IsNullOrEmpty(sqlWhere))
-                {
-                    sqlWhere = " where " + sqlWhere;
-                }
-                sql += sqlWhere;
-
-                if (!string.IsNullOrEmpty(sqlOrderBy))
-                {
-                    sqlOrderBy = " order by " + sqlOrderBy;
-                }
-                sql += sqlOrderBy;
-
-                results = Company.Query<dynamic>(sql);
-            }
-            catch (Exception)
-            {
-
-            }
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                Values = results,
-                Columns = columns,
-                Fields = gridFields
-            });
-        }
-
-        #endregion
-
-
         #region Lineage
 
         [HttpGet, Route("maps/{source}/{sourceID:int}/{target}/{targetID:int}/mapitems")]
@@ -2297,9 +2057,6 @@ order by    rnk, [Name]";
                     break;
                 case DataType.OwnershipLookup:
                     resultString = await GetOwnershipLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
-                    break;
-                case DataType.FilteredLookup:
-                    resultString = await GetFilteredLookupGridField(type, id, fieldTypeID).Content.ReadAsStringAsync();
                     break;
                 default:
                     return Request.CreateErrorResponse(HttpStatusCode.BadRequest, new Exception("invalid lookup type"));
@@ -4317,22 +4074,6 @@ order by C.DisplayValue";
                 .AsQueryable();
         }
 
-        [Route("ownership/admintypes")]
-        public IQueryable<dynamic> GetAdminResponsibilityTypes()
-        {
-            if (!Company.CurrentResourceIsAdmin) throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.Forbidden));
-
-            return Company.Table<ResponsibilityType>()
-                .Select(i => new
-                {
-                    i.ID,
-                    i.Name,
-                    i.Description
-                })
-                .OrderBy(i => i.Name)
-                .AsQueryable();
-        }
-
         [Route("ownership/types/{id:int}/relations")]
         public List<ResponsibilityTypeRelationViewModel> GetResponsibilityTypeRelationsByResponsibilityType(int id)
         {
@@ -4463,9 +4204,10 @@ from    ResponsibilityTypeRelationRule R
 	                    AT.CreatedOn,
 	                    AT.UpdatedBy,
 	                    AT.UpdatedOn,
-	                    AT.ID as AssetTypeID
+	                    AT.ID as AssetTypeID,
+                        AT.uid as uid
 	                    from	    AssetType AT where AT.Object = 'PolicyType'"))
-            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID })
+            .Select(i => new { i.Description, i.ID, i.MaximumDepth, i.Name, i.AssetTypeID, i.uid })
             );
         }
 
@@ -4868,7 +4610,8 @@ select      ID as AssetTypeID,
             CreatedBy, 
             UpdatedOn, 
             UpdatedBy, 
-            DisplayFormat 
+            DisplayFormat,
+            uid
 from        AssetType 
 where       Object = 'RuleType'
 order by    Name

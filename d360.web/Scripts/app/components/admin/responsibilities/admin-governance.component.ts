@@ -23,16 +23,22 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     private responsibilityTypeItems = new Array<ResponsibilityType>();
     private selectedRow = new ResponsibilityType();
 
+    theDeleteCallback: Function;
+
     constructor(secondaryNavService: SecondaryNavService, private responsibilityTypeService: ResponsibilityTypeService, headerBreadcrumbService: HeaderBreadcrumbService, titleService: Title, protected messagesService: MessagesObservableService) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.areaName = "Responsibilities";
         this.adminHeading = "Security";
         this.tabTitle = 'Responsibility Types';
+        this.theDeleteCallback = this.doDelete.bind(this);
         this.load();
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.ID : 0,  'ResponsibilityType');
+        this.buildSecondaryNavigationForObject(0, 'ResponsibilityType');
+        this.responsibilityTypeService.getAdminResponsibilityTypeDetails(this.selectedRow.uid).subscribe(res => {
+            this.selectedRow.ID = res.data.ID;
+        });
     }
 
     ngOnDestroy() {
@@ -52,32 +58,20 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
         this.formMode = FormMode.Adding;
     }
 
-    edit(id: number): void {
+    edit(uid: string): void {
         this.formMode = FormMode.Editing;
-        this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
+        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid == uid);
         this.selectedItemChange();
     }
-
-    delete(id: number): void {
+     
+    delete(uid: string): void {
         this.formMode = FormMode.Deleting;
-        this.selectedRow = this.responsibilityTypeItems.find(i => i.ID == id);
+        this.selectedRow = this.responsibilityTypeItems.find(i => i.uid == uid);
         this.selectedItemChange();
     }
 
     save(e: any) {
         this.showMessageForResult(this.messagesService, e);
-        this.formMode = FormMode.Default;
-        this.load();
-    }
-
-    confirmDelete(e: any) {
-        if (e == 'error') {
-            this.messagesService.showError('Error', 'An error occurred');
-        }
-        else {
-            this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
-        }
-
         this.formMode = FormMode.Default;
         this.load();
     }
@@ -88,5 +82,17 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
 
     responsibilityRelationDelete() {
         this.forceRulesReloadFlag = !this.forceRulesReloadFlag;
+    }
+    doDelete() {
+        this.responsibilityTypeService.deleteResponsibilityType(this.selectedRow.uid, true).subscribe(res => {
+            if (res && res.Success) {
+                this.messagesService.showInfoMessage('Success', 'Item deleted successfully');
+            }
+            else {
+                this.messagesService.showError('Error', 'An error occurred');
+            }
+            this.formMode = FormMode.Default;
+            this.load();
+        });
     }
 }

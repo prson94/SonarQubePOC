@@ -42,8 +42,6 @@ namespace d360.core
         Color= 1 << 13,
         [Description("Attribute Hierarchy"), ReadOnly(true)]
         Attribute= 1 << 15,
-        [Description("Filtered Lookup")]
-        FilteredLookup= 1 << 16,
         [Description("Relation Lookup")]
         ComplexRelationLookup = 1 << 17,
         [Description("Percentage"), ReadOnly(true)]

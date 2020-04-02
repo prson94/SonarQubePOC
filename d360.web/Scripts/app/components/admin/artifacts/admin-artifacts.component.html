@@ -81,7 +81,7 @@
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-field-definition-tile>
+            <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [assetTypeUid]="selectedRow?.data?.uid"></d3s-field-definition-tile>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>

@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.metrics.LoadFromStaging-v3">
+  <changeSet author="MDonato" id="Procedure.metrics.LoadFromStaging-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -58,7 +58,7 @@ begin
 	drop table if exists #step1;
 	create table #step1 ( 
 		AssetUid uniqueidentifier not null, MetricAssetUid uniqueidentifier not null, ParentUid uniqueidentifier null, IsGroup bit not null, 
-		[Weight] decimal(5,3) not null, [Value] bit not null, ScoreType int not null 
+		[Weight] decimal(5,3) not null, [Value] bit not null, ScoreType int not null
 		);
 	CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_Metric_EffectiveDate ON #step1 (AssetUid, MetricAssetUid);
 	CREATE NONCLUSTERED INDEX IX_TempStep1_Asset_ParentMetric_EffectiveDate ON #step1 (AssetUid, ParentUid);
@@ -83,6 +83,7 @@ begin
 		truncate table #maxEffectiveMetrics;
 		truncate table #priorResults;
 		truncate table #assets;
+		truncate table #conditionChecks;
 
 		update	metrics.StagingScoreItem
 		set		Processing = 1
@@ -251,7 +252,7 @@ begin
 		from	#step2 T
 				outer apply (
 					select	sum(Weight) Weight
-					from	#step2
+					from	#step2 
 					where	AssetUid = T.AssetUid
 							and ( (ParentUid = T.ParentUid) or (ParentUid is null and T.ParentUid is null) )
 							and IsRelevant = 1
@@ -309,7 +310,10 @@ begin
 								and IsRelevant = 1
 					group by	AssetUid, ScoreType
 					) S
-		on			(T.AssetUid = S.AssetUid and T.EffectiveDate = @current_date and T.ScoreType = S.ScoreType)
+		on			(
+						(T.AssetUid = S.AssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and T.[Value] = S.[Value] and T.ScoreType = S.ScoreType)
+						or (T.AssetUid = S.AssetUid and T.EffectiveDate = @current_date and T.ScoreType = S.ScoreType)
+					)
 		when		matched then
 			update	set
 					T.Value = S.Value,
@@ -346,7 +350,10 @@ begin
 					from		#step2 s2
 								inner join metrics.Asset A on A.ScoreType = s2.ScoreType and A.[uid] = s2.MetricAssetUid
 					) S
-		on			(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = @current_date)
+		on			(
+						(T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate <= @current_date and T.EndDate is null and T.[Value] = S.[Value])
+						or (T.AssetUid = S.AssetUid and T.MetricAssetUid = S.MetricAssetUid and T.EffectiveDate = @current_date)
+					)
 		when		matched then
 			update	set
 					T.AdjustedWeight = S.AdjustedWeight,
@@ -372,6 +379,7 @@ begin
 							and R.AssetUid = M.AssetUid
 							and R.EffectiveDate > M.EffectiveDate
 							and A.ScoreType = S.ScoreType 
+							and R.MetricAssetUid = M.MetricAssetUid
 					order by R.EffectiveDate asc
 				) R;
 

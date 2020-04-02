@@ -28,6 +28,7 @@ using System.Web.Http.Description;
 using d360.core.resources;
 using Resources;
 using System.IO;
+using d360.model.helpers.filters;
 
 namespace d360.web.Controllers.V2
 {
@@ -173,7 +174,11 @@ namespace d360.web.Controllers.V2
         /// 
         /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
         /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
-        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct Lo.
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        /// 
+        /// Relationship filtering is done using _relationFilter parameter and filter expressions are specified using relationship type UID, operator and Asset UID. IE. {Relationship Type UID} eq {Asset UID}.
+        /// *  For comparison operators you can use eq (equal), ne (not equal)
+        /// *  Chaining of relationship filter expressions is done using 'and' or 'or' logical operator.
         /// 
         /// If the requested content media type is "application/octet-stream", the response will be an Excel document with the asset results and the assetTypeUid as the file name.
         /// </remarks>
@@ -197,6 +202,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_ownedBy", "The parameter takes a comma separated list of user or group uids. Only assets which are owned by any one or more of the provided owners are returned.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_filter", "The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_relationFilter", "The filter expression used to filter assets by relation to other asset.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_loadPermissionDetails", "If the value is set to True, the results will include permission details for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeParent", "If the value is True, the results will include parent UID and parent display name for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
@@ -229,8 +235,11 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidOrderDirectionGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order direction passed in the request"));
 
-                if(!validator.IsValidOwnersGetAssets(queryParams))
+                if (!validator.IsValidOwnersGetAssets(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid user or group uid as owner passed in the request"));
+
+                if (!validator.IsValidRelationFilter(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
                 HttpResponseMessage response;
 
@@ -252,6 +261,11 @@ namespace d360.web.Controllers.V2
 
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+            }
+            catch (FilterExpressionParserException ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
             }
             catch (Exception ex)
             {
@@ -1283,13 +1297,14 @@ namespace d360.web.Controllers.V2
         /// <remarks>
         /// An Administrator can create any tag association. A non-administrative user can only create tag associations for assets to which they have read access.
         /// </remarks>
-        /// <param name="assetTags">Collection of assets and tags to associate.</param>
+        /// <param name="assetTags">Collection of assets and tags to associate. Use TagUID or TagName to associate an asset with existing tag.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
             Route("tags"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Creates association between an existing Asset and an existing tag, returns the UID of asset/tag association.", typeof(List<AssetTagSuccessApiModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Asset / Tag Association failed. Tag field may not be assigned to Asset. ", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostAssetTag(List<AssetTagApiModel> assetTags)
@@ -1300,6 +1315,18 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
+                if(assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"Only TagUid OR TagName can be specified.",
+                        Success = false
+                    };
+
+                    resultList.Add(result);
+                    continue;
+                }
+
                 if (assetTagApi.TagUID == Guid.Empty)
                 {
                     currentTag = tagRepository.GetTagByName(assetTagApi.TagName);
@@ -1308,6 +1335,7 @@ namespace d360.web.Controllers.V2
                 {
                     currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
                 }
+                
                 if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1315,6 +1343,12 @@ namespace d360.web.Controllers.V2
                         Message = $"Invalid TagUid provided, no tag exists with the specified uid.",
                         Success = false
                     };
+
+                    if (!string.IsNullOrEmpty(assetTagApi.TagName))
+                    {
+                        result.Message = $"Invalid TagName provided, no tag exists with the specified Tag name.";
+                    }
+
 
                     resultList.Add(result);
                     continue;
@@ -1336,6 +1370,19 @@ namespace d360.web.Controllers.V2
                     result = new AssetTagSuccessApiModel()
                     {
                         Message = $"Invalid uid {assetTagApi.AssetUID} no asset exists with the specified uid.",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
+                var assetType = Company.Filter<AssetType>(x => x.ID == asset.AssetTypeID).FirstOrDefault();
+                var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID);
+                if (!fieldTypes.Any(x => x.Type.ToLower() == "tag"))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"No Tag Fields found for AssetUID {assetTagApi.AssetUID}, Cannot add an association without a Tag field",
                         Success = false
                     };
                     resultList.Add(result);
@@ -1376,15 +1423,11 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    result = new AssetTagSuccessApiModel()
-                    {
-                        Message = $"TagUID {assetTagApi.TagUID} and AssetUID {assetTagApi.AssetUID} association  already exists, it is not valid to add a second association",
-                        Success = false
-                    };
-                    resultList.Add(result);
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Bad Requst", "Asset / Tag Association failed. Tag field may not be assigned to Asset.");
                 }
 
             }
+            
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
         }
 

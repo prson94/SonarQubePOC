@@ -77,6 +77,7 @@ namespace d360.web.Models
         public string ClassName { get { return Class.GetName(); } }
         public int Count { get; set; }
         public bool expanded { get; set; }
+        public string uid { get; set; }
     }
 
     public class AttributeNode
@@ -199,7 +200,7 @@ namespace d360.web.Models
 
             foreach (var ft in fieldTypes)
             {
-                if (ft.Type != DataType.ComplexRelationLookup.ToString() && ft.Type != DataType.FilteredLookup.ToString())
+                if (ft.Type != DataType.ComplexRelationLookup.ToString())
                 {
                     string value = "";
 

@@ -40,5 +40,60 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
+  <changeSet author="BHoward" id="Table.metrics.AssetVersion-v2">
+    <comment>GOV-9978</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[metrics].[AssetVersion]', 'EffectiveEndDate') IS NULL
+		BEGIN
+			ALTER TABLE metrics.assetVersion
+			ADD EffectiveEndDate date NULL
+		END
+		IF COL_LENGTH('[metrics].[AssetVersion]', 'State') IS NULL
+		BEGIN
+			ALTER TABLE metrics.assetVersion
+			ADD [State] int	
+		END
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[metrics].[AssetVersion]', 'EffectiveEndDate') IS NOT NULL
+		BEGIN
+			ALTER TABLE metrics.assetVersion
+			DROP COLUMN EffectiveEndDate 
+		END
+		IF COL_LENGTH('[metrics].[AssetVersion]', 'State') IS NOT NULL
+		BEGIN
+			ALTER TABLE metrics.assetVersion
+			DROP COLUMN [State] 
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
+    <changeSet author="BHoward" id="Table.metrics.AssetVersion-v2.1">
+    <comment>GOV-9978-1</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		UPDATE metrics.assetVersion 
+		SET  [State] = 1
+    
+		UPDATE metrics.assetVersion 
+		SET EffectiveEndDate = convert(varchar(10), getdate()-1, 120), [State] = 3
+		WHERE Uid in (SELECT Uid FROM metrics.Asset WHERE State = 3)
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+	  ]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

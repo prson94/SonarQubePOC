@@ -98,7 +98,11 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
                         if (a.EffectiveDate < b.EffectiveDate) return 1;
                     })
 
-                    this.scoresPoints.shift();
+                    //handle non existing todays score point used for plotting graph
+                    var nullEndDate = this.scoresPoints.filter(x => x.EndDate == null);
+                    if (nullEndDate.length > 1)
+                        this.scoresPoints.shift();
+
                     this.lastScorePoint = new Date(this.scoresPoints[0].EffectiveDate);
 
                     for (var i = 0; i < this.scoresPoints.length - 1; i++) {
@@ -471,11 +475,13 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         this.scoreDate = item.EffectiveDate;
         this.tableSelectedIDX = this.scoresPoints.indexOf(item);
         this.loadPoints();
+        this.loadDefinition();
     }
 
     private onCarouselScoreClick(item: ScorePoint) {
         this.scoreDate = item.EffectiveDate;
         this.loadPoints();
+        this.loadDefinition();
     }
 
     private chartInstance: Highcharts.ChartObject;

@@ -252,48 +252,42 @@ namespace d360.model
             var fCount = 1;
             var rCount = 1;
 
-            
 
-                if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
+            if (rule.StructuredDefinition != null && rule.StructuredDefinition.When != null)
+            {
+                rule.StructuredDefinition.When.ForEach(w =>
                 {
-                    rule.StructuredDefinition.When.ForEach(w =>
+                    if (w.CheckType == "F")
                     {
-                        if (w.CheckType == "F")
+                        if (w.FieldTypeID > 0)
                         {
-                            if (w.FieldTypeID > 0)
+                            var whenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID }, transaction: transaction).SingleOrDefault();
+                            whenSql += $" cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
+                            if (whenFieldType != null)
                             {
-                                var whenFieldType = cnn.Query<FieldType>("select * from FieldType where ID = @FieldTypeID", new { w.FieldTypeID },transaction:transaction).SingleOrDefault();
-                                whenSql += $"cross apply (select coalesce(FT.DefaultValue, F.Value) as [Value] from FieldType FT left join Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID ";
-                                if (whenFieldType != null)
-                                {
-                                    whenSql += (whenFieldType.AllowMultipleValues) ?
-                                        $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
-                                        $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
-                                }
-                                else
-                                {
-                                    whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
-                                }
+                                whenSql += (whenFieldType.AllowMultipleValues) ?
+                                    $"where FT.ID = {w.FieldTypeID} and '{w.Value}' in (select value from string_split(coalesce(F.Value, FT.DefaultValue),',')) ) FV{fCount}" :
+                                    $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
                             }
                             else
                             {
-                                //something else here, static field
+                                whenSql += $"where FT.ID = {w.FieldTypeID} and coalesce(F.Value, FT.DefaultValue) = '{w.Value}' ) FV{fCount}";
                             }
-                            fCount++;
                         }
-                        if (w.CheckType == "R")
-                        {
-                            whenSql += $@"inner join [Intersect] I{rCount} on 
+                        fCount++;
+                    }
+                    if (w.CheckType == "R")
+                    {
+                        whenSql += $@"inner join [Intersect] I{rCount} on 
         I{rCount}.IntersectTypeID = {w.IntersectTypeID} and 
         ( 
         (I{rCount}.Subject = A.Object and I{rCount}.SubjectID = A.ObjectID and I{rCount}.Object = '{w.TargetObject}' and I{rCount}.ObjectID = {w.TargetObjectID}) OR 
         (I{rCount}.Object = A.Object and I{rCount}.ObjectID = A.ObjectID and I{rCount}.Subject = '{w.TargetObject}' and I{rCount}.SubjectID = {w.TargetObjectID}) 
         ) ";
-                            rCount++;
-                        }
-                    });
-                }
-            
+                        rCount++;
+                    }
+                });
+            }
 
             return whenSql;
         }

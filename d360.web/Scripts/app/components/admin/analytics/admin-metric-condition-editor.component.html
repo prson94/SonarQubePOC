@@ -53,10 +53,10 @@
                 </select>
             </div>
             <div *ngIf="condition.FieldType.Type == 'Date'">
-                <p-calendar [(ngModel)]="condition.Values" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+                <p-calendar [(ngModel)]="condition.Values"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
             </div>
             <div *ngIf="condition.FieldType.Type == 'DateTime'">
-                <p-calendar [(ngModel)]="condition.Values" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+                <p-calendar [(ngModel)]="condition.Values"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition.FieldType.Type == 'Number'">
                 <input type="number" style="width: 95%" [(ngModel)]="condition.Values" />

@@ -161,6 +161,13 @@ namespace d360.model.DataAccessLayer
                             ");
         }
 
+        public async Task<dynamic> GetResponsibilityType(Guid uid)
+        {
+            return await Company.QueryFirstOrDefaultAsync<dynamic>($@"
+                            select [ID], [Name], [Description], [uid], [UpdatedOn] from [dbo].[responsibilitytype] WHERE [uid] = '{uid.ToString()}'
+                            ");
+        }
+
         private async Task<IEnumerable<ResponsibilityApiModel>> getOwnershipForGivenAssets(IEnumerable<long> assetIDList, string responsibilityUidFilter, string assigneeUidFilter, int timeout = 300)
         {
             if (assetIDList == null) return null;

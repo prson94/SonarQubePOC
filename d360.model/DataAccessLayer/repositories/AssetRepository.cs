@@ -196,7 +196,8 @@ namespace d360.model.DataAccessLayer
             assetTypeID = assetType.ID;
 
             List<string> hiddenFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
-            var fieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID && !hiddenFieldTypes.Contains(f.Type)).ToList();
+            var allFieldTypes = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetTypeID).ToList();
+            var fieldTypes = allFieldTypes.Where(f => !hiddenFieldTypes.Contains(f.Type)).ToList();
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
@@ -422,9 +423,10 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, fieldTypes, fieldColumns, FilterExpressionParseType.CustomFields, includeParent);
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add(filterExpressionParser.Parse(value, out sqlParams));
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
 
                 foreach (var item in sqlParams)
                 {
@@ -432,12 +434,26 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            string permissionDetailSQL = @"				outer apply (
-				 select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
+            {
+                var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
+                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                foreach (var item in sqlParams)
+                {
+                    dbArgs.Add(item.Key, item.Value);
+                }
+            }
+
+            string permissionDetailSQL = @"	outer apply (
+                 select top 1 * from
+				 (select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
 					where AssetID = A.ID
 				union all 	
 					select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
-					where AssetID = 0 and AssetTypeID = A.AssetTypeID
+					where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
 				   )Permission(mask)";
 
             string includePermissionFields = @",(SELECT case 
@@ -485,6 +501,10 @@ namespace d360.model.DataAccessLayer
 						                                where AT.AssetID = A.ID and T.Value like @simpleFilter)";
 
                             simpleFilters.Add(simpleFilterTagSql);
+                        }
+                        else if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
                         }
                         else
                         {
@@ -663,7 +683,6 @@ namespace d360.model.DataAccessLayer
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
 
@@ -1692,7 +1711,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         public bool IsReachedTransformationLimit(AssetTypeUpsert model)
         {
             bool reached = false;
-            if (model.Class == AssetTypeClass.BusinessAsset && model.UseAsTransformation == true)
+            if ((model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset) && model.UseAsTransformation == true)
             {
                 var useAsTransformationLimit = Community.GetCompanySettingByKey<int>("UseAsTransformationLimit");
                 var totalUseAsTransform = CompanyContext.Filter<AssetType>(i => i.UseAsTransformation == true).Count();

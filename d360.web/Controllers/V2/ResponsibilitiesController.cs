@@ -15,6 +15,7 @@ using Dapper;
 using d360.model.DataAccessLayer;
 using Resources;
 using System.Diagnostics;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -71,6 +72,45 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
+        /// <summary>
+        /// Retrieves a responsibility type.
+        /// </summary>
+        /// <returns>Returns a responsibility type.</returns>
+        [
+            HttpGet,
+            Route("type/{uid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A responsibility type.", typeof(List<ResponsibilityTypeViewModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access Denied"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetResponsibilityTypeAsync(Guid uid)
+        {
+            var prefix = "Responsibilities.GetResponsibilityTypesAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            try
+            {
+                dynamic responsibilityTypes = await ResponsibilityRepository.GetResponsibilityType(uid);
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { data = responsibilityTypes });
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         /// <summary>
         /// Get a list of all claims that are available for assignment.

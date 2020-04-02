@@ -26,6 +26,8 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
 
     @Input() assetTypeUid: string;
     @Input() typeName: string;
+    @Input() hasAdd: boolean = false;
+
     private sortField: string = 'Code';
     private items: any[] = [];
     private totalRecords: number = 10000;
@@ -37,6 +39,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     private showEditor: boolean = false;
     private showDelete: boolean = false;
     private getAssetSub: Subscription;
+
 
     private loadParams = { _loadPermissionDetails: true, _includeParent: true, _order: 'Code', _direction: 'ASC', _pageSize: 10, _pageNum: 1, useGraphForParent: true };
 

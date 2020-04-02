@@ -135,7 +135,7 @@ namespace d360.web.Controllers
 
             return new JsonNetResult
             {
-                Data = Company.Table<AttributeType>().OrderBy(i => i.Parent.Name).ThenBy(i => i.Name),
+                Data = Company.Query<dynamic>("select AttT.*, ATT.uid from AttributeType AttT inner join Assettype ATT on ATT.[objectid] = AttT.ID and ATT.[object] = 'AttributeType'"),
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }

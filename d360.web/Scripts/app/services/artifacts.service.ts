@@ -1,23 +1,23 @@
-import {Observable} from "rxjs";
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {catchError, map} from 'rxjs/operators';
-import {Injectable} from '@angular/core';
+import { Observable } from "rxjs";
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { catchError, map } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
 
-import {Artifacts, Artifact} from '../models/artifacts.model';
-import {ArtifactType} from '../models/artifact-type.model';
-import {SortOrder} from '../models/enums.model';
+import { Artifacts, Artifact } from '../models/artifacts.model';
+import { ArtifactType } from '../models/artifact-type.model';
+import { SortOrder } from '../models/enums.model';
 import {
     GridFilterExpression,
     GridRelationshipFilterExpression,
-    GridFilterFieldType,    
+    GridFilterFieldType,
     GridOwnerFilter
 } from '../models/grid-definition.model';
-import {Count} from '../models/counts.model';
-import {JsonResult} from '../models/jsonresult.model';
-import {AssetDetail} from '../models/asset.model';
+import { Count } from '../models/counts.model';
+import { JsonResult } from '../models/jsonresult.model';
+import { AssetDetail } from '../models/asset.model';
 
-import {MessagesObservableService} from './messages-observable.service';
-import {BaseObservableService} from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from './baseObservable.service';
 
 @Injectable()
 export class ArtifactService extends BaseObservableService {
@@ -36,7 +36,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],        
+        relationships?: GridRelationshipFilterExpression[],
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ): Observable<Artifacts> {
@@ -56,7 +56,7 @@ export class ArtifactService extends BaseObservableService {
             }
 
             //#endregion
-                        
+
 
             //#region hidden filter fields
             let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
@@ -70,7 +70,7 @@ export class ArtifactService extends BaseObservableService {
             }
             //#endregion
         }
-        
+
         if (relationships != undefined) {
 
             uri += '&relcount=' + relationships.length;
@@ -95,10 +95,10 @@ export class ArtifactService extends BaseObservableService {
             .get(uri)
             .pipe(
                 map(response => <Artifacts>response),
-            catchError(err => {
-                this.handleError(err);              
-                throw(err);
-            })
+                catchError(err => {
+                    this.handleError(err);
+                    throw (err);
+                })
             );
     }
 
@@ -108,7 +108,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],        
+        relationships?: GridRelationshipFilterExpression[],
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ) {
@@ -125,7 +125,7 @@ export class ArtifactService extends BaseObservableService {
                 uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
                 count++;
             }
-            
+
             //hiden filter fields
             let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
             count = 0;
@@ -155,6 +155,10 @@ export class ArtifactService extends BaseObservableService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
 
+        this.getExcelFile(uri, artifactType.Name);
+    }
+
+    private getExcelFile(uri: string, fileName: string) {
         this
             .http
             .get(
@@ -163,14 +167,25 @@ export class ArtifactService extends BaseObservableService {
                     responseType: 'blob'
                 }
             )
-            .subscribe(data => this.downloadFile(data, artifactType.Name))
-        ;
+            .pipe(map(res => {
+                if (res.type.toString() != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+                    this.messages.showError('Error', 'An error has occured');
+                }
+                else {
+                    return res;
+                }
+            }), catchError(err => this.handleError(err)))
+            .subscribe(data => {
+                if (data)
+                    this.downloadFile(data, fileName);
+            });
     }
 
     downloadFile(
         data: Blob,
         artifactTypeName: string
     ) {
+        console.log("Downloading file");
         var filename = `Filtered ${artifactTypeName} List ${new Date().toDateString()}.xlsx`;
 
         if (window.navigator.msSaveOrOpenBlob) {
@@ -275,7 +290,7 @@ export class ArtifactService extends BaseObservableService {
         sortfield: string,
         sortorder: SortOrder,
         filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],        
+        relationships?: GridRelationshipFilterExpression[],
         simpleFilter?: string,
         owner?: GridOwnerFilter
     ) {
@@ -292,7 +307,7 @@ export class ArtifactService extends BaseObservableService {
                 uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
                 count++;
             }
-            
+
             //hiden filter fields
             let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
             count = 0;
@@ -304,7 +319,7 @@ export class ArtifactService extends BaseObservableService {
                 count++;
             }
         }
-        
+
         if (relationships != undefined) {
             uri += '&relcount=' + relationships.length;
             let count = 0;
@@ -322,14 +337,7 @@ export class ArtifactService extends BaseObservableService {
             uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
         }
 
-        this
-            .http
-            .get(
-                uri,
-                {
-                    responseType: 'blob'
-                }
-            )
-            .subscribe(data => this.downloadFile(data, artifactType.Name));
+        this.getExcelFile(uri, artifactType.Name);
+
     }
 }

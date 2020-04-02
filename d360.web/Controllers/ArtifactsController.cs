@@ -39,7 +39,6 @@ namespace d360.web.Controllers
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
@@ -145,7 +144,6 @@ namespace d360.web.Controllers
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
 
@@ -788,7 +786,8 @@ select	AT.ObjectID as ID,
         AT.ID as AssetTypeID,
         AT.[Class],
         K.[Count],
-        cast(1 as bit) as expanded
+        cast(1 as bit) as expanded,
+        cast(AT.UID as nvarchar(200)) as uid
 from    AssetType AT
 		cross apply (
                     SELECT  count(1) as [Count]

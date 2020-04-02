@@ -1,14 +1,16 @@
 ﻿<div class="asset-browser-button-group">
-    <button type="button" title="Settings Panel" aria-label="Settings Panel" (click)="execute_Settings()" [class]="button_Css_Settings()"><i class="fa fa-gear"></i></button>
-    <button type="button" title="Filters Panel" aria-label="Filters Panel" (click)="execute_Filter()" [class]="button_Css_Filter()"><i class="fa fa-filter"></i></button>
-    <button type="button" title="Information Panel" aria-label="Information Panel" (click)="execute_Information()" [class]="button_Css_Information()" [disabled]="isInfoTabDisabled"><i class="fa fa-info-circle"></i></button>
-    <button type="button" title="Refresh Diagram" aria-label="Refresh Diagram" class="icon" (click)="execute(7)"><i class="fa fa-refresh"></i></button>
-    <button type="button" title="Add Lineage Panel" aria-label="Add Lineage Panel" (click)="execute_Add()" [class]="button_Css_Add()" [disabled]="!enableAdd"><i class="fa fa-plus"></i></button>
-    <button type="button" title="Download as PNG" aria-label="Download as PNG" (click)="execute(3)" class="icon right-margin-4"><i class="fa fa-download"></i></button>
-    <button type="button" title="Alerts Panel" aria-label="Alerts Panel" (click)="execute_Alert()" [class]="button_Css_Alert()" [ngStyle]="{'width': alert_ButtonWidth()}" [disabled]="totalAlertCount == 0">
+    <button type="button" title="Settings Panel" aria-label="Settings Panel" (click)="execute_Settings()" [class]="'icon mr8' + (settingsSelected ? ' selected' : '')"><i class="fa fa-gear"></i></button>
+    <button type="button" title="Filters Panel" aria-label="Filters Panel" (click)="execute_Filter()" [class]="'icon mr8' + (filtersSelected ? ' selected' : '')"><i class="fa fa-filter"></i></button>
+    <button type="button" title="Alerts Panel" aria-label="Alerts Panel" (click)="execute_Alert()" [class]="'icon mr8' + (alertsSelected ? ' selected' : '')" [ngStyle]="{'width': alert_ButtonWidth()}" [disabled]="totalAlertCount == 0">
         <i [class]="alert_CountClass()"></i>
         <div [class]="alert_CountNumberClass()" [innerText]="alert_CountNumber()"></div>
     </button>
+    <button type="button" title="Information Panel" aria-label="Information Panel" (click)="execute_Information()" [class]="'icon mr8' + (informationSelected ? ' selected' : '') + (enableInformation ? '' : ' disabled')" [disabled]="!enableInformation"><i class="fa fa-info-circle"></i></button>
+    <button type="button" title="Add Lineage Panel" aria-label="Add Lineage Panel" (click)="execute_Add()" [class]="'icon mr8' + (addSelected ? ' selected' : '') + (enableAdd ? '' : ' disabled')" [disabled]="!enableAdd"><i class="fa fa-plus"></i></button>
+    <button type="button" title="Refresh Diagram" aria-label="Refresh Diagram" class="dark icon mr8" (click)="execute(7)"><i class="fa fa-refresh"></i></button>
+    <button type="button" title="Download as PNG" aria-label="Download as PNG" (click)="execute(3)" class="dark icon"><i class="fa fa-download"></i></button>
     <div class="button-spacer"></div>
-    <button type="button" [title]="isFullScreen ? 'Shrink View':'Expand View'" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" (click)="execute(6)"><i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i></button>
+    <button type="button" [title]="isFullScreen ? 'Shrink View':'Expand View'" [attr.aria-label]="isFullScreen ? 'Shrink View':'Expand View'" class="dark icon mr8" (click)="execute(6)">
+        <i class="fa" [ngClass]="{'fa-compress' : isFullScreen, 'fa-arrows-alt' : !isFullScreen}"></i>
+    </button>
 </div>

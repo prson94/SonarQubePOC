@@ -239,4 +239,14 @@ export class AdminAllocationEditorComponent extends BaseComponent implements OnC
 
     }
 
+    reverseElipsis(str: string, length: number) {
+
+        var startIndex = str.length - length;
+        if (startIndex < 0) {
+            return str;
+        }
+
+        return '...' + str.substring(startIndex);
+    }
+
 };

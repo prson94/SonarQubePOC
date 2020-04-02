@@ -651,6 +651,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -695,9 +696,11 @@
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
+    <Content Include="Scripts\app\components\rule\rule-results-grid.component.html" />
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.css" />
     <Content Include="Scripts\app\components\search\explain-widget\explain-widget.component.html" />
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
+    <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
@@ -794,6 +797,9 @@
     <Content Include="Scripts\app\components\workflow\workflow-bulk-reassign.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
+    <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
@@ -1304,7 +1310,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-homepage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+	<TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.ts" />
@@ -1458,6 +1464,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\comments\comments.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\ruleresults\rule-results.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
@@ -1503,7 +1512,6 @@
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
-    <TypeScriptCompile Include="Scripts\app\http-interceptors\error-notify-interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
@@ -1740,6 +1748,7 @@
     <TypeScriptCompile Include="Scripts\app\services\allocations.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\metrics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\organizations.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\previewpopup-singleton.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shopping-cart.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\shortcuts.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\site-customizations.service.ts" />

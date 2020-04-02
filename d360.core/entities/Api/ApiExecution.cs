@@ -43,6 +43,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string Route { get; set; }
+
+        [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime? ProcessingStartedOn { get; set; }
     }
 
     public class ApiExecutionFields_PostAssets

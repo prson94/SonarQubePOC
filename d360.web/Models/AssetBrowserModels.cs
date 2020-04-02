@@ -113,11 +113,14 @@ namespace d360.web.Models
         public Guid PredicateUid { get; set; }
         public AssetBrowserApiHopDirection Direction { get; set; }
         public int Count { get; set; }
+        public bool Expanded { get; set; }
+        public string Key { get; set; }
     }
 
     public class AssetBrowserAssetRelationModel
     {
         public Guid intersectUid { get; set; }
+        public AssetBrowserApiHopDirection direction { get; set; }
         public Guid subjectUid { get; set; }
         public string subjectKey { get; set; }
         public Guid objectUid { get; set; }
@@ -203,11 +206,8 @@ namespace d360.web.Models
     {
         public int ResponsibilityTypeID { get; set; }
         public string ResponsibilityTypeName { get; set; }
-        public string Icon { get; set; }
         public int ResourceID { get; set; }
         public string ResourceName { get; set; }
-        public string SecurityAssetName { get; set; }
-        public string Context { get; set; }
     }
 
     #endregion
@@ -243,6 +243,7 @@ namespace d360.web.Models
     internal class HopLinkResult
     {
         public Guid uid { get; set; }
+        public AssetBrowserApiHopDirection direction { get; set; }
         public string subjectKey { get; set; }
         public string objectKey { get; set; }
         public int predicateId { get; set; }
@@ -309,6 +310,7 @@ namespace d360.web.Models
         }
 
         public int Count { get; set; }
+        public bool Expanded { get; set; }
     }
 
     public class AssetBrowserOwnerRelationModel

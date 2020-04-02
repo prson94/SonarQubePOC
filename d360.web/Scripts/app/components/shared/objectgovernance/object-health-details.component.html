@@ -19,8 +19,8 @@
                     <div class="carousel-item" *ngFor="let score of scoresPoints">
                         <span class="value {{isSameDate(score.EffectiveDate,scoreDate) ? 'selected' : ''}}" (click)="onCarouselScoreClick(score)">
                             <ng-container [ngSwitch]="score.ScoreProgression">
-                                <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
-                                <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
+                                <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
                                 <i *ngSwitchDefault></i>
                             </ng-container>
                             {{score.EffectiveDate | utcDate | date:'shortDate'}}
@@ -67,8 +67,8 @@
                             <div class="col s6 column">{{item.EffectiveDate | utcDate | date:'shortDate'}}</div>
                             <div class="col s6 column">
                                 <ng-container [ngSwitch]="item.ScoreProgression">
-                                    <i *ngSwitchCase="1" class="fa fa-caret-up" style="color:#ed3765;"></i>
-                                    <i *ngSwitchCase="-1" class="fa fa-caret-down" style="color:#4ecc89;"></i>
+                                    <i *ngSwitchCase="1" class="fa fa-caret-up arrow-up"></i>
+                                    <i *ngSwitchCase="-1" class="fa fa-caret-down arrow-down"></i>
                                     <i *ngSwitchDefault></i>
                                 </ng-container>
                                 {{item.Score}}%
