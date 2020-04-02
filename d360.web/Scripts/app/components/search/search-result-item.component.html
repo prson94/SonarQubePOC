@@ -22,14 +22,14 @@
             {{formattedPath}}
         </div>
     </div>
-    <div class="card-row description" *ngIf="result?.Description" [innerHtml]="result.Description"></div>
+    <div class="card-row description" *ngIf="result?.Description" [innerHtml]="result.Description" [copy-clipboard]="result.Description"></div>
     <div *ngIf="result?.Tags && result?.Tags.length > 0" class="card-row tags tagsnomanagewidth">
         <d3s-tag-view [ignoreResizing]="true" [data]="parseTagResult(result?.Tags)"></d3s-tag-view>
     </div>
     <div class="card-row button">
         <d3s-preview-popup [uid]="result.Uid" [(display)]="displayInfopopup" [seed]="getDataForPreview()"></d3s-preview-popup>
         <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu"></p-menu>
-        <button type="button" pButton icon="fa fa-ellipsis-v" (click)="cardmenu.toggle($event)" class="icon-only"></button>
+        <button igButton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="More..."></button>
     </div>
     <div class="card-row" *ngIf="result?.Explaination"><explain-widget [json]="result?.Explaination"></explain-widget></div>
 </div>
