@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import {  Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -41,7 +41,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (this.condition) {
                     if (this.condition.FieldTypeID != i) {
                         ft.Disabled = true;
-                    } 
+                    }
                 }
                 else {
                     ft.Disabled = true;
@@ -115,13 +115,14 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (!this.condition.Values) {
                     this.condition.Values = "";
                 }
-                
+
                 switch (field.Type) {
                     case "Boolean":
                         this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
                         break;
                     case "Date":
                     case "DateTime":
+                        this.condition['Type'] = 'Date';
                         if (this.condition.Values) {
                             this.condition.Values = new Date(<string>this.condition.Values);
                         }
