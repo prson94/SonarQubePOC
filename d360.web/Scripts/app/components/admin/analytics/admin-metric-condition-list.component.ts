@@ -7,77 +7,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
 
 @Component({
     selector: 'd3s-admin-metric-condition-list',
-    template: ` 
-                <header *ngIf="formMode == FormMode.Default">
-                    &nbsp;
-                    <d3s-tile-actions [hasAdd]="showAddButton()" (addClick)="add()"></d3s-tile-actions>   
-                </header>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-               <div *ngIf="!isLoading">
-                    <div [ngSwitch]="formMode">
-                        <div *ngSwitchCase="FormMode.Default">
-                            <p-table #dt [value]="conditions" selectionMode="single" [(selection)]="selection">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Field</th>
-                                        <th>Operator</th>
-                                        <th>Value</th>
-                                        <th style="width: 100px"></th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item let-i="rowIndex">
-                                    <tr [pSelectableRow]="item">
-                                        <td>{{item.FieldTypeName}}</td>
-                                        <td>{{item.OperatorText}}</td>
-                                        <td>{{item.ValuesText}}</td>
-                                        <td>
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selection = item; edit(i)"><i class="fa fa-pencil"></i></a>   
-                                            <a style="cursor:pointer;" (click)="selection = item; delete(i)"><i class="fa fa-trash-o"></i></a>   
-                                        </div> 
-                                        </td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
-                        </div>
-                        <div *ngSwitchCase="FormMode.Adding">
-                            <d3s-admin-metric-condition-editor 
-                                [uid]="metricUid" 
-                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                [usedFieldTypes]="usedFieldTypeIDs"
-                                [assetTypeUid]="assetTypeUid"
-                                [(condition)]="selection"
-                                (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
-                            </d3s-admin-metric-condition-editor>
-                        </div>
-                        <div *ngSwitchCase="FormMode.Editing">
-                            <d3s-admin-metric-condition-editor 
-                                [uid]="metricUid" 
-                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                [usedFieldTypes]="usedFieldTypeIDs"
-                                [assetTypeUid]="assetTypeUid"
-                                [(condition)]="selection"
-                                (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
-                                (onSave)="formMode = FormMode.Default; formModeChange.emit(formMode); save($event);">
-                            </d3s-admin-metric-condition-editor>
-                        </div>
-                        <div *ngSwitchCase="FormMode.Deleting">
-                            <div class="row">
-                                <div class="col s12">
-                                    Are you sure you want to delete this condition?
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col s12" style="padding-top: 15px">
-                                    <button pButton type="button" label="Delete" (click)="confirmDelete()" style="float: right"></button>
-                                    <button pButton type="button" label="Cancel" (click)="formMode = FormMode.Default; formModeChange.emit(formMode);" style="float: right"></button>
-                                </div>
-                            </div> 
-                        </div>
-                    </div>    
-                </div>
-                `,
+    templateUrl: 'admin-metric-condition-list.component.html',
     providers: [MetricsService]
 })
 
@@ -132,7 +62,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
             let field = this.metricConditionListFieldTypes.find(f => f.ID == c.FieldTypeID);
             if (field != null) {
                 c.FieldTypeName = field.Name;
-
+                c.Type = field.Type;
                 if (field.Values) {
                     if (field.Values.length > 0) {
                         let valueModel: MetricFieldTypeValueViewModel = field.Values.find(o => o.Value == c.Values);
@@ -146,6 +76,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                 if (!c.ValuesText) {
                     c.ValuesText = c.Values;
                 }
+
             }
         });
         this.isLoading = false;

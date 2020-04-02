@@ -651,6 +651,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
