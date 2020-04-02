@@ -28,6 +28,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     @Input() showFilter: boolean;
     @Input() assetTypeUid: string;
     @Input() objectTypeUid: string;
+    @Input() displayName: string;
 
     private columns: GridColumn[] = [];
     private fields: GridField[] = [];
@@ -35,6 +36,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
     private totalRecords: number = 10000;
+    private useGraph: boolean = true;
 
     private numberOfRows: number = this.defaultInitialItemsPerPage;
     private currentPage: number = 0;
@@ -90,14 +92,16 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
 
     getData() {
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
+            console.log(this.displayName);
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + i.Name + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: true };
+            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
+            //var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq 'shane'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
                 this.totalRecords = res.total;
                 this.artifacts = res;
 
                 if (this.totalRecords < 1000) {
-                    params.useGraphForParent = false;
+                    this.useGraph = false;
                 }
 
                 this.isLoading = false;
