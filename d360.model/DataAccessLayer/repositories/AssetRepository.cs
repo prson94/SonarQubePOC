@@ -557,6 +557,7 @@ namespace d360.model.DataAccessLayer
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
+                    A.ObjectID,
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,

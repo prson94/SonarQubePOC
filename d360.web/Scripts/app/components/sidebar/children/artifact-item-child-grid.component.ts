@@ -1,4 +1,4 @@
-﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
+﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {BaseComponent} from '../../shared/base.component';
@@ -54,6 +54,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         protected artifactService: ArtifactService,
         protected assetService: AssetService,
         protected objectStatisticsService: ObjectStatisticsService,
+        private ref: ChangeDetectorRef
     ) {
         super();
     }
@@ -90,7 +91,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     getData() {
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, order: 'Code', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: true };
+            var params = { pagesize: this.numberOfRows, pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + i.Name + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: true };
             this.assetService.getAssets(i.uid, params).subscribe(res => {
                 this.totalRecords = res.total;
                 this.artifacts = res;
@@ -100,6 +101,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 }
 
                 this.isLoading = false;
+                this.ref.detectChanges();
             });
         });
     }
@@ -143,7 +145,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .router
             .navigateByUrl(SiteUrlHelpers.getObjectUrl(
                 'Artifact',
-                this.parentId,
+                artifact.ObjectID,
                 this.artifactTypeId
             )
             )

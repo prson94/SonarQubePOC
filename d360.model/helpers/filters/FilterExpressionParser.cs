@@ -133,6 +133,7 @@ namespace d360.model.helpers
             else
             {
                 var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
+
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.Item1.ToLower() == token.Field.ToLower()))
