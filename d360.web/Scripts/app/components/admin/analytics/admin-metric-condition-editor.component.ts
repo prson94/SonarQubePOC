@@ -89,14 +89,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 case "Lookup":
                     this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
                     break;
-                case "Date":
-                case "DateTime":
-                    if (this.condition.Values) {
-                        this.condition.Values = new Date(<string>this.condition.Values);
-                        this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
-                        this.condition.ValuesText = this.condition.Values.toString();
-                    }
-                    break;
                 default:
                     this.condition.ValuesText = this.condition.Values;
                     break;
@@ -123,6 +115,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                 if (!this.condition.Values) {
                     this.condition.Values = "";
                 }
+                
                 switch (field.Type) {
                     case "Boolean":
                         this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
@@ -131,7 +124,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     case "DateTime":
                         if (this.condition.Values) {
                             this.condition.Values = new Date(<string>this.condition.Values);
-                            this.condition.Values.setMinutes(this.condition.Values.getMinutes() + this.condition.Values.getTimezoneOffset());
                         }
                         break;
                 }

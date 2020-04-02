@@ -116,6 +116,7 @@ namespace d360.model.DataAccessLayer
                     case "Date":
                         if (!DateTime.TryParse(condition.Values, out tempDate))
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                        condition.Values = tempDate.ToShortDateString();
                         break;
                     case "Number":
                         if (!int.TryParse(condition.Values, out tempInt))

@@ -41,7 +41,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     }
 
     ngOnInit() {
-        this.load(); 
+        this.load();
     }
 
     load() {
@@ -68,11 +68,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
     valid() {
         let valid = true;
-        
+
         if (this.model == null) {
             valid = false;
         } else {
-            if (this.model.Name == null || this.model.Name.trim().length > 250 || this.model.Name.trim().length==0)
+            if (this.model.Name == null || this.model.Name.trim().length > 250 || this.model.Name.trim().length == 0)
                 valid = false;
             if (this.model.EffectiveDate == null)
                 valid = false;
@@ -85,6 +85,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
     save() {
         this.isLoading = true;
+
         var prevDate: string | Date = null;
         if (this.model.EffectiveDate != null) {
             prevDate = this.model.EffectiveDate;
@@ -93,6 +94,15 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
             condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
             this.model.EffectiveDate = condate.toISOString();
         }
+        this.model.Conditions.forEach(c => {
+            if (c['Type'] == 'Date') {
+                let d = new Date(<string>c.Values);
+                var condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+                condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
+                c.Values = condate.toISOString();
+            }
+        });
+
         this.model.ScoreType = this.scoreType;
         this.metricsService.saveMetric(this.model)
             .subscribe(r => {

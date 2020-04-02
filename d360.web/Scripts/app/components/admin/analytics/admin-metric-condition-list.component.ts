@@ -76,6 +76,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                 if (!c.ValuesText) {
                     c.ValuesText = c.Values;
                 }
+
             }
         });
         this.isLoading = false;
