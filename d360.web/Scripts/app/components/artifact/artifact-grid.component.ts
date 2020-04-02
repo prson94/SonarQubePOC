@@ -1,5 +1,5 @@
-import {of as observableOf, Subject, Observable} from 'rxjs';
-import {debounceTime, map, distinctUntilChanged, delay, mergeMap} from 'rxjs/operators';
+import { of as observableOf, Subject, Observable } from 'rxjs';
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
 import {
     Component,
     Input,
@@ -14,9 +14,9 @@ import {
 } from '@angular/core';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import {Router, ActivatedRoute} from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
-import {Lookup, LookupItem} from '../../models/lookup.model';
+import { Lookup, LookupItem } from '../../models/lookup.model';
 import {
     GridDefinition,
     GridColumn,
@@ -25,20 +25,21 @@ import {
     GridFilterExpression,
     GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
-import {GridDefinitionService} from '../../services/grid-definition.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 import { ArtifactService } from '../../services/artifacts.service';
 import { AssetService } from '../../services/asset.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {StateService} from '../../services/state.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {ArtifactType} from '../../models/artifact-type.model';
-import {BaseComponent} from '../shared/base.component';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
-import {ObjectDetailService} from '../../services/object-detail.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { StateService } from '../../services/state.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { ArtifactType } from '../../models/artifact-type.model';
+import { BaseComponent } from '../shared/base.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
+import { ObjectDetailService } from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
+import { GetAssetsFilters } from '../../models/asset-search.model';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -106,7 +107,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private assetService: AssetService
     ) {
         super();
-                
+
         var me = this;
 
         const subscription = this.simpleSearch.pipe(
@@ -117,7 +118,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 search => observableOf(search).pipe(delay(500))
             )
         )
-            .subscribe( 
+            .subscribe(
                 data => {
                     this.doSimpleSearch(me.dt, me.isLoading);
                 }
@@ -143,7 +144,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this
             .loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID)
             .then(() => this.changeDetectorRef.markForCheck())
-        ;
+            ;
 
         this.getFieldsDefinition();
 
@@ -164,7 +165,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     resetFilters(dt: Table, val) {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
-        this.stateService.artifactTypeFilters.filters = [];        
+        this.stateService.artifactTypeFilters.filters = [];
         this.stateService.artifactTypeFilters.relationships = [];
         this.stateService.artifactTypeFilters.owners = null;
 
@@ -177,7 +178,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showDelete = false;
         this.changeDetectorRef.markForCheck();
     }
-    
+
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.artifactType.ID, StringConstants.ObjectArtifactType).subscribe(
             result => {
@@ -207,22 +208,35 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         );
     }
 
-    getData() {        
+    getParams() {
+        var params = new GetAssetsFilters();
+        params._includeParent = true;
+        params.useTypeLevelDefaultSorts = true;
+        params._loadPermissionDetails = true;
+        params._pageSize = this.rowsPerPage;
+        params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
+        return params;
+    }
+
+    getData() {
         this.isLoading = true;
-        this.artifactService.getArtifacts(this.artifactType.AssetTypeID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
-            .subscribe(result => {
-                    this.items = result.results;
-                    this.totalRecords = result.total;
-                    if (this.items && this.items.length > 0) this.selected = this.items[0];
-                    this.isLoading = false;
-                    this.changeDetectorRef.markForCheck();
-                },
+
+        this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
+            .pipe(debounceTime(200))
+            .subscribe(res => {
+                this.items = res.items;
+                this.totalRecords = res.total;
+                //if (this.items && this.items.length > 0) this.selected = this.items[0];
+                console.log(this.selected);
+                this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
+            },
                 err => {
                     this.isLoading = false;
                     this.changeDetectorRef.markForCheck();
                     this.messagesService.showError("Error", err.message);
-                }
-            );
+                });
+
     }
 
     getCertificationStatusColor(status: string) {
@@ -256,7 +270,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     export(listableOnly) {
-        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships,  this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
+        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
     }
 
     customExport() {
@@ -274,17 +288,18 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     selectArtifact(artifact) {
-        this
-            .router
-            .navigateByUrl(
+
+        this.selected = artifact;
+
+        this.executeActionWithObjectCheck(() => {
+            this.router.navigateByUrl(
                 SiteUrlHelpers
                     .getObjectUrl(
                         'Artifact',
-                        artifact.ObjectID,
+                        this.selected.ObjectID,
                         this.artifactType.ID
-                    )
-            )
-        ;
+                    ));
+        });
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
@@ -342,17 +357,36 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showArtifactDetails = !this.showArtifactDetails;
     }
 
-    protected doShowDelete() {
-        this
-            .objectDetailService
-            .getObject(this.selected.ObjectID, 'Artifact')
-            .subscribe(
-                r => {
-                    this.selected.DisplayValue = r.DisplayValue;
-                    this.showDelete = true;
-                    this.changeDetectorRef.markForCheck();
-                }
-            )
-        ;
+    private onEdit(item) {
+        this.selected = item;
+        this.executeActionWithObjectCheck(() => {
+            this.showEditor = true;
+            this.changeDetectorRef.markForCheck();
+        });
     }
+
+    private onDelete(item) {
+        this.selected = item;
+        this.executeActionWithObjectCheck(() => {
+            this.showDelete = true;
+            this.changeDetectorRef.markForCheck();
+        });
+    }
+
+
+    private executeActionWithObjectCheck(callback: Function) {
+        if (this.selected.ObjectID) {
+            callback();
+        }
+        else {
+            this.assetService.getUIDetailsForAssetUID(this.selected.AssetUid)
+                .subscribe(res => {
+                    this.selected.Object = res.Object;
+                    this.selected.ObjectID = res.ObjectID;
+                    this.selected.DisplayValue = res.DisplayValue;
+                    callback();
+                });
+        }
+    }
+
 }
