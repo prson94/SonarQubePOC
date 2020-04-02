@@ -485,7 +485,7 @@ namespace d360.model.DataAccessLayer
 							                            and AV1.EffectiveDate > @effectiveDate
 	                        order by EffectiveDate), AV.EffectiveEndDate) 
                          as [EndDate], 
-                         I.AdjustedWeight as [Weight],
+                         COALESCE(I.AdjustedWeight, AV.[Weight]) as [Weight],
                          I.Value,
                          ma.ScoreType
                         from metrics.asset ma 
