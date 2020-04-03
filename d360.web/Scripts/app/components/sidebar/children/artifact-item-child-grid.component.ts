@@ -39,7 +39,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     private useGraph: boolean = true;
 
     private numberOfRows: number = this.defaultInitialItemsPerPage;
-    private currentPage: number = 0;
+    private currentPage: number = 1;
     private sortField: string;
     private sortOrder: SortOrder;
     private filter: string;
@@ -86,9 +86,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.numberOfRows = event.rows;
-        if (this.currentPage == 0)
-            this.currentPage = 1;
-        this.currentPage = event.first / event.rows;
+        this.currentPage = (event.first / event.rows) + 1;
         this.getData();
     }
 
@@ -142,7 +140,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             dt.reset();
         }
 
-        this.currentPage = 0;
         this.getData();
     }
 
