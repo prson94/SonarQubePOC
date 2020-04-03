@@ -180,7 +180,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.route.params.subscribe(
             params => {
-                this.originalAssetUid = params['assetUid']; 
+                this.originalAssetUid = params['assetUid'];
                 this.helper_RefreshDiagram();
             }
         );
@@ -239,7 +239,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.panelModel.AlertVisible ||
             this.panelModel.FiltersVisible ||
             this.panelModel.InformationVisible ||
-            this.panelModel.SettingsVisible 
+            this.panelModel.SettingsVisible
         );
     }
 
@@ -329,7 +329,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     relation.expanded = false;
                     this.diagram.model.removeArrayItem(node.relations, ix);
                     this.diagram.model.insertArrayItem(node.relations, ix, relation);
-                    this.helper_CalculateAlertCount(); 
+                    this.helper_CalculateAlertCount();
                     this.cdRef.markForCheck();
 
                     relation.disabled = false;
@@ -414,7 +414,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         relation.expanded = true;
                         this.helper_ParseTranslatedData(trans, true);
 
-                        this.helper_SetFilterWindow(); 
+                        this.helper_SetFilterWindow();
 
                         this.helper_HideDeselectedAssetTypes(keysToBeConcernedWith);
                         this.helper_HideDeselectedPredicates(keysToBeConcernedWith);
@@ -440,7 +440,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
         }
     }
-    
+
     private badge_ClickOwner(e, obj) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let ix = obj.itemIndex;
@@ -467,7 +467,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
                         requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
                     }
-                    
+
 
                     (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                         let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
@@ -523,7 +523,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
             if (node.isGroup) { //top level item
 
-                let group: any = this.diagram.findNodeForKey(node.key); 
+                let group: any = this.diagram.findNodeForKey(node.key);
 
                 if (direction == null) { //hide the current node
                     this.helper_HideNode(node, group);
@@ -1630,7 +1630,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.requestModel.Initial = true;
             this.requestModel.Assets = new Array();
             this.requestModel.AssetsToIgnore = new Array();
-            
+
             let assetRequestModel: AssetBrowserApiHopAssetRequestModel = new AssetBrowserApiHopAssetRequestModel();
             assetRequestModel.Uid = this.assetUid;
             this.requestModel.Assets.push(assetRequestModel);
@@ -1680,7 +1680,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     /**
     * Refreshes the data and diagram to its initially loaded state.
     * @returns Nothing
-    */ 
+    */
     private helper_RefreshDiagram(closePanels: boolean = true) {
         this.assetUid = this.originalAssetUid;
         this.isLoading = true;
@@ -1696,7 +1696,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedPredicates(undefined);
             this.helper_HideDeselectedResponsibilityTypes(undefined);
             //if (this.panelModel.selectedCommand != AssetBrowserPanelCommand.Alerts) {
-                this.helper_CalculateAlertCount();
+            this.helper_CalculateAlertCount();
             //}
         });
     }
@@ -1831,7 +1831,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     label: at.Path,
                     data: at.AssetTypeId
                 });
-            } 
+            }
         });
         this.filter_AvailableOptions.FilterAssetTypes.sort((a, b) => (a.label > b.label) ? 1 : -1);
         //this.selectedFilterAssetTypes = this.helper_GetTreeNodeSelectionNodes(this.displayConfiguration.SelectedAssetTypes, this.filter_AvailableOptions.FilterAssetTypes);
@@ -1940,7 +1940,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else
             return 0;
     }
-  
+
     private helper_UnhideNode(node: AssetBrowserTranslationNode) {
         if (node.template == "HiddenData") {
             this.diagram.startTransaction('unhide');
@@ -2224,7 +2224,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.diagram.commitTransaction();
                 break;
             case AssetBrowserFilterChangeEventType.Scores:
-                
+
                 break;
         }
     }
@@ -2692,7 +2692,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.TextBlock,
                     {
-                        stretch: go.GraphObject.Fill,
                         editable: false,
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
@@ -2700,7 +2699,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.template_Tooltip()
+                        toolTip: this.template_Tooltip(),
+                        margin: 0
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
@@ -2766,7 +2766,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.g(
                     go.TextBlock,
                     {
-                        stretch: go.GraphObject.Fill,
                         editable: false,
                         font: this.fontLabel,
                         stroke: this.fontLabelColor,
@@ -2774,7 +2773,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         maxLines: this.textMaxLines,
                         maxSize: this.textMaxSize,
                         overflow: this.textOverflowStyle,
-                        toolTip: this.template_Tooltip()
+                        toolTip: this.template_Tooltip(),
+                        margin: 0
                     },
                     new go.Binding("text", "highlight").makeTwoWay(),
                     new go.Binding("visible", "highlight_visible").makeTwoWay(),
