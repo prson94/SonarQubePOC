@@ -542,11 +542,10 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    whereStatements.Add($@"EXISTS (
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.AssetID = a.ID AND rd.ResourceUid in @ownerUids
-                        UNION ALL
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd  WHERE rd.AssetID = 0 AND rd.AssetTypeID = a.AssetTypeID AND rd.ResourceUid in @ownerUids
-                    )");
+                    string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR a.AssetTypeID = owners.AssetTypeID)";
+                    fieldJoins.Add(joinStatement);
+                    countJoins.Add(joinStatement);
+                    whereStatements.Add("owners.ResourceUid in @ownerUids");
                 }
             }
 
