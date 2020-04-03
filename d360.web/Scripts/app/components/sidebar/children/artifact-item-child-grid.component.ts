@@ -96,7 +96,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
             var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
             this.assetService.getAssets(i.uid, params).pipe(
-                debounceTime(250)).subscribe(res => {
+                debounceTime(500)).subscribe(res => {
                 this.totalRecords = res.total;
                 this.artifacts = res;
 
