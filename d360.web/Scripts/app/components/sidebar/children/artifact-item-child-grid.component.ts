@@ -91,7 +91,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getData() {
-        this.isLoading = true;
+        //this.isLoading = true;
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
             var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
@@ -111,6 +111,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     getFieldsDefinition() {
+        this.isLoading = true;
         this.gridDefinitionService.getGridDefinition(this.artifactTypeId, "ArtifactType").subscribe(
             result => {
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
@@ -118,6 +119,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 this.fields = result.Fields;
 
                 this.isLoading = false;
+                this.getData();
             }
         );
     }
