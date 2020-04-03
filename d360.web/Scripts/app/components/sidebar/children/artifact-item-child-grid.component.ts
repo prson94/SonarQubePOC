@@ -86,9 +86,9 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.numberOfRows = event.rows;
-        this.currentPage = event.first / event.rows;
         if (this.currentPage == 0)
             this.currentPage = 1;
+        this.currentPage = event.first / event.rows;
         this.getData();
     }
 
@@ -125,6 +125,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     private checkSimpleSearchEnter(event, dt: Table) {
+        console.log(dt);
         if (event.keyCode == 13) {
             this.doSimpleSearch(dt);
         } else {
@@ -138,6 +139,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     private doSimpleSearch(dt: Table) {
+        console.log(dt);
         if (dt) {
             dt.reset();
         }
