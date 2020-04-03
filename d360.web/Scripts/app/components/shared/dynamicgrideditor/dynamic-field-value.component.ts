@@ -27,7 +27,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
-
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }

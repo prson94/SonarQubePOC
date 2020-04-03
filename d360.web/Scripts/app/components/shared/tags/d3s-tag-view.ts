@@ -357,9 +357,18 @@ export class TagView extends BaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        this.tagService.getTagTooltip(tag.uid, this.assetUID)
+        this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
             .subscribe(t => {
                 this.tagTooltip = t[0];
+
+                this.tags.forEach(x => {
+                    if (x.Value == tag.Value) {
+                        if (!x.uid) {
+                            x.uid = t[0].TagUid;
+                        }
+                    }
+                });
+
                 this.isTooltipLoaded = true;
                 this.ref.markForCheck();
             });

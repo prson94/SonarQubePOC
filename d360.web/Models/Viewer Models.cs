@@ -379,6 +379,12 @@ namespace d360.web.Models
 
         [DataMember]
         public bool canHaveMultipleFilters { get; set; }
+
+        [DataMember]
+        public string apiName { get; set; }
+
+        [DataMember]
+        public string fieldType { get; set; }
     }
 
     [DataContract]
@@ -389,7 +395,7 @@ namespace d360.web.Models
 
         }
         public GridFilterColumn(GridColumn val)
-        {            
+        {
             cellsformat = val.cellsformat;
             datafield = val.datafield;
             text = val.text;
@@ -400,8 +406,10 @@ namespace d360.web.Models
             filteritems = val.filteritems;
             parentFieldTypeID = val.parentFieldTypeID;
             canHaveMultipleFilters = val.canHaveMultipleFilters;
+            fieldType = val.fieldType;
+            apiName = val.apiName;
         }
-        
+
         [DataMember]
         public bool hiddenfield { get; set; }
 

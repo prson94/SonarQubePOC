@@ -189,7 +189,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
-
                 statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
 
                 if (statusField != null) {
@@ -242,6 +241,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             delete params['_simpleFilter'];
         }
 
+        if (this.stateService.artifactTypeFilters.filters && this.stateService.artifactTypeFilters.filters.length > 0) {
+            let expressions: string[] = [];
+            this.stateService.artifactTypeFilters.filters.forEach(f => {
+                expressions.push(f.getAsV2ApiFilter(this.filtercolumns));
+            });
+            params._filter = expressions.join(' and ');
+        }
+        else {
+            delete params['_filter'];
+        }
+        console.log(params._filter);
         return params;
     }
 
@@ -254,7 +264,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.items = res.items;
                 this.totalRecords = res.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
-                console.log(this.selected);
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             },
@@ -266,7 +275,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         //this.artifactService.getArtifacts(this.artifactType.AssetTypeID,
         //    this.stateService.artifactTypeFilters.filters,
         //    this.stateService.artifactTypeFilters.relationships,
-        //    this.stateService.artifactTypeFilters.simpleTextFilter,
         //    this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
         //    .subscribe(result => {
         //        this.items = result.results;
