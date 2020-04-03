@@ -125,7 +125,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     private checkSimpleSearchEnter(event, dt: Table) {
-        console.log(dt);
         if (event.keyCode == 13) {
             this.doSimpleSearch(dt);
         } else {
@@ -139,7 +138,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     }
 
     private doSimpleSearch(dt: Table) {
-        console.log(dt);
         if (dt) {
             dt.reset();
         }
