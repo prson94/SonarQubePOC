@@ -1,0 +1,50 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Function.graph.Hop_GenerateSalt-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter function graph.[Hop_GenerateSalt]
+(
+)
+RETURNS varchar(25)
+AS
+BEGIN
+    declare @Length int = 25
+
+	DECLARE @RandomID varchar(25) = ''
+	DECLARE @counter smallint = 1
+	DECLARE @RandomNumber float = 0
+	DECLARE @RandomNumberInt tinyint = 0
+	DECLARE @CurrentCharacter varchar(1) = ''
+	DECLARE @ValidCharacters varchar(255) = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+	DECLARE @ValidCharactersLength int = len(@ValidCharacters)
+
+	WHILE @counter <= @Length
+	BEGIN
+		SELECT @RandomNumber = rnd FROM RandomNumber
+		SET @RandomNumberInt = Convert(tinyint, ((@ValidCharactersLength - 1) * @RandomNumber + 1))
+		SELECT @CurrentCharacter = SUBSTRING(@ValidCharacters, @RandomNumberInt, 1)
+		SET @counter = @counter + 1
+		SET @RandomID = @RandomID + @CurrentCharacter
+	END
+	
+	RETURN @RandomID
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop function if exists graph.[Hop_GenerateSalt]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

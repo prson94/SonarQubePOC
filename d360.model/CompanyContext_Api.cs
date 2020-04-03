@@ -1,8 +1,10 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
 using d360.core.queue;
+using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
@@ -2707,6 +2709,7 @@ where   ExecutionID = @ExecutionID
             const string METHOD_NAME = "ImportAssets";
             bool isLog = import.Count() > 1;
             var results = new List<DatabaseBulkAssetResult>();
+            var importFields = new Dictionary<int, List<string>>();
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -2920,8 +2923,8 @@ where   ExecutionID = @ExecutionID
                                 }
 
                                 if (success)
-                                {                                    
-
+                                {
+                                    importFields.Add(i, model.Fields.Keys.ToList());
                                     fieldRows.ForEach(fr => { fieldTable.Rows.Add(fr); });
 
                                     var row = table.NewRow();
@@ -3648,12 +3651,25 @@ select [uid] from #ParentChildRelationships",
 
                             try
                             {
-                                var changedFields = import.ToDictionary(k => k.Uid, v => v.Fields.Keys.ToList());
+
+                                var changedFields = new Dictionary<Guid, List<string>>();
+                                foreach(var key in importFields.Keys)
+                                {
+                                    var r = results.SingleOrDefault(i => i.ItemNumber == key);
+                                    if (r != null && !changedFields.ContainsKey(r.uid))
+                                    {
+                                        changedFields.Add(r.uid, importFields[key]);
+                                    }
+                                }
+
                                 sw.Restart();
                                 SendAssetGraphEvents(graphResults, changedFields, true);
                                 this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                             }
-                            catch { }
+                            catch
+                            { 
+
+                            }
                         }
                        
 
@@ -3682,9 +3698,13 @@ select [uid] from #ParentChildRelationships",
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
             bool checkCircularRelationships = false;
-            if (rt.Predicate.Type == PredicateType.Transformation)
+            bool checkSemanticRelation = false;
+
+            if ( (rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation )
                 checkCircularRelationships = true;
-            bool checkSemanticRelation = rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType;
+
+            if ( (rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType )
+                checkSemanticRelation = true;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -5899,6 +5919,384 @@ insert into #Keys
                 new { executionID, at.ID, intersectTypeID = parentIntersectTypeId ?? 0 }, commandTimeout: timeout, transaction: trans);
             }
 
+        }
+
+        public List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> import, ApiExecution execution, int timeout = 3600)
+        {
+            var results = new List<DataQualityResponseModel>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new DataQualityResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionAssetResult");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<DataQualityResponseModel>(
+                                $"select Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
+                    table.Columns.Add("OwningAssetUid", typeof(Guid));
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("EffectiveDate", typeof(DateTime));
+                    table.Columns.Add("RunDate", typeof(DateTime));
+                    table.Columns.Add("PassCount", typeof(int));
+                    table.Columns.Add("FailCount", typeof(int));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
+                            row["ItemNumber"] = i;
+                            row["OwningAssetUid"] = model.OwningAssetUid;                            
+                            row["PassCount"] = model.PassCount;
+                            row["FailCount"] = model.FailCount;
+                            row["Uid"] = Guid.NewGuid();
+
+                            if (model.EvaluatedAssetUid.HasValue)
+                            {
+                                row["EvaluatedAssetUid"] = model.EvaluatedAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["EvaluatedAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EffectiveDate != null && model.EffectiveDate != DateTime.MinValue)
+                            {
+                                row["EffectiveDate"] = model.EffectiveDate.Date;
+                            }
+                            else
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "EffectiveDate");
+                                row["Success"] = 0;
+                            }
+
+                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            {
+                                row["RunDate"] = model.RunDate;
+                            }
+                            else
+                            {                                
+                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
+                                row["Success"] = 0;
+                            }
+
+                            if (model.EffectiveDate > DateTime.Now)
+                            {
+                                row["Message"]= String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+                                row["Success"] = 0;                                
+                            }
+                            if (model.RunDate > DateTime.Now)
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                row["Success"] = 0;                                
+                            }
+
+                            if (model.PassCount < 0 || model.PassCount > 9223372036854775807)
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "PassCount", 0, 9223372036854775807);
+                                row["Success"] = 0;                                
+                            }
+
+                            if (model.FailCount < 0 || model.FailCount > 9223372036854775807)
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "FailCount", 0, 9223372036854775807);
+                                row["Success"] = 0;                               
+                            }                            
+
+                            if (model.PassCount == 0 && model.FailCount == 0)
+                            {
+                                row["Message"] = String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0);
+                                row["Success"] = 0;
+                            }
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionAssetResult";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
+                    bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
+                    bulkCopy.ColumnMappings.Add("EffectiveDate", "EffectiveDate");
+                    bulkCopy.ColumnMappings.Add("RunDate", "RunDate");
+                    bulkCopy.ColumnMappings.Add("PassCount", "PassCount");
+                    bulkCopy.ColumnMappings.Add("FailCount", "FailCount");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");                    
+
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+
+                    #region Log data errors                    
+
+
+                    var checkSQL = $@"
+    	                            --check user permissions
+                                    declare @IsAdministrator bit = 0
+                                    select	@IsAdministrator = IsAdministrator
+                                    from	reporting.Global_Resource
+                                    where	ResourceID = @ResourceID
+
+                                    if @IsAdministrator = 0
+                                    begin
+	                                    update	EAR
+	                                    set		EAR.Success = 0,
+			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
+	                                    from    api.ExecutionAssetResult EAR
+			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
+											                                    and E.ExecutionID = @executionID 
+			                                    inner join 
+			                                    Asset A on (EAR.OwningAssetUid = A.uid or EAR.EvaluatedAssetUid = A.uid) 
+			                                    and EAR.OwningAssetUid is not null												
+			                                    and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                    end
+
+	                                -- check Uid on Put
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid UID value'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
+                                    where 
+		                                AE.Method = 'PUT'
+		                                and EAR.ExecutionID = @ExecutionID 		
+		                                and 
+		                                (EAR.Uid is null or EAR.Uid = '00000000-0000-0000-0000-000000000000')
+
+	                                -- check Owning Asset Uid
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid OwningAssetUid value'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
+		                                left join asset a on a.uid = EAR.OwningAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 
+		                                EAR.ExecutionID = @ExecutionID 		
+		                                and 
+		                                (
+			                                (EAR.OwningAssetUid is null or EAR.OwningAssetUid = '00000000-0000-0000-0000-000000000000')
+			                                or
+			                                (EAR.OwningAssetUid is not null and a.ID is null)
+			                                or
+			                                (EAR.OwningAssetUid is not null and a.ID is not null and at.Class <> {(int)AssetTypeClass.Rule})
+			                                or
+			                                A.State = {(int)State.InActive}
+		                                )
+
+	                                -- check Evaluated Asset Uid
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid EvaluatedAssetUid value'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
+		                                left join asset a on a.uid = EAR.EvaluatedAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 		                               
+		                                EAR.ExecutionID = @ExecutionID 		
+		                                And
+		                                EAR.EvaluatedAssetUid is not null
+		                                and 
+		                                (
+			                                a.ID is null -- no match
+			                                or
+			                                (a.ID is not null and at.Class not in ({(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.BusinessAsset}))-- match but wrong asset type
+			                                or
+			                                A.State = {(int)State.InActive} -- inactive state
+		                                )	
+                                   ";
+
+                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<DataQualityResponseModel>();
+                    results.AddRange(import.Select(i => new DataQualityResponseModel { Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {                    
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    string assetResultSQL = $@"create table #ObjectMergeTableAssetResult (Uid uniqueidentifier, ItemNumber int, [Operation] varchar(10));
+                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableAssetResult ON #ObjectMergeTableAssetResult ( ItemNumber ASC );
+
+                                                Merge into AssetResult
+                                                using (
+                                                        select  ItemNumber, 
+                                                                UID,
+                                                                EffectiveDate,
+			                                                    RunDate,
+			                                                    PassCount,
+			                                                    FailCount			                                                    
+                                                        from    api.[ExecutionAssetResult]
+                                                        where   ExecutionID = @ExecutionID
+                                                                and Success is null
+                                                                and ItemNumber between @beginItemNumber and @endItemNumber
+                                                        ) S
+                                                ON S.UID = AssetResult.UID
+                                                WHEN NOT MATCHED THEN
+                                                INSERT ([Uid]
+			                                                ,[EffectiveDate]
+			                                                ,[RunDate]
+			                                                ,[PassCount]
+			                                                ,[FailCount]
+			                                                ,[CreatedOn]
+			                                                ,[CreatedBy]
+			                                                ,[UpdatedOn]
+			                                                ,[UpdatedBy])
+		                                                VALUES
+			                                                (S.UID
+			                                                ,S.EffectiveDate
+			                                                ,S.RunDate
+			                                                ,S.PassCount
+			                                                ,S.FailCount
+			                                                ,@requestDate
+			                                                ,@userId
+			                                                ,@requestDate
+			                                                ,@userId)
+	                                                output  inserted.[Uid], S.ItemNumber, $action into #ObjectMergeTableAssetResult;
+
+	                                                INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
+	                                                select 
+		                                                AN.$node_Id, AR.$node_Id, 1
+	                                                from 
+		                                                AssetResult AR 
+		                                                inner join
+		                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
+		                                                inner join 
+		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
+		                                                inner join 
+		                                                graph.AssetNode AN on AN.Uid = EAR.[OwningAssetUid]
+
+	                                                INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
+	                                                select 
+		                                                AN.$node_Id, AR.$node_Id, 2
+	                                                from 
+		                                                AssetResult AR 
+		                                                inner join 
+		                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
+		                                                inner join 
+		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
+		                                                inner join 
+		                                                graph.AssetNode AN on AN.Uid = EAR.EvaluatedAssetUid
+
+	                                                Update EAR
+	                                                set EAR.success = 1 
+	                                                FROM 
+	                                                api.ExecutionAssetResult EAR
+	                                                inner join 
+	                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = EAR.Uid";
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            using (var trans = Connection.BeginTransaction())
+                            {
+
+                                try
+                                {
+                                    Connection.Execute(assetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber, userId = CurrentResourceID, requestDate = DateTime.UtcNow }, transaction: trans, commandTimeout: timeout);
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                                Query<DataQualityResponseModel>(
+                                    $"select Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                )
+                            );
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+                        
+                }
+            }
+            return results;
         }
 
     }

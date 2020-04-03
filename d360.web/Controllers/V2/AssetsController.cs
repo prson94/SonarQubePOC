@@ -1361,6 +1361,19 @@ namespace d360.web.Controllers.V2
                     continue;
                 }
 
+                var assetType = Company.Filter<AssetType>(x => x.ID == asset.AssetTypeID).FirstOrDefault();
+                var fieldTypes = Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID);
+                if (!fieldTypes.Any(x => x.Type.ToLower() == "tag"))
+                {
+                    result = new AssetTagSuccessApiModel()
+                    {
+                        Message = $"No Tag Fields found for AssetUID {assetTagApi.AssetUID}, Cannot add an association without a Tag field",
+                        Success = false
+                    };
+                    resultList.Add(result);
+                    continue;
+                }
+
                 if (this.tagRepository.DoesAssetTagExists(currentTag.ID, asset.ID))
                 {
                     result = new AssetTagSuccessApiModel()

@@ -405,21 +405,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFilteredLookupDisplayFields(
-        type: string,
-        id: number,
-        listType: string,
-        listID: number
-    ): Observable<any> {
-        return this
-            .http
-            .get(`form/FieldType_FilteredLookup_DisplayFields?type=${type}&id=${id}&listType=${listType}&listID=${listID}`)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getCascadingListFieldValues(
         fieldTypeId: number,
         parentItemId?: string,

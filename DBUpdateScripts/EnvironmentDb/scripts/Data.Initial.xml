@@ -1,0 +1,278 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Data.Initial.AssetType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from AssetType where Object = 'ResourceType' or ObjectID = 1)
+begin
+	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
+	values ('User', 'A resource account', 11, '{FirstName} {LastName}', 'ResourceType', 1, '00000001-0000-0000-0000-a00000000011')
+end
+if not exists (select 1 from AssetType where Object = 'GroupType' or ObjectID = 1)
+begin
+	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
+	values ('Group', 'A security group.', 12, '{Name}', 'GroupType', 1, '00000001-0000-0000-0000-b00000000012')
+end
+if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 0)
+begin
+	insert into [AssetType] (Name, Description, Class, DisplayFormat, Object, ObjectID, Uid) 
+	values ('Reference List', 'A reference list.', 9, '{Name}', 'ReferenceItemType', 0, '0000000a-0000-0000-0000-000000000009')
+end
+if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 1)
+begin
+	insert into [AssetType] (Name, Class, DisplayFormat, Object, ObjectID, Uid) 
+	values ('Rule Status', 9, '{Code}', 'ReferenceItemType', 1, '8537fe49-62fa-472a-aa0d-72cf7c51dca3')
+end
+if not exists (select 1 from AssetType where Object = 'ReferenceItemType' or ObjectID = 2)
+begin
+	insert into [AssetType] (Name, Class, DisplayFormat, Object, ObjectID, Uid) 
+	values ('Rule Dimension', 9, '{Code}', 'ReferenceItemType', 2, '619e92f4-9b87-47ca-989a-e45abc8dccae')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.FusionType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from FusionType where ID = 116)
+begin
+	SET IDENTITY_INSERT dbo.FusionType ON;
+	insert into [FusionType] (ID, Name, Description, UpdatedOn, UpdatedBy) 
+	values (116, 'Technology Asset', 'Technology Asset', getutcdate(), 0);
+	SET IDENTITY_INSERT dbo.FusionType OFF;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.Fusion-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from Fusion where ID = 0)
+begin
+	SET IDENTITY_INSERT dbo.Fusion ON;
+	insert into [Fusion] (ID, FusionTypeID, Name, Description, [Enabled], [Manual], LockPromotedItems, IntervalType, [Interval], ForceRefresh, UpdatedOn, UpdatedBy) 
+	values (0, 116, 'Technology Asset Configuration', '', 0, 0, 0, 3, 15, 0, getutcdate(), 0);
+	SET IDENTITY_INSERT dbo.Fusion OFF;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.FusionAttributeType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from FusionAttributeType where ID = 1820)
+begin
+	SET IDENTITY_INSERT dbo.FusionAttributeType ON;
+	insert into [FusionAttributeType] (ID, FusionTypeID, Name, Assignable, UpdatedOn, UpdatedBy, ScanEnabled) 
+	values (1820, 116, 'Asset', 1, getutcdate(), 0, 1);
+	SET IDENTITY_INSERT dbo.FusionAttributeType OFF;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.FieldType-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'BusinessAssetOwner')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('BusinessAssetOwner', 'Business Asset Owner', 'Text', 'FusionAttributeType', 1820, 1, 1, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'NormalizedAsset')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('NormalizedAsset', 'Normalized Asset', 'Text', 'FusionAttributeType', 1820, 1, 1, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'NormalizedAssetProperties')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('NormalizedAssetProperties', 'Normalized Asset Properties', 'JSON', 'FusionAttributeType', 1820, 1, 0, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'TechnologyAsset')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('TechnologyAsset', 'Technology Asset', 'Text', 'FusionAttributeType', 1820, 1, 1, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'TechnologyAssetProperties')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('TechnologyAssetProperties', 'Technology Asset Properties', 'JSON', 'FusionAttributeType', 1820, 1, 0, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'Definition')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('Definition', 'Definition', 'Text', 'FusionAttributeType', 1820, 0, 1, 0)
+end
+if not exists (select 1 from FieldType where Object = 'FusionAttributeType' and ObjectID = 1820 and Name = 'AssetPath')
+begin
+	insert into FieldType (Name, [FriendlyName], [Type], [Object], [ObjectID], [IsRequired], [IsListable], [IsEditable])
+     VALUES ('AssetPath', 'Asset Path', 'Text', 'FusionAttributeType', 1820, 1, 1, 0)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.Predicate-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [Predicate] where Name = 'stores' or Uid = 'd7ff74b8-5606-4fb9-a7ef-f42be4299dc9')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('stores', 'stored in', 1, 1, '1', 'd7ff74b8-5606-4fb9-a7ef-f42be4299dc9')
+end
+if not exists (select 1 from [Predicate] where Name = 'Synonym' or Uid = 'b8a4c392-6431-4cd7-a4ee-abf260d538fd')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Synonym', 'Synonym', 6, 1, '2', 'b8a4c392-6431-4cd7-a4ee-abf260d538fd')
+end
+if not exists (select 1 from [Predicate] where Name = 'licenses' or Uid = '0f718e3d-13b1-4efb-a407-258dec05b844')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('licenses', 'licensed by', 1, 1, '3', '0f718e3d-13b1-4efb-a407-258dec05b844')
+end
+if not exists (select 1 from [Predicate] where Name = 'type of' or Uid = '267d2361-cbe0-4c38-935e-226c222ee51d')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('type of', 'child type of', 3, 1, '4', '267d2361-cbe0-4c38-935e-226c222ee51d')
+end
+if not exists (select 1 from [Predicate] where Name = 'mapping for' or Uid = 'df813d88-7d53-482a-af7a-dc35b13001ed')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('mapping for', 'mapping for', 8, 1, '5', 'df813d88-7d53-482a-af7a-dc35b13001ed')
+end
+if not exists (select 1 from [Predicate] where Name = 'Validates' or Uid = 'c88ebecd-eed5-4c27-99be-a1eed29c13dd')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Validates', 'Is Validated By', 7, 1, '44', 'c88ebecd-eed5-4c27-99be-a1eed29c13dd')
+end
+if not exists (select 1 from [Predicate] where Name = 'Asset Owned For' or Uid = '2a7fa12d-63aa-4595-83d0-cfa98aac2aa4')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Asset Owned For', 'Asset Owned By', 7, 1, '45', '2a7fa12d-63aa-4595-83d0-cfa98aac2aa4')
+end
+if not exists (select 1 from [Predicate] where Name = 'parent category of' or Uid = '9ece0a25-a8c2-4899-9b25-61bf469f9848')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('parent category of', 'child category of', 4, 1, 'pcof', '9ece0a25-a8c2-4899-9b25-61bf469f9848')
+end
+if not exists (select 1 from [Predicate] where Name = 'Child Of' or Uid = '70add814-7a31-411c-ae63-ded52b8d128c')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Parent Of', 'Child Of', 3, 1, '27', '70add814-7a31-411c-ae63-ded52b8d128c')
+end
+if not exists (select 1 from [Predicate] where Name = 'Represents in' or Uid = '92075112-7aa7-4086-911c-30fd8ab16c8c')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Represents in', 'Represented by', 13, 0, '13', '92075112-7aa7-4086-911c-30fd8ab16c8c')
+end
+if not exists (select 1 from [Predicate] where Name = 'Flows to' or Uid = '9cfc9ca7-a255-4b07-96af-ab65d8b2cf45')
+begin
+	insert into [Predicate] (Name, Inverse, Type, IsSystem, Code, Uid) values ('Flows to', 'Flowed from', 12, 0, '14', '9cfc9ca7-a255-4b07-96af-ab65d8b2cf45')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Initial.SiteNav-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from SiteNav where Name = '#Data Quality')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Data Quality',8,'fa-check-square','Rules')
+end
+if not exists (select 1 from SiteNav where Name = '#Monitor')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Monitor',5,'fa-usb','Workflow')
+end
+if not exists (select 1 from SiteNav where Name = '#Business')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Business',2,'fa-book','Business Assets')
+end
+if not exists (select 1 from SiteNav where Name = '#Models')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Models',4,'fa-sitemap','Models')
+end
+if not exists (select 1 from SiteNav where Name = '#Policy')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Policy',6,'fa-university','Policies')
+end
+if not exists (select 1 from SiteNav where Name = '#Reference')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Reference',9,'fa-list-alt','Reference Lists')
+end
+if not exists (select 1 from SiteNav where Name = '#Fusion')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Fusion',7,'fa-database','Fusion')
+end
+if not exists (select 1 from SiteNav where Name = '#Community')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Community',10,'fa-group','Community')
+end
+if not exists (select 1 from SiteNav where Name = '#Dashboards')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Dashboards',1,'fa-tachometer','Dashboards')
+end
+if not exists (select 1 from SiteNav where Name = '#Technical')
+begin
+	insert into SiteNav (Name, SortOrder, Icon, Title) values ('#Technical',3,'fa-database','Technical Assets')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

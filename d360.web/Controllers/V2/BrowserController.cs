@@ -36,7 +36,6 @@ namespace d360.web.Controllers.V2
     ]
     public class BrowserController : BaseV2ApiController
     {
-
         IGraphFilterRepository GraphFilterRepository;
 
         public BrowserController(ICommunityContext community, ICompanyContext company, IGraphFilterRepository graphFilterRepository) : base(community, company)
@@ -45,12 +44,12 @@ namespace d360.web.Controllers.V2
         }
 
 
-        List<T> ParseArrayCount<T>(string json)
+        private List<T> parseArrayCount<T>(string json)
         {
             return JsonConvert.DeserializeObject<List<T>>(json ?? "[]");
         }
 
-        private void Recurse(AssetBrowserAssetsModel model, List<HopNodeResult> hierarchies, AssetBrowserAssetModel current, int multiplier)
+        private void recurse(AssetBrowserAssetsModel model, List<HopNodeResult> hierarchies, AssetBrowserAssetModel current, int multiplier)
         {
             foreach (var h in hierarchies.Where(h => h.parentKey == current.key && h.key != current.key))
             {
@@ -70,15 +69,15 @@ namespace d360.web.Controllers.V2
                     displayValue = h.displayValue,
                     reveal = h.reveal,
                     actionCount = h.actionCount,
-                    ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
-                    relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
+                    ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
+                    relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation,
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
                 //child.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
                 
-                Recurse(model, hierarchies, child, multiplier+1);
+                recurse(model, hierarchies, child, multiplier+1);
 
                 if (current.items == null)
                 {
@@ -93,7 +92,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        private AssetBrowserAssetsModel BuildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships, int multiplier)
+        private AssetBrowserAssetsModel buildResponseModel(List<HopNodeResult> hierarchies, List<HopLinkResult> relationships, int multiplier)
         {
             var model = new AssetBrowserAssetsModel();
 
@@ -114,14 +113,14 @@ namespace d360.web.Controllers.V2
                     displayValue = h.displayValue, 
                     reveal = h.reveal,
                     actionCount = h.actionCount,
-                    ownerCounts = ParseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
-                    relationCounts = ParseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
+                    ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
+                    relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
                     useAsTransformation = h.useAsTransformation, 
                     hasAssetReadAccess = h.hasAssetReadAccess,
                     isSubjectInTransformation = h.isSubjectInTransformation 
                 };
                 //current.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
-                Recurse(model, hierarchies, current, multiplier + 1);
+                recurse(model, hierarchies, current, multiplier + 1);
 
                 if (!model.assets.Any(r => r.key == current.key))
                 {
@@ -146,6 +145,53 @@ namespace d360.web.Controllers.V2
             }).ToList();
 
             return model;
+        }
+
+        private async Task<HopModel> getHop(
+            bool initial,
+            AssetBrowserDiagramType diagramType,
+            AssetBrowserApiHopType hopType,
+            List<AssetBrowserApiHopAssetRequestModel> assets, 
+            List<AssetBrowserApiHopIgnoreAssetRequestModel> ignoredAssets, 
+            int hopCount,
+            AssetBrowserApiHopDirection direction,
+            Guid? predicateUid,
+            bool leafOnly
+            )
+        {
+            var hopModel = new HopModel();
+
+            // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
+            assets.ForEach(a =>
+            {
+                if (string.IsNullOrEmpty(a.Key))
+                {
+                    a.Key = "";
+                }
+            });
+
+            var reader = await Company.QueryMultipleAsync(
+                @"exec graph.GetHop @assets, @initial, @hopCount, @diagramType, @hopType, @resourceId, @isAdmin, @ignoredAssets, @direction, @predicateUid, @leafOnly",
+                new
+                {
+                    assets = assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
+                    initial,
+                    hopCount,
+                    diagramType = (int)diagramType,
+                    hopType = (int)hopType,
+                    resourceId = Company.CurrentResourceID,
+                    isAdmin = Company.CurrentResourceIsAdmin,
+
+                    ignoredAssets = ignoredAssets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                    direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
+                    predicateUid,
+                    leafOnly
+                }, timeout: 60);
+
+            hopModel.nodes = reader.Read<HopNodeResult>().ToList();
+            hopModel.links = reader.Read<HopLinkResult>().ToList();
+
+            return hopModel;
         }
 
         /// <summary>
@@ -176,131 +222,8 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                Func<string> generateSalt = delegate ()
-                {
-                    Random random = new Random();
-                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                    return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
-                };
-                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
-                {
-                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
-                };
-
-                var model = new HopModel {
-                    links = new List<HopLinkResult>(),
-                    nodes = new List<HopNodeResult>()
-                };
-
-                // Create initial salt value for Hop 0.
-                string HopSalt = generateSalt();
-
-                string hashKey(string input)
-                {
-                    string returnValue = "";
-
-                    var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-                    returnValue = string.Concat(hash.Select(b => b.ToString("x2")));
-                    returnValue = returnValue.Substring(2, returnValue.Length - 3);
-
-                    return returnValue;
-                }
-
-                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, AssetBrowserApiHopType hopType, AssetBrowserApiHopDirection direction)
-                {
-                    var hopModel = new HopModel();
-
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetHop @assets, @ht, @HopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
-                    {
-                        assets = hopAssets.AsTableValuedParameter(
-                            "dbo.AssetBrowserImpactTable",
-                            new List<string>() { "Key", "Uid" }
-                            ),
-                        HopSalt,
-                        ht = (int)hopType,
-                        direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-                        predicateUid = criteria.PredicateUid,
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin
-                    }, timeout: 60);
-
-                    hopModel.nodes = reader.Read<HopNodeResult>().ToList();
-                    hopModel.links = reader.Read<HopLinkResult>().ToList();
-
-                    // Mark as focal if self=true.
-                    hopModel.nodes.ForEach(n => n.isFocal = (hopType == AssetBrowserApiHopType.Self));
-
-                    return hopModel;
-                }
-
-                // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
-                criteria.Assets.ForEach(a =>
-                {
-                    if (string.IsNullOrEmpty(a.Key))
-                    {
-                        a.Key = hashKey($"{HopSalt}|{a.Uid}");
-                    }
-                });
-
-                if (criteria.HopType == AssetBrowserApiHopType.Impact && criteria.PredicateUid.HasValue)
-                {
-                    // This is an IMPACT call.
-                    model = await getHop(criteria.Assets, criteria.HopType, criteria.Direction);
-                }
-                else 
-                {
-                    // This is a LINEAGE call.
-                    if (criteria.HopType == AssetBrowserApiHopType.Self)
-                    {
-                        model = await getHop(criteria.Assets, criteria.HopType, AssetBrowserApiHopDirection.None);
-                    }
-
-                    if (criteria.Hops <= 0 || criteria.Hops > 15)
-                    {
-                        criteria.Hops = 3;
-                    }
-
-                    var backwardAssets = new List<AssetBrowserApiHopAssetRequestModel>();
-                    var forwardAssets = new List<AssetBrowserApiHopAssetRequestModel>();
-                    if (model.nodes.Count > 0)
-                    {
-                        // This means you got the self, now you need to loop through backwards and forwards.
-                        backwardAssets = getLeafAssets(model.nodes);
-                        forwardAssets = getLeafAssets(model.nodes);
-                    }
-                    else
-                    {
-                        if (criteria.Direction == AssetBrowserApiHopDirection.Backward || criteria.Direction == AssetBrowserApiHopDirection.Both)
-                        {
-                            backwardAssets = criteria.Assets;
-                        }
-                        if (criteria.Direction == AssetBrowserApiHopDirection.Forward || criteria.Direction == AssetBrowserApiHopDirection.Both)
-                        {
-                            forwardAssets = criteria.Assets;
-                        }
-                    }
-
-                    for (int i = 0; i < criteria.Hops; i++)
-                    {
-                        model.nodes.ForEach(a => { a.reveal = AssetBrowserApiHopDirection.None; }); // Ensure that nodes we are about to traverse to do not have the reveal set, as we are about to expose the reveal.
-
-                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
-                        var backModel = await getHop(backwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Backward);
-                        
-                        HopSalt = generateSalt(); // We have multiple hops, so we should reset the salt after each hop.
-                        var forwardModel = await getHop(forwardAssets, AssetBrowserApiHopType.Lineage, AssetBrowserApiHopDirection.Forward);
-
-                        backwardAssets = getLeafAssets(backModel.nodes);
-                        forwardAssets = getLeafAssets(forwardModel.nodes);
-
-                        model.links.AddRange(backModel.links);
-                        model.links.AddRange(forwardModel.links);
-                        model.nodes.AddRange(backModel.nodes);
-                        model.nodes.AddRange(forwardModel.nodes);
-                    }
-                }
-                
-                return Request.CreateResponse(HttpStatusCode.OK, BuildResponseModel(model.nodes, model.links, 0));
+                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Lineage, criteria.HopType, criteria.Assets, criteria.AssetsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
+                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
             {
@@ -327,7 +250,6 @@ namespace d360.web.Controllers.V2
             HttpPost,
             MapToApiVersion("2.0"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            //SwaggerRequestExample(typeof(AssetBrowserApiHopRequestModel), typeof(GetAssetLineagePostModelExample)),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(AssetBrowserOwnersModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
@@ -424,80 +346,12 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetImpactDiagramHop(AssetBrowserApiHopRequestModel criteria)
+        public async Task<HttpResponseMessage> GetImpactHop(AssetBrowserApiHopRequestModel criteria)
         {
             try
             {
-                Func<string> generateSalt = delegate ()
-                {
-                    Random random = new Random();
-                    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-                    return new string(Enumerable.Repeat(chars, 25).Select(s => s[random.Next(s.Length)]).ToArray());
-                };
-                Func<List<HopNodeResult>, List<AssetBrowserApiHopAssetRequestModel>> getLeafAssets = delegate (List<HopNodeResult> nodes)
-                {
-                    return nodes.Where(n => n.isLeaf).Select(n => new AssetBrowserApiHopAssetRequestModel { Key = n.key, Uid = n.assetUid }).ToList();
-                };
-
-                var model = new HopModel
-                {
-                    links = new List<HopLinkResult>(),
-                    nodes = new List<HopNodeResult>()
-                };
-
-                // Create initial salt value for Hop 0.
-                string HopSalt = generateSalt();
-
-                string hashKey(string input)
-                {
-                    string returnValue = "";
-
-                    var hash = new SHA1Managed().ComputeHash(Encoding.UTF8.GetBytes(input));
-                    returnValue = string.Concat(hash.Select(b => b.ToString("x2")));
-                    returnValue = returnValue.Substring(2, returnValue.Length - 3);
-
-                    return returnValue;
-                }
-
-                async Task<HopModel> getHop(List<AssetBrowserApiHopAssetRequestModel> hopAssets, bool self, AssetBrowserApiHopDirection direction)
-                {
-                    var hopModel = new HopModel();
-
-                    var reader = await Company.QueryMultipleAsync(@"exec graph.GetImpactHop @assets, @self, @HopSalt, @direction, @predicateUid, @resourceId, @isAdmin", new
-                    {
-                        assets = hopAssets.AsTableValuedParameter(
-                            "dbo.AssetBrowserImpactTable",
-                            new List<string>() { "Key", "Uid" }
-                            ),
-                        HopSalt,
-                        self = self,
-                        direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
-                        predicateUid = criteria.PredicateUid,
-                        resourceId = Company.CurrentResourceID,
-                        isAdmin = Company.CurrentResourceIsAdmin
-                    }, timeout: 60);
-
-                    hopModel.nodes = reader.Read<HopNodeResult>().ToList();
-                    hopModel.links = reader.Read<HopLinkResult>().ToList();
-
-                    // Mark as focal if self=true.
-                    hopModel.nodes.ForEach(n => n.isFocal = self);
-
-                    return hopModel;
-                }
-
-                // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
-                criteria.Assets.ForEach(a =>
-                {
-                    if (string.IsNullOrEmpty(a.Key))
-                    {
-                        a.Key = hashKey($"{HopSalt}|{a.Uid}");
-                    }
-                });
-
-                model = await getHop(criteria.Assets, (criteria.HopType == AssetBrowserApiHopType.Self), criteria.Direction);
-
-                return Request.CreateResponse(HttpStatusCode.OK, BuildResponseModel(model.nodes, model.links, 0));
+                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Impact, criteria.HopType, criteria.Assets, criteria.AssetsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
+                return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
             {
@@ -744,7 +598,6 @@ order by Name";
         }
 
 
-        //
         /// <summary>
         /// Retrieves lists of filters to be used in the Asset Browser. Hidden from Swagger as this is an internal API.
         /// </summary>

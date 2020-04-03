@@ -39,7 +39,6 @@ namespace d360.web.Controllers
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
@@ -145,7 +144,6 @@ namespace d360.web.Controllers
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
-                DataType.FilteredLookup.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
 

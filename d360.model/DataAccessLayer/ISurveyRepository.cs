@@ -16,5 +16,6 @@ namespace d360.model.DataAccessLayer
         Task<SurveyAssetApiResponseModel> GetAssetSurvey(Guid assetUid);
         int DeleteSurveyResults(IEnumerable<KeyValuePair<string, string>> queryParams);
         Task PostSurveyResults(SurveyResultsApiModel model, Asset asset, SurveyType surveyType);
+        Task<List<int>> GetSurveyQuestionResponses(Guid uid);
     }
 }

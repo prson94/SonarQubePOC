@@ -342,6 +342,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Json' then FT.DisplayDescription else null end as 'Type.Json.Description.Display',
 		        case when FT.Type = 'Json' then FT.IsDisplayable else null end as 'Type.Json.IsDisplayable',
 		        case when FT.Type = 'Json' then FT.IsEditable else null end as 'Type.Json.IsEditable',
+                case when FT.Type = 'Json' then FT.IsRequired else null end as 'Type.Json.Validation.IsRequired',
 		        case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.Json.ShowIfEmpty',
 
 		        case when FT.Type = 'JsonElement' then FT.ColumnOrder else null end as 'Type.JsonElement.ColumnOrder',
@@ -907,6 +908,10 @@ from	IntersectType I
                     }
                     newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
+                    if (f.Type.Json.Validation != null)
+                    {
+                        newFieldType.IsRequired = f.Type.Json.Validation.IsRequired;
+                    }
                 }
                 else if (f.Type.JsonElement != null)
                 {

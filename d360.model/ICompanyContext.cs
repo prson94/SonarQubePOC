@@ -58,8 +58,6 @@ namespace d360.model
         DbSet<FieldApiModel> FieldApiModels { get; set; }
         DbSet<FieldLookupValue> FieldLookupValues { get; set; }
         DbSet<Field> Fields { get; set; }
-        DbSet<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
-        DbSet<FieldTypeFilteredLookupDisplayField> FieldTypeFilteredLookupDisplayFields { get; set; }
         DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }        
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldValue> FieldValues { get; set; }
@@ -330,5 +328,6 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
+        List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> request, ApiExecution execution, int timeout = 3600);
     }
 }

@@ -144,9 +144,6 @@ namespace d360.core.entities
         [IgnoreDataMember]
         public virtual FieldTypeLookup FieldTypeLookup { get; set; }
 
-        [IgnoreDataMember, ForeignKey("FieldTypeID")]
-        public virtual ICollection<FieldTypeFilteredLookupDefinition> FieldTypeFilteredLookupDefinitions { get; set; }
-
     }
 
     #region Definition property models
@@ -403,6 +400,8 @@ namespace d360.core.entities
         public int ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
         [DataMember]
         public bool IsDisplayable { get; set; }
         [DataMember]

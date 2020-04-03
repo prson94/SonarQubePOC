@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { AfterViewInit, Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { AssetBrowserAlert, AssetBrowserAlertRequest } from '../../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../../services/browser.service';
@@ -11,7 +11,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [BrowserService, PermissionsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit {
+export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit, OnChanges {
     @Input() assets: string[] = [];
     @Output() openDetail: EventEmitter<AssetBrowserAlert> = new EventEmitter();
 
@@ -27,6 +27,28 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit {
     }
 
     public ngOnInit() {
+        this.reloadAlerts();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["assets"]) {
+            this.reloadAlerts();
+        }
+    }
+
+    public ngAfterViewInit() {
+        this.cdRef.markForCheck();
+    }
+
+    private openAssetDetail(alert: AssetBrowserAlert) {
+        this.openDetail.emit(alert);
+    }
+
+    private openInNewTab(alert: AssetBrowserAlert) {
+        window.open(`/asset/${alert.asset.uid}`, "_blank");
+    }
+
+    private reloadAlerts() {
         if (this.assets.length > 0) {
             this.loading = true;
 
@@ -47,17 +69,4 @@ export class AssetBrowserAlertPanelComponent implements OnInit, AfterViewInit {
             });
         }
     }
-
-    public ngAfterViewInit() {
-        this.cdRef.markForCheck();
-    }
-
-    private openAssetDetail(alert: AssetBrowserAlert) {
-        this.openDetail.emit(alert);
-    }
-
-    private openInNewTab(alert: AssetBrowserAlert) {
-        window.open(`/asset/${alert.asset.uid}`, "_blank");
-    }
-
 } 

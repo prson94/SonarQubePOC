@@ -5,7 +5,6 @@ import { SelectItem } from 'primeng/api';
 import {
     FieldType,
     FieldTypeEditorModel,
-    FilteredLookupItem,
     Lookups,
     FieldTypeFusionItemEditorModel,
     JsonElementSettings,
@@ -92,11 +91,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private childIntersectsLoading = false;
     private childIntersectDisabled = true;
 
-    private filteredLookup: string = '';
-    private filteredLookupDisplayFields: any[] = [];
-    private filteredSortOrderList: any[] = [];
-    private filteredLookupHideHeader: boolean = false;
-    private filteredLookupHideFooter: boolean = false;
     private selectedLookupToken = null;
     private selectedFormatToken = null;
     private fieldsFromRelation: SelectItem[] = [];
@@ -190,7 +184,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings = responseGetFormData.OwnershipLookupSettings;
             this.model.RelationItems = responseGetFormData.RelationItems;
             this.model.FusionItems = responseGetFormData.FusionItems;
-            this.model.FilteredLookupItems = responseGetFormData.FilteredLookupItems;
 
             if (this.model.FusionItems != null) {
                 this.model.FusionItems.forEach(
@@ -451,9 +444,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                     this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
-                break;
-            case 'filteredlookup':
-                this.loadFilteredLookup();
                 break;
             case 'jsonelement':
                 if (!this.model.JsonElementSettings) this.model.JsonElementSettings = new JsonElementSettings();
@@ -775,31 +765,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         );
     }
 
-    private loadFilteredLookup() {
-        if (this.model.FilteredLookupItems == null || this.model.FilteredLookupItems.length < 1) {
-            return;
-        }
-
-        let item = this.model.FilteredLookupItems[0];
-
-        this.filteredLookup = item.Object + '|' + item.ObjectID;
-        this.filteredLookupHideHeader = item.HideHeader;
-        this.filteredLookupHideFooter = item.HideFooter;
-
-        this.changeFilteredLookup().pipe(map(() => {
-            this.filteredLookupDisplayFields.forEach(
-                d => {
-                    let i = item.DisplayFields.find(j => j.value == d.value);
-                    if (i) {
-                        d.Show = i.Show;
-                        d.Filter = i.Filter;
-                        d.SortOrder = i.SortOrder;
-                    }
-                }
-            );
-        })).subscribe();
-    }
-
     //#endregion
 
     //#region form actions
@@ -820,34 +785,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             );
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'FilteredLookup') {
-            let item = new FilteredLookupItem();
-
-            item.Object = this.filteredLookup.split('|')[0];
-            item.ObjectID = parseInt(this.filteredLookup.split('|')[1]);
-
-            if (this.model.FilteredLookupItems != null) {
-                item.ID = this.model.FilteredLookupItems[0].ID;
-            }
-
-            item.HideFooter = this.filteredLookupHideFooter;
-            item.HideHeader = this.filteredLookupHideHeader;
-
-            item.DisplayFields = [];
-            this.filteredLookupDisplayFields.forEach(i => {
-                item.DisplayFields.push({
-                    value: i.value,
-                    Filter: i.Filter,
-                    Show: i.Show,
-                    SortOrder: i.SortOrder,
-                    FieldTypeID: parseInt(i.value.split('|')[0]),
-                    FieldTypeName: i.value.split('|')[1]
-                });
-            });
-            this.model.FilteredLookupItem = item;
-        }
-
-        if (this.currentFieldType(this.model.FieldType) == 'Link') {
+        if (this.model.FieldType.Type == 'Link') {
             {
                 this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
                 this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue += '|';
@@ -1040,33 +978,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
     }
         
-    private changeFilteredLookup(): Observable<any> {
-        if (this.filteredLookup == null || this.filteredLookup == '') {
-            this.filteredLookupDisplayFields = [];
-            return Observable.create();
-        }
-
-        let params = this.filteredLookup.split('|');
-        let id = parseInt(params[1]);
-        let type = params[0];
-
-        return this.fieldsService.getFilteredLookupDisplayFields(this.objectType, this.objectID, type, id)
-            .pipe(map(
-                d => {
-                    this.filteredLookupDisplayFields = d;
-
-                    this.filteredSortOrderList = [];
-
-                    for (let i = 0; i < this.filteredLookupDisplayFields.length; i++) {
-                        this.filteredSortOrderList.push({
-                            id: i + 1,
-                            text: i + 1
-                        });
-                    }
-                }
-            ));
-    }
-
     //#endregion
 
     searchJsonForProperty(event) {
@@ -1413,23 +1324,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private isSettingDisabled(val: string) {
         switch (val) {
             case 'IsDisplayable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.currentFieldType(this.model.FieldType)) > -1
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.currentFieldType(this.model.FieldType)) > -1
                     || (this.currentFieldType(this.model.FieldType) == 'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag']
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag']
                     .indexOf(this.currentFieldType(this.model.FieldType)) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].List
                         && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'FilteredLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentFieldType(this.model.FieldType)) == -1);
             case 'ShowIfEmpty':

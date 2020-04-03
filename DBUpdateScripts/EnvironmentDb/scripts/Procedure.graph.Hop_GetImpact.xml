@@ -5,12 +5,149 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.graph.GetImpactHop-v2">
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetImpact-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [graph].[Hop_GetImpact]
+	@hopSalt varchar(25),
+	@diagramType int,
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@hopNumber int,
+	@checkDirection bit,
+	@leafOnly bit
+as
+begin
+	set nocount on;
+
+	declare @maxRowId int = 0;
+
+	if @direction = 'B'
+	begin
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+					
+					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+					S.ID,
+					S.Uid, 
+					S.[Path],
+					S.Segments,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Inverse
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateUid = P.[Uid]
+					and (@predicateUid is null OR (@predicateUid is not null AND P.[Uid] = @predicateUid)) 
+					and T.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and ( (@checkDirection = 1 and A.Direction = 'B') or (@checkDirection = 0) )
+					--and A.Direction = 'B'
+					and S.Uid not in (select Uid from #assetsToIgnore);
+	end
+		
+	if @direction = 'F'
+	begin 
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+					
+					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+					T.ID,
+					T.Uid, 
+					T.[Path],
+					T.Segments,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Name
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateUid = P.[Uid]
+					and (@predicateUid is null OR (@predicateUid is not null AND P.[Uid] = @predicateUid))
+					and S.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and ( (@checkDirection = 1 and A.Direction = 'F') or (@checkDirection = 0) )
+					--and A.Direction = 'F'
+					and T.Uid not in (select Uid from #assetsToIgnore);
+	end
+
+	select @maxRowId = max(RowID) from #nodes;
+
+	if @diagramType = 2
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed)
+			select	distinct
+					2
+					,A.Uid as AssetUid
+					,A.ID as AssetID
+					,L.[Key]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,V.DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,1 as IsLeaf
+					,0
+			from	#links L
+					inner join AssetWithType A on A.ID = L.ID and L.Direction = @direction and L.HopNumber = @hopNumber
+					left join AssetDisplayValue V on V.AssetID = L.ID;
+	end
+	else
+	begin
+		exec graph.Hop_LoadHopHierarchies @hopSalt, @direction, @hopNumber;
+	end
+		
+	exec graph.Hop_LoadSingleParentHeirarchies @hopSalt, @direction, @hopNumber;
+
+	-- This indicates which assets will be used for subsequent hops, as well as which direction.
+	exec graph.Hop_LoadNextHopAssets @direction, @hopNumber, @maxRowId, @leafOnly
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop procedure if exists [graph].[Hop_GetImpact]
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.GetImpactHop-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop procedure if exists [graph].[GetImpactHop]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[GetImpactHop]
 	@assets dbo.AssetBrowserImpactTable readonly,
 	@self bit,
@@ -308,11 +445,6 @@ begin
 	where	[Key] is not null 
 			and ProvidedKey is not null;
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

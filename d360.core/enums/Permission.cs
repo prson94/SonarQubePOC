@@ -67,5 +67,19 @@ namespace d360.core.enums
 
             return list;
         }
+
+        public static PermissionInfo GetPermissionInfo(this Permission type)
+        {
+            MemberInfo[] tm = typeof(Permission).GetMember(type.ToString(), (BindingFlags.Public | BindingFlags.Static));
+            
+            return new PermissionInfo
+            {
+                Value = (int)(Permission)Enum.Parse(typeof(Permission), tm[0].Name),
+                ID = (Permission)Enum.Parse(typeof(Permission), tm[0].Name),
+                Name = ((NameAttribute)tm[0].GetCustomAttribute(typeof(NameAttribute))).Name,
+                Category = ((CategoryAttribute)tm[0].GetCustomAttribute(typeof(CategoryAttribute))).Category,
+                Description = ((DescriptionAttribute)tm[0].GetCustomAttribute(typeof(DescriptionAttribute))).Description,
+            };
+        }
     }
 }
