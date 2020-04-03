@@ -289,17 +289,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     selectArtifact(artifact) {
 
-        this.selected = artifact;
+        this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
+            .subscribe(res => {
+                this.router.navigateByUrl(
+                    SiteUrlHelpers
+                        .getObjectUrl(
+                            'Artifact',
+                            res.ObjectId,
+                            this.artifactType.ID
+                        ));
+            });
 
-        this.executeActionWithObjectCheck(() => {
-            this.router.navigateByUrl(
-                SiteUrlHelpers
-                    .getObjectUrl(
-                        'Artifact',
-                        this.selected.ObjectID,
-                        this.artifactType.ID
-                    ));
-        });
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
@@ -342,7 +342,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         rightMenu.style.top = (event.screenY - gridRect.top) + 'px';
         rightMenu.style.left = (event.offsetX) + 'px'; //correct
 
-        this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ObjectID, this.artifactType.ID);
+        this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
+            .subscribe(res => {
+                this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+            });
 
         return false;
     }
@@ -359,34 +362,15 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     private onEdit(item) {
         this.selected = item;
-        this.executeActionWithObjectCheck(() => {
-            this.showEditor = true;
-            this.changeDetectorRef.markForCheck();
-        });
+        this.showEditor = true;
+        this.changeDetectorRef.markForCheck();
     }
 
     private onDelete(item) {
         this.selected = item;
-        this.executeActionWithObjectCheck(() => {
-            this.showDelete = true;
-            this.changeDetectorRef.markForCheck();
-        });
+        this.showDelete = true;
+        this.changeDetectorRef.markForCheck();
     }
 
-
-    private executeActionWithObjectCheck(callback: Function) {
-        if (this.selected.ObjectID) {
-            callback();
-        }
-        else {
-            this.assetService.getUIDetailsForAssetUID(this.selected.AssetUid)
-                .subscribe(res => {
-                    this.selected.Object = res.Object;
-                    this.selected.ObjectID = res.ObjectID;
-                    this.selected.DisplayValue = res.DisplayValue;
-                    callback();
-                });
-        }
-    }
 
 }
