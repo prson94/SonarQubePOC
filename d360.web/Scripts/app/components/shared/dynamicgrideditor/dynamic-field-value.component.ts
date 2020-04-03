@@ -55,7 +55,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
             this.fieldValue = null;
-
     }
 
     private formatAsNumber(): string {

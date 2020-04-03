@@ -40,6 +40,7 @@ import { MessagesObservableService } from '../../services/messages-observable.se
 import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
 import { GetAssetsFilters } from '../../models/asset-search.model';
+import { SortOrder } from '../../models/enums.model';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -208,13 +209,39 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         );
     }
 
+    getFieldAPINameByOldName(oldname: string) {
+        return this.fields.find(x => x.name == oldname).apiName;
+    }
+
     getParams() {
         var params = new GetAssetsFilters();
         params._includeParent = true;
-        params.useTypeLevelDefaultSorts = true;
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
+
+        if (this.stateService.artifactTypeFilters.sortField) {
+            params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
+            params.useTypeLevelDefaultSorts = false;
+        }
+        else {
+            params.useTypeLevelDefaultSorts = true;
+            delete params['_order'];
+        }
+
+        if (this.stateService.artifactTypeFilters.sortOrder != SortOrder.None)
+            params._direction = this.stateService.artifactTypeFilters.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+        else {
+            delete params['_direction'];
+        }
+
+        if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
+            params._simpleFilter = this.stateService.artifactTypeFilters.simpleTextFilter;
+        }
+        else {
+            delete params['_simpleFilter'];
+        }
+
         return params;
     }
 
@@ -226,7 +253,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             .subscribe(res => {
                 this.items = res.items;
                 this.totalRecords = res.total;
-                //if (this.items && this.items.length > 0) this.selected = this.items[0];
+                if (this.items && this.items.length > 0) this.selected = this.items[0];
                 console.log(this.selected);
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
@@ -236,7 +263,24 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                     this.changeDetectorRef.markForCheck();
                     this.messagesService.showError("Error", err.message);
                 });
-
+        //this.artifactService.getArtifacts(this.artifactType.AssetTypeID,
+        //    this.stateService.artifactTypeFilters.filters,
+        //    this.stateService.artifactTypeFilters.relationships,
+        //    this.stateService.artifactTypeFilters.simpleTextFilter,
+        //    this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
+        //    .subscribe(result => {
+        //        this.items = result.results;
+        //        this.totalRecords = result.total;
+        //        if (this.items && this.items.length > 0) this.selected = this.items[0];
+        //        this.isLoading = false;
+        //        this.changeDetectorRef.markForCheck();
+        //    },
+        //        err => {
+        //            this.isLoading = false;
+        //            this.changeDetectorRef.markForCheck();
+        //            this.messagesService.showError("Error", err.message);
+        //        }
+        //    );
     }
 
     getCertificationStatusColor(status: string) {
