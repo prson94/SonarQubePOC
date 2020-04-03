@@ -851,6 +851,124 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Delete data quality result(s) based on parameters provided
+        /// </summary>
+        /// <returns>A response containing the status of the request</returns>
+        [
+            HttpDelete,
+            Route("quality/results/"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A response with the status of the request", typeof(DataQualityResponseModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> DeleteDataQualityResultsAsync(DataQualityDeleteModel model)
+        {
+            Asset asset = null;
+
+            Asset ruleAsset = null;
+
+            Guid? _OwningUid = null;
+
+            #region Model Validation            
+            asset = null;
+
+            if((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
+            }
+
+            if (model.Uid.HasValue && model.Uid.Value != Guid.Empty)
+            {
+                var dataQualityAssetResult = MetricsRepository.GetAssetResultDetailsByUid(model.Uid.Value);
+
+                if (dataQualityAssetResult == null)
+                {            
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Result not found", String.Format("Result with Uid {0} could not be found.", model.OwningAssetUid));
+                }
+                
+                if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.OwningAssetUid.Value && x.Class == (int)ResultRelationClass.Owns))
+                {                 
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "OwningAssetUid Invalid", String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
+                }
+                else
+                {
+                    _OwningUid = dataQualityAssetResult.Find(x => x.Class == (int)ResultRelationClass.Owns)?.AssetUid;
+                }
+                
+                if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.EvaluatedAssetUid.Value && x.Class == (int)ResultRelationClass.EvaluatedBy))
+                {                 
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "EvaluatedAssetUid Invalid", String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
+                }
+
+            }
+
+            if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty)
+            {
+                ruleAsset = AssetRepository.GetAssetByUID(model.OwningAssetUid.Value);
+
+                if (ruleAsset == null)
+                {                    
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Owning Asset not found", String.Format(DataQualityErrors.AssetNotFoundError, model.OwningAssetUid));
+                }
+                else if (ruleAsset.AssetType.Class != AssetTypeClass.Rule || ruleAsset.State == State.InActive)
+                {                    
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "OwningAssetUid Invalid", String.Format(DataQualityErrors.AssetNotValidError, "OwningAssetUid", model.OwningAssetUid));
+                }
+
+                _OwningUid = model.OwningAssetUid;
+            }else 
+            {
+                if (_OwningUid.HasValue)
+                {
+                    ruleAsset = AssetRepository.GetAssetByUID(_OwningUid.Value);
+                }
+            }
+
+            if (model.EvaluatedAssetUid.HasValue && model.EvaluatedAssetUid.Value != Guid.Empty)
+            {
+                asset = AssetRepository.GetAssetByUID(model.EvaluatedAssetUid.Value);
+
+                if (asset == null)
+                {                    
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Evaluated Asset not found", String.Format(DataQualityErrors.AssetNotFoundError, model.EvaluatedAssetUid));
+                }
+                else if ((asset.AssetType.Class != AssetTypeClass.BusinessAsset && asset.AssetType.Class != AssetTypeClass.TechnicalAsset) || asset.State == State.InActive)
+                {                    
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "EvaluatedAssetUid Invalid", String.Format(DataQualityErrors.AssetNotValidError, "EvaluatedAssetUid", model.EvaluatedAssetUid));
+                }
+            }
+            
+            if (_OwningUid.HasValue && !Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.DeleteAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.DeleteAsset)))
+            {                
+                return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
+            }
+
+            if (model.EffectiveDateStart.HasValue && model.EffectiveDateEnd.HasValue && model.EffectiveDateStart > model.EffectiveDateEnd)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+            }
+
+            if (model.RunDateStart.HasValue && model.RunDateEnd.HasValue && model.RunDateStart > model.RunDateEnd)
+            {
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+            }
+
+            #endregion
+
+            List<DataQualityDeleteResponseModel> responseList = new List<DataQualityDeleteResponseModel>();
+
+
+            var execution = getApiExecution(1);
+
+            responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList.FirstOrDefault()));
+        }
+
+        /// <summary>
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data quality results</returns>
