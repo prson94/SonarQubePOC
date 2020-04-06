@@ -564,7 +564,7 @@ namespace d360.web.Controllers.V2
 
         }
 
-        [HttpGet, MapToApiVersion("2.0"), Route("{tagName}/tooltipByName"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet, MapToApiVersion("2.0"), Route("tooltipByName"), ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult GetTagTooltipByNameData(string tagName, Guid? assetUid = null)
         {
             try

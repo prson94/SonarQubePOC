@@ -1,4 +1,4 @@
-import { of as observableOf, Subject, Observable } from 'rxjs';
+import { of as observableOf, Subject, Observable, Subscription } from 'rxjs';
 import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
 import {
     Component,
@@ -10,7 +10,8 @@ import {
     ViewChild,
     OnInit,
     ChangeDetectionStrategy,
-    ChangeDetectorRef
+    ChangeDetectorRef,
+    OnDestroy
 } from '@angular/core';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
@@ -52,7 +53,7 @@ import { SortOrder } from '../../models/enums.model';
     },
 })
 
-export class ArtifactGridComponent extends BaseComponent implements OnChanges {
+export class ArtifactGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
@@ -90,6 +91,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     itemUrl: string;
 
     public simpleSearch = new Subject<any>();
+    private assetSearchSub: Subscription;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -139,6 +141,12 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
         //clear out the filters if the artifacttype is different
         this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);
+    }
+
+    ngOnDestroy() {
+        if (this.assetSearchSub) {
+            this.assetSearchSub.unsubscribe();
+        }
     }
 
     load() {
@@ -257,11 +265,35 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
             this.stateService.artifactTypeFilters.relationships.forEach(f => {
                 expressions.push(f.getAsV2ApiFilter());
             });
-            params._relationFilter = expressions.join(' and ');
-            console.log(params._relationFilter);
+            if (expressions.length > 0) {
+                params._relationFilter = expressions.join(' and ');
+            }
+            else {
+                delete params['_relationFilter'];
+            }
         }
         else {
             delete params['_relationFilter'];
+        }
+
+        if (this.stateService.artifactTypeFilters.owners) {
+            var filter = this.stateService.artifactTypeFilters.owners.getAsV2ApiFilter();
+            if (filter.length > 0) {
+                params._ownedBy = filter;
+            }
+            else {
+                delete params['_ownedBy'];
+            }
+        }
+        else {
+            delete params['_ownedBy'];
+        }
+
+        if (this.totalRecords < 1000) {
+            params.usegraphforparent = false;
+        }
+        else {
+            delete params['usegraphforparent'];
         }
 
         return params;
@@ -269,8 +301,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
 
     getData() {
         this.isLoading = true;
-
-        this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
+        if (this.assetSearchSub) {
+            this.assetSearchSub.unsubscribe();
+        }
+        this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;
@@ -284,22 +318,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                     this.changeDetectorRef.markForCheck();
                     this.messagesService.showError("Error", err.message);
                 });
-        //this.artifactService.getArtifacts(this.artifactType.AssetTypeID,
-        //    this.stateService.artifactTypeFilters.relationships,
-        //    this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
-        //    .subscribe(result => {
-        //        this.items = result.results;
-        //        this.totalRecords = result.total;
-        //        if (this.items && this.items.length > 0) this.selected = this.items[0];
-        //        this.isLoading = false;
-        //        this.changeDetectorRef.markForCheck();
-        //    },
-        //        err => {
-        //            this.isLoading = false;
-        //            this.changeDetectorRef.markForCheck();
-        //            this.messagesService.showError("Error", err.message);
-        //        }
-        //    );
     }
 
     getCertificationStatusColor(status: string) {
@@ -333,7 +351,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     export(listableOnly) {
-        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
+        this.assetService.downloadAssetsExcel(this.artifactType.AssetTypeUID, this.getParams(), 'Filtered ' + this.artifactType.Name + ' List');
     }
 
     customExport() {

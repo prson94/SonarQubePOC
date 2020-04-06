@@ -86,4 +86,6 @@ export class GetAssetsFilters {
     useTypeLevelDefaultSorts: boolean;
     _loadPermissionDetails: boolean;
     _includeParent: boolean;
+    _excludeCount: boolean;
+    usegraphforparent: boolean;
 }

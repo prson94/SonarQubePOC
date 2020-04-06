@@ -870,7 +870,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     if (hasParentType)
                     {
                         fields.Add(new GridField { name = "ParentID", type = "number" });
-                        fields.Add(new GridField { name = "Parent", type = "string" });
+                        fields.Add(new GridField { name = "Parent", type = "string", apiName = "ParentDisplayName" });
                         fields.Add(new GridField { name = "ParentUrl", type = "string" });
                     }
                     fields.Add(new GridField { name = "Url", type = "string" });
@@ -1435,7 +1435,7 @@ where   h.ID <> @t order by h.[Level] desc;
         {
             var sql = @"
 select  distinct 
-	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
+	    ResourceUid as 'ID', 
 	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
 	    case 
             when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
@@ -3773,13 +3773,15 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.DisplayValue";
                     break;
                 case SystemObjects.FusionAttributeType:
-                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
                             inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) ) 
+                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             union 
-                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
                             inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
+                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             order by A.TextPath
                             ";
                     break;
@@ -3806,13 +3808,21 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
-                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] , A.uid
+                    if (id != 0)
+                    {
+                        sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] , A.uid
                             from Asset A 
                             inner join AssetType AST on AST.ID = A.AssetTypeID
                             inner join AssetDisplayValue AD on AD.AssetID =A.ID
                             inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
                             where AST.ObjectID= @id and AST.[Object]='ReferenceItemType'
                             order by AD.DisplayValue";
+                    }
+                    else
+                    {
+                        sql = @"select distinct Name, ID, 'ReferenceItemType' as [Type] , uid
+                                from AssetType where Object ='ReferenceItemType'";
+                    }
                     break;
                 case SystemObjects.ResourceType:
                     sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] , A.Uid

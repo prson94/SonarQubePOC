@@ -423,27 +423,33 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                    filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
@@ -479,8 +485,6 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
                 bool.TryParse(value, out includePermissionDetails);
             }
-
-
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
             {
@@ -602,7 +606,7 @@ namespace d360.model.DataAccessLayer
             ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
-            var count = countResults.First();
+            int count = countResults.First();
 
             var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs);
 
@@ -677,7 +681,13 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
                 bool.TryParse(value, out includeParent);
             }
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
 
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),

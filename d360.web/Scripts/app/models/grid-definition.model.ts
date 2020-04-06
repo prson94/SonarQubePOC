@@ -30,7 +30,7 @@ export class GridRelationshipFilterExpression {
         let condition: string = this.includeType == 'Any' ? ' or ' : ' and ';
         let relUid: string = this.relationshipType.Uid;
         this.objectIds.forEach(opt => {
-            
+
             filters.push(`${relUid} eq ${opt}`);
         });
 
@@ -41,6 +41,11 @@ export class GridRelationshipFilterExpression {
 export class GridOwnerFilter {
     ownerUsers: string[];
     ownerGroups: string[];
+
+    public getAsV2ApiFilter() {
+        let filters: string[] = this.ownerGroups.concat(this.ownerUsers);
+        return filters.join(',');
+    }
 }
 
 export enum GridFilterFieldType {
