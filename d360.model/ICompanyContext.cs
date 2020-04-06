@@ -187,8 +187,7 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
-        void Enqueue(string queueName, List<QueueObject> items);
+        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);        
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
