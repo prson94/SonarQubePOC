@@ -127,8 +127,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                     this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                         this.secondaryNavService.showHeader(true);
-                        this.setCommonSecondaryNavTabs(true);
-                        this.selectedItemChange();
+                        this.setCommonSecondaryNavTabs(false);
                         this.secondaryNavService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
@@ -136,11 +135,6 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                 this.loadPolicies();
             }
         );
-    }
-    selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/PolicyType/${this.selected.ID};isAdminPage=false`;
-        }
     }
     ngOnDestroy() {
         this.clearSidebar();
