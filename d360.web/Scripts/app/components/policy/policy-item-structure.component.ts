@@ -27,6 +27,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-policy-item-structure',
@@ -35,7 +36,8 @@ import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
         PoliciesService,
         GridDefinitionService,
         PermissionsService,
-        LevelsService
+        LevelsService,
+        AssetTypeService,
     ]
 })
 
@@ -49,6 +51,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
     levels: any[] = [];
 
     policyTypeId: number;
+    policyTypeUid: string;
     treeNodeArray: TreeNode[] = [];
     selected: TreeNode;
     selectedParentId: number;
@@ -76,7 +79,8 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         secondaryNavService: SecondaryNavService,
         private permissionsService: PermissionsService,
         private levelsService: LevelsService,
-        private gridDefinitionService: GridDefinitionService
+        private gridDefinitionService: GridDefinitionService,
+        private assetTypeService: AssetTypeService,
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -102,58 +106,72 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
         this.routeParamsSubscription = this.route.params.subscribe(
             params => {
                 this.policyTypeId = +params['policyTypeId'];
-                this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
+                this.policyTypeUid = params['uid'];
 
+                if (this.policyTypeUid) {
+                    this.assetTypeService.getAssetTypeObjectAndID(this.policyTypeUid).subscribe(res => {
+                        this.isLoading = true;
+                        this.policyTypeId = res.ObjectID
+                        this.load();
+                    });
+                } else {
+                    this.isLoading = true;
+                    this.load();
+                }
+            }
+        );
+    }
 
-                this.setObjectInfo('PolicyType', this.policyTypeId);
-                this.clearSidebar();
-                this.setCommonSecondaryNavTabs(true);
-                this.getFieldsDefinition();
-                this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
+    load() {
+        this.headerBreadcrumbService.setCurrentObjectInfo('PolicyType', this.policyTypeId);
 
-                this.isLoading = true;
-                this.policiesService.getPolicyType(this.policyTypeId).subscribe(
-                    result => {
+        this.setObjectInfo('PolicyType', this.policyTypeId);
+        this.clearSidebar();
+        this.setCommonSecondaryNavTabs(true);
+        this.getFieldsDefinition();
+        this.loadPermissions(this.permissionsService, StringConstants.ObjectPolicyType, this.policyTypeId);
 
-                        this.policyType = result;
-                        this.currentAreaNameSubscription =
-                            this.headerBreadcrumbService
-                                .getAreaName('PolicyType', this.policyTypeId)
-                                .subscribe(result => {
-                                    this.currentAreaName = result
-                                    this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
-                                        this.headerBreadcrumbService.clearBreadcrumbs();
-                                        this.headerBreadcrumbService.showBreadcrumb(
-                                            new Breadcrumb(
-                                                this.currentAreaName ? this.currentAreaName : res,
-                                                `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
-                                            )
-                                        );
-                                        this.headerBreadcrumbService.showBreadcrumb(
-                                            new Breadcrumb(
-                                                this.policyType.Name,
-                                                SiteUrlHelpers.getObjectUrl('POLICYTYPE', this.policyTypeId),
-                                                undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
-                                        );
-                                        this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId,this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
-                                            this.secondaryNavService.showHeader(true);
-                                            this.secondaryNavService.setCurrentArea(this.policyType.Name, icon, 'Policy');
-                                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('PolicyType', this.policyType.ID, null, null, true));
-                                        });
-                                    });
+        this.isLoading = true;
+        this.policiesService.getPolicyType(this.policyTypeId).subscribe(
+            result => {
+
+                this.policyType = result;
+                this.currentAreaNameSubscription =
+                    this.headerBreadcrumbService
+                        .getAreaName('PolicyType', this.policyTypeId)
+                        .subscribe(result => {
+                            this.currentAreaName = result
+                            this.headerBreadcrumbService.getFolderTitle('#Policy').then((res) => {
+                                this.headerBreadcrumbService.clearBreadcrumbs();
+                                this.headerBreadcrumbService.showBreadcrumb(
+                                    new Breadcrumb(
+                                        this.currentAreaName ? this.currentAreaName : res,
+                                        `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                                    )
+                                );
+                                this.headerBreadcrumbService.showBreadcrumb(
+                                    new Breadcrumb(
+                                        this.policyType.Name,
+                                        SiteUrlHelpers.getObjectUrl('POLICYTYPE', this.policyTypeId),
+                                        undefined, 'POLICYTYPE', this.policyTypeId, undefined, undefined, true)
+                                );
+                                this.headerBreadcrumbService.getAssetFolderIcon('PolicyType', this.policyTypeId, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
+                                    this.secondaryNavService.showHeader(true);
+                                    this.secondaryNavService.setCurrentArea(this.policyType.Name, icon, 'Policy');
+                                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('PolicyType', this.policyType.ID, null, null, true));
                                 });
+                            });
+                        });
 
-                        this.loadPolicyHierarchy(this.policyTypeId);
-                        this.setBrowserTitle(this.titleService, this.policyType.Name);
+                this.loadPolicyHierarchy(this.policyTypeId);
+                this.setBrowserTitle(this.titleService, this.policyType.Name);
 
-                        this.isLoading = false;
-                    }
-                );
-                this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
-                    result => {
-                        this.levels = result;
-                    }
-                );
+                this.isLoading = false;
+            }
+        );
+        this.levelsService.getObjectLevels(this.policyTypeId, StringConstants.ObjectPolicyType).subscribe(
+            result => {
+                this.levels = result;
             }
         );
     }
