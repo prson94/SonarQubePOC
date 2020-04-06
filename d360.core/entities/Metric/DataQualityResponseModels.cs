@@ -34,4 +34,11 @@ namespace d360.core.entities.Metric
         public bool Success { get; set; } = false;
         public string Message { get; set; }
     }
+
+    public class DataQualityDeleteResponseModel
+    {
+        public Guid ExecutionItemUid { get; set; }
+        public bool Success { get; set; } = false;
+        public string Message { get; set; }
+    }
 }

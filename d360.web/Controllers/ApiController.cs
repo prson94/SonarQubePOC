@@ -870,7 +870,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     if (hasParentType)
                     {
                         fields.Add(new GridField { name = "ParentID", type = "number" });
-                        fields.Add(new GridField { name = "Parent", type = "string" });
+                        fields.Add(new GridField { name = "Parent", type = "string", apiName = "ParentDisplayName" });
                         fields.Add(new GridField { name = "ParentUrl", type = "string" });
                     }
                     fields.Add(new GridField { name = "Url", type = "string" });
