@@ -10,7 +10,6 @@ const routes: Routes = [
         component: AdminComponent,        
         canActivate: [AdminUserGuard],
         children: [                                                
-            //lazy load
             { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: () => import('./lookups/admin-lookups.module').then(m => m.AdminLookupsModule) }, 
             { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, loadChildren: () => import('./relationships/admin-relationships.module').then(m => m.AdminRelationshipsModule) }, 
             { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, loadChildren: () => import('./surveys/admin-surveys.module').then(m => m.AdminSurveysModule) },             
