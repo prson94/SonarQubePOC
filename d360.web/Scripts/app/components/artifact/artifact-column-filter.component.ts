@@ -322,8 +322,8 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             .pipe(
                 map(result => {
                 expr.options = [];
-                for (let item of result) {
-                    expr.options.push({label: item.Name, value: item.ID});
+                    for (let item of result) {
+                        expr.options.push({ label: item.Name, value: item.Uid });
                 }
                 this.ref.markForCheck();
             }));

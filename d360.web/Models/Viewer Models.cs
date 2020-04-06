@@ -277,6 +277,8 @@ namespace d360.web.Models
         public string Type { get; set; }
         [DataMember]
         public int ID { get; set; }
+        [DataMember]
+        public Guid Uid { get; set; }
     }
 
     public class FusionQueryAttributeTypeKeyField

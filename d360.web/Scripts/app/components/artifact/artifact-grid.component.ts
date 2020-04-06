@@ -251,7 +251,19 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         else {
             delete params['_filter'];
         }
-        console.log(params._filter);
+
+        if (this.stateService.artifactTypeFilters.relationships && this.stateService.artifactTypeFilters.relationships.length > 0) {
+            let expressions: string[] = [];
+            this.stateService.artifactTypeFilters.relationships.forEach(f => {
+                expressions.push(f.getAsV2ApiFilter());
+            });
+            params._relationFilter = expressions.join(' and ');
+            console.log(params._relationFilter);
+        }
+        else {
+            delete params['_relationFilter'];
+        }
+
         return params;
     }
 
@@ -273,7 +285,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                     this.messagesService.showError("Error", err.message);
                 });
         //this.artifactService.getArtifacts(this.artifactType.AssetTypeID,
-        //    this.stateService.artifactTypeFilters.filters,
         //    this.stateService.artifactTypeFilters.relationships,
         //    this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
         //    .subscribe(result => {

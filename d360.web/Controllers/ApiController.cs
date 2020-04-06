@@ -3759,13 +3759,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] 
+                    sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
 							union
-							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] 
+							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')     
                             inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID) ) 
@@ -3784,7 +3784,7 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             ";
                     break;
                 case SystemObjects.IntersectType:
-                    sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] 
+                    sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] , I.Uid
                             from [Intersect] A 
                             inner join [Intersect] I on A.IntersectTypeID = @id and ( (I.Subject = 'Intersect' and A.ID = I.SubjectID) OR (I.Object = 'Intersect' and A.ID = I.ObjectID) ) 
                             cross apply [dbo].getintersectNames(A.ID) iname
@@ -3792,13 +3792,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                     break;
                 case SystemObjects.PolicyType:
                 case SystemObjects.Policy:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] 
+                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Policy' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] 
+							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')     
                             inner join [Intersect] I on ( (I.Object = 'Policy' and ASS.ObjectID = I.ObjectID) ) 
@@ -3806,7 +3806,7 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
-                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
+                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] , A.uid
                             from Asset A 
                             inner join AssetType AST on AST.ID = A.AssetTypeID
                             inner join AssetDisplayValue AD on AD.AssetID =A.ID
@@ -3815,32 +3815,32 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by AD.DisplayValue";
                     break;
                 case SystemObjects.ResourceType:
-                    sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
+                    sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] , A.Uid
                             from reporting.Global_Resource A 
                             inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
                             order by 1";
                     break;
                 case SystemObjects.RuleType:
                 case SystemObjects.Rule:
-                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
                             union
-                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
                             order by D.DisplayValue";
                     break;
                 case SystemObjects.TaxonomyType:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] 
+                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Taxonomy' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] 
+							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')     
                             inner join [Intersect] I on ( (I.Object = 'Taxonomy' and ASS.ObjectID = I.ObjectID) ) 

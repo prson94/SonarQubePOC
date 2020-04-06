@@ -23,6 +23,19 @@ export class GridRelationshipFilterExpression {
     objectIds: string[];
     options: SelectItem[];
     relationshipType: ObjectRelationship;
+
+    public getAsV2ApiFilter() {
+
+        let filters: string[] = [];
+        let condition: string = this.includeType == 'Any' ? ' or ' : ' and ';
+        let relUid: string = this.relationshipType.Uid;
+        this.objectIds.forEach(opt => {
+            
+            filters.push(`${relUid} eq ${opt}`);
+        });
+
+        return `(${filters.join(condition)})`;
+    }
 }
 
 export class GridOwnerFilter {
@@ -43,9 +56,7 @@ export class GridFilterExpression {
     fieldtype: GridFilterFieldType;
 
     public getAsV2ApiFilter(fieldColumns: GridFilterColumn[]): string {
-        console.log(this);
         var f = fieldColumns.find(x => x.datafield.toLowerCase() == this.field.toLowerCase());
-        console.log(f);
         var cond = this.convertCondition(this.condition);
         var val = this.wrapValue(f.fieldType, this.value);
 
