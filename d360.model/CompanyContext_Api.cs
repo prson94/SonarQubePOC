@@ -6496,7 +6496,6 @@ insert into #Keys
 			                                    DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
 	                                    from    api.ExecutionDeleteAssetResult DAR                                                
                                         inner join api.Execution E on E.ExecutionID = DAR.ExecutionID 
-								                                        and E.ExecutionID = 'FC840220-9E70-4FF7-BB0F-7968464FB15A'
                                         inner join 
                                         Asset A on (
                                                     (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
