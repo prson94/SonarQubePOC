@@ -29,6 +29,7 @@ namespace d360.model.DataAccessLayer
         Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true);
         Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true);
         Predicate GetPredicateByUID(Guid predicateGuid);
+        AssetType GetArtifactTypeByID(int artifactTypeId);
         AssetType GetAssetTypeByUID(Guid assetTypeUid);
         AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class);
         AssetType GetAssetTypeByModel(AssetTypeUpsert model);

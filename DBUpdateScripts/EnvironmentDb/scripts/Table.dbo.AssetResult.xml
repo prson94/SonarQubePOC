@@ -37,4 +37,23 @@ END
 ]]>
 	</rollback>
   </changeSet>
-  </databaseChangeLog>
+
+  <changeSet author="Pappas" id="Table.dbo.AssetResult-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+alter table dbo.AssetResult drop column PassFraction;
+alter table dbo.AssetResult add PassFraction as (cast(PassCount as float)/coalesce(cast(PassCount as float)+cast(FailCount as float),1)) persisted;
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+alter table dbo.AssetResult drop column PassFraction;
+alter table dbo.AssetResult add PassFraction as (PassCount / (PassCount+FailCount)) persisted;
+]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -516,6 +516,21 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Get field types for the given asset type Uid
+        /// </summary>
+        /// <param name="artifactTypeID">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("artfactType/{artifactTypeID}"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public AssetType GetArtifactTypeUidById(int artifactTypeID)
+        {
+            return this.AssetRepository.GetArtifactTypeByID(artifactTypeID);
+        }
+
+        /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>

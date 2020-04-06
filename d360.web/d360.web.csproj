@@ -651,6 +651,7 @@
     <Content Include="fonts\sanspro\source-sans-pro-v13-latin-regular.svg" />
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
+    <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
     <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
@@ -980,6 +981,11 @@
     <Content Include="Content\styles\img\saturation.png" />
     <Content Include="Content\styles\materialize.less" />
     <Content Include="Content\styles\selectlistinfoitem.less" />
+    <Content Include="Content\styles\infogix-ui\IgBackground.less" />
+    <Content Include="Content\styles\infogix-ui\IgColorVariables.less" />
+    <Content Include="Content\styles\infogix-ui\IgUiVariables.less" />
+    <Content Include="Content\styles\infogix-ui\IgButton.less" />
+    <Content Include="Content\styles\infogix-ui\infogix-ui.less" />
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
@@ -1309,7 +1315,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-homepage.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-shopping-cart.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\similar-items.component.ts" />
-	<TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\preview-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\carausel\simple-carousel.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree-node.component.ts" />
@@ -1509,6 +1515,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
