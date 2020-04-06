@@ -35,7 +35,6 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: () => import('./customapi/admin-customapi.module').then(m => m.AdminCustomAPIModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: () => import('./exporttemplates/admin-export-templates.module').then(m => m.AdminExportTemplatesModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TAGS, loadChildren: () => import('./tags/admin-tags.module').then(m => m.AdminTagsModule) },
-
         ]
     }
 ];
@@ -45,4 +44,3 @@ const routes: Routes = [
     exports: [RouterModule],
 })
 export class AdminRoutingModule { }
-
