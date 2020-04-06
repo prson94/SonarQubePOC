@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
