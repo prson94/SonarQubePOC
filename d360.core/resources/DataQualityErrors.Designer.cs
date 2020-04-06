@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} must not be greater than {1}..
+        /// </summary>
+        public static string GreaterThanError {
+            get {
+                return ResourceManager.GetString("GreaterThanError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must not be greater than today’s date..
         /// </summary>
         public static string GreaterThanTodayError {

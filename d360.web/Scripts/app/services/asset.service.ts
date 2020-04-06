@@ -89,6 +89,14 @@ export class AssetService extends BaseObservableService {
         }
     }
 
+    public getArtifactType(artifactTypeId: number): Observable<any> {
+        return this.
+            http
+            .get(`/api/v2/assets/artfactType/${artifactTypeId}`)
+            .pipe(map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
     public getAssets(assetTypeUid: string, params: any): Observable<any> {
         var qString = '';
         if (params) {

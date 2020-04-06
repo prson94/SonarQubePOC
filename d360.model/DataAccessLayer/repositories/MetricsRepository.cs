@@ -876,6 +876,52 @@ namespace d360.model.DataAccessLayer
             result.items = Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList();
             if (result.items == null) result.items = new List<DataQualityResultItem>();
             return result;
+        }  
+
+        public List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value)
+        {
+            var result = new List<DataQualityAssetResultModel>();
+            var parameters = new DynamicParameters();
+            parameters.Add("@Uid", value);
+
+            string assetResultSQL = $@"select 
+	                                    AR.Uid as ResultUid, ARE.[Class] as Class, AN.UID as AssetUid, AR.EffectiveDate as EffectiveDate, AR.RunDate as RunDate
+                                    from 
+	                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+                                    where 
+	                                    Match (AN -(ARE)-> AR)
+	                                    and 
+	                                    AR.Uid = @Uid";
+
+            result = Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters).ToList();
+
+            return result;
+
+        }
+
+        public List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> request, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<DataQualityDeleteResponseModel> results = null;
+            try
+            {
+                results = Company.DeleteAssetResults(request, execution);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
         }
     }
 }

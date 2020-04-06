@@ -4,6 +4,8 @@ import { Subject, Subscription } from "rxjs";
 import { TooltipInfo } from '../../../models/tooltip-info.model';
 import { PreviewpopupSingletonService } from '../../../services/previewpopup-singleton.service';
 import { ToolTipService } from '../../../services/tooltip.service';
+import { DomHandler } from 'primeng/components/dom/domhandler';
+
 
 @Component({
     selector: 'd3s-preview-popup',
@@ -103,7 +105,8 @@ export class PreviewPopupComponent implements OnInit {
     }
 
     private getTop(): number {
-        return Math.min(this.elRef.nativeElement.offsetTop, (document.documentElement.clientHeight/2)-30);
+        var viewport = DomHandler.getViewport();
+        return Math.min(this.elRef.nativeElement.offsetTop, (viewport.height/2)-30);
     }
 
     repositionMenuToFit(windowHeight, windowWidth, element) {

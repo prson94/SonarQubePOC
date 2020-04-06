@@ -164,11 +164,10 @@ namespace d360.model.helpers
             {
                 var fieldType = this.fieldTypes.FirstOrDefault(x => x.Name.ToLower() == token.Field);
 
-                if (disallowedFieldTypes.Contains(fieldType.Type))
+                if (fieldType != null && disallowedFieldTypes.Contains(fieldType.Type))
                 {
                     throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
                 }
-
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.Item1.ToLower() == token.Field.ToLower()))
