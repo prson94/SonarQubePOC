@@ -19,14 +19,6 @@ export class PoliciesService extends BaseObservableService {
         super(messagesService);
     }
 
-    getPolicyTypes(): Observable<PolicyType[]> {
-        return this.http.get('api/policytypes')
-            .pipe(
-                map(response => <PolicyType[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getPolicies(
         policyTypeId: number,
         stripHtml: boolean = false

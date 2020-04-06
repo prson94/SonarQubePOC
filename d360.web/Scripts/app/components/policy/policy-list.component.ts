@@ -3,23 +3,26 @@
     OnInit,
     OnDestroy
 } from '@angular/core';
-import {Router, ActivatedRoute} from '@angular/router';
-import {Title} from '@angular/platform-browser';
+import { Router, ActivatedRoute } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 
-import {Breadcrumb} from '../../models/breadcrumb.model';
-import {PolicyType} from '../../models/policy.model';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+import { PolicyType } from '../../models/policy.model';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
 
-import {HeaderBreadcrumbService} from '../../services/header-breadcrumb.service';
-import {PoliciesService} from '../../services/policies.service';
-import {SecondaryNavService} from '../../services/right-sidebar.service';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { PoliciesService } from '../../services/policies.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { AssetTypeService } from '../../services/asset-type.service';
 
-import {BaseComponent} from '../shared/base.component';
+import { BaseComponent } from '../shared/base.component';
 
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+
 
 @Component({
     selector: 'd3s-policy-list',
-    providers: [PoliciesService],
+    providers: [PoliciesService, AssetTypeService],
     template: `
         <div class="row">
             <div class="col s12">
@@ -101,8 +104,8 @@ import {SiteUrlHelpers} from '../../static/site-url-helpers';
 
 export class PolicyListComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
-    private policies: PolicyType[] = [];
-    private selected: PolicyType;
+    private policies: AssetTypeApiModel[] = [];
+    private selected: AssetTypeApiModel;
     private policyClassName: string;
 
     constructor(
@@ -111,7 +114,8 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected policiesService: PoliciesService
+        protected policiesService: PoliciesService,
+        private assetTypeService: AssetTypeService,
     ) {
         super();
 
@@ -151,22 +155,18 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
 
     loadPolicies() {
         this.isLoading = true;
-        this.policiesService.getPolicyTypes()
-            .subscribe(
-                result => {
-                    this.policies = result;
+        this.assetTypeService.getAssetTypesByClass(AssetTypeClass.Policy)
+            .subscribe(result => {
+                this.policies = result;
+                this.policyClassName = '';
+                this.setBrowserTitle(this.titleService, `Policies`);
 
-                    this.policyClassName = '';
-
-                    this.setBrowserTitle(this.titleService, `Policies`);
-
-                    if (this.policies.length && this.policies.length > 0) {
+                if (this.policies.length && this.policies.length > 0) {
                         this.selected = this.policies[0];
-                    }
-
-                    this.isLoading = false;
                 }
-            );
+
+                this.isLoading = false;
+            });
     }
 
     showPolicyType(policyType: PolicyType) {
