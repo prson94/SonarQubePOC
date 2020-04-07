@@ -156,7 +156,7 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
                     this.headerBreadcrumbService.getFolderTitle('#Models').then((res) => {
                         this.headerBreadcrumbService.clearCurrentObjectInfo();
                         this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_MODEL_CLASSIFICATION}` : undefined));
+                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, this.modelGroup ? `${SiteUrlHelpers.SITE_URL_MODEL_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}` : undefined));
                         this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                             this.secondaryNavService.setCurrentArea(res, icon, 'Models');
                         });
