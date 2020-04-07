@@ -263,8 +263,7 @@ from    fusionattribute f
 	    inner join fusion fu on (f.fusionID = fu.id)
 	    left outer join fusionattribute fp on (f.parentID = fp.id)
 where   f.id = @id";
-
-       
+     
 
 
         public static string FusionStatisticsItem = @"select
