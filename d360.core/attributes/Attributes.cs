@@ -53,6 +53,24 @@ namespace d360.core
         }
     }
 
+    public class SubjectAssetClassesSupportedAttribute : Attribute
+    {
+        public enums.AssetTypeClass[] Classes { get; set; }
+        public SubjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
+        {
+            Classes = classes;
+        }
+    }
+
+    public class ObjectAssetClassesSupportedAttribute : Attribute
+    {
+        public enums.AssetTypeClass[] Classes { get; set; }
+        public ObjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
+        {
+            Classes = classes;
+        }
+    }
+
     public class AllowIntersectTypeAssignmentAttribute : Attribute
     {
         private bool _allowed = true;

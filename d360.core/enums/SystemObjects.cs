@@ -156,7 +156,9 @@ namespace d360.core
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
         OrganizationType,
         [Description("Export Template"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
-        ExportTemplate
+        ExportTemplate,
+        [Description("Task Type"), AllowSurvey(false), EnableAudit(false), IsType(true)]
+        TaskType
     }
 
     public class SystemObjectInfo

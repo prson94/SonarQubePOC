@@ -1223,8 +1223,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
         }
 
-
-
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
         {
             if (!resourceID.HasValue)
@@ -1620,8 +1618,9 @@ where	R.SourceObject = 'FusionAttribute'
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
 			                when T.Object = 'ResourceType' then 'Security :: '
-			                when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
-			                when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
+                            when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
+                            when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
+                            when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
@@ -1668,7 +1667,8 @@ where	R.SourceObject = 'FusionAttribute'
         {
             var sSubject = subject.ToString();
             bool removeSpecialPredicateTypes = false;
-
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
+            
             if (sSubject == "IntersectType")
             {
                 removeSpecialPredicateTypes = true;
@@ -1681,12 +1681,7 @@ where	R.SourceObject = 'FusionAttribute'
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
 
-                removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.BusinessAsset &&
-                    subjectAssetType.Class != AssetTypeClass.Model &&
-                    subjectAssetType.Class != AssetTypeClass.Policy &&
-                    subjectAssetType.Class != AssetTypeClass.Rule
-                );
+                allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class)).ToList();
             }
 
             var sql = @"
@@ -1713,7 +1708,7 @@ where	I.ID is null";
 
             if (removeSpecialPredicateTypes)
             {
-                predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
+                predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
             }
 
             return predicates.ToList();
@@ -1749,22 +1744,20 @@ where	I.ID is null";
             model.SubjectUid = subjectAssetType?.uid;
             model.ObjectUid = objectAssetType?.uid;
 
+            var predicateInfo = predicateModel.Type.AsInfoModel();
+            
+            if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : {predicateInfo.SubjectAssetClassesSupported}.");
+            }
+            if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be one of the following classes : {predicateInfo.ObjectAssetClassesSupported}.");
+            }
+
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
             {
-
-
-                if (predicateModel.Type == PredicateType.BusinessToTechnical)
-                {
-                    if (subjectAssetType.Class != AssetTypeClass.BusinessAsset && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
-                    }
-                    if (objectAssetType.Class != AssetTypeClass.TechnicalAsset)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
-                    }
-                }
-                else if (predicateModel.Type == PredicateType.Transformation)
+                if (predicateModel.Type == PredicateType.Transformation)
                 {
                     if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
                     {
