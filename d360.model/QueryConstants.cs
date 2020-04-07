@@ -1738,6 +1738,5 @@ select
             order by IST.StartedOn, IST.CompletedOn";
 
         #endregion
-
     }
 }
