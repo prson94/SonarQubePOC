@@ -2461,7 +2461,7 @@ where   ExecutionID = @ExecutionID
                     var dupesResult = uidDupes.Join(import,
                                         x => x.Uid,
                                         y => y.Uid,
-                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Count = d.Count }).ToList();
+                                        (d, i) => new { i.ExecutionItemUid, i.Uid, d.Count }).ToList();
                     results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = $"Duplicate Uid", Success = false }));
                 }
                 else
@@ -4606,76 +4606,100 @@ from    [Intersect] T
         private void ValidateRelationshipTypes(bool isInsert, ApiExecution execution, int timeout = 3600)
         {
             var predicateTypeInfo = new PredicateType().GetAsList();
-            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
-
             Guid emptyUid = Guid.Empty;
 
-            if (isInsert)
-            {
-                Connection.Execute($@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'SubjectUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (SubjectUid is null or SubjectUid = @emptyUid);
-
-update  api.ExecutionRelationshipType
-set     Success = 0,
-        Message = 'ObjectUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (ObjectUid is null or ObjectUid = @emptyUid);
-
-update  T
-set     T.Success = 0,
-        T.Message = 'ObjectUid and SubjectUid must be the same for the Semantic Relation predicate type.' 
-from    api.ExecutionRelationshipType T
-        inner join [Predicate] P on P.Uid = T.PredicateUid
-where   T.ExecutionID = @ExecutionID 
-        and T.Success is null 
-        and (T.ObjectUid = T.SubjectUid)
-        and P.[Type] = {(int)PredicateType.SemanticRelation};
-
-update  T
-set     T.Success = 0, 
-        T.Message = 'Relationship with specified Uid already exists.' 
-from    api.ExecutionRelationshipType T
-        inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
-        and T.Success is null 
-        and (T.Uid is not null and T.Uid <> @emptyUid);",
-                new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
-            }
-            else
-            {
+            if (!isInsert)
+            { 
                 Connection.Execute(@"
 update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'Uid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (Uid is null or Uid = @emptyUid);
+set     Success = 0, Message = 'Uid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID and Success is null and (Uid is null or Uid = @emptyUid);
 
-update  ER
+update  ER 
 set     Success = 0,
         Message = 'Relationship type (Uid) not found.' 
 from    [api].[ExecutionRelationshipType] ER 
 where   ER.ExecutionID = @ExecutionID 
         and ER.Success is null 
-        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);",
+        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);
+
+Update  T
+set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
+        ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+from    [api].[ExecutionRelationshipType] T
+        inner join IntersectType S on S.Uid = T.Uid
+        inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+        inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
+where   T.ExecutionID = @ExecutionID and T.Success is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
-            Connection.Execute(@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'PredicateUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (PredicateUid is null or PredicateUid = @emptyUid);",
-        new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+            #region Insert/Update
+
+            var predicateCheckSql = "";
+            predicateTypeInfo.ForEach(p =>
+            {
+                string message = "";
+
+                if (p.Obsolete)
+                {
+                    message = $"You may not use the {p.Name} functional type as it is obsolete and no longer supported.";
+                    predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
+                }
+                else if (!p.AllowEditFromRelationshipEditor)
+                {
+                    message = $"Creating or updating of relationship types with a {p.Name} functional type is not allowed.";
+                    predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
+                }
+                else
+                {
+                    if (!p.AllowDifferentSubjectObject)
+                    {
+                        message = $"ObjectUid and SubjectUid must be the same for the {p.Name} functional type.";
+                        predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null and (T.ObjectUid <> T.SubjectUid); ";
+                    }
+
+                    if (p.ForceDifferentSubjectObject)
+                    {
+                        message = $"ObjectUid and SubjectUid must be different for the {p.Name} functional type.";
+                        predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null and (T.ObjectUid = T.SubjectUid); ";
+                    }
+
+                    if (p.ID == PredicateType.Transformation)
+                    {
+                        message = $"When using the {p.Name} functional type, either your Subject or Object must support being used as a transformation, but not both.";
+                        predicateCheckSql += $@"
+update  T 
+set     T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' 
+from    api.ExecutionRelationshipType T 
+        inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null 
+        inner join AssetType S on S.Uid = T.SubjectUid
+        inner join AssetType O on O.Uid = T.ObjectUid 
+where   (S.UseAsTransformation = 1 and O.UseAsTransformation = 1) OR (S.UseAsTransformation = 0 and O.UseAsTransformation = 0); ";
+                    }
+
+                    // Always do this.
+                    message = $"When using the {p.Name} functional type, your Subject must be an asset type of class {string.Join(" or ", p.SubjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}, and Object of class {string.Join(" or ", p.ObjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}.";
+                    predicateCheckSql += $@"
+update  T 
+set     T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' 
+from    api.ExecutionRelationshipType T 
+        inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null 
+        inner join AssetType S on S.Uid = T.SubjectUid 
+        inner join AssetType O on O.Uid = T.ObjectUid 
+where   (S.[Class] not in ({string.Join(",", p.SubjectAssetClassesSupported.Select(c => (int)c.AsInfoModel().ID))}) 
+        OR O.[Class] not in ({string.Join(",", p.ObjectAssetClassesSupported.Select(c => (int)c.AsInfoModel().ID))})); ";
+                }
+            });
+            Connection.Execute(predicateCheckSql, new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 
             Connection.Execute(@"
+update  api.ExecutionRelationshipType
+set     Message = coalesce(Message+' ', '') + 'PredicateUid is missing / incorrect format.'
+where   ExecutionID = @ExecutionID 
+        and Success = 0
+        and (PredicateUid is null or PredicateUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message='SubjectCardinality is missing / incorrect' 
@@ -4688,10 +4712,8 @@ set     Success = 0,
         Message='ObjectCardinality is missing / incorrect' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectCardinality is null or ObjectCardinality = 0);",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+        and (ObjectCardinality is null or ObjectCardinality = 0);
 
-            Connection.Execute(@"
 with cte_relations as (
                       select    ItemNumber, 
                                 Row_Number() Over (PARTITION BY SubjectUID,ObjectUID,PredicateUID,SubjectCardinality,ObjectCardinality order by ItemNumber)  row_num
@@ -4705,38 +4727,47 @@ SET     Success = 0,
 from    api.[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and Success is null 
-        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
-            Connection.Execute(@"
 Update  ER 
 set     [Subject] = AST.[Object],
         SubjectID = AST.[ObjectID]
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.SubjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
-            Connection.Execute(@"
 Update  ER 
 set     [Object] = AST.[Object], 
         ObjectID = AST.[ObjectID] 
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.ObjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
-            Connection.Execute(@"
 update  ER 
 set     PredicateID = P.ID 
 from    [api].[ExecutionRelationshipType] ER 
         inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+update  api.ExecutionRelationshipType 
+set     Success = 0, 
+        Message = 'Predicate not found.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and PredicateID is null;", new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+
+            #endregion
 
             if (isInsert)
             {
                 Connection.Execute(@"
+update  api.ExecutionRelationshipType 
+set     Success = 0, 
+        Message = 'SubjectUid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and (SubjectUid is null or SubjectUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message ='Subject asset type not found.' 
@@ -4744,41 +4775,28 @@ where   ExecutionID = @ExecutionID
         and Success is null 
         and (SubjectId is null or [Subject] is null);
 
+update  api.ExecutionRelationshipType
+set     Success = 0,
+        Message = 'ObjectUid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and (ObjectUid is null or ObjectUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message = 'Object asset type not found.' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectId is null or [Object] is null);",
-                new { execution.ExecutionID }, commandTimeout: timeout);
-            }
+        and (ObjectId is null or [Object] is null);
 
+update  T
+set     T.Success = 0, 
+        T.Message = 'Relationship with specified Uid already exists.' 
+from    api.ExecutionRelationshipType T
+        inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
+        and T.Success is null 
+        and (T.Uid is not null and T.Uid <> @emptyUid);
 
-            Connection.Execute(@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'Predicate not found.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and PredicateID is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
-
-            Connection.Execute(@"
-update  ER 
-set     PredicateID = null, 
-        Success = 0, 
-        Message = 'Predicate not allowed.' 
-from    [api].[ExecutionRelationshipType] ER 
-        inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID 
-        and P.[Type] in @disallowEditIds 
-        and ER.Success is null 
-        and ER.PredicateID is not null;",
-        new { execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
-
-            if (isInsert)
-            {
-                Connection.Execute(@"
 update  ER 
 set     Success = 0, 
         Message = 'Another relationship already exists with this configuration.' 
@@ -4793,7 +4811,7 @@ where   ER.ExecutionID = @ExecutionID
                             and [Object] = ER.[Object] 
                             and ObjectID = ER.ObjectID 
                             and PredicateID = ER.PredicateID);",
-                new { execution.ExecutionID }, commandTimeout: timeout);
+                new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
             else
             {
@@ -4823,11 +4841,9 @@ where   ER.ExecutionID = @ExecutionID
                     and I.SubjectID=IT.SubjectID 
                     and I.Uid != IT.Uid 
                     and I.[Object]=IT.[Object] 
-                    and I.ObjectID=IT.ObjectID 
-            );",
+                    and I.ObjectID=IT.ObjectID);",
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
-
         }
 
         private void ValidateAssetCrossReference(ApiExecution execution, int timeout = 3600)
@@ -5206,6 +5222,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
+        
         public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
         {
             var results = new List<PredicateUpsertResult>();
@@ -5767,6 +5784,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
+        
         public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
         {
             Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null",

@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Task.
+        /// </summary>
+        public static string AssetTypeClass_Task {
+            get {
+                return ResourceManager.GetString("AssetTypeClass_Task", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Technical Asset.
         /// </summary>
         public static string AssetTypeClass_Technical {
