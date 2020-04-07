@@ -89,9 +89,17 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, string fieldSyntax)
+        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, DefaultFilter filter)
         {
             this.sqlParamsRef = sqlParams;
+
+            if (!IsValidOperatorForFieldType(filter))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
+            }
+
+            CheckFieldValue(filter);
+
             value = value.ToString().Trim('\'');
             if (this.@operator == "ct")
             {
@@ -100,7 +108,7 @@ namespace d360.model.helpers
 
             stringBuilder.Clear();
 
-            stringBuilder.Append(fieldSyntax);
+            stringBuilder.Append(filter.SqlExpression);
             stringBuilder.Append(GetSQLOperator(@operator));
             stringBuilder.Append($"@filter_{parameterIdx}");
 
@@ -190,7 +198,40 @@ namespace d360.model.helpers
         }
         private void UpdateTokenValueForType()
         {
-            switch (fieldType.Type.ToLower())
+            CheckFieldValue();
+
+            if (@operator == "ct")
+            {
+                value = $"%{value.ToString().Replace("*", "%")}%";
+            }
+
+            string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
+
+            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
+            {
+                if (fieldType.LookupObjectID == null)
+                {
+                    throw new Exception("Lookup field type is missing LookupObjectID value!");
+                }
+                this.isLookupField = true;
+                LoadLookupSql();
+            }
+
+            if (!this.isLookupField)
+            {
+                stringBuilder.Append(GetColumnValueSyntax(fieldType.ID));
+                stringBuilder.Append(GetSQLOperator(@operator));
+                stringBuilder.Append($"@filter_{parameterIdx}");
+            }
+
+            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
+
+        }
+
+        private void CheckFieldValue(DefaultFilter filter = null)
+        {
+            string ft = filter == null ? fieldType.Type : filter.SqlFieldType.ToString();
+            switch (ft.ToLower())
             {
                 case "number":
                     int number = 0;
@@ -232,32 +273,6 @@ namespace d360.model.helpers
                     value = value.ToString().Trim('\'');
                     break;
             }
-            if (@operator == "ct")
-            {
-                value = $"%{value.ToString().Replace("*", "%")}%";
-            }
-
-            string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
-
-            if (lookupFieldTypes.Select(x => x.ToLower()).Contains(fieldType.Type.ToLower()))
-            {
-                if (fieldType.LookupObjectID == null)
-                {
-                    throw new Exception("Lookup field type is missing LookupObjectID value!");
-                }
-                this.isLookupField = true;
-                LoadLookupSql();
-            }
-
-            if (!this.isLookupField)
-            {
-                stringBuilder.Append(GetColumnValueSyntax(fieldType.ID));
-                stringBuilder.Append(GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
-            }
-
-            sqlParamsRef.Add($"@filter_{parameterIdx}", value);
-
         }
 
         private void LoadLookupSql()
@@ -325,10 +340,12 @@ namespace d360.model.helpers
             }
         }
 
-        private bool IsValidOperatorForFieldType()
+        private bool IsValidOperatorForFieldType(DefaultFilter defaultFilter = null)
         {
             var operand = @operator.ToLower();
-            switch (fieldType.Type.ToLower())
+            string fType = defaultFilter == null ? fieldType.Type.ToLower() : defaultFilter.SqlFieldType.ToString().ToLower();
+
+            switch (fType)
             {
                 case "boolean":
                 case "lookup":
