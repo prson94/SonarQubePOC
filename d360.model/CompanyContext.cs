@@ -3317,28 +3317,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
         }
 
-        public dynamic GetAssetStatusAndScore(Guid uid)
-        {
-            string sql = $@"SELECT 
-                            cast(S.Value * 100 as int) as 'Score',
-                            S.EffectiveDate as 'EffectiveDate',  
-                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
-                            from Asset A
-                            left Join AssetType AT on A.AssetTypeID = AT.ID
-                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
-                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
-                            left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
-                            WHERE A.Uid = @assetUid";
-            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
-        }
-
         public int? GetAssetScore(long assetId)
         {
             string sql = $@"SELECT top 1
                             cast(S.Value * 100 as int) as 'Score'                            
                             from Asset A                            
                             inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE A.ID = @assetId order by S.EffectiveDate desc";
+                            WHERE S.ScoreType = 1 and A.ID = @assetId order by S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId }).FirstOrDefault();
         }
 
