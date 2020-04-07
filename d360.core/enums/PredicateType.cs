@@ -94,7 +94,7 @@ namespace d360.core.enums
         ]
         UserOwnership = 5,
         [
-            Category(""),
+            Category("General"),
             Name("Grammatic Association"),
             Description("Allows you to establish grammatic association between two objects."),
             ReadOnly(false),
@@ -110,7 +110,7 @@ namespace d360.core.enums
         ]
         Grammar = 6,
         [
-            Category(""),
+            Category("General"),
             Name("Simple"),
             Description("Allows you to create a simple association between two objects that do not fit into any other functional type, such as lineage."),
             ReadOnly(false),
@@ -143,7 +143,7 @@ namespace d360.core.enums
         ]
         FusionMapping = 8,
         [
-            Category(""),
+            Category("General"),
             Name("See Also"),
             Description("This type of predicate allows for items to be related together to express similarity between them."),
             ReadOnly(false),
@@ -228,7 +228,7 @@ namespace d360.core.enums
         ]
         BusinessToTechnical = 13,
         [
-            Category(""),
+            Category("General"),
             Name("Semantic Relation"),
             Description(""),
             ReadOnly(false),
