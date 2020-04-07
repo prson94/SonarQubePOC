@@ -306,7 +306,6 @@ namespace d360.model.helpers
             }
 
         }
-
     }
 
     public enum FilterExpressionParseType
