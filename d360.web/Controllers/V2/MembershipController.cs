@@ -427,7 +427,6 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;
@@ -443,6 +442,5 @@ namespace d360.web.Controllers.V2
             }
             return isValid;
         }
-
     }
 }
