@@ -146,7 +146,7 @@ export class PolicyItemStructureComponent extends BaseComponent implements OnIni
                                 this.headerBreadcrumbService.showBreadcrumb(
                                     new Breadcrumb(
                                         this.currentAreaName ? this.currentAreaName : res,
-                                        `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                                        `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
                                     )
                                 );
                                 this.headerBreadcrumbService.showBreadcrumb(
