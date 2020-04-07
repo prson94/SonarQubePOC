@@ -35,9 +35,9 @@ export class AdminGovernanceComponent extends AdminBaseComponent implements OnDe
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(0, 'ResponsibilityType');
         this.responsibilityTypeService.getAdminResponsibilityTypeDetails(this.selectedRow.uid).subscribe(res => {
             this.selectedRow.ID = res.data.ID;
+            this.buildSecondaryNavigationForObject(this.selectedRow.ID, 'ResponsibilityType');
         });
     }
 
