@@ -30,19 +30,19 @@ namespace d360.extensions.queue
             return new StorageCredentials(QueueStorageName, QueueStorageKey);
         }
 
-        public void CreateMessage<T>(string queueName, T item)
+        public bool CreateMessage<T>(string queueName, T item)
         {
             var list = new List<T>() { item };
-            CreateMessages(queueName, list);
+            return CreateMessages(queueName, list);
         }
 
-        public async Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
+        public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
         {
             var list = new List<T>() { item };
-            await CreateMessagesAsync(queueName, list, initialVisibilityDelay);
+            return await CreateMessagesAsync(queueName, list, initialVisibilityDelay);
         }
 
-        public void CreateMessages<T>(string queueName, List<T> items)
+        public bool CreateMessages<T>(string queueName, List<T> items)
         {
             try
             {
@@ -66,10 +66,12 @@ namespace d360.extensions.queue
             catch (Exception ex)
             {
                 Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                return false;
             }
+            return true;
         }
 
-        public async Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
+        public async Task<bool> CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
         {
             try
             {
@@ -94,7 +96,9 @@ namespace d360.extensions.queue
             catch (Exception ex)
             {
                 Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                return false;
             }
+            return true;
         }
 
         public void CreateTopicMessage(EventInfo e)

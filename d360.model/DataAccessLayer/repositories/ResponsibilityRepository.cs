@@ -126,12 +126,14 @@ namespace d360.model.DataAccessLayer
                             select 
 	                            att.Class as AssetClass,
 	                            att.[Name] as AssetTypeName,
+	                            P.[Path] as AssetTypePath,
 	                            att.[uid] as AssetTypeUid,
 	                            rtr.PermissionsBitMask as PermissionsMask
                             from 
 	                            [dbo].responsibilitytype rt
 	                            inner join [dbo].responsibilitytyperelation rtr on (rt.id = rtr.ResponsibilityTypeID)
 	                            inner join [dbo].assettype att on(att.[Object] = rtr.ObjectType and att.ObjectID = rtr.ObjectID)
+                                cross apply dbo.GetAssetTypeTextPathById(att.ID, ' / ') P
                             where
 	                            rt.[uid] = @uid
                             ", new { uid = responsibilityTypeUid.ToString() });

@@ -203,4 +203,78 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 	</rollback>
   </changeSet>
 
+  <changeSet author="TDuric" id="Data.Corrections.GOV-9723">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+BEGIN TRY
+    BEGIN TRANSACTION 
+
+	drop table if exists #existingRuleResults
+	create table #existingRuleResults (RuleUid uniqueidentifier,Uid uniqueidentifier, EffectiveDate date, RunDate date, RowsPassed int, RowsFailed int, CreatedOn date, CreatedBy int, UpdatedOn date, UpdatedBy int)
+	
+	insert into #existingRuleResults (RuleUid, uid, EffectiveDate, RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+	select 
+	A.uid as RuleUid, 
+	newid() as Uid, 
+	RR.EffectiveDate,
+	RR.RunDate, 
+	RowsPassed, 
+	RowsFailed, 
+	RR.CreatedOn,
+	RR.CreatedBy, 
+	RR.CreatedOn, 
+	Rr.CreatedBy 
+	from RuleResult RR
+			inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+			inner join [Rule] R on R.ID = RI.RuleID
+			inner join [RuleType] RT on R.RuleTypeID = RT.ID
+			inner join Asset A on A.Object = 'Rule' and ObjectId = RT.ID    
+	where RowsPassed != 0 or RowsFailed != 0
+
+	INSERT INTO AssetResult
+	 ([Uid]
+			                                                ,[EffectiveDate]
+			                                                ,[RunDate]
+			                                                ,[PassCount]
+			                                                ,[FailCount]
+			                                                ,[CreatedOn]
+			                                                ,[CreatedBy]
+															,[UpdatedOn]
+															,[UpdatedBy])
+		select uid, EffectiveDate,RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, CreatedOn, CreatedBy
+			from #existingRuleResults
+	
+
+		INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
+	    select 
+		    AN.$node_Id, AR.$node_Id, 1
+	    from 
+		    #existingRuleResults ERR 
+		    inner join graph.AssetNode AN on AN.Uid = ERR.[RuleUid]
+			inner join dbo.AssetResult AR on AR.Uid = ERR.[Uid]
+
+	COMMIT
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRAN
+
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE()
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY()
+        DECLARE @ErrorState INT = ERROR_STATE()
+
+    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+END CATCH
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
