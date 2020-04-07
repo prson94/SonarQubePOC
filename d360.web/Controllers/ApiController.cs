@@ -6996,9 +6996,9 @@ where   (
         }
 
         [Route("{type}/{id:int}/{predicateId:int}/synonyms")]
-        public HttpResponseMessage GetSynonymsByObject(SystemObjects type, int id, int predicateId)
+        public async Task<HttpResponseMessage> GetSynonymsByObject(SystemObjects type, int id, int predicateId)
         {
-            var models = Company.Query<dynamic>(
+            var models = await Company.QueryAsync<dynamic>(
                 QueryConstants.SynonymsByObjectList,
                 new
                 {

@@ -854,7 +854,17 @@ order by MS.Sequence";
 
 
         select 
-            d.[Name], d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as [Value], d.[Object], d.ObjectID from intersecttype IT        
+            d.[Name], 
+			d.[Object] + '|' + cast(d.ObjectID as varchar(50)) as [Value], 
+			d.[Object], 
+			d.ObjectID, 
+			IT.[uid],
+			case when IT.Subject = @ot and IT.SubjectID = @otid then
+		        1
+	        else
+		        0
+	        end as IntersectTypeIsSubjectSide
+		from intersecttype IT        
         inner join (
 			select A.[Name], A.[Object], A.ObjectID from AssetType A
 			union all
@@ -884,9 +894,9 @@ select	@ot = T.Object,
 from	Asset A 
         inner join AssetType T on T.ID = A.AssetTypeID  and A.Object = @object and A.ObjectID = @objectId 
 
-select		D.Object + '|' + cast(D.ObjectID as varchar) + '|' + cast(P.ID as varchar) as ID,
-			D.TypeName + ' :: ' + D.DisplayValue as Name,
-            O.TargetingSubject
+select		D.TypeName + ' :: ' + D.DisplayValue as Name,
+            O.TargetingSubject,
+			d.uid as [uid]
 from AssetDetail d		
 			inner join (
 						select	case 
@@ -927,6 +937,8 @@ select	I.ID as IntersectID,
 		null as [Description],
 		dbo.GenerateAssetUrl(S.ID) as [Url]       
         ,null as [CustomID]
+		,I.uid as [IntersectUid]
+		,T.uid as [IntersectTypeUid]
 from	[Intersect] I
 		inner join IntersectType T on T.ID = I.IntersectTypeID  and T.PredicateID = @predicateId	
 		inner join Asset S on 
@@ -962,6 +974,8 @@ select
 	,null as [Description]
 	,null as [Url]	
     ,S.ID as CustomID
+	,null as [IntersectUid]
+	,null as [IntersectTypeUid]
 from 
 	[dbo].[nym] s	
 where s.[object] = @type and s.[objectID] = @id and s.PredicateID = @predicateId and s.Visible = 1

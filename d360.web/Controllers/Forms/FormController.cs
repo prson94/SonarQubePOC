@@ -586,9 +586,7 @@ namespace d360.web.Controllers
                 case "SURVEYTYPE":
                     return DeleteSurveyType(form);
                 case "SURVEYQUESTIONTYPE":
-                    return DeleteQuestionType(form);
-                case "SYNONYM":
-                    return DeleteSynonym(form);                
+                    return DeleteQuestionType(form);                
                 case "TAXONOMYTYPE":
                     return DeleteTaxonomyType(form);
                 case "TAXONOMYTYPELEVEL":
@@ -2804,24 +2802,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
         }
 
         [HttpGet, Route("SynonymsOptions"), NonNullableParameters]
-        public JsonResult SynonymsOptions(int predicateId, string type, int typeId, string obj, int objId, string query = "")
+        public JsonNetResult SynonymsOptions(int predicateId, string type, int typeId, string obj, int objId, string query = "")
         {
             query = query.Replace("_", "[_]").Replace("%", "[%]");
                         
             var items = Company.Query<dynamic>(QueryConstants.SynonymOptions, new { predicateId,  type = new Dapper.DbString { IsAnsi = true, Value = type.ToString(), IsFixedLength = true, Length = 50 }, @object = new Dapper.DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objectId = objId, typeId, query }).ToList();
-            var typeIsSubject = true;
-            if (items.Count > 0)
-            {
-                typeIsSubject = (bool)items[0].TargetingSubject;
-            }
 
-            var model = new
+            return new JsonNetResult
             {
-                items,
-                typeIsSubject
+                Data = items,
+                Formatting = Newtonsoft.Json.Formatting.None
             };
-
-            return Json(model, JsonRequestBehavior.AllowGet);
         }
 
         #endregion
@@ -2915,101 +2906,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(ex, HttpStatusCode.InternalServerError);
             }
         }
-
-        [ HttpPost, AjaxValidateAntiForgeryToken, Route("AddSynonym")]
-        public JsonResult AddSynonym(SynonymEditModel model)
-        {
-            try
-            {
-                if (!Company.HasAssetPermission(model.Type, model.ID, Permission.ModifyRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                var synonymSegments = model.Synonym.Split('|');
-                var subject = model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
-                var subjectID = model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
-                var @object = !model.TypeIsSubject ? model.Type : (SystemObjects)Enum.Parse(typeof(SystemObjects), synonymSegments[0]);
-                var objectID = !model.TypeIsSubject ? model.ID : int.Parse(synonymSegments[1]);
-
-                if (subjectID == objectID) return jsonException("Cannot add a synonym that specifies the same object as the current object.", HttpStatusCode.Forbidden);
-
-                var sSubject = subject.ToString();
-                var sObject = @object.ToString();
-                
-                var subjectDetail = Company.GetObjectDetail(sSubject, subjectID);
-                var objectDetail = Company.GetObjectDetail(sObject, objectID);
-
-                if (subjectDetail != null && objectDetail != null)
-                {
-                    var intersectType = Company.Filter<IntersectType>(i =>
-                        (
-                        (i.Subject == subjectDetail.Type && i.SubjectID == subjectDetail.TypeID && i.Object == objectDetail.Type && i.ObjectID == objectDetail.TypeID) ||
-                        (i.Subject == objectDetail.Type && i.SubjectID == objectDetail.TypeID && i.Object == subjectDetail.Type && i.ObjectID == subjectDetail.TypeID)
-                        )
-                        && i.PredicateID == model.PredicateID
-                    ).SingleOrDefault();
-                    var intersect = Company.AddIntersect(intersectType.ID, subject, subjectID, @object, objectID);
-
-                    if (intersect == null)
-                        throw new ApplicationException("Failed to create synonym relationship.");
-
-                    return jsonSuccess("Synonym assigned.", intersect.ID.ToString(), "add", HttpStatusCode.Created, new { });
-                }
-                else
-                {
-                    return jsonException("Item not found.", HttpStatusCode.NotFound, "Item not found.");
-                }
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-        [HttpDelete, Route("DeleteSynonym")]
-        public JsonResult DeleteSynonym(FormCollection form)
-        {
-            try
-            {
-                if (!form.HasKeys()) throw new NoFormDataException("synonym");
-                var id = parseIntField(form, "ID");
-
-                var detail = Company.GetById<Intersect>(id);
-
-                if (detail == null)
-                    throw new NullReferenceException("Intersect not found");
-
-                if (!Company.HasAssetPermission(detail.Subject, detail.SubjectID, Permission.DeleteRelationships))
-                    return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-                if (detail != null)
-                {
-                    Company.Delete(detail);
-                }
-
-                dynamic custom = new
-                {
-                    Name = "Synonym",
-                    Context = form["_context"]
-                };
-
-                return jsonSuccess("Synonym successfully removed.", id.ToString(), "delete", HttpStatusCode.OK, custom);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
 
         [HttpDelete, Route("DeleteCustomSynonym")]
         public JsonResult DeleteCustomSynonym(FormCollection form)
