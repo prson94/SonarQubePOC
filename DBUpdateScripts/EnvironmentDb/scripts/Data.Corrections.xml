@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Data.Corrections.GOV-100149">
+  <changeSet author="MDonato" id="Data.Corrections.GOV-10149">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -126,7 +126,12 @@ begin
 					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
 		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
 
-		update metrics.Score set EffectiveDate = NewEffectiveDate where FlagForUpdate = 1;
+		update	S
+		set		S.EffectiveDate = S.NewEffectiveDate 
+		from	metrics.Score S
+		where	S.FlagForUpdate = 1
+				and not exists (select 1 from metrics.Score where AssetUid = S.AssetUid and ScoreType = S.ScoreType 
+				and EffectiveDate = S.EffectiveDate);
 		
 
 		update	S
@@ -142,7 +147,12 @@ begin
 					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
 		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
 
-		update metrics.ScoreItem set EffectiveDate = NewEffectiveDate where FlagForUpdate = 1;
+		update	S
+		set		S.EffectiveDate = S.NewEffectiveDate 
+		from	metrics.ScoreItem S
+		where	S.FlagForUpdate = 1
+		and not exists (select 1 from metrics.Scoreitem where AssetUid = S.AssetUid
+			and MetricAssetUid = S.MetricAssetUid and EffectiveDate = S.NewEffectiveDate);
 		
 		drop table if exists #tempScore;
 		drop table if exists #tempScoreItem;
@@ -176,8 +186,6 @@ if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metri
 begin
      alter table metrics.ScoreItem drop column FlagForUpdate;
 end
-		
-
 		]]>
     </sql>
 	<rollback>
