@@ -6317,5 +6317,434 @@ insert into #Keys
             return results;
         }
 
+        public List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> import, ApiExecution execution, int timeout = 3600)
+        {
+            var results = new List<DataQualityDeleteResponseModel>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionAssetResult");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<DataQualityDeleteResponseModel>(
+                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
+                    table.Columns.Add("OwningAssetUid", typeof(Guid));                    
+                    table.Columns.Add("EffectiveDateStart", typeof(DateTime));
+                    table.Columns.Add("EffectiveDateEnd", typeof(DateTime));
+                    table.Columns.Add("RunDateStart", typeof(DateTime));
+                    table.Columns.Add("RunDateEnd", typeof(DateTime));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+                            List<string> messages = new List<string>();
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
+                            row["ItemNumber"] = i;                            
+
+                            if (model.Uid.HasValue)
+                            {
+                                row["Uid"] = model.Uid.Value;
+                            }
+                            else
+                            {
+                                row["Uid"] = DBNull.Value;
+                            }
+
+                            if (model.OwningAssetUid.HasValue)
+                            {
+                                row["OwningAssetUid"] = model.OwningAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["OwningAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EvaluatedAssetUid.HasValue)
+                            {
+                                row["EvaluatedAssetUid"] = model.EvaluatedAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["EvaluatedAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EffectiveDateStart != null)
+                            {
+                                row["EffectiveDateStart"] = model.EffectiveDateStart.Value.Date;
+                            }                                                 
+
+                            if (model.EffectiveDateEnd != null)
+                            {
+                                row["EffectiveDateEnd"] = model.EffectiveDateEnd.Value.Date; 
+                            }
+
+                            if (model.RunDateStart != null)
+                            {
+                                row["RunDateStart"] = model.RunDateStart;
+                            }                            
+
+                            if (model.RunDateEnd != null)
+                            {
+                                row["RunDateEnd"] = model.RunDateEnd;
+                            }
+                            if ((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
+                            {
+                                messages.Add("At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
+                                row["Success"] = 0;
+                            }
+
+                            if (model.EffectiveDateStart != null && model.EffectiveDateEnd != null && model.EffectiveDateStart.Value > model.EffectiveDateEnd.Value)
+                            {
+                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                                row["Success"] = 0;
+                            }
+                            if (model.RunDateEnd != null && model.RunDateStart != null && model.RunDateStart > model.RunDateEnd)
+                            {
+                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                                row["Success"] = 0;
+                            }
+
+                            row["Message"] = string.Join(";", messages.ToArray());
+                            
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionDeleteAssetResult";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
+                    bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
+                    bulkCopy.ColumnMappings.Add("EffectiveDateStart", "EffectiveDateStart");
+                    bulkCopy.ColumnMappings.Add("EffectiveDateEnd", "EffectiveDateEnd");
+                    bulkCopy.ColumnMappings.Add("RunDateStart", "RunDateStart");
+                    bulkCopy.ColumnMappings.Add("RunDateEnd", "RunDateEnd");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");                    
+
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+                    #region Log data errors 
+
+                    var checkSQL = $@"
+    	                            --check user permissions
+                                    declare @IsAdministrator bit = 0
+                                    select	@IsAdministrator = IsAdministrator
+                                    from	reporting.Global_Resource
+                                    where	ResourceID = @ResourceID                                    
+
+                                    if @IsAdministrator = 0
+                                    begin
+	                                    update	DAR
+	                                    set		DAR.Success = 0,
+			                                    DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+	                                    from    api.ExecutionDeleteAssetResult DAR                                                
+                                        inner join api.Execution E on E.ExecutionID = DAR.ExecutionID 
+								                                        and E.ExecutionID = 'FC840220-9E70-4FF7-BB0F-7968464FB15A'
+                                        inner join 
+                                        Asset A on (
+                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
+                                                    or 
+                                                    (DAR.EvaluatedAssetUid is not null	and DAR.EvaluatedAssetUid = A.uid) 
+                                                    or 
+                                                    (
+                                                        DAR.Uid is not null 
+                                                        and                                                             
+                                                        A.uid in (select 
+	                                                                    AN.Uid
+                                                                    from 
+	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
+                                                                    where 	
+	                                                                    Match (AN -(ARE)-> AR)
+	                                                                    AND
+	                                                                    AR.uid =DAR.Uid
+                                                                        AND 
+                                                                        ARE.Class = 1)
+                                                    )
+                                                    )											
+			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                                
+                                    end
+                                                                        
+	                                -- check Owning Asset Uid
+	                                update DAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid OwningAssetUid value'
+                                    from api.[ExecutionDeleteAssetResult] DAR
+                                        inner join api.Execution AE on AE.ExecutionID = DAR.ExecutionID
+		                                left join asset a on a.uid = DAR.OwningAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 
+		                                DAR.ExecutionID = @ExecutionID 		
+		                                and 
+                                        DAR.OwningAssetUid is not null
+                                        AND
+                                        DAR.OwningAssetUid <> '00000000-0000-0000-0000-000000000000'
+                                        AND
+		                                (			                                			                             
+			                                a.ID is null
+			                                or
+			                                (a.ID is not null and at.Class <> {(int)AssetTypeClass.Rule})
+			                                or
+			                                A.State = {(int)State.InActive}
+		                                )
+
+	                                -- check Evaluated Asset Uid
+	                                update DAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid EvaluatedAssetUid value'
+                                    from api.[ExecutionDeleteAssetResult] DAR
+                                        inner join api.Execution AE on AE.ExecutionID = DAR.ExecutionID
+		                                left join asset a on a.uid = DAR.EvaluatedAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 		                               
+		                                DAR.ExecutionID = @ExecutionID 		
+		                                And
+		                                DAR.EvaluatedAssetUid is not null
+                                        AND
+                                        DAR.EvaluatedAssetUid <> '00000000-0000-0000-0000-000000000000'
+		                                and 
+		                                (
+			                                a.ID is null -- no match
+			                                or
+			                                (a.ID is not null and at.Class not in ({(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.BusinessAsset}))-- match but wrong asset type
+			                                or
+			                                A.State = {(int)State.InActive} -- inactive state
+		                                )                                      
+
+                                   ";
+
+                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset}, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<DataQualityDeleteResponseModel>();
+                    results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
+
+                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
+	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";                                        
+                    
+                    string deleteAssetResultSQL = $@"create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
+                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
+                                                merge into AssetResultEdge DARE
+                                                using 
+                                                (select 
+	                                                ARE.$from_id as from_id,ARE.$to_id as to_id, AR.Uid, ARE.Class, DAR.itemnumber, DAR.ExecutionItemUid
+	                                                --AR.Uid, ARE.[Class], AR.RunDate, AR.EffectiveDate
+                                                from 
+	                                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR
+                                                where 
+	                                                DAR.ExecutionID = @executionID
+	                                                and
+                                                    DAR.Success is null
+                                                    and DAR.ItemNumber between @beginItemNumber and @endItemNumber
+                                                    AND
+	                                                Match (AN -(ARE)-> AR)
+	                                                and 
+	                                                ((DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') or AR.Uid = DAR.Uid)
+	                                                and
+	                                                (
+		                                                (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') or AR.Uid in 
+		                                                (	
+			                                                select 
+				                                                AR1.Uid
+			                                                from 
+				                                                AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
+			                                                where 
+				                                                Match (AN1 -(ARE1)-> AR1)
+				                                                and 
+				                                                AN1.Uid = DAR.owningAssetUid
+				                                                and
+				                                                ARE1.Class = {(int)ResultRelationClass.Owns}	
+		                                                )
+	                                                )
+	                                                and 
+	                                                (	
+		                                                (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  or AR.Uid in 
+		                                                (
+			                                                select 
+				                                                AR2.Uid
+			                                                from 
+				                                                AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
+			                                                where 
+				                                                Match (AN2 -(ARE2)-> AR2)
+				                                                and 
+				                                                AN2.Uid = DAR.evaluatedAssetUid
+				                                                and
+				                                                ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
+		                                                )
+	                                                )
+	                                                and 
+	                                                (
+		                                                (
+                                                            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
+			                                                
+		                                                )
+		                                                or
+		                                                (
+			                                               DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy}
+		                                                )
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart < AR.EffectiveDate
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd > AR.EffectiveDate
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.RunDateStart is null or AR.RunDate > DAR.RunDateStart
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.RunDateEnd is null or AR.RunDate < DAR.RunDateEnd 
+												  
+	                                                )
+                                                ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
+                                                WHEN MATCHED THEN DELETE
+                                                output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
+
+                                                merge into AssetResult AR
+                                                using (
+	                                                select AR1.uid
+	                                                FROM AssetResult AR1
+	                                                INNER JOIN #ObjectDeleteAssetEdge MAE
+	                                                  ON AR1.UID=MAE.Uid
+	                                                left join 
+	                                                assetResultEdge ARE on ARE.$to_id = AR1.$node_id
+	                                                Where ARE.$to_id is null
+	                                                ) R on R.Uid = AR.Uid
+                                                WHEN MATCHED THEN DELETE;
+
+                                                {updateOnSuccess}
+                                                    ";
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            using (var trans = Connection.BeginTransaction())
+                            {
+
+                                try
+                                {
+                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber}, transaction: trans, commandTimeout: timeout);
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                                Query<DataQualityDeleteResponseModel>(
+                                    $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                )
+                            );
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    
+                }
+            }
+
+            return results;
+        }
+
     }
+
 }

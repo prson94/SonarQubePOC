@@ -31,6 +31,9 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
+
+        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
@@ -542,11 +545,10 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    whereStatements.Add($@"EXISTS (
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.AssetID = a.ID AND rd.ResourceUid in @ownerUids
-                        UNION ALL
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd  WHERE rd.AssetID = 0 AND rd.AssetTypeID = a.AssetTypeID AND rd.ResourceUid in @ownerUids
-                    )");
+                    string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR a.AssetTypeID = owners.AssetTypeID)";
+                    fieldJoins.Add(joinStatement);
+                    countJoins.Add(joinStatement);
+                    whereStatements.Add("owners.ResourceUid in @ownerUids");
                 }
             }
 
@@ -1427,7 +1429,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1461,7 +1466,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1486,7 +1494,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
 
             // Save to the database.
@@ -1511,7 +1522,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }           
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;

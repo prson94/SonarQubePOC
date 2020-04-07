@@ -22,4 +22,24 @@ namespace d360.core.entities.Metric
         public long FailCount { get; set; }
     }
 
+    public class DataQualityDeleteModel
+    {
+        public Guid? ExecutionItemUid { get; set; }
+        public Guid? Uid { get; set; }
+        public Guid? OwningAssetUid { get; set; }        
+        public Guid? EvaluatedAssetUid { get; set; }
+        public DateTime? EffectiveDateStart { get; set; }
+        public DateTime? EffectiveDateEnd { get; set; }
+        public DateTime? RunDateStart { get; set; }
+        public DateTime? RunDateEnd { get; set; }
+    }
+
+    public class DataQualityAssetResultModel
+    {
+        public Guid ResultUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public int Class { get; set; }
+        public DateTime EffectiveDate { get; set; }
+        public DateTime RunDate { get; set; }
+    }
 }

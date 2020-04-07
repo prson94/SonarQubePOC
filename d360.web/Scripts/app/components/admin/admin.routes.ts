@@ -1,4 +1,4 @@
-﻿import { NgModule } from '@angular/core';
+import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AdminUserGuard } from '../../guards/admin-user.guard';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
@@ -10,32 +10,30 @@ const routes: Routes = [
         component: AdminComponent,        
         canActivate: [AdminUserGuard],
         children: [                                                
-            //lazy load
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: './lookups/admin-lookups.module#AdminLookupsModule?chunkName=adminLookupsChunk' }, 
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, loadChildren: './relationships/admin-relationships.module#AdminRelationshipsModule?chunkName=adminRelationshipsChunk' }, 
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, loadChildren: './surveys/admin-surveys.module#AdminSurveysModule?chunkName=adminSurveysChunk' },             
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, loadChildren: './workflow/admin-workflow.module#AdminWorkflowModule?chunkName=adminWorkflowChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, loadChildren: './load/admin-load.module#AdminLoadModule?chunkName=adminLoadChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, loadChildren: './settings/admin-settings.module#AdminSettingsModule?chunkName=adminSettingsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_SCORING, loadChildren: './analytics/admin-analytics.module#AdminAnalyticsModule?chunkName=adminAnalyticsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, loadChildren: './dashboards/admin-dashboards.module#AdminDashboardsModule?chunkName=adminDashboardsChunk' },            
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, loadChildren: './rules/admin-rules.module#AdminRulesModule?chunkName=adminRulesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, loadChildren: './responsibilities/admin-responsibilities.module#AdminResponsibilitiesModule?chunkName=adminResponsibilitiesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, loadChildren: './resources/admin-resources.module#AdminResourcesModule?chunkName=adminResourcesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, loadChildren: './groups/admin-groups.module#AdminGroupsModule?chunkName=adminGroupsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, loadChildren: './fusion/admin-fusion.module#AdminFusionModule?chunkName=adminFusionChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: './hierarchies/admin-hierarchies.module#AdminHierarchiesModule?chunkName=adminHierarchiesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, loadChildren: './hierarchies/admin-hierarchies.module#AdminHierarchiesModule?chunkName=adminHierarchiesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, loadChildren: './attributes/admin-attributes.module#AdminAttributesModule?chunkName=adminAttributesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ASSET, loadChildren: './artifacts/admin-artifacts.module#AdminArtifactsModule?chunkName=adminArtifactsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES, loadChildren: './issuetypes/admin-issue-types.module#AdminIssueTypesModule?chunkName=adminIssueTypesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: './predicates/admin-predicates.module#AdminPredicatesModule?chunkName=adminPredicatesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: './organizations/admin-organizations.module#AdminOrganizationsModule?chunkName=adminOrganizationsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS, loadChildren: './customizations/admin-customizations.module#AdminCustomizationsModule?chunkName=adminCustomizationsChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: './customapi/admin-customapi.module#AdminCustomAPIModule?chunkName=adminCustomAPIChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: './exporttemplates/admin-export-templates.module#AdminExportTemplatesModule?chunkName=adminExportTemplatesChunk' },
-            { path: SiteUrlHelpers.SITE_URL_ADMIN_TAGS, loadChildren: './tags/admin-tags.module#AdminTagsModule?chunkName=adminTagsChunk' },
-
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS, loadChildren: () => import('./lookups/admin-lookups.module').then(m => m.AdminLookupsModule) }, 
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RELATIONSHIPS, loadChildren: () => import('./relationships/admin-relationships.module').then(m => m.AdminRelationshipsModule) }, 
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS, loadChildren: () => import('./surveys/admin-surveys.module').then(m => m.AdminSurveysModule) },             
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW, loadChildren: () => import('./workflow/admin-workflow.module').then(m => m.AdminWorkflowModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_BULK_LOAD, loadChildren: () => import('./load/admin-load.module').then(m => m.AdminLoadModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SETTINGS, loadChildren: () => import('./settings/admin-settings.module').then(m => m.AdminSettingsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_SCORING, loadChildren: () => import('./analytics/admin-analytics.module').then(m => m.AdminAnalyticsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DASHBOARDS, loadChildren: () => import('./dashboards/admin-dashboards.module').then(m => m.AdminDashboardsModule) },            
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RULES, loadChildren: () => import('./rules/admin-rules.module').then(m => m.AdminRulesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES, loadChildren: () => import('./responsibilities/admin-responsibilities.module').then(m => m.AdminResponsibilitiesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_RESOURCES, loadChildren: () => import('./resources/admin-resources.module').then( m => m.AdminResourcesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_GROUPS, loadChildren: () => import('./groups/admin-groups.module').then( m => m.AdminGroupsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_FUSION, loadChildren: () => import('./fusion/admin-fusion.module').then( m => m.AdminFusionModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_POLICIES, loadChildren: () => import('./hierarchies/admin-hierarchies.module').then(m => m.AdminHierarchiesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_MODELS, loadChildren: () => import('./hierarchies/admin-hierarchies.module').then(m => m.AdminHierarchiesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES, loadChildren: () => import('./attributes/admin-attributes.module').then(m => m.AdminAttributesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ASSET, loadChildren: () => import('./artifacts/admin-artifacts.module').then(m => m.AdminArtifactsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES, loadChildren: () => import('./issuetypes/admin-issue-types.module').then(m => m.AdminIssueTypesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES, loadChildren: () => import('./predicates/admin-predicates.module').then(m => m.AdminPredicatesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_ORGANIZATIONS, loadChildren: () => import('./organizations/admin-organizations.module').then(m => m.AdminOrganizationsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOMIZATIONS, loadChildren: () => import('./customizations/admin-customizations.module').then(m => m.AdminCustomizationsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: () => import('./customapi/admin-customapi.module').then(m => m.AdminCustomAPIModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: () => import('./exporttemplates/admin-export-templates.module').then(m => m.AdminExportTemplatesModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_TAGS, loadChildren: () => import('./tags/admin-tags.module').then(m => m.AdminTagsModule) },
         ]
     }
 ];
@@ -45,4 +43,3 @@ const routes: Routes = [
     exports: [RouterModule],
 })
 export class AdminRoutingModule { }
-
