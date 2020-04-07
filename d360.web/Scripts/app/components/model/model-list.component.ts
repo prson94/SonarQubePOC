@@ -109,14 +109,11 @@ export class ModelListComponent extends BaseComponent implements OnInit, OnDestr
         super();
         this.secondaryNavService = secondaryNavService;
         this.setObjectInfo('TaxonomyType', -1);
-        this.setCommonSecondaryNavTabs(true);
+        this.setCommonSecondaryNavTabs(false);
 
         this.selectedItemChange();
     }
     selectedItemChange() {
-        if (this.auditSidebar && this.selected) {
-            this.auditSidebar.url = `/sidebar/audit/TaxonomyType/${this.selected.ID};isAdminPage=false`;
-        }
         if (this.ownershipSidebar && this.selected) {
             this.ownershipSidebar.url = `/sidebar/ownership/TaxonomyType/${this.selected.ID};isAdminPage=false`
         }

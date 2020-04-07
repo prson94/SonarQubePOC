@@ -127,7 +127,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
                     this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
                     this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
                         this.secondaryNavService.showHeader(true);
-                        this.setCommonSecondaryNavTabs(true);
+                        this.setCommonSecondaryNavTabs(false);
                         this.secondaryNavService.setCurrentArea(res, icon, 'Policies');
                     });
                 });
@@ -137,7 +137,7 @@ export class PolicyListComponent extends BaseComponent implements OnInit, OnDest
         );
     }
 
-    ngOnDestroy() {
+  ngOnDestroy() {
         this.clearSidebar();
         if (this.sub) {
             this.sub.unsubscribe();
