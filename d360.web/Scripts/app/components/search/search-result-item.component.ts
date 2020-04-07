@@ -1,4 +1,4 @@
-﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, Input, ChangeDetectionStrategy, OnInit, ChangeDetectorRef, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { SearchFullResult, SearchDetail } from '../../models/search-result.model';
@@ -10,6 +10,7 @@ import { TagService } from '../../services/tag.service';
 import { Tag, TagItem } from '../../models/tag.model';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { MenuItem } from 'primeng/api';
+import { Menu } from 'primeng/menu';
 
 declare var CompanySettings;
 
@@ -33,6 +34,18 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private searchDetails: SearchDetail;
     private formattedPath: string;
     private displayInfopopup: boolean = false;
+
+    @ViewChild('cardmenu', { static: false }) cardmenuRef: Menu;
+    @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
+    
+    @HostListener('document:click', ['$event.target'])
+    public hostclick(targetElement) {
+        if (this.cardmenuRef != undefined && this.cardmenuRef.visible == true && targetElement.closest('.kebabmenu') == null) {
+            if (!this.cardmenubuttonRef.nativeElement.contains(targetElement)) {
+                this.cardmenuRef.hide();
+            }
+        }
+    }
 
     parseTagResult(tags: any[]) {
         return tags.map(tag => { return { uid: tag.Uid, Value: tag.Value }; });

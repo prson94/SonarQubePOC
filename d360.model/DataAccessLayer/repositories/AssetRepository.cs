@@ -31,6 +31,9 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
+
+        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
@@ -542,11 +545,16 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    whereStatements.Add($@"EXISTS (
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd WHERE rd.AssetID = a.ID AND rd.ResourceUid in @ownerUids
-                        UNION ALL
-                        SELECT 1 FROM [dbo].[ResponsibilityDetail] rd  WHERE rd.AssetID = 0 AND rd.AssetTypeID = a.AssetTypeID AND rd.ResourceUid in @ownerUids
-                    )");
+                    /*
+                     * Joining to ResponsibilityDetail on AssetID which is consistent with the [dbo].[GetDynamicAssets] stored procedure
+                     * This does not take rules with "Applies to Entire Type" into account, as those show up with AssetID=0 in ResponsibilityDetail
+                     * To include those assets, use the commented 'joinStatement' below instead.
+                     */
+                    string joinStatement = "inner join [ResponsibilityDetail] owners ON a.ID = owners.AssetID";
+                    //string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR (owners.AssetID = 0 AND a.AssetTypeID = owners.AssetTypeID))";
+                    fieldJoins.Add(joinStatement);
+                    countJoins.Add(joinStatement);
+                    whereStatements.Add("owners.ResourceUid in @ownerUids");
                 }
             }
 
@@ -577,6 +585,7 @@ namespace d360.model.DataAccessLayer
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
+                    A.ObjectID,
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
@@ -1426,7 +1435,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1460,7 +1472,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1485,7 +1500,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
 
             // Save to the database.
@@ -1510,7 +1528,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }           
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1532,6 +1553,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         public AssetType GetAssetTypeByUidAndClass(Guid assetTypeUid, AssetTypeClass @class)
         {
             return CompanyContext.Filter<AssetType>(i => i.uid == assetTypeUid && i.Class == @class).SingleOrDefault();
+        }
+        public AssetType GetArtifactTypeByID(int artifactTypeId)
+        {
+            return CompanyContext.Filter<AssetType>(i => i.Object.Equals("ArtifactType") && i.ObjectID == artifactTypeId).SingleOrDefault();
         }
 
         public AssetType GetAssetTypeByModel(AssetTypeUpsert model)

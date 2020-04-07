@@ -364,11 +364,6 @@ namespace d360.model
             QueueSource.CreateMessage(queueName, item);
         }
 
-        public void Enqueue(string queueName, List<QueueObject> items)
-        {
-            QueueSource.CreateMessages(queueName, items);
-        }
-
         public JObject GetPageInformation(SystemObjects o, int oid)
         {
             var jsonRows = Database.Connection.Query<string>("exec GetPageInformation @o, @oid, @rid", new { o = o.ToString(), oid, rid = CurrentResourceID });

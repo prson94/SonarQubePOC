@@ -102,28 +102,6 @@ export class ArtifactService extends BaseObservableService {
             );
     }
 
-    getArtifactByParentAndArtifactType(
-        parentId: number,
-        artifactTypeId: number,
-        filter: string,
-        pagesize: number,
-        pagenum: number,
-        sortfield: string,
-        sortorder: SortOrder
-    ): Observable<Artifacts> {
-        let sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `internal/artifacts/artifactsbyparent?parentID=${parentId}&childArtifactTypeID=${artifactTypeId}&pagesize=${pagesize}&pagenum=${pagenum}&sortDataField=${sortfield}&sortOrder=${sortOrderText}&filter=${filter ? filter : ''}`;
-
-        return this
-            .http
-            .get(uri)
-            .pipe(
-                map(response => <Artifacts>response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
     getArtifactsXls(
         listableOnly: boolean,
         artifactType: ArtifactType,
