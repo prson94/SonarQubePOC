@@ -177,7 +177,7 @@ namespace d360.model.DataAccessLayer
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-                        where       A.[State] = 1
+                        where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
