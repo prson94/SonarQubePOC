@@ -6398,7 +6398,7 @@ insert into #Keys
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAssetResult", ex.GetFullExceptionData(false), timeout);
                                     }
                                 }
                             }
