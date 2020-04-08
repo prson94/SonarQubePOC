@@ -205,7 +205,7 @@ namespace d360.web.Controllers
                                         }
                                     }
 
-                                    ro.TooltipType = ft.LookupObjectType == "Lookup" ? SystemObjects.LookupType.ToString() : ft.LookupObjectType;
+                                    ro.TooltipType = ft.LookupObjectType;
                                     if (k != null)
                                     {
                                         if (!string.IsNullOrEmpty(k.LookupUrl))
@@ -949,19 +949,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "HasAttributes", type = "bool" });
                     break;
                 #endregion
-                case SystemObjects.LookupType:
-                    #region
-
-                    remainingWidth = 90;
-                    dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
-
-                    fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "LookupTypeID", type = "number" });
-                    break;
-                #endregion
-                case SystemObjects.PolicyType:
+                     case SystemObjects.PolicyType:
                     #region
 
                     remainingWidth = 45;
@@ -5521,27 +5509,6 @@ where   R.RuleTypeID = @id
                         }
                     }
                     load = null;
-                    break;
-                #endregion
-                case SystemObjects.LookupType:
-                    #region Fields
-                    var lookupType = Company.GetById<LookupType>(id);
-                    if (lookupType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = lookupType.GetName(i => i.Name), FieldName = "LookupTypeName", FieldDescription = lookupType.GetDescription(i => i.Name), Value = lookupType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = lookupType.GetName(i => i.ID), FieldName = "LookupTypeID", FieldDescription = lookupType.GetDescription(i => i.ID), Value = lookupType.ID.ToString() }
-                            }
-                        });
-                    }
-                    lookupType = null;
                     break;
                 #endregion
                 case SystemObjects.Policy:

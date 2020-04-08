@@ -10,7 +10,7 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+      <![CDATA[
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup')
 BEGIN
 	CREATE TABLE [dbo].[Lookup](
@@ -34,11 +34,11 @@ BEGIN
 END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
+    <rollback>
+      <![CDATA[	
 
 		]]>
-	</rollback>
+    </rollback>
   </changeSet>
 
   <changeSet author="Core" id="Table.dbo.Lookup-Lookup_AfterDelete-v1">
@@ -46,7 +46,7 @@ END
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+      <![CDATA[
 CREATE OR ALTER TRIGGER [dbo].[Lookup_AfterDelete]
    ON  [dbo].[Lookup] 
    AFTER DELETE
@@ -58,11 +58,32 @@ BEGIN
 END
 		]]>
     </sql>
-	<rollback>
-		<![CDATA[	
+    <rollback>
+      <![CDATA[	
 
 		]]>
-	</rollback>
+    </rollback>
+  </changeSet>
+  <changeSet author="bhoward" id="Table.dbo.Lookup-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup')
+BEGIN
+ exec sp_rename '[dbo].[Lookup]', 'Lookup_backup'
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup_backup')
+BEGIN
+ exec sp_rename '[dbo].[Lookup_backup]', 'Lookup'
+END
+		]]>
+    </rollback>
   </changeSet>
 
 </databaseChangeLog>

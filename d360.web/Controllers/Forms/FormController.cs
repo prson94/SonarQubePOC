@@ -308,8 +308,6 @@ namespace d360.web.Controllers
                     return Relationship_EditFields(oid);
                 case "ISSUETYPE":
                     return IssueType_EditFields(oid);
-                case "LOOKUPTYPE":
-                    return Lookup_EditFields(oid);
                 case "MAP":
                     return Map_EditFields(oid);                
                 case "NAMESPACE":
@@ -396,9 +394,7 @@ namespace d360.web.Controllers
                     return IssueType_AddFields();
                 case "ISSUETYPERELATION":
                     return IssueTypeRelation_AddFields(objectID.GetValueOrDefault());
-                case "LOOKUPTYPE":
-                    return Lookup_AddFields(objectID.GetValueOrDefault());
-                case "MAP":
+                 case "MAP":
                     return Map_AddFields();                
                 case "NAMESPACE":
                     return CustomAPINamespace_AddFields(parentID.GetValueOrDefault());
@@ -491,8 +487,6 @@ namespace d360.web.Controllers
                     return EditIntersectType(form);
                 case "ISSUETYPE":
                     return EditIssueType(form);
-                case "LOOKUP":
-                    return EditLookup(form);
                 case "MAP":
                     return EditMap(form);                
                 case "NAMESPACE":
@@ -563,10 +557,6 @@ namespace d360.web.Controllers
                     return DeleteIssueType(form);
                 case "LINEAGEMAPPING":
                     return DeleteLineageMapping(form);
-                case "LOOKUP":
-                    return DeleteLookup(form);
-                case "LOOKUPTYPE":
-                    return DeleteLookupType(form);
                 case "NAMESPACE":
                     return DeleteCustomAPINamespace(form);
                 case "ORGANIZATION":
@@ -641,9 +631,7 @@ namespace d360.web.Controllers
                     return AddIssueType(form);
                 case "ISSUETYPERELATION":
                     return AddIssueTypeRelation(form);
-                case "LOOKUP":
-                    return AddLookup(form);
-                case "MAP":
+               case "MAP":
                     return AddMap(form);                
                 case "NAMESPACE":
                     return AddNamespace(form);
@@ -655,7 +643,6 @@ namespace d360.web.Controllers
                     return PostOrganizationInvitation(form);
                 case "POLICYTYPELEVEL":
                     return AddPolicyTypeLevel(form);
-
                 case "REPORT":
                     return await AddReport(form);
                 case "RESOURCE":

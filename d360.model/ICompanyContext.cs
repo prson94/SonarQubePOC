@@ -96,8 +96,6 @@ namespace d360.model
         DbSet<LoadItemColumn> LoadItemColumns { get; set; }
         DbSet<LoadItem> LoadItems { get; set; }
         DbSet<Load> Loads { get; set; }
-        DbSet<Lookup> Lookups { get; set; }
-        DbSet<LookupType> LookupTypes { get; set; }
         DbSet<MapGroupItem> MapGroupItems { get; set; }
         DbSet<MapGroup> MapGroups { get; set; }
         DbSet<MapItem> MapItems { get; set; }
@@ -232,7 +230,6 @@ namespace d360.model
         LoadDetail GetLoadDetail(int id);
         IEnumerable<LoadDetail> GetLoadDetails();
         IEnumerable<dynamic> GetLoadItemDetails(int id);
-        List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID);
         string GetNoReadSqlStatement(string identifier = null);
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);
