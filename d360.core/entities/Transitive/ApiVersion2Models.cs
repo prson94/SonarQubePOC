@@ -569,4 +569,10 @@ namespace d360.core.entities
         public bool Cascade { get; set; }
 
     }
+
+    [DataContract]
+    public class InsertUserToGroup
+    {
+        public List<Guid> UserUids { get; set; }
+    }
 }

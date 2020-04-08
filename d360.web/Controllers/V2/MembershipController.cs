@@ -178,6 +178,26 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, model);
         }
 
+
+        /// <summary>
+        /// Retrieves members of a group for a given group unique identifier.
+        /// </summary>
+        /// <param name="groupUid">The unique identifier of the Group.</param>
+        [
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupUid:Guid}/members"),
+           SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+       ]
+        public HttpResponseMessage AddMembers(Guid groupUid, InsertUserToGroup users)
+        {
+            return null;
+        }
+
         /// <summary>
         /// Retrieves members of a group for a given group unique identifier.
         /// </summary>
