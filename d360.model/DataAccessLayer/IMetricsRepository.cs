@@ -23,6 +23,7 @@ namespace d360.model.DataAccessLayer
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
         DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd);
         List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);
+        List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution);
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
     }

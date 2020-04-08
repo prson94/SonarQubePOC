@@ -742,7 +742,9 @@ namespace d360.model.DataAccessLayer
             List<DataQualityResponseModel> results = null;
             try
             {
-                results = Company.UpsertAssetResults(request, execution);
+                List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
+                upsert.AddRange(request);
+                results = Company.UpsertAssetResults(upsert, execution);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -907,6 +909,33 @@ namespace d360.model.DataAccessLayer
             try
             {
                 results = Company.DeleteAssetResults(request, execution);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
+        }
+
+        public List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<DataQualityResponseModel> results = null;
+            try
+            {
+                List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
+                upsert.AddRange(request);
+                results = Company.UpsertAssetResults(upsert, execution);
 
                 // Close execution record.
                 execution.Processed = results.Count;

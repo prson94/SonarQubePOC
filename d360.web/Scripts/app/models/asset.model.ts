@@ -87,6 +87,15 @@ export class AssetTypeApiModel {
     Name: string;
     Path: string;
     Class: AssetTypeClassApiModel;
+    Description: string;
+    AutoDisplayDescription: boolean;
+    DisplayFormat: string;
+    ParentUid: string;
+    Notes: string;
+    UseAsTransformation: boolean;
+    CanOwnFusion: boolean;
+    Hierarchical: boolean;
+    HierarchyMaximumDepth: number;
 }
 
 export class IconStyle {

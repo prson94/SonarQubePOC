@@ -187,8 +187,7 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
-        void Enqueue(string queueName, List<QueueObject> items);
+        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);        
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
@@ -258,7 +257,6 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        dynamic GetAssetStatusAndScore(Guid uid);
         int? GetAssetScore(long assetId);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
@@ -328,7 +326,7 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
-        List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> request, ApiExecution execution, int timeout = 3600);
+        List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
     }
 }

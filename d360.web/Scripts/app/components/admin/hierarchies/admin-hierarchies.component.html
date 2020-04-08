@@ -1,6 +1,6 @@
 ﻿<div *ngIf="showEditor || showDelete && !isLoading" class="row">
     <div class="tile tile-detail">
-        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID" [assetTypeUid]="selected?.uid" [useUid]="assetTypeClass == AssetTypeClass.Model"
+        <d3s-asset-type-editor *ngIf="showEditor" [assetTypeClass]="assetTypeClass" [id]="selected?.AssetTypeID" [assetTypeUid]="selected?.uid" [useUid]="true"
                                [title]="(selected == null ? 'New' : 'Edit') + ' ' + ( assetTypeClass == AssetTypeClass.Model ? 'Model':'Policy') + ' Type'"
                                (onCancel)="closeEditor()"
                                (onComplete)="save($event)"></d3s-asset-type-editor>
@@ -8,7 +8,7 @@
                          [callback]="theDeleteCallback"
                          [itemId]="selected?.AssetTypeID"
                          [assetTypeUid]="selected?.uid" 
-                         [useUid]="assetTypeClass == AssetTypeClass.Model"
+                         [useUid]="true"
                          [method]="'callback'"
                          [prompt]="'Are you sure you want to delete the model [' + [selected?.Name] + ']?'"
                          (onCancel)="showDelete=false;"></d3s-delete-form>

@@ -368,11 +368,6 @@ namespace d360.model
             QueueSource.CreateMessage(queueName, item);
         }
 
-        public void Enqueue(string queueName, List<QueueObject> items)
-        {
-            QueueSource.CreateMessages(queueName, items);
-        }
-
         public JObject GetPageInformation(SystemObjects o, int oid)
         {
             var jsonRows = Database.Connection.Query<string>("exec GetPageInformation @o, @oid, @rid", new { o = o.ToString(), oid, rid = CurrentResourceID });
@@ -1228,8 +1223,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
         }
 
-
-
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
         {
             if (!resourceID.HasValue)
@@ -1625,8 +1618,9 @@ where	R.SourceObject = 'FusionAttribute'
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
 			                when T.Object = 'ResourceType' then 'Security :: '
-			                when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
-			                when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
+                            when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
+                            when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
+                            when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
@@ -1673,7 +1667,8 @@ where	R.SourceObject = 'FusionAttribute'
         {
             var sSubject = subject.ToString();
             bool removeSpecialPredicateTypes = false;
-
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
+            
             if (sSubject == "IntersectType")
             {
                 removeSpecialPredicateTypes = true;
@@ -1686,12 +1681,7 @@ where	R.SourceObject = 'FusionAttribute'
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
 
-                removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.BusinessAsset &&
-                    subjectAssetType.Class != AssetTypeClass.Model &&
-                    subjectAssetType.Class != AssetTypeClass.Policy &&
-                    subjectAssetType.Class != AssetTypeClass.Rule
-                );
+                allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class)).ToList();
             }
 
             var sql = @"
@@ -1718,7 +1708,7 @@ where	I.ID is null";
 
             if (removeSpecialPredicateTypes)
             {
-                predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
+                predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
             }
 
             return predicates.ToList();
@@ -1754,22 +1744,20 @@ where	I.ID is null";
             model.SubjectUid = subjectAssetType?.uid;
             model.ObjectUid = objectAssetType?.uid;
 
+            var predicateInfo = predicateModel.Type.AsInfoModel();
+            
+            if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : {predicateInfo.SubjectAssetClassesSupported}.");
+            }
+            if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be one of the following classes : {predicateInfo.ObjectAssetClassesSupported}.");
+            }
+
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
             {
-
-
-                if (predicateModel.Type == PredicateType.BusinessToTechnical)
-                {
-                    if (subjectAssetType.Class != AssetTypeClass.BusinessAsset && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
-                    }
-                    if (objectAssetType.Class != AssetTypeClass.TechnicalAsset)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
-                    }
-                }
-                else if (predicateModel.Type == PredicateType.Transformation)
+                if (predicateModel.Type == PredicateType.Transformation)
                 {
                     if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
                     {
@@ -3317,28 +3305,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
         }
 
-        public dynamic GetAssetStatusAndScore(Guid uid)
-        {
-            string sql = $@"SELECT 
-                            cast(S.Value * 100 as int) as 'Score',
-                            S.EffectiveDate as 'EffectiveDate',  
-                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
-                            from Asset A
-                            left Join AssetType AT on A.AssetTypeID = AT.ID
-                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
-                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
-                            left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
-                            WHERE A.Uid = @assetUid";
-            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
-        }
-
         public int? GetAssetScore(long assetId)
         {
             string sql = $@"SELECT top 1
                             cast(S.Value * 100 as int) as 'Score'                            
                             from Asset A                            
                             inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE A.ID = @assetId order by S.EffectiveDate desc";
+                            WHERE S.ScoreType = 1 and A.ID = @assetId order by S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId }).FirstOrDefault();
         }
 
