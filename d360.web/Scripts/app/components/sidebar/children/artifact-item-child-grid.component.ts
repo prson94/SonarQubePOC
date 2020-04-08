@@ -1,8 +1,9 @@
-﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
+﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {BaseComponent} from '../../shared/base.component';
-import {ArtifactService} from '../../../services/artifacts.service';
+import { ArtifactService } from '../../../services/artifacts.service';
+import { AssetService } from '../../../services/asset.service';
 import {GridDefinitionService} from '../../../services/grid-definition.service';
 import {GridColumn, GridField} from '../../../models/grid-definition.model';
 import {SortOrder} from '../../../models/enums.model';
@@ -12,29 +13,38 @@ import { Table } from 'primeng/table';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 import {StringConstants} from '../../../static/string-constants';
 import {  debounceTime } from 'rxjs/operators';
+import { ObjectStatistics } from '../../../models/object-statistics.model';
+import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 
 @Component({
     selector: 'd3s-artifact-item-child-grid',
     templateUrl: './artifact-item-child-grid.component.html',
-    providers: [ArtifactService, GridDefinitionService],
+    providers: [ArtifactService, GridDefinitionService, AssetService],
 })
 
 export class ArtifactItemChildGridComponent extends BaseComponent implements OnChanges {
     @Input() artifactTypeId: number;
     @Input() parentId: number;
     @Input() showFilter: boolean;
+    @Input() assetTypeUid: string;
+    @Input() objectTypeUid: string;
+    @Input() displayName: string;
 
     private columns: GridColumn[] = [];
     private fields: GridField[] = [];
     private artifacts: Artifacts;
     private searchDelayMilliSeconds: number = 300;
     private simpleSearchID: number = 0;
+    private totalRecords: number = 10000;
+    private useGraph: boolean = true;
 
     private numberOfRows: number = this.defaultInitialItemsPerPage;
-    private currentPage: number = 0;
+    private currentPage: number = 1;
     private sortField: string;
     private sortOrder: SortOrder;
     private filter: string;
+    private statistics: ObjectStatistics;
+    isLoading: boolean = false;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -43,7 +53,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     constructor(
         protected router: Router,
         protected gridDefinitionService: GridDefinitionService,
-        protected artifactService: ArtifactService
+        protected artifactService: ArtifactService,
+        protected assetService: AssetService,
+        protected objectStatisticsService: ObjectStatisticsService,
+        private ref: ChangeDetectorRef
     ) {
         super();
     }
@@ -73,29 +86,28 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.numberOfRows = event.rows;
-        this.currentPage = event.first / event.rows;
+        this.currentPage = (event.first / event.rows) + 1;
         this.getData();
     }
 
     getData() {
-        this
-            .artifactService
-            .getArtifactByParentAndArtifactType(
-                this.parentId,
-                this.artifactTypeId,
-                this.filter,
-                this.numberOfRows,
-                this.currentPage,
-                this.sortField,
-                this.sortOrder
-            )
-            .pipe(debounceTime(this.searchDelayMilliSeconds))
-            .subscribe(
-                res => {
-                    this.artifacts = res;
+        this.isLoading = true;
+        this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
+            let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
+            var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
+            this.assetService.getAssets(i.uid, params).pipe(
+                debounceTime(500)).subscribe(res => {
+                this.totalRecords = res.total;
+                this.artifacts = res;
+
+                if (this.totalRecords < 1000) {
+                    this.useGraph = false;
                 }
-            )
-        ;
+
+                this.isLoading = false;
+                this.ref.markForCheck();
+            });
+        });
     }
 
     getFieldsDefinition() {
@@ -107,6 +119,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 this.fields = result.Fields;
 
                 this.isLoading = false;
+                this.getData();
             }
         );
     }
@@ -129,7 +142,6 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             dt.reset();
         }
 
-        this.currentPage = 0;
         this.getData();
     }
 
@@ -138,10 +150,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
             .router
             .navigateByUrl(SiteUrlHelpers.getObjectUrl(
                 'Artifact',
-                artifact.ID,
+                artifact.ObjectID,
                 this.artifactTypeId
-                )
             )
-        ;
+            )
+            ;
     }
 }

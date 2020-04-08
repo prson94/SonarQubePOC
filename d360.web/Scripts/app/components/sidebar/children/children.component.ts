@@ -27,7 +27,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                             </div>
                         </div>
                         <div class="col l9 s12">
-                            <d3s-artifact-item-child-grid [parentId]="objectID"
+                            <d3s-artifact-item-child-grid [parentId]="objectID" [displayName]="displayName"
                                                           [artifactTypeId]="selected?.TypeID"></d3s-artifact-item-child-grid>
                         </div>
                     </div>
@@ -43,6 +43,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
     private children: ObjectStatisticChildItem[] = [];
     private selected: ObjectStatisticChildItem;
     private sub: any;
+    private displayName: string;
 
     constructor(
         protected objectStatisticsService: ObjectStatisticsService,
@@ -88,6 +89,7 @@ export class ChildrenComponent extends BaseComponent implements OnInit, OnDestro
 
         this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
             res => {
+                this.displayName = res.DisplayValue;
                 this.objectName = res.DisplayValue;
             }
         );

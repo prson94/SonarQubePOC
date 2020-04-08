@@ -129,6 +129,9 @@
   <data name="AssetTypeClass_Rule" xml:space="preserve">
     <value>Rule</value>
   </data>
+  <data name="AssetTypeClass_Task" xml:space="preserve">
+    <value>Task</value>
+  </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
     <value>Technical Asset</value>
   </data>

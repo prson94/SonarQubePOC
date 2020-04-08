@@ -2461,7 +2461,7 @@ where   ExecutionID = @ExecutionID
                     var dupesResult = uidDupes.Join(import,
                                         x => x.Uid,
                                         y => y.Uid,
-                                        (d, i) => new { ExecutionItemUid = i.ExecutionItemUid, Uid = i.Uid, Count = d.Count }).ToList();
+                                        (d, i) => new { i.ExecutionItemUid, i.Uid, d.Count }).ToList();
                     results.AddRange(dupesResult.Select(i => new RelationshipTypeResult { ExecutionItemUid = i.ExecutionItemUid, uid = i.Uid, Message = $"Duplicate Uid", Success = false }));
                 }
                 else
@@ -4606,76 +4606,100 @@ from    [Intersect] T
         private void ValidateRelationshipTypes(bool isInsert, ApiExecution execution, int timeout = 3600)
         {
             var predicateTypeInfo = new PredicateType().GetAsList();
-            var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
-
             Guid emptyUid = Guid.Empty;
 
-            if (isInsert)
-            {
-                Connection.Execute($@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'SubjectUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (SubjectUid is null or SubjectUid = @emptyUid);
-
-update  api.ExecutionRelationshipType
-set     Success = 0,
-        Message = 'ObjectUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (ObjectUid is null or ObjectUid = @emptyUid);
-
-update  T
-set     T.Success = 0,
-        T.Message = 'ObjectUid and SubjectUid must be the same for the Semantic Relation predicate type.' 
-from    api.ExecutionRelationshipType T
-        inner join [Predicate] P on P.Uid = T.PredicateUid
-where   T.ExecutionID = @ExecutionID 
-        and T.Success is null 
-        and (T.ObjectUid = T.SubjectUid)
-        and P.[Type] = {(int)PredicateType.SemanticRelation};
-
-update  T
-set     T.Success = 0, 
-        T.Message = 'Relationship with specified Uid already exists.' 
-from    api.ExecutionRelationshipType T
-        inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
-        and T.Success is null 
-        and (T.Uid is not null and T.Uid <> @emptyUid);",
-                new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
-            }
-            else
-            {
+            if (!isInsert)
+            { 
                 Connection.Execute(@"
 update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'Uid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (Uid is null or Uid = @emptyUid);
+set     Success = 0, Message = 'Uid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID and Success is null and (Uid is null or Uid = @emptyUid);
 
-update  ER
+update  ER 
 set     Success = 0,
         Message = 'Relationship type (Uid) not found.' 
 from    [api].[ExecutionRelationshipType] ER 
 where   ER.ExecutionID = @ExecutionID 
         and ER.Success is null 
-        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);",
+        and not exists (select 1 from IntersectType where Uid = ER.[Uid]);
+
+Update  T
+set     SubjectUid = SA.Uid, [Subject] = SA.Object, SubjectID = SA.ObjectID,
+        ObjectUid = OA.Uid, [Object] = OA.Object, ObjectID = OA.ObjectID
+from    [api].[ExecutionRelationshipType] T
+        inner join IntersectType S on S.Uid = T.Uid
+        inner join AssetType SA on SA.Object = S.Subject and SA.ObjectID = S.SubjectID
+        inner join AssetType OA on OA.Object = S.Object and OA.ObjectID = S.ObjectID
+where   T.ExecutionID = @ExecutionID and T.Success is null;",
                 new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
 
-            Connection.Execute(@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'PredicateUid is missing / incorrect format.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and (PredicateUid is null or PredicateUid = @emptyUid);",
-        new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+            #region Insert/Update
+
+            var predicateCheckSql = "";
+            predicateTypeInfo.ForEach(p =>
+            {
+                string message = "";
+
+                if (p.Obsolete)
+                {
+                    message = $"You may not use the {p.Name} functional type as it is obsolete and no longer supported.";
+                    predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
+                }
+                else if (!p.AllowEditFromRelationshipEditor)
+                {
+                    message = $"Creating or updating of relationship types with a {p.Name} functional type is not allowed.";
+                    predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null; ";
+                }
+                else
+                {
+                    if (!p.AllowDifferentSubjectObject)
+                    {
+                        message = $"ObjectUid and SubjectUid must be the same for the {p.Name} functional type.";
+                        predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null and (T.ObjectUid <> T.SubjectUid); ";
+                    }
+
+                    if (p.ForceDifferentSubjectObject)
+                    {
+                        message = $"ObjectUid and SubjectUid must be different for the {p.Name} functional type.";
+                        predicateCheckSql += $@"update T set T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' from api.ExecutionRelationshipType T inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null and (T.ObjectUid = T.SubjectUid); ";
+                    }
+
+                    if (p.ID == PredicateType.Transformation)
+                    {
+                        message = $"When using the {p.Name} functional type, either your Subject or Object must support being used as a transformation, but not both.";
+                        predicateCheckSql += $@"
+update  T 
+set     T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' 
+from    api.ExecutionRelationshipType T 
+        inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null 
+        inner join AssetType S on S.Uid = T.SubjectUid
+        inner join AssetType O on O.Uid = T.ObjectUid 
+where   (S.UseAsTransformation = 1 and O.UseAsTransformation = 1) OR (S.UseAsTransformation = 0 and O.UseAsTransformation = 0); ";
+                    }
+
+                    // Always do this.
+                    message = $"When using the {p.Name} functional type, your Subject must be an asset type of class {string.Join(" or ", p.SubjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}, and Object of class {string.Join(" or ", p.ObjectAssetClassesSupported.Select(c => c.AsInfoModel().Name))}.";
+                    predicateCheckSql += $@"
+update  T 
+set     T.Success = 0, T.Message = coalesce(T.Message+' ', '') + '{message}' 
+from    api.ExecutionRelationshipType T 
+        inner join [Predicate] P on P.Uid = T.PredicateUid and P.[Type] = {(int)p.ID} and T.ExecutionID = @ExecutionID and T.Success is null 
+        inner join AssetType S on S.Uid = T.SubjectUid 
+        inner join AssetType O on O.Uid = T.ObjectUid 
+where   (S.[Class] not in ({string.Join(",", p.SubjectAssetClassesSupported.Select(c => (int)c.AsInfoModel().ID))}) 
+        OR O.[Class] not in ({string.Join(",", p.ObjectAssetClassesSupported.Select(c => (int)c.AsInfoModel().ID))})); ";
+                }
+            });
+            Connection.Execute(predicateCheckSql, new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
 
             Connection.Execute(@"
+update  api.ExecutionRelationshipType
+set     Message = coalesce(Message+' ', '') + 'PredicateUid is missing / incorrect format.'
+where   ExecutionID = @ExecutionID 
+        and Success = 0
+        and (PredicateUid is null or PredicateUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message='SubjectCardinality is missing / incorrect' 
@@ -4688,10 +4712,8 @@ set     Success = 0,
         Message='ObjectCardinality is missing / incorrect' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectCardinality is null or ObjectCardinality = 0);",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+        and (ObjectCardinality is null or ObjectCardinality = 0);
 
-            Connection.Execute(@"
 with cte_relations as (
                       select    ItemNumber, 
                                 Row_Number() Over (PARTITION BY SubjectUID,ObjectUID,PredicateUID,SubjectCardinality,ObjectCardinality order by ItemNumber)  row_num
@@ -4705,38 +4727,47 @@ SET     Success = 0,
 from    api.[ExecutionRelationshipType] ER
 where   ER.ExecutionID = @ExecutionID 
         and Success is null 
-        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+        and  exists ( select 1 from cte_relations where row_num > 1 and ER.ItemNumber = ItemNumber );
 
-            Connection.Execute(@"
 Update  ER 
 set     [Subject] = AST.[Object],
         SubjectID = AST.[ObjectID]
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.SubjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
-            Connection.Execute(@"
 Update  ER 
 set     [Object] = AST.[Object], 
         ObjectID = AST.[ObjectID] 
 from    [api].[ExecutionRelationshipType] ER 
         inner join AssetType AST on AST.UID = ER.ObjectUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
 
-            Connection.Execute(@"
 update  ER 
 set     PredicateID = P.ID 
 from    [api].[ExecutionRelationshipType] ER 
         inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID and ER.Success is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
+where   ER.ExecutionID = @ExecutionID and ER.Success is null;
+
+update  api.ExecutionRelationshipType 
+set     Success = 0, 
+        Message = 'Predicate not found.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and PredicateID is null;", new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
+
+            #endregion
 
             if (isInsert)
             {
                 Connection.Execute(@"
+update  api.ExecutionRelationshipType 
+set     Success = 0, 
+        Message = 'SubjectUid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and (SubjectUid is null or SubjectUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message ='Subject asset type not found.' 
@@ -4744,41 +4775,28 @@ where   ExecutionID = @ExecutionID
         and Success is null 
         and (SubjectId is null or [Subject] is null);
 
+update  api.ExecutionRelationshipType
+set     Success = 0,
+        Message = 'ObjectUid is missing / incorrect format.' 
+where   ExecutionID = @ExecutionID 
+        and Success is null 
+        and (ObjectUid is null or ObjectUid = @emptyUid);
+
 update  api.ExecutionRelationshipType 
 set     Success = 0, 
         Message = 'Object asset type not found.' 
 where   ExecutionID = @ExecutionID 
         and Success is null 
-        and (ObjectId is null or [Object] is null);",
-                new { execution.ExecutionID }, commandTimeout: timeout);
-            }
+        and (ObjectId is null or [Object] is null);
 
+update  T
+set     T.Success = 0, 
+        T.Message = 'Relationship with specified Uid already exists.' 
+from    api.ExecutionRelationshipType T
+        inner join IntersectType S on S.Uid = T.Uid and T.ExecutionID = @ExecutionID 
+        and T.Success is null 
+        and (T.Uid is not null and T.Uid <> @emptyUid);
 
-            Connection.Execute(@"
-update  api.ExecutionRelationshipType 
-set     Success = 0, 
-        Message = 'Predicate not found.' 
-where   ExecutionID = @ExecutionID 
-        and Success is null 
-        and PredicateID is null;",
-        new { execution.ExecutionID }, commandTimeout: timeout);
-
-            Connection.Execute(@"
-update  ER 
-set     PredicateID = null, 
-        Success = 0, 
-        Message = 'Predicate not allowed.' 
-from    [api].[ExecutionRelationshipType] ER 
-        inner join [Predicate] P on P.UID = ER.PredicateUID 
-where   ER.ExecutionID = @ExecutionID 
-        and P.[Type] in @disallowEditIds 
-        and ER.Success is null 
-        and ER.PredicateID is not null;",
-        new { execution.ExecutionID, disallowEditIds = disallowEditIds }, commandTimeout: timeout);
-
-            if (isInsert)
-            {
-                Connection.Execute(@"
 update  ER 
 set     Success = 0, 
         Message = 'Another relationship already exists with this configuration.' 
@@ -4793,7 +4811,7 @@ where   ER.ExecutionID = @ExecutionID
                             and [Object] = ER.[Object] 
                             and ObjectID = ER.ObjectID 
                             and PredicateID = ER.PredicateID);",
-                new { execution.ExecutionID }, commandTimeout: timeout);
+                new { execution.ExecutionID, emptyUid }, commandTimeout: timeout);
             }
             else
             {
@@ -4823,11 +4841,9 @@ where   ER.ExecutionID = @ExecutionID
                     and I.SubjectID=IT.SubjectID 
                     and I.Uid != IT.Uid 
                     and I.[Object]=IT.[Object] 
-                    and I.ObjectID=IT.ObjectID 
-            );",
+                    and I.ObjectID=IT.ObjectID);",
                 new { execution.ExecutionID }, commandTimeout: timeout);
             }
-
         }
 
         private void ValidateAssetCrossReference(ApiExecution execution, int timeout = 3600)
@@ -5206,6 +5222,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
+        
         public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
         {
             var results = new List<PredicateUpsertResult>();
@@ -5767,6 +5784,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
+        
         public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
         {
             Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null",
@@ -6299,5 +6317,434 @@ insert into #Keys
             return results;
         }
 
+        public List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> import, ApiExecution execution, int timeout = 3600)
+        {
+            var results = new List<DataQualityDeleteResponseModel>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            if (dupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionAssetResult");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<DataQualityDeleteResponseModel>(
+                                $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
+                    table.Columns.Add("OwningAssetUid", typeof(Guid));                    
+                    table.Columns.Add("EffectiveDateStart", typeof(DateTime));
+                    table.Columns.Add("EffectiveDateEnd", typeof(DateTime));
+                    table.Columns.Add("RunDateStart", typeof(DateTime));
+                    table.Columns.Add("RunDateEnd", typeof(DateTime));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+                            List<string> messages = new List<string>();
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
+                            row["ItemNumber"] = i;                            
+
+                            if (model.Uid.HasValue)
+                            {
+                                row["Uid"] = model.Uid.Value;
+                            }
+                            else
+                            {
+                                row["Uid"] = DBNull.Value;
+                            }
+
+                            if (model.OwningAssetUid.HasValue)
+                            {
+                                row["OwningAssetUid"] = model.OwningAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["OwningAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EvaluatedAssetUid.HasValue)
+                            {
+                                row["EvaluatedAssetUid"] = model.EvaluatedAssetUid.Value;
+                            }
+                            else
+                            {
+                                row["EvaluatedAssetUid"] = DBNull.Value;
+                            }
+
+                            if (model.EffectiveDateStart != null)
+                            {
+                                row["EffectiveDateStart"] = model.EffectiveDateStart.Value.Date;
+                            }                                                 
+
+                            if (model.EffectiveDateEnd != null)
+                            {
+                                row["EffectiveDateEnd"] = model.EffectiveDateEnd.Value.Date; 
+                            }
+
+                            if (model.RunDateStart != null)
+                            {
+                                row["RunDateStart"] = model.RunDateStart;
+                            }                            
+
+                            if (model.RunDateEnd != null)
+                            {
+                                row["RunDateEnd"] = model.RunDateEnd;
+                            }
+                            if ((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
+                            {
+                                messages.Add("At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
+                                row["Success"] = 0;
+                            }
+
+                            if (model.EffectiveDateStart != null && model.EffectiveDateEnd != null && model.EffectiveDateStart.Value > model.EffectiveDateEnd.Value)
+                            {
+                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                                row["Success"] = 0;
+                            }
+                            if (model.RunDateEnd != null && model.RunDateStart != null && model.RunDateStart > model.RunDateEnd)
+                            {
+                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                                row["Success"] = 0;
+                            }
+
+                            row["Message"] = string.Join(";", messages.ToArray());
+                            
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionDeleteAssetResult";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("OwningAssetUid", "OwningAssetUid");
+                    bulkCopy.ColumnMappings.Add("EvaluatedAssetUid", "EvaluatedAssetUid");
+                    bulkCopy.ColumnMappings.Add("EffectiveDateStart", "EffectiveDateStart");
+                    bulkCopy.ColumnMappings.Add("EffectiveDateEnd", "EffectiveDateEnd");
+                    bulkCopy.ColumnMappings.Add("RunDateStart", "RunDateStart");
+                    bulkCopy.ColumnMappings.Add("RunDateEnd", "RunDateEnd");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");                    
+
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+                    #region Log data errors 
+
+                    var checkSQL = $@"
+    	                            --check user permissions
+                                    declare @IsAdministrator bit = 0
+                                    select	@IsAdministrator = IsAdministrator
+                                    from	reporting.Global_Resource
+                                    where	ResourceID = @ResourceID                                    
+
+                                    if @IsAdministrator = 0
+                                    begin
+	                                    update	DAR
+	                                    set		DAR.Success = 0,
+			                                    DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+	                                    from    api.ExecutionDeleteAssetResult DAR                                                
+                                        inner join api.Execution E on E.ExecutionID = DAR.ExecutionID 
+								                                        and E.ExecutionID = 'FC840220-9E70-4FF7-BB0F-7968464FB15A'
+                                        inner join 
+                                        Asset A on (
+                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
+                                                    or 
+                                                    (DAR.EvaluatedAssetUid is not null	and DAR.EvaluatedAssetUid = A.uid) 
+                                                    or 
+                                                    (
+                                                        DAR.Uid is not null 
+                                                        and                                                             
+                                                        A.uid in (select 
+	                                                                    AN.Uid
+                                                                    from 
+	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
+                                                                    where 	
+	                                                                    Match (AN -(ARE)-> AR)
+	                                                                    AND
+	                                                                    AR.uid =DAR.Uid
+                                                                        AND 
+                                                                        ARE.Class = 1)
+                                                    )
+                                                    )											
+			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                                
+                                    end
+                                                                        
+	                                -- check Owning Asset Uid
+	                                update DAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid OwningAssetUid value'
+                                    from api.[ExecutionDeleteAssetResult] DAR
+                                        inner join api.Execution AE on AE.ExecutionID = DAR.ExecutionID
+		                                left join asset a on a.uid = DAR.OwningAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 
+		                                DAR.ExecutionID = @ExecutionID 		
+		                                and 
+                                        DAR.OwningAssetUid is not null
+                                        AND
+                                        DAR.OwningAssetUid <> '00000000-0000-0000-0000-000000000000'
+                                        AND
+		                                (			                                			                             
+			                                a.ID is null
+			                                or
+			                                (a.ID is not null and at.Class <> {(int)AssetTypeClass.Rule})
+			                                or
+			                                A.State = {(int)State.InActive}
+		                                )
+
+	                                -- check Evaluated Asset Uid
+	                                update DAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid EvaluatedAssetUid value'
+                                    from api.[ExecutionDeleteAssetResult] DAR
+                                        inner join api.Execution AE on AE.ExecutionID = DAR.ExecutionID
+		                                left join asset a on a.uid = DAR.EvaluatedAssetUid
+		                                left Join assettype at on at.id = a.AssetTypeID
+                                    where 		                               
+		                                DAR.ExecutionID = @ExecutionID 		
+		                                And
+		                                DAR.EvaluatedAssetUid is not null
+                                        AND
+                                        DAR.EvaluatedAssetUid <> '00000000-0000-0000-0000-000000000000'
+		                                and 
+		                                (
+			                                a.ID is null -- no match
+			                                or
+			                                (a.ID is not null and at.Class not in ({(int)AssetTypeClass.TechnicalAsset}, {(int)AssetTypeClass.BusinessAsset}))-- match but wrong asset type
+			                                or
+			                                A.State = {(int)State.InActive} -- inactive state
+		                                )                                      
+
+                                   ";
+
+                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset}, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<DataQualityDeleteResponseModel>();
+                    results.AddRange(import.Select(i => new DataQualityDeleteResponseModel { Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                    var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
+
+                    var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
+	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";                                        
+                    
+                    string deleteAssetResultSQL = $@"create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
+                                                CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
+                                                merge into AssetResultEdge DARE
+                                                using 
+                                                (select 
+	                                                ARE.$from_id as from_id,ARE.$to_id as to_id, AR.Uid, ARE.Class, DAR.itemnumber, DAR.ExecutionItemUid
+	                                                --AR.Uid, ARE.[Class], AR.RunDate, AR.EffectiveDate
+                                                from 
+	                                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN, API.[ExecutionDeleteAssetResult] DAR
+                                                where 
+	                                                DAR.ExecutionID = @executionID
+	                                                and
+                                                    DAR.Success is null
+                                                    and DAR.ItemNumber between @beginItemNumber and @endItemNumber
+                                                    AND
+	                                                Match (AN -(ARE)-> AR)
+	                                                and 
+	                                                ((DAR.Uid is null or DAR.Uid ='00000000-0000-0000-0000-000000000000') or AR.Uid = DAR.Uid)
+	                                                and
+	                                                (
+		                                                (DAR.OwningAssetUid is null or DAR.OwningAssetUid ='00000000-0000-0000-0000-000000000000') or AR.Uid in 
+		                                                (	
+			                                                select 
+				                                                AR1.Uid
+			                                                from 
+				                                                AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1					
+			                                                where 
+				                                                Match (AN1 -(ARE1)-> AR1)
+				                                                and 
+				                                                AN1.Uid = DAR.owningAssetUid
+				                                                and
+				                                                ARE1.Class = {(int)ResultRelationClass.Owns}	
+		                                                )
+	                                                )
+	                                                and 
+	                                                (	
+		                                                (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')  or AR.Uid in 
+		                                                (
+			                                                select 
+				                                                AR2.Uid
+			                                                from 
+				                                                AssetResult AR2, assetResultedge ARE2, graph.AssetNode AN2					
+			                                                where 
+				                                                Match (AN2 -(ARE2)-> AR2)
+				                                                and 
+				                                                AN2.Uid = DAR.evaluatedAssetUid
+				                                                and
+				                                                ARE2.Class = {(int)ResultRelationClass.EvaluatedBy}
+		                                                )
+	                                                )
+	                                                and 
+	                                                (
+		                                                (
+                                                            (DAR.EvaluatedAssetUid is null or DAR.EvaluatedAssetUid ='00000000-0000-0000-0000-000000000000')
+			                                                
+		                                                )
+		                                                or
+		                                                (
+			                                               DAR.EvaluatedAssetUid is not null and ARE.class =  {(int)ResultRelationClass.EvaluatedBy}
+		                                                )
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart < AR.EffectiveDate
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd > AR.EffectiveDate
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.RunDateStart is null or AR.RunDate > DAR.RunDateStart
+	                                                )
+	                                                and
+	                                                (
+		                                                DAR.RunDateEnd is null or AR.RunDate < DAR.RunDateEnd 
+												  
+	                                                )
+                                                ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
+                                                WHEN MATCHED THEN DELETE
+                                                output R.uid, R.class, R.itemnumber, R.ExecutionItemUid, $action into #ObjectDeleteAssetEdge;
+
+                                                merge into AssetResult AR
+                                                using (
+	                                                select AR1.uid
+	                                                FROM AssetResult AR1
+	                                                INNER JOIN #ObjectDeleteAssetEdge MAE
+	                                                  ON AR1.UID=MAE.Uid
+	                                                left join 
+	                                                assetResultEdge ARE on ARE.$to_id = AR1.$node_id
+	                                                Where ARE.$to_id is null
+	                                                ) R on R.Uid = AR.Uid
+                                                WHEN MATCHED THEN DELETE;
+
+                                                {updateOnSuccess}
+                                                    ";
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            using (var trans = Connection.BeginTransaction())
+                            {
+
+                                try
+                                {
+                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber}, transaction: trans, commandTimeout: timeout);
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                                Query<DataQualityDeleteResponseModel>(
+                                    $"select ExecutionItemUid, Success, Message from api.ExecutionDeleteAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                )
+                            );
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    
+                }
+            }
+
+            return results;
+        }
+
     }
+
 }

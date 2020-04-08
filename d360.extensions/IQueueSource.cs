@@ -10,13 +10,13 @@ namespace d360.extensions
 {
     public interface IQueueSource
     {
-        void CreateMessage<T>(string queueName, T item);
+        bool CreateMessage<T>(string queueName, T item);
 
-        void CreateMessages<T>(string queueName, List<T> items);
+        bool CreateMessages<T>(string queueName, List<T> items);
 
-        Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null);
+        Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null);
 
-        Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null);
+        Task<bool> CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null);
 
         void CreateTopicMessage(EventInfo e);
         void CreateTopicMessage(string topicName, EventInfo e);
