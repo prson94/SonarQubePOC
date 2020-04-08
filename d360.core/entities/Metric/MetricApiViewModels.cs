@@ -33,7 +33,7 @@ namespace d360.core.entities.Metric
         #region From metric asset version
 
         public DateTime EffectiveDate { get; set; }
-        
+
         public decimal Weight { get; set; }
 
         [StringLength(1)]
@@ -50,7 +50,8 @@ namespace d360.core.entities.Metric
 
     public class MetricAssetVersionConditionViewModel
     {
-        public int FieldTypeID { get; set; }
+        public int? FieldTypeID { get; set; }
+        public string FieldName { get; set; }
 
         [StringLength(10)]
         public string Operator { get; set; }
