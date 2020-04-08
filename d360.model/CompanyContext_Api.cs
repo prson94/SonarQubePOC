@@ -6054,6 +6054,12 @@ insert into #Keys
                             if(model is DataQualityUpdateModel dataQualityUpdateModel)
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
+
+                                if (!model.EvaluatedAssetUid.HasValue && !model.RunDate.HasValue && !model.PassCount.HasValue && !model.FailCount.HasValue)
+                                {
+                                    row["Message"] = DataQualityErrors.InvalidUpdateError;
+                                    row["Success"] = 0;
+                                }
                             }
 
                             if (model.EvaluatedAssetUid.HasValue)
