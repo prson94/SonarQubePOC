@@ -6439,7 +6439,7 @@ insert into #Keys
             {
                 try
                 {
-                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionAssetResult");
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeleteAssetResult");
 
                     if (currentLocation.HighestItemNumberProcessed > 0)
                     {
@@ -6598,8 +6598,7 @@ insert into #Keys
 	                                    set		DAR.Success = 0,
 			                                    DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
 	                                    from    api.ExecutionDeleteAssetResult DAR                                                
-                                        inner join api.Execution E on E.ExecutionID = DAR.ExecutionID 
-								                                        and E.ExecutionID = 'FC840220-9E70-4FF7-BB0F-7968464FB15A'
+                                        inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
                                         inner join 
                                         Asset A on (
                                                     (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
@@ -6824,7 +6823,7 @@ insert into #Keys
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeleteAssetResult", ex.GetFullExceptionData(false), timeout);
                                     }
                                 }
                             }
