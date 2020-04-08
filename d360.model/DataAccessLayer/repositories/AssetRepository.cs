@@ -545,16 +545,7 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    /*
-                     * Joining to ResponsibilityDetail on AssetID which is consistent with the [dbo].[GetDynamicAssets] stored procedure
-                     * This does not take rules with "Applies to Entire Type" into account, as those show up with AssetID=0 in ResponsibilityDetail
-                     * To include those assets, use the commented 'joinStatement' below instead.
-                     */
-                    string joinStatement = "inner join [ResponsibilityDetail] owners ON a.ID = owners.AssetID";
-                    //string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR (owners.AssetID = 0 AND a.AssetTypeID = owners.AssetTypeID))";
-                    fieldJoins.Add(joinStatement);
-                    countJoins.Add(joinStatement);
-                    whereStatements.Add("owners.ResourceUid in @ownerUids");
+                    whereStatements.Add("a.ID IN (SELECT AssetID FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids)");
                 }
             }
 
