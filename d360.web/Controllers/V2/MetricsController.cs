@@ -181,10 +181,19 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
             }
 
-
-            if (model.Conditions.Any(x => x.FieldTypeID <= 0))
+            foreach (var cond in model.Conditions)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
+                if (cond.FieldTypeID.HasValue && !string.IsNullOrEmpty(cond.FieldName))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both FieldTypeID and FieldName as a Field identifier in condition.");
+                }
+
+                bool hasFieldDefinition = cond.FieldTypeID.HasValue || !string.IsNullOrEmpty(cond.FieldName);
+
+                if (!hasFieldDefinition)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeId or FieldName definition missing from condition.");
+                }
             }
 
             if (model.ParentUid != null && model.ParentUid != Guid.Empty)
