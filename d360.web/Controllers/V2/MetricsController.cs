@@ -194,6 +194,11 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeId or FieldName definition missing from condition.");
                 }
+
+                if (cond.FieldTypeID.HasValue && cond.FieldTypeID <= 0)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
+                }
             }
 
             if (model.ParentUid != null && model.ParentUid != Guid.Empty)
