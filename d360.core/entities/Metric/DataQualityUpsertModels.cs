@@ -7,19 +7,27 @@ using System.Threading.Tasks;
 
 namespace d360.core.entities.Metric
 {
-    public class DataQualityInsertModel
+    public interface IDataQualityUpsert
+    {
+        Guid? ExecutionItemUid { get; set; }
+        Guid? EvaluatedAssetUid { get; set; }
+        DateTime? RunDate { get; set; }
+        long? PassCount { get; set; }        
+        long? FailCount { get; set; }
+    }
+    public class DataQualityInsertModel : IDataQualityUpsert
     {
         public Guid? ExecutionItemUid { get; set; }
         public Guid OwningAssetUid { get; set; }        
         public Guid? EvaluatedAssetUid { get; set; }
         public DateTime EffectiveDate { get; set; }
-        public DateTime RunDate { get; set; }
+        public DateTime? RunDate { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-        public long PassCount { get; set; }
+        public long? PassCount { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
-        public long FailCount { get; set; }
+        public long? FailCount { get; set; }
     }
 
     public class DataQualityDeleteModel
@@ -41,5 +49,19 @@ namespace d360.core.entities.Metric
         public int Class { get; set; }
         public DateTime EffectiveDate { get; set; }
         public DateTime RunDate { get; set; }
+    }
+
+    public class DataQualityUpdateModel : IDataQualityUpsert
+    {
+        public Guid Uid { get; set; }
+        public Guid? ExecutionItemUid { get; set; }
+        public Guid? EvaluatedAssetUid { get; set; }
+        public DateTime? RunDate { get; set; }
+        [Range(0, 9223372036854775807,
+            ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+        public long? PassCount { get; set; }
+        [Range(0, 9223372036854775807,
+            ErrorMessage = "Value for {0} must be between {1} and {2}.")]
+        public long? FailCount { get; set; }
     }
 }

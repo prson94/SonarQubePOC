@@ -5939,7 +5939,7 @@ insert into #Keys
 
         }
 
-        public List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> import, ApiExecution execution, int timeout = 3600)
+        public List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> import, ApiExecution execution, int timeout = 3600)
         {
             var results = new List<DataQualityResponseModel>();
             bool generalChecksCompleted = false;
@@ -6000,10 +6000,67 @@ insert into #Keys
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            row["OwningAssetUid"] = model.OwningAssetUid;                            
-                            row["PassCount"] = model.PassCount;
-                            row["FailCount"] = model.FailCount;
-                            row["Uid"] = Guid.NewGuid();
+
+                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            {
+                                row["RunDate"] = model.RunDate;
+
+                                if (model.RunDate > DateTime.Now)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                    row["Success"] = 0;
+                                }
+                            }                                                       
+
+                            if (model is DataQualityInsertModel dataQualityInsertModel)
+                            {
+                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;
+
+                                if (dataQualityInsertModel.EffectiveDate != null && dataQualityInsertModel.EffectiveDate != DateTime.MinValue)
+                                {
+                                    row["EffectiveDate"] = dataQualityInsertModel.EffectiveDate.Date;
+                                }
+                                else
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "EffectiveDate");
+                                    row["Success"] = 0;
+                                }
+
+                                if (dataQualityInsertModel.EffectiveDate > DateTime.Now)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+                                    row["Success"] = 0;
+                                }
+
+                                if (model.RunDate == null && model.RunDate == DateTime.MinValue)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
+                                    row["Success"] = 0;
+                                }
+
+                                if(!model.PassCount.HasValue)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "PassCount");
+                                    row["Success"] = 0;
+                                }
+
+                                if (!model.FailCount.HasValue)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "FailCount");
+                                    row["Success"] = 0;
+                                }                                
+                            }
+
+                            if(model is DataQualityUpdateModel dataQualityUpdateModel)
+                            {
+                                row["Uid"] = dataQualityUpdateModel.Uid;
+
+                                if (!model.EvaluatedAssetUid.HasValue && !model.RunDate.HasValue && !model.PassCount.HasValue && !model.FailCount.HasValue)
+                                {
+                                    row["Message"] = DataQualityErrors.InvalidUpdateError;
+                                    row["Success"] = 0;
+                                }
+                            }
 
                             if (model.EvaluatedAssetUid.HasValue)
                             {
@@ -6013,51 +6070,37 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-
-                            if (model.EffectiveDate != null && model.EffectiveDate != DateTime.MinValue)
+                            if(model.PassCount.HasValue)
                             {
-                                row["EffectiveDate"] = model.EffectiveDate.Date;
+                                row["PassCount"] = model.PassCount.Value;
                             }
                             else
                             {
-                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "EffectiveDate");
-                                row["Success"] = 0;
+                                row["PassCount"] = DBNull.Value;
                             }
-
-                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            
+                            if(model.FailCount.HasValue)
                             {
-                                row["RunDate"] = model.RunDate;
+                                row["FailCount"] = model.FailCount.Value;
                             }
                             else
-                            {                                
-                                row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
-                                row["Success"] = 0;
-                            }
-
-                            if (model.EffectiveDate > DateTime.Now)
                             {
-                                row["Message"]= String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
-                                row["Success"] = 0;                                
-                            }
-                            if (model.RunDate > DateTime.Now)
-                            {
-                                row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
-                                row["Success"] = 0;                                
-                            }
+                                row["FailCount"] = DBNull.Value;
+                            }                            
 
-                            if (model.PassCount < 0 || model.PassCount > 9223372036854775807)
+                            if (model.PassCount.HasValue && (model.PassCount < 0 || model.PassCount > 9223372036854775807))
                             {
                                 row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "PassCount", 0, 9223372036854775807);
                                 row["Success"] = 0;                                
                             }
 
-                            if (model.FailCount < 0 || model.FailCount > 9223372036854775807)
+                            if (model.FailCount.HasValue && (model.FailCount < 0 || model.FailCount > 9223372036854775807))
                             {
                                 row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "FailCount", 0, 9223372036854775807);
                                 row["Success"] = 0;                               
                             }                            
 
-                            if (model.PassCount == 0 && model.FailCount == 0)
+                            if (model.PassCount.HasValue && model.FailCount.HasValue && model.PassCount == 0 && model.FailCount == 0)
                             {
                                 row["Message"] = String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0);
                                 row["Success"] = 0;
@@ -6110,16 +6153,40 @@ insert into #Keys
 
                                     if @IsAdministrator = 0
                                     begin
+                                        -- check on insert
 	                                    update	EAR
 	                                    set		EAR.Success = 0,
 			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
 	                                    from    api.ExecutionAssetResult EAR
 			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
-											                                    and E.ExecutionID = @executionID 
+											                                    and E.ExecutionID = @executionID and UPPER(E.Method)='POST'
 			                                    inner join 
 			                                    Asset A on (EAR.OwningAssetUid = A.uid or EAR.EvaluatedAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
 			                                    and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                        
+                                        -- Check on update
+                                        update	EAR
+	                                    set		EAR.Success = 0,
+			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+	                                    from    api.ExecutionAssetResult EAR                                                
+                                        inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and UPPER(E.Method)='PUT'
+                                        inner join 
+                                        Asset A on (
+                                                    (EAR.EvaluatedAssetUid is not null	and EAR.EvaluatedAssetUid = A.uid) 
+                                                    or 
+                                                    A.uid in (select 
+	                                                                    AN.Uid
+                                                                    from 
+	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
+                                                                    where 	
+	                                                                    Match (AN -(ARE)-> AR)
+	                                                                    AND
+	                                                                    AR.uid =EAR.Uid
+                                                                        AND 
+                                                                        ARE.Class = {(int)ResultRelationClass.Owns})   
+                                                     )
+			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
                                     end
 
 	                                -- check Uid on Put
@@ -6128,11 +6195,12 @@ insert into #Keys
 		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid UID value'
                                     from api.[ExecutionAssetResult] EAR
                                         inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
+                                        left join AssetResult AR on AR.Uid = EAR.Uid
                                     where 
 		                                AE.Method = 'PUT'
 		                                and EAR.ExecutionID = @ExecutionID 		
 		                                and 
-		                                (EAR.Uid is null or EAR.Uid = '00000000-0000-0000-0000-000000000000')
+		                                (EAR.Uid is null or EAR.Uid = '00000000-0000-0000-0000-000000000000' or AR.Uid is null)                                        
 
 	                                -- check Owning Asset Uid
 	                                update EAR
@@ -6143,6 +6211,8 @@ insert into #Keys
 		                                left join asset a on a.uid = EAR.OwningAssetUid
 		                                left Join assettype at on at.id = a.AssetTypeID
                                     where 
+                                        AE.Method = 'POST'
+                                        AND
 		                                EAR.ExecutionID = @ExecutionID 		
 		                                and 
 		                                (
@@ -6205,7 +6275,7 @@ insert into #Keys
                     string assetResultSQL = $@"create table #ObjectMergeTableAssetResult (Uid uniqueidentifier, ItemNumber int, [Operation] varchar(10));
                                                 CREATE NONCLUSTERED INDEX IX_TempObjectMergeTableAssetResult ON #ObjectMergeTableAssetResult ( ItemNumber ASC );
 
-                                                Merge into AssetResult
+                                                Merge into AssetResult AR
                                                 using (
                                                         select  ItemNumber, 
                                                                 UID,
@@ -6218,7 +6288,7 @@ insert into #Keys
                                                                 and Success is null
                                                                 and ItemNumber between @beginItemNumber and @endItemNumber
                                                         ) S
-                                                ON S.UID = AssetResult.UID
+                                                ON S.UID = AR.UID
                                                 WHEN NOT MATCHED THEN
                                                 INSERT ([Uid]
 			                                                ,[EffectiveDate]
@@ -6230,7 +6300,7 @@ insert into #Keys
 			                                                ,[UpdatedOn]
 			                                                ,[UpdatedBy])
 		                                                VALUES
-			                                                (S.UID
+			                                                (NEWID()
 			                                                ,S.EffectiveDate
 			                                                ,S.RunDate
 			                                                ,S.PassCount
@@ -6238,12 +6308,26 @@ insert into #Keys
 			                                                ,@requestDate
 			                                                ,@userId
 			                                                ,@requestDate
-			                                                ,@userId)
-	                                                output  inserted.[Uid], S.ItemNumber, $action into #ObjectMergeTableAssetResult;
+			                                                ,@userId)	                                                
+                                                WHEN MATCHED THEN
+                                                 UPDATE 
+                                                    SET RunDate = (case when S.RunDate is null then AR.RunDate else S.RunDate end),
+                                                    PassCount = (case when S.PassCount is null then AR.PassCount else S.PassCount end),
+                                                    FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end)                                                   
+                                                output inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableAssetResult;
 
+                                                    --Update Exection record with new Uid
+                                                    Update EAR
+                                                    set Uid = MTR.Uid
+                                                    from 
+                                                        api.ExecutionAssetResult EAR 
+                                                        inner join 
+                                                        #ObjectMergeTableAssetResult MTR on EAR.ItemNumber=MTR.ItemNumber and EAR.ExecutionID=@ExecutionID                                                                                                         
+                                                    
+                                                    --Add new owning asset record in Edge table (insert only)
 	                                                INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
 	                                                select 
-		                                                AN.$node_Id, AR.$node_Id, 1
+		                                                AN.$node_Id, AR.$node_Id, {(int)ResultRelationClass.Owns}
 	                                                from 
 		                                                AssetResult AR 
 		                                                inner join
@@ -6252,25 +6336,44 @@ insert into #Keys
 		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
 		                                                inner join 
 		                                                graph.AssetNode AN on AN.Uid = EAR.[OwningAssetUid]
+                                                        inner join 
+                                                        api.Execution E on EAR.ExecutionID = E.ExecutionID and E.ExecutionID=@ExecutionID and E.Method='POST'
+                                                    
+                                                    --Delete existing evaluated edge record if there is one.
+                                                    DELETE ARE FROM                                                     
+                                                        AssetResultEdge ARE 
+                                                        inner join 
+                                                        AssetResult AR on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}
+                                                        inner join 
+                                                        #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
+                                                        inner join 
+                                                        api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid and EAR.ExecutionID = @ExecutionID and EAR.Success is null and EAR.EvaluatedAssetUid is not null 
+                                                        inner join 
+                                                        api.Execution E on EAR.ExecutionID = E.ExecutionID and E.ExecutionID=@ExecutionID and E.Method='PUT'                                                  
 
+                                                    -- and new edge records
 	                                                INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
 	                                                select 
-		                                                AN.$node_Id, AR.$node_Id, 2
+		                                                AN.$node_Id, AR.$node_Id, {(int)ResultRelationClass.EvaluatedBy}
 	                                                from 
 		                                                AssetResult AR 
 		                                                inner join 
 		                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = AR.Uid
 		                                                inner join 
-		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid 
+		                                                api.ExecutionAssetResult EAR on MTR.Uid = EAR.Uid and EAR.ExecutionID = @ExecutionID
 		                                                inner join 
 		                                                graph.AssetNode AN on AN.Uid = EAR.EvaluatedAssetUid
+                                                        left Join AssetResultEdge ARE on ARE.$to_id = AR.$node_Id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}-- find any results already in Edge table.
+                                                    where
+                                                        ARE.$to_id is null --only insert if a matching record does not already exist                                                   
 
 	                                                Update EAR
 	                                                set EAR.success = 1 
 	                                                FROM 
 	                                                api.ExecutionAssetResult EAR
 	                                                inner join 
-	                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = EAR.Uid";
+	                                                #ObjectMergeTableAssetResult MTR on MTR.Uid = EAR.Uid and EAR.ExecutionID = @ExecutionID";
+
                     for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                     {
                         bool runCompleted = false;
@@ -6295,7 +6398,7 @@ insert into #Keys
 
                                     if (retryCount > API_V2_RETRY_LIMIT)
                                     {
-                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityType", ex.GetFullExceptionData(false), timeout);
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionAssetResult", ex.GetFullExceptionData(false), timeout);
                                     }
                                 }
                             }

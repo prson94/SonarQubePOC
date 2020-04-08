@@ -843,7 +843,6 @@ namespace d360.web.Controllers.V2
         /// * You do not have to provide ExecutionItemUid values for all entries in a request.
         /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
         /// 
-        /// Workflows - This endpoint will trigger any associated workflows for the add actions taken on assets as part of this API call.
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
         [
@@ -983,6 +982,38 @@ namespace d360.web.Controllers.V2
 
             responseList = await Task.FromResult(MetricsRepository.DeleteDataQualityResult(new List<DataQualityDeleteModel> { model }, execution));
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList.FirstOrDefault()));
+        }
+
+        /// <summary>
+        /// Update data quality result(s) for an asset / Rule
+        /// </summary>
+        /// <remarks>
+        /// When using the ExecutionItemUid, keep in mind:
+        /// * ExecutionItemUid is optional.
+        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
+        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
+        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
+        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// 
+        /// </remarks>
+        /// <returns>A list of data quality results including any error messages.</returns>
+        [
+            HttpPut,
+            Route("quality/results/"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
+        {
+            List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
+
+            var execution = getApiExecution(request.Count);
+
+            responseList = await Task.FromResult(MetricsRepository.UpdateDataQualityResult(request, execution));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, responseList));
         }
 
         /// <summary>
