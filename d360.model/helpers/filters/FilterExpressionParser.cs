@@ -10,33 +10,44 @@ using System.Threading.Tasks;
 
 namespace d360.model.helpers
 {
-    public enum FilterExpressionParseType
-    {
-        CustomFields,
-        Relationships
-    }
     public class FilterExpressionParser
     {
         ICompanyContext CompanyContext;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
         private FilterExpressionParseType parseType;
-        private List<Tuple<string, string>> allowedDefaultFields = new List<Tuple<string, string>>();
+        private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
 
         public FilterExpressionParser(
             ICompanyContext ctx,
             FilterExpressionParseType type = FilterExpressionParseType.CustomFields,
-            bool includeParent = false)
+            bool includeParent = false,
+            bool useUserDefaultFields = false)
         {
             this.CompanyContext = ctx;
             this.parseType = type;
 
-            allowedDefaultFields.Add(new Tuple<string, string>("Code", "Code"));
+            allowedDefaultFields.Add(new DefaultFilter("Code", "Code", SqlFieldType.Text));
 
             if (includeParent)
             {
-                allowedDefaultFields.Add(new Tuple<string, string>("ParentDisplayName", "Parent.DisplayValue"));
+                allowedDefaultFields.Add(new DefaultFilter("ParentDisplayName", "Parent.DisplayValue", SqlFieldType.Text));
+            }
+
+            if (useUserDefaultFields)
+            {
+                allowedDefaultFields.Clear();
+                allowedDefaultFields.Add(new DefaultFilter("FirstName", "gr.FirstName", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("LastName", "gr.LastName", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("Email", "gr.Email", SqlFieldType.Text));
+                allowedDefaultFields.Add(new DefaultFilter("IsAdministrator", "gr.IsAdministrator", SqlFieldType.Boolean));
+                allowedDefaultFields.Add(new DefaultFilter("LastLoggedInOn", "gr.LastLoggedInOn", SqlFieldType.DateTime));
+                allowedDefaultFields.Add(new DefaultFilter("State", @"(CASE gr.state 
+                    WHEN 1 THEN 'Active'
+                    WHEN 2 THEN 'InActive'
+                    WHEN 3 THEN 'Deleted' END)", SqlFieldType.Text));
+
             }
         }
 
@@ -58,7 +69,7 @@ namespace d360.model.helpers
             }
             catch (Exception ex)
             {
-                throw new FilterExpressionParserException("Invalid filter expression: ", ex);
+                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message, ex);
             }
         }
 
@@ -170,10 +181,10 @@ namespace d360.model.helpers
                 }
                 if (fieldType == null)
                 {
-                    if (allowedDefaultFields.Any(x => x.Item1.ToLower() == token.Field.ToLower()))
+                    if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == token.Field.ToLower()))
                     {
-                        var val = allowedDefaultFields.FirstOrDefault(x => x.Item1.ToLower() == token.Field.ToLower());
-                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val.Item2));
+                        var val = allowedDefaultFields.FirstOrDefault(x => x.ApiName.ToLower() == token.Field.ToLower());
+                        sb.Append(token.GetSQLForDefaultField(ref sqlParams, val));
                     }
                     else
                     {
@@ -295,6 +306,30 @@ namespace d360.model.helpers
             }
 
         }
+    }
 
+    public enum FilterExpressionParseType
+    {
+        CustomFields,
+        Relationships
+    }
+
+    public enum SqlFieldType
+    {
+        Text, Boolean, Number, Decimal, Date, DateTime
+    }
+
+    public class DefaultFilter
+    {
+        public string ApiName { get; set; }
+        public string SqlExpression { get; set; }
+        public SqlFieldType SqlFieldType { get; set; }
+
+        public DefaultFilter(string apiName, string sqlExpression, SqlFieldType sqlFieldType)
+        {
+            this.ApiName = apiName;
+            this.SqlExpression = sqlExpression;
+            this.SqlFieldType = sqlFieldType;
+        }
     }
 }
