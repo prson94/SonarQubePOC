@@ -55,13 +55,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
             if (p == 'Uid') {
-                this.objectType = changes['Uid'].currentValue;
+                this.uid = changes['Uid'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
             }
-            if (p == 'Uid') {
-                this.objectID = changes['Uid'].currentValue;
+            if (p == 'objectID') {
+                this.objectID = changes['objectID'].currentValue;
+                this.isEditing = false;
+                this.isAdding = false;
+                this.isDeleting = false;
+            }
+            if (p == 'objectType') {
+                this.objectType = changes['objectType'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
@@ -83,18 +89,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 this.fieldDefinitions = data;
                 
                 this.fieldDefinitions.forEach(d => {
-                    if (d.Type == 'ComplexRelationLookup') {
-                        d.Type = 'Relation Lookup';
-                    }
-                    if (d.Type == 'RelationLookup') {
-                        d.Type = 'Relation Lookup';
-                    }
-                    if (d.Type == 'FusionLookup') {
-                        d.Type = 'Fusion Lookup';
-                    }
-                    if (d.Type == 'DateTime') {
-                        d.Type = 'Date Time';
-                    }
                     let foundKeyField = false;
                     this.fieldDefinitions.forEach(x => {
                         if (this.IsPartyOfKey(x.Type)) {

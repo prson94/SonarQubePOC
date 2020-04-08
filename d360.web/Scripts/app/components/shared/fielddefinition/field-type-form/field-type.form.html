@@ -49,12 +49,12 @@
                                         ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
-                        <div *ngIf="model?.FieldType?.IsListable">
+                        <div>
                             <div class="FieldNameRequired">Column Width (pixels)</div>
                             <input name="columnwidth"
                                    pInputText
                                    type="number"
-                                   [(ngModel)]="model.FieldType.ColumnWidth"
+                                   [(ngModel)]="ColumnWidth"
                                    style="width: 25%; display: block;" />
                         </div>
                     </div>
@@ -93,9 +93,9 @@
                                 <input name="sortorder"
                                        pInputText
                                        type="number"
-                                       [(ngModel)]="model.FieldType.SortOrder"
-                                       [disabled]="!model.FieldType.IsListable"
-                                       [ngStyle]="{'background':(!model.FieldType.IsListable ? '#EFEFEF': '')}"
+                                       [(ngModel)]="SortOrder"
+                                       [disabled]="!IsListable"
+                                       [ngStyle]="{'background':(!IsListable ? '#EFEFEF': '')}"
                                        style="width: 25%; display: block;" />
                             </div>
                         </div>
@@ -108,61 +108,61 @@
                                   active="true">
                     <div>
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsDisplayable"
+                                    [(ngModel)]="IsDisplayable"
                                     label="Show In Detail Tile?"
                                     [ngModelOptions]="{standalone: true}"
-                                    (ngModelChange)="model.FieldType.IsDisplayable=$event;onShowDetailChange($event);"
+                                    (ngModelChange)="model.FieldType.Type[this.currentType].IsDisplayable=$event;onShowDetailChange($event);"
                                     [disabled]="isSettingDisabled('IsDisplayable')">
                         </p-checkbox>
                     </div>
                     <div *ngIf="showIsEditable">
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsEditable"
+                                    [(ngModel)]="IsEditable"
                                     label="Is Editable?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsEditable')"></p-checkbox>
                     </div>
                     <div *ngIf="showIsListable">
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsListable"
+                                    [(ngModel)]="IsListable"
                                     label="Is Listable?"
                                     [ngModelOptions]="{standalone: true}"
-                                    (ngModelChange)="!$event ? model.FieldType.SortOrder=0:model.FieldType.SortOrder=model.FieldType.SortOrder"
+                                    (ngModelChange)="!$event ? model.FieldType.Type[this.currentType].SortOrder=0:model.FieldType.Type[this.currentType].SortOrder=model.FieldType.Type[this.currentType].SortOrder"
                                     [disabled]="isSettingDisabled('IsListable')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsRequired"
+                                    [(ngModel)]="IsRequired"
                                     label="Is Required?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsRequired')"
-                                    (onChange)="model.FieldType.MinimumLength=0"></p-checkbox>
+                                    (onChange)="model.FieldType.Type[this.currentType].MinimumLength=0"></p-checkbox>
                     </div>
                     <div *ngIf="showIsPartOfKey">
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsPartOfKey"
+                                    [(ngModel)]="IsPartOfKey"
                                     label="Part Of Key?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPartOfKey')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.IsPrimaryFilter"
+                                    [(ngModel)]="IsPrimaryFilter"
                                     label="Show As Top Level Filter?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('IsPrimaryFilter')"></p-checkbox>
                     </div>
                     <div *ngIf="enableAllowMultipleValues">
                         <p-checkbox binary="true"
-                                    [ngModel]="model.FieldType.AllowMultipleValues"
-                                    (ngModelChange)="model.FieldType.AllowMultipleValues=$event;model.FieldType.IsPartOfKey=false;"
+                                    [ngModel]="AllowMultipleValues"
+                                    (ngModelChange)="model.FieldType.Type[this.currentType].AllowMultipleValues=$event;model.FieldType.Type[this.currentType].IsPartOfKey=false;"
                                     label="Allow Multiple Items?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('AllowMultipleValues')"></p-checkbox>
                     </div>
                     <div>
                         <p-checkbox binary="true"
-                                    [(ngModel)]="model.FieldType.ShowIfEmpty"
+                                    [(ngModel)]="ShowIfEmpty"
                                     label="Show if Empty?"
                                     [ngModelOptions]="{standalone: true}"
                                     [disabled]="isSettingDisabled('ShowIfEmpty')"></p-checkbox>
@@ -173,7 +173,7 @@
 
         <simple-accordion header="List Configuration"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'Lookup'">
+                          *ngIf="this.currentType == 'Lookup'">
             <div class="row">
                 <div class="col s6">
                     <div class="FieldNameRequired">Type of List</div>
@@ -190,7 +190,7 @@
                     <input name="lookupDisplayFormat"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.LookupDisplayFormat"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].LookupDisplayFormat"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
@@ -215,7 +215,7 @@
                     <div class="FieldNameRequired">Parent List</div>
                     <p-dropdown name="lookupparent"
                                 [options]="listParentFields"
-                                [(ngModel)]="model.FieldType.ParentFieldTypeID"
+                                [(ngModel)]="model.FieldType.Type[this.currentType].ParentFieldTypeID"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -227,7 +227,7 @@
                     <input name="lookupEditFormat"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.LookupEditFormat"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].LookupEditFormat"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
@@ -252,7 +252,7 @@
 
         <simple-accordion header="Filter Configuration"
                           [active]="expandFilterConfiguration"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'Lookup' && listFilterable">
+                          *ngIf="this.currentType == 'Lookup' && listFilterable">
             <div class="form-instructions">
                 You can optionally filter a list of artifacts or models based on a relationship with another artifact or
                 model, by choosing the predicate of the relationship you wish to filter by.
@@ -274,7 +274,7 @@
                     <div class="FieldName">Filter by Related Assets in Field</div>
                     <p-dropdown name="filterassetfield"
                                 [options]="listFilterRelatedFields"
-                                [(ngModel)]="model.FieldType.FilterFieldTypeID"
+                                [(ngModel)]="model.FieldType.Type[this.currentType].FilterFieldTypeID"
                                 [style]="{ 'width': '98%' }"
                                 [disabled]="listFilterPredicate == null"
                                 ngDefaultControl>
@@ -289,9 +289,9 @@
 
         <simple-accordion header="Validation"
                           active="true"
-                          *ngIf="['Text','Number','Decimal'].indexOf(model.FieldType.Type) > -1">
+                          *ngIf="['Text','Number','Decimal'].indexOf(this.currentType) > -1">
             <div class="row">
-                <div *ngIf="currentFieldType(this.model.FieldType) == 'Text'"
+                <div *ngIf="this.currentType == 'Text'"
                      class="col s3">
                     <div id='PatternTip'
                          class="FieldName">
@@ -300,11 +300,11 @@
                     <input name="validationPattern"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.Pattern"
-                           (change)="validatePattern(); model.FieldType.MinimumLength=0;"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].Pattern"
+                           (change)="validatePattern(); model.FieldType.Type[this.currentType].MinimumLength=0;"
                            style="width: 98%; display: block;" />
                 </div>
-                <div *ngIf="currentFieldType(this.model.FieldType) == 'Text'"
+                <div *ngIf="this.currentType == 'Text'"
                      class="col s3">
                     <div class="FieldName"
                          style="display:block">
@@ -312,36 +312,36 @@
                     </div>
                     <p-dropdown name="validationPattersOpt"
                                 [options]="lookups.Patterns"
-                                (onChange)="model.FieldType.Pattern = $event.value; validatePattern()"
+                                (onChange)="model.FieldType.Type[this.currentType].Pattern = $event.value; validatePattern()"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">
                     <div id='MinimumLengthTip'
-                         class="FieldName">Minimum{{currentFieldType(this.model.FieldType) == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">Minimum{{this.currentType == 'Text' ? "Length" : "Value"}}</div>
                     <input name="minLength"
                            type="number"
-                           step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
-                           min="{{currentFieldType(this.model.FieldType) == 'Text' ? minLengthLowerText : minLengthLowerNumeric }}"
-                           max="{{currentFieldType(this.model.FieldType) == 'Text' ? minLengthUpperText : minLengthUpperNumeric }}"
-                           [disabled]="CheckMinRequired(model) || model.FieldType.Pattern?.length > 0 "
-                           [(ngModel)]="model.FieldType.MinimumLength"
+                           step="{{model.FieldType.Type[this.currentType].Increment ? model.FieldType.Type[this.currentType].Increment : 1}}"
+                           min="{{this.currentType == 'Text' ? minLengthLowerText : minLengthLowerNumeric }}"
+                           max="{{this.currentType == 'Text' ? minLengthUpperText : minLengthUpperNumeric }}"
+                           [disabled]="CheckMinRequired(model) || model.FieldType.Type[this.currentType].Pattern?.length > 0 "
+                           [(ngModel)]="model.FieldType.Type[this.currentType].MinimumLength"
                            (input)="validate('MinimumLength')"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip'
-                         class="FieldName">Maximum{{currentFieldType(this.model.FieldType) == 'Text' ? "Length" : "Value"}}</div>
+                         class="FieldName">Maximum{{this.currentType == 'Text' ? "Length" : "Value"}}</div>
                     <input name="maxLength"
                            type="number"
-                           step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
-                           min="{{currentFieldType(this.model.FieldType) == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
-                           max="{{currentFieldType(this.model.FieldType) == 'Text' ? maxLengthUpperText : maxLengthUpperNumeric }}"
-                           [(ngModel)]="model.FieldType.MaximumLength"
+                           step="{{model.FieldType.Type[this.currentType].Increment ? model.FieldType.Type[this.currentType].Increment : 1}}"
+                           min="{{this.currentType == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
+                           max="{{this.currentType == 'Text' ? maxLengthUpperText : maxLengthUpperNumeric }}"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].MaximumLength"
                            (input)="validate('MaximumLength')"
                            style="width: 98%; display: block;" />
                 </div>
-                <div *ngIf="currentFieldType(this.model.FieldType) == 'Decimal'"
+                <div *ngIf="this.currentType == 'Decimal'"
                      class="col s3">
                     <div id='decimalPlaces'
                          class="FieldName">
@@ -349,7 +349,7 @@
                     </div>
                     <input name="Precision"
                            type="number"
-                           [(ngModel)]="model.FieldType.Precision"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].Precision"
                            (input)="validate('Precision')"
                            min="0"
                            max="5"
@@ -357,8 +357,8 @@
                 </div>
             </div>
             <div class="row"
-                 *ngIf="model.FieldType.Pattern?.length > 0">
-                <div *ngIf="currentFieldType(this.model.FieldType) == 'Text'"
+                 *ngIf="model.FieldType.Type[this.currentType].Pattern?.length > 0">
+                <div *ngIf="this.currentType == 'Text'"
                      class="col s3">
                     <div class="FieldNameRequired">Test Pattern</div>
                     <input name="testPattern"
@@ -374,8 +374,8 @@
                 </div>
             </div>
             <div class="row"
-                 *ngIf="model.FieldType.Pattern?.length > 0 || model.FieldType.MinimumLength > 0 || model.FieldType.IsRequired">
-                <div *ngIf="['Number', 'Decimal'].indexOf(model.FieldType.Type) == -1"
+                 *ngIf="model.FieldType.Type[this.currentType].Pattern?.length > 0 || model.FieldType.Type[this.currentType].MinimumLength > 0 || model.FieldType.Type[this.currentType].IsRequired">
+                <div *ngIf="['Number', 'Decimal'].indexOf(this.currentType) == -1"
                      class="col s12">
                     <div id='ValidationDescriptionTip'
                          class="FieldName">
@@ -383,7 +383,7 @@
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
-                              [(ngModel)]="model.FieldType.ValidationDescription"
+                              [(ngModel)]="model.FieldType.Type[this.currentType].ValidationDescription"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>
@@ -391,17 +391,17 @@
 
         <simple-accordion header="Value Selection"
                           active="true"
-                          *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal'].indexOf(model.FieldType.Type) > -1">
+                          *ngIf="['Lookup','Text','Boolean','Number','Html','Date','Link','Decimal'].indexOf(this.currentType) > -1">
             <div class="row">
                 <div class="col l6 m6 s12">
                     <div class="FieldName">Default Value (if any)</div>
                 </div>
                 <div class="col l6 m6 s12"
-                     *ngIf="currentFieldType(this.model.FieldType) == 'Lookup'">
+                     *ngIf="this.currentType == 'Lookup'">
                     <div class="FieldName">Allow ALL Value Selection</div>
                 </div>
                 <div class="col l6 m6 s12"
-                     *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1">
+                     *ngIf="['Number','Decimal'].indexOf(this.currentType) > -1">
                     <div class="FieldName"
                          style="display:block">
                         Increment
@@ -410,37 +410,37 @@
             </div>
             <div class="row">
                 <div class="col l6 m6 s12">
-                    <p-dropdown *ngIf="currentFieldType(this.model.FieldType) == 'Boolean'"
+                    <p-dropdown *ngIf="this.currentType == 'Boolean'"
                                 [options]="booleanDefaultValueOptions"
-                                [(ngModel)]="model.FieldType.DefaultValue"
+                                [(ngModel)]="model.FieldType.Type[this.currentType].DefaultValue"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-dropdown *ngIf="currentFieldType(this.model.FieldType) == 'Lookup'"
+                    <p-dropdown *ngIf="this.currentType == 'Lookup'"
                                 [options]="lookupDefaultValueOptions"
-                                [(ngModel)]="model.FieldType.DefaultValue"
+                                [(ngModel)]="model.FieldType.Type[this.currentType].DefaultValue"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"
                                 [disabled]="listFilterPredicate != null"></p-dropdown>
-                    <p-calendar *ngIf="currentFieldType(this.model.FieldType) == 'Date'"
+                    <p-calendar *ngIf="this.currentType == 'Date'"
                                 [ngModelOptions]="{standalone: true}"
                                 [(ngModel)]="defaultDate"
                                 [showButtonBar]="true"
                                 [showIcon]="true"
                                 (onSelect)="onDateSelectMethod($event)"
                                 [dateFormat]="getLocaleDateString()"></p-calendar>
-                    <input *ngIf="currentFieldType(this.model.FieldType) == 'Text' "
+                    <input *ngIf="this.currentType == 'Text' "
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.DefaultValue"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].DefaultValue"
                            style="width: 98%; display: block;"
                            [ngModelOptions]="{standalone: true}"
                            (change)="validate('DefaultValue')" />
-                    <p-editor *ngIf="currentFieldType(this.model.FieldType) == 'Html'"
-                              [(ngModel)]="model.FieldType.DefaultValue"
+                    <p-editor *ngIf="this.currentType == 'Html'"
+                              [(ngModel)]="model.FieldType.Type[this.currentType].DefaultValue"
                               [ngModelOptions]="{standalone: true}"></p-editor>
-                    <div *ngIf="currentFieldType(this.model.FieldType) == 'Link'">
+                    <div *ngIf="this.currentType == 'Link'">
                         <input [(ngModel)]="defaultLinkName"
                                style="width: 100%;"
                                type="string"
@@ -455,35 +455,35 @@
                             'https://')
                         </div>
                     </div>
-                    <input *ngIf="['Number','Decimal'].indexOf(model.FieldType.Type) > -1"
+                    <input *ngIf="['Number','Decimal'].indexOf(this.currentType) > -1"
                            type="number"
-                           step="{{model.FieldType.Increment ? model.FieldType.Increment : 1}}"
+                           step="{{model.FieldType.Type[this.currentType].Increment ? model.FieldType.Type[this.currentType].Increment : 1}}"
                            (change)="validate('DefaultValue')"
                            (keyup)="validate('DefaultValue')"
-                           [(ngModel)]="model.FieldType.DefaultValue"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].DefaultValue"
                            style="width: 98%; display: block;"
                            [ngModelOptions]="{standalone: true}" />
                 </div>
                 <div class="col l1 m1 s12"
-                     *ngIf="currentFieldType(this.model.FieldType) == 'Lookup'">
+                     *ngIf="this.currentType == 'Lookup'">
                     <p-checkbox binary="true"
-                                [(ngModel)]="model.FieldType.AllowAllValue"
+                                [(ngModel)]="model.FieldType.Type[this.currentType].AllowAllValue"
                                 [ngModelOptions]="{standalone: true}"></p-checkbox>
                 </div>
                 <div class="col l5 m5 s12"
-                     *ngIf="currentFieldType(this.model.FieldType) == 'Lookup'">
+                     *ngIf="this.currentType == 'Lookup'">
                     <input pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.AllowAllLabel"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].AllowAllLabel"
                            [ngModelOptions]="{standalone: true}"
                            style="width: 100%"
-                           [disabled]="!model.FieldType.AllowAllValue" />
+                           [disabled]="!model.FieldType.Type[this.currentType].AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12"
-                     *ngIf="currentFieldType(this.model.FieldType) == 'Number' || currentFieldType(this.model.FieldType) == 'Decimal'">
+                     *ngIf="this.currentType == 'Number' || this.currentType == 'Decimal'">
                     <input name="validationIncrement"
                            type="number"
-                           [(ngModel)]="model.FieldType.Increment"
+                           [(ngModel)]="model.FieldType.Type[this.currentType].Increment"
                            (input)="validate('Increment')"
                            style="width: 98%; display: block;" />
                 </div>
@@ -493,7 +493,7 @@
         <!-- fusion lookup -->
         <simple-accordion header="Fusion Lookup"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'FusionLookup'">
+                          *ngIf="this.currentType == 'FusionLookup'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
@@ -575,7 +575,7 @@
         <!-- complex relation lookup -->
         <simple-accordion header="Relation Lookup"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'ComplexRelationLookup'">
+                          *ngIf="this.currentType == 'ComplexRelationLookup'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0; overflow-x: auto">
@@ -759,7 +759,7 @@
         <!-- relation -->
         <simple-accordion header="Relationship"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'Relationship'">
+                          *ngIf="this.currentType == 'Relationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
@@ -777,7 +777,7 @@
         <!-- field from relation -->
         <simple-accordion header="Field from Relationship"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'FieldFromRelationship'">
+                          *ngIf="this.currentType == 'FieldFromRelationship'">
             <div class="row">
                 <div class="col l6 m6 s12"
                      style="margin: 10px 0 10px 0">
@@ -794,7 +794,7 @@
                     <div class="FieldName">Selected Field</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="fieldsFromRelation"
-                                [ngModel]="model.FieldType.LookupObjectFieldTypeID"
+                                [ngModel]="model.FieldType.Type[this.currentType].LookupObjectFieldTypeID"
                                 (ngModelChange)="cardinalFieldFromRelationship_FieldSelected($event);"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
@@ -805,7 +805,7 @@
         <!-- reference list from relation -->
         <simple-accordion header="Reference Item List from Relationship"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'RefListRelationship'">
+                          *ngIf="this.currentType == 'RefListRelationship'">
             <div class="row">
                 <div class="col s12"
                      style="margin: 10px 0 10px 0">
@@ -824,7 +824,7 @@
         <!-- ownership lookup -->
         <simple-accordion header="Ownership Lookup"
                           active="true"
-                          *ngIf="currentFieldType(this.model.FieldType) == 'OwnershipLookup' && model.OwnershipLookupSettings">
+                          *ngIf="this.currentType == 'OwnershipLookup' && model.OwnershipLookupSettings">
             <div class="row">
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
@@ -866,7 +866,7 @@
         </simple-accordion>
 
         <!-- json property -->
-        <simple-accordion header="JSON Attribute" active="true" *ngIf="currentFieldType(this.model.FieldType) == 'JsonElement'">
+        <simple-accordion header="JSON Attribute" active="true" *ngIf="this.currentType == 'JsonElement'">
             <div class="row">
                 <div class="col l4 m4 s12" style="margin: 10px 0 10px 0">
                     <div class="FieldNameRequired">JSON Field</div>
@@ -909,7 +909,7 @@
                     <textarea pInputTextarea
                               autoResize="'true'"
                               maxlength="4000"
-                              [(ngModel)]="model.FieldType.DisplayDescription"
+                              [(ngModel)]="DescriptionDisplay"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
                 <div *ngIf="showDescription" class="col s6">
@@ -920,7 +920,7 @@
                     <textarea pInputTextarea
                               autoResize="'true'"
                               maxlength="4000"
-                              [(ngModel)]="model.FieldType.FormDescription"
+                              [(ngModel)]="DescriptionForm"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>

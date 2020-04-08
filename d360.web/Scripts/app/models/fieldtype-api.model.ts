@@ -1,7 +1,7 @@
 ﻿
 export class FieldTypeAPIModel {
     Action: string;
-    Field: FieldTypeAPIModelField;
+    Fields: FieldTypeAPIModelField;
     ActionTypeUid: string;
     AssetTypeUid: string;
     RelationshipTypeUid: string;
@@ -11,10 +11,70 @@ export class FieldTypeAPIModelField {
     Name: string;
     FriendlyName: string;
     Category: string;
-    Type: FieldType;
+    Type: FieldType = new FieldType();
 }
 
 export class FieldType {
+
+    constructor(type?: string){
+        switch (type) {
+            case 'Boolean':
+                this.Boolean = new Boolean();
+                break;
+            case 'ComputedFusionLookup':
+                this.ComputedFusionLookup = new ComputedFusionLookup();
+                break;
+            case 'ComputedOwnershipLookup':
+                this.ComputedOwnershipLookup = new ComputedOwnershipLookup();
+                break;
+            case 'ComputedRelationshipField':
+                this.ComputedRelationshipField = new ComputedRelationshipField();
+                break;
+            case 'ComputedRelationshipLookup':
+                this.ComputedRelationshipLookup = new ComputedRelationshipLookup();
+                break;
+            case 'ComputedRelationshipReferenceList':
+                this.ComputedRelationshipReferenceList = new ComputedRelationshipReferenceList();
+                break;
+            case 'Date':
+                this.Date = new DateClass();
+                break;
+            case 'DateTime':
+                this.DateTime = new DateClass();
+                break;
+            case 'Decimal':
+                this.Decimal = new Decimal();
+                break;
+            case 'Html':
+                this.Html = new HTML();
+                break;
+            case 'Json':
+                this.Json = new ComputedRelationshipReferenceList();
+                break;
+            case 'JsonElement':
+                this.JsonElement = new ComputedRelationshipField();
+                break;
+            case 'Link':
+                this.Link = new Link();
+                break;
+            case 'Lookup':
+                this.Lookup = new Lookup();
+                break;
+            case 'Number':
+                this.Json = new Decimal();
+                break;
+            case 'Relationship':
+                this.Relationship = new Boolean();
+                break;
+            case 'Text':
+                this.Text = new Text();
+                break;
+            case 'Tag':
+                this.Tag = new Tag();
+                break;
+        }
+    }
+
     Boolean: Boolean;
     ComputedFusionLookup: ComputedFusionLookup;
     ComputedOwnershipLookup: ComputedOwnershipLookup;
@@ -35,8 +95,19 @@ export class FieldType {
     Tag: Tag;
 }
 
+export interface Editable {
+    ColumnOrder: number;
+    ColumnWidth: number;
+    SortOrder: number;
+    IsDisplayable: boolean;
+    IsEditable: boolean;
+    IsListable: boolean;
+    IsPartOfKey: boolean;
+    IsPrimaryFilter: boolean;
+    ShowIfEmpty: boolean;
+}
 
-export interface Boolean {
+export class Boolean implements Editable {
     DefaultValue?: boolean;
     Description: BooleanDescription;
     ColumnOrder: number;
@@ -52,26 +123,33 @@ export interface Boolean {
     Validation?: BooleanValidation;
 }
 
-export interface BooleanDescription {
+export class BooleanDescription {
     Form: string;
     Display: string;
 }
 
-export interface BooleanValidation {
+export class BooleanValidation {
     IsRequired: boolean;
 }
 
-export interface ComputedFusionLookup {
+export class ComputedFusionLookup implements Editable  {
+    ColumnWidth: number;
+    SortOrder: number;
+    IsEditable: boolean;
+    IsListable: boolean;
+    IsPartOfKey: boolean;
+    IsPrimaryFilter: boolean;
+    ShowIfEmpty: boolean;
     ColumnOrder: number;
     Description: ComputedFusionLookupDescription;
     IsDisplayable: boolean;
 }
 
-export interface ComputedFusionLookupDescription {
+export class ComputedFusionLookupDescription {
     Display: string;
 }
 
-export interface ComputedOwnershipLookup {
+export class ComputedOwnershipLookup implements Editable  {
     ColumnOrder: number;
     Description: ComputedFusionLookupDescription;
     Definition: ComputedOwnershipLookupDefinition;
@@ -82,12 +160,12 @@ export interface ComputedOwnershipLookup {
     HideHeader: boolean;
 }
 
-export interface ComputedOwnershipLookupDefinition {
+export class ComputedOwnershipLookupDefinition {
     DisplayAssignmentSource: boolean;
     ExpandGroupMembership: boolean;
 }
 
-export interface ComputedRelationshipField {
+export class ComputedRelationshipField {
     ColumnOrder: number;
     ColumnWidth: number;
     SortOrder: number;
@@ -100,13 +178,13 @@ export interface ComputedRelationshipField {
     JsonAttribute?: JSONAttribute;
 }
 
-export interface JSONAttribute {
+export class JSONAttribute {
     FieldName: string;
     Path: string;
     DataType: string;
 }
 
-export interface ComputedRelationshipLookup {
+export class ComputedRelationshipLookup {
     ColumnOrder: number;
     Description: ComputedFusionLookupDescription;
     Definition: ComputedRelationshipLookupDefinition;
@@ -117,12 +195,12 @@ export interface ComputedRelationshipLookup {
     HideHeader: boolean;
 }
 
-export interface ComputedRelationshipLookupDefinition {
+export class ComputedRelationshipLookupDefinition {
     Fields: DefinitionField[];
     Relations: Relation[];
 }
 
-export interface DefinitionField {
+export class DefinitionField {
     AssetTypeUid: string;
     FieldTypeName: string;
     Filter: string;
@@ -133,14 +211,14 @@ export interface DefinitionField {
     Width: number;
 }
 
-export interface Relation {
+export class Relation {
     IntersectTypeUid: string;
     AssetTypeUid: string;
     RelationType: string;
     Direction: string;
 }
 
-export interface ComputedRelationshipReferenceList {
+export class ComputedRelationshipReferenceList {
     ColumnOrder: number;
     Description: ComputedFusionLookupDescription;
     IntersectTypeUid?: string;
@@ -149,7 +227,7 @@ export interface ComputedRelationshipReferenceList {
     Validation?: BooleanValidation;
 }
 
-export interface DateClass {
+export class DateClass {
     DefaultValue: Date;
     Description: BooleanDescription;
     Validation: BooleanValidation;
@@ -164,7 +242,7 @@ export interface DateClass {
     ShowIfEmpty: boolean;
 }
 
-export interface Decimal {
+export class Decimal {
     DefaultValue: number;
     Description: BooleanDescription;
     Increment: number;
@@ -180,14 +258,14 @@ export interface Decimal {
     ShowIfEmpty: boolean;
 }
 
-export interface DecimalValidation {
+export class DecimalValidation {
     Precision?: number;
     MinimumValue: number;
     MaximumValue: number;
     IsRequired: boolean;
 }
 
-export interface HTML {
+export class HTML {
     DefaultValue: string;
     Description: BooleanDescription;
     Validation: HTMLValidation;
@@ -202,13 +280,13 @@ export interface HTML {
     ShowIfEmpty: boolean;
 }
 
-export interface HTMLValidation {
+export class HTMLValidation {
     MinimumLength: number;
     MaximumLength: number;
     IsRequired: boolean;
 }
 
-export interface Link {
+export class Link {
     DefaultValue: DefaultValue;
     Description: BooleanDescription;
     Validation: BooleanValidation;
@@ -223,12 +301,12 @@ export interface Link {
     ShowIfEmpty: boolean;
 }
 
-export interface DefaultValue {
+export class DefaultValue {
     Text: string;
     Url: string;
 }
 
-export interface Lookup {
+export class Lookup {
     DefaultValue: string;
     Description: BooleanDescription;
     AllowAllValue: boolean;
@@ -248,24 +326,24 @@ export interface Lookup {
     ShowIfEmpty: boolean;
 }
 
-export interface Filter {
+export class Filter {
     FieldTypeName: string;
     PredicateUid: string;
     UseDirection: boolean;
 }
 
-export interface Format {
+export class Format {
     Display: string;
     Edit: string;
 }
 
-export interface List {
+export class List {
     Uid: string;
     Class: string;
     AllowMultipleValues: boolean;
 }
 
-export interface Tag {
+export class Tag {
     ColumnOrder: number;
     ColumnWidth: number;
     Description: ComputedFusionLookupDescription;
@@ -273,7 +351,7 @@ export interface Tag {
     IsPrimaryFilter: boolean;
 }
 
-export interface Text {
+export class Text {
     DefaultValue: string;
     Description: BooleanDescription;
     Validation: TextValidation;
@@ -288,7 +366,7 @@ export interface Text {
     ShowIfEmpty: boolean;
 }
 
-export interface TextValidation {
+export class TextValidation {
     Message: string;
     Pattern: string;
     MinimumLength: number;

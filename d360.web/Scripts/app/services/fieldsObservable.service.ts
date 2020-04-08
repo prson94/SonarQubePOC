@@ -48,6 +48,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
+    putFieldsV2(
+        model: FieldTypeAPIModel
+    ): any {
+        return this
+            .http
+            .put<any>(`api/v2/fields`, model)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getAssetTypeFields(assetTypeUID: string): Observable<FieldDefinition[]> {
         return this
             .http
@@ -188,13 +200,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getLookups(
-        id: number,
-        type: string,
-        fieldtypeid: number
+        typeuid: string,
+        fieldTypeName: string
     ): Observable<Lookups> {
         return this
             .http
-            .get<Lookups>(`form/FieldType_Lookups?id=${id}&type=${type}&fieldtypeid=${fieldtypeid}&isNg=true`)
+            .get<Lookups>(`form/FieldType_Lookups?typeuid=${typeuid}&fieldtypename=${fieldTypeName}&isNg=true`)
             .pipe(
                 map(response => <any>response),
                 map(
@@ -277,7 +288,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     postFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
         return this
             .http
-            .post('form/AddFieldType', model)
+            .post('v2/api/', model)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))

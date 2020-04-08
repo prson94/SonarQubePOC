@@ -710,9 +710,16 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_Lookups"), NonNullableParameters]
-        public JsonNetResult FieldType_Lookups(SystemObjects type, int id, int fieldtypeid, bool isNg = false)
+        public JsonNetResult FieldType_Lookups(string typeuid, string fieldtypename, bool isNg = false)
         {
             #region Load static lists
+
+            Guid.TryParse(typeuid, out Guid typeGuid);
+            var assetType = Company.Filter<AssetType>(x => x.uid == typeGuid).FirstOrDefault();
+            Enum.TryParse(assetType.Object, out SystemObjects type);
+            var id = assetType != null ? assetType.ObjectID : 0;
+            var fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == fieldtypename).FirstOrDefault();
+            var fieldtypeid = fieldType != null ? fieldType.ID : 0;
 
             var lists = Company.Query<dynamic>("exec utility.GetFieldTypeLookupList @type, @id", new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
             var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);

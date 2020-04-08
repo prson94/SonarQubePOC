@@ -3,7 +3,6 @@ import { Input, Output, Component, EventEmitter, OnInit, OnChanges, SimpleChange
 import { SelectItem } from 'primeng/api';
 
 import {
-    FieldType,
     FieldTypeEditorModel,
     Lookups,
     FieldTypeFusionItemEditorModel,
@@ -21,8 +20,7 @@ import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { FieldTypeAPIModelField } from '../../../../models/fieldtype-api.model';
-import { clearLine } from 'readline';
+import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel } from '../../../../models/fieldtype-api.model';
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -129,6 +127,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private maxLengthUpperNumeric = 9999999999;
 
 
+    private IsDisplayable: boolean;
+    private IsEditable: boolean;
+    private IsListable: boolean;
+    private IsRequired: boolean;
+    private IsPartOfKey: boolean;
+    private IsPrimaryFilter: boolean;
+    private AllowMultipleValues: boolean;
+    private ShowIfEmpty: boolean;
+    private ColumnWidth: number;
+    private DescriptionDisplay: string;
+    private DescriptionForm: string;
+
+
     constructor(private fieldsService: FieldsObservableService, private messagesService: MessagesObservableService, private objectDetailService: ObjectDetailService) {
         super();
         this.model = new FieldTypeEditorModel();
@@ -159,8 +170,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
     //#region load functions
 
-    private getFieldTypeEditorHandler = (responseGetFieldTypeEditor) => {
+    private getFieldTypeEditorHandler = (responseGetFieldTypeEditor: FieldTypeAPIModelField) => {
         this.model.FieldType = responseGetFieldTypeEditor;
+        this.currentType = this.currentFieldType(responseGetFieldTypeEditor);        
         this.model.cardinalRelationship = null;
         this.model.selectedLookup = null;
     };
@@ -194,7 +206,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 );
             }
 
-            if (this.model.RelationItems && this.currentFieldType(this.model.FieldType) == 'ComplexRelationLookup') {
+            if (this.model.RelationItems && this.currentType ==  'ComplexRelationLookup') {
                 this.loadComplexRelationLookup();
             }
         }
@@ -206,23 +218,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.isLoading = true;
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                 .subscribe(ret => {
-                    console.log(ret);
                     this.getFieldTypeEditorHandler(ret);
                     this.isLoading = false;
-                    //***commenting out until getFieldType is sorted****
-                    //this.fieldsService.getLookups(this.model.FieldType.ObjectID, this.model.FieldType.Object, this.id)
-                    //    .subscribe(s => {
-                    //        this.getLookupsHandler(s);
-                    //        if (this.id > 0) {
-                    //            this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
-                    //                .subscribe(formData => {
-                    //                    this.getFormDataHandler(formData);
-                    //                    this.loadDataType(this.model.FieldType.Type, true);
-                    //                    this.isLoading = false;
-                    //                });
-                    //        }
-
-                    //    });
+                    this.fieldsService.getLookups(this.assetTypeUid, this.name)
+                        .subscribe(s => {
+                            console.log(s);
+                            this.getLookupsHandler(s);
+                    /***commenting out until getLookupsHandler is sorted****
+                            if (this.id > 0) {
+                                this.fieldsService.getFormData(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
+                                    .subscribe(formData => {
+                                        this.getFormDataHandler(formData);
+                                        this.loadDataType(this.model.FieldType.Type, true);
+                                        this.isLoading = false;
+                                    });
+                           }
+                    */
+                        });
 
                 });
         } else if (this.assetTypeUid || this.actionTypeUid || this.relationshipTypeUid){
@@ -241,12 +253,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
             this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
-            //this.fieldsService.getLookups(this.objectID, this.objectType, this.id)
-            //    .subscribe(x => {
-            //        this.getLookupsHandler(x);
-            //        this.model.FieldType.Type = null; //Set as NULL to allow for selection.
-            //        this.isLoading = false;
-            //    });
+            this.fieldsService.getLookups(this.assetTypeUid, this.name)
+                .subscribe(x => {
+                    this.getLookupsHandler(x);
+                    this.model.FieldType.Type = null; //Set as NULL to allow for selection.
+                    this.isLoading = false;
+                });
         }
     }
 
@@ -362,6 +374,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (value == null) {
             return;
         }
+        console.log(this.model.FieldType);
+        this.model.FieldType.Type = new FieldType(value);
 
 
         switch (value.toLowerCase()) {
@@ -466,14 +480,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             default:
                 break;
         }
-        if (this.currentFieldType(this.model.FieldType) == 'Date' && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue != null) {
-            this.defaultDate = new Date(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue);
+        if (this.currentType == 'Date' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
+            this.defaultDate = new Date(this.model.FieldType.Type[this.currentType].DefaultValue);
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Link' && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue != null) {
-            var link = this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue.split('|');
-            this.defaultLinkName = link[0];
-            this.defaultLinkAdress = link[1];
+        if (this.currentType == 'Link' && this.model.FieldType.Type[this.currentType].DefaultValue != null) {
+            this.defaultLinkName = this.model.FieldType.Type[this.currentType].DefaultValue.Text;
+            this.defaultLinkAdress = this.model.FieldType.Type[this.currentType].DefaultValue.Url;
         }
 
         observables
@@ -505,9 +518,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.loadListFilterOptions(type, id);
 
         //clear the validated fields and error message
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength = null;
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation = null;
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Increment = null;
+        this.model.FieldType.Type[this.currentType].Validation.MaximumLength = null;
+        this.model.FieldType.Type[this.currentType].Validation = null;
+        this.model.FieldType.Type[this.currentType].Increment = null;
         this.validate('*');
 
         return this.loadTokens(type, id);
@@ -672,7 +685,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.listFilterOptions.has(value)) {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
 
-            if (this.model.FieldType.FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
+            if (this.model.FieldType[this.currentType].FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
                 this.model.FieldType.FilterFieldTypeID = this.listFilterRelatedFields[0].value;
             }
         } else {
@@ -785,19 +798,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             );
         }
 
-        if (this.model.FieldType.Type == 'Link') {
+        if (this.currentType == 'Link') {
             {
-                this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
-                this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue += '|';
-                this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.Type[this.currentType].DefaultValue.Text += '|';
+                this.model.FieldType.Type[this.currentType].DefaultValue.Url += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
             }
-        } else if (this.currentFieldType(this.model.FieldType) == 'Date') {
-            this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue = this.defaultDate;
+        } else if (this.currentType == 'Date') {
+            this.model.FieldType.Type[this.currentType].DefaultValue = this.defaultDate;
         }
 
         this.isLoading = true;
 
-        if (this.model.FieldType.Name != '') {
+        if (this.actionName == 'Edit') {
             this.fieldsService.putFieldType(this.model).subscribe(
                 r => {
                     this.isLoading = false;
@@ -809,7 +822,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             );
         } else {
-            this.fieldsService.postFieldType(this.model).subscribe(
+            let apiModel = new FieldTypeAPIModel();
+            apiModel.Action = "Merge";
+            apiModel.ActionTypeUid = this.actionTypeUid;
+            apiModel.AssetTypeUid = this.assetTypeUid;
+            apiModel.RelationshipTypeUid = this.relationshipTypeUid;
+            apiModel.Fields = this.model.FieldType;
+
+            this.fieldsService.putFieldsV2(apiModel).subscribe(
                 r => {
                     this.showMessageForResult(this.messagesService, r);
                     this.isLoading = false;
@@ -825,19 +845,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private valid(): boolean {
         let valid = true;
 
-        if (this.currentFieldType(this.model.FieldType) == 'RefListRelationship' && !this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupObjectID) {
+        if (this.currentType == 'RefListRelationship' && !this.model.FieldType.Type[this.currentType].LookupObjectID) {
             valid = false;
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'FieldFromRelationship' && !this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupObjectFieldTypeID) {
+        if (this.currentType == 'FieldFromRelationship' && !this.model.FieldType.Type[this.currentType].LookupObjectFieldTypeID) {
             valid = false;
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Relationship' && !this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupObjectID) {
+        if (this.currentType == 'Relationship' && !this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
             valid = false;
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'JsonElement') {
+        if (this.currentType == 'JsonElement') {
             if (!this.model.JsonElementSettings.FieldTypeID || !this.model.JsonElementSettings.Path || !this.model.JsonElementSettings.DataType)
                 valid = false;
         }
@@ -991,12 +1011,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupDisplayFormat == null) {
-            this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupDisplayFormat = '';
+        if (this.model.FieldType.Type[this.currentType].LookupDisplayFormat == null) {
+            this.model.FieldType.Type[this.currentType].LookupDisplayFormat = '';
         }
 
         this.selectedLookupToken = null;
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupDisplayFormat += value;
+        this.model.FieldType.Type[this.currentType].LookupDisplayFormat += value;
     }
 
     private selectEditToken(value: string) {
@@ -1004,17 +1024,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupEditFormat == null) {
-            this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupEditFormat = '';
+        if (this.model.FieldType.Type[this.currentType].LookupEditFormat == null) {
+            this.model.FieldType.Type[this.currentType].LookupEditFormat = '';
         }
 
         this.selectedFormatToken = null;
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].LookupEditFormat += value;
+        this.model.FieldType.Type[this.currentType].LookupEditFormat += value;
     }
 
     private validatePattern() {
-        if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Pattern > "" && this.testPattern > "") {
-            var patternRegex = new RegExp(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Pattern);
+        if (this.model.FieldType.Type[this.currentType].Validation.Pattern > "" && this.testPattern > "") {
+            var patternRegex = new RegExp(this.model.FieldType.Type[this.currentType].Validation.Pattern);
             this.testPatternValidationText = (patternRegex.test(this.testPattern)) ? 'Success' : 'Fail';
         } else {
             this.testPatternValidationText = '';
@@ -1040,90 +1060,90 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.validationErrors.clear();
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Number' || this.currentFieldType(this.model.FieldType) == 'Decimal') {
+        if (this.currentType == 'Number' || this.currentType == 'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength') {
                 this.setValidation('MinimumLength_toobig', 'Please enter a smaller Minimum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation > this.minLengthUpperNumeric);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.minLengthUpperNumeric);
                 })());
                 this.setValidation('MinimumLength_toosmall', 'Please enter a larger Minimum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation < this.minLengthLowerNumeric);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue < this.minLengthLowerNumeric);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 this.setValidation('MaximumLength_toobig', 'Please enter a smaller Maximum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength > this.maxLengthUpperNumeric);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue > this.maxLengthUpperNumeric);
                 })());
                 this.setValidation('MaximumLength_toosmall', 'Please enter a larger Maximum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength < this.maxLengthLowerNumeric);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue < this.maxLengthLowerNumeric);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'Increment') {
                 this.setValidation('Increment_negative', 'Please enter a positive number for the increment.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Increment < 0);
+                    return (this.model.FieldType.Type[this.currentType].Increment < 0);
                 })());
 
                 this.setValidation('Increment_toobig', 'Please enter a smaller number for the increment.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Increment > Number.MAX_SAFE_INTEGER);
+                    return (this.model.FieldType.Type[this.currentType].Increment > Number.MAX_SAFE_INTEGER);
                 })());
             }
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Number') {
+        if (this.currentType ==  'Number') {
             if (fieldname == '*' || fieldname == 'Increment') {
                 this.setValidation('Increment_integer', 'Please enter a valid integer for Increment.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Increment && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Increment % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].Increment && this.model.FieldType.Type[this.currentType].Increment % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength') {
                 this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumValue % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumValue && this.model.FieldType.Type[this.currentType].Validation.MaximumValue % 1 != 0);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'DefaultValue') {
                 this.setValidation('default_integer', 'Please enter a valid integer for Default Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue && +this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].DefaultValue && +this.model.FieldType.Type[this.currentType].DefaultValue % 1 != 0);
                 })());
             }
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Decimal') {
+        if (this.currentType ==  'Decimal') {
             if (fieldname == '*' || fieldname == 'Precision') {
                 this.setValidation('precision_range', 'Please enter decimal places between 0 and 5.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision < 0 || this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision > 5);
+                    return (this.model.FieldType.Type[this.currentType].Validation.Precision && this.model.FieldType.Type[this.currentType].Validation.Precision < 0 || this.model.FieldType.Type[this.currentType].Validation.Precision > 5);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'Precision' || fieldname == 'DefaultValue') {
-                if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision && FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue)) {
-                    let asString = '' + this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue;
+                if (this.model.FieldType.Type[this.currentType].Validation.Precision && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
+                    let asString = '' + this.model.FieldType.Type[this.currentType].DefaultValue;
 
-                    if (asString.split('.').length == 2 && asString.split('.')[1].length >= this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision) {
-                        let val = +this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue;
-                        let newVal = +val.toFixed(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Precision);
+                    if (asString.split('.').length == 2 && asString.split('.')[1].length >= this.model.FieldType.Type[this.currentType].Validation.Precision) {
+                        let val = +this.model.FieldType.Type[this.currentType].DefaultValue;
+                        let newVal = +val.toFixed(this.model.FieldType.Type[this.currentType].Validation.Precision);
 
                         if (newVal != null && (newVal != 0 || newVal != +val) && !isNaN(newVal)) {
-                            this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue = '' + newVal;
+                            this.model.FieldType.Type[this.currentType].DefaultValue = newVal;
                         }
                     }
                 }
             }
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Number' || this.currentFieldType(this.model.FieldType) == 'Decimal') {
+        if (this.currentType ==  'Number' || this.currentType ==  'Decimal') {
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation + ' in Default Value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue)) {
-                        if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation) && +this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue < this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation) {
+                this.setValidation('default_MinimumLength', 'Please enter a minimum value of ' + this.model.FieldType.Type[this.currentType].Validation.MinimumValue + ' in Default Value.', (() => {
+                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
+                        if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MinimumValue) && this.model.FieldType.Type[this.currentType].DefaultValue < this.model.FieldType.Type[this.currentType].Validation.MinimumValue) {
                             return true;
                         }
                     }
@@ -1133,9 +1153,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength + ' in Default Value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue)) {
-                        if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength) && +this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue > this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength) {
+                this.setValidation('default_MaximumLength', 'Please enter a maximum value of ' + this.model.FieldType.Type[this.currentType].Validation.MaximumValue + ' in Default Value.', (() => {
+                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].DefaultValue)) {
+                        if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue) && +this.model.FieldType.Type[this.currentType].DefaultValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue) {
                             return true;
                         }
                     }
@@ -1145,19 +1165,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
                 this.setValidation('number_minmax', 'Please enter a minimum value which is lower than the maximum value.', (() => {
-                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MinimumLength) && FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength))
-                        return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MinimumLength > this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength);
+                    if (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue) && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumValue))
+                        return (this.model.FieldType.Type[this.currentType].Validation.MinimumValue > this.model.FieldType.Type[this.currentType].Validation.MaximumValue);
                     return false;
                 })());
             }
         }
 
-        if (this.currentFieldType(this.model.FieldType) == 'Text') {
+        if (this.currentType ==  'Text') {
             if (fieldname == '*' || fieldname == 'Pattern' || fieldname == 'DefaultValue') {
                 this.setValidation('default_validationpattern', 'Default Value does not match Validation Pattern.', (() => {
-                    if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Pattern > "" && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue > "") {
-                        var patternRegex = new RegExp(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.Pattern);
-                        return !patternRegex.test(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].DefaultValue);
+                    if (this.model.FieldType.Type[this.currentType].Validation.Pattern > "" && this.model.FieldType.Type[this.currentType].DefaultValue > "") {
+                        var patternRegex = new RegExp(this.model.FieldType.Type[this.currentType].Validation.Pattern);
+                        return !patternRegex.test(this.model.FieldType.Type[this.currentType].DefaultValue);
                     }
                     return false;
                 })());
@@ -1165,33 +1185,33 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             if (fieldname == '*' || fieldname == 'MinimumLength') {
                 this.setValidation('MinimumLength_integer', 'Please enter a valid integer for Minimum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength % 1 != 0);
                 })());
                 this.setValidation('MinimumLength_toolong', 'Please enter a Minimum Length shorter than ' + this.minLengthUpperNumeric + '.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation > this.minLengthUpperNumeric);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength > this.minLengthUpperNumeric);
                 })());
                 this.setValidation('MinimumLength_tooshort', 'Minimum Length must be a positive numnber.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation < this.minLengthLowerText);
+                    return (this.model.FieldType.Type[this.currentType].Validation && this.model.FieldType.Type[this.currentType].Validation.MinimumLength < this.minLengthLowerText);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength') {
                 var m
                 this.setValidation('MaximumLength_integer', 'Please enter a valid integer for Maximum Value.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength % 1 != 0);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength % 1 != 0);
                 })());
                 this.setValidation('MaximumLength_toolong', 'Please enter Maximum Length shorter than ' + this.maxLengthUpperText + '.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength > this.maxLengthUpperText);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength > this.maxLengthUpperText);
                 })());
                 this.setValidation('MaximumLength_tooshort', 'Maximum Length must be a positive numnber.', (() => {
-                    return (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength < this.maxLengthLowerText);
+                    return (this.model.FieldType.Type[this.currentType].Validation.MaximumLength && this.model.FieldType.Type[this.currentType].Validation.MaximumLength < this.maxLengthLowerText);
                 })());
             }
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation + '.', (() => {
-                    if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue) {
-                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation) && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue.length > 0 && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue.length < this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation);
+                this.setValidation('default_MinimumLength_text', 'Default value is shorter than ' + this.model.FieldType.Type[this.currentType].Validation + '.', (() => {
+                    if (this.model.FieldType.Type[this.currentType].DefaultValue) {
+                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation) && this.model.FieldType.Type[this.currentType].DefaultValue.length > 0 && this.model.FieldType.Type[this.currentType].DefaultValue.length < this.model.FieldType.Type[this.currentType].Validation.MinimumLength);
                     } else {
                         return false;
                     }
@@ -1199,9 +1219,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
 
             if (fieldname == '*' || fieldname == 'MaximumLength' || fieldname == 'DefaultValue') {
-                this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength + '.', (() => {
-                    if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue) {
-                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength) && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue.length > this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength);
+                this.setValidation('default_MaximumLength_text', 'Default value is longer than ' + this.model.FieldType.Type[this.currentType].Validation.MaximumLength + '.', (() => {
+                    if (this.model.FieldType.Type[this.currentType].DefaultValue) {
+                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength) && this.model.FieldType.Type[this.currentType].DefaultValue.length > this.model.FieldType.Type[this.currentType].Validation.MaximumLength);
                     } else {
                         return false;
                     }
@@ -1210,8 +1230,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
             if (fieldname == '*' || fieldname == 'MinimumLength' || fieldname == 'MaximumLength') {
                 this.setValidation('MinimumLengthMaximumLength_text', 'Maximum Lenght is shorter than Minimum Length.', (() => {
-                    if (this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation && FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation)) {
-                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength) && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation > this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.MaximumLength);
+                    if (this.model.FieldType.Type[this.currentType].Validation && FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength)) {
+                        return (FormHelpers.isNumber(this.model.FieldType.Type[this.currentType].Validation.MaximumLength) && this.model.FieldType.Type[this.currentType].Validation.MinimumLength > this.model.FieldType.Type[this.currentType].Validation.MaximumLength);
                     } else {
                         return false;
                     }
@@ -1227,10 +1247,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (!fem) {
             return;
         }
-        if (this.currentFieldType(this.model.FieldType) == 'Number' || this.currentFieldType(this.model.FieldType) == 'Decimal') {
+        if (this.currentType ==  'Number' || this.currentType ==  'Decimal') {
             return false;
         } else {
-            return !fem.FieldType.Type[this.currentFieldType(this.model.FieldType)].IsRequired;
+            return !fem.FieldType.Type[this.currentType].IsRequired;
         }
     }
 
@@ -1279,7 +1299,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private anyDisplayFieldsSelected(e: any) {
-        if (this.currentFieldType(this.model.FieldType) != 'ComplexRelationLookup') {
+        if (this.currentType != 'ComplexRelationLookup') {
             this.displayFieldSelected = true;
 
             if (this.lookups.Field_FieldFromRelRelationships.length > 0) {
@@ -1306,7 +1326,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     public onDateSelectMethod(e: Date) {
-        this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].Validation.DefaultValue = this.getGovernDate(e);
+        if (this.currentType == "Date" || this.currentType == "DateTime")
+        this.model.FieldType.Type[this.currentType].DefaultValue = e;
     }
 
     private getGovernDate(e: Date) {
@@ -1324,27 +1345,27 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private isSettingDisabled(val: string) {
         switch (val) {
             case 'IsDisplayable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.currentFieldType(this.model.FieldType)) > -1
-                    || (this.currentFieldType(this.model.FieldType) == 'Relationship' && !this.isListableRelationship));
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.currentType) > -1
+                    || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
                 return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag']
-                    .indexOf(this.currentFieldType(this.model.FieldType)) > -1
+                    .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
-                        && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].List
-                        && this.model.FieldType.Type[this.currentFieldType(this.model.FieldType)].List.AllowMultipleValues)
+                        && this.model.FieldType.Type[this.currentType].List
+                        && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
-                return (['Lookup'].indexOf(this.currentFieldType(this.model.FieldType)) == -1);
+                return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Tag'].indexOf(this.currentFieldType(this.model.FieldType)) > -1);
+                return (['Tag'].indexOf(this.currentType) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
