@@ -1435,7 +1435,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1472,7 +1472,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1500,7 +1500,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1528,10 +1528,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }           
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1815,5 +1815,32 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
+        {
+
+            var countsSQL = @"select AT.uid, 
+	                ATParent.uid as parentUid,
+	                case at.class
+	                 when 1 then 'Business Asset'
+	                 when 8 then 'Technical Asset'
+	                 when 2 then 'Model'
+	                 when 6 then 'Policy'
+	                 when 7 then 'Rule'
+	                end as class,
+	                at.name,
+	                at.description,
+	                Assets.count as count
+                 from AssetType AT
+                 left join [IntersectType] ITParent on ITParent.ObjectID = AT.ObjectID and ITParent.Object = AT.Object and PredicateID = 4
+                 left join [AssetType] ATParent on ATParent.Object = ITParent.Subject AND ATParent.ObjectID = ITParent.SubjectID
+                 outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
+                    from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
+                 where AT.ID not in (select AssetTypeID
+                    from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))
+                 and at.Class in @filterClasses";
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses});
+        }
+
     }
 }

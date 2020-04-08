@@ -923,6 +923,49 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of all asset types and asset counts.
+        /// </summary>
+        /// <returns>Returns a list of asset type counts.</returns>
+        [
+            HttpGet,
+            Route("counts/byAssetType"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("Class", "Comma separated values of classes. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.")
+        ]
+        public async Task<HttpResponseMessage> GetAssetTypeCountsAsync()
+        {
+            var prefix = "Assets.GetAssetTypeCountsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                List<AssetTypeClass> classFilters = new List<AssetTypeClass>() { 
+                    AssetTypeClass.BusinessAsset, 
+                    AssetTypeClass.TechnicalAsset, 
+                    AssetTypeClass.Model, 
+                    AssetTypeClass.Policy, 
+                    AssetTypeClass.Rule };
+
+
+
+
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x=> (int)x).ToArray());
+                return Request.CreateResponse(HttpStatusCode.OK, classes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         #region Batch
 
@@ -1315,7 +1358,7 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
-                if(assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+                if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1335,7 +1378,7 @@ namespace d360.web.Controllers.V2
                 {
                     currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
                 }
-                
+
                 if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1427,7 +1470,7 @@ namespace d360.web.Controllers.V2
                 }
 
             }
-            
+
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
         }
 
