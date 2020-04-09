@@ -581,7 +581,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
-                    A.Code,
+                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
                     --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
