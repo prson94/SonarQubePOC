@@ -1561,6 +1561,7 @@ a.breadcrumb {
             width: 26px;
             height: 26px;
             line-height: 26px;
+            border-radius: 13px !important;
             font-size: 14px !important;
             background: @igx-left-side-nav;
             margin-right: 4px;
@@ -1579,8 +1580,6 @@ a.breadcrumb {
                 color: @igx-blue-color;
             }
 
-
-
             i.fa {
                 padding-left: unset !important;
             }
@@ -1594,12 +1593,18 @@ a.breadcrumb {
 
         &.description-row {
             .category {
-                color: @d3s-gray-2;
+                font-weight: bold;
+            }
+
+            .category, .asset-path {
                 white-space: nowrap;
+                color: @ig-black;
 
                 i.fa {
                     padding: 0 7px !important;
-                    color: @d3s-gray-2 !important;
+                    color: inherit !important;
+                    font-size: inherit;
+                    font-weight: inherit;
                 }
             }
         }
@@ -4458,12 +4463,12 @@ button.tab-scroller {
                                 margin-top: 0px;
                             }
 
+                            i.fa {
+                                padding: 0 7px;
+                            }
+
                             &.category {
                                 color: @ig-black;
-
-                                i.fa {
-                                    padding: 0 7px;
-                                }
                             }
 
                             &.asset-path {

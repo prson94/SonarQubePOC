@@ -1,6 +1,7 @@
 ﻿using d360.core.entities;
 using d360.extensions;
 using d360.model;
+using d360.model.DataAccessLayer;
 using d360.web.Models;
 using d360.web.Models.Attributes;
 using System;
@@ -17,14 +18,17 @@ namespace d360.web.Controllers
         #region DI
 
         ISearchSource SearchSource;
+        IAssetRepository AssetRepository;
 
         public SearchController(
             ICommunityContext community,
             ICompanyContext company,
-            ISearchSource searchSource)
+            ISearchSource searchSource,
+            IAssetRepository repository)
             : base(community, company)
         {
             SearchSource = searchSource;
+            AssetRepository = repository;
         }
 
         #endregion
@@ -43,7 +47,7 @@ namespace d360.web.Controllers
 
                 foreach (IndexResult result in o.Result.Results)
                 {
-                    AddIcon(result);
+                    AugmentResult(result);
                 }
             }
 
@@ -74,7 +78,7 @@ namespace d360.web.Controllers
                     IList<TypeaheadResult> res = SearchSource.GetTypeaheadResults(Company.CurrentCompanyID, Company.CurrentResourceID, q, GetQueryLimitation(), num.GetValueOrDefault(7), t).ToList();
                     foreach(TypeaheadResult result in res)
                     {
-                        AddIcon(result);
+                        AugmentResult(result);
                     }
 
                     return new JsonNetResult { Data = res, Formatting = Newtonsoft.Json.Formatting.None };
@@ -187,7 +191,13 @@ namespace d360.web.Controllers
             return "fa-circle-o";
         }
 
-        private TypeaheadResult AddIcon(TypeaheadResult result)
+        private void AugmentResult(TypeaheadResult result)
+        {
+            AddIcon(result);
+            AddAssetPath(result);
+        }
+
+        private void AddIcon(TypeaheadResult result)
         {
             string icon = GetIcon(result.AssetTypeUid, result.Group);
             if(icon.Substring(0, 3) == "fa-")
@@ -198,7 +208,14 @@ namespace d360.web.Controllers
                 result.Icon = null;
                 result.ImageUrl = icon;
             }
-            return result;
+        }
+
+        private void AddAssetPath(TypeaheadResult result)
+        {
+            if(result.Uid.HasValue && result.Uid.Value != Guid.Empty)
+            {
+                result.AssetPath = AssetRepository.GetAssetPath(result.Uid ?? Guid.Empty);
+            }
         }
 
         private QueryLimitation GetQueryLimitation()

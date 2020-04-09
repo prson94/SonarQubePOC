@@ -11,6 +11,7 @@ import { Tag, TagItem } from '../../models/tag.model';
 import { ObjectStatisticsService } from '../../services/object-statistics.service';
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
+import { isUndefined } from 'util';
 
 declare var CompanySettings;
 
@@ -34,6 +35,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private searchDetails: SearchDetail;
     private formattedPath: string;
     private displayInfopopup: boolean = false;
+
+    private assetPathSeparator: string = '<i class="fa fa-angle-right"></i>'
 
     @ViewChild('cardmenu', { static: false }) cardmenuRef: Menu;
     @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
@@ -76,6 +79,15 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             this.showShoppingCart = true;
 
         this.loadDetails();
+        if (this.result.AssetPath) {
+            console.log('assstpath', this.result.AssetPath)
+            this.formattedPath = this.result.AssetPath.join(this.assetPathSeparator);
+            this.showPath = true;
+            this.ref.markForCheck();
+        } else {
+            this.showPath = false;
+        }
+
     }
 
   
@@ -91,11 +103,13 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                     } else {
                         this.showStatus = false;
                     }
-                    if (this.searchDetails && this.searchDetails.AssetDetail.Path) {
-                        this.formattedPath = this.formatPath(this.searchDetails.AssetDetail.Path);
-                        this.showPath = true;
-                    } else {
-                        this.showPath = false;
+                    if (isUndefined(this.formattedPath)) {
+                        if (this.searchDetails && this.searchDetails.AssetDetail.Path) {
+                            this.formattedPath = this.formatPath(this.searchDetails.AssetDetail.Path);
+                            this.showPath = true;
+                        } else {
+                            this.showPath = false;
+                        }
                     }
                     this.ref.markForCheck();
                 }
@@ -139,7 +153,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         if (Path[Path.length - 1] == "]") {
             res = res.substr(0, Path.length - 2);
         }
-        res = res.replace(/(\]\.\[)+/g, " / ");
+        res = res.replace(/(\]\.\[)+/g, this.assetPathSeparator);
 
         return res;
     }
