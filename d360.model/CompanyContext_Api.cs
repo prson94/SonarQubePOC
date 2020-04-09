@@ -6109,9 +6109,9 @@ insert into #Keys
                                     row["Message"] = String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0);
                                     row["Success"] = 0;
                                 }
-                                else if(total >= 9223372036854775807)
+                                else if(total > 9223372036854775807)
                                 {
-                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775806", 0);
+                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
                                     row["Success"] = 0;
                                 }
                                 
