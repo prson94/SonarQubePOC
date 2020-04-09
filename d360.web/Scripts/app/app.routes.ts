@@ -15,8 +15,8 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_RULE_ROOT, loadChildren: () => import('./components/rule/rule.module').then(m => m.RuleModule) },
     { path: SiteUrlHelpers.SITE_URL_TAG_ROOT, loadChildren: () => import('./components/tag/tag.module').then(m => m.TagModule) },
     { path: SiteUrlHelpers.SITE_URL_GROUP_ROOT, loadChildren: () => import('./components/group/group.module').then(m => m.GroupModule) },
-    { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
-    { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
+    { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, data: { type: SiteUrlHelpers.SITE_URL_POLICY_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
+    { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, data: { type: SiteUrlHelpers.SITE_URL_MODEL_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
     //TODO: REMOVE THESE BEFORE MERGING
     { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT + '2', loadChildren: () => import('./components/policy/policy.module').then(m => m.PolicyModule) },
     { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT + '2', loadChildren: () => import('./components/model/model.module').then(m => m.ModelModule) },

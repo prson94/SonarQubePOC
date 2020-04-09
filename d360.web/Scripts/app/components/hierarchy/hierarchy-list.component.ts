@@ -1,14 +1,108 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { BaseComponent } from '../shared/base.component';
+import { AssetTypeApiModel, AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeService } from '../../services/asset-type.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { Title } from '@angular/platform-browser';
+import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
+import { Breadcrumb } from '../../models/breadcrumb.model';
+
+import * as _ from 'lodash';
+import { StringConstants } from '../../static/string-constants';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+
+
 
 @Component({
     selector: 'd3s-hierarchy-list',
-    providers: [],
+    providers: [AssetTypeService],
     templateUrl: 'hierarchy-list.component.html' 
 })
 
-export class HierarchyListComponent extends BaseComponent {
-    constructor() {
+export class HierarchyListComponent extends BaseComponent implements OnInit {
+    private types: AssetTypeApiModel[] = [];
+    private selected: AssetTypeApiModel;
+    private type: string;
+
+    private assetTypeClass: AssetTypeClass;
+    private navFolderName: string;
+    
+
+    constructor(
+        private assetTypeService: AssetTypeService,
+        private route: ActivatedRoute,
+        private router: Router,
+        secondaryNavService: SecondaryNavService,
+        protected titleService: Title,
+        protected headerBreadcrumbService: HeaderBreadcrumbService) {
+
         super();
+
+        this.secondaryNavService = secondaryNavService;
+    }
+
+    ngOnInit() {
+
+        this.type = this.route.parent.snapshot.data.type;
+
+        switch (this.type) {
+            case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
+                this.assetTypeClass = AssetTypeClass.Model;
+                this.objectType = StringConstants.ObjectTaxonomyType;
+                this.objectName = 'Models';
+                this.navFolderName = '#Models';
+                break;
+            case SiteUrlHelpers.SITE_URL_POLICY_ROOT:
+                this.assetTypeClass = AssetTypeClass.Policy;
+                this.objectType = StringConstants.ObjectPolicyType;
+                this.objectName = 'Policies';
+                this.navFolderName = '#Policy';
+                break;
+        }
+
+        this.setObjectInfo(this.objectType, -1);
+        this.setCommonSecondaryNavTabs(false);
+
+        this.load();
+
+        this.setBrowserTitle(this.titleService, this.objectName);
+
+    }
+
+    ngOnDestroy() {
+        this.clearSidebar();
+    }
+
+    load() {
+        this.isLoading = true;
+        this.assetTypeService.getAssetTypesByClass(this.assetTypeClass).subscribe(
+            result => {
+                this.isLoading = false;
+
+                this.types = result;
+                this.types = _.sortBy(this.types, 'Name');
+
+                if (this.types.length && this.types.length > 0) {
+                    this.selected = this.types[0];
+                }
+
+                this.headerBreadcrumbService.getFolderTitle(this.navFolderName).then(res => {
+                    this.headerBreadcrumbService.clearCurrentObjectInfo();
+                    this.headerBreadcrumbService.clearBreadcrumbs();
+                    this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res, undefined));
+
+                    this.headerBreadcrumbService.getFolderIcon(res).subscribe(icon => {
+                        this.secondaryNavService.setCurrentArea(res, icon, this.objectName);
+                    });
+
+                    this.secondaryNavService.showHeader(true);
+                });
+            }
+        );
+    }
+
+    showAsset(asset: AssetTypeApiModel) {
+        this.router.navigateByUrl(`${this.type}/structure/${asset.uid}`);
     }
 }
