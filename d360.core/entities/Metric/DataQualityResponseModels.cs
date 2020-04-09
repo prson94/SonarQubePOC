@@ -21,8 +21,8 @@ namespace d360.core.entities.Metric
         public Guid EvaluatedAssetUid { get; set; }
         public DateTime EffectiveDate { get; set; }
         public DateTime RunDate { get; set; }
-        public int PassCount { get; set; }
-        public int FailCount { get; set; }
+        public long PassCount { get; set; }
+        public long FailCount { get; set; }
         public bool Passed { get; set; }
     }    
 
