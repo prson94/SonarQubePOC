@@ -43,5 +43,7 @@ namespace d360.model.DataAccessLayer
         Task<dynamic> GetAssetDetails(Asset asset);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
         Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
+
     }
 }

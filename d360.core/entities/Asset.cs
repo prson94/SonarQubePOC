@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Xml.Linq;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -194,4 +195,17 @@ namespace d360.core.entities
     }
 
     #endregion
+
+    public class AssetTypeCountModel
+    {
+        public Guid uid { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public Guid? parentUid { get; set; }
+        public string @class { get; set; }
+        public string name { get; set; }
+        [JsonProperty(NullValueHandling = NullValueHandling.Include)]
+        public string description { get; set; }
+        public int count { get; set; }
+
+    }
 }
