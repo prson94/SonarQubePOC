@@ -17,6 +17,7 @@ import { SubscriptionLike as ISubscription } from 'rxjs';
 import { SortOrder } from '../../models/enums.model';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../services/messages-observable.service';
+import { AssetSearchFilter, V2ApiFilters } from '../../models/asset-search.model';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -233,15 +234,22 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     getData() {
         this.isLoading = true;
 
-        this.usersSub = this.resourcesService.getResourceLazy(this.objectID, this.currentPageNumber, this.rowsPerPage, this.sortOrder, this.sortField, this.simpleFilter, this.filters).pipe(
+        this.usersSub = this.resourcesService.getResourceLazy(this.getParams()).pipe(
             debounceTime(3000))
             .subscribe(result => {
-                this.items = result.results;
+                this.items = result.items;
                 this.totalRecords = result.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
                 this.changeDetectorRef.markForCheck();
             });
+    }
+
+    public getParams() {
+        var params = new V2ApiFilters();
+
+        return params;
+
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
