@@ -11,8 +11,7 @@ import {
     AssetDetail,
     NymType,
     Synonym,
-    SynonymEditorModel,
-    SynonymEditModel,
+    SynonymItem,    
     AttributeHeirarchyItem,
     ToolbarItemNg,
     ObjectDetail
@@ -92,29 +91,10 @@ export class ObjectDetailService extends BaseObservableService {
         object: string,
         objectId: number,
         query: string = ''
-    ): Observable<SynonymEditorModel> {
+    ): Observable<SynonymItem[]> {
         return this.http.get(`form/SynonymsOptions?type=${type}&typeId=${typeId}&obj=${object}&objid=${objectId}&query=${query}&predicateId=${predicateId}`)
             .pipe(
-                map(response => <SynonymEditorModel>response),
-                map(r => {
-                    r.items.forEach(
-                        i => {
-                            i.ID = i[0].Value;
-                            i.Name = i[1].Value;
-                            i.TargetingSubject = i[2].Value;
-                        }
-                    );
-
-                    return r;
-                }),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postSynonym(model: SynonymEditModel): Observable<any> {
-        return this.http.post('form/AddSynonym', model)
-            .pipe(
-                map(response => response),
+                map(response => <SynonymItem[]>response),                
                 catchError(err => this.handleError(err))
             );
     }
@@ -205,11 +185,7 @@ export class ObjectDetailService extends BaseObservableService {
         }
     }
 
-    deleteSynonym(synonym: Synonym): Observable<JsonResult> {
-        if (synonym.IntersectID) {
-            return this.deleteDynamicWithResult(this.http, 'synonym', synonym.IntersectID);
-        }
-
+    deleteCustomSynonym(synonym: Synonym): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'customsynonym', synonym.CustomID);
     }
 

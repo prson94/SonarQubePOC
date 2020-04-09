@@ -79,31 +79,17 @@ export class Synonym {
     Object: string;
     ObjectID: number;
     ObjectTypeName: string;
-    Url: string;
-    SubjectArea: string;
-    TaxonomyTypeID: number;
+    Url: string;    
     ParentName: string;
     ParentID: number;
-    ParentUrl: string;
+    ParentUrl: string;  
+    IntersectUid: string;
+    IntersectTypeUid: string;
 }
 
-export class SynonymItem {
-    ID: string;
-    Name: string;
-    TargetingSubject: boolean;
-}
-
-export class SynonymEditorModel {
-    typeIsSubject: boolean;
-    items: SynonymItem[];
-}
-
-export class SynonymEditModel {
-    Type: string;
-    ID: number;
-    Synonym: string;
-    TypeIsSubject: boolean;
-    PredicateID: number;
+export class SynonymItem {    
+    Name: string;    
+    uid: string;
 }
 
 export class NymType {

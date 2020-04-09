@@ -31,7 +31,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
     private formMode: FormMode = FormMode.Default;
     FormMode = FormMode;
 
-    private object: ObjectDetail = null;
+    protected object: ObjectDetail = null;
 
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
 
@@ -63,7 +63,7 @@ export class ObjectDefinitionTile extends BaseComponent implements OnChanges {
         this.objectDetailService.getObject(this.objectID, type).subscribe(
             r => {
                 this.object = r;
-
+                
                 this.isLoading = false;
             }
         );
