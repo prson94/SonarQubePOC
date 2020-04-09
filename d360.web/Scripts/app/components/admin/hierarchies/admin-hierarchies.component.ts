@@ -68,18 +68,13 @@ export class AdminHierarchiesComponent extends AdminBaseComponent implements OnI
 
     selectedItemChange() {
         if (this.selected) {
-            this.isLoading = true;
+            
             this.assetTypeService.getAssetTypeObjectAndID(this.selected.uid).subscribe(res => {
                 this.selectedItemID = res.ObjectID;
                 this.selectedAssetTypeID = res.Id;
                 this.buildSecondaryNavigationForObject(this.selected ? this.selectedItemID : 0, this.objectType);
                         
-            }, err => {
-                this.isLoading = false;    
-                },
-                () => {
-                    this.isLoading = false;
-                });
+            });
         }
     }
 

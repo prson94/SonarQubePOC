@@ -115,6 +115,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You must provide at least one of the following: EvaluatedAssetUid, RunDate, PassCount, FailCount..
+        /// </summary>
+        public static string InvalidUpdateError {
+            get {
+                return ResourceManager.GetString("InvalidUpdateError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must be greater than or equal to {1}.
         /// </summary>
         public static string MustBeGreaterThanError {

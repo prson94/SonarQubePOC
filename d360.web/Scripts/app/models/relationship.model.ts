@@ -71,3 +71,9 @@ export class PredicateDropdown {
     value: string;
     isSemantic: boolean;
 }
+
+export class RelationshipV2 {
+    SubjectAssetUid: string;
+    ObjectAssetUid: string;
+    Fields: [];
+}

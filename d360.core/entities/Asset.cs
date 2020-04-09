@@ -36,6 +36,12 @@ namespace d360.core.entities
         [DataMember, StringLength(250)]
         public string Code { get; set; }
 
+        [DataMember, Column(TypeName = "varchar"), StringLength(7)]
+        public string Color { get; set; }
+
+        [DataMember, Column(TypeName = "varchar"), StringLength(50)]
+        public string Icon { get; set; }
+
         [IgnoreDataMember, ReadOnly(true), Column(TypeName = "varchar"), StringLength(50)]
         public string KeyHash { get; set; }
 

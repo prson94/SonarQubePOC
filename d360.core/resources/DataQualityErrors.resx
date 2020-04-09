@@ -135,6 +135,9 @@
   <data name="GreaterThanTodayError" xml:space="preserve">
     <value>{0} must not be greater than today’s date.</value>
   </data>
+  <data name="InvalidUpdateError" xml:space="preserve">
+    <value>You must provide at least one of the following: EvaluatedAssetUid, RunDate, PassCount, FailCount.</value>
+  </data>
   <data name="MustBeGreaterThanError" xml:space="preserve">
     <value>{0} must be greater than or equal to {1}</value>
   </data>

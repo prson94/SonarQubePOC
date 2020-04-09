@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetWorkflowConditionLabels-v1">
+  <changeSet author="bhoward" id="Function.dbo.GetWorkflowConditionLabels-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -61,9 +61,7 @@ BEGIN
 				from 
 					FieldType FT
 				inner join @results R on R.id = @recordCount and FT.ID = R.FieldTypeID
-				left join LookupType LT on FT.LookupObjectType = 'Lookup' and LT.ID = FT.LookupObjectID
-				left join [Lookup] L on L.ID = (select top 1 [Value] from @results where id = @recordCount)
-				left join AssetDetail AD on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = AD.TypeID and AD.[Object]='ReferenceItem' and AD.[ObjectID] = R.[Value]
+			  left join AssetDetail AD on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = AD.TypeID and AD.[Object]='ReferenceItem' and AD.[ObjectID] = R.[Value]
 
 				update r
 				set 
@@ -88,8 +86,6 @@ BEGIN
 				from @fields.nodes('fields/form/field') f(x)
 				inner join @results R on R.id = @recordCount
 				inner join FieldType FT on FT.ID = x.value('@referenceFieldId', 'int')
-				left join LookupType LT on FT.LookupObjectType = 'Lookup' and LT.ID = FT.LookupObjectID
-				left join [Lookup] L on L.ID = (select top 1 [Value] from @results where id = @recordCount)
 				left join AssetDetail AD on FT.LookupObjectType = 'ReferenceItem' and FT.LookupObjectID = AD.TypeID and AD.[Object]='ReferenceItem' and AD.[ObjectID] = R.[Value]
 				where x.value('@id', 'varchar(max)') = R.FormInputID;
 

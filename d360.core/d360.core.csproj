@@ -267,8 +267,6 @@
     <Compile Include="entities\Security\Group.cs" />
     <Compile Include="entities\Relation\Intersect.cs" />
     <Compile Include="entities\Relation\IntersectType.cs" />
-    <Compile Include="entities\Reference\LookupType.cs" />
-    <Compile Include="entities\Reference\Lookup.cs" />
     <Compile Include="entities\Community\Resource.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
     <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
@@ -492,6 +490,8 @@
       <Name>d360.utils</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="entities\Reference\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

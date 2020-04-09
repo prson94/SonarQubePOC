@@ -177,7 +177,7 @@ namespace d360.model.DataAccessLayer
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-                        where       A.[State] = 1
+                        where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
@@ -545,10 +545,7 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR a.AssetTypeID = owners.AssetTypeID)";
-                    fieldJoins.Add(joinStatement);
-                    countJoins.Add(joinStatement);
-                    whereStatements.Add("owners.ResourceUid in @ownerUids");
+                    whereStatements.Add("a.ID IN (SELECT AssetID FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids)");
                 }
             }
 
@@ -584,7 +581,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
-                    A.Code,
+                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
                     --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
