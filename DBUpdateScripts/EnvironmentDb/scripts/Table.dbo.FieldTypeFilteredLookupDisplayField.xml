@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.FieldTypeFilteredLookupDisplayField-v2">
-    <comment>GOV-8571</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.FieldTypeFilteredLookupDisplayField-v3">
+    <comment>GOV-8571,GOV-9863</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,10 +21,30 @@
 			BEGIN	
 				ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField_bak] DROP CONSTRAINT [FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition]
 			END
+			
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDisplayField_bak')
+			BEGIN
+				DROP TABLE [dbo].[FieldTypeFilteredLookupDisplayField_bak]
+			END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
+		
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDisplayField_bak')
+			BEGIN
+				CREATE TABLE [dbo].[FieldTypeFilteredLookupDisplayField_bak](
+					[ID] [int] IDENTITY(1,1) NOT NULL,
+					[FieldTypeFilteredLookupDefinitionID] [int] NOT NULL,
+					[FieldTypeID] [int] NOT NULL,
+					[FieldTypeName] [nvarchar](250) NULL,
+					[Show] [bit] CONSTRAINT [DF_FieldTypeFilteredLookupDisplayField_Show] DEFAULT (1) NOT NULL,
+					[SortOrder] [int] NULL,
+					[Filter] [bit] NOT NULL,
+					CONSTRAINT [PK_FieldTypeFilteredLookupDisplayField] PRIMARY KEY CLUSTERED ( [ID] ASC )
+				)
+			END
+		
 			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDisplayField_bak')
 			BEGIN
 				exec sp_rename 'dbo.FieldTypeFilteredLookupDisplayField_bak', 'FieldTypeFilteredLookupDisplayField';
