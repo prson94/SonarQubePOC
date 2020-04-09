@@ -3919,7 +3919,13 @@ where	ExecutionID = @ExecutionID and (Subject is null or SubjectID is null);
 update	api.ExecutionRelationship
 set		Success = 0,
 		[Message] = coalesce([Message] + '; ', '') + 'Not able to resolve object of this relationship to a valid asset.'
-where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);",
+where	ExecutionID = @ExecutionID and (Object is null or ObjectID is null);
+
+update	api.ExecutionRelationship
+set		Success = 0,
+		[Message] = coalesce([Message] + '; ', '') + 'Subject and Object cannot be same Asset.'
+where	ExecutionID = @ExecutionID and SubjectUid = ObjectUid;
+",
                     new { execution.ExecutionID }, commandTimeout: timeout);
                     this.AITrackTrace(client, execution, METHOD_NAME, " Log subject/object resolution errors", sw.ElapsedMilliseconds, isLog);
                     #endregion
