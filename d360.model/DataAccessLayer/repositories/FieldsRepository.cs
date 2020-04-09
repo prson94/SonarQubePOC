@@ -501,9 +501,17 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var fieldTypeNamesToDelete = new List<string>();
             var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
-
+            var reservedWords = new List<string>() { "Color", "Icon", "ParentID", "Database" };
             foreach(var f in model.Fields)
             {
+                foreach (var rW in reservedWords)
+                {
+                    if (f.Name.ToLower() == rW.ToLower())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use {rW} as the Name of your field because it is a reserved word.");
+                    }
+                }
+
                 var newFieldType = new FieldType
                 {
                     AssetTypeID = typeIdentifierInfoModel.ID,

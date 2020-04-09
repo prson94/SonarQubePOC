@@ -1023,16 +1023,42 @@ where T.ExecutionId = @executionid;
                     {
                         success = true;
                     }
-                    else if (ot == "ReferenceItemType" && fieldName == "Code")
+                    else if (ot == "ReferenceItemType")
                     {
-                        if((fieldValue ?? "").Length > 250)
-                        {
-                            errorMessages.Add($"The Code field must be 250 characters or less in length.");
-                            success = false;
-                        }
-                        else
-                        {
-                            success = true;
+                        switch (fieldName.ToLower()) {
+                            case "code":
+                                if ((fieldValue ?? "").Length > 250)
+                                {
+                                    errorMessages.Add($"The Code field must be 250 characters or less in length");
+                                    success = false;
+                                }
+                                else
+                                {
+                                    success = true;
+                                }
+                                break;
+                            case "color":
+                                if ((fieldValue ?? "").Length > 7)
+                                {
+                                    errorMessages.Add($"The Color field must be a seven character RGB code");
+                                    success = false;
+                                }
+                                else
+                                {
+                                    success = true;
+                                }
+                                break;
+                            case "icon":
+                                if ((fieldValue ?? "").Length > 50)
+                                {
+                                    errorMessages.Add($"The Icon field must be fifty characters or less in length");
+                                    success = false;
+                                }
+                                else
+                                {
+                                    success = true;
+                                }
+                                break;
                         }
                     }
                     else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
@@ -1194,6 +1220,7 @@ where T.ExecutionId = @executionid;
                 if (errorMessages.Any())
                 {
                     errorMessage = string.Join(errorDelimiter, errorMessages);
+                    errorMessage += "."; //ending period
                 }
 
                 var fieldRow = fieldTable.NewRow();
@@ -3053,7 +3080,7 @@ where   ExecutionID = @ExecutionID
                             }
                         }
 
-                        if (at.Object == "RuleType")
+                        if (at.Class == AssetTypeClass.Rule)
                         {
                             ResolveRuleTypeLookupValues(execution.ExecutionID, timeout);
                             this.AITrackTrace(client, execution, METHOD_NAME, "ResolveRuleTypeLookupValues", sw.ElapsedMilliseconds, isLog);
@@ -3445,17 +3472,21 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         merge   [Asset] as T
                                                         using   (
                                                                 select  A.ItemNumber,
-                                                                        C.FieldValue as [Code]
+                                                                        C.FieldValue as [Code],
+                                                                        CR.FieldValue as [Color],
+                                                                        I.FieldValue as [Icon]
                                                                 from    api.ExecutionAsset A
-                                                                        inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code'
+                                                                        inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
+                                                                        inner join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                                                                        inner join api.ExecutionField I on I.ExecutionID = A.ExecutionID and I.ItemNumber = A.ItemNumber and I.FieldName = 'Icon' 
                                                                 where   A.ExecutionID = @ExecutionID
                                                                         and A.Success is null
                                                                         and A.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
                                                         on      (T.AssetTypeID = @AssetTypeID and T.[Code] = @NonExistentUid)
                                                         when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], [Code], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-                                                        values  (@AssetTypeID,1,'ReferenceItem', S.[Code], @R, @D, @R, @D)
+                                                        insert  (AssetTypeID,State,[Object], [Code], [Color], [Icon], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+                                                        values  (@AssetTypeID,1,'ReferenceItem', S.[Code], S.[Color], S.[Icon], @R, @D, @R, @D)
                                                         output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T
@@ -3474,11 +3505,15 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
                                                         update	T
                                                         set		T.[Code] = C.FieldValue,
+                                                                T.[Color] = CR.FieldValue,
+                                                                T.[Icon] = I.FieldValue,
                                                                 T.UpdatedBy = @R,
                                                                 T.UpdatedOn = @D
                                                         from	Asset T
 		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
-                                                                inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code';
+                                                                inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
+                                                                inner join api.ExecutionField CR on C.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+                                                                inner join api.ExecutionField I on C.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
