@@ -206,6 +206,26 @@ namespace d360.core.entities
         public string Pattern { get; set; }
     }
 
+    public class FieldTypeEditableApiNoKeyViewModel
+    {
+        [DataMember]
+        public int ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsEditable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
+    }
+
     public class FieldTypeEditableApiViewModel
     {
         [DataMember]
@@ -513,14 +533,26 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_ValidationMinMaxValue Validation { get; set; }
     }
 
-    public class FieldTypeDataTypeRelationshipApiViewModel : FieldTypeEditableApiViewModel
+    public class FieldTypeDataTypeRelationshipApiViewModel
     {
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
         [DataMember]
         public Guid IntersectTypeUid { get; set; }
         [DataMember]
-        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
+        public int ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsEditable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
     }
 
     public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
@@ -612,7 +644,7 @@ namespace d360.core.entities
             return (childPopulatedCount == 1);
         }
 
-        public bool IsPartyOfKey()
+        public bool IsPartOfKey()
         {
             bool partOfKey = false;
 
