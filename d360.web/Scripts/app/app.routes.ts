@@ -17,10 +17,6 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_GROUP_ROOT, loadChildren: () => import('./components/group/group.module').then(m => m.GroupModule) },
     { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, data: { type: SiteUrlHelpers.SITE_URL_POLICY_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
     { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, data: { type: SiteUrlHelpers.SITE_URL_MODEL_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
-    //TODO: REMOVE THESE BEFORE MERGING
-    { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT + '2', loadChildren: () => import('./components/policy/policy.module').then(m => m.PolicyModule) },
-    { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT + '2', loadChildren: () => import('./components/model/model.module').then(m => m.ModelModule) },
-
     { path: SiteUrlHelpers.SITE_URL_RESOURCE_ROOT, loadChildren: () => import('./components/resource/resource.module').then(m => m.ResourceModule) },
     { path: SiteUrlHelpers.SITE_URL_REFERENCE_ROOT, loadChildren: () => import('./components/reference/reference.module').then(m => m.ReferenceModule) },
     { path: SiteUrlHelpers.SITE_URL_ASSET_ROOT, loadChildren: () => import('./components/asset/asset.module').then(m => m.AssetModule), data: { preload: false } },

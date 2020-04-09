@@ -730,8 +730,6 @@
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-template-tool.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field-value.component.html" />
     <Content Include="Scripts\app\components\shared\editor-header.component.html" />
-    <Content Include="Scripts\app\components\model\model-item-structure.component.html" />
-    <Content Include="Scripts\app\components\policy\policy-item-structure.component.html" />
     <Content Include="Scripts\app\components\shared\fielddefinition\field-type-form\field-type.form.html" />
     <Content Include="Scripts\app\components\shared\menu\site-menu.component.html" />
     <Content Include="Scripts\app\components\shared\modal\gov-modal.component.html" />
@@ -1436,8 +1434,6 @@
     <TypeScriptCompile Include="Scripts\app\components\help\help.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\help\help.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\rule\rule-column-filter.component.ts" />
@@ -1566,8 +1562,6 @@
     <TypeScriptCompile Include="Scripts\app\services\diagram.service.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy-item-structure.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-type-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.module.ts" />
@@ -1626,17 +1620,9 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\home\home.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model-item-structure.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\model\model.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\objectdetails\object-detail-field.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\simple-accordion.part.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\policy\policy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />

@@ -38,6 +38,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     objectTypeId: number;
     object: string;
     assetType: any;
+    type: string;
     navFolderName: string;
     showDiagram: boolean = false;
 
@@ -83,9 +84,9 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        let type = this.route.parent.snapshot.data.type;
+        this.type = this.route.parent.snapshot.data.type;
 
-        switch (type) {
+        switch (this.type) {
             case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
                 this.assetTypeClass = AssetTypeClass.Model;
                 this.objectType = StringConstants.ObjectTaxonomyType;

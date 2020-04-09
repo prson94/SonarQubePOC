@@ -41,7 +41,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     assetTypeClass: AssetTypeClass;
 
     selected: any;
-    asset: any;
+    assetType: any;
     treeNodeArray: TreeNode[] = [];
     crumbs: Breadcrumb[] = [];
     messages: MessageBarItem[] = [];
@@ -93,7 +93,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             this.currentAreaNameSub =
                 this.headerBreadcrumbService
                 .getAreaName(this.objectType, newObjectTypeId)
-                .subscribe(result => { this.currentAreaName = result; if (this.asset) this.buildBreadcrumb(); });
+                .subscribe(result => { this.currentAreaName = result; if (this.assetType) this.buildBreadcrumb(); });
 
             if (!hierarchyId)
                 hierarchyId = params['hierarchyId'] ? +params['hierarchyId'] : 0;
@@ -119,7 +119,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             case AssetTypeClass.Model:
                 this.modelsService.getModel(this.objectTypeId)
                     .subscribe(result => {
-                        this.asset = result;
+                        this.assetType = result;
                         this.loadHierarchy(this.objectTypeId, hierarchyId);
                         this.buildBreadcrumb();
                     });
@@ -127,7 +127,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
             case AssetTypeClass.Policy:
                 this.policiesService.getPolicyType(this.objectTypeId)
                     .subscribe(result => {
-                            this.asset = result;
+                            this.assetType = result;
                             this.loadHierarchy(this.objectTypeId, hierarchyId);
                             this.buildBreadcrumb();
                     });
@@ -165,7 +165,7 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
                     this.messages = []; //clear any messages for this model
                     this.loadItemSurvey(this.objectTypeId);
 
-                    this.setBrowserTitle(this.titleService, this.asset.Name);
+                    this.setBrowserTitle(this.titleService, this.assetType.Name);
                 });
                 break;
             case AssetTypeClass.Policy:
