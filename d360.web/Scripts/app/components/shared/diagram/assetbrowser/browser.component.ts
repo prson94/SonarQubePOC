@@ -75,6 +75,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private isFullScreen: boolean = false;
     private loadingText: string = '';
 
+    private searchText: string = '';
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
 
@@ -1436,6 +1437,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.helper_HideDeselectedAssetTypes(undefined);
             this.helper_HideDeselectedPredicates(undefined);
             this.helper_HideDeselectedResponsibilityTypes(undefined);
+            if (this.searchText !== '') {
+                this.search_Execute(this.searchText);
+            }
         });
     }
 
@@ -2115,6 +2119,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.search_RemoveHighlightFromNode(n);
         });
 
+        this.searchText = phrase;
         this.searchResults = [];
 
         this.diagram.zoomToFit();
