@@ -5981,8 +5981,8 @@ insert into #Keys
                     table.Columns.Add("Uid", typeof(Guid));
                     table.Columns.Add("EffectiveDate", typeof(DateTime));
                     table.Columns.Add("RunDate", typeof(DateTime));
-                    table.Columns.Add("PassCount", typeof(int));
-                    table.Columns.Add("FailCount", typeof(int));
+                    table.Columns.Add("PassCount", typeof(long));
+                    table.Columns.Add("FailCount", typeof(long));
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
                     #endregion
@@ -6100,11 +6100,23 @@ insert into #Keys
                                 row["Success"] = 0;                               
                             }                            
 
-                            if (model.PassCount.HasValue && model.FailCount.HasValue && model.PassCount == 0 && model.FailCount == 0)
+                            if (model.PassCount.HasValue && model.FailCount.HasValue)
                             {
-                                row["Message"] = String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0);
-                                row["Success"] = 0;
+                                ulong total = (ulong)model.PassCount.Value + (ulong)model.FailCount.Value;
+
+                                if (model.PassCount == 0 && model.FailCount == 0)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0);
+                                    row["Success"] = 0;
+                                }
+                                else if(total >= 9223372036854775807)
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775806", 0);
+                                    row["Success"] = 0;
+                                }
+                                
                             }
+
 
                             table.Rows.Add(row);
                         }
