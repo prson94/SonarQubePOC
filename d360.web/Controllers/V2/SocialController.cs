@@ -225,9 +225,6 @@ namespace d360.web.Controllers.V2
         {
             var relations = new List<CommentRelation>();
 
-            var resourceRelation = new CommentRelation { ObjectID = Company.CurrentResourceID, ObjectType = SystemObjects.Resource.ToString(), Date = DateTime.UtcNow };
-
-
             if (comment.Comment.ParentID.HasValue)
             {
                 var parent = Company.GetCommentDetail(comment.Comment.ParentID.Value).FirstOrDefault(i => i.ID == comment.Comment.ParentID.Value);
@@ -236,7 +233,6 @@ namespace d360.web.Controllers.V2
                     comment.Comment.OwnerObjectType = parent.ObjectType;
                     comment.Comment.OwnerObjectID = parent.ObjectID;
                     relations.Add(new CommentRelation { ObjectID = parent.ObjectID, ObjectType = parent.ObjectType });
-                    resourceRelation.CommentID = parent.ID;
                 }
             }
             else
@@ -253,8 +249,6 @@ namespace d360.web.Controllers.V2
                     comment.Comment.OwnerObjectID = Company.CurrentResourceID;
                 }
             }
-
-            relations.Add(resourceRelation);
 
             if (comment.Tags == null)
                 comment.Tags = new List<CommentTag>();
