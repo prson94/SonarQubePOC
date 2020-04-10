@@ -75,9 +75,9 @@ export class FieldsObservableService extends BaseObservableService implements IF
         if (assetTypeUid)
             url = `AssetTypeUid=${assetTypeUid}`;
         if (actionTypeUid)
-            url = `AssetTypeUid=${actionTypeUid}`;
+            url = `ActionTypeUid=${actionTypeUid}`;
         if (relationshipTypeUid)
-            url = `AssetTypeUid=${relationshipTypeUid}`;
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
 
         return this
             .http
@@ -113,14 +113,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationObjectFields(
-        type: string,
-        id: number,
-        intersectTypeID: number
-    ): Observable<SelectItem[]> {
+    getRelationObjectFields(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_FieldFromRelationship_Fields?type=${type}&id=${id}&intersectTypeID=${intersectTypeID}`)
+            .get<SelectItem[]>(`form/FieldType_FieldFromRelationship_Fields?${url}`)
             .pipe(
                 map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
@@ -199,13 +203,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getLookups(
-        typeuid: string,
-        fieldTypeName: string
-    ): Observable<Lookups> {
+    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldTypeName: string): Observable<Lookups> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<Lookups>(`form/FieldType_Lookups?typeuid=${typeuid}&fieldtypename=${fieldTypeName}&isNg=true`)
+            .get<Lookups>(`form/FieldType_Lookups?fieldtypename=${fieldTypeName}&${url}&isNg=true`)
             .pipe(
                 map(response => <any>response),
                 map(
@@ -238,10 +247,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFormData(id: number): Observable<FieldTypeEditorModel> {
+    getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<FieldTypeEditorModel>(`form/FieldType_FormData?id=${id}`)
+            .get<FieldTypeEditorModel>(`form/FieldType_FormData?name=${name}&${url}`)
             .pipe(
                 map(response => <FieldTypeEditorModel>response),
                 catchError(err => this.handleError(err))
@@ -279,16 +295,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return this
             .http
             .put('form/EditFieldType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
-        return this
-            .http
-            .post('v2/api/', model)
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))

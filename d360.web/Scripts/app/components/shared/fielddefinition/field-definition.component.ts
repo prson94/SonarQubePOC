@@ -141,8 +141,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
     edit(name: string): void {
         this.selectedRow = this.fieldDefinitions.find(f => f.Name == name);
-        console.log(this.fieldDefinitions);
-        console.log(this.selectedRow.Name);
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;

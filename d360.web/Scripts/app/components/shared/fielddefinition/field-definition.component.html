@@ -105,8 +105,8 @@
                         <span><i *ngIf="!item.Type[currentFieldType(item)]?.IsListable" class="fa fa-times disabled" title="False"></i></span>
                     </td>
                     <td>
-                        <span><i *ngIf="item.IsRequired" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item.IsRequired" class="fa fa-times disabled" title="False"></i></span>
+                        <span><i *ngIf="item.Type[currentFieldType(item)]?.Validation?.IsRequired" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item.Type[currentFieldType(item)]?.Validation?.IsRequired" class="fa fa-times disabled" title="False"></i></span>
                     </td>
                     <td *ngIf="showIsPartOfKey">
                         <span><i *ngIf="item.Type[currentFieldType(item)]?.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>

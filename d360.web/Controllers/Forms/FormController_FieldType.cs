@@ -380,10 +380,35 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_FieldFromRelationship_Fields"), NonNullableParameters]
-        public JsonNetResult FieldType_FieldFromRelationship_Fields(SystemObjects type, int id, int intersectTypeID)
+        [Route("FieldType_FieldFromRelationship_Fields")]
+        public JsonNetResult FieldType_FieldFromRelationship_Fields(Guid intersectTypeUid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
         {
-            var intersectType = Company.GetById<IntersectType>(intersectTypeID);
+
+            int id = 0;
+            SystemObjects type = SystemObjects.ArtifactType;
+            if (AssetTypeUid != null)
+            {
+                var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+                id = assetType.ObjectID;
+                Enum.TryParse(assetType.Object, out type);
+            }
+            else if (ActionTypeUid != null)
+            {
+                var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
+                id = issueType.ID;
+                Enum.TryParse("IssueType", out type);
+            }
+            else if (RelationshipTypeUid != null)
+            {
+                var it = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
+                id = it.ID;
+            }
+            else
+            {
+                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+            }
+
+            var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
 
             if (intersectType == null)
                 return new JsonNetResult { Data = new Dictionary<string, int>() };
@@ -710,16 +735,39 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_Lookups"), NonNullableParameters]
-        public JsonNetResult FieldType_Lookups(string typeuid, string fieldtypename, bool isNg = false)
+        public JsonNetResult FieldType_Lookups(string fieldtypename, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, bool isNg = false)
         {
             #region Load static lists
 
-            Guid.TryParse(typeuid, out Guid typeGuid);
-            var assetType = Company.Filter<AssetType>(x => x.uid == typeGuid).FirstOrDefault();
-            Enum.TryParse(assetType.Object, out SystemObjects type);
-            var id = assetType != null ? assetType.ObjectID : 0;
-            var fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == fieldtypename).FirstOrDefault();
-            var fieldtypeid = fieldType != null ? fieldType.ID : 0;
+            int id = 0;
+            int fieldtypeid = 0;
+            FieldType fieldType;
+            SystemObjects type = SystemObjects.ArtifactType;
+            if (AssetTypeUid != null)
+            {
+                var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+                id = assetType.ObjectID;
+                Enum.TryParse(assetType.Object, out type);
+                fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == id && x.Name == fieldtypename).SingleOrDefault();
+            }
+            else if (ActionTypeUid != null)
+            {
+                var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
+                id = issueType.ID;
+                Enum.TryParse("IssueType", out type);
+                fieldType = Company.Filter<FieldType>(x => x.Object == "IssueType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
+            }
+            else if (RelationshipTypeUid != null)
+            {
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
+                id = intersectType.ID;
+                fieldType = Company.Filter<FieldType>(x => x.Object == "IntersectType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
+            }
+            else
+            {
+                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+            }
+            fieldtypeid = fieldType == null ? 0 : fieldType.ID; 
 
             var lists = Company.Query<dynamic>("exec utility.GetFieldTypeLookupList @type, @id", new { type = new Dapper.DbString { IsAnsi = true, Value = type.ToString() }, id }).ToList();
             var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
@@ -773,7 +821,7 @@ namespace d360.web.Controllers
                     title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                    value = i.ID
+                    value = i.Uid 
                 });
 
             var Field_CardinalRelationships = cardinalRelationships
@@ -782,7 +830,7 @@ namespace d360.web.Controllers
                     title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                    value = i.ID
+                    value = i.Uid
                 });
 
             var Field_CardinalReferenceRelationships = cardinalRelationships
@@ -796,7 +844,7 @@ namespace d360.web.Controllers
                     title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                    value = i.ID
+                    value = i.Uid
                 });
 
             var Field_FieldFromRelRelationships = fieldFromRelRelationships.Select(i => new
@@ -804,7 +852,7 @@ namespace d360.web.Controllers
                 title = ((i.Subject == sType && i.SubjectID == id) ?
                         $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
                         $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
-                value = i.ID
+                value = i.Uid
             });
 
             var patterns = new Dictionary<string, string>() {
@@ -845,7 +893,7 @@ namespace d360.web.Controllers
                 .OrderBy(ft => ft.FriendlyName)
                 .Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
                 .ToList()
-                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.ID })
+                .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.Name })
                 .ToList();
 
             #endregion
@@ -874,18 +922,39 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_FormData"), NonNullableParameters]
-        public JsonNetResult FieldType_FormData(int id)
+        public JsonNetResult FieldType_FormData(string name, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
         {
+
             FieldType ft = null;
+            if (assetTypeUid != null)
+            {
+                int atID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+            }else if (actionTypeUid != null) 
+            {
+                int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+            }
+            else if (relationshipTypeUid != null) 
+            {
+                var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == itID && x.Name == name).SingleOrDefault();
+            }
+            else
+            {
+                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+            }
+
+
+
             List<dynamic> filteredLookupItems = null;
             List<dynamic> fusionItems = null;
             List<dynamic> relationItems = null;
             dynamic ownershipLookupSettings = null;
             dynamic JsonElementSettings = null;
 
-            if (id > 0)
+            if (ft != null)
             {
-                ft = Company.GetById<FieldType>(id);
 
                 if (ft.Type == DataType.JsonElement.ToString())
                 {
@@ -895,7 +964,7 @@ namespace d360.web.Controllers
                     }
                 }
 
-                var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == id).FirstOrDefault();
+                var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == ft.ID).FirstOrDefault();
                 if (lookup != null)
                 {
                     var definition = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);

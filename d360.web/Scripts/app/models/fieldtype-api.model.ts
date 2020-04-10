@@ -1,7 +1,7 @@
 ﻿
 export class FieldTypeAPIModel {
     Action: string;
-    Fields: FieldTypeAPIModelField;
+    Fields: FieldTypeAPIModelField[];
     ActionTypeUid: string;
     AssetTypeUid: string;
     RelationshipTypeUid: string;
@@ -24,17 +24,17 @@ export class FieldType {
             case 'ComputedFusionLookup':
                 this.ComputedFusionLookup = new ComputedFusionLookup();
                 break;
-            case 'ComputedOwnershipLookup':
-                this.ComputedOwnershipLookup = new ComputedOwnershipLookup();
+            case 'OwnershipLookup':
+                this.OwnershipLookup = new ComputedOwnershipLookup();
                 break;
-            case 'ComputedRelationshipField':
-                this.ComputedRelationshipField = new ComputedRelationshipField();
+            case 'FieldFromRelationship':
+                this.FieldFromRelationship = new ComputedRelationshipField();
                 break;
-            case 'ComputedRelationshipLookup':
-                this.ComputedRelationshipLookup = new ComputedRelationshipLookup();
+            case 'ComplexRelationLookup':
+                this.ComplexRelationLookup = new ComputedRelationshipLookup();
                 break;
-            case 'ComputedRelationshipReferenceList':
-                this.ComputedRelationshipReferenceList = new ComputedRelationshipReferenceList();
+            case 'RefListRelationship':
+                this.RefListRelationship = new ComputedRelationshipReferenceList();
                 break;
             case 'Date':
                 this.Date = new DateClass();
@@ -48,8 +48,8 @@ export class FieldType {
             case 'Html':
                 this.Html = new HTML();
                 break;
-            case 'Json':
-                this.Json = new ComputedRelationshipReferenceList();
+            case 'JSON':
+                this.JSON = new ComputedRelationshipReferenceList();
                 break;
             case 'JsonElement':
                 this.JsonElement = new ComputedRelationshipField();
@@ -61,7 +61,7 @@ export class FieldType {
                 this.Lookup = new Lookup();
                 break;
             case 'Number':
-                this.Json = new Decimal();
+                this.Number = new Decimal();
                 break;
             case 'Relationship':
                 this.Relationship = new Boolean();
@@ -72,20 +72,28 @@ export class FieldType {
             case 'Tag':
                 this.Tag = new Tag();
                 break;
+            default:
+                this.Empty = new Empty();
         }
     }
 
     Boolean: Boolean;
     ComputedFusionLookup: ComputedFusionLookup;
-    ComputedOwnershipLookup: ComputedOwnershipLookup;
+    OwnershipLookup: ComputedOwnershipLookup;
+
+    FieldFromRelationship: ComputedRelationshipField;
+    //need a second ComputedRelationshipField so the API can serialize the object by the strongly typed name
     ComputedRelationshipField: ComputedRelationshipField;
-    ComputedRelationshipLookup: ComputedRelationshipLookup;
-    ComputedRelationshipReferenceList: ComputedRelationshipReferenceList;
+
+    ComplexRelationLookup: ComputedRelationshipLookup;
+
+    RefListRelationship: ComputedRelationshipReferenceList;
+
     Date: DateClass;
     DateTime: DateClass;
     Decimal: Decimal;
     Html: HTML;
-    Json: ComputedRelationshipReferenceList;
+    JSON: ComputedRelationshipReferenceList;
     JsonElement: ComputedRelationshipField;
     Link: Link;
     Lookup: Lookup;
@@ -93,9 +101,10 @@ export class FieldType {
     Relationship: Boolean;
     Text: Text;
     Tag: Tag;
+    Empty: Empty;
 }
 
-export interface Editable {
+export interface ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number;
     SortOrder: number;
@@ -105,59 +114,82 @@ export interface Editable {
     IsPartOfKey: boolean;
     IsPrimaryFilter: boolean;
     ShowIfEmpty: boolean;
+    Validation: BooleanValidation;
 }
 
-export class Boolean implements Editable {
+export class Empty implements ICommonOptions {
+    ColumnOrder: number;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
+    Validation: BooleanValidation = new BooleanValidation();
+    Description: Description = new Description();
+}
+
+export class Boolean implements ICommonOptions {
     DefaultValue?: boolean;
-    Description: BooleanDescription;
+    Description: Description = new Description();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
     IntersectTypeUid?: string;
-    Validation?: BooleanValidation;
+    Validation: BooleanValidation = new BooleanValidation();
 }
 
-export class BooleanDescription {
+export class Description {
     Form: string;
     Display: string;
 }
 
 export class BooleanValidation {
-    IsRequired: boolean;
+    IsRequired: boolean = false;
 }
 
-export class ComputedFusionLookup implements Editable  {
-    ColumnWidth: number;
-    SortOrder: number;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+export class ComputedFusionLookup implements ICommonOptions  {
+    Validation: BooleanValidation = new BooleanValidation();
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
     ColumnOrder: number;
-    Description: ComputedFusionLookupDescription;
-    IsDisplayable: boolean;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    IsDisplayable: boolean = true;
 }
 
-export class ComputedFusionLookupDescription {
+export class DisplayOnlyDescription {
     Display: string;
 }
 
-export class ComputedOwnershipLookup implements Editable  {
+export class ComputedOwnershipLookup implements ICommonOptions  {
+    Validation: BooleanValidation = new BooleanValidation();
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
-    Description: ComputedFusionLookupDescription;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     Definition: ComputedOwnershipLookupDefinition;
-    IsDisplayable: boolean;
-    ShowIfEmpty: boolean;
-    HideFilter: boolean;
-    HideFooter: boolean;
-    HideHeader: boolean;
+    IsDisplayable: boolean = true;
+    ShowIfEmpty: boolean = false;
+    HideFilter: boolean = false;
+    HideFooter: boolean = false;
+    HideHeader: boolean = false;
 }
 
 export class ComputedOwnershipLookupDefinition {
@@ -165,16 +197,20 @@ export class ComputedOwnershipLookupDefinition {
     ExpandGroupMembership: boolean;
 }
 
-export class ComputedRelationshipField {
+export class ComputedRelationshipField implements ICommonOptions {
+    Validation: BooleanValidation = new BooleanValidation();
+    IsEditable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    Description: ComputedFusionLookupDescription;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     IntersectTypeUid?: string;
     FieldTypeName?: string;
-    IsDisplayable: boolean;
-    IsListable: boolean;
-    ShowIfEmpty: boolean;
+    IsDisplayable: boolean = true;
+    IsListable: boolean = false;
+    ShowIfEmpty: boolean = false;
     JsonAttribute?: JSONAttribute;
 }
 
@@ -184,12 +220,19 @@ export class JSONAttribute {
     DataType: string;
 }
 
-export class ComputedRelationshipLookup {
+export class ComputedRelationshipLookup implements ICommonOptions {
+    Validation: BooleanValidation = new BooleanValidation();
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
-    Description: ComputedFusionLookupDescription;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     Definition: ComputedRelationshipLookupDefinition;
-    IsDisplayable: boolean;
-    ShowIfEmpty: boolean;
+    IsDisplayable: boolean = true;
+    ShowIfEmpty: boolean = false;
     HideFilter: boolean;
     HideFooter: boolean;
     HideHeader: boolean;
@@ -206,7 +249,7 @@ export class DefinitionField {
     Filter: string;
     OverrideDisplayName: string;
     DisplayOrder: number;
-    SortOrder: number;
+    SortOrder: number = 0;
     Show: boolean;
     Width: number;
 }
@@ -218,87 +261,93 @@ export class Relation {
     Direction: string;
 }
 
-export class ComputedRelationshipReferenceList {
+export class ComputedRelationshipReferenceList implements ICommonOptions {
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
-    Description: ComputedFusionLookupDescription;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     IntersectTypeUid?: string;
-    IsDisplayable: boolean;
-    ShowIfEmpty: boolean;
-    Validation?: BooleanValidation;
+    IsDisplayable: boolean = true;
+    ShowIfEmpty: boolean = false;
+    Validation: BooleanValidation = new BooleanValidation();
 }
 
-export class DateClass {
-    DefaultValue: Date;
-    Description: BooleanDescription;
-    Validation: BooleanValidation;
+export class DateClass implements ICommonOptions {
+    DefaultValue?: Date = undefined;
+    Description: Description = new Description();
+    Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
-export class Decimal {
+export class Decimal implements ICommonOptions {
     DefaultValue: number;
-    Description: BooleanDescription;
+    Description: Description = new Description();
     Increment: number;
-    Validation: DecimalValidation;
+    Validation: DecimalValidation = new DecimalValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
 export class DecimalValidation {
     Precision?: number;
     MinimumValue: number;
     MaximumValue: number;
-    IsRequired: boolean;
+    IsRequired: boolean = false;
 }
 
-export class HTML {
+export class HTML implements ICommonOptions {
     DefaultValue: string;
-    Description: BooleanDescription;
-    Validation: HTMLValidation;
+    Description: Description = new Description();
+    Validation: HTMLValidation = new HTMLValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
 export class HTMLValidation {
     MinimumLength: number;
     MaximumLength: number;
-    IsRequired: boolean;
+    IsRequired: boolean = false;
 }
 
-export class Link {
+export class Link implements ICommonOptions {
     DefaultValue: DefaultValue;
-    Description: BooleanDescription;
-    Validation: BooleanValidation;
+    Description: Description = new Description();
+    Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
 export class DefaultValue {
@@ -306,24 +355,24 @@ export class DefaultValue {
     Url: string;
 }
 
-export class Lookup {
+export class Lookup implements ICommonOptions{
     DefaultValue: string;
-    Description: BooleanDescription;
+    Description: Description = new Description();
     AllowAllValue: boolean;
     AllowAllLabel: string;
     Filter: Filter;
     Format: Format;
     List: List;
-    Validation: BooleanValidation;
+    Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
 export class Filter {
@@ -343,27 +392,33 @@ export class List {
     AllowMultipleValues: boolean;
 }
 
-export class Tag {
+export class Tag implements ICommonOptions{
+    Validation: BooleanValidation = new BooleanValidation();
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsPartOfKey: boolean = false;
+    ShowIfEmpty: boolean = false;
     ColumnOrder: number;
-    ColumnWidth: number;
-    Description: ComputedFusionLookupDescription;
-    IsListable: boolean;
-    IsPrimaryFilter: boolean;
+    ColumnWidth: number = 0;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    IsListable: boolean = false;
+    IsPrimaryFilter: boolean = false;
 }
 
-export class Text {
+export class Text implements ICommonOptions {
     DefaultValue: string;
-    Description: BooleanDescription;
-    Validation: TextValidation;
+    Description: Description = new Description();
+    Validation: TextValidation = new TextValidation();
     ColumnOrder: number;
-    ColumnWidth: number;
-    SortOrder: number;
-    IsDisplayable: boolean;
-    IsEditable: boolean;
-    IsListable: boolean;
-    IsPartOfKey: boolean;
-    IsPrimaryFilter: boolean;
-    ShowIfEmpty: boolean;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
 }
 
 export class TextValidation {
@@ -371,6 +426,6 @@ export class TextValidation {
     Pattern: string;
     MinimumLength: number;
     MaximumLength: number;
-    IsRequired: boolean;
+    IsRequired: boolean = false;
 }
 

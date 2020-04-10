@@ -19,11 +19,10 @@ export interface IFieldsObservableService {
 
     getLookups(typeuid: string, fieldTypeName: string): Observable<Lookups>;
 
-    getFormData(id: number): Observable<FieldTypeEditorModel>;
+    getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel>;
 
     putFieldType(model: FieldTypeEditorModel): Observable<any>;
 
-    postFieldType(model: FieldTypeEditorModel): Observable<any>;
 }
 
 export class FieldDefinition {
