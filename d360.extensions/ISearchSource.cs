@@ -166,6 +166,7 @@ namespace d360.extensions
 
         public string Icon { get; set; }
         public string ImageUrl { get; set; }
+        public string[] AssetPath { get; set; }
         public Guid? Uid { get; set; }
         public Guid? AssetTypeUid { get; set; }
         public List<IndexTag> Tags { get; set; }
