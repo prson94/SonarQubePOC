@@ -206,26 +206,6 @@ namespace d360.core.entities
         public string Pattern { get; set; }
     }
 
-    public class FieldTypeEditableApiNoKeyViewModel
-    {
-        [DataMember]
-        public int ColumnOrder { get; set; }
-        [DataMember]
-        public int? ColumnWidth { get; set; }
-        [DataMember]
-        public int SortOrder { get; set; }
-        [DataMember]
-        public bool IsDisplayable { get; set; }
-        [DataMember]
-        public bool IsEditable { get; set; }
-        [DataMember]
-        public bool IsListable { get; set; }
-        [DataMember]
-        public bool IsPrimaryFilter { get; set; }
-        [DataMember]
-        public bool ShowIfEmpty { get; set; }
-    }
-
     public class FieldTypeEditableApiViewModel
     {
         [DataMember]
@@ -309,36 +289,6 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
     }
 
-    public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel_Field
-    {
-        [DataMember]
-        public Guid AssetTypeUid { get; set; }
-        [DataMember]
-        public string FieldTypeName { get; set; }
-        [DataMember]
-        public string Filter { get; set; }
-        [DataMember]
-        public string OverrideDisplayName { get; set; }
-        [DataMember]
-        public int DisplayOrder { get; set; }
-        [DataMember]
-        public int SortOrder { get; set; }
-        [DataMember]
-        public bool Show { get; set; }
-        [DataMember]
-        public int Width { get; set; }
-    }
-    public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel_Relation
-    {
-        [DataMember]
-        public Guid IntersectTypeUid { get; set; }
-        [DataMember]
-        public Guid AssetTypeUid { get; set; }
-        [DataMember]
-        public ComplexLookupRelationType RelationType { get; set; }
-        [DataMember]
-        public short Direction { get; set; }
-    }
     public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel
     {
         [DataMember]
