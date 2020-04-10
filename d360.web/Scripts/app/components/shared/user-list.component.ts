@@ -248,8 +248,25 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     public getParams() {
         var params = new V2ApiFilters();
 
+        params["state"] = "Active,Inactive";
+
+        params._direction = this.sortOrder == 1 ? 'asc' : 'desc';
+        if (this.sortField) {
+            params._order = this.getApiName(this.sortField);
+        }
+        else {
+            params._order = "FirstName";
+        }
+
+        params._pageNum = this.currentPageNumber + 1;
+        params._pageSize = this.rowsPerPage;
+
         return params;
 
+    }
+
+    getApiName(fieldName: string): string {
+        return this.fields.find(x => x.name == fieldName).apiName;
     }
 
     public lazyLoadUsers(event: LazyLoadEvent) {
