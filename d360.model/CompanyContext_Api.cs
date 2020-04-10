@@ -6510,10 +6510,10 @@ insert into #Keys
                     table.Columns.Add("Uid", typeof(Guid));
                     table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
                     table.Columns.Add("OwningAssetUid", typeof(Guid));                    
-                    table.Columns.Add("EffectiveDateStart", typeof(DateTime));
-                    table.Columns.Add("EffectiveDateEnd", typeof(DateTime));
-                    table.Columns.Add("RunDateStart", typeof(DateTime));
-                    table.Columns.Add("RunDateEnd", typeof(DateTime));
+                    table.Columns.Add("EffectiveDateStart", typeof(string));
+                    table.Columns.Add("EffectiveDateEnd", typeof(string));
+                    table.Columns.Add("RunDateStart", typeof(string));
+                    table.Columns.Add("RunDateEnd", typeof(string));
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
 
