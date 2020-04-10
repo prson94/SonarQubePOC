@@ -46,12 +46,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
 
-
-    //model child routes
-    static SITE_URL_MODEL_CLASSIFICATION = 'classification';
-
-    //policy child routes 
-    static SITE_URL_POLICY_CLASSIFICATION = 'classification';
+    //hierarchy child routes
+    static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
     //workflow child routes
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';

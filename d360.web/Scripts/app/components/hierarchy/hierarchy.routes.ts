@@ -1,0 +1,29 @@
+﻿import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+import { HierarchyComponent } from './hierarchy.component';
+import { HierarchyListComponent } from './hierarchy-list.component';
+import { HierarchyItemComponent } from './hierarchy-item.component';
+import { HierarchyItemStructureComponent } from './hierarchy-item-structure.component';
+
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+
+const routes: Routes = [
+    {
+        path: '',
+        component: HierarchyComponent,
+        children: [
+            { path: SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION + '/:group', component: HierarchyListComponent },
+            { path: SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION, component: HierarchyListComponent },
+            { path: ':typeId/structure', component: HierarchyItemStructureComponent },
+            { path: 'structure/:uid', component: HierarchyItemStructureComponent },
+            { path: ':typeId', component: HierarchyItemComponent },
+            { path: ':typeId/id/:id', component: HierarchyItemComponent }
+        ]
+    }
+];
+
+@NgModule({
+    imports: [RouterModule.forChild(routes)],
+    exports: [RouterModule],
+})
+export class HierarchyRoutingModule { }
