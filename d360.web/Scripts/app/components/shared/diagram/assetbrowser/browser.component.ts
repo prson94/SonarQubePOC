@@ -25,7 +25,8 @@ import {
     AssetBrowserFilterChangeEventType,
     AssetBrowserFilterChangeEvent,
     AssetBrowserPanelCommand,
-    AssetBrowserPanelModel
+    AssetBrowserPanelModel,
+    AssetBrowserApiHopIgnoreRequestModel
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -336,14 +337,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     relation.disabled = false;
                 }
                 else {
-
-                    let ignoredAssetUids: string[] = [];
-
                     let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
 
                     requestModel.Initial = false;
                     requestModel.Assets = [];
-                    requestModel.AssetsToIgnore = [];
                     requestModel.PredicateUid = relation.predicateUid;
                     requestModel.Direction = relation.direction;
                     requestModel.HopType = AssetBrowserApiHopType.Impact;
@@ -355,7 +352,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         // Add the root node's asset information.
                         if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
                             requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
-                            node.ignoredAssetUids.forEach(i => { ignoredAssetUids.push(i); });
                         }
                         (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
                             let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
@@ -364,11 +360,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 asset.Uid = g.data.assetUid;
                                 asset.Key = g.data.key
                                 requestModel.Assets.push(asset);
-
-                                g.data.ignoredAssetUids.forEach(i => { ignoredAssetUids.push(i); });
                             }
                         })
                     }
+
+                    // Get relations to ignore.
+                    requestModel.RelationsToIgnore = this.helper_GetRelationsToIgnore(relation.predicateId);
 
                     let subscriber = (response: AssetBrowserAssetsModel) => {
                         response.assets.forEach(a => {
@@ -405,10 +402,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 else if (r.objectKey == reqAsset.Key) {
                                     idxToUpdate = trans.nodes.findIndex(o => { return o.key == r.subjectKey });
                                 }
-
-                                if (idxToUpdate > -1) {
-                                    trans.nodes[idxToUpdate].ignoredAssetUids.push(reqAsset.Uid);
-                                }
                             });
                         });
 
@@ -423,10 +416,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                         relation.disabled = false;
                     };
-
-                    ignoredAssetUids.forEach(i => {
-                        requestModel.AssetsToIgnore.push({Uid: i});
-                    });
 
                     if (this.helper_LineageDiagramApplies()) {
                         this.requestModel.DiagramType = DiagramType.Lineage;
@@ -1041,6 +1030,25 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, existingAssets.assets);
     }
 
+    private helper_GetRelationsToIgnore(predicateId: number): AssetBrowserApiHopIgnoreRequestModel[] {
+        let ignores: AssetBrowserApiHopIgnoreRequestModel[] = [];
+
+        this.diagram.links.each(r => {
+            r.data.intersectUids.forEach(i => {
+                if (predicateId) {
+                    if (predicateId == i.predicateId) {
+                        ignores.push({ Uid: i.intersectUid });
+                    }
+                }
+                else {
+                    ignores.push({ Uid: i.intersectUid });
+                }
+            });
+        });
+
+        return ignores;
+    }
+
     private helper_HideDeselectedAssetTypes(keysToBeConcernedWith: string[]) {
         // Now loop through selected asset types, as those are the ones we need to hide.
         let nodesToHide: AssetBrowserTranslationNode[] = [];
@@ -1261,13 +1269,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         upstreamLinks.forEach(l => {
             hideNode.subgraph.links.push(l);
             this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds, responsibilityTypeId: l.responsibilityTypeId });
+            this.diagramModelAsGraph().addLinkData({ from: l.from, to: hideNode.key, predicateIds: l.predicateIds, intersectUids: l.intersectUids, responsibilityTypeId: l.responsibilityTypeId });
         });
 
         downstreamLinks.forEach(l => {
             hideNode.subgraph.links.push(l);
             this.diagramModelAsGraph().removeLinkData(l);
-            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds, responsibilityTypeId: l.responsibilityTypeId });
+            this.diagramModelAsGraph().addLinkData({ from: hideNode.key, to: l.to, predicateIds: l.predicateIds, intersectUids: l.intersectUids, responsibilityTypeId: l.responsibilityTypeId });
         });
 
         this.diagram.remove(group);
@@ -1633,7 +1641,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.requestModel = new AssetBrowserApiHopRequestModel();
             this.requestModel.Initial = true;
             this.requestModel.Assets = new Array();
-            this.requestModel.AssetsToIgnore = new Array();
+            this.requestModel.RelationsToIgnore = [];
 
             let assetRequestModel: AssetBrowserApiHopAssetRequestModel = new AssetBrowserApiHopAssetRequestModel();
             assetRequestModel.Uid = this.assetUid;
@@ -1750,7 +1758,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             model.DiagramType = DiagramType.Lineage;
             model.HopType = AssetBrowserApiHopType.Lineage;
             model.Assets = data.assetUids;
-            model.AssetsToIgnore = new Array();
+
+            // Get relations to ignore.
+            model.RelationsToIgnore = this.helper_GetRelationsToIgnore(undefined);
 
             this.browserService.getAssetBrowserHop(model)
                 .subscribe(response => {
