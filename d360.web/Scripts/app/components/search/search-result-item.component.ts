@@ -80,7 +80,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
         this.loadDetails();
         if (this.result.AssetPath) {
-            console.log('assstpath', this.result.AssetPath)
             this.formattedPath = this.result.AssetPath.join(this.assetPathSeparator);
             this.showPath = true;
             this.ref.markForCheck();
