@@ -6528,6 +6528,8 @@ insert into #Keys
                             var model = import[i - 1];
                             List<string> messages = new List<string>();
                             var row = table.NewRow();
+                            DateTime effectiveDateStart = new DateTime();
+                            DateTime runDateStart = new DateTime();
 
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
@@ -6559,42 +6561,82 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-
+                            
                             if (model.EffectiveDateStart != null)
                             {
-                                row["EffectiveDateStart"] = model.EffectiveDateStart.Value.Date;
+                                row["EffectiveDateStart"] = model.EffectiveDateStart;
+                                
+                                if (!DateTime.TryParseExact(model.EffectiveDateStart,
+                                                       "yyyy-MM-dd",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out effectiveDateStart))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd");
+                                    row["Success"] = 0;
+                                }                                
                             }                                                 
 
                             if (model.EffectiveDateEnd != null)
                             {
-                                row["EffectiveDateEnd"] = model.EffectiveDateEnd.Value.Date; 
+                                row["EffectiveDateEnd"] = model.EffectiveDateEnd;
+
+                                DateTime effectiveDateEnd;
+                                if (!DateTime.TryParseExact(model.EffectiveDateEnd,
+                                                       "yyyy-MM-dd",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out effectiveDateEnd))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd");
+                                    row["Success"] = 0;
+                                }
+                                else if (model.EffectiveDateStart != null && effectiveDateStart > effectiveDateEnd)
+                                {
+                                    messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                                    row["Success"] = 0;
+                                }
                             }
 
                             if (model.RunDateStart != null)
                             {
                                 row["RunDateStart"] = model.RunDateStart;
+                                
+                                if (!DateTime.TryParseExact(model.RunDateStart,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out runDateStart))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss");
+                                    row["Success"] = 0;
+                                }
                             }                            
 
                             if (model.RunDateEnd != null)
                             {
                                 row["RunDateEnd"] = model.RunDateEnd;
+
+                                DateTime runDateEnd;
+                                if (!DateTime.TryParseExact(model.RunDateEnd,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out runDateEnd))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
+                                    row["Success"] = 0;
+                                }else if (model.RunDateStart != null && runDateStart > runDateEnd)
+                                {
+                                    messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                                    row["Success"] = 0;
+                                }
                             }
                             if ((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
                             {
                                 messages.Add("At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
                                 row["Success"] = 0;
-                            }
-
-                            if (model.EffectiveDateStart != null && model.EffectiveDateEnd != null && model.EffectiveDateStart.Value > model.EffectiveDateEnd.Value)
-                            {
-                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
-                                row["Success"] = 0;
-                            }
-                            if (model.RunDateEnd != null && model.RunDateStart != null && model.RunDateStart > model.RunDateEnd)
-                            {
-                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
-                                row["Success"] = 0;
-                            }
+                            }                           
 
                             row["Message"] = string.Join(";", messages.ToArray());
                             

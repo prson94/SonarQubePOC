@@ -36,10 +36,10 @@ namespace d360.core.entities.Metric
         public Guid? Uid { get; set; }
         public Guid? OwningAssetUid { get; set; }        
         public Guid? EvaluatedAssetUid { get; set; }
-        public DateTime? EffectiveDateStart { get; set; }
-        public DateTime? EffectiveDateEnd { get; set; }
-        public DateTime? RunDateStart { get; set; }
-        public DateTime? RunDateEnd { get; set; }
+        public string EffectiveDateStart { get; set; }
+        public string EffectiveDateEnd { get; set; }
+        public string RunDateStart { get; set; }
+        public string RunDateEnd { get; set; }
     }
 
     public class DataQualityAssetResultModel

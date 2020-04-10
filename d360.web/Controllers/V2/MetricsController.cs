@@ -905,6 +905,9 @@ namespace d360.web.Controllers.V2
             #region Model Validation            
             asset = null;
 
+            DateTime runDateStart = new DateTime();
+            DateTime effectiveDateStart = new DateTime();
+
             if ((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", "At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
@@ -977,14 +980,57 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
             }
 
-            if (model.EffectiveDateStart.HasValue && model.EffectiveDateEnd.HasValue && model.EffectiveDateStart > model.EffectiveDateEnd)
+            if (model.EffectiveDateStart != null && !DateTime.TryParseExact(model.EffectiveDateStart,
+                                   "yyyy-MM-dd",
+                                   System.Globalization.CultureInfo.InvariantCulture,
+                                   System.Globalization.DateTimeStyles.None,
+                                   out effectiveDateStart))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd"));
+            }            
+
+            if (model.EffectiveDateEnd != null)
+            {
+                DateTime effectiveDateEnd;
+                if (!DateTime.TryParseExact(model.EffectiveDateEnd,
+                                   "yyyy-MM-dd",
+                                   System.Globalization.CultureInfo.InvariantCulture,
+                                   System.Globalization.DateTimeStyles.None,
+                                   out effectiveDateEnd))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd"));
+                }
+                else if(effectiveDateStart > effectiveDateEnd)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                }
+                
             }
 
-            if (model.RunDateStart.HasValue && model.RunDateEnd.HasValue && model.RunDateStart > model.RunDateEnd)
+            if(model.RunDateStart != null && !DateTime.TryParseExact(model.RunDateStart,
+                                   "yyyy-MM-dd HH:mm:ss",
+                                   System.Globalization.CultureInfo.InvariantCulture,
+                                   System.Globalization.DateTimeStyles.None,
+                                   out runDateStart))
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss"));
+            }
+
+            if (model.RunDateEnd != null)
+            {
+                DateTime runDateEnd;
+                if (!DateTime.TryParseExact(model.RunDateEnd,
+                                   "yyyy-MM-dd HH:mm:ss",
+                                   System.Globalization.CultureInfo.InvariantCulture,
+                                   System.Globalization.DateTimeStyles.None,
+                                   out runDateEnd))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss"));
+                }
+                else if(runDateStart > runDateEnd)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                }                
             }
 
             #endregion
