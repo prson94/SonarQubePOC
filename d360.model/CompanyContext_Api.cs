@@ -5985,8 +5985,8 @@ insert into #Keys
                     table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
                     table.Columns.Add("OwningAssetUid", typeof(Guid));
                     table.Columns.Add("Uid", typeof(Guid));
-                    table.Columns.Add("EffectiveDate", typeof(DateTime));
-                    table.Columns.Add("RunDate", typeof(DateTime));
+                    table.Columns.Add("EffectiveDate", typeof(string));
+                    table.Columns.Add("RunDate", typeof(string));
                     table.Columns.Add("PassCount", typeof(long));
                     table.Columns.Add("FailCount", typeof(long));
                     table.Columns.Add("Message", typeof(string));
