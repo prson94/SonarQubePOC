@@ -6093,7 +6093,7 @@ insert into #Keys
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
 
-                                if (!model.EvaluatedAssetUid.HasValue && model.RunDate != null && !model.PassCount.HasValue && !model.FailCount.HasValue)
+                                if (!model.EvaluatedAssetUid.HasValue && model.RunDate == null && !model.PassCount.HasValue && !model.FailCount.HasValue)
                                 {
                                     row["Message"] = DataQualityErrors.InvalidUpdateError;
                                     row["Success"] = 0;
