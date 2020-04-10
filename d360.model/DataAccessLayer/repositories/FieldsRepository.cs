@@ -1121,14 +1121,8 @@ from	IntersectType I
                     newFieldType.IsDisplayable = f.Type.Relationship.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Relationship.IsEditable;
                     newFieldType.IsListable = f.Type.Relationship.IsListable;
-                    newFieldType.IsPartOfKey = f.Type.Relationship.IsPartOfKey;
-                    newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
-                    if (f.Type.Relationship.Validation != null)
-                    {
-                        newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
-                    }
                 }
                 else if (f.Type.Text != null)
                 {
