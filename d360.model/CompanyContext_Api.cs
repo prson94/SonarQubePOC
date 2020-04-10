@@ -6006,25 +6006,61 @@ insert into #Keys
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
                             row["ItemNumber"] = i;
-
-                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            
+                            if (model.RunDate != null)
                             {
                                 row["RunDate"] = model.RunDate;
 
-                                if (model.RunDate > DateTime.Now)
+                                DateTime rundate;
+                                if (!DateTime.TryParseExact(model.RunDate,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out rundate))
                                 {
-                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
                                 }
+                                else {
+                                    if (rundate > DateTime.Now)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                        row["Success"] = 0;
+                                    }else if(rundate == DateTime.MinValue)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
+                                        row["Success"] = 0;
+                                    }
+                                }                                
                             }                                                       
 
                             if (model is DataQualityInsertModel dataQualityInsertModel)
                             {
-                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;
+                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;                                
 
-                                if (dataQualityInsertModel.EffectiveDate != null && dataQualityInsertModel.EffectiveDate != DateTime.MinValue)
+                                if (dataQualityInsertModel.EffectiveDate != null)
                                 {
-                                    row["EffectiveDate"] = dataQualityInsertModel.EffectiveDate.Date;
+                                    row["EffectiveDate"] = dataQualityInsertModel.EffectiveDate;
+
+                                    DateTime effectiveDate;
+                                    if (!DateTime.TryParseExact(dataQualityInsertModel.EffectiveDate,
+                                                           "yyyy-MM-dd",
+                                                           System.Globalization.CultureInfo.InvariantCulture,
+                                                           System.Globalization.DateTimeStyles.None,
+                                                           out effectiveDate))
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
+                                        row["Success"] = 0;
+                                    }else if (effectiveDate == DateTime.MinValue)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
+                                        row["Success"] = 0;
+                                    }
+                                    else if (effectiveDate > DateTime.Now)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+                                        row["Success"] = 0;
+                                    }                                    
                                 }
                                 else
                                 {
@@ -6032,13 +6068,9 @@ insert into #Keys
                                     row["Success"] = 0;
                                 }
 
-                                if (dataQualityInsertModel.EffectiveDate > DateTime.Now)
-                                {
-                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
-                                    row["Success"] = 0;
-                                }
+                                
 
-                                if (model.RunDate == null && model.RunDate == DateTime.MinValue)
+                                if (model.RunDate == null)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
                                     row["Success"] = 0;
@@ -6061,7 +6093,7 @@ insert into #Keys
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
 
-                                if (!model.EvaluatedAssetUid.HasValue && !model.RunDate.HasValue && !model.PassCount.HasValue && !model.FailCount.HasValue)
+                                if (!model.EvaluatedAssetUid.HasValue && model.RunDate != null && !model.PassCount.HasValue && !model.FailCount.HasValue)
                                 {
                                     row["Message"] = DataQualityErrors.InvalidUpdateError;
                                     row["Success"] = 0;
@@ -6186,7 +6218,7 @@ insert into #Keys
                                         -- Check on update
                                         update	EAR
 	                                    set		EAR.Success = 0,
-			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
 	                                    from    api.ExecutionAssetResult EAR                                                
                                         inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and UPPER(E.Method)='PUT'
                                         inner join 

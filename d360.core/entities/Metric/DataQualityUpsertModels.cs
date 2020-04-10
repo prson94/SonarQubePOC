@@ -11,7 +11,7 @@ namespace d360.core.entities.Metric
     {
         Guid? ExecutionItemUid { get; set; }
         Guid? EvaluatedAssetUid { get; set; }
-        DateTime? RunDate { get; set; }
+        string RunDate { get; set; }
         long? PassCount { get; set; }        
         long? FailCount { get; set; }
     }
@@ -20,8 +20,8 @@ namespace d360.core.entities.Metric
         public Guid? ExecutionItemUid { get; set; }
         public Guid OwningAssetUid { get; set; }        
         public Guid? EvaluatedAssetUid { get; set; }
-        public DateTime EffectiveDate { get; set; }
-        public DateTime? RunDate { get; set; }
+        public string EffectiveDate { get; set; }
+        public string RunDate { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
         public long? PassCount { get; set; }
@@ -56,7 +56,7 @@ namespace d360.core.entities.Metric
         public Guid Uid { get; set; }
         public Guid? ExecutionItemUid { get; set; }
         public Guid? EvaluatedAssetUid { get; set; }
-        public DateTime? RunDate { get; set; }
+        public string RunDate { get; set; }
         [Range(0, 9223372036854775807,
             ErrorMessage = "Value for {0} must be between {1} and {2}.")]
         public long? PassCount { get; set; }
