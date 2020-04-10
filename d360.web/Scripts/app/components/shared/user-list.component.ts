@@ -67,7 +67,7 @@ import { AssetSearchFilter, V2ApiFilters } from '../../models/asset-search.model
                                     <a *ngIf="column.datafield=='FirstName'"
                                        (click)="openResource(item)">{{item.FirstName}}</a>
                                     <d3s-dynamic-field-value *ngIf="column.datafield!='FirstName'" [column]="column"
-                                                             [fields]="fields" [item]="item"></d3s-dynamic-field-value>                                                                 
+                                                             [fields]="fields" [item]="item" [useApiName]="true"></d3s-dynamic-field-value>                                                                 
                                 </td>
                                 <td *ngIf="hasModifyAssetPermissions()" style="width: 40px">
                                     <div class="RowTools" *ngIf="item.ResourceID > 0">
@@ -248,7 +248,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     public getParams() {
         var params = new V2ApiFilters();
 
-        params["state"] = "Active,Inactive";
+        params._filter = `(State eq 'Active' or State eq 'Inactive')`;
 
         params._direction = this.sortOrder == 1 ? 'asc' : 'desc';
         if (this.sortField) {
@@ -256,6 +256,13 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         }
         else {
             params._order = "FirstName";
+        }
+
+        if (this.simpleFilter) {
+            params._simpleFilter = this.simpleFilter;
+        }
+        else {
+            delete params['_simpleFilter'];
         }
 
         params._pageNum = this.currentPageNumber + 1;

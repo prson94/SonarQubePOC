@@ -55,6 +55,7 @@ namespace d360.web.Controllers.V2
         /// <param name="_order">The order field to return results by.</param>
         /// <param name="_direction">The direction in which to return results by asc/desc. </param>
         /// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
+        /// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -64,15 +65,16 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "")
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
-            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
+                    case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end as State ";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
             string orderBySQL = $"";
             long pageSize;
@@ -159,6 +161,42 @@ namespace d360.web.Controllers.V2
                         dbArgs.Add(item.Key, item.Value);
                     }
                 }
+            }
+
+            if (!string.IsNullOrEmpty(_simpleFilter))
+            {
+                dbArgs.Add("@simpleFilter", _simpleFilter);
+                List<string> simpleFilters = new List<string>();
+
+                foreach (var field in fieldTypes.Where(x => x.IsListable == true))
+                {
+                    _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
+
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    {
+                        if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        }
+                    }
+
+                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+
+                    defaultFields.ForEach(f =>
+                    {
+                        simpleFilters.Add($"{f} like @simpleFilter");
+                    });
+
+                    simpleFilters.Add(@"(case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end) like @simpleFilter");
+                }
+                queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
             }
 
             if (queries.Count() > 0)
