@@ -119,6 +119,11 @@ export class AssetService extends BaseObservableService {
     }
 
     public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
+
+        //Setup paging for export
+        params['_pageNum'] = 1;
+        params['_pageSize'] = 200000;
+
         var qString = '';
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');

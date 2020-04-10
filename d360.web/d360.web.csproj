@@ -301,7 +301,6 @@
     <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
     <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
     <Compile Include="Controllers\Forms\FormController_Issue.cs" />
-    <Compile Include="Controllers\Forms\FormController_Lookup.cs" />
     <Compile Include="Controllers\Forms\FormController_Organization.cs" />
     <Compile Include="Controllers\Forms\FormController_Policy.cs" />
     <Compile Include="Controllers\Forms\FormController_Relationship.cs" />
@@ -749,6 +748,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\check-tree\check-tree.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\score-badge\score-badge.component.html" />
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
+    <Content Include="Scripts\app\components\shared\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
@@ -1113,10 +1113,6 @@
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>
       <Name>d360.model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
-      <Project>{9775B4DF-0AC8-4524-BA10-4A43BF9CB61E}</Project>
-      <Name>d360.utils</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\app\app.module.ts" />
@@ -1405,8 +1401,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-governance.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\groups\admin-groups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\load\admin-load.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookup-type-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\resources\admin-resources.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\rules\admin-rules.component.ts" />
@@ -1417,8 +1411,6 @@
     <TypeScriptCompile Include="Scripts\app\app.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\lookups\admin-lookups.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.module.ts" />
@@ -1807,7 +1799,6 @@
     <TypeScriptCompile Include="Scripts\app\services\responsibility-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-actions.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\header-breadcrumb.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\lookup.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-style.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\rules.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\surveys.service.ts" />

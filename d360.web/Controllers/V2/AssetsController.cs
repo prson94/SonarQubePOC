@@ -922,6 +922,70 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of all asset types and asset counts for current user.
+        /// </summary>
+        /// <returns>Returns a list of asset type counts for current user.</returns>
+        [
+            HttpGet,
+            Route("counts/byAssetType"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false)
+        ]
+        public async Task<HttpResponseMessage> GetAssetTypeCountsAsync()
+        {
+            var prefix = "Assets.GetAssetTypeCountsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                List<AssetTypeClass> classFilters = new List<AssetTypeClass>() {
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.TechnicalAsset,
+                    AssetTypeClass.Model,
+                    AssetTypeClass.Policy,
+                    AssetTypeClass.Rule };
+
+                var param = Request.GetQueryNameValuePairs();
+                if (param.Any(x => x.Key.ToLower() == "class"))
+                {
+                    var value = param.FirstOrDefault(x => x.Key.ToLower() == "class").Value;
+                    var values = value.Split(',');
+                    if (values.Count() > 0)
+                    {
+                        classFilters.Clear();
+                        foreach (var cs in values.Select(x => x.Trim()))
+                        {
+                            if (Enum.TryParse(cs, true, out AssetTypeClass assetTypeClass))
+                            {
+                                classFilters.Add(assetTypeClass);
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Asset type class '{cs}'");
+                            }
+
+                        }
+                    }
+                }
+
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray());
+                return Request.CreateResponse(HttpStatusCode.OK, classes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
 
         #region Batch
 

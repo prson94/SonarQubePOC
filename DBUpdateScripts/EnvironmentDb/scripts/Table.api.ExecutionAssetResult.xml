@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetResult-v2">
+  <changeSet author="bquinlivan" id="Table.api.ExecutionAssetResult-v2.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -22,8 +22,8 @@
 			[EvaluatedAssetUid] [uniqueidentifier] NULL,
 			[EffectiveDate] [date] NULL,
 			[RunDate] [datetime],
-			[PassCount] [int],
-			[FailCount] [int],
+			[PassCount] [bigint],
+			[FailCount] [bigint],
 			[Message] [nvarchar](2500) NULL,
 			[Success] [bit] NULL,
 			[Uid] [uniqueidentifier] NULL
@@ -38,6 +38,7 @@
 
 	ALTER TABLE API.ExecutionAssetResult
 	ALTER COLUMN [OwningAssetUid] uniqueidentifier null
+	
 		]]>
     </sql>
 	<rollback>
@@ -46,5 +47,27 @@
 		]]>
 	</rollback>
   </changeSet>
+  	<changeSet author="bquinlivan" id="Table.api.ExecutionAssetResult-v3">
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">		
+			<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetResult')
+			BEGIN
+				ALTER TABLE API.ExecutionAssetResult
+				ALTER COLUMN [PassCount] BIGINT null
+				
+				ALTER TABLE API.ExecutionAssetResult
+				ALTER COLUMN [FailCount] BIGINT null
+			END
+			]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+	</changeSet>
 
 </databaseChangeLog>

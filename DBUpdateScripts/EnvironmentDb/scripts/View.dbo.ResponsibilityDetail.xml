@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TKlok" id="View.dbo.ResponsibilityDetail-v2">
+  <changeSet author="TKlok" id="View.dbo.ResponsibilityDetail-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -32,7 +32,8 @@
 				coalesce(A.ObjectID, 0) as ObjectID,
 				r.Object as [Type],
 				r.ObjectID as TypeID,
-				RES.uid as ResourceUid
+				RES.uid as ResourceUid,
+				RES.uid as SecurityAssetUid
 		from	responsibilitytyperelationrule r
 				inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
@@ -61,7 +62,8 @@
 				coalesce(A.ObjectID, 0) as ObjectID,
 				r.Object as [Type],
 				r.ObjectID as TypeID,
-				RES.uid as ResourceUid
+				RES.uid as ResourceUid,
+				secasset.uid as SecurityAssetUid
 		from	responsibilitytyperelationrule r
 				inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
@@ -69,6 +71,7 @@
 				inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 				left join Asset A on ( (A.ID = rasset.AssetID)  )
 				inner join [Group] G on rresource.SecurityAsset = 'G' and G.ID = rresource.SecurityAssetID
+				inner join [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = rresource.SecurityAssetID
 				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID
 		where 	RES.State=1
@@ -92,7 +95,8 @@
 				coalesce(A.ObjectID, 0) as ObjectID,
 				r.Object as [Type],
 				r.ObjectID as TypeID,
-				RES.uid as ResourceUid
+				RES.uid as ResourceUid,
+				secasset.uid as SecurityAssetUid
 		from	responsibilitytyperelationrule r
 				inner join ResponsibilityTypeRelation rrel on (r.ResponsibilityTypeID = rrel.ResponsibilityTypeID and r.[Object] = rrel.[ObjectType] and r.ObjectID = rrel.ObjectID)
 				inner join [ResponsibilityRuleResultAsset] rasset on (r.ID = rasset.RuleID)
@@ -100,6 +104,7 @@
 				inner join ResponsibilityType RT on RT.ID = r.ResponsibilityTypeID
 				left join Asset A on ( (A.ID = rasset.AssetID) )
 				inner join [Organization] D on rresource.SecurityAsset = 'O' and D.ID = rresource.SecurityAssetID
+				inner join [Asset] secasset ON secasset.[Object] = 'Organization' AND secasset.ObjectID = rresource.SecurityAssetID
 				inner join OrganizationResource RD on RD.OrganizationID = D.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RD.ResourceID
 		where 	RES.State=1
@@ -123,7 +128,8 @@
 				coalesce(A.ObjectID, 0) as ObjectID,
 				ATT.Object as [Type],
 				ATT.ObjectID as TypeID,
-				RES.uid as ResourceUid
+				RES.uid as ResourceUid,
+				RES.uid as SecurityAssetUid
 		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
 				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)
@@ -150,13 +156,15 @@
 				coalesce(A.ObjectID, 0) as ObjectID,
 				ATT.Object as [Type],
 				ATT.ObjectID as TypeID,
-				RES.uid as ResourceUid
+				RES.uid as ResourceUid,
+				secasset.uid as SecurityAssetUid
 		from	[dbo].[ResponsibilityTypeRelationOverrideItem] oride
 				inner join ResponsibilityType RT on RT.ID = oride.ResponsibilityTypeID
 				inner join [dbo].asset a on (a.id = oride.assetID)
 				inner join [dbo].assettype att on (att.id = a.assettypeid)
 				inner join [dbo].[ResponsibilityTypeRelation] RR on (att.[object] = RR.[objectType] and att.objectid = RR.[Objectid] and RR.ResponsibilityTypeID = oride.ResponsibilityTypeID)
 				inner join [Group] G on oride.SecurityAsset = 'G' and G.ID = oride.SecurityAssetID
+				inner join [Asset] secasset ON secasset.[Object] = 'Group' AND secasset.ObjectID = oride.SecurityAssetID
 				inner join ResourceGroup RG on RG.GroupID = G.ID
 				inner join reporting.Global_Resource RES on RES.ResourceID = RG.ResourceID and RES.[State] = 1
 		]]>
