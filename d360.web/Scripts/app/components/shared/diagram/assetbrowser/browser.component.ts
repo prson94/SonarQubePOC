@@ -89,7 +89,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     displayConfiguration: AssetBrowserFilterModel = new AssetBrowserFilterModel();
     private readonly displayConfigurationKey = 'asset-browser-configuration';
     private storage = window.sessionStorage;
-
+    scale: number = 1;
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
 
@@ -630,6 +630,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.cdRef.markForCheck();
     }
 
+    private event_ViewportBoundsChanged(e: go.DiagramEvent) {
+        this.scale = e.subject.scale;
+        this.cdRef.markForCheck();
+    }
+
     private filterpanel_Apply(e: AssetBrowserFilterChangeEvent) {
         this.displayConfiguration = e.Model;
         this.saveFilter();
@@ -802,10 +807,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
         return model;
-    }
-
-    private helper_DiagramScale(): number {
-        return this.diagram.scale;
     }
 
     private helper_DisableDragging() {
@@ -1458,6 +1459,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
 
         this.diagram.addDiagramListener('ChangedSelection', e => this.event_DiagramSelectionChanged(e));
+        this.diagram.addDiagramListener('ViewportBoundsChanged', e => this.event_ViewportBoundsChanged(e));
 
         this.diagram.grid.visible = false;
         this.diagram.grid.gridCellSize = new go.Size(8, 8);
@@ -1687,7 +1689,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.helper_ParseTranslatedData(trans);
                 this.helper_ResizeDiagram();
-                this.diagram.scale = 1;
+                this.helper_ScaleDiagram(1);
                 this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                 this.loadingText = "";
                 this.isLoading = false;
@@ -1847,6 +1849,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 });
         }
+    }
+
+    private helper_ScaleDiagram(_scale: number) {
+        this.diagram.scale = _scale;
+        this.scale = _scale;
     }
 
     private helper_SetFilterWindow() {
@@ -2081,7 +2088,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Refresh:
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                this.diagram.scale = 1;
+                this.helper_ScaleDiagram(1);
                 this.helper_RefreshDiagram();
                 break;
             case AssetBrowserPanelCommand.Settings:
@@ -2157,7 +2164,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let foundResults: go.Node[] = [];
         this.searchResults = [];
 
-        this.diagram.zoomToFit();
+        this.helper_ScaleDiagram(1);//this.diagram.zoomToFit();
         var self = this;
 
         this.diagram.nodes.each(function (node) {
@@ -2182,7 +2189,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.searchResults = foundResults;
 
         this.search_GoToResult(1);
-
         this.cdRef.markForCheck();
     }
 
@@ -3226,7 +3232,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * Responds to the change event from the shared Asset Browser Zoom control.
     * @returns Nothing.
     */
-    private zoom_Change(scale: number) {
-        this.diagram.scale = scale;
+    private zoom_Change(_scale: number) {
+        this.helper_ScaleDiagram(_scale);
     }
 } 
