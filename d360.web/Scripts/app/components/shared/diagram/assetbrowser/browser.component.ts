@@ -327,13 +327,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 relation.disabled = true;
 
                 if (relation.expanded) {
-                    this.helper_CollapseBadgeRelationDependentNodesAndLinks(node.key, relation.predicateId, relation.predicate);
+                    this.helper_CollapseBadgeRelationDependentNodesAndLinks(node.key, relation.predicateId, relation.predicate, relation.direction.toString());
                     relation.expanded = false;
                     this.diagram.model.removeArrayItem(node.relations, ix);
                     this.diagram.model.insertArrayItem(node.relations, ix, relation);
                     this.helper_CalculateAlertCount();
-                    this.cdRef.markForCheck();
-
+                    this.cdRef.markForCheck();                    
                     relation.disabled = false;
                 }
                 else {
@@ -688,16 +687,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.commitTransaction("collapseOwnerBadge");
     }
 
-    private helper_CollapseBadgeRelationDependentNodesAndLinks(nodeKey: string, predicateId: number, predicateName: string) {
+    private helper_CollapseBadgeRelationDependentNodesAndLinks(nodeKey: string, predicateId: number, predicateName: string, direction: string) {
         this.diagram.startTransaction("collapseRelationBadge");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
         let links: go.Iterator<go.Link>;
-
-        links = this.diagram.links.filter(l =>
-            l.data.text == predicateName &&
-            (l.fromNode.key == nodeKey || l.toNode.key == nodeKey) &&
-            l.data.predicateIds[0] == predicateId);
-
+        switch (AssetBrowserApiHopDirection[direction]) {
+            case AssetBrowserApiHopDirection.Backward:
+                if (this.displayConfiguration.DiagramType == DiagramType.Impact) {
+                    // Impact diagram always points forward. So disregard the direciton sent in be predicate badge.
+                    links = this.diagram.links.filter(l =>
+                        l.data.text == predicateName &&
+                        (l.fromNode.key == nodeKey) && l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
+                    );
+                }
+                else {
+                    links = this.diagram.links.filter(l =>
+                        l.data.text == predicateName &&
+                        (l.toNode.key == nodeKey) &&
+                        l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
+                    );
+                }
+                break;
+            case AssetBrowserApiHopDirection.Forward:
+                links = this.diagram.links.filter(l =>
+                    l.data.text == predicateName &&
+                    (l.fromNode.key == nodeKey) && l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
+                );
+                break;
+            default:
+                links = this.diagram.links.filter(l =>
+                    l.data.text == predicateName &&
+                    (l.fromNode.key == nodeKey || l.toNode.key == nodeKey) &&
+                    l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
+                );
+                break;
+        }
 
         this.helper_CollapseNodesAndLinks(dm, nodeKey, nodeKey, links);
 
