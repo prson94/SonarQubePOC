@@ -2154,6 +2154,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
         this.searchText = phrase;
+        let foundResults: go.Node[] = [];
         this.searchResults = [];
 
         this.diagram.zoomToFit();
@@ -2169,7 +2170,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 else if (phrase != '') {
                     self.searchableProps.forEach(prop => {
                         if (node.data[prop] && node.data[prop].toLowerCase().indexOf(phrase.toLowerCase()) == 0) {
-                            self.searchResults.push(node);
+                            foundResults.push(node);
                             self.search_AddHighlightToNode(node, phrase);
                             self.search_ExpandGroups(node.data.group);
                         }
@@ -2177,6 +2178,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 }
             }
         });
+
+        this.searchResults = foundResults;
 
         this.search_GoToResult(1);
 
