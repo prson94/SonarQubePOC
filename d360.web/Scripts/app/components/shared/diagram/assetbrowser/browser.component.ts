@@ -809,10 +809,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return model;
     }
 
-    //private helper_DiagramScale(): number {
-    //    return this.diagram.scale;
-    //}
-
     private helper_DisableDragging() {
         let unlockedKeys: string[] = [];
 
@@ -1693,7 +1689,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                 this.helper_ParseTranslatedData(trans);
                 this.helper_ResizeDiagram();
-                this.helper_ScaleDiagram(1); //this.diagram.scale = 1;
+                this.helper_ScaleDiagram(1);
                 this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
                 this.loadingText = "";
                 this.isLoading = false;
@@ -2092,7 +2088,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Refresh:
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                this.helper_ScaleDiagram(1); //this.diagram.scale = 1;
+                this.helper_ScaleDiagram(1);
                 this.helper_RefreshDiagram();
                 break;
             case AssetBrowserPanelCommand.Settings:
@@ -3234,6 +3230,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing.
     */
     private zoom_Change(_scale: number) {
-        this.helper_ScaleDiagram(_scale); //this.diagram.scale = _scale;
+        this.helper_ScaleDiagram(_scale);
     }
 } 
