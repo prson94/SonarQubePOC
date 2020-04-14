@@ -69,5 +69,27 @@
 		]]>
 	</rollback>
 	</changeSet>
+	<changeSet author="bquinlivan" id="Table.api.ExecutionAssetResult-v4">
+		<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">		
+			<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionAssetResult')
+			BEGIN
+				ALTER TABLE API.ExecutionAssetResult
+				ALTER COLUMN [RunDate] varchar(100) null
+				
+				ALTER TABLE API.ExecutionAssetResult
+				ALTER COLUMN [EffectiveDate] varchar(100) null
+			END
+			]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+	</changeSet>
 
 </databaseChangeLog>
