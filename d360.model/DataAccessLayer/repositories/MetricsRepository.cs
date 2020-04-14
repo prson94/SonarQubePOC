@@ -787,12 +787,12 @@ namespace d360.model.DataAccessLayer
 
             if (effectiveDateStart.HasValue)
             {
-                effectiveSQL = $@"and EffectiveDate > @effectiveStartDate";
+                effectiveSQL = $@"and EffectiveDate >= @effectiveStartDate";
                 parameters.Add("@effectiveStartDate", effectiveDateStart.Value);
             }
             if (effectiveDateEnd.HasValue)
             {
-                effectiveSQL = $@"{effectiveSQL} and EffectiveDate < @effectiveEndDate";
+                effectiveSQL = $@"{effectiveSQL} and EffectiveDate <= @effectiveEndDate";
                 parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
             }
 

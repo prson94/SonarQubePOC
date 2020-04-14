@@ -1777,6 +1777,20 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
+        public string[] GetAssetPath(Guid assetUid)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid.ToString());
+
+            var sql = $@"SELECT	doc.c.value('.', 'nvarchar(250)')
+                        FROM graph.AssetNode AN
+                		CROSS APPLY AN.Segments.nodes('/path/segment') doc(c)
+                        WHERE Uid = @assetUid
+                        ORDER BY doc.c.value('./@level', 'int')";
+            var res = CompanyContext.Query<string>(sql, dbArgs).ToArray();
+            return res;
+        }
+
         public async Task<dynamic> GetAssetTypeDetails(AssetType type)
         {
             var dbArgs = new DynamicParameters();

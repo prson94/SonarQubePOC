@@ -425,6 +425,11 @@ export class BrowserService extends BaseObservableService {
                     fl.predicateIds = [];
                 }
                 fl.predicateIds.push(intersect.predicateId);
+
+                if (!fl.intersectUids) {
+                    fl.intersectUids = [];
+                }
+                fl.intersectUids.push({ intersectUid: intersect.intersectUid, predicateId: intersect.predicateId });
             });
             fl.text = linkText;
 
