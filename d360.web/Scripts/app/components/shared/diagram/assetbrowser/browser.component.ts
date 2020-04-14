@@ -2439,9 +2439,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                     }
                 },
-                new go.Binding("visible", "", function (o) {
-                    return o.part.data.hasAssetReadAccess;
-                }).ofObject()
+                new go.Binding("visible", "", (o) => (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
@@ -2454,9 +2452,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     }
                 },
-                new go.Binding("visible", "", function (o) {
-                    return o.part.data.hasAssetReadAccess;
-                }).ofObject()
+                new go.Binding("visible", "", (o) => (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
