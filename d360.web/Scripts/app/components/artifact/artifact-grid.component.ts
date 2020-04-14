@@ -201,7 +201,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
 
                 if (statusField != null) {
                     this.showCertificationStatus = true;
-                    this.certificationStatusIndex = statusField.name;
+                    this.certificationStatusIndex = statusField.apiName;
                 }
 
                 if (result.Columns && result.Columns.length == 0) {
@@ -304,10 +304,14 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
         if (this.assetSearchSub) {
             this.assetSearchSub.unsubscribe();
         }
+
         this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;
+
+
+
                 this.totalRecords = res.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;

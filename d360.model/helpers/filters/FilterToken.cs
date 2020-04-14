@@ -253,7 +253,7 @@ namespace d360.model.helpers
                     bool boolean = false;
                     if (value.ToString() == "0") value = "false";
                     if (value.ToString() == "1") value = "true";
-                    if (!bool.TryParse(value.ToString(), out boolean))
+                    if (!bool.TryParse(value.ToString().ToLower(), out boolean))
                     {
                         throw new FormatException($"Invalid boolean value for field '{field}'");
                     }

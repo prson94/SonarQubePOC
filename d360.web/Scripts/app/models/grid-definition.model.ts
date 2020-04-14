@@ -65,15 +65,17 @@ export class GridFilterExpression {
         var cond = this.convertCondition(this.condition);
         var val = this.wrapValue(f.fieldType, this.value);
 
-        if (f.fieldType == 'Relationship') {
-            this.condition = 'eq';
+        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup'];
+
+        if (forceEqualFields.some(x => x == f.fieldType)) {
+            cond = 'eq';
         }
 
         return `${f.apiName} ${cond} ${val}`;
     }
 
     private wrapValue(fieldType, value): string {
-        if (fieldType == 'Number' || fieldType == 'Decimal') {
+        if (fieldType == 'Number' || fieldType == 'Decimal' || fieldType == 'Boolean') {
             return value;
         }
         return `'${value}'`;
