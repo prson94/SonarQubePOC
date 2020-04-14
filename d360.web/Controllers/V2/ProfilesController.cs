@@ -82,6 +82,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
                 table.Columns.Add("Id", typeof(int));
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("AssetId", typeof(long));
@@ -375,6 +377,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("AssetId", typeof(long));
 
@@ -513,6 +517,25 @@ namespace d360.web.Controllers.V2
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
 
+        }
+
+        public void SetApiExecutionProcessingStartTime(Guid ExecutionId, int timeout = 90)
+        {
+            using (SqlConnection conn = new SqlConnection(Company.CompanyConnectionString))
+            {
+                if (conn.State != ConnectionState.Open)
+                    conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                using (SqlTransaction trans = conn.BeginTransaction())
+                {
+                    conn.Execute($@"update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null"
+                    , new { startedOn = DateTime.UtcNow, ExecutionId = ExecutionId }, transaction: trans, commandTimeout: timeout);
+
+                    trans.Commit();
+
+                }
+
+            }
         }
     }
 }
