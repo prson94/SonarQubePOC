@@ -216,6 +216,9 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@uid", uid.ToString());
             fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
 
+            dbArgs.Add("@assetTypeID", assetTypeID);
+            whereStatements.Add("A.AssetTypeID = @assetTypeID");
+
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
