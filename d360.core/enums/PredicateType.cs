@@ -127,8 +127,8 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
             AllowIntersectTypeAsSubject(false)
         ]
         Simple = 7,
@@ -162,8 +162,8 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
             AllowIntersectTypeAsSubject(true)
         ]
         SeeAlso = 9,

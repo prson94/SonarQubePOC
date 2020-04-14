@@ -1609,7 +1609,7 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
             
             if (sSubject == "IntersectType")
             {
@@ -1622,8 +1622,7 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
-
-                allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class)).ToList();
+                allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
             var sql = @"
