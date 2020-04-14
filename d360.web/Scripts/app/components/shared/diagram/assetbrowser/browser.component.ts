@@ -1222,7 +1222,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let topLevelNode: AssetBrowserTranslationNode = n.data as AssetBrowserTranslationNode;
 
             //#region Owners node/link logic
-            if (topLevelNode.responsibilityTypeId) { //shallWeDealWithNode && 
+            if (topLevelNode.responsibilityTypeId) {
                 // We are dealing with an Owners root node.
                 let showBadge: boolean = (this.displayConfiguration.SelectedResponsibilityTypes.findIndex(v => { return v == topLevelNode.responsibilityTypeId; }) == -1);
                 this.diagram.model.setDataProperty(topLevelNode, "showNode", showBadge);
