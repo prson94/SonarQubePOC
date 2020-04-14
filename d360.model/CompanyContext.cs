@@ -1609,12 +1609,11 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            bool removeSpecialPredicateTypes = false;
             var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
             
             if (sSubject == "IntersectType")
             {
-                removeSpecialPredicateTypes = true;
+                allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
@@ -1649,10 +1648,7 @@ where	I.ID is null";
                         i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
                   );
 
-            if (removeSpecialPredicateTypes)
-            {
-                predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
-            }
+            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
 
             return predicates.ToList();
         }
