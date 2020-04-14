@@ -25,7 +25,6 @@ export class GridRelationshipFilterExpression {
     relationshipType: ObjectRelationship;
 
     public getAsV2ApiFilter() {
-
         let filters: string[] = [];
         let condition: string = this.includeType == 'Any' ? ' or ' : ' and ';
         let relUid: string = this.relationshipType.Uid;
@@ -64,6 +63,12 @@ export class GridFilterExpression {
         var f = fieldColumns.find(x => x.datafield.toLowerCase() == this.field.toLowerCase());
         var cond = this.convertCondition(this.condition);
         let multiValueDelimiter = '!~!';
+
+        if (this.fieldtype == 0 && this.field == 'Parent') {
+            f = new GridFilterColumn();
+            f.fieldType = 'Lookup';
+            f.apiName = 'ParentDisplayName';
+        }
 
         let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup', 'Decimal', 'Number'];
 
