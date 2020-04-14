@@ -52,7 +52,7 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
     private title: string = 'Items';
 
     ngOnChanges(changes: SimpleChanges) {
-        if (changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
+        if (changes.assetTypeUid && changes.assetTypeUid.currentValue != changes.assetTypeUid.previousValue) {
             this.load();
             this.loadParams._order = 'Code';
             this.loadParams._direction = 'ASC';

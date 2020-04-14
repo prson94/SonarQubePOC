@@ -741,7 +741,7 @@ namespace d360.web.Models
         public List<AssetBrowserApiHopAssetRequestModel> Assets { get; set; }
 
         [DataMember]
-        public List<AssetBrowserApiHopIgnoreAssetRequestModel> AssetsToIgnore { get; set; }
+        public List<AssetBrowserApiHopIgnoreRequestModel> RelationsToIgnore { get; set; }
 
         [DataMember]
         public AssetBrowserApiHopDirection Direction { get; set; } = AssetBrowserApiHopDirection.Both;
@@ -783,7 +783,7 @@ namespace d360.web.Models
     }
 
     [DataContract]
-    public class AssetBrowserApiHopIgnoreAssetRequestModel
+    public class AssetBrowserApiHopIgnoreRequestModel
     {
         [DataMember]
         public Guid Uid { get; set; }

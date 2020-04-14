@@ -96,8 +96,6 @@ namespace d360.model
         DbSet<LoadItemColumn> LoadItemColumns { get; set; }
         DbSet<LoadItem> LoadItems { get; set; }
         DbSet<Load> Loads { get; set; }
-        DbSet<Lookup> Lookups { get; set; }
-        DbSet<LookupType> LookupTypes { get; set; }
         DbSet<MapGroupItem> MapGroupItems { get; set; }
         DbSet<MapGroup> MapGroups { get; set; }
         DbSet<MapItem> MapItems { get; set; }
@@ -232,7 +230,6 @@ namespace d360.model
         LoadDetail GetLoadDetail(int id);
         IEnumerable<LoadDetail> GetLoadDetails();
         IEnumerable<dynamic> GetLoadItemDetails(int id);
-        List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID);
         string GetNoReadSqlStatement(string identifier = null);
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);
@@ -257,7 +254,6 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        dynamic GetAssetStatusAndScore(Guid uid);
         int? GetAssetScore(long assetId);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
@@ -327,7 +323,7 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
-        List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> request, ApiExecution execution, int timeout = 3600);
+        List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
     }
 }

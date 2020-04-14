@@ -18,9 +18,7 @@
         <div class="path category">
             {{result?.Group}}<span *ngIf="result?.Type"><i class="fa fa-angle-right"></i><span class="category" [innerHtml]="result?.Type"></span></span>
         </div>
-        <div class="path asset-path" *ngIf="searchDetails && searchDetails?.AssetDetail?.Path">
-            {{formattedPath}}
-        </div>
+        <div class="path asset-path" *ngIf="searchDetails && searchDetails?.AssetDetail?.Path" [innerHtml]="formattedPath"></div>
     </div>
     <div class="card-row description" *ngIf="result?.Description" [innerHtml]="result.Description"></div>
     <div *ngIf="result?.Tags && result?.Tags.length > 0" class="card-row tags tagsnomanagewidth">

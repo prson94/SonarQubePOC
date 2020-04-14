@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.FieldLookupValue-v1">
+  <changeSet author="bhoward" id="View.dbo.FieldLookupValue-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -59,17 +59,6 @@
 		FROM	FieldType T 
 				INNER JOIN reporting.Global_Resource R ON T.LookupObjectType = 'Resource'			
 		WHERE	T.LookupObjectType is not null and R.ResourceID IS NOT NULL
-
-		UNION ALL
-
-		SELECT	T.ID as FieldTypeID,
-				T.LookupObjectType,
-				T.LookupObjectID,
-				L.ID as Value,	
-				utility.GetFormattedFieldLookupValue(T.Type, coalesce(T.LookupEditFormat, T.LookupDisplayFormat), T.LookupObjectType, T.LookupObjectID, L.ID) as Text
-		FROM	FieldType T 
-				INNER JOIN Lookup L ON T.LookupObjectType = 'Lookup' AND T.LookupObjectID = L.LookupTypeID 
-		WHERE	T.LookupObjectType is not null AND L.ID IS NOT NULL
 
 		UNION ALL
 

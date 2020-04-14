@@ -47,6 +47,9 @@
     <OutputPath>bin\Debug\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HtmlAgilityPack, Version=1.11.23.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.23\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -267,8 +270,6 @@
     <Compile Include="entities\Security\Group.cs" />
     <Compile Include="entities\Relation\Intersect.cs" />
     <Compile Include="entities\Relation\IntersectType.cs" />
-    <Compile Include="entities\Reference\LookupType.cs" />
-    <Compile Include="entities\Reference\Lookup.cs" />
     <Compile Include="entities\Community\Resource.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
     <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
@@ -360,6 +361,7 @@
     <Compile Include="exceptions\NotFoundException.cs" />
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="helpers\HtmlHelper.cs" />
     <Compile Include="helpers\PluralServiceHelper.cs" />
     <Compile Include="helpers\DataTypeHelper.cs" />
     <Compile Include="helpers\SystemObjectHelper.cs" />
@@ -487,11 +489,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.utils\d360.utils.csproj">
-      <Project>{9775b4df-0ac8-4524-ba10-4a43bf9cb61e}</Project>
-      <Name>d360.utils</Name>
-    </ProjectReference>
+    <Folder Include="entities\Reference\" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

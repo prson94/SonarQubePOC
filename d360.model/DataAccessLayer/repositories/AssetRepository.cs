@@ -177,7 +177,7 @@ namespace d360.model.DataAccessLayer
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-                        where       A.[State] = 1
+                        where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
@@ -545,16 +545,7 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    /*
-                     * Joining to ResponsibilityDetail on AssetID which is consistent with the [dbo].[GetDynamicAssets] stored procedure
-                     * This does not take rules with "Applies to Entire Type" into account, as those show up with AssetID=0 in ResponsibilityDetail
-                     * To include those assets, use the commented 'joinStatement' below instead.
-                     */
-                    string joinStatement = "inner join [ResponsibilityDetail] owners ON a.ID = owners.AssetID";
-                    //string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR (owners.AssetID = 0 AND a.AssetTypeID = owners.AssetTypeID))";
-                    fieldJoins.Add(joinStatement);
-                    countJoins.Add(joinStatement);
-                    whereStatements.Add("owners.ResourceUid in @ownerUids");
+                    whereStatements.Add("a.ID IN (SELECT AssetID FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids)");
                 }
             }
 
@@ -590,7 +581,7 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
-                    A.Code,
+                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
                     --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
@@ -1435,7 +1426,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1472,7 +1463,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1500,7 +1491,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
@@ -1528,10 +1519,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            if(!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
             {
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }           
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1776,6 +1767,20 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
+        public string[] GetAssetPath(Guid assetUid)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid.ToString());
+
+            var sql = $@"SELECT	doc.c.value('.', 'nvarchar(250)')
+                        FROM graph.AssetNode AN
+                		CROSS APPLY AN.Segments.nodes('/path/segment') doc(c)
+                        WHERE Uid = @assetUid
+                        ORDER BY doc.c.value('./@level', 'int')";
+            var res = CompanyContext.Query<string>(sql, dbArgs).ToArray();
+            return res;
+        }
+
         public async Task<dynamic> GetAssetTypeDetails(AssetType type)
         {
             var dbArgs = new DynamicParameters();
@@ -1815,5 +1820,33 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
         }
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
+        {
+
+            var countsSQL = @"select AT.uid, 
+	                        ATParent.uid as parentUid,
+	                        case at.class
+	                         when 1 then 'Business Asset'
+	                         when 8 then 'Technical Asset'
+	                         when 2 then 'Model'
+	                         when 6 then 'Policy'
+	                         when 7 then 'Rule'
+	                        end as class,
+	                        at.name,
+	                        at.description,
+	                        Assets.count as count
+                         from AssetType AT
+                         left join [IntersectType] ITParent on ITParent.ObjectID = AT.ObjectID and ITParent.Object = AT.Object and PredicateID = 4
+                         left join [AssetType] ATParent on ATParent.Object = ITParent.Subject AND ATParent.ObjectID = ITParent.SubjectID
+                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
+                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
+                        where
+                         at.Class in @filterClasses
+                         and AT.ID not in (select AssetTypeID
+                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses});
+        }
+
     }
 }

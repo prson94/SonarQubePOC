@@ -1131,7 +1131,7 @@ offset 0 rows fetch next 25 rows only
         {
             var nameUpper = name.ToUpper();
 
-            if (nameUpper == "PARENTID" || nameUpper == "DATABASE") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
+            if (nameUpper == "PARENTID" || nameUpper == "DATABASE" || nameUpper == "COLOR" || nameUpper == "ICON") throw new Exception("Use of a field type with the name " + name + " is prohibited.");
         }
 
         [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), Route("AddFieldType")]

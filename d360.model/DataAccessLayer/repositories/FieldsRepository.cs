@@ -501,9 +501,14 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var fieldTypeNamesToDelete = new List<string>();
             var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
-
+            var reservedWords = new List<string>() { "color", "icon", "parentid", "database" };
             foreach(var f in model.Fields)
             {
+                if (reservedWords.Contains(f.Name.ToLower())) 
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use {f.Name} as the Name of your field because it is a reserved word.");
+                }
+
                 var newFieldType = new FieldType
                 {
                     AssetTypeID = typeIdentifierInfoModel.ID,
@@ -1116,14 +1121,8 @@ from	IntersectType I
                     newFieldType.IsDisplayable = f.Type.Relationship.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Relationship.IsEditable;
                     newFieldType.IsListable = f.Type.Relationship.IsListable;
-                    newFieldType.IsPartOfKey = f.Type.Relationship.IsPartOfKey;
-                    newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
-                    if (f.Type.Relationship.Validation != null)
-                    {
-                        newFieldType.IsRequired = f.Type.Relationship.Validation.IsRequired;
-                    }
                 }
                 else if (f.Type.Text != null)
                 {

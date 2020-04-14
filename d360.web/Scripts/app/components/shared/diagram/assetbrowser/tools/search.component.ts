@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 
 import { BrowserService } from '../../../../../services/browser.service';
 import { PermissionsService } from '../../../../../services/permissions.service';
@@ -11,7 +11,8 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [BrowserService, PermissionsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserSearchComponent implements AfterViewInit {
+export class AssetBrowserSearchComponent implements AfterViewInit, OnChanges {
+
     @Input() numberOfResults: number;
     @Output() search: EventEmitter<string> = new EventEmitter();
     @Output() previous: EventEmitter<number> = new EventEmitter();
@@ -30,6 +31,12 @@ export class AssetBrowserSearchComponent implements AfterViewInit {
 
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["numberOfResults"]) {
+            this.searchCurrentItem = (this.numberOfResults == 0) ? 0 : 1;
+        }
     }
 
     goToPrevious() {

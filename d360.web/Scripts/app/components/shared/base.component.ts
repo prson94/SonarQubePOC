@@ -1053,7 +1053,7 @@ export class BaseComponent {
                     });
 
                     let areaBreadcrumb = new Breadcrumb(
-                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_POLICY_CLASSIFICATION}`
+                        currentAreaName ? currentAreaName : res, `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${SiteUrlHelpers.SITE_URL_HIERARCHY_CLASSIFICATION}`
                     );
                     this.breadcrumbsService.showBreadcrumb(areaBreadcrumb);
 

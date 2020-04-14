@@ -16,6 +16,7 @@ import { FormMode } from '../../models/form.model';
 import { StringConstants } from '../../static/string-constants';
 import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 import { AssetTypeService } from '../../services/asset-type.service';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-reference-list',
@@ -60,6 +61,9 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
     private canEditReferenceItem: boolean = false;
     private canRemoveReferenceItem: boolean = false;
 
+    private loadPermissionSub: Subscription;
+    private loadObjectDataSub: Subscription;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         private route: ActivatedRoute,
@@ -92,7 +96,10 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
             if (params['referenceListId']) {
                 if (params['referenceListId'].toString().length == 36) {
                     this.selectedReferenceListUid = params['referenceListId'];
-                    this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe(res => {
+                    if (this.loadObjectDataSub) {
+                        this.loadObjectDataSub.unsubscribe();
+                    }
+                    this.loadObjectDataSub = this.assetTypeService.getAssetTypeObjectAndID(params['referenceListId']).subscribe(res => {
                         this.selectedReferenceListId = +res.ObjectID;
                         this.load();
                     })
@@ -107,27 +114,37 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
 
     private load() {
         //check if the user has permission to read the selected type
-        this.referenceService.canReadReferenceType(this.selectedReferenceListId)
+        if (this.loadPermissionSub)
+            this.loadPermissionSub.unsubscribe();
+
+        this.loadPermissionSub = this.referenceService.canReadReferenceType(this.selectedReferenceListId)
             .subscribe(r => {
                 this.canReadSelectedType = r;
+                if (this.selectedReferenceListId && this.selectedReferenceListId != NaN) {
+                    this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {
+                        this.canAddReferenceItem = this.hasModifyAssetPermissions();
+                        this.canEditReferenceItem = this.hasModifyAssetPermissions();
+                        this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
 
-                this.loadPermissions(this.permissionsService, "ReferenceItemType", this.selectedReferenceListId).then(perms => {
-                    this.canAddReferenceItem = this.hasModifyAssetPermissions();
-                    this.canEditReferenceItem = this.hasModifyAssetPermissions();
-                    this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-
-                    this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
-                        this.headerBreadcrumbService.clearBreadcrumbs();
-                        this.headerBreadcrumbService.clearCurrentObjectInfo();
-                        this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                        this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
+                            this.headerBreadcrumbService.clearBreadcrumbs();
+                            this.headerBreadcrumbService.clearCurrentObjectInfo();
+                            this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                        });
                     });
-                });
-                this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
+                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
+                }
             });
     }
 
     ngOnDestroy() {
         this.clearSidebar();
+        if (this.loadPermissionSub)
+            this.loadPermissionSub.unsubscribe();
+
+        if (this.loadObjectDataSub)
+            this.loadObjectDataSub.unsubscribe();
+
     }
 
     referenceItemUri() {

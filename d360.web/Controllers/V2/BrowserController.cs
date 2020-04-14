@@ -152,7 +152,7 @@ namespace d360.web.Controllers.V2
             AssetBrowserDiagramType diagramType,
             AssetBrowserApiHopType hopType,
             List<AssetBrowserApiHopAssetRequestModel> assets, 
-            List<AssetBrowserApiHopIgnoreAssetRequestModel> ignoredAssets, 
+            List<AssetBrowserApiHopIgnoreRequestModel> ignoredRelations, 
             int hopCount,
             AssetBrowserApiHopDirection direction,
             Guid? predicateUid,
@@ -171,7 +171,7 @@ namespace d360.web.Controllers.V2
             });
 
             var reader = await Company.QueryMultipleAsync(
-                @"exec graph.GetHop @assets, @initial, @hopCount, @diagramType, @hopType, @resourceId, @isAdmin, @ignoredAssets, @direction, @predicateUid, @leafOnly",
+                @"exec graph.GetHop @assets, @initial, @hopCount, @diagramType, @hopType, @resourceId, @isAdmin, @ignoredRelations, @direction, @predicateUid, @leafOnly",
                 new
                 {
                     assets = assets.AsTableValuedParameter("dbo.AssetBrowserImpactTable", new List<string>() { "Key", "Uid" }),
@@ -182,7 +182,7 @@ namespace d360.web.Controllers.V2
                     resourceId = Company.CurrentResourceID,
                     isAdmin = Company.CurrentResourceIsAdmin,
 
-                    ignoredAssets = ignoredAssets.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
+                    ignoredRelations = ignoredRelations.AsTableValuedParameter("dbo.UidTable", new List<string>() { "Uid" }),
                     direction = (direction == AssetBrowserApiHopDirection.Backward) ? "B" : "F",
                     predicateUid,
                     leafOnly
@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Lineage, criteria.HopType, criteria.Assets, criteria.AssetsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
+                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Lineage, criteria.HopType, criteria.Assets, criteria.RelationsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
                 return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)
@@ -350,7 +350,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
         {
             try
             {
-                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Impact, criteria.HopType, criteria.Assets, criteria.AssetsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
+                var model = await getHop(criteria.Initial, AssetBrowserDiagramType.Impact, criteria.HopType, criteria.Assets, criteria.RelationsToIgnore, criteria.Hops, criteria.Direction, criteria.PredicateUid, criteria.LeafOnly);
                 return Request.CreateResponse(HttpStatusCode.OK, buildResponseModel(model.nodes, model.links, 0));
             }
             catch (Exception ex)

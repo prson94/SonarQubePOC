@@ -46,12 +46,8 @@ export class SiteUrlHelpers {
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
 
-
-    //model child routes
-    static SITE_URL_MODEL_CLASSIFICATION = 'classification';
-
-    //policy child routes 
-    static SITE_URL_POLICY_CLASSIFICATION = 'classification';
+    //hierarchy child routes
+    static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
     //workflow child routes
     static SITE_URL_WORKFLOW_RAISE_ISSUE = 'raiseissue';
@@ -76,7 +72,6 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ASSET_TECHNICAL = `TechnicalAsset`;
     static SITE_URL_ADMIN_CUSTOMIZATIONS = 'customizations';
     static SITE_URL_ADMIN_CUSTOM_API = 'customapi';
-    static SITE_URL_ADMIN_LOOKUPS = 'lookups';
     static SITE_URL_ADMIN_MODELS = 'taxonomies';
     static SITE_URL_ADMIN_POLICIES = 'policies';
     static SITE_URL_ADMIN_RELATIONSHIPS = 'relationships';
@@ -132,9 +127,6 @@ export class SiteUrlHelpers {
         }
         if (objectType.toLowerCase() == "attributetype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_ATTRIBUTES}`;
-        }
-        if (objectType.toLowerCase() == "lookuptype") {
-            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_LOOKUPS}`;
         }
         if (objectType.toLowerCase() == "responsibilitytype") {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RESPONSIBILITIES}`;
