@@ -1720,6 +1720,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private helper_RefreshDiagram(closePanels: boolean = true) {
+
+        // Clear out the current diagram data first.
+        this.diagram.startTransaction('RefreshDiagramCommand');
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        dm.nodeDataArray = [];
+        dm.linkDataArray = [];
+        this.diagram.commitTransaction('RefreshDiagramCommand');
+
+
         this.assetUid = this.originalAssetUid;
         this.isLoading = true;
         this.selectedDiagramAsset = null;
@@ -2088,7 +2097,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Refresh:
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                this.helper_ScaleDiagram(1);
                 this.helper_RefreshDiagram();
                 break;
             case AssetBrowserPanelCommand.Settings:
