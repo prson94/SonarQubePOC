@@ -945,8 +945,6 @@ namespace d360.web.Controllers
                 throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
             }
 
-
-
             List<dynamic> filteredLookupItems = null;
             List<dynamic> fusionItems = null;
             List<dynamic> relationItems = null;
@@ -1082,10 +1080,29 @@ namespace d360.web.Controllers
         }
 
         [Route("FieldType_TypeaheadJsonPropertyOptionsForJsonField"), NonNullableParameters]
-        public JsonNetResult FieldType_TypeaheadJsonPropertyOptionsForJsonField(int fieldTypeId, string phrase)
+        public JsonNetResult FieldType_TypeaheadJsonPropertyOptionsForJsonField(string fieldName, string phrase, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
         {
             var selectList = new List<SelectListItem>();
-            var ft = Company.GetById<FieldType>(fieldTypeId);
+            FieldType ft = null;
+            if (assetTypeUid != null)
+            {
+                int atID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == fieldName).SingleOrDefault();
+            }
+            else if (actionTypeUid != null)
+            {
+                int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == fieldName).SingleOrDefault();
+            }
+            else if (relationshipTypeUid != null)
+            {
+                var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
+                ft = Company.Filter<FieldType>(x => x.AssetTypeID == itID && x.Name == fieldName).SingleOrDefault();
+            }
+            else
+            {
+                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+            }
             phrase = phrase.Replace("[", @"\[");
             var sql = $@"
 select		P.[Path]
@@ -1096,7 +1113,7 @@ order by	P.[Path]
 offset 0 rows fetch next 25 rows only
                 ";
 
-            var items = Company.Query<string>(sql, new { fieldTypeId, phrase }).ToList();
+            var items = Company.Query<string>(sql, new { fieldTypeId = ft.ID, phrase }).ToList();
 
             return new JsonNetResult
             {

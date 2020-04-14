@@ -525,8 +525,15 @@ export class FieldsObservableService extends BaseObservableService implements IF
             }));
     }
 
-    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Observable<string[]> {
-        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
+    getTypeaheadJsonPropertyOptionsForJsonField(fieldName: string, phrase: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<string[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `assetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `actionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `relationshipTypeUid=${relationshipTypeUid}`;
+        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldName=${fieldName}&phrase=${encodeURIComponent(phrase)}&${url}`)
             .pipe(
                 map(response => <string[]>response),
                 catchError(err => this.handleError(err))

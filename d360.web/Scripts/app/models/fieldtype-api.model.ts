@@ -53,6 +53,7 @@ export class FieldType {
                 break;
             case 'JsonElement':
                 this.JsonElement = new ComputedRelationshipField();
+                this.JsonElement.JsonAttribute = new JSONAttribute();
                 break;
             case 'Link':
                 this.Link = new Link();
@@ -336,7 +337,7 @@ export class HTMLValidation {
 }
 
 export class Link implements ICommonOptions {
-    DefaultValue: DefaultValue;
+    DefaultValue: DefaultValue = new DefaultValue();
     Description: Description = new Description();
     Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;

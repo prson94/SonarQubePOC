@@ -483,25 +483,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     // called when the lookup type field is changed
-    private lookupTypeSelected(value: string): Observable<any> {
-        if (value == undefined) {
-            console.log("[ERROR] - LOOKUP TYPE IS UNDEFINED", value);
+    private lookupTypeSelected(uid: string): Observable<any> {
+        if (uid == undefined) {
+            console.log("[ERROR] - LOOKUP TYPE UID IS UNDEFINED", uid);
             return null;
         }
         if (this.currentType == 'Lookup') {
-
-            //update the model to have correct lookuptype object and id
-            let id = parseInt(value.split('|')[1]);
-            let type = value.split('|')[0];
-
-            if (this.model.FieldType.LookupObjectID != id || this.model.FieldType.LookupObjectType != type) {
-                this.model.FieldType.LookupDisplayFormat = "";
-                this.model.FieldType.LookupEditFormat = "";
+            if (this.model.FieldType.Type[this.currentType].List.Uid != uid) {
+                this.model.FieldType.Type[this.currentType].Format.Display = "";
+                this.model.FieldType.Type[this.currentType].Format.Edit= "";
             }
 
-            this.model.FieldType.LookupObjectID = id;
-            this.model.FieldType.LookupObjectType = type;
-
+            //gonna have to load these by the uid :( 
             this.loadDefaultValueOptions(type, id);
             this.loadHierarchyOptions(type, id);
             this.loadListFilterOptions(type, id);
@@ -510,7 +503,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type[this.currentType].Validation = new BooleanValidation();
             this.validate('*');
 
-            return null;// this.loadTokens(type, id);
+            return null;
         }
     }
 
@@ -785,9 +778,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Link') {
             {
-                this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName != null ? this.defaultLinkName : '';// + '|' + this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
-                this.model.FieldType.Type[this.currentType].DefaultValue.Text += '|';
-                this.model.FieldType.Type[this.currentType].DefaultValue.Url += this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName != null ? this.defaultLinkName : '';
+                this.model.FieldType.Type[this.currentType].DefaultValue.Url = this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
             }
         } else if (this.currentType == 'Date') {
             this.model.FieldType.Type[this.currentType].DefaultValue = this.defaultDate;
@@ -846,7 +838,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType == 'JsonElement') {
-            if (!this.model.JsonElementSettings.FieldTypeID || !this.model.JsonElementSettings.Path || !this.model.JsonElementSettings.DataType)
+            if (!this.model.FieldType.Type[this.currentType].JsonAttribute.FieldName
+                || !this.model.FieldType.Type[this.currentType].JsonAttribute.Path ||
+                !this.model.FieldType.Type[this.currentType].JsonAttribute.DataType)
                 valid = false;
         }
 
@@ -989,8 +983,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#endregion
 
     searchJsonForProperty(event) {
-        this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(this.model.JsonElementSettings.FieldTypeID, event.query).subscribe(data => {
-            this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
+        this.fieldsService.getTypeaheadJsonPropertyOptionsForJsonField(
+            this.model.FieldType.Type[this.currentType].JsonAttribute.FieldName,
+            event.query,
+            this.assetTypeUid,
+            this.actionTypeUid,
+            this.relationshipTypeUid).subscribe(data => {
+                this.TypeaheadJsonPropertyOptionsForJsonFieldResults = data;
         });
     }
 
