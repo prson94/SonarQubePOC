@@ -1091,6 +1091,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Views\Profiles\" />
+    <Folder Include="Views\Users\" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App_GlobalResources\FormInfo.resx">
