@@ -3512,8 +3512,8 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         from	Asset T
 		                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and S.[Object]=T.[Object] and T.[Object]='ReferenceItem'  and S.ExecutionID = @ExecutionID and S.Success is null and S.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 inner join api.ExecutionField C on C.ExecutionID = S.ExecutionID and C.ItemNumber = S.ItemNumber and C.FieldName = 'Code'
-                                                                left join api.ExecutionField CR on C.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
-                                                                left join api.ExecutionField I on C.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
+                                                                left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+                                                                left join api.ExecutionField I on I.ExecutionID = S.ExecutionID and I.ItemNumber = S.ItemNumber and I.FieldName = 'Icon';
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
@@ -6020,8 +6020,8 @@ insert into #Keys
                     table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
                     table.Columns.Add("OwningAssetUid", typeof(Guid));
                     table.Columns.Add("Uid", typeof(Guid));
-                    table.Columns.Add("EffectiveDate", typeof(DateTime));
-                    table.Columns.Add("RunDate", typeof(DateTime));
+                    table.Columns.Add("EffectiveDate", typeof(string));
+                    table.Columns.Add("RunDate", typeof(string));
                     table.Columns.Add("PassCount", typeof(long));
                     table.Columns.Add("FailCount", typeof(long));
                     table.Columns.Add("Message", typeof(string));
@@ -6041,25 +6041,61 @@ insert into #Keys
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
                             row["ItemNumber"] = i;
-
-                            if (model.RunDate != null && model.RunDate != DateTime.MinValue)
+                            
+                            if (model.RunDate != null)
                             {
                                 row["RunDate"] = model.RunDate;
 
-                                if (model.RunDate > DateTime.Now)
+                                DateTime rundate;
+                                if (!DateTime.TryParseExact(model.RunDate,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out rundate))
                                 {
-                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
                                 }
+                                else {
+                                    if (rundate > DateTime.Now)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
+                                        row["Success"] = 0;
+                                    }else if(rundate == DateTime.MinValue)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
+                                        row["Success"] = 0;
+                                    }
+                                }                                
                             }                                                       
 
                             if (model is DataQualityInsertModel dataQualityInsertModel)
                             {
-                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;
+                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;                                
 
-                                if (dataQualityInsertModel.EffectiveDate != null && dataQualityInsertModel.EffectiveDate != DateTime.MinValue)
+                                if (dataQualityInsertModel.EffectiveDate != null)
                                 {
-                                    row["EffectiveDate"] = dataQualityInsertModel.EffectiveDate.Date;
+                                    row["EffectiveDate"] = dataQualityInsertModel.EffectiveDate;
+
+                                    DateTime effectiveDate;
+                                    if (!DateTime.TryParseExact(dataQualityInsertModel.EffectiveDate,
+                                                           "yyyy-MM-dd",
+                                                           System.Globalization.CultureInfo.InvariantCulture,
+                                                           System.Globalization.DateTimeStyles.None,
+                                                           out effectiveDate))
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
+                                        row["Success"] = 0;
+                                    }else if (effectiveDate == DateTime.MinValue)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
+                                        row["Success"] = 0;
+                                    }
+                                    else if (effectiveDate > DateTime.Now)
+                                    {
+                                        row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
+                                        row["Success"] = 0;
+                                    }                                    
                                 }
                                 else
                                 {
@@ -6067,13 +6103,9 @@ insert into #Keys
                                     row["Success"] = 0;
                                 }
 
-                                if (dataQualityInsertModel.EffectiveDate > DateTime.Now)
-                                {
-                                    row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
-                                    row["Success"] = 0;
-                                }
+                                
 
-                                if (model.RunDate == null && model.RunDate == DateTime.MinValue)
+                                if (model.RunDate == null)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "RunDate");
                                     row["Success"] = 0;
@@ -6096,7 +6128,7 @@ insert into #Keys
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
 
-                                if (!model.EvaluatedAssetUid.HasValue && !model.RunDate.HasValue && !model.PassCount.HasValue && !model.FailCount.HasValue)
+                                if (!model.EvaluatedAssetUid.HasValue && model.RunDate == null && !model.PassCount.HasValue && !model.FailCount.HasValue)
                                 {
                                     row["Message"] = DataQualityErrors.InvalidUpdateError;
                                     row["Success"] = 0;
@@ -6214,14 +6246,14 @@ insert into #Keys
 			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
 											                                    and E.ExecutionID = @executionID and UPPER(E.Method)='POST'
 			                                    inner join 
-			                                    Asset A on (EAR.OwningAssetUid = A.uid or EAR.EvaluatedAssetUid = A.uid) 
+			                                    Asset A on (EAR.OwningAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
 			                                    and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
                                         
                                         -- Check on update
                                         update	EAR
 	                                    set		EAR.Success = 0,
-			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
+			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
 	                                    from    api.ExecutionAssetResult EAR                                                
                                         inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and UPPER(E.Method)='PUT'
                                         inner join 
@@ -6513,10 +6545,10 @@ insert into #Keys
                     table.Columns.Add("Uid", typeof(Guid));
                     table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
                     table.Columns.Add("OwningAssetUid", typeof(Guid));                    
-                    table.Columns.Add("EffectiveDateStart", typeof(DateTime));
-                    table.Columns.Add("EffectiveDateEnd", typeof(DateTime));
-                    table.Columns.Add("RunDateStart", typeof(DateTime));
-                    table.Columns.Add("RunDateEnd", typeof(DateTime));
+                    table.Columns.Add("EffectiveDateStart", typeof(string));
+                    table.Columns.Add("EffectiveDateEnd", typeof(string));
+                    table.Columns.Add("RunDateStart", typeof(string));
+                    table.Columns.Add("RunDateEnd", typeof(string));
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
 
@@ -6531,6 +6563,8 @@ insert into #Keys
                             var model = import[i - 1];
                             List<string> messages = new List<string>();
                             var row = table.NewRow();
+                            DateTime effectiveDateStart = new DateTime();
+                            DateTime runDateStart = new DateTime();
 
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
@@ -6562,42 +6596,82 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-
+                            
                             if (model.EffectiveDateStart != null)
                             {
-                                row["EffectiveDateStart"] = model.EffectiveDateStart.Value.Date;
+                                row["EffectiveDateStart"] = model.EffectiveDateStart;
+                                
+                                if (!DateTime.TryParseExact(model.EffectiveDateStart,
+                                                       "yyyy-MM-dd",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out effectiveDateStart))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd");
+                                    row["Success"] = 0;
+                                }                                
                             }                                                 
 
                             if (model.EffectiveDateEnd != null)
                             {
-                                row["EffectiveDateEnd"] = model.EffectiveDateEnd.Value.Date; 
+                                row["EffectiveDateEnd"] = model.EffectiveDateEnd;
+
+                                DateTime effectiveDateEnd;
+                                if (!DateTime.TryParseExact(model.EffectiveDateEnd,
+                                                       "yyyy-MM-dd",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out effectiveDateEnd))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd");
+                                    row["Success"] = 0;
+                                }
+                                else if (model.EffectiveDateStart != null && effectiveDateStart > effectiveDateEnd)
+                                {
+                                    messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
+                                    row["Success"] = 0;
+                                }
                             }
 
                             if (model.RunDateStart != null)
                             {
                                 row["RunDateStart"] = model.RunDateStart;
+                                
+                                if (!DateTime.TryParseExact(model.RunDateStart,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out runDateStart))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss");
+                                    row["Success"] = 0;
+                                }
                             }                            
 
                             if (model.RunDateEnd != null)
                             {
                                 row["RunDateEnd"] = model.RunDateEnd;
+
+                                DateTime runDateEnd;
+                                if (!DateTime.TryParseExact(model.RunDateEnd,
+                                                       "yyyy-MM-dd HH:mm:ss",
+                                                       System.Globalization.CultureInfo.InvariantCulture,
+                                                       System.Globalization.DateTimeStyles.None,
+                                                       out runDateEnd))
+                                {
+                                    row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
+                                    row["Success"] = 0;
+                                }else if (model.RunDateStart != null && runDateStart > runDateEnd)
+                                {
+                                    messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
+                                    row["Success"] = 0;
+                                }
                             }
                             if ((!model.Uid.HasValue || model.Uid.Value == Guid.Empty) && (!model.OwningAssetUid.HasValue || model.OwningAssetUid.Value == Guid.Empty) && (!model.EvaluatedAssetUid.HasValue || model.EvaluatedAssetUid.Value == Guid.Empty))
                             {
                                 messages.Add("At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
                                 row["Success"] = 0;
-                            }
-
-                            if (model.EffectiveDateStart != null && model.EffectiveDateEnd != null && model.EffectiveDateStart.Value > model.EffectiveDateEnd.Value)
-                            {
-                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
-                                row["Success"] = 0;
-                            }
-                            if (model.RunDateEnd != null && model.RunDateStart != null && model.RunDateStart > model.RunDateEnd)
-                            {
-                                messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
-                                row["Success"] = 0;
-                            }
+                            }                           
 
                             row["Message"] = string.Join(";", messages.ToArray());
                             
@@ -6654,9 +6728,22 @@ insert into #Keys
                                         inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
                                         inner join 
                                         Asset A on (
-                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
+                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)                                                    
                                                     or 
-                                                    (DAR.EvaluatedAssetUid is not null	and DAR.EvaluatedAssetUid = A.uid) 
+                                                    (
+                                                        DAR.EvaluatedAssetUid is not null 
+                                                        and -- find the owning asset for each result linked to the evaluated asset
+                                                        A.uid in (select 
+		                                                                distinct AN_own.Uid 
+	                                                                from 
+		                                                                graph.AssetNode AN_eval
+		                                                                inner join
+		                                                                assetResultedge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = 2 and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
+		                                                                inner join 
+		                                                                assetResultedge ARE_own on ARE_eval.$to_id = ARE_own.$to_id and ARE_own.class = 1 -- join the edge table to itself but only get the owning records.
+		                                                                inner join 
+		                                                                graph.AssetNode AN_own on ARE_own.$From_id = AN_own.$node_id)
+                                                    ) 
                                                     or 
                                                     (
                                                         DAR.Uid is not null 
@@ -6818,19 +6905,19 @@ insert into #Keys
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart < AR.EffectiveDate
+		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd > AR.EffectiveDate
+		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.RunDateStart is null or AR.RunDate > DAR.RunDateStart
+		                                                DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.RunDateEnd is null or AR.RunDate < DAR.RunDateEnd 
+		                                                DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd 
 												  
 	                                                )
                                                 ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
