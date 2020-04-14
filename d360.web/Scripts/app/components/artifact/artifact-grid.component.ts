@@ -10,7 +10,8 @@ import {
     ViewChild,
     OnInit,
     ChangeDetectionStrategy,
-    ChangeDetectorRef,
+    ChangeDetectorRef,
+
     OnDestroy
 } from '@angular/core';
 import { LazyLoadEvent } from 'primeng/api';

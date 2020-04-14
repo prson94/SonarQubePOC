@@ -63,15 +63,27 @@ export class GridFilterExpression {
     public getAsV2ApiFilter(fieldColumns: GridFilterColumn[]): string {
         var f = fieldColumns.find(x => x.datafield.toLowerCase() == this.field.toLowerCase());
         var cond = this.convertCondition(this.condition);
-        var val = this.wrapValue(f.fieldType, this.value);
+        let multiValueDelimiter = '!~!';
 
-        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup'];
+        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup', 'Decimal', 'Number'];
 
         if (forceEqualFields.some(x => x == f.fieldType)) {
             cond = 'eq';
         }
 
-        return `${f.apiName} ${cond} ${val}`;
+        var values = this.value.split(multiValueDelimiter);
+        let expressions: string[] = [];
+
+        values.forEach(value => {
+            var val = this.wrapValue(f.fieldType, value);
+            expressions.push(`${f.apiName} ${cond} ${val}`);
+        })
+
+        if (expressions.length > 1) {
+            return `(${expressions.join(' or ')})`;
+        }
+
+        return expressions.join(' or ');
     }
 
     private wrapValue(fieldType, value): string {
