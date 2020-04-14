@@ -213,8 +213,10 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             var model = new AssetsApiViewModel();
 
-            dbArgs.Add("@uid", uid.ToString());
-            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
+            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
+            dbArgs.Add("@assetTypeID", assetTypeID);
+            whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
