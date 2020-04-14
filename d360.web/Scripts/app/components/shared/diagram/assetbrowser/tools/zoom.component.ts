@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MessagesObservableService } from '../../../../../services/messages-observable.service';
 
 @Component({
@@ -8,7 +8,7 @@ import { MessagesObservableService } from '../../../../../services/messages-obse
     providers: [],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserZoomComponent {
+export class AssetBrowserZoomComponent implements OnChanges {
     @Input() scale: number;
     @Output() change: EventEmitter<number> = new EventEmitter();
 
@@ -20,8 +20,13 @@ export class AssetBrowserZoomComponent {
         
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes["scale"]) {
+            this.zoomText = Math.round(this.scale * 100) + '%';
+        }
+    }
+
     private update(scale: number) {
-        console.log(scale);
         this.change.emit(scale);
         this.zoomText = Math.round(scale * 100) + '%';
     }

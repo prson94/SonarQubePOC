@@ -1,4 +1,4 @@
-<div class="row">
+﻿<div class="row">
     <div class="col s12">
         <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail"
@@ -7,8 +7,8 @@
                 &nbsp; <d3s-tile-actions [hasAdd]="hasModifyAssetPermissions()"
                                          (addClick)="showAdd(0)"></d3s-tile-actions>
             </header>
-            <div *ngIf="!showDelete && !showEditor && model && model.Description && model.Description.length >0"
-                 [innerHtml]="model.Description"
+            <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
+                 [innerHtml]="assetType.Description"
                  class="item-description"></div>
             <input type="text"
                    pInputText
@@ -17,7 +17,8 @@
                    placeholder="Search"
                    style="width: 100%;margin-bottom:10px;"
                    *ngIf="!showDelete && !showEditor">
-            <p-treeTable #treeTable *ngIf="!showDelete && !showEditor"
+            <p-treeTable #treeTable 
+                         *ngIf="!showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
                          [(selection)]="selected"
@@ -57,15 +58,15 @@
                         <td>
                             <div class="RowTools">
                                 <a style="cursor:pointer;"
-                                   (click)="selected=rowNode.node;showAdd(item.Level)"
-                                   *ngIf="( model.MaximumDepth > item.Level ) && hasModifyAssetPermissions()"><i class="fa fa-plus"></i></a>
+                                   (click)="selected = rowNode.node; showAdd(item.Level)"
+                                   *ngIf="(assetType.MaximumDepth > item.Level) && hasModifyAssetPermissions()"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools"
                                  *ngIf="item.P_CanEdit">
                                 <a style="cursor:pointer;"
-                                   (click)="selected=rowNode.node;showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                   (click)="selected = rowNode.node; showEditor = true;"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>
@@ -73,7 +74,7 @@
                                  *ngIf="item.P_CanDelete">
                                 <a *ngIf="!rowNode.node.children || rowNode.node.children?.length == 0"
                                    style="cursor:pointer;"
-                                   (click)="selected=rowNode.node;showDelete=true;"><i class="fa fa-trash-o"></i></a>
+                                   (click)="selected = rowNode.node; showDelete=true;"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -81,20 +82,20 @@
             </p-treeTable>
             <d3s-asset-delete-editor *ngIf="showDelete"
                                      [uid]="selected?.data?.Uid"
-                                     [assetTypeUid]="model?.AssetTypeUID"
-                                     [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : 'Model')"
-                                     (onCancel)="showDelete = false;filter(null);"
+                                     [assetTypeUid]="assetType?.AssetTypeUID"
+                                     [displayValue]="(selected?.data?.DisplayValue ? selected?.data?.DisplayValue : objectName)"
+                                     (onCancel)="showDelete = false; filter(null);"
                                      (onDeleted)="onDeleted();">
             </d3s-asset-delete-editor>
 
             <d3s-dynamic-editor *ngIf="showEditor"
-                                [objectID]="selected ? selected?.data?.ID : model.ID"
-                                objectType="Taxonomy"
-                                [objectTypeUid]="model?.AssetTypeUID"
+                                [objectID]="selected ? selected?.data?.ID : assetType.ID"
+                                [objectType]="object"
+                                [objectTypeUid]="assetType?.AssetTypeUID"
                                 [parentID]="selectedParentId"
-                                [title]="modelTaxonomyTitle()"
+                                [title]="assetTypeTitle"
                                 [selection]="selected?.data"
-                                (saveClick)="saveTaxonomy()"
+                                (saveClick)="save()"
                                 (closeClick)="closeEditor();"
                                 [isV2API]="true"></d3s-dynamic-editor>
         </div>

@@ -12,6 +12,7 @@ export class SearchResult {
     Url: string;
     Icon: string;
     ImageUrl: string;
+    AssetPath: string[];
     Uid: string;
     AssetTypeUid: string;
     Tags: SearchResultTags[];
