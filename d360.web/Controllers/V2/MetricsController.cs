@@ -731,7 +731,7 @@ namespace d360.web.Controllers.V2
             }
 
 
-            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset) && (_evaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.ReadAsset)))
+            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
             }
@@ -975,7 +975,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
-            if (_OwningUid.HasValue && !Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.DeleteAsset) && (model.EvaluatedAssetUid != null && !Company.HasAssetPermission(asset.AssetType.Object, asset.AssetType.ObjectID, Permission.DeleteAsset)))
+            if (_OwningUid.HasValue && !Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.DeleteAsset))
             {
                 return errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage);
             }

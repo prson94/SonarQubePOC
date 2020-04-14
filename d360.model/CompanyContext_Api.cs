@@ -6246,7 +6246,7 @@ insert into #Keys
 			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
 											                                    and E.ExecutionID = @executionID and UPPER(E.Method)='POST'
 			                                    inner join 
-			                                    Asset A on (EAR.OwningAssetUid = A.uid or EAR.EvaluatedAssetUid = A.uid) 
+			                                    Asset A on (EAR.OwningAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
 			                                    and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
                                         
@@ -6728,9 +6728,22 @@ insert into #Keys
                                         inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
                                         inner join 
                                         Asset A on (
-                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)
+                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)                                                    
                                                     or 
-                                                    (DAR.EvaluatedAssetUid is not null	and DAR.EvaluatedAssetUid = A.uid) 
+                                                    (
+                                                        DAR.EvaluatedAssetUid is not null 
+                                                        and -- find the owning asset for each result linked to the evaluated asset
+                                                        A.uid in (select 
+		                                                                distinct AN_own.Uid 
+	                                                                from 
+		                                                                graph.AssetNode AN_eval
+		                                                                inner join
+		                                                                assetResultedge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = 2 and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
+		                                                                inner join 
+		                                                                assetResultedge ARE_own on ARE_eval.$to_id = ARE_own.$to_id and ARE_own.class = 1 -- join the edge table to itself but only get the owning records.
+		                                                                inner join 
+		                                                                graph.AssetNode AN_own on ARE_own.$From_id = AN_own.$node_id)
+                                                    ) 
                                                     or 
                                                     (
                                                         DAR.Uid is not null 
@@ -6892,19 +6905,19 @@ insert into #Keys
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart < AR.EffectiveDate
+		                                                DAR.EffectiveDateStart is null or DAR.EffectiveDateStart <= AR.EffectiveDate
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd > AR.EffectiveDate
+		                                                DAR.EffectiveDateEnd is null or DAR.EffectiveDateEnd >= AR.EffectiveDate
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.RunDateStart is null or AR.RunDate > DAR.RunDateStart
+		                                                DAR.RunDateStart is null or AR.RunDate >= DAR.RunDateStart
 	                                                )
 	                                                and
 	                                                (
-		                                                DAR.RunDateEnd is null or AR.RunDate < DAR.RunDateEnd 
+		                                                DAR.RunDateEnd is null or AR.RunDate <= DAR.RunDateEnd 
 												  
 	                                                )
                                                 ) R on R.from_id = DARE.$from_id and R.to_id = DARE.$to_id
