@@ -1,20 +1,20 @@
 ﻿using d360.media.formatters;
 using d360.web.Filters;
 using d360.web.Handlers;
+using d360.web.Models;
 using d360.web.Models.Attributes;
-using System;
-using System.Net.Http.Formatting;
-using System.Web.Http;
-using System.Web.Http.ExceptionHandling;
-using System.Web.Http.OData.Extensions;
-using Swashbuckle.Application;
-using System.Globalization;
-using System.Web.Http.Description;
-using System.Web.Http.Routing;
+using d360.web.Models.Formatters;
 using Microsoft.Web.Http.Routing;
 using Microsoft.Web.Http.Versioning;
-using d360.web.Models;
+using Swashbuckle.Application;
+using System;
 using System.Linq;
+using System.Net.Http.Formatting;
+using System.Web.Http;
+using System.Web.Http.Description;
+using System.Web.Http.ExceptionHandling;
+using System.Web.Http.OData.Extensions;
+using System.Web.Http.Routing;
 
 namespace d360.web
 {
@@ -116,6 +116,7 @@ For general API usage and instructions please see the <a href='{HelpBaseUri}' ta
             config.EnableCors();
             config.Formatters.Add(new DictionaryXmlMediaTypeFormatter());
 
+            config.Formatters.JsonFormatter.SerializerSettings.Converters.Add(new GuidConverter());
             config.Formatters.JsonFormatter.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
             config.Formatters.JsonFormatter.SerializerSettings.DateTimeZoneHandling = Newtonsoft.Json.DateTimeZoneHandling.Utc;
