@@ -573,6 +573,7 @@ namespace d360.core.entities
     [DataContract]
     public class InsertUserToGroup
     {
+        [DataMember]
         public List<Guid> UserUids { get; set; }
     }
 }

@@ -183,18 +183,39 @@ namespace d360.web.Controllers.V2
         /// Retrieves members of a group for a given group unique identifier.
         /// </summary>
         /// <param name="groupUid">The unique identifier of the Group.</param>
+        /// <param name="users">The users that need to be added to the group</param>
         [
            HttpPost,
            MapToApiVersion("2.0"),
            Route("groups/{groupUid:Guid}/members"),
            SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.OK, "Gets Members of a Group.", typeof(ResourceApiViewModel)),
-           SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group"),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(ResourceApiViewModel)),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
        ]
-        public HttpResponseMessage AddMembers(Guid groupUid, InsertUserToGroup users)
+        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, InsertUserToGroup users)
         {
+            var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
+            var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
+
+            if(isValidGroup.Total == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid provided is not a valid group uid"));
+
+            if (users.UserUids.Count != users.UserUids.Distinct().Count())
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User Uid appears multiple times"));
+            }
+
+            foreach(var user in users.UserUids)
+            {
+                var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
+                bool isValid = this.IsValidGuid(userUid,"uid");
+
+                if(!isValid)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user uids passed in are not valid"));
+
+            }
             return null;
         }
 
