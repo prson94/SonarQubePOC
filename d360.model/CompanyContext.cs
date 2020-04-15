@@ -1524,17 +1524,7 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
                         {additionalApply}
-                        {relationshipsWhere}
-                UNION
-                SELECT	R.ID,
-		                'Rule Implementation :: ' + A.DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule] R
-                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type	";
+                        {relationshipsWhere}";
             }
             else
             {
@@ -1545,6 +1535,14 @@ where	R.SourceObject = 'FusionAttribute'
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+            if (subject.HasValue && subjectID.HasValue && limitToClasses != null) 
+            {
+                if (limitToClasses.Contains(AssetTypeClass.Reference))
+                {
+                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                }
+            }
 
             var sql = $@"
     SELECT		I.ID,
@@ -1609,12 +1607,11 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            bool removeSpecialPredicateTypes = false;
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
             
             if (sSubject == "IntersectType")
             {
-                removeSpecialPredicateTypes = true;
+                allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
@@ -1623,8 +1620,7 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
-
-                allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class)).ToList();
+                allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
             var sql = @"
@@ -1649,10 +1645,7 @@ where	I.ID is null";
                         i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
                   );
 
-            if (removeSpecialPredicateTypes)
-            {
-                predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
-            }
+            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
 
             return predicates.ToList();
         }
