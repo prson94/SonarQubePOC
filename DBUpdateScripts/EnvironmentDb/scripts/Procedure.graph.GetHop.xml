@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.GetHop-v6">
+  <changeSet author="Pappas" id="Procedure.graph.GetHop-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -176,14 +176,13 @@ begin
 
 
 	--Now set read access permissions on assets.
+	update #nodes set HasAssetReadAccess = 1;
+
 	update	N
-	set		HasAssetReadAccess = 
-				case 
-					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = N.AssetTypeID) then 0
-					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, N.AssetTypeID) where N.AssetID = assetid) then 0
-					else @isAdmin
-				end
-	from	#nodes N;
+	set		HasAssetReadAccess = 0
+	from	#nodes N
+			cross apply dbo.UserAssetPermissions(@resourceId,N.AssetTypeID) P 
+	where	P.AssetID = N.AssetID and P.PermissionsBitMask & 1 = 0;
 
 	exec graph.Hop_GetResults @diagramType;				-- Return to caller.
 end
@@ -202,7 +201,7 @@ create or alter procedure [graph].[GetHop]
 	@isAdmin bit,
 	
 	-- Only relevant below if NOT initial
-	@ignoredAssets dbo.UidTable readonly,
+	@ignoredRelations dbo.UidTable readonly,
 	@direction char(1), -- (F)orward, (B)ackward
 	@predicateUid uniqueidentifier,
 	@leafOnly bit = 1
@@ -216,12 +215,12 @@ begin
 		set @predicateUid = null
 	end
 
-	drop table if exists #assetsToIgnore
-	create table #assetsToIgnore ([Uid] uniqueidentifier)
-	create index ix_TempAssetToIgnore on #assetsToIgnore (Uid asc)
+	drop table if exists #relationsToIgnore
+	create table #relationsToIgnore ([Uid] uniqueidentifier)
+	create index ix_TempRelationsToIgnore on #relationsToIgnore (Uid asc)
 	
-	insert into #assetsToIgnore
-		select * from @ignoredAssets;
+	insert into #relationsToIgnore
+		select * from @ignoredRelations;
 
 	-- Temporary Table Creation
 	drop table if exists #assetIds
@@ -342,8 +341,11 @@ begin
 		exec graph.Hop_GetBadgeCounts @diagramType, @expanded, @currentHopCount;		-- Get count values on badges that should be attached to assets.
 
 		-- Prepare for the next loop by resetting the assets we are interested in.
-		insert into #assetsToIgnore
-			select distinct AssetUid from #nodes where Parsed = 0 and AssetUid <> '00000000-0000-0000-0000-000000000000';
+		if @currentHopCount > 0
+		begin
+			insert into #relationsToIgnore
+				select distinct Uid from #links where Uid not in (select Uid from #relationsToIgnore)
+		end
 
 		update	#assetIds set Parsed = 1 where parsed = 0;
 		update	#nodes set Parsed = 1 where parsed = 0;

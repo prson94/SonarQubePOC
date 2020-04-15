@@ -571,7 +571,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
 
                     if (uid !== '' && uid != this.emptyUid) {
-                        this.panel_InformationDisabled = false;
+                        this.panel_InformationDisabled = !data.hasAssetReadAccess;
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];
@@ -580,7 +580,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
                                 this.selectedDiagramAsset.Uid = uid;
                                 if (this.panelModel.InformationVisible) {
-                                    this.helper_ShowDetail(uid);
+                                    if (this.panel_InformationDisabled) {
+                                        this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
+                                    }
+                                    else {
+                                        this.helper_ShowDetail(uid);
+                                    }
+                                    
                                 }
                                 this.cdRef.markForCheck();
                             }
@@ -2085,7 +2091,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (this.selectedDiagramAsset) {
                     allowInformationPopup = (this.selectedDiagramAsset.Uid != this.emptyUid);
                 }
-
+                
                 if (allowInformationPopup) {
                     if (this.selectedDiagramAsset != null) {
                         this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
