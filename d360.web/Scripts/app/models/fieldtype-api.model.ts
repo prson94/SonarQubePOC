@@ -361,9 +361,9 @@ export class Lookup implements ICommonOptions{
     Description: Description = new Description();
     AllowAllValue: boolean;
     AllowAllLabel: string;
-    Filter: Filter;
-    Format: Format;
-    List: List;
+    Filter: Filter = new Filter();
+    Format: Format = new Format();
+    List: List = new List();
     Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;
     ColumnWidth: number = 0;
@@ -383,14 +383,14 @@ export class Filter {
 }
 
 export class Format {
-    Display: string;
-    Edit: string;
+    Display: string = undefined;
+    Edit: string = undefined;
 }
 
 export class List {
-    Uid: string;
-    Class: string;
-    AllowMultipleValues: boolean;
+    Uid: string = undefined;
+    Class: string = undefined;
+    AllowMultipleValues: boolean = undefined;
 }
 
 export class Tag implements ICommonOptions{

@@ -5,47 +5,46 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="Procedure.utility.GetFieldTypeLookupList-v2">
+  <changeSet author="bhoward" id="Procedure.utility.GetFieldTypeLookupList-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
 create or alter procedure [utility].[GetFieldTypeLookupList]
-	@type varchar(50), 
-	@id int 
 as
 begin
 	SELECT	'L' as type,
-			'Artifact|' + cast(ObjectID as varchar) as value,
+			Uid as value,
 			'Business Asset : ' + Name as title
 	FROM	AssetType where [Class] = 1
 	UNION
   SELECT	'L' as type,
-			'Artifact|' + cast(ObjectID as varchar) as value,
+			Uid as value,
 			'Technical Asset : ' + Name as title
 	FROM	AssetType where [Class] = 8
 	UNION
 	SELECT	'L' as type,
-			'ReferenceItemType|0'  as value,
+			CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) as value,
 			'Reference List' as title
 	UNION
 	SELECT	'L' as type,
-			'ReferenceItem|' + cast(ObjectID as varchar) as value,
+			Uid as value,
 			'Reference List Item: ' + Name as title
 	FROM	AssetType where [Object] = 'ReferenceItemType'
 	UNION
 	SELECT	'L' as type,
-			'Resource|1' as value,
+			Uid as value,
 			'Resource : User' as title
+			FROM AssetType where [Class] = 11
 	UNION
 	SELECT	'L' as type,
-			'Taxonomy|' + cast(ObjectID as varchar) as value,
+			Uid as value,
 			'Model : ' + Name as title
 	FROM	AssetType where [Object] = 'TaxonomyType'
 	UNION
 	SELECT	'L' as type,
-			'TaxonomyType|0'  as value,
+			CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) as value,
 			'Model Type' as title
 end
 		]]>

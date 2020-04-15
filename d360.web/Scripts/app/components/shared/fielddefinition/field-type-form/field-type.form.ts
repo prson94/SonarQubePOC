@@ -366,7 +366,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (value.toLowerCase()) {
             case 'lookup':
-                observables.push(this.lookupTypeSelected(this.model.selectedLookup || this.lookups.Lookups[0].value));
+                if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid)
+                    observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
+                else 
+                    observables.push(this.lookupTypeSelected(this.lookups.Lookups[0].value));
                 break;
             case 'relationship':
                 try {
@@ -489,21 +492,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return null;
         }
         if (this.currentType == 'Lookup') {
-            if (this.model.FieldType.Type[this.currentType].List.Uid != uid) {
+            if (this.model.FieldType.Type[this.currentType].List.Uid = uid) {
                 this.model.FieldType.Type[this.currentType].Format.Display = "";
-                this.model.FieldType.Type[this.currentType].Format.Edit= "";
+                this.model.FieldType.Type[this.currentType].Format.Edit = "";
             }
+            console.log(this.model.FieldType.Type[this.currentType]);
 
-            //gonna have to load these by the uid :( 
-            this.loadDefaultValueOptions(type, id);
-            this.loadHierarchyOptions(type, id);
-            this.loadListFilterOptions(type, id);
+            this.loadDefaultValueOptions(uid);
+            this.loadHierarchyOptions(uid);
+            this.loadListFilterOptions(uid);
 
-            //clear the validated fields and error message
-            this.model.FieldType.Type[this.currentType].Validation = new BooleanValidation();
             this.validate('*');
 
-            return null;
+            return this.loadTokens(uid);
         }
     }
 
@@ -542,7 +543,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     if (fieldTypename != null) {
                         this.model.FieldType.Type[this.currentType].FieldTypeName = fieldTypename;
                     } else if (this.fieldsFromRelation.length > 0) {
-                        console.log(this.fieldsFromRelation[0]);
                         this.model.FieldType.Type[this.currentType].FieldTypeName = this.fieldsFromRelation[0].label;
                     } else {
                         this.model.FieldType.Type[this.currentType].FieldTypeName = null;
@@ -684,37 +684,29 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         return;
     }
 
-    private loadDefaultValueOptions(objectType: string, objectId: number): Subscription {
-        if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
-            console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD DEFAULT VALUES FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
+    private loadDefaultValueOptions(uid: string): Subscription {
+        if (this.model.FieldType.Type[this.currentType].List.Uid  == undefined) {
+            console.log("[ERROR] - NO UID SPECIFIED TO LOAD DEFAULT VALUES FOR ", this.model.FieldType.Type[this.currentType].List.Uid );
             return;
         }
 
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") {
-            objectType += 'Type';
-        }
-
-        return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).pipe(
+        return this.fieldsService.getLookupDefaultValueOptions(this.model.FieldType.Type[this.currentType].List.Uid).pipe(
             map(r => {
+                console.log(r);
                 this.lookupDefaultValueOptions = r;
                 this.lookupDefaultValueOptions.forEach(x => x.value = x.value ? x.value.toString() : x.value);
             })
         ).subscribe();
     }
 
-    private loadTokens(objectType: string, objectId: number): Observable<any> {
-        if (this.model.FieldType.LookupObjectType == undefined || this.model.FieldType.LookupObjectID == undefined) {
-            console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.LookupObjectID, this.model.FieldType.LookupObjectType);
+    private loadTokens(uid: string): Observable<any> {
+        if (this.model.FieldType.Type[this.currentType].List.Uid == undefined) {
+            console.log("[ERROR] - NO TYPE OR ID SPECIFIED TO LOAD TOKENS FOR", this.model.FieldType.Type[this.currentType].List.Uid);
             return;
         }
 
-        if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") {
-            objectType += 'Type';
-        }
-        if (objectType == "Artifact")
-            objectType = "Business Asset"
 
-        return this.fieldsService.getLookupTokens(objectId, objectType).pipe(map(
+        return this.fieldsService.getLookupTokens(uid).pipe(map(
             r => {
                 this.model.LookupTokens = r;
                 if (this.model.LookupTokens

@@ -52,7 +52,7 @@ export class FieldTypeEditorModel {
     RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
     cardinalRelationship: number;
-    LookupTokens: SelectItem[] = new Array<SelectItem>();
+    LookupTokens: SelectItem[] = [];
     OwnershipLookupSettings: OwnershipLookupSettings;
     JsonElementSettings: JsonElementSettings;
     IsPrimaryFilter: boolean;

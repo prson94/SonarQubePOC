@@ -23,6 +23,7 @@ using System.Web.Http;
 using d360.model.validators;
 using d360.model.DataAccessLayer;
 using Resources;
+using System.Web.Http.Description;
 
 namespace d360.web.Controllers.V2
 {
@@ -429,6 +430,514 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        #region FormHelpers NOT TO BE EXPOSED IN SWAGGER DOC
+
+        /// <summary>
+        /// Gets the default values for the all lookups in the Field Form.
+        /// </summary>
+        /// <returns>A list of Lookup options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetLookups"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetLookups(string fieldtypename, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, bool isNg = false)
+        {
+            var prefix = "Fields.GetLookups => ";
+            var errorMessage = "";
+
+            try
+            {
+                #region Load static lists
+
+                int id = 0;
+                int fieldtypeid = 0;
+                FieldType fieldType;
+                SystemObjects type = SystemObjects.ArtifactType;
+                if (AssetTypeUid != null)
+                {
+                    var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+                    id = assetType.ObjectID;
+                    Enum.TryParse(assetType.Object, out type);
+                    fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == id && x.Name == fieldtypename).SingleOrDefault();
+                }
+                else if (ActionTypeUid != null)
+                {
+                    var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
+                    id = issueType.ID;
+                    Enum.TryParse("IssueType", out type);
+                    fieldType = Company.Filter<FieldType>(x => x.Object == "IssueType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
+                }
+                else if (RelationshipTypeUid != null)
+                {
+                    var intersectType = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
+                    id = intersectType.ID;
+                    fieldType = Company.Filter<FieldType>(x => x.Object == "IntersectType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
+                }
+                else
+                {
+                    throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+                }
+                fieldtypeid = fieldType == null ? 0 : fieldType.ID;
+
+                var lists = await Company.QueryAsync<dynamic>("exec utility.GetFieldTypeLookupList");
+                var intersectTypes = lists.Where(i => i.type == "I").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+                var attributes = lists.Where(i => i.type == "A").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+                var fusionAttributeTypes = lists.Where(i => i.type == "F").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+                var lookups = lists.Where(i => i.type == "L").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+                var filteredLookups = lists.Where(i => i.type == "FL").Select(i => new { i.value, i.title }).OrderBy(i => i.title);
+
+                var complexLookupRelations = ComplexLookupRelationType.ChildItem.GetComplexLookupRelationTypeInfoList().ToList();
+
+                var sType = type.ToString();
+
+                IQueryable<IntersectTypeDetail> queryAllRelationships = Company.Filter<IntersectTypeDetail>(i =>
+                    (i.Subject == sType && i.SubjectID == id) ||
+                    (i.Object == sType && i.ObjectID == id)
+                );
+
+                //Hide self reference relationships for models and policies 
+                if (type == SystemObjects.TaxonomyType || type == SystemObjects.PolicyType)
+                {
+                    queryAllRelationships = queryAllRelationships.Where(x => x.PredicateType != PredicateType.IntraTypeHierarchy);
+                }
+
+                var allRelationships = queryAllRelationships.ToList();
+
+                var cardinalRelationships = allRelationships.Where(i =>
+                    (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
+                    (i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
+                ).ToList();
+
+                var fieldFromRelRelationships = allRelationships.Where(i =>
+                    (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                    (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                ).ToList();
+
+                IEnumerable<int> LookupObjectIDs = await Company.QueryAsync<int>(@"select distinct LookupObjectID from [FieldType] ft 
+                                                                  where (Object = @objectType and ObjectID = @objectid) 
+                                                                  and (LookupObjectID is not null) and Type = 'Relationship' 
+                                                                  and not exists (select 1 from [FieldType] ft2 
+                                                                                  where ft2.id = @ffieldtypeid
+                                                                                  and   ft2.LookupObjectID = ft.LookupObjectID
+                                                                                  and   ft2.LookupObjectID is not null)", new { objectType = sType, objectid = id, ffieldtypeid = fieldtypeid });
+
+                var Field_Relationships = allRelationships
+                    .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy
+                                && x.Object != SystemObjects.IntersectType.ToString()
+                                && x.Subject != SystemObjects.IntersectType.ToString()
+                                && !LookupObjectIDs.Contains(x.ID))
+                    .Select(i => new
+                    {
+                        title = ((i.Subject == sType && i.SubjectID == id) ?
+                            $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                            $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                        value = i.Uid
+                    });
+
+                var Field_CardinalRelationships = cardinalRelationships
+                    .Select(i => new
+                    {
+                        title = ((i.Subject == sType && i.SubjectID == id) ?
+                            $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                            $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                        value = i.Uid
+                    });
+
+                var Field_CardinalReferenceRelationships = cardinalRelationships
+                    .Where(i =>
+                        (i.Subject == sType && i.SubjectID == id) ?
+                            (i.Object == SystemObjects.ReferenceItemType.ToString() && i.ObjectID == 0) :
+                            (i.Subject == SystemObjects.ReferenceItemType.ToString() && i.SubjectID == 0)
+                    )
+                    .Select(i => new
+                    {
+                        title = ((i.Subject == sType && i.SubjectID == id) ?
+                            $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                            $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                        value = i.Uid
+                    });
+
+                var Field_FieldFromRelRelationships = fieldFromRelRelationships.Select(i => new
+                {
+                    title = ((i.Subject == sType && i.SubjectID == id) ?
+                            $"{i.SubjectName} {i.PredicateName} {i.ObjectName}" :
+                            $"{i.ObjectName} {i.PredicateInverse} {i.SubjectName}"),
+                    value = i.Uid
+                });
+
+                var patterns = new Dictionary<string, string>() {
+                { "Choose sample...", "" },
+                { "Email", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b" },
+                { "IP Address", @"^$|^([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})\.([0-9]{1,3})$" },
+                { "North American Phone", @"^$|\b\d{3}[-.]?\d{3}[-.]?\d{4}\b" },
+                { "Internal Url", @"^$|\b(http(s)?:\/\/){1}([\da-z\.-]+)([\/\w \.-]*)*\/?\b" },
+                { "Public Url", @"^$|\b(http(s)?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?\b" },
+                { "US Zip Code", @"^(\d{5}(?:\-\d{4})?)$" }
+            };
+                var dataTypeOptions = DataType.Boolean.GetDataTypeInfoList(type)
+                        .Where(i => !i.ReadOnly)
+                        .Select(i => new
+                        {
+                            title = i.Description,
+                            value = i.Name
+                        })
+                        .OrderBy(i => i.title).ToList();
+
+                if (!Community.IsFusionEnabled())
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
+                }
+
+                var jsonFieldType = new Dictionary<string, string>()
+            {
+                { "Boolean", "bit" },
+                { "Date", "date" },
+                { "Date With Time", "datetime" },
+                { "Decimal", "float" },
+                { "Text", "nvarchar" },
+                { "Whole Number", "int" },
+                { "Whole Number (Large)", "bigint" },
+            };
+                var Field_JsonDataTypes = jsonFieldType.Select(i => new { title = i.Key, value = i.Value });
+                var Field_JsonFields = Company.Filter<FieldType>(ft => ft.Object == sType && ft.ObjectID == id && ft.Type == "JSON")
+                    .OrderBy(ft => ft.FriendlyName)
+                    .Select(ft => new { ft.FriendlyName, ft.Name, ft.ID })
+                    .ToList()
+                    .Select(ft => new { title = $"{ft.FriendlyName} ({ft.Name})", value = ft.Name })
+                    .ToList();
+
+                #endregion
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, new {
+                        Attributes = attributes,
+                        Field_Relationships,
+                        Field_JsonFields,
+                        Field_JsonDataTypes,
+                        Field_CardinalRelationships,
+                        Field_FieldFromRelRelationships,
+                        Field_CardinalReferenceRelationships,
+                        DataTypes = dataTypeOptions,
+                        FilteredLookups = filteredLookups,
+                        Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
+                        IntersectTypes = intersectTypes,
+                        FusionAttributeTypes = fusionAttributeTypes,
+                        Lookups = lookups,
+                        ComplexLookupRelations = complexLookupRelations 
+                });
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the form data for the chosen Field Form.
+        /// </summary>
+        /// <returns>A the form options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetFieldTypeFormData"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetFieldTypeFormData(string name, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
+        {
+            var prefix = "Fields.GetFieldTypeFormData => ";
+            var errorMessage = "";
+
+            try
+            {
+                FieldType ft = null;
+                if (assetTypeUid != null)
+                {
+                    int atID = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault().ID;
+                    ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+                }
+                else if (actionTypeUid != null)
+                {
+                    int atID = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault().ID;
+                    ft = Company.Filter<FieldType>(x => x.AssetTypeID == atID && x.Name == name).SingleOrDefault();
+                }
+                else if (relationshipTypeUid != null)
+                {
+                    var itID = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault().ID;
+                    ft = Company.Filter<FieldType>(x => x.AssetTypeID == itID && x.Name == name).SingleOrDefault();
+                }
+                else
+                {
+                    throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+                }
+
+                List<dynamic> filteredLookupItems = null;
+                List<dynamic> fusionItems = null;
+                List<dynamic> relationItems = null;
+                dynamic ownershipLookupSettings = null;
+                dynamic JsonElementSettings = null;
+
+                if (ft != null)
+                {
+
+                    if (ft.Type == DataType.JsonElement.ToString())
+                    {
+                        if (!string.IsNullOrEmpty(ft.Definition))
+                        {
+                            JsonElementSettings = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(ft.Definition);
+                        }
+                    }
+
+                    var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == ft.ID).FirstOrDefault();
+                    if (lookup != null)
+                    {
+                        var definition = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);
+
+                        if (ft.Type == DataType.ComplexRelationLookup.ToString())
+                        {
+                            relationItems = new List<dynamic>();
+                            foreach (var r in definition.Relations)
+                            {
+                                relationItems.Add(new
+                                {
+                                    r.ID,
+                                    IntersectType = r.IntersectTypeID,
+                                    ReferenceType = r.RelationType,
+                                    ChildIntersectType = 0,
+                                    DisplayFields = new List<dynamic>(),
+                                    lookup.HideHeader,
+                                    lookup.HideFooter,
+                                    lookup.HideFilter,
+                                    Direction = r.Direction ?? 0,
+                                    r.Object,
+                                    r.ObjectID
+                                });
+                            }
+                            if (definition.Fields != null)
+                            {
+                                foreach (var f in definition.Fields)
+                                {
+                                    var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
+
+                                    if (r != null)
+                                    {
+                                        r.DisplayFields.Add(f);
+                                    }
+                                }
+                            }
+                        }
+                        else if (ft.Type == DataType.OwnershipLookup.ToString())
+                        {
+                            ownershipLookupSettings = new
+                            {
+                                definition.DisplayAssignmentSource,
+                                definition.ExpandGroupMembership,
+                                lookup.HideFilter,
+                                lookup.HideFooter,
+                                lookup.HideHeader
+                            };
+                        }
+                    }
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, new {                    
+                        FieldType = ft,
+                        FilteredLookupItems = filteredLookupItems,
+                        FusionItems = fusionItems,
+                        JsonElementSettings,
+                        OwnershipLookupSettings = ownershipLookupSettings,
+                        RelationItems = relationItems
+                });
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the lookup tokens for the chosen lookup in the Field Form.
+        /// </summary>
+        /// <returns>A list of tokens, if any.</returns>
+        [
+            HttpGet,
+            Route("GetFieldTypeLookupTokens"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetFieldTypeLookupTokens(Guid Uid)
+        {
+            var prefix = "Fields.GetFieldTypeLookupTokens => ";
+            var errorMessage = "";
+
+            try
+            {
+                var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
+                int id = item.ObjectID;
+                Enum.TryParse(item.Object, out SystemObjects type);
+
+                var list = Company.GetFieldTypesByObject(type, id)
+                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                    .Select(i => new { i.ID, i.Name })
+                    .ToDictionary(i => i.Name, i => i.Name);
+
+                switch (type)
+                {
+                    case SystemObjects.ArtifactType:
+                        list.Add("ID", "ID");
+                        break;
+                    case SystemObjects.ReferenceItem:
+                    case SystemObjects.ReferenceItemType:
+                        list.Add("Code", "Code");
+                        break;
+                    case SystemObjects.PolicyType:
+                        list.Add("TextPath", "TextPath");
+                        break;
+                    case SystemObjects.Resource:
+                    case SystemObjects.ResourceType:
+                        list.Add("First Name", "FirstName");
+                        list.Add("Last Name", "LastName");
+                        list.Add("Email", "Email");
+                        break;
+                    case SystemObjects.TaxonomyType:
+                        if (id == 0)
+                        {
+                            list.Add("Name", "Name");
+                        }
+                        else
+                        {
+                            list.Add("TextPath", "TextPath");
+                        }
+                        break;
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = "{" + i.Value + "}" }));
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the default values for the chosen lookup in the Field Form.
+        /// </summary>
+        /// <returns>A list of default options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetLookupDefaultValues"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)            
+        ]
+        public async Task<HttpResponseMessage> GetLookupDefaultValues(Guid Uid)
+        {
+            var prefix = "Fields.GetLookupDefaultValues => ";
+            var errorMessage = "";
+
+            try
+            {
+                var list = new List<ListUidItem>();
+                list.Add(new ListUidItem { title = "- No default -", value = null });
+                var usersOnly = false;
+                string sql = "";
+                usersOnly = Company.Filter<AssetType>(x => x.uid == Uid && x.Class == AssetTypeClass.User).Count() > 0;
+                if (usersOnly)
+                {
+                    string HideD3SUsers = HideData3SixtyUsers() ? "": " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' "; 
+                    sql = $@"
+                        select 
+                            R.Uid as value,
+                            (FirstName + ' ' + LastName)  as title  
+                        from [reporting].[Global_Resource] r 
+                        {HideD3SUsers}
+                        order by title           
+                    ";
+                }
+                else
+                {
+                    sql = $@"
+                        select 
+                            ast.Uid as value,
+                            d.DisplayValue as title  
+                        from asset ast 
+                            inner join assettype astt on (ast.assettypeid = astt.id) 
+                            cross apply [dbo].GetAssetDisplayValueById(ast.id) d 
+                        where astt.Uid = @Uid order by d.DisplayValue
+                                        
+                    ";
+
+                }
+
+                list.AddRange(
+                    await Company.QueryAsync<ListUidItem>(sql, new { Uid })
+                );
+
+                return Request.CreateResponse(HttpStatusCode.OK, list);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+        #endregion
 
     }
 }

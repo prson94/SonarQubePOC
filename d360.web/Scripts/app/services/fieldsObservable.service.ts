@@ -177,12 +177,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getLookupDefaultValueOptions(
-        id: number,
-        type: string
+        Uid: string
     ): Observable<SelectItem[]> {
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
+            .get<SelectItem[]>(`api/v2/fields/GetLookupDefaultValues?Uid=${Uid}`)
             .pipe(
                 map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
@@ -190,13 +189,10 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
 
-    getLookupTokens(
-        id: number,
-        type: string
-    ): Observable<SelectItem[]> {
+    getLookupTokens(uid: string): Observable<Array<SelectItem>> {
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
+            .get<Array<SelectItem>>(`api/v2/fields/GetFieldTypeLookupTokens?Uid=${uid}`)
             .pipe(
                 map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
@@ -214,7 +210,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
         return this
             .http
-            .get<Lookups>(`form/FieldType_Lookups?fieldtypename=${fieldTypeName}&${url}&isNg=true`)
+            .get<Lookups>(`api/v2/fields/GetLookups?fieldtypename=${fieldTypeName}&${url}&isNg=true`)
             .pipe(
                 map(response => <any>response),
                 map(

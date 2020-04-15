@@ -15,9 +15,9 @@ export interface IFieldsObservableService {
 
     getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]>;
 
-    getLookupTokens(id: number, type: string): Observable<SelectItem[]>;
+    getLookupTokens(uid: string): Observable<SelectItem[]>;
 
-    getLookups(typeuid: string, fieldTypeName: string): Observable<Lookups>;
+    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldTypeName: string): Observable<Lookups>;
 
     getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel>;
 

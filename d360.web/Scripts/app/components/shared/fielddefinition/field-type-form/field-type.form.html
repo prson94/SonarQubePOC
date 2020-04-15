@@ -180,8 +180,8 @@
                     <p-dropdown filter="true"
                                 name="lookup"
                                 [options]="lookups.Lookups"
-                                [ngModel]="model.selectedLookup"
-                                (ngModelChange)="model.selectedLookup=$event;lookupTypeSelected($event).subscribe();"
+                                [(ngModel)]="model.FieldType.Type[currentType].List.Uid"
+                                (ngModelChange)="model.FieldType.Type[currentType].List.Uid=$event;lookupTypeSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -256,7 +256,7 @@
             <div class="form-instructions">
                 You can optionally filter a list of artifacts or models based on a relationship with another artifact or
                 model, by choosing the predicate of the relationship you wish to filter by.
-                <span *ngIf="objectType == 'IssueType'">For example, choose 'stores' and 'Action Subject' to filter a list of applications to include only those which store the subject asset of a form.</span>
+                <span *ngIf="actionTypeUid != null">For example, choose 'stores' and 'Action Subject' to filter a list of applications to include only those which store the subject asset of a form.</span>
             </div>
             <div class="row">
                 <div class="col s12">
