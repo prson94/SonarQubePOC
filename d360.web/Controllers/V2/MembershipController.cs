@@ -486,6 +486,47 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Adds the specified users.
+        /// </summary>
+        /// <param name="users">A list users to add.</param>
+        [
+            HttpPost,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiUpsertModel), typeof(UserPostExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostUsers(List<UserApiUpsertModel> users)
+        {
+            var prefix = "Membership.PostUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = true);
+
+            try
+            {
+               var results = await membershipRepository.UpsertUsers(users);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+
+            return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ""));
+
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;

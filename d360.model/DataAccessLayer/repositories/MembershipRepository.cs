@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using d360.core.enums;
 using System.Net;
+using System.Data;
 
 namespace d360.model.DataAccessLayer
 {
@@ -76,7 +77,6 @@ namespace d360.model.DataAccessLayer
             return new GroupApiModels() { items = results, Total = count };
 
         }
-
         public WorkHttpStatus DeleteResources(IEnumerable<UserApiDeleteModel> resources)
         {
             try
@@ -121,6 +121,117 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Users deleted successfully");
         }
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(IEnumerable<UserApiUpsertModel> users)
+        {
+            var executionID = Guid.NewGuid();
+            var results = new List<UserApiUpsertResult>();
 
+            #region Data Tables
+
+            var userTable = new DataTable();
+            var fieldTable = new DataTable();
+
+            userTable.Columns.Add("ExecutionID", typeof(Guid));
+            userTable.Columns.Add("Uid", typeof(Guid));
+            userTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+            userTable.Columns.Add("ItemNumber", typeof(int));
+            userTable.Columns.Add("Username", typeof(string));
+            userTable.Columns.Add("FirstName", typeof(string));
+            userTable.Columns.Add("LastName", typeof(string));
+            userTable.Columns.Add("Password", typeof(string));
+            userTable.Columns.Add("State", typeof(int));
+            userTable.Columns.Add("IsAdministrator", typeof(bool));
+            userTable.Columns.Add("IsNew", typeof(bool));
+
+
+            fieldTable.Columns.Add("ExecutionID", typeof(Guid));
+            fieldTable.Columns.Add("ItemNumber", typeof(int));
+            fieldTable.Columns.Add("FieldName", typeof(string));
+            fieldTable.Columns.Add("FieldValue", typeof(string));
+            fieldTable.Columns.Add("FieldTypeID", typeof(int));
+            fieldTable.Columns.Add("LookupValue", typeof(string));
+
+            #endregion
+
+            int itemNumber = 0;
+            foreach (var user in users)
+            {
+                itemNumber++;
+                var row = userTable.NewRow();
+                var result = new UserApiUpsertResult()
+                { 
+                    ExecutionItemUid = user.ExecutionItemUid,
+                    ItemNumber = itemNumber
+                };
+
+                var success = true;
+                var messages = new List<string>();
+
+                results.Add(result);
+
+
+                if (user.IsNew)
+                {
+                    if (user.Uid.HasValue)
+                    {
+                        success = false;
+                        messages.Add("Cannot provide Uid for a new user");
+                    }
+
+                    if (user.State.HasValue)
+                    {
+                        success = false;
+                        messages.Add("Cannot provide State for a new user");
+                    }
+                }
+                else
+                {
+                    if (!user.Uid.HasValue)
+                    {
+                        success = false;
+                        messages.Add("Must provide Uid for updated user");
+                    }
+                }
+
+
+                if (success)
+                {
+                    row["ExecutionID"] = executionID;
+                    if (user.Uid.HasValue) row["Uid"] = user.Uid;
+                    if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
+                    row["ItemNumber"] = itemNumber;
+                    row["Username"] = user.Username;
+                    row["FirstName"] = user.FirstName;
+                    row["LastName"] = user.LastName;
+                    row["Password"] = user.Password;
+                    if (user.State.HasValue) row["State"] = (int)user.State;
+                    row["IsAdministrator"] = user.IsAdministrator;
+                    row["IsNew"] = user.IsNew;
+
+                    userTable.Rows.Add(row);
+
+                    if (user.Fields != null)
+                    {
+                        foreach (var field in user.Fields.Keys)
+                        {
+                            var fieldRow = fieldTable.NewRow();
+                            fieldRow["ExecutionID"] = executionID;
+                            fieldRow["ItemNumber"] = itemNumber;
+                            fieldRow["FieldName"] = field;
+                            fieldRow["FieldValue"] = user.Fields[field];
+
+                            fieldTable.Rows.Add(fieldRow);
+                        }
+                    }
+                }
+
+                result.Success = success;
+                result.Message = string.Join(". ", messages);
+
+            }
+
+
+            return results;
+        }
     }
 }
