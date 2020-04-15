@@ -124,7 +124,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} format invalid. correct format is: {1}.
+        ///   Looks up a localized string similar to {0} format invalid. The correct format is: {1}.
         /// </summary>
         public static string InvalidFormatError {
             get {
