@@ -1132,7 +1132,7 @@ where T.ExecutionId = @executionid;
                                 if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807.");
+                                    errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
                                 }
                                 break;
                             case "Percentage":
@@ -1147,12 +1147,12 @@ where T.ExecutionId = @executionid;
                                 if (fieldValue.Length > 2500)
                                 {
                                     success = false;
-                                    errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters.");
+                                    errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
                                 }
                                 break;
                             case "Tag":
                                 success = false;
-                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request.");
+                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request");
                                 break;
                             default: // Html, Text
                                 if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
