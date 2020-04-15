@@ -571,7 +571,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     }
 
                     if (uid !== '' && uid != this.emptyUid) {
-                        this.panel_InformationDisabled = false;
+                        this.panel_InformationDisabled = !data.hasAssetReadAccess;
                         if (this.selectedDiagramAsset == null || this.selectedDiagramAsset.Uid != uid) {
                             if (this.panelModel.AlertVisible) {
                                 this.selectedAssetsWithAlerts = [uid];
@@ -580,7 +580,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 this.selectedDiagramAsset = new AssetBrowserDiagramAsset();
                                 this.selectedDiagramAsset.Uid = uid;
                                 if (this.panelModel.InformationVisible) {
-                                    this.helper_ShowDetail(uid);
+                                    if (this.panel_InformationDisabled) {
+                                        this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
+                                    }
+                                    else {
+                                        this.helper_ShowDetail(uid);
+                                    }
+                                    
                                 }
                                 this.cdRef.markForCheck();
                             }
@@ -1720,6 +1726,15 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private helper_RefreshDiagram(closePanels: boolean = true) {
+
+        // Clear out the current diagram data first.
+        this.diagram.startTransaction('RefreshDiagramCommand');
+        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
+        dm.nodeDataArray = [];
+        dm.linkDataArray = [];
+        this.diagram.commitTransaction('RefreshDiagramCommand');
+
+
         this.assetUid = this.originalAssetUid;
         this.isLoading = true;
         this.selectedDiagramAsset = null;
@@ -2076,7 +2091,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (this.selectedDiagramAsset) {
                     allowInformationPopup = (this.selectedDiagramAsset.Uid != this.emptyUid);
                 }
-
+                
                 if (allowInformationPopup) {
                     if (this.selectedDiagramAsset != null) {
                         this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
@@ -2088,7 +2103,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 break;
             case AssetBrowserPanelCommand.Refresh:
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
-                this.helper_ScaleDiagram(1);
                 this.helper_RefreshDiagram();
                 break;
             case AssetBrowserPanelCommand.Settings:
@@ -2431,9 +2445,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                     }
                 },
-                new go.Binding("visible", "", function (o) {
-                    return o.part.data.hasAssetReadAccess;
-                }).ofObject()
+                new go.Binding("visible", "", (o) => (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
@@ -2446,9 +2458,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     }
                 },
-                new go.Binding("visible", "", function (o) {
-                    return o.part.data.hasAssetReadAccess;
-                }).ofObject()
+                new go.Binding("visible", "", (o) => (o.part.data.assetUid !== this.emptyUid && o.part.data.hasAssetReadAccess)).ofObject()
             ),
             this.g(
                 "ContextMenuButton",
