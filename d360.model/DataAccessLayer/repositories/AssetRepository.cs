@@ -174,15 +174,21 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,P.[Path]
+                                    ,AT.IconBackColor as BackColor
+                                    ,AT.Icon as Icon
+                                    ,AT.IconForeColor as ForeColor
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                                    left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
-            var assetTypes = await CompanyContext.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
-            return assetTypes;
+
+            // If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
+
+            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param:dbArgs, map:(a, i) => { a.IconStyle = i;return a; }, splitOn:"Path,BackColor");            
         }
         public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
