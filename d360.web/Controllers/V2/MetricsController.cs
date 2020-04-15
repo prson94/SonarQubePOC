@@ -638,15 +638,7 @@ namespace d360.web.Controllers.V2
 
         /// <summary>
         /// Gets the data quality results for an asset
-        /// </summary>        
-        /// <param name="_owningAssetUid">The unique identifier of a rule.</param>
-        /// <param name="_evaluatedAssetUid">The unique identifier of an asset</param>
-        /// <param name="_pageSize">The size of the page if there are many results. [Defaults to 250]</param>
-        /// <param name="_pageNum">The page number to page through results. [Defaults to 1]</param>
-        /// <param name="_order">The name of the field to order results by.</param>
-        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order. [Default asc]</param>
-        /// <param name="_effectiveDateStart">Return results with effective date after this date</param>
-        /// <param name="_effectiveDateEnd">Return results with effective date before this date</param>
+        /// </summary>
         /// <returns>List of data quality results</returns>
         [
             HttpGet,
@@ -663,9 +655,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityGetResultModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetDataQualityResults()
         {
@@ -808,7 +799,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                d360.core.entities.Metric.DataQualityResult dataQualityResult = new d360.core.entities.Metric.DataQualityResult();
+                DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
                 dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
 
@@ -862,11 +853,11 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityInsertModel), typeof(DataQualityInsertExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
@@ -886,13 +877,13 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityDeleteModel), typeof(DataQualityDeleteExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the status of the request", typeof(DataQualityResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteDataQualityResultsAsync(DataQualityDeleteModel model)
         {
@@ -1060,11 +1051,11 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityUpdateModel), typeof(DataQualityUpdateExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
         {
@@ -1080,7 +1071,7 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data quality results</returns>
-        private SLDocument CreateResponseDocument(core.entities.Metric.DataQualityResult dataQualityResult)
+        private SLDocument CreateResponseDocument(DataQualityGetResultModel dataQualityResult)
         {
             SLDocument doc = new SLDocument();
             doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Results");
