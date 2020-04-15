@@ -1841,16 +1841,24 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 	                        at.description,
 	                        Assets.count as count
                          from AssetType AT
-                         left join [IntersectType] ITParent on ITParent.ObjectID = AT.ObjectID and ITParent.Object = AT.Object and PredicateID = 4
-                         left join [AssetType] ATParent on ATParent.Object = ITParent.Subject AND ATParent.ObjectID = ITParent.SubjectID
+						 outer apply (select ATParent.uid from IntersectType IT
+							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
+							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
+						 where it.ObjectID = AT.ObjectID and it.Object = at.Object
+						 )ATParent
                          outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
                             from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
                         where
                          at.Class in @filterClasses
                          and AT.ID not in (select AssetTypeID
-                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+                    from dbo.AssetTypesUserCantRead(@ResourceID))
+                    order by at.name";
             return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
         }
 
+        public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
+        {
+            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID from assettype where uid = @uid", new { uid });
+        }
     }
 }
