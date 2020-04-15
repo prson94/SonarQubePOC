@@ -1524,17 +1524,7 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
                         {additionalApply}
-                        {relationshipsWhere}
-                UNION
-                SELECT	R.ID,
-		                'Rule Implementation :: ' + A.DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule] R
-                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type	";
+                        {relationshipsWhere}";
             }
             else
             {
@@ -1545,6 +1535,14 @@ where	R.SourceObject = 'FusionAttribute'
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+            if (subject.HasValue && subjectID.HasValue && limitToClasses != null) 
+            {
+                if (limitToClasses.Contains(AssetTypeClass.Reference))
+                {
+                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                }
+            }
 
             var sql = $@"
     SELECT		I.ID,
