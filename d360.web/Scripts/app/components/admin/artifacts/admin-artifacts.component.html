@@ -26,26 +26,26 @@
                     <tr [ttSelectableRow]="rowNode" #treetableRows>
                         <td>
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                            {{item.Name}}
+                            {{item.name}}
                         </td>
                         <td>
                             <div class="RowTools">
-                                <d3s-preview-tooltip objectType="ArtifactType" [objectId]="item.ID" icon="info"></d3s-preview-tooltip>
+                                <d3s-preview-tooltip objectType="ArtifactType" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="add(item.ID)"><i class="fa fa-plus"></i></a>
+                                <a style="cursor:pointer;" (click)="add(item.uid)"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="edit(item.ID)"><i class="fa fa-pencil"></i></a>
+                                <a style="cursor:pointer;" (click)="edit(item.uid)"><i class="fa fa-pencil"></i></a>
                             </div>
                         </td>
                         <td>
                             <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="delete(item.ID)"><i class="fa fa-trash-o"></i></a>
+                                <a style="cursor:pointer;" (click)="delete(item.uid)"><i class="fa fa-trash-o"></i></a>
                             </div>
                         </td>
                     </tr>
@@ -79,7 +79,7 @@
             <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID"></d3s-artifact-type-delete>
         </div>
     </div>
-    <div *ngIf="!isEditing && !isAdding && !isDeleting" class="col s12 m7 l8">
+    <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">
         <div class="tile tile-detail">
             <d3s-field-definition-tile [objectType]="objectType" [objectID]="selectedRow?.data?.ID" [assetTypeUid]="selectedRow?.data?.uid"></d3s-field-definition-tile>
         </div>

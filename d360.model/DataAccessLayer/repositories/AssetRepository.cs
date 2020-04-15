@@ -1858,7 +1858,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
         {
-            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID from assettype where uid = @uid", new { uid });
+            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
         }
     }
 }
