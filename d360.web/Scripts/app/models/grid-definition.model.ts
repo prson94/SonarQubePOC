@@ -69,8 +69,8 @@ export class GridFilterExpression {
             f.fieldType = 'Lookup';
             f.apiName = 'ParentDisplayName';
         }
-
-        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup', 'Decimal', 'Number'];
+        console.log(f.fieldType);
+        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup', 'Decimal', 'Number', 'Date', 'DateTime'];
 
         if (forceEqualFields.some(x => x == f.fieldType)) {
             cond = 'eq';
