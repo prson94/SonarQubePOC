@@ -10,6 +10,7 @@
 
 export enum PredicateType {
     Simple = 'Simple',
+    Evaluation = 'Evaluation',
     DataLineage ='DataLineage',
     ReferenceLineage ='ReferenceLineage',
     InterTypeHierarchy = 'InterTypeHierarchy',
@@ -27,6 +28,7 @@ export enum PredicateType {
 
 export enum PredicateFriendlyType {
     Simple = 'Simple',
+    Evaluation = 'Evaluation',
     DataLineage = 'Simple Data Lineage',
     ReferenceLineage = 'Reference Data Lineage',
     InterTypeHierarchy = 'Inter-type Hierarchy',
