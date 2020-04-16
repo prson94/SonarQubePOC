@@ -585,7 +585,7 @@ namespace d360.web.Controllers.V2
 
         }
         [HttpGet,
-        Route("getAssetTagDetails"),
+        Route("AssetTagDetails"),
         ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult getAssetTagDetails(int tagID, Guid assetUID)
         {

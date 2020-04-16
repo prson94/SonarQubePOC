@@ -625,7 +625,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The score types for a given an asset Uid.</returns>
         [
             HttpGet,
-            Route("getScoreTypes/{assetUid}"),
+            Route("ScoreTypes/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "Returns the score types given an asset Uid.", typeof(ConfirmResponse)),
             ApiExplorerSettings(IgnoreApi = true)
