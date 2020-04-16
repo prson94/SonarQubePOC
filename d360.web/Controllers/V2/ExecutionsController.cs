@@ -17,6 +17,7 @@ using d360.web.Models;
 using d360.core.queue;
 using d360.extensions;
 using Newtonsoft.Json;
+using Resources;
 
 namespace d360.web.Controllers.V2
 {
@@ -105,6 +106,11 @@ namespace d360.web.Controllers.V2
             var errorMessage = "";
             try
             {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+                }
+
                 var response = new ConfirmResponse();
                 var execution = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == executionUid);
 
