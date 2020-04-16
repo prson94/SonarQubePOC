@@ -1225,50 +1225,22 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             //#endregion
         });
+
+        this.diagram.findNodesByExample({ template: function (t) { return (t == "Owners") || (t == "HiddenData"); }}).each(n => {
+            let topLevelNode: AssetBrowserTranslationNode = n.data as AssetBrowserTranslationNode;
+
+            //#region Owners node/link logic
+            if (topLevelNode.responsibilityTypeId) {
+                // We are dealing with an Owners root node.
+                let showBadge: boolean = (this.displayConfiguration.SelectedResponsibilityTypes.findIndex(v => { return v == topLevelNode.responsibilityTypeId; }) == -1);
+                this.diagram.model.setDataProperty(topLevelNode, "showNode", showBadge);
+            }
+            //#endregion
+        });
+
         this.diagram.commitTransaction('ownerBadge');
 
         //#endregion Badge
-
-        //#region Hide Node
-
-        // Now loop through selected asset types, as those are the ones we need to hide.
-        let nodesToHide: AssetBrowserTranslationNode[] = [];
-        this.diagram.model
-            .nodeDataArray
-            .filter((tn: AssetBrowserTranslationNode) => { return tn.template == "Owners" || tn.template == "HiddenData"; })
-            .forEach((tn: AssetBrowserTranslationNode) => {
-                if (this.displayConfiguration.SelectedResponsibilityTypes.findIndex(v => { return v == tn.responsibilityTypeId; }) > -1) {
-                    if (tn.template == "Owners") { //only hide if it is already displayed.
-                        nodesToHide.push(tn);
-                    }
-                }
-                else {
-                    let shallWeDealWithNode: boolean = false;
-                    if (keysToBeConcernedWith) {
-                        if (keysToBeConcernedWith.findIndex(ix => ix == tn.key) > -1) {
-                            shallWeDealWithNode = true;
-                        }
-                    }
-                    else {
-                        shallWeDealWithNode = true;
-                    }
-
-                    if (shallWeDealWithNode) {
-                        if (!(this.displayConfiguration.SelectedAssetTypes.findIndex(v => { return v == tn.assetTypeId; }) > -1)) {
-                            this.helper_UnhideNode(tn);
-                        }
-                    }
-                }
-            });
-
-        if (nodesToHide.length > 0) {
-            nodesToHide.forEach(n => {
-                let group: any = this.diagram.findNodeForKey(n.key);
-                this.helper_HideNode(n, group);
-            });
-        }
-
-        //#endregion
     }
 
     private helper_HideNode(node: AssetBrowserTranslationNode, group: any) {
@@ -2593,6 +2565,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 click: (e, obj) => this.context_Unhide(e, obj),
                 cursor: 'pointer'
             },
+            new go.Binding("visible", "showNode"),
             this.g(
                 go.Panel,
                 "Horizontal",
@@ -2985,6 +2958,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     )
             },
+            new go.Binding("visible", "showNode"),
             this.g(
                 go.Panel,
                 "Vertical",
