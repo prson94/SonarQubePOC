@@ -87,7 +87,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Cancels api execution by execution UID
+        /// Cancel an API Execution by Execution UID
         /// </summary>
         /// <returns></returns>
         [
@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A success message.", typeof(ConfirmResponse)),
 
         ]
         public async Task<IHttpActionResult> CancelExecution(Guid executionUid)
@@ -121,6 +121,16 @@ namespace d360.web.Controllers.V2
                 if (execution.CompletedOn != null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} has finished and cannot be canceled."));
+                }
+
+                if (execution.ProcessingStartedOn != null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} has started and cannot be canceled."));
+                }
+
+                if (!execution.Route.Contains("batch"))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} is not a batch job and cannot be canceled."));
                 }
 
                 execution.State = core.enums.State.Deleted;
