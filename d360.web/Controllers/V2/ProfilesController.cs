@@ -82,6 +82,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
                 table.Columns.Add("Id", typeof(int));
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("AssetId", typeof(long));
@@ -375,6 +377,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                Company.SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
                 table.Columns.Add("AssetUid", typeof(Guid));
                 table.Columns.Add("AssetId", typeof(long));
 

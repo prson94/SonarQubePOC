@@ -427,6 +427,65 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Deletes the specified users from Govern.
+        /// </summary>
+        /// <param name="users">A list of uids for users to delete.</param>
+        [
+            HttpDelete,
+            Route("users"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteUsers(List<string> users)
+        {
+            var prefix = "Membership.DeleteUsers => ";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
+
+
+                List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
+
+                foreach(var u in users)
+                {
+                    if (Guid.TryParse(u, out Guid res))
+                    {
+                        resources.Add(new UserApiDeleteModel()
+                        {
+                            Uid = res
+                        }); 
+                    }
+                    else
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The value [{u}] is not a valid uid."));
+                    }
+                }
+
+                var result = membershipRepository.DeleteResources(resources);
+
+                if (result.StatusCode != HttpStatusCode.OK)
+                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
+
+                return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;

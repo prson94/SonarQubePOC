@@ -4684,7 +4684,9 @@ where   R.RuleTypeID = @id
             if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
 
             var sql = @"select 
-										c.[Object], 
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
+										else	c.[Object] end [object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
 										cU.Url, 

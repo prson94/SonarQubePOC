@@ -213,8 +213,10 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             var model = new AssetsApiViewModel();
 
-            dbArgs.Add("@uid", uid.ToString());
-            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
+            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
+            dbArgs.Add("@assetTypeID", assetTypeID);
+            whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
@@ -348,8 +350,10 @@ namespace d360.model.DataAccessLayer
                 whereStatements.Add("R.Relationships is not null");
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-            whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
-            whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
+            whereStatements.Add($"A.ID not in (select AssetID from dbo.UserAssetPermissions(@userId,A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)");
+
+            if (!CompanyContext.CurrentResourceIsAdmin)
+                whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
@@ -1845,7 +1849,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                          at.Class in @filterClasses
                          and AT.ID not in (select AssetTypeID
                     from dbo.AssetTypesUserCantRead(@ResourceID))";
-            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses});
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
         }
 
     }
