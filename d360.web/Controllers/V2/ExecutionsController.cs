@@ -29,12 +29,14 @@ namespace d360.web.Controllers.V2
         #region DI
 
         IAssetRepository AssetRepository;
+        ICompanyContext Company;
         IStorageProvider Storage;
         public ExecutionsController(ICommunityContext community, ICompanyContext company, IAssetRepository repository, IStorageProvider storage)
             : base(community, company)
         {
             Storage = storage;
             AssetRepository = repository;
+            Company = company;
         }
 
         #endregion
@@ -70,7 +72,7 @@ namespace d360.web.Controllers.V2
             }
 
             var executions = await AssetRepository.GetExecutionItems(queryParams);
-            if(executions.StatusCode != HttpStatusCode.OK)
+            if (executions.StatusCode != HttpStatusCode.OK)
             {
                 return await Task.FromResult(errorMessageResponse(executions.StatusCode, "Invalid request", executions.Message));
             }
@@ -82,6 +84,68 @@ namespace d360.web.Controllers.V2
                         )
                     )
                 );
+        }
+
+        /// <summary>
+        /// Cancels api execution by execution UID
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpDelete,
+            Route("{executionUid:Guid}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all execution statuses.", typeof(ConfirmResponse)),
+
+        ]
+        public async Task<IHttpActionResult> CancelExecution(Guid executionUid)
+        {
+            var prefix = "Executions.DeleteExecution => ";
+            var errorMessage = "";
+            try
+            {
+                var response = new ConfirmResponse();
+                var execution = Company.ApiExecutions.FirstOrDefault(x => x.ExecutionID == executionUid);
+
+                if (execution == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} does not exist."));
+                }
+
+                if (execution.State == core.enums.State.Deleted)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} has been already canceled."));
+                }
+
+                if (execution.CompletedOn != null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Execution with UID {executionUid} has finished and cannot be canceled."));
+                }
+
+                execution.State = core.enums.State.Deleted;
+                bool isDone = Company.Update(execution);
+
+                response.message = $"Execution with UID {executionUid} has been cancelled sucessfully.";
+                if (isDone)
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+                else
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Invalid request", $"Something went wrong while canceling Execution."));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+
         }
 
         #endregion
