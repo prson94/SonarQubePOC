@@ -80,10 +80,13 @@ export class FieldType {
 
     Boolean: Boolean;
     ComputedFusionLookup: ComputedFusionLookup;
-    OwnershipLookup: ComputedOwnershipLookup;
 
+    //need a second ComputedOwnershipLookup so the API can serialize the object by the object name
+    OwnershipLookup: ComputedOwnershipLookup;
+    ComputedOwnershipLookup: ComputedOwnershipLookup;
+
+    //need a second ComputedRelationshipField so the API can serialize the object by the object name
     FieldFromRelationship: ComputedRelationshipField;
-    //need a second ComputedRelationshipField so the API can serialize the object by the strongly typed name
     ComputedRelationshipField: ComputedRelationshipField;
 
     ComplexRelationLookup: ComputedRelationshipLookup;
@@ -185,7 +188,7 @@ export class ComputedOwnershipLookup implements ICommonOptions  {
     IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
-    Definition: ComputedOwnershipLookupDefinition;
+    Definition: ComputedOwnershipLookupDefinition = new ComputedOwnershipLookupDefinition();
     IsDisplayable: boolean = true;
     ShowIfEmpty: boolean = false;
     HideFilter: boolean = false;
@@ -194,8 +197,8 @@ export class ComputedOwnershipLookup implements ICommonOptions  {
 }
 
 export class ComputedOwnershipLookupDefinition {
-    DisplayAssignmentSource: boolean;
-    ExpandGroupMembership: boolean;
+    DisplayAssignmentSource: boolean = false;
+    ExpandGroupMembership: boolean = true;
 }
 
 export class ComputedRelationshipField implements ICommonOptions {
@@ -361,7 +364,7 @@ export class Lookup implements ICommonOptions{
     Description: Description = new Description();
     AllowAllValue: boolean;
     AllowAllLabel: string;
-    Filter: Filter = new Filter();
+    Filter: Filter;
     Format: Format = new Format();
     List: List = new List();
     Validation: BooleanValidation = new BooleanValidation();

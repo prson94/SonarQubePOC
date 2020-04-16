@@ -124,7 +124,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
 
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_FieldFromRelationship_Fields?${url}`)
+            .get<SelectItem[]>(`api/v2/fields/GetFieldFromRelationshipFields?${url}`)
             .pipe(
                 map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),

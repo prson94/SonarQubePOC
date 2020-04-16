@@ -864,6 +864,89 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Gets the FieldFromRelationship values for the given intersect type UID for the Field Form.
+        /// </summary>
+        /// <returns>A list of FieldFromRelationship options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetFieldFromRelationshipFields"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetFieldFromRelationshipFields(Guid intersectTypeUid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
+        {
+            var prefix = "Fields.GetFieldFromRelationshipFields => ";
+            var errorMessage = "";
+
+            try
+            {
+                int id = 0;
+                SystemObjects type = SystemObjects.ArtifactType;
+                if (AssetTypeUid != null)
+                {
+                    var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+                    id = assetType.ObjectID;
+                    Enum.TryParse(assetType.Object, out type);
+                }
+                else if (ActionTypeUid != null)
+                {
+                    var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
+                    id = issueType.ID;
+                    Enum.TryParse("IssueType", out type);
+                }
+                else if (RelationshipTypeUid != null)
+                {
+                    var it = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
+                    id = it.ID;
+                }
+                else
+                {
+                    throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+                }
+
+                var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
+
+                if (intersectType == null)
+                    throw new RestApiException(HttpStatusCode.BadRequest, $"No IntersecType found for [{intersectTypeUid.ToString()}]");
+
+                var isSubject = (intersectType.Subject == type.ToString() && intersectType.SubjectID == id);
+
+                var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
+                var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
+
+                var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
+                    .Where(i => i.Type != DataType.Attribute.ToString() &&
+                            i.Type != DataType.ComplexRelationLookup.ToString() &&
+                            i.Type != DataType.Relationship.ToString() &&
+                            i.Type != DataType.JSON.ToString()
+                            && i.Type != DataType.Tag.ToString())
+                    .Select(i => new { i.ID, i.Name })
+                    .Distinct()
+                    .ToDictionary(i => i.Name, i => i.ID);
+
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = i.Value }));
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
         /// Gets the default values for the chosen lookup in the Field Form.
         /// </summary>
         /// <returns>A list of default options, if any.</returns>
@@ -883,8 +966,8 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var list = new List<ListUidItem>();
-                list.Add(new ListUidItem { title = "- No default -", value = null });
+                var list = new List<ListIntItem>();
+                list.Add(new ListIntItem { title = "- No default -", value = null });
                 var usersOnly = false;
                 string sql = "";
                 usersOnly = Company.Filter<AssetType>(x => x.uid == Uid && x.Class == AssetTypeClass.User).Count() > 0;
@@ -893,7 +976,7 @@ namespace d360.web.Controllers.V2
                     string HideD3SUsers = HideData3SixtyUsers() ? "": " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' "; 
                     sql = $@"
                         select 
-                            R.Uid as value,
+                            R.ResourceID as value,
                             (FirstName + ' ' + LastName)  as title  
                         from [reporting].[Global_Resource] r 
                         {HideD3SUsers}
@@ -904,7 +987,7 @@ namespace d360.web.Controllers.V2
                 {
                     sql = $@"
                         select 
-                            ast.Uid as value,
+                            ast.ObjectID as value,
                             d.DisplayValue as title  
                         from asset ast 
                             inner join assettype astt on (ast.assettypeid = astt.id) 
@@ -916,7 +999,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 list.AddRange(
-                    await Company.QueryAsync<ListUidItem>(sql, new { Uid })
+                    await Company.QueryAsync<ListIntItem>(sql, new { Uid })
                 );
 
                 return Request.CreateResponse(HttpStatusCode.OK, list);

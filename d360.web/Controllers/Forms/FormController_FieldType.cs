@@ -380,60 +380,6 @@ namespace d360.web.Controllers
             };
         }
 
-        [Route("FieldType_FieldFromRelationship_Fields")]
-        public JsonNetResult FieldType_FieldFromRelationship_Fields(Guid intersectTypeUid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
-        {
-
-            int id = 0;
-            SystemObjects type = SystemObjects.ArtifactType;
-            if (AssetTypeUid != null)
-            {
-                var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
-                id = assetType.ObjectID;
-                Enum.TryParse(assetType.Object, out type);
-            }
-            else if (ActionTypeUid != null)
-            {
-                var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
-                id = issueType.ID;
-                Enum.TryParse("IssueType", out type);
-            }
-            else if (RelationshipTypeUid != null)
-            {
-                var it = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
-                id = it.ID;
-            }
-            else
-            {
-                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
-            }
-
-            var intersectType = Company.Filter<IntersectType>(x => x.uid == intersectTypeUid).SingleOrDefault();
-
-            if (intersectType == null)
-                return new JsonNetResult { Data = new Dictionary<string, int>() };
-
-            var isSubject = (intersectType.Subject == type.ToString() && intersectType.SubjectID == id);
-
-            var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
-            var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
-
-            var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
-                .Where(i => i.Type != DataType.Attribute.ToString() &&
-                        i.Type != DataType.ComplexRelationLookup.ToString() &&
-                        i.Type != DataType.Relationship.ToString() &&
-                        i.Type != DataType.JSON.ToString()
-                        && i.Type != DataType.Tag.ToString())
-                .Select(i => new { i.ID, i.Name })
-                .Distinct()
-                .ToDictionary(i => i.Name, i => i.ID);
-
-            return new JsonNetResult
-            {
-                Data = list.Select(i => new { title = i.Key, value = i.Value }),
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
 
         [Route("FieldType_Lookup_FilteredByPredicate"), NonNullableParameters]
         public JsonNetResult FieldType_Lookup_FilteredByPredicate(int fieldTypeId, string objectType, int ObjectID, string value = "", string query = "")

@@ -190,7 +190,7 @@
                     <input name="lookupDisplayFormat"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.Type[currentType].LookupDisplayFormat"
+                           [(ngModel)]="model.FieldType.Type[currentType].Format.Display"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
@@ -227,7 +227,7 @@
                     <input name="lookupEditFormat"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.Type[currentType].LookupEditFormat"
+                           [(ngModel)]="model.FieldType.Type[currentType].Format.Edit"
                            style="width: 98%; display: block;" />
                 </div>
                 <div class="col s3">
@@ -824,21 +824,21 @@
         <!-- ownership lookup -->
         <simple-accordion header="Ownership Lookup"
                           active="true"
-                          *ngIf="currentType == 'OwnershipLookup' && model.OwnershipLookupSettings">
+                          *ngIf="currentType == 'OwnershipLookup'">
             <div class="row">
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <input name="expandGroupMembership"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.ExpandGroupMembership" />Expand Group Membership?
+                           [(ngModel)]="model.FieldType.Type[currentType].Definition.ExpandGroupMembership" />Expand Group Membership?
                 </div>
                 <div class="col l3 m3 s6"
                      style="margin: 10px 0 10px 0">
                     <input name="displayAssignmentSource"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.DisplayAssignmentSource" />Display Assignment
+                           [(ngModel)]="model.FieldType.Type[currentType].Definition.DisplayAssignmentSource" />Display Assignment
                     Source?
                 </div>
                 <div class="col l2 m2 s6"
@@ -846,7 +846,7 @@
                     <input name="hideFilter"
                            pCheckbox
                            type="checkbox"
-                           [(ngModel)]="model.OwnershipLookupSettings.HideFilter" />Hide Grid Filter?
+                           [(ngModel)]="model.FieldType.Type[currentType].HideFilter" />Hide Grid Filter?
                 </div>
                 <div class="col l2 m2 s6"
                      style="margin: 10px 0 10px 0">

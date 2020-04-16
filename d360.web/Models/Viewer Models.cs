@@ -424,12 +424,6 @@ namespace d360.web.Models
         public int? value { get; set; }
     }
 
-    public class ListUidItem
-    {
-        public string title { get; set; }
-        public Guid? value { get; set; }
-    }
-
     public class SourceTargetIntersectModels
     {
         public List<SourceTargetIntersectModel> Items { get; set; }

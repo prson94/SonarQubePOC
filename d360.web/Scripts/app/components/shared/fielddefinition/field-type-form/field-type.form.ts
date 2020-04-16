@@ -7,11 +7,9 @@ import {
     Lookups,
     FieldTypeFusionItemEditorModel,
     JsonElementSettings,
-    OwnershipLookupSettings,
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
-    Field,
 } from '../../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -21,9 +19,8 @@ import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, Empty, BooleanValidation } from '../../../../models/fieldtype-api.model';
-import { Type } from '@angular/compiler';
-import { clearLine } from 'readline';
+import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel } from '../../../../models/fieldtype-api.model';
+
 
 @Component({
     selector: 'd3s-field-type-form',
@@ -182,8 +179,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private getFormDataHandler = (responseGetFormData) => {
         if (responseGetFormData) {
-            this.model.JsonElementSettings = responseGetFormData.JsonElementSettings;
-            this.model.OwnershipLookupSettings = responseGetFormData.OwnershipLookupSettings;
             this.model.RelationItems = responseGetFormData.RelationItems;
             this.model.FusionItems = responseGetFormData.FusionItems;
 
@@ -226,15 +221,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.isLoading = true;
             this.model = new FieldTypeEditorModel();
             this.model.FieldType = new FieldTypeAPIModelField();
-
-            this.model.JsonElementSettings = new JsonElementSettings();
-            this.model.JsonElementSettings.DataType = '';
-            this.model.JsonElementSettings.FieldTypeID = 0;
-            this.model.JsonElementSettings.Path = '';
-
-            this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
-            this.model.OwnershipLookupSettings.DisplayAssignmentSource = false;
-            this.model.OwnershipLookupSettings.ExpandGroupMembership = true;
 
             this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
                 .subscribe(x => {
@@ -452,18 +438,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 break;
             case 'jsonelement':
                 if (!this.model.JsonElementSettings) this.model.JsonElementSettings = new JsonElementSettings();
-              
                 break;
             case 'json':
                 break;
-            case 'ownershiplookup':
-                if (!this.model.OwnershipLookupSettings) this.model.OwnershipLookupSettings = new OwnershipLookupSettings();
-                
-                break;
             case 'tag':
-                if (!isFromLoad)
-
-                
+                if (!isFromLoad)                
                 this.showIsEditable = false;
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
@@ -716,6 +695,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 ) {
                     this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
                 }
+                if (this.model.LookupTokens
+                    && this.model.LookupTokens.length > 0
+                    && (this.model.FieldType.Type[this.currentType].Format.Edit == null
+                    || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
+                ) {
+                    this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
+                }
             }
         ));
     }
@@ -796,10 +782,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             apiModel.ActionTypeUid = this.actionTypeUid;
             apiModel.AssetTypeUid = this.assetTypeUid;
             apiModel.RelationshipTypeUid = this.relationshipTypeUid;
+
             if (this.currentType == 'FieldFromRelationship') {
                 this.model.FieldType.Type.ComputedRelationshipField = this.model.FieldType.Type.FieldFromRelationship;
             }
-            apiModel.Fields = [this.model.FieldType];
+            if (this.currentType == "OwnershipLookup")
+                this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
+            if (this.currentType == "RefListRelationship")
+                //add the other type for the correct name
+            apiModel.Fields = [ this.model.FieldType ];
 
             this.fieldsService.putFieldsV2(apiModel).subscribe(
                 r => {
@@ -990,12 +981,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (this.model.FieldType.Type[this.currentType].LookupDisplayFormat == null) {
-            this.model.FieldType.Type[this.currentType].LookupDisplayFormat = '';
+        if (this.model.FieldType.Type[this.currentType].Format.Display == null) {
+            this.model.FieldType.Type[this.currentType].Format.Display = '';
         }
 
         this.selectedLookupToken = null;
-        this.model.FieldType.Type[this.currentType].LookupDisplayFormat += value;
+        this.model.FieldType.Type[this.currentType].Format.Display += value;
     }
 
     private selectEditToken(value: string) {
@@ -1003,12 +994,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return;
         }
 
-        if (this.model.FieldType.Type[this.currentType].LookupEditFormat == null) {
-            this.model.FieldType.Type[this.currentType].LookupEditFormat = '';
+        if (this.model.FieldType.Type[this.currentType].Format.Edit == null) {
+            this.model.FieldType.Type[this.currentType].Format.Edit = '';
         }
 
         this.selectedFormatToken = null;
-        this.model.FieldType.Type[this.currentType].LookupEditFormat += value;
+        this.model.FieldType.Type[this.currentType].Format.Edit += value;
     }
 
     private validatePattern() {
