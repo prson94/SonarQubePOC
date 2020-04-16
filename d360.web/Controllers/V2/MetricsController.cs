@@ -637,35 +637,33 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets the data quality results for an asset
-        /// </summary>        
-        /// <param name="_owningAssetUid">The unique identifier of a rule.</param>
-        /// <param name="_evaluatedAssetUid">The unique identifier of an asset</param>
-        /// <param name="_pageSize">The size of the page if there are many results. [Defaults to 250]</param>
-        /// <param name="_pageNum">The page number to page through results. [Defaults to 1]</param>
-        /// <param name="_order">The name of the field to order results by.</param>
-        /// <param name="_direction">The direction in which to order the results (asc/desc). Used in conjunction with _order. [Default asc]</param>
-        /// <param name="_effectiveDateStart">Return results with effective date after this date</param>
-        /// <param name="_effectiveDateEnd">Return results with effective date before this date</param>
+        /// Gets the data quality results for a rule
+        /// </summary>
+        /// <remarks>
+        /// Gets the data quality results for a rule and optionally a specific asset
+        /// 
+        /// **Notes:** 
+        /// * Read permissions on the rule are required.
+        /// * Effective start and end and Run start and end dates can be used as additional parameters when a Rule or Asset ID is provided (OwningAssetUid or EvaluatedAssetUid)
+        /// </remarks>
         /// <returns>List of data quality results</returns>
         [
             HttpGet,
             Route("quality/results/"),
-            SwaggerParameter("_owningAssetUid", "The unique identifier of a rule.", DataType = "string", ParameterType = "query", Required = true),
-            SwaggerParameter("_evaluatedAssetUid", "The unique identifier of an asset.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_owningAssetUid", "Rule UID. If no other parameters are specified, all rule results for the rule will be returned", DataType = "string", ParameterType = "query", Required = true),
+            SwaggerParameter("_evaluatedAssetUid", "Asset UID.  If provided only rule results for the specified asset will be returned", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_order", "The name of the field to order results by (Default ascending).", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_effectiveDateStart", "Return results with effective date after this date", DataType = "date-time", ParameterType = "query", Required = false),
-            SwaggerParameter("_effectiveDateEnd", "Return results with effective date before this date", DataType = "date-time", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateStart", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateEnd all results between the EffectiveDateStart and now will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
+            SwaggerParameter("_effectiveDateEnd", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateStart all results up until the EffectiveDateEnd will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityResult)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.OK, "A list of Data Quality Results.", typeof(DataQualityGetResultModel)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetDataQualityResults()
         {
@@ -808,7 +806,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                d360.core.entities.Metric.DataQualityResult dataQualityResult = new d360.core.entities.Metric.DataQualityResult();
+                DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
                 dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
 
@@ -850,23 +848,34 @@ namespace d360.web.Controllers.V2
         /// Create the data quality result for an asset / Rule
         /// </summary>
         /// <remarks>
-        /// When using the ExecutionItemUid, keep in mind:
-        /// * ExecutionItemUid is optional.
-        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
-        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
-        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
-        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        ///
+        /// The endpoint creates rule results for a specific rule and optional asset
+        ///###Rules###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>OwningAssetUid</td><td>Required</td><td>UID of the Rule in which to post the results to</td><td>Must be a valid Rule UID</td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Used to identify the request. One can be provided but if not, one will be generated</td><td>If provided must be in the correct format</td></tr>
+        /// <tr><td>EvaluatedAssetUid</td><td>Optional</td><td>Asset UID  of the asset that the result is for</td><td>Must be valid Business or Technical Asset UID</td></tr>
+        /// <tr><td>EffectiveDate</td><td>Required</td><td>Effective date of the rule result</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>RunDate</td><td>Required</td><td>Run date of the rule result</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>PassCount</td><td>Required</td><td>Number of rows that passed the rule</td><td>Must be greater than or equal to zero</td></tr>
+        /// <tr><td>FailCount</td><td>Required</td><td>Number of rows that failed the rule</td><td>Must be greater than or equal to zero</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Edit permissions on the rule are required.
+        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
         [
             HttpPost,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityInsertModel), typeof(DataQualityInsertExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the new data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
@@ -882,17 +891,116 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Delete data quality result(s) based on parameters provided
         /// </summary>
+        /// <remarks>
+        /// 
+        /// Deletes rules results that match the criteria supplied.
+        /// 
+        /// This can be used to remove unused or old results that are no longer relevant or can be used to remove rule results loaded in error. 
+        /// 
+        /// ###Rules###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required/Optional**</td><td>**Description**</td><td>**Validation**</td></tr>        
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Used to identify the request. One can be provided but if not, one will be generated</td><td>If provided must be in the correct format</td></tr>
+        /// <tr><td>Uid</td><td>Optional</td><td>Rule Result UID.<br/>If provided alone or with the OwningAssetUid, the rule result will be deleted</td><td>Valid Rule result UID</td></tr>
+        /// <tr><td>OwningAssetUid</td><td>Optional</td><td>Rule UID.<br/>If provided without other UID’s all rule results for this rule will be deleted</td><td>Must be a valid Rule UID</td></tr>
+        /// <tr><td>EvaluatedAssetUid</td><td>Optional</td><td>Asset UID.  If provided without other UID’s all rule results for this asset will be deleted</td><td>Must be valid Business or Technical Asset UID</td></tr>        
+        /// <tr><td>EffectiveDateStart</td><td>Optional</td><td>Additional parameter that can be supplied when the Rule or Asset UID is provided.<br/>If EffectiveDateEnd is not provided all results between the EffectiveDateStart and now will be deleted.</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>EffectiveDateEnd</td><td>Optional</td><td>Additional parameter that can be supplied when the Rule or Asset UID is provided.<br/>If EffectiveDateStart is not provided all results up until the EffectiveDateEnd will be deleted.</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>RunDateStart</td><td>Optional</td><td>Additional parameter that can be supplied when the Rule or Asset UID is provided.<br/>If RunDateEnd is not provided all results between the RunDateStart and now will be deleted.</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>RunDateEnd</td><td>Optional</td><td>Additional parameter that can be supplied when the Rule or Asset UID is provided.<br/>If RunDateStart is not provided all results up until the RunDateEnd will be deleted</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:**
+        /// *   Delete permissions on the Rule are required.
+        /// *   One of these 3 optional fields must be provided: **Uid**, **OwningAssetUid**, **EvaluatedAssetUid**
+        /// *   If more than one of the 3 optional UIDs are provided validation will occur between them.
+        /// *   Effective start and end and Run start and end dates can be used as additional parameters when a Rule or Asset ID is provided (OwningAssetUid or EvaluatedAssetUid)
+        /// 
+        /// ###Example Requests###
+        /// Delete a result based on just the result Uid
+        /// ```
+        /// {
+        ///     "Uid": "ff41848c-1118-4870-8ee7-b78dcabf1682"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete a result based on the result Uid while validating Rule (OwningAssetUid) is correct.
+        /// ```
+        /// {
+        ///     "Uid": "ff41848c-1118-4870-8ee7-b78dcabf1682",
+        ///     "OwningAssetUid": "a1ee2e5b-c531-47dc-a675-9fd28c829c19"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete an asset (EvaluatedAssetUid) from all results.
+        /// ```
+        /// {
+        ///     "EvaluatedAssetUid": "8415655e-638b-49e0-97f2-db840199b401"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete an asset (EvaluatedAssetUid) from a single result.
+        /// ```
+        /// {
+        ///     "Uid": "ff41848c-1118-4870-8ee7-b78dcabf1682",
+        ///     "EvaluatedAssetUid": "8415655e-638b-49e0-97f2-db840199b401"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete an asset (EvaluatedAssetUid) from results for a specific rule (OwningAssetUid)
+        /// ```
+        /// {
+        ///     "EvaluatedAssetUid": "8415655e-638b-49e0-97f2-db840199b401",
+        ///     "OwningAssetUid": "a1ee2e5b-c531-47dc-a675-9fd28c829c19"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete all results for a given rule (OwningAssetUid) between given effective start and end dates
+        /// ```
+        /// {
+        ///     "OwningAssetUid": "a1ee2e5b-c531-47dc-a675-9fd28c829c19",
+        ///     "EffectiveDateStart": "2020-04-15",
+        ///     "EffectiveDateEnd": "2020-04-30"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete an asset (EvaluatedAssetUid) from all results after a given run date
+        /// ```
+        /// {
+        ///     "EvaluatedAssetUid": "8415655e-638b-49e0-97f2-db840199b401",
+        ///     "RunDateStart": "2020-04-15 11:27:33"
+        /// }
+        /// ```
+        /// 
+        /// 
+        /// Delete an asset (EvaluatedAssetUid) from all results after a given effective date and between given run start and end dates
+        /// ```
+        /// {
+        ///     "EvaluatedAssetUid": "8415655e-638b-49e0-97f2-db840199b401",
+        ///     "EffectiveDateStart": "2020-04-15",
+        ///     "RunDateStart": "2020-04-15 11:27:33",
+        ///     "RunDateEnd": "2020-04-29 12:55:21"
+        /// }
+        /// ```
+        /// 
+        /// </remarks>
         /// <returns>A response containing the status of the request</returns>
         [
             HttpDelete,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityDeleteModel), typeof(DataQualityDeleteExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request has one or more invalid parameters.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the status of the request", typeof(DataQualityResponseModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteDataQualityResultsAsync(DataQualityDeleteModel model)
         {
@@ -1048,23 +1156,33 @@ namespace d360.web.Controllers.V2
         /// Update data quality result(s) for an asset / Rule
         /// </summary>
         /// <remarks>
-        /// When using the ExecutionItemUid, keep in mind:
-        /// * ExecutionItemUid is optional.
-        /// * If you do not wish to provide an ExecutionItemUid, remove the entire line, including the preceding comma (, "ExecutionItemUid": "00000000-0000-0000-0000-000000000000").
-        /// * If you provide ExecutionItemUids, values must be a unique across the entire request body.
-        /// * You do not have to provide ExecutionItemUid values for all entries in a request.
-        /// * ExecutionItemUid values, if provided, are returned in the response to allow you to correlate success / failure per item.
+        /// The endpoint can update various fields on a rule result.
+        /// 
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Uid</td><td>Required</td><td>Rule Result UID</td><td>Valid Rule result UID</td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Used to identify the request. One can be provided but if not, one will be generated</td><td>If provided must be in the correct format</td></tr>
+        /// <tr><td>EvaluatedAssetUid</td><td>Optional</td><td>Provide a valid Business or Technical Asset UID to update an existing rule result.<br/>This will either add or update the asset on the rule result.</td><td>Must be valid Business or Technical Asset UID</td></tr>        
+        /// <tr><td>RunDate</td><td>Optional</td><td>Provide a run date if that needs to be updated to the rule result</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>PassCount</td><td>Optional</td><td>Provide a pass count if that needs to be updated to the rule result</td><td>Must be greater than or equal to zero</td></tr>
+        /// <tr><td>FailCount</td><td>Optional</td><td>Provide a fail count if that needs to be updated to the rule result</td><td>Must be greater than or equal to zero</td></tr>
+        /// </table>  
+        /// <br/>
+        /// **Notes:**
+        /// * Edit permissions on the rule are required.
+        /// * One of the four optional fields that can be updated must be provided (**EvaluatedAssetUid**, **RunDate**, **PassCount**, **FailCount**).
+        /// * Fields not provided will not be updated and existing values will retained.
         /// 
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
         [
             HttpPut,
             Route("quality/results/"),
+            SwaggerRequestExample(typeof(DataQualityUpdateModel), typeof(DataQualityUpdateExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A response with the Uid of the data quality result.", typeof(List<DataQualityResponseModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutDataQualityResultAsync(List<DataQualityUpdateModel> request)
         {
@@ -1080,7 +1198,7 @@ namespace d360.web.Controllers.V2
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data quality results</returns>
-        private SLDocument CreateResponseDocument(core.entities.Metric.DataQualityResult dataQualityResult)
+        private SLDocument CreateResponseDocument(DataQualityGetResultModel dataQualityResult)
         {
             SLDocument doc = new SLDocument();
             doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Results");
