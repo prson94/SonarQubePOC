@@ -11,7 +11,7 @@
                     <div class="col s12">
                         <span *ngSwitchCase="'dropdownlist'">
                             <p-multiSelect [name]="field.datafield"
-                                [options]="field.filteritems | arraySelectItemPipe"
+                                [options]="field.filteritems | arraySelectItemPipe:'labelasval'"
                                 [ngModel]="field.value"
                                 (ngModelChange)="field.value=$event;enableParentFilters(field);"
                                 [style]="{width:'100%'}"

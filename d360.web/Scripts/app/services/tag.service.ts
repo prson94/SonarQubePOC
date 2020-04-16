@@ -183,15 +183,22 @@ export class TagService extends BaseObservableService {
 
     private tagTooltipsCache: any[] = [];
 
-    getTagTooltip(tagUid: string, assetUid: string = null): Observable<any> {
+    getTagTooltip(tagUid: string, assetUid: string = null, value: string = null): Observable<any> {
 
-        var cachedItem = this.tagTooltipsCache.find(x => x.tagUid == tagUid && x.assetUid == assetUid);
-        if (cachedItem)
-            return cachedItem.obs;
+        if (tagUid) {
+            var cachedItem = this.tagTooltipsCache.find(x => x.tagUid == tagUid && x.assetUid == assetUid);
+            if (cachedItem)
+                return cachedItem.obs;
+        }
 
         let url = `api/v2/tags/${tagUid}/tooltip`;
 
-        if (assetUid != null)
+        if (!tagUid) {
+            url = `api/v2/tags/tooltipByName?tagName=${value}`;
+            if (assetUid != null)
+                url += `&assetUid=${assetUid}`;
+        }
+        else if (assetUid != null)
             url += `?assetUid=${assetUid}`;
 
         var obs = this.http.get(url)

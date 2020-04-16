@@ -47,7 +47,7 @@
                             style="width:100%;"
                             placeholder="Choose a field">
                             <option *ngFor="let p of filter.Field?.Data?.filteritems | arraySelectItemPipe"
-                                [value]="p.value">{{p.label}}</option>
+                                [value]="p.label">{{p.label}}</option>
                         </select>
                     </span>
                     <input *ngSwitchDefault

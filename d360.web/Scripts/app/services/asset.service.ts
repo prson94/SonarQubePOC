@@ -112,6 +112,12 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public getUIDetailsForAssetUID(uid: string): Observable<any> {
+        return this.http.get('api/v2/assets/GetUIDetails/' + uid)
+            .pipe(map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
     public downloadAssetsExcel(assetTypeUid: string, params: any, fileName) {
 
         //Setup paging for export

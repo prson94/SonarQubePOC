@@ -27,7 +27,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
-
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
@@ -55,6 +54,15 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
         if ((this.fieldType == 'date' || this.fieldType == 'datetime') && isNaN(Date.parse(this.fieldValue)))
             this.fieldValue = null;
+
+        if (this.useApiName && this.column['fieldType'] == 'Link' && this.fieldValue) {
+            var delimiterIdx = (this.fieldValue as string).indexOf('|');
+            if (delimiterIdx > -1) {
+                var name = (this.fieldValue as string).substring(0, delimiterIdx);
+                var href = (this.fieldValue as string).substring(delimiterIdx + 1);
+                this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;
+            }
+        }
 
     }
 
