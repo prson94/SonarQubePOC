@@ -1065,16 +1065,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let ignores: AssetBrowserApiHopIgnoreRequestModel[] = [];
 
         this.diagram.links.each(r => {
-            r.data.intersectUids.forEach(i => {
-                if (predicateId) {
-                    if (predicateId == i.predicateId) {
+            if (r.data && r.data.intersectUids) {
+                r.data.intersectUids.forEach(i => {
+                    if (predicateId) {
+                        if (predicateId === i.predicateId) {
+                            ignores.push({ Uid: i.intersectUid });
+                        }
+                    }
+                    else {
                         ignores.push({ Uid: i.intersectUid });
                     }
-                }
-                else {
-                    ignores.push({ Uid: i.intersectUid });
-                }
-            });
+                });
+            }
         });
 
         return ignores;
