@@ -18,6 +18,7 @@ export class SecondaryNavItem {
     url: string;
     count: number;
     orderPriority: number = 99;
+    subTabsUrl: string[] = [];
 }
 
 export class NavState {
