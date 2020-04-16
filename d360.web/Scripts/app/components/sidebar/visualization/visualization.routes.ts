@@ -10,6 +10,7 @@ const routes: Routes = [
     { path: 'lineage/:objectType/:objectId', component: LineageComponent },
     { path: 'lineage/:objectType/:objectId/:showUsageOnly', component: LineageComponent },
     { path: 'browser/:assetUid', component: BrowserComponent },
+    { path: 'browser/:assetUid/:diagramType', component: BrowserComponent },
     { path: 'diagram/:objectId', component: DiagramComponent },
 ];
 
