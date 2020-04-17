@@ -69,7 +69,7 @@ namespace d360.model.helpers
             }
             catch (Exception ex)
             {
-                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message, ex);
+                throw new FilterExpressionParserException("Invalid filter expression: " + ex.Message);
             }
         }
 
