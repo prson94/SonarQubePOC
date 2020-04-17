@@ -530,6 +530,21 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Get Asset type object and object id for asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("assetTypeLegacyData/{assetTypeUid}"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<dynamic> GetArtifactTypeUidById(Guid assetTypeUid)
+        {
+            return await AssetRepository.GetAssetTypeObjectAndObjectId(assetTypeUid);
+        }
+
+        /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>
