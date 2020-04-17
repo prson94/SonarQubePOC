@@ -9,9 +9,11 @@ using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -60,7 +62,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
@@ -235,9 +237,21 @@ namespace d360.web.Controllers.V2
 
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
-            model.items = results;
-            model.total = countResults.FirstOrDefault();
-            return Request.CreateResponse(HttpStatusCode.OK, model);
+
+            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+            if (isStreamResponse)
+            {
+                byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
+                return createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
+            }
+            else
+            {
+                model.items = results;
+                model.total = countResults.FirstOrDefault();
+                return Request.CreateResponse(HttpStatusCode.OK, model);
+            }
+
         }
 
         /// <summary>
@@ -538,6 +552,92 @@ namespace d360.web.Controllers.V2
 
             }
             return isValid;
+        }
+
+        private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
+        {
+            List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();
+            fieldMap.Add(new Tuple<string, string, string>("First name", "FirstName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Last name", "LastName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Email", "Email", "Text"));
+            fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
+             {
+                 fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
+             });
+            fieldMap.Add(new Tuple<string, string, string>("Last logged in on", "LastLoggedInOn", "Date"));
+            fieldMap.Add(new Tuple<string, string, string>("Administrator?", "IsAdministrator", "Boolean"));
+            fieldMap.Add(new Tuple<string, string, string>("Status", "State", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("User UID", "uid", "Text"));
+
+
+            var document = new SLDocument();
+            document.AddWorksheet("Users");
+
+            int colIndex = 1;
+            int rowIndex = 1;
+            foreach (var f in fieldMap)
+            {
+                document.SetCellValue(rowIndex, colIndex, f.Item1);
+                colIndex++;
+            }
+
+            foreach (var row in results)
+            {
+                rowIndex++;
+                colIndex = 1;
+
+                foreach (var f in fieldMap)
+                {
+                    var val = (((row as IDictionary<string, object>)[$"{f.Item2}"]) ?? "").ToString();
+                    SetCellValue(document, rowIndex, colIndex, f.Item3, val);
+                    colIndex++;
+                }
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var result = stream.ToArray();
+            return result;
+        }
+
+        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch (dataType.ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
+            }
         }
     }
 }

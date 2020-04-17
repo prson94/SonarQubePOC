@@ -44,6 +44,7 @@ export class ResourcesService extends BaseObservableService {
 
 
     getResourceLazy(params: any): Observable<any> {
+
         var qString = '';
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
@@ -51,12 +52,27 @@ export class ResourcesService extends BaseObservableService {
                 qString = '?' + qString;
         }
 
-
         return this.http.get('/api/v2/membership/users' + qString).pipe(
             map(response => {
                 return response;
             }),
             catchError(err => this.handleError(err)));
+    }
+
+    exportResources(params: any) {
+        params['_pageNum'] = 1;
+        params['_pageSize'] = 10000;
+
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+
+        this.http.get('/api/v2/membership/users' + qString,
+            { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Observable<CountObject[]> {
@@ -151,25 +167,6 @@ export class ResourcesService extends BaseObservableService {
                 map(response => <MulitSelectResourceData>response),
                 catchError(err => this.handleError(err))
             );
-    }
-
-    exportResources(typeId: number, sortOrder: SortOrder, sortField?: string, simpleFilter?: string, filters?: GridFilterExpression[]) {
-
-        let sortCol = sortField != undefined ? sortField : "";
-
-        let url = `/resources/${typeId}/lazy/excel?sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}&simpleFilter=${simpleFilter}`;
-        let indx = 0;
-
-        if (filters != undefined) {
-            url += `&filterscount=${filters.length}`;
-
-            for (let filter of filters) {
-                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
-                indx++;
-            }
-        }
-
-        this.http.get(url, { responseType: 'blob' }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));
     }
 
     downloadFile(data: Blob, filename: string) {

@@ -94,7 +94,7 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     public export() {
-        this.resourcesService.exportResources(this.objectID, this.sortOrder, this.sortField, this.simpleFilter, this.filters);
+        this.resourcesService.exportResources(this.getParams());
     }
 
     load() {
