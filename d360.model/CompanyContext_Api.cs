@@ -6232,7 +6232,7 @@ insert into #Keys
 			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
 	                                    from    api.ExecutionAssetResult EAR
 			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
-											                                    and E.ExecutionID = @executionID and UPPER(E.Method)='POST'
+											                                    and E.ExecutionID = @executionID and EAR.Success is null and UPPER(E.Method)='POST'
 			                                    inner join 
 			                                    Asset A on (EAR.OwningAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
@@ -6243,23 +6243,11 @@ insert into #Keys
 	                                    set		EAR.Success = 0,
 			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
 	                                    from    api.ExecutionAssetResult EAR                                                
-                                        inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and UPPER(E.Method)='PUT'
-                                        inner join 
-                                        Asset A on (
-                                                    (EAR.EvaluatedAssetUid is not null	and EAR.EvaluatedAssetUid = A.uid) 
-                                                    or 
-                                                    A.uid in (select 
-	                                                                    AN.Uid
-                                                                    from 
-	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
-                                                                    where 	
-	                                                                    Match (AN -(ARE)-> AR)
-	                                                                    AND
-	                                                                    AR.uid =EAR.Uid
-                                                                        AND 
-                                                                        ARE.Class = {(int)ResultRelationClass.Owns})   
-                                                     )
-			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                        inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and EAR.Success is null and UPPER(E.Method)='PUT'
+										inner join AssetResult AR on AR.uid =EAR.Uid
+                                        inner join AssetResultEdge ARE on AR.$node_id = ARE.$to_id and ARE.class = {(int)ResultRelationClass.Owns}
+										inner join graph.AssetNode AN on AN.$node_id = ARE.$from_id
+			                             and AN.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, AN.AssetTypeID) where PermissionsBitMask & @p = @p)
                                     end
 
 	                                -- check Uid on Put
