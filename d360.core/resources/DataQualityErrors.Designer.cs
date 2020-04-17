@@ -97,6 +97,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} is an invalid {1} value..
+        /// </summary>
+        public static string GenericInvalidFieldValueError {
+            get {
+                return ResourceManager.GetString("GenericInvalidFieldValueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} must not be greater than {1}..
         /// </summary>
         public static string GreaterThanError {
@@ -111,6 +120,15 @@ namespace d360.core.resources {
         public static string GreaterThanTodayError {
             get {
                 return ResourceManager.GetString("GreaterThanTodayError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} format invalid. The correct format is: {1}.
+        /// </summary>
+        public static string InvalidFormatError {
+            get {
+                return ResourceManager.GetString("InvalidFormatError", resourceCulture);
             }
         }
         

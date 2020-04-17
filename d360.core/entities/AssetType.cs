@@ -126,5 +126,8 @@ namespace d360.core.entities
         public bool CanOwnFusion { get; set; }
         [DataMember]
         public string Path { get; set; }
+
+        [DataMember]
+        public IconStyleInsert IconStyle { get; set; }
     }
 }

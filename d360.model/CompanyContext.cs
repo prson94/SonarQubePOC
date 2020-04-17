@@ -11,7 +11,6 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;
@@ -19,12 +18,10 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Design.PluralizationServices;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -1524,17 +1521,7 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
                         {additionalApply}
-                        {relationshipsWhere}
-                UNION
-                SELECT	R.ID,
-		                'Rule Implementation :: ' + A.DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule] R
-                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type	";
+                        {relationshipsWhere}";
             }
             else
             {
@@ -1545,6 +1532,14 @@ where	R.SourceObject = 'FusionAttribute'
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+            if (subject.HasValue && subjectID.HasValue && limitToClasses != null) 
+            {
+                if (limitToClasses.Contains(AssetTypeClass.Reference))
+                {
+                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                }
+            }
 
             var sql = $@"
     SELECT		I.ID,
@@ -1609,12 +1604,11 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            bool removeSpecialPredicateTypes = false;
-            var allowedFunctionalTypes = PredicateType.Simple.GetAsList();
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
             
             if (sSubject == "IntersectType")
             {
-                removeSpecialPredicateTypes = true;
+                allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
@@ -1623,8 +1617,7 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
-
-                allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class)).ToList();
+                allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
             var sql = @"
@@ -1649,10 +1642,7 @@ where	I.ID is null";
                         i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
                   );
 
-            if (removeSpecialPredicateTypes)
-            {
-                predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
-            }
+            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
 
             return predicates.ToList();
         }
@@ -2147,8 +2137,13 @@ where	I.ID is null";
             return Database.Connection.Query<T>(sql, param, null, false, timeout);
         }
 
+        public async Task<IEnumerable<TReturn>> QueryAsync<TFirst,TSecond,TReturn>(string sql, Func<TFirst,TSecond,TReturn> map, string splitOn, object param = null, int timeout = 90)
+        {            
+            return await Database.Connection.QueryAsync<TFirst,TSecond,TReturn>(sql, map:map, param: param, splitOn: splitOn);
+        }
+
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
-        {
+        {            
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
@@ -2296,40 +2291,6 @@ where	I.ID is null";
         public void RebuildIndexRequest()
         {
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
-        }
-
-        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Node,
-                ChangedFieldNames = changedFieldNames
-            });
-        }
-
-        public void UpdateAssetGraphNodePath(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Path
-            });
-        }
-
-        public void UpdateAssetGraphEdge(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Edge
-            });
         }
 
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
@@ -3280,6 +3241,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
         }
+
         public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
         {
             return Query<int>(@"select value

@@ -24,7 +24,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(true)
         ]
         DataLineage = 1,
         [
@@ -40,7 +41,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.Rule),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         Evaluation = 2,
         [
@@ -56,7 +58,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(false),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         InterTypeHierarchy = 3,
         [
@@ -72,7 +75,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(false),
             SubjectAssetClassesSupported(AssetTypeClass.Model, AssetTypeClass.Policy),
-            ObjectAssetClassesSupported(AssetTypeClass.Model, AssetTypeClass.Policy)
+            ObjectAssetClassesSupported(AssetTypeClass.Model, AssetTypeClass.Policy),
+            AllowIntersectTypeAsSubject(false)
         ]
         IntraTypeHierarchy = 4,
         [
@@ -90,7 +94,8 @@ namespace d360.core.enums
             LineageVersionsSupported(1),
             Obsolete,
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         UserOwnership = 5,
         [
@@ -106,7 +111,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         Grammar = 6,
         [
@@ -121,8 +127,9 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset)
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            AllowIntersectTypeAsSubject(false)
         ]
         Simple = 7,
         [
@@ -139,7 +146,8 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1, 2),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule),
-            ObjectAssetClassesSupported(AssetTypeClass.FusionAttribute)
+            ObjectAssetClassesSupported(AssetTypeClass.FusionAttribute),
+            AllowIntersectTypeAsSubject(false)
         ]
         FusionMapping = 8,
         [
@@ -154,8 +162,9 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(false),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset)
+            SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            AllowIntersectTypeAsSubject(true)
         ]
         SeeAlso = 9,
         [
@@ -172,7 +181,8 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(true)
         ]
         Usage = 10,
         [
@@ -190,7 +200,8 @@ namespace d360.core.enums
             LineageVersionsSupported(1, 2),
             Obsolete,
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         ObjectOwnerhip = 11,
         [
@@ -207,7 +218,8 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         Transformation = 12,
         [
@@ -224,7 +236,8 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule),
-            ObjectAssetClassesSupported(AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         BusinessToTechnical = 13,
         [
@@ -241,7 +254,8 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(3),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         SemanticRelation = 14,
         [
@@ -257,7 +271,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.Task)
+            ObjectAssetClassesSupported(AssetTypeClass.Task),
+            AllowIntersectTypeAsSubject(false)
         ]
         Task = 15,
         [
@@ -273,7 +288,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.Task),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         TaskUse = 16,
         [
@@ -289,7 +305,8 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.Task),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset)
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            AllowIntersectTypeAsSubject(false)
         ]
         TaskDiagramReference = 17
     }
@@ -326,6 +343,9 @@ namespace d360.core.enums
 
         [JsonIgnore]
         public bool AllowEditFromRelationshipEditor { get; set; }
+
+        [JsonIgnore]
+        public bool AllowIntersectTypeAsSubject { get; set; }
 
         [JsonIgnore]
         public bool SingleRelationshipByFunctionalType { get; set; }
@@ -399,6 +419,7 @@ namespace d360.core.enums
                         AllowDifferentSubjectObject = ((AllowDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(AllowDifferentSubjectObjectAttribute))).Allowed,
                         AllowEditFromPredicateEditor = ((AllowEditFromPredicateEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromPredicateEditorAttribute))).Allowed,
                         AllowEditFromRelationshipEditor = ((AllowEditFromRelationshipEditorAttribute)tm.GetCustomAttribute(typeof(AllowEditFromRelationshipEditorAttribute))).Allowed,
+                        AllowIntersectTypeAsSubject = ((AllowIntersectTypeAsSubjectAttribute)tm.GetCustomAttribute(typeof(AllowIntersectTypeAsSubjectAttribute))).Allowed,
                         SingleRelationshipByFunctionalType = ((SingleRelationshipByFunctionalTypeAttribute)tm.GetCustomAttribute(typeof(SingleRelationshipByFunctionalTypeAttribute))).Allowed,
                         ForceDifferentSubjectObject = ((ForceDifferentSubjectObjectAttribute)tm.GetCustomAttribute(typeof(ForceDifferentSubjectObjectAttribute))).Allowed,
                         ReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute))).IsReadOnly,

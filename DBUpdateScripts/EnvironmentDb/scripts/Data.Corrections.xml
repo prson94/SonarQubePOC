@@ -5,6 +5,23 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
+  <changeSet author="MDonato" id="Data.Corrections.GOV-10308">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop table if exists metrics.TempScore;
+drop table if exists metrics.TempScoreItem;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="MDonato" id="Data.Corrections.GOV-10149">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -281,6 +298,25 @@ END CATCH
 	<rollback>
 		<![CDATA[	
 
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10344">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [dbo].[Predicate] where [Uid] = '5CD90E11-321C-4925-9E61-C9112940072C')
+begin
+	INSERT INTO [dbo].[Predicate] ([Name], [Inverse], [Type], [IsSystem], [Code], [UID]) VALUES ('evaluates', 'evaluated by', 2, 1, 'eval', '5CD90E11-321C-4925-9E61-C9112940072C')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+delete [dbo].[Predicate] where [Uid] = '5CD90E11-321C-4925-9E61-C9112940072C'
 		]]>
 	</rollback>
   </changeSet>

@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using System;
@@ -95,7 +96,7 @@ namespace d360.web.Models
             return new AssetBrowserApiHopRequestModel
             {
                 Direction = AssetBrowserApiHopDirection.Both,
-                Hops = 3, 
+                Hops = 3,
                 PredicateUid = Guid.Empty,
                 Assets = new List<AssetBrowserApiHopAssetRequestModel>() { new AssetBrowserApiHopAssetRequestModel { Uid = Guid.Empty } }
             };
@@ -156,6 +157,58 @@ namespace d360.web.Models
     #region Workflow Type Examples
 
 
+
+    #endregion
+    #region Data Quality Examples
+    public class DataQualityUpdateExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new DataQualityUpdateModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                RunDate = "yyyy-MM-dd HH:mm:ss",
+                PassCount = 0,
+                FailCount = 0
+            };
+        }
+    }
+
+    public class DataQualityDeleteExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new DataQualityDeleteModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                OwningAssetUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                RunDateStart = "yyyy-MM-dd HH:mm:ss",
+                RunDateEnd = "yyyy-MM-dd HH:mm:ss",
+                EffectiveDateStart = "yyyy-MM-dd",
+                EffectiveDateEnd = "yyyy-MM-dd"
+            };
+        }
+    }
+
+    public class DataQualityInsertExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {              
+            return new DataQualityInsertModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                OwningAssetUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                EffectiveDate = "yyyy-MM-dd",
+                RunDate = "yyyy-MM-dd HH:mm:ss",
+                PassCount = 0,
+                FailCount = 0
+            };
+        }
+    }
 
     #endregion
 }
