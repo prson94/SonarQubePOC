@@ -1032,10 +1032,6 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"The Code field must be 250 characters or less in length");
                                     success = false;
                                 }
-                                else
-                                {
-                                    success = true;
-                                }
                                 break;
                             case "color":
                                 if ((fieldValue ?? "").Length > 7)
@@ -1043,20 +1039,12 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"The Color field must be a seven character RGB code");
                                     success = false;
                                 }
-                                else
-                                {
-                                    success = true;
-                                }
                                 break;
                             case "icon":
-                                if ((fieldValue ?? "").Length > 50)
+                                if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
-                                    errorMessages.Add($"The Icon field must be fifty characters or less in length");
+                                    errorMessages.Add($"The Icon field must be fifty characters or less in length and start with 'fa-'");
                                     success = false;
-                                }
-                                else
-                                {
-                                    success = true;
                                 }
                                 break;
                         }
