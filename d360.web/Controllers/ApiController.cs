@@ -1205,20 +1205,21 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
+                    columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
+                    columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
+                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
                     columns.Add(new GridColumn
                     {
                         text = d360.core.resources.Fields.Status_Name,
                         datafield = "State",
                         filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                        fieldType = "Text",
                         filteritems = new List<string>() {
                         CompanyResourceState.Active.ToString(),
-                        CompanyResourceState.Inactive.ToString()
+                        CompanyResourceState.Inactive.ToString(),
                     }
                     });
 

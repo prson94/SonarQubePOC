@@ -3,7 +3,7 @@ import { debounceTime } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Breadcrumb } from '../../models/breadcrumb.model';
-import { GridColumn, GridField, GridFilterExpression } from '../../models/grid-definition.model';
+import { GridColumn, GridField, GridFilterExpression, GridFilterColumn } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
@@ -18,6 +18,7 @@ import { SortOrder } from '../../models/enums.model';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, ViewChild, OnInit } from '@angular/core';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetSearchFilter, V2ApiFilters } from '../../models/asset-search.model';
+import { Column } from 'primeng/shared';
 /* FIXME: Extract templates and styles to their own files
 *  https://angular.io/guide/styleguide#style-05-04 */
 @Component({
@@ -29,7 +30,6 @@ import { AssetSearchFilter, V2ApiFilters } from '../../models/asset-search.model
                               [(filterMode)]="showSimpleFilter" hasExport="true"
                               (exportClick)="export()"></d3s-tile-actions>
         </header>
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <span *ngIf="!showDelete && !showEditor && !showResetPwd">
                     <input type="text" [hidden]="!showSimpleFilter" pInputText size="100"
                            (input)="$event.target.value;dt.filterGlobal($event.target.value, 'contains')"
@@ -237,18 +237,25 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         this.usersSub = this.resourcesService.getResourceLazy(this.getParams()).pipe(
             debounceTime(3000))
             .subscribe(result => {
-                this.items = result.items;
-                this.totalRecords = result.total;
-                if (this.items && this.items.length > 0) this.selected = this.items[0];
-                this.isLoading = false;
-                this.changeDetectorRef.markForCheck();
-            });
+                if (result) {
+                    this.items = result.items;
+                    this.totalRecords = result.total;
+                    if (this.items && this.items.length > 0) this.selected = this.items[0];
+                    this.isLoading = false;
+                    this.changeDetectorRef.markForCheck();
+                }
+            },
+                null,
+                () => {
+                    this.isLoading = false;
+                    this.changeDetectorRef.markForCheck();
+                }
+            );
     }
 
     public getParams() {
         var params = new V2ApiFilters();
-
-        params._filter = `(State eq 'Active' or State eq 'Inactive')`;
+        let baseFilter = `(State eq 'Active' or State eq 'Inactive')`;
 
         params._direction = this.sortOrder == 1 ? 'asc' : 'desc';
         if (this.sortField) {
@@ -263,6 +270,31 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
         }
         else {
             delete params['_simpleFilter'];
+        }
+
+        if (this.filters.length > 0) {
+            let expressions: string[] = [];
+            let filterColumns: GridFilterColumn[] = [];
+            this.columns.forEach(f => {
+                var gfc = new GridFilterColumn();
+                gfc.apiName = this.getApiName(f.datafield);
+                gfc.fieldType = f['fieldType'];
+                gfc.datafield = f.datafield;
+                filterColumns.push(gfc);
+            });
+            this.filters.forEach(f => {
+                expressions.push(f.getAsV2ApiFilter(filterColumns));
+            });
+
+            if (expressions.length > 0) {
+                params._filter = `(${expressions.join(' and ')}) and ${baseFilter}`;
+            }
+            else {
+                params._filter = baseFilter;
+            }
+        }
+        else {
+            params._filter = baseFilter;
         }
 
         params._pageNum = this.currentPageNumber + 1;
