@@ -95,7 +95,7 @@ namespace d360.web.Controllers
                 parentItems.Insert(0, new SelectListItem { Text = "- Root -", Value = Guid.Empty.ToString(), Selected = (parent == null) });
 
                 list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = taxonomy.Uid.ToString() });
-                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
+                list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "ParentUid", Name = "Parent Model", FieldDescription = FormInfo.Taxonomy_ChangeParent_Warning, FieldType = DataType.Lookup.ToString(), Items = parentItems, VirtualScroll = true, ItemSize = 20, Value = ((parent != null) ? parent.uid.ToString() : Guid.Empty.ToString()) });
                 list = (
                      loadDynamicFields(
                          SystemObjects.Taxonomy.ToString(),
