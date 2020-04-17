@@ -186,4 +186,10 @@ export class ResourcesService extends BaseObservableService {
             anchor.click();
         }
     }
+
+    getLegacyData(uid: string): Observable<any> {
+        return this.http.get(`/api/v2/membership/legacyData/resource/${uid}`)
+            .pipe(map(res => <any>res),
+                catchError((err) => this.handleError(err)));
+    }
 }

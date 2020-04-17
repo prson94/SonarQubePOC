@@ -165,7 +165,7 @@ namespace d360.web.Controllers.V2
 
             if (!string.IsNullOrEmpty(_simpleFilter))
             {
-                dbArgs.Add("@simpleFilter", _simpleFilter);
+                dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
                 List<string> simpleFilters = new List<string>();
 
                 foreach (var field in fieldTypes.Where(x => x.IsListable == true))
@@ -490,14 +490,14 @@ namespace d360.web.Controllers.V2
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
-                foreach(var u in users)
+                foreach (var u in users)
                 {
                     if (Guid.TryParse(u, out Guid res))
                     {
                         resources.Add(new UserApiDeleteModel()
                         {
                             Uid = res
-                        }); 
+                        });
                     }
                     else
                     {
