@@ -1025,9 +1025,9 @@ namespace d360.web.Controllers.V2
             {
                 var dataQualityAssetResult = MetricsRepository.GetAssetResultDetailsByUid(model.Uid.Value);
 
-                if (dataQualityAssetResult == null)
+                if (dataQualityAssetResult == null || dataQualityAssetResult.Count == 0)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Result not found", String.Format("Result with Uid {0} could not be found.", model.OwningAssetUid));
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Result not found", String.Format("Result with Uid {0} could not be found.", model.Uid.Value));
                 }
 
                 if (model.OwningAssetUid.HasValue && model.OwningAssetUid.Value != Guid.Empty && !dataQualityAssetResult.Exists(x => x.AssetUid == model.OwningAssetUid.Value && x.Class == (int)ResultRelationClass.Owns))
