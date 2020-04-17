@@ -52,7 +52,7 @@ declare var window: any;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AssetBrowserComponent extends DiagramBaseComponent implements OnInit, AfterViewInit, AfterViewChecked {
-    @Input() readonly: boolean = true;
+    @Input() readonly = true;
     @Input() assetUid: string;
 
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
@@ -70,26 +70,29 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private alerts: AssetBrowserAlert[] = [];
     private assetsWithAlerts: string[] = [];
     private selectedAssetsWithAlerts: string[] = [];
-    private totalAlertCount: number = 0;
+    private totalAlertCount = 0;
+
+    private diagramTypeSpecifiedInPath = DiagramType.Lineage;
+    private isDiagramTypeSpecifiedInPath = false;
 
     private selectedDiagramAsset: AssetBrowserDiagramAsset;
-    private isFullScreen: boolean = false;
-    private loadingText: string = '';
+    private isFullScreen = false;
+    private loadingText = '';
 
-    private searchText: string = '';
+    private searchText = '';
     private searchResults: go.Node[] = [];
     private searchableProps: string[] = ["text"];
 
-    private panel_Loading: boolean = false;
-    private panel_InformationDisabled: boolean = true;
-    private panel_TabIndex: number = 0;
+    private panel_Loading = false;
+    private panel_InformationDisabled = true;
+    private panel_TabIndex = 0;
 
     private panelModel: AssetBrowserPanelModel = { selectedCommand: AssetBrowserPanelCommand.None, AddVisible: false, AlertVisible: false, FiltersVisible: false, InformationVisible: false, SettingsVisible: false };
 
     displayConfiguration: AssetBrowserFilterModel = new AssetBrowserFilterModel();
     private readonly displayConfigurationKey = 'asset-browser-configuration';
     private storage = window.sessionStorage;
-    scale: number = 1;
+    scale = 1;
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
 
@@ -166,9 +169,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.originalAssetUid = this.assetUid;
 
-        //this.loadPermissions(this.permissionsService, this.objectType, this.objectID);
-
-        this.helper_InitializeDiagram();
         this.checkSecondaryNavLocalStorage();
 
         // Do this only on initial load.
@@ -178,12 +178,24 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.filter_AllOptions = options;
             });
 
-        //this.displayConfiguration = this.loadFilter();
-
         this.route.params.subscribe(
             params => {
                 this.originalAssetUid = params['assetUid'];
-                this.helper_RefreshDiagram();
+
+                let diagramTypeParameterValue = 'Lineage';
+                if (params['diagramType']) {
+                    diagramTypeParameterValue = params['diagramType'];
+
+                    this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
+                    if (!this.isDiagramTypeSpecifiedInPath) {
+                        diagramTypeParameterValue = 'Lineage';
+                    }
+                }
+                this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
+                this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
+
+                if (this.diagram) this.diagram.div = null;
+                this.helper_InitializeDiagram();
             }
         );
     }
@@ -195,20 +207,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngAfterViewChecked() {
 
-        var panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
-        var panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window');
+        const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
+        const panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window');
 
         (function () {
             if (typeof NodeList.prototype.forEach === "function") return false;
             panelElements.forEach = Array.prototype.forEach;
         })();
-        var diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
+        const diagramSize = +this.diagramRef.nativeElement.style.height.replace('px', '');
         panelElements.forEach(el => {
             el.style.height = (diagramSize - 75) + 'px';
             el.style.maxHeight = (diagramSize - 75) + 'px';
-            var panelHeaderSize = panelHeaderElement.clientHeight;
+            const panelHeaderSize = panelHeaderElement.clientHeight;
 
-            let innerPanelHeight: string = (diagramSize - 75 - panelHeaderSize - 50) + 'px';
+            const innerPanelHeight = (diagramSize - 75 - panelHeaderSize - 50) + 'px';
             if (this.addLineagePanelRef) {
                 this.addLineagePanelRef.nativeElement.style.height = innerPanelHeight;
             }
@@ -246,7 +258,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private ownershipTabEnabled() {
-        let enabled: boolean = false;
+        let enabled = false;
 
         if (this.selectedDiagramAsset) {
             enabled = (this.selectedDiagramAsset.Owners.length > 0);
@@ -258,12 +270,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //#region Session storage
 
     private saveState(key: string, data: any) {
-        let dataString = JSON.stringify(data);
+        const dataString = JSON.stringify(data);
         this.storage.setItem(key, dataString);
     }
 
     private loadState(key: string): any {
-        let dataString = this.storage.getItem(key);
+        const dataString = this.storage.getItem(key);
         if (dataString) {
             return JSON.parse(dataString);
         }
@@ -275,11 +287,17 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private loadFilter() {
-        let m = this.loadState(this.displayConfigurationKey);
-        if (m == null)
+        const m: AssetBrowserFilterModel = this.loadState(this.displayConfigurationKey);
+        if (m === null)
             this.displayConfiguration = new AssetBrowserFilterModel();
-        else
+        else {
+            // Override the selected diagram type in the session, as you are going to a specific diagram via the path. 
+            if (this.isDiagramTypeSpecifiedInPath) {
+                m.DiagramType = this.diagramTypeSpecifiedInPath;
+            }
             this.displayConfiguration = m;
+        }
+            
     }
 
     //#endregion
@@ -1999,6 +2017,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.diagram.requestUpdate();
     }
 
+    private helper_UpdateDiagramType(dt: DiagramType) {
+        let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
+        model.DiagramType = dt;
+        this.displayConfiguration = model;
+    }
+
     private helper_UpdateVisualization(): void {
         this.saveFilter();
         this.isLoading = true;
@@ -3206,12 +3230,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private viewchange_Apply(e: DiagramType) {
         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
         this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;
-        let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
-        model.DiagramType = e;
-        this.displayConfiguration = model;
+        this.helper_UpdateDiagramType(e);
         this.saveFilter();
-        this.diagram.div = null;
-        this.helper_InitializeDiagram();
+        this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }
 
     /**

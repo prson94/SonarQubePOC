@@ -282,6 +282,9 @@ export class BaseComponent {
                         ['fa-random'],
                         `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
                     );
+
+                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
+                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
                 }
                 this.secondaryNavService.showItem(this.lineageSidebar);
             }
@@ -917,6 +920,10 @@ export class BaseComponent {
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {
+                cmp.active = true;
+            }
+
+            if (cmp && cmp.subTabsUrl.some(x => x == currentComponentUrl)) {
                 cmp.active = true;
             }
         });
