@@ -87,7 +87,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
                 this.searchTypes = params['types'].split(',').filter((x): x is string => x.length > 0);
             }
             let keepFilter = params['f'] ? (params['f'] == 1 ? true : false) : false;
-            this.searchStateService.loadState(this.isExactMatch ? `'${this.searchText}'` : this.searchText, this.searchTypes, keepFilter);
+            this.searchStateService.loadState(this.searchText, this.searchTypes, keepFilter);
             if (params['explain'] != undefined) {
                 this.searchStateService.setExplain(params['explain'] == 'please');
             }
