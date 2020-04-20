@@ -1819,14 +1819,16 @@ from	IntersectType I
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
         where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
     )
-    insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
+    insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Object], [ObjectID])
         select  distinct 
                 ExecutionID, 
                 ItemNumber, 
                 [Uid], 
                 AssetID, 
                 IntersectID, 
-                1 
+                1,
+                Object,
+                ObjectID
         from    h 
         where   IntersectID is not null 
                 and [Level] > 0 
