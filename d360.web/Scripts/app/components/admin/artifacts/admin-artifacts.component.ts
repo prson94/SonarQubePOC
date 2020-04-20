@@ -9,12 +9,13 @@ import { ArtifactTypeService } from '../../../services/artifact-type.service';
 import { AdminBaseComponent } from '../admin-base.component'
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AssetTypeClass } from '../../../models/asset.model';
+import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
+import { AssetService } from '../../../services/asset.service';
 
 @Component({
     selector: 'd3s-admin-artifacts',
-    providers: [ArtifactTypeService, AuditService],
+    providers: [ArtifactTypeService, AuditService, AssetService],
     templateUrl: './admin-artifacts.component.html'
 })
 
@@ -45,6 +46,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         secondaryNavService: SecondaryNavService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private artifactsService: ArtifactTypeService,
+        private assetsService: AssetService,
         titleService: Title,
         protected messagesService: MessagesObservableService
     ) {
@@ -75,53 +77,73 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     selectedItemChange() {
-        this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
+        this.loadDataAndExecuteAction(() => {
+            this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
+        });
     }
 
     ngOnDestroy() {
         this.clearSidebar();
     }
 
-    load(selectionId: number = 0) {
+    load(uid: string = '') {
         this.isLoading = true;
-        this.artifactsService.getArtifactTypeTree(this.assetTypeClass)
+        this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
             .subscribe(data => {
-                this.artifactTypes = data;
-                if (selectionId <= 0) {
+                let temp: TreeNode[] = [];
+                data.forEach(n => {
+                    temp.push(AssetCount.ConvertToTreeNode(n));
+                })
+
+                this.artifactTypes = AssetCount.ListToTree(temp);
+                if (!uid) {
                     this.selectedRow = this.artifactTypes[0];
                 } else {
-                    this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, selectionId);
+                    this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+
                 }
                 this.selectedItemChange();
                 this.isLoading = false;
             });
     }
 
-    delete(id: number) {
-        this.selectedRow = this.artifactsService.findArtifactType(this.artifactTypes, id);
-        this.isAdding = false;
-        this.isEditing = false;
-        this.isDeleting = true;
+    delete(uid: string) {
+        this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+
+        this.loadDataAndExecuteAction(() => {
+            this.isAdding = false;
+            this.isEditing = false;
+            this.isDeleting = true;
+        });
+
     }
 
-    edit(id: number) {
-        this.editorModel = this.artifactsService.findArtifactType(this.artifactTypes, id);
-        this.isAdding = false;
-        this.isEditing = true;
-        this.isDeleting = false;
+    edit(uid: string) {
+        this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+
+        this.loadDataAndExecuteAction(() => {
+            this.editorModel = this.selectedRow;
+            this.isAdding = false;
+            this.isEditing = true;
+            this.isDeleting = false;
+        });
     }
 
-    add(id: number) {
+    add(uid: string) {
+        if (uid)
+            this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        this.loadDataAndExecuteAction(() => {
+            if (!uid) {
+                this.editorModel = { data: { ID: 0 } };
+            } else {
+                this.editorModel = this.selectedRow;
+            }
 
-        if (id == 0) {
-            this.editorModel = { data: { ID: 0 } };
-        } else {
-            this.editorModel = this.artifactsService.findArtifactType(this.artifactTypes, id);
-        }
+            this.isEditing = false;
+            this.isAdding = true;
+            this.isDeleting = false;
 
-        this.isEditing = false;
-        this.isAdding = true;
-        this.isDeleting = false;
+        });
     }
 
     cancel() {
@@ -136,7 +158,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.isAdding = false;
         this.isEditing = false;
         this.isDeleting = false;
-        this.load(e.id ? (e.id - 0) : 0);
+        this.load(e.id ? e.id : '');
         this.stateService.reloadLeftNavMenu();
     }
 
@@ -159,5 +181,16 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
             this.dt.reset();
             this.filterTreeTable(this.artifactTypes, this.searchValue, this.dt);
         }, event ? 600 : 0);
+    }
+
+    private loadDataAndExecuteAction(action: Function) {
+        this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
+            .subscribe(res => {
+                this.selectedRow.data.ID = res.ObjectID;
+                this.selectedRow.data.AssetTypeID = res.AssetTypeID;
+                if (action) {
+                    action();
+                }
+            });
     }
 }

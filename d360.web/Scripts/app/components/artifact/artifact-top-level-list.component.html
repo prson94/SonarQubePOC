@@ -8,7 +8,7 @@
                 [(ngModel)]="searchValue"
                 placeholder="Search"
                 style="width: 100%;margin-bottom:10px;">
-            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'Name'"
+            <p-treeTable [value]="ArtifactTypes | treeSearch: searchValue:'name'"
                 selectionMode="single"
                 [(selection)]="selectedRow"                
                 [style]="{ 'width': '100%' }">
@@ -23,23 +23,23 @@
                 <ng-template pTemplate="body"
                     let-rowNode
                     let-item="rowData">
-                    <tr [ttSelectableRow]="rowNode"  (click)="navigate(item.ID)">
+                    <tr [ttSelectableRow]="rowNode"  (click)="navigate(item.uid)">
                         <td style="vertical-align: top">
                             <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                            {{item.Name}}
+                            {{item.name}}
                         </td>
-                        <td *ngIf="item.Description;else other_content"
-                            [innerHtml]="item.Description"></td>
+                        <td *ngIf="item.description;else other_content"
+                            [innerHtml]="item.description"></td>
                         <ng-template #other_content>
                             <td>&nbsp;</td>
                         </ng-template>
                         <td style="overflow: auto; padding-left: 15px; text-align: center">
-                            {{item.Count}}
+                            {{item.count}}
                         </td>
                         <td>
                             <div class="RowTools">
                                 <d3s-preview-tooltip objectType="ArtifactType"
-                                                     [objectId]="item.ID"
+                                                     [uid]="item.uid"
                                                      icon="info"></d3s-preview-tooltip>
                             </div>
                         </td>

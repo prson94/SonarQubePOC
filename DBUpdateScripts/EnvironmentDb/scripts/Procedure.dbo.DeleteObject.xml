@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Bhoward" id="Procedure.dbo.DeleteObject-v3">
+  <changeSet author="Bhoward" id="Procedure.dbo.DeleteObject-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -490,14 +490,6 @@ begin
       
    delete [Intersect] where IntersectTypeID = @ObjectID      
    delete IntersectType where ID = @ObjectID      
-  end      
-      
-  if @Object = 'LookupType'      
-  begin      
-   set @ClearFields = 1      
-      
-   delete [Lookup] where LookupTypeID = @ObjectID      
-   delete  LookupType where ID=@ObjectID      
   end      
       
   if @Object = 'Policy'      

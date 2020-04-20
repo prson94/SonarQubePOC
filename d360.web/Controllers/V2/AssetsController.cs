@@ -530,6 +530,21 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Get Asset type object and object id for asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("assetTypeLegacyData/{assetTypeUid}"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<dynamic> GetArtifactTypeUidById(Guid assetTypeUid)
+        {
+            return await AssetRepository.GetAssetTypeObjectAndObjectId(assetTypeUid);
+        }
+
+        /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>
@@ -858,21 +873,20 @@ namespace d360.web.Controllers.V2
             }
         }
 
-
         /// <summary>
         /// Gets the score and the status of a Asset by its Uid
         /// </summary>
         /// <param name="assetUid">The asset Uid</param>
         /// <returns></returns>
         [
-            HttpGet, MapToApiVersion("2.0"), Route("GetScoreAndStatus/{assetUid}"),
+            HttpGet, MapToApiVersion("2.0"), Route("GetUIDetails/{assetUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public dynamic GetScoreAndStatus(Guid assetUid)
+        public dynamic GetUIDetails(Guid assetUid)
         {
-            return Company.GetAssetStatusAndScore(assetUid);
+            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
         }
 
         /// <summary>
@@ -920,6 +934,70 @@ namespace d360.web.Controllers.V2
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a list of all asset types and asset counts for current user.
+        /// </summary>
+        /// <returns>Returns a list of asset type counts for current user.</returns>
+        [
+            HttpGet,
+            Route("counts/byAssetType"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("Class", "Comma separated values of classes to filter by. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.", DataType = "string", ParameterType = "query", Required = false)
+        ]
+        public async Task<HttpResponseMessage> GetAssetTypeCountsAsync()
+        {
+            var prefix = "Assets.GetAssetTypeCountsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                List<AssetTypeClass> classFilters = new List<AssetTypeClass>() {
+                    AssetTypeClass.BusinessAsset,
+                    AssetTypeClass.TechnicalAsset,
+                    AssetTypeClass.Model,
+                    AssetTypeClass.Policy,
+                    AssetTypeClass.Rule };
+
+                var param = Request.GetQueryNameValuePairs();
+                if (param.Any(x => x.Key.ToLower() == "class"))
+                {
+                    var value = param.FirstOrDefault(x => x.Key.ToLower() == "class").Value;
+                    var values = value.Split(',');
+                    if (values.Count() > 0)
+                    {
+                        classFilters.Clear();
+                        foreach (var cs in values.Select(x => x.Trim()))
+                        {
+                            if (Enum.TryParse(cs, true, out AssetTypeClass assetTypeClass))
+                            {
+                                classFilters.Add(assetTypeClass);
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Asset type class '{cs}'");
+                            }
+
+                        }
+                    }
+                }
+
+                var classes = await AssetRepository.GetAssetTypeCounts(classFilters.Select(x => (int)x).ToArray());
+                return Request.CreateResponse(HttpStatusCode.OK, classes);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
 
@@ -1315,7 +1393,7 @@ namespace d360.web.Controllers.V2
             {
                 AssetTagSuccessApiModel result;
 
-                if(assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
+                if (assetTagApi.TagUID != Guid.Empty && !string.IsNullOrEmpty(assetTagApi.TagName))
                 {
                     result = new AssetTagSuccessApiModel()
                     {
@@ -1335,7 +1413,7 @@ namespace d360.web.Controllers.V2
                 {
                     currentTag = tagRepository.GetTagByUid(assetTagApi.TagUID);
                 }
-                
+
                 if (currentTag == null)
                 {
                     result = new AssetTagSuccessApiModel()
@@ -1427,7 +1505,7 @@ namespace d360.web.Controllers.V2
                 }
 
             }
-            
+
             return ResponseMessage(Request.CreateResponse<List<AssetTagSuccessApiModel>>(HttpStatusCode.OK, resultList));
         }
 

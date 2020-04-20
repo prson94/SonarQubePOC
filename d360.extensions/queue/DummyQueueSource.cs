@@ -12,23 +12,26 @@ namespace d360.extensions.queue
     {
         public string EventServiceBusConnectionString { get { return CloudConfigurationManager.GetSetting("EventServiceBus"); } }
 
-        public void CreateMessage<T>(string queueName, T item)
+        public bool CreateMessage<T>(string queueName, T item)
         {
+            return true;
         }
 
-        public void CreateMessages<T>(string queueName, List<T> items)
+        public bool CreateMessages<T>(string queueName, List<T> items)
         {
-
+            return true;
         }
 
-        public async Task CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
+        public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
+        {
+            await Task.Run(() => {  });
+            return true;
+        }
+
+        public async Task<bool> CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
         {
             await Task.Run(() => { });
-        }
-
-        public async Task CreateMessagesAsync<T>(string queueName, List<T> items, TimeSpan? initialVisibilityDelay = null)
-        {
-            await Task.Run(() => { });
+            return true;
         }
 
         public void CreateTopicMessage(EventInfo e)

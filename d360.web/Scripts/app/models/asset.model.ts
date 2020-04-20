@@ -1,4 +1,5 @@
 ﻿import { ReferenceItemType } from "./reference.model";
+import { TreeNode } from "primeng/api";
 
 
 export enum State {
@@ -87,6 +88,15 @@ export class AssetTypeApiModel {
     Name: string;
     Path: string;
     Class: AssetTypeClassApiModel;
+    Description: string;
+    AutoDisplayDescription: boolean;
+    DisplayFormat: string;
+    ParentUid: string;
+    Notes: string;
+    UseAsTransformation: boolean;
+    CanOwnFusion: boolean;
+    Hierarchical: boolean;
+    HierarchyMaximumDepth: number;
 }
 
 export class IconStyle {
@@ -98,5 +108,54 @@ export class IconStyle {
 export class Hierarchy {
     MaximumDepth: number;
     PredicateUid: string;
+}
+
+export class AssetCount {
+    uid: string;
+    parentUid: string;
+    class: string;
+    name: string;
+    description: string;
+    count: number;
+
+    public static ConvertToTreeNode(data: AssetCount): TreeNode {
+        let node: TreeNode = {};
+        node.data = data;
+        node.key = data.uid;
+        node['id'] = data.uid;
+        node['parentid'] = data.parentUid;
+        return node;
+    }
+
+
+    public static ListToTree(arr: TreeNode[]): TreeNode[] {
+        var tree = [],
+            mappedArr = {},
+            arrElem,
+            mappedElem;
+
+        // First map the nodes of the array to an object -> create a hash table.
+        for (var i = 0, len = arr.length; i < len; i++) {
+            arrElem = arr[i];
+            mappedArr[arrElem.id] = arrElem;
+            mappedArr[arrElem.id]['children'] = [];
+        }
+
+
+        for (var id in mappedArr) {
+            if (mappedArr.hasOwnProperty(id)) {
+                mappedElem = mappedArr[id];
+                // If the element is not at the root level, add it to its parent array of children.
+                if (mappedElem.parentid) {
+                    mappedArr[mappedElem['parentid']]['children'].push(mappedElem);
+                }
+                // If the element is at the root level, add it to first level elements array.
+                else {
+                    tree.push(mappedElem);
+                }
+            }
+        }
+        return tree;
+    }
 }
 

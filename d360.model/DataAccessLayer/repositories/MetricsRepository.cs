@@ -84,7 +84,22 @@ namespace d360.model.DataAccessLayer
 
             foreach (var condition in model.Conditions)
             {
-                var fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldTypeID);
+                var fieldType = new FieldType();
+                if (condition.FieldTypeID.HasValue)
+                {
+                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldTypeID);
+                }
+                else
+                {
+                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.Name.ToLower() == condition.FieldName.Trim().ToLower() && x.Object == targetAssetType.Object && x.ObjectID == targetAssetType.ObjectID);
+
+                    if (fieldType == null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                    }
+                    condition.FieldTypeID = fieldType.ID;
+                }
+
                 if (fieldType == null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
@@ -108,20 +123,20 @@ namespace d360.model.DataAccessLayer
                 {
                     case "Boolean":
                         if (!bool.TryParse(condition.Values, out tempBool))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
                         break;
                     case "Decimal":
                         if (!decimal.TryParse(condition.Values, out tempDecimal))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
                         break;
                     case "Date":
                         if (!DateTime.TryParse(condition.Values, out tempDate))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
                         condition.Values = tempDate.ToShortDateString();
                         break;
                     case "Number":
                         if (!int.TryParse(condition.Values, out tempInt))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{condition.FieldTypeID}' does not contain valid '{fieldType.Type}' value!");
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
                         break;
                     default:
                         break;
@@ -214,7 +229,7 @@ namespace d360.model.DataAccessLayer
                 }
                 Company.MetricAssets.Add(metricAsset);
             }
-            
+
             var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
 
             var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where [Uid] = @Uid", new { model.Uid }).SingleOrDefault();
@@ -261,10 +276,10 @@ namespace d360.model.DataAccessLayer
                     model.Conditions.ForEach(c =>
                     {
                         // You can only add one of a specific field type ID.
-                        if (!usedFieldTypeIDs.Contains(c.FieldTypeID))
+                        if (!usedFieldTypeIDs.Contains(c.FieldTypeID.Value))
                         {
-                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID, Operator = c.Operator, ValueJson = c.Values });
-                            usedFieldTypeIDs.Add(c.FieldTypeID);
+                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
+                            usedFieldTypeIDs.Add(c.FieldTypeID.Value);
                         }
                     });
                 }
@@ -323,7 +338,7 @@ namespace d360.model.DataAccessLayer
                         else
                         {
                             // Add to collection.
-                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID, Operator = c.Operator, ValueJson = c.Values });
+                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
                         }
                     });
 
@@ -456,7 +471,7 @@ namespace d360.model.DataAccessLayer
         public MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType type)
         {
             SqlConnection cnn = Company.Database.Connection as SqlConnection;
-            
+
             if (!effectiveDate.HasValue)
                 effectiveDate = DateTime.UtcNow.Date;
 
@@ -736,13 +751,15 @@ namespace d360.model.DataAccessLayer
 
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
-        {            
+        {
             Company.Add(execution);
 
             List<DataQualityResponseModel> results = null;
             try
             {
-                results = Company.UpsertAssetResults(request, execution);
+                List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
+                upsert.AddRange(request);
+                results = Company.UpsertAssetResults(upsert, execution);
 
                 // Close execution record.
                 execution.Processed = results.Count;
@@ -759,23 +776,23 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
-        public DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
         {
-            var result = new DataQualityResult();
+            var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
             string orderBy;
             string effectiveSQL = "";
             string evaluatedAssetSQL;
-            
-            
+
+
             if (effectiveDateStart.HasValue)
             {
-                effectiveSQL = $@"and EffectiveDate > @effectiveStartDate";
+                effectiveSQL = $@"and EffectiveDate >= @effectiveStartDate";
                 parameters.Add("@effectiveStartDate", effectiveDateStart.Value);
             }
             if (effectiveDateEnd.HasValue)
             {
-                effectiveSQL = $@"{effectiveSQL} and EffectiveDate < @effectiveEndDate";
+                effectiveSQL = $@"{effectiveSQL} and EffectiveDate <= @effectiveEndDate";
                 parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
             }
 
@@ -793,7 +810,7 @@ namespace d360.model.DataAccessLayer
                                         {effectiveSQL}
 	                                ) DQR";
 
-            if(!string.IsNullOrWhiteSpace(sort))
+            if (!string.IsNullOrWhiteSpace(sort))
             {
                 orderBy = $"Order by {sort} {direction ?? ""}";
             }
@@ -801,7 +818,7 @@ namespace d360.model.DataAccessLayer
             {
                 orderBy = $"Order by EffectiveDate {direction ?? ""}";
             }
-            
+
 
             if (evaluatedAssetUid != null)
             {
@@ -818,9 +835,10 @@ namespace d360.model.DataAccessLayer
 			                            and
 			                            ARE.Class = {(int)ResultRelationClass.EvaluatedBy}	
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
-                
+
             }
-            else {
+            else
+            {
                 evaluatedAssetSQL = $@"left Join
 	                            (		
 		                            select 
@@ -869,14 +887,14 @@ namespace d360.model.DataAccessLayer
             parameters.Add("@evaluatedAssetUid", evaluatedAssetUid);
             parameters.Add("@owningAssetUid", owningAssetUid);
             parameters.Add("@pageNum", result.pageNum);
-            parameters.Add("@pageSize", result.pageSize);            
+            parameters.Add("@pageSize", result.pageSize);
 
-            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();                        
+            result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
-            result.items = Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList();
-            if (result.items == null) result.items = new List<DataQualityResultItem>();
+            result.items = Company.Query<DataQualityGetResultItem>(dataQualityResultSql, parameters).ToList();
+            if (result.items == null) result.items = new List<DataQualityGetResultItem>();
             return result;
-        }  
+        }
 
         public List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value)
         {
@@ -907,6 +925,33 @@ namespace d360.model.DataAccessLayer
             try
             {
                 results = Company.DeleteAssetResults(request, execution);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
+        }
+
+        public List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<DataQualityResponseModel> results = null;
+            try
+            {
+                List<IDataQualityUpsert> upsert = new List<IDataQualityUpsert>();
+                upsert.AddRange(request);
+                results = Company.UpsertAssetResults(upsert, execution);
 
                 // Close execution record.
                 execution.Processed = results.Count;

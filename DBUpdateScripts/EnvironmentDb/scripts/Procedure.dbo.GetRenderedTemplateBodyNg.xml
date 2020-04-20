@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetRenderedTemplateBodyNg-v1">
+  <changeSet author="bhoward" id="Procedure.dbo.GetRenderedTemplateBodyNg-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -122,103 +122,6 @@ BEGIN
 			set @fusionAttributeItemsHtml = @fusionAttributeItemsHtml + '</table></div>'
 
 			insert into @tbl values ('Items', @fusionAttributeItemsHtml)
-			
-		end;
-
-		if @Type = 'LookupType' OR @Type = 'Lookup'
-		begin
-			
-			declare @lookups table (RowID int identity, ID int)
-
-			declare @MyLookupTypeID int
-			if @Type = 'Lookup'
-				begin
-					select @MyLookupTypeID = LookupTypeID from [Lookup] where ID = @ID 
-				end
-			else
-				begin
-					set @MyLookupTypeID = @ID
-				end
-
-			insert into @lookups 
-				select top 10 ID from [Lookup] where LookupTypeID = @MyLookupTypeID order by ID desc
-
-			declare @lookupFieldTypes table (ID int identity, Name nvarchar(250))
-			insert into @lookupFieldTypes
-				select FriendlyName from FieldType where [Object] = 'LookupType' and ObjectID = @MyLookupTypeID order by ColumnOrder asc
-
-			declare @lookupHtml nvarchar(max)
-
-			set @lookupHtml = '<table class="hoverable bordered striped" style="width:100%">'
-
-			
-			set @lookupHtml = @lookupHtml + '<thead>'
-			set		@current = 1
-			select	@max = max(ID) from @lookupFieldTypes
-			while @current <= @max
-			begin
-				select	@name = Name
-				from	@lookupFieldTypes
-				where	ID = @current
-
-				set @lookupHtml = @lookupHtml + '<th style="margin-right: 15px">' + @name  + '</th>'
-
-				set @current = @current + 1
-			end
-			set @lookupHtml = @lookupHtml + '</thead>'
-			
-
-			set @lookupHtml = @lookupHtml + '<tbody>'
-
-			
-			select	@current = min(RowID) from @lookups
-			select	@max = max(RowID) from @lookups
-
-			while @current <= @max
-			begin
-				set @lookupHtml = @lookupHtml + '<tr>'	
-
-				declare @lookupFields table (Name nvarchar(250), Value nvarchar(4000))
-
-				declare @lookupID int
-
-				select	@lookupID = ID from @lookups where RowID = @current
-
-				insert into @lookupFields
-					select		FriendlyName,
-								FormattedValue
-					from		FieldWithRelation
-					where		ObjectType = 'Lookup' 
-								and ObjectID = @lookupID
-
-					
-					declare @lfCurrent int,
-							@lfMax int
-					set		@lfCurrent = 1
-					select	@lfMax = max(ID) from @lookupFieldTypes
-					while @lfCurrent <= @lfMax
-					begin
-						select	@name = Name from @lookupFieldTypes where ID = @lfCurrent
-
-						select @lookupHtml = @lookupHtml + '<td>' + coalesce(Value, '') + '</td>' from @lookupFields where Name = @name
-
-						set @lfCurrent = @lfCurrent + 1
-					end
-					
-
-				delete @lookupFields
-
-				set @lookupHtml = @lookupHtml + '</tr>'	
-
-				set @current = @current + 1
-			end
-			
-
-			set @lookupHtml = @lookupHtml + '</tbody>'
-
-			set @lookupHtml = @lookupHtml + '</table>'
-
-			insert into @tbl values ('Items', @lookupHtml)
 			
 		end;
 

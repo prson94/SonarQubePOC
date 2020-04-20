@@ -39,12 +39,14 @@ export class ObjectRelationship {
     TargetType: string;
     TargetTypeID: number;
     PredicateName: string;
+    Uid: string;
 }
 
 export class RelatedItem {
     Name: string;
     Type: string;
     ID: number;
+    Uid: string;
 }
 
 export class ObjectRelationshipCount {
@@ -70,4 +72,10 @@ export class PredicateDropdown {
     label: string;
     value: string;
     isSemantic: boolean;
+}
+
+export class RelationshipV2 {
+    SubjectAssetUid: string;
+    ObjectAssetUid: string;
+    Fields: [];
 }

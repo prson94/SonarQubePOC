@@ -2,6 +2,7 @@
 using d360.core.entities.Membership;
 using d360.model;
 using d360.model.DataAccessLayer;
+using d360.model.helpers;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -37,10 +38,13 @@ namespace d360.web.Controllers.V2
             _company = company;
             this.membershipRepository = membershipRepository;
             this.assetRepository = assetRepository;
-            
         }
         /// <summary>
         /// Retrieves a list of users.
+        /// Advanced filtering is done using _filter parameter and filter expressions are specified using field name, operator and value. For example city eq 'Redmond'.
+        /// *  For comparison operators you can use eq (equal), ne (not equal), gt (greater than), ge (greater than or equal), lt (less than), le (less than or equal) and ct (contains) which allows usage of (*) symbol as wildcard
+        /// *  Chaining of filter expressions is done using 'and' or 'or' logical operator. IE. city eq 'Redmond' OR city ct 'Lo'.
+        /// 
         /// </summary>
         /// <param name="Uid">The uid of the user.</param>
         /// <param name="FirstName">First Name of user.</param>
@@ -51,6 +55,7 @@ namespace d360.web.Controllers.V2
         /// <param name="_pageNum">The page number to return results for.</param>
         /// <param name="_order">The order field to return results by.</param>
         /// <param name="_direction">The direction in which to return results by asc/desc. </param>
+        /// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -60,7 +65,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc")
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
@@ -79,7 +84,7 @@ namespace d360.web.Controllers.V2
             ResourceApiViewModel model = new ResourceApiViewModel();
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize}, { "_pageNum", _pageNum } };
+            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
             string isValid = isPageSizeAndNumValid(pageParams);
 
             if (!string.IsNullOrEmpty(isValid))
@@ -139,6 +144,24 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (queryParams.Any(x => x.Key.ToLower() == "_filter"))
+            {
+                var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+
+                if (!string.IsNullOrEmpty(filterValue))
+                {
+                    var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                    filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
+                }
+            }
+
             if (queries.Count() > 0)
             {
                 whereSql += "where ";
@@ -157,7 +180,7 @@ namespace d360.web.Controllers.V2
 
             if (validCols.All(x => x.ToLower() != _order.ToLower()))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order by passed in the request");
-            if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower())) 
+            if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
                 return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order passed in the request");
 
             orderBySQL = $"order by {_order} {_direction}";
@@ -418,7 +441,8 @@ namespace d360.web.Controllers.V2
             {
                 var queryParams = Request.GetQueryNameValuePairs();
 
-                if  (!this.IsValidGuid(queryParams,"uid")){
+                if (!this.IsValidGuid(queryParams, "uid"))
+                {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid uid is passed in the request"));
                 }
                 var results = await this.membershipRepository.GetGroups(queryParams);
@@ -451,7 +475,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
 
         ]
-        public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid,Guid resourceUid)
+        public async Task<IHttpActionResult> DeleteGroupMember(Guid groupUid, Guid resourceUid)
         {
             var prefix = "Membership.DeleteGroupMember => ";
 
@@ -476,6 +500,64 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Deletes the specified users from Govern.
+        /// </summary>
+        /// <param name="users">A list of uids for users to delete.</param>
+        [
+            HttpDelete,
+            Route("users"),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteUsers(List<string> users)
+        {
+            var prefix = "Membership.DeleteUsers => ";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Unauthorized", $"Access denied"));
+
+
+                List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
+
+                foreach(var u in users)
+                {
+                    if (Guid.TryParse(u, out Guid res))
+                    {
+                        resources.Add(new UserApiDeleteModel()
+                        {
+                            Uid = res
+                        }); 
+                    }
+                    else
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"The value [{u}] is not a valid uid."));
+                    }
+                }
+
+                var result = membershipRepository.DeleteResources(resources);
+
+                if (result.StatusCode != HttpStatusCode.OK)
+                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
+
+                return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
+
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
 
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
@@ -492,6 +574,5 @@ namespace d360.web.Controllers.V2
             }
             return isValid;
         }
-
     }
 }

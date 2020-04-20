@@ -24,6 +24,16 @@ namespace d360.core
         }
     }
 
+    public class AllowIntersectTypeAsSubjectAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public AllowIntersectTypeAsSubjectAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
     public class AllowOwnershipAttribute : Attribute
     {
         private bool _allowed = true;
@@ -50,6 +60,24 @@ namespace d360.core
         public LineageVersionsSupportedAttribute(params int[] versions)
         {
             Versions = versions;
+        }
+    }
+
+    public class SubjectAssetClassesSupportedAttribute : Attribute
+    {
+        public enums.AssetTypeClass[] Classes { get; set; }
+        public SubjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
+        {
+            Classes = classes;
+        }
+    }
+
+    public class ObjectAssetClassesSupportedAttribute : Attribute
+    {
+        public enums.AssetTypeClass[] Classes { get; set; }
+        public ObjectAssetClassesSupportedAttribute(params enums.AssetTypeClass[] classes)
+        {
+            Classes = classes;
         }
     }
 

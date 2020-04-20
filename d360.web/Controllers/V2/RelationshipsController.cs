@@ -188,9 +188,9 @@ namespace d360.web.Controllers.V2
                 if (predicates.Count > MAX_SYNCHRONOUS_API_ITEM_COUNT)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"You may only provide a maximum of {MAX_SYNCHRONOUS_API_ITEM_COUNT} predicates in this request."));
 
-                foreach(var pred in predicates)
+                foreach (var pred in predicates)
                 {
-                    if(pred.Name.Length > 100)
+                    if (pred.Name.Length > 100)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Name must be less then 100 characters."));
                     if (pred.Inverse.Length > 250)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Inverse must be less then 250 characters."));
@@ -307,17 +307,17 @@ namespace d360.web.Controllers.V2
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
 
             int index = 1;
-            
+
             document.SetCellValue(1, index++, "Subject Type");
             document.SetCellValue(1, index++, "Subject Name");
             document.SetCellValue(1, index++, "Subject Type Name");
             document.SetCellValue(1, index++, "Predicate");
-            document.SetCellValue(1, index++, "Object Type");                      
+            document.SetCellValue(1, index++, "Object Type");
             document.SetCellValue(1, index++, "Object Name");
             document.SetCellValue(1, index++, "Object Type Name");
 
             document.SetCellValue(1, index++, "Relationship UID");
-            document.SetCellValue(1, index++, "Intersect ID");            
+            document.SetCellValue(1, index++, "Intersect ID");
             document.SetCellValue(1, index++, "Subject UID");
             document.SetCellValue(1, index++, "Subject ID");
             document.SetCellValue(1, index++, "Object UID");
@@ -333,8 +333,8 @@ namespace d360.web.Controllers.V2
             {
                 index = 1;
                 rowNumber++;
-                
-                document.SetCellValue(rowNumber, index++, (string)row.Subject);                
+
+                document.SetCellValue(rowNumber, index++, (string)row.Subject);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectName);
                 document.SetCellValue(rowNumber, index++, (string)row.SubjectTypeName);
                 document.SetCellValue(rowNumber, index++, (string)row.PredicateName);
@@ -368,14 +368,7 @@ namespace d360.web.Controllers.V2
         /// In addition to the below query parameters a field name for the relationship type can be specified to filter by exact match. For example MyCustomField=someExactValue. 
         /// This must be used in conjunction with the RelationshipTypeUid query parameter.
         /// </remarks>
-        /// <param name="RelationshipTypeUid">Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.</param>
-        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
-        /// <param name="SubjectUid">Filter by a subject asset's unique identifier.</param>
-        /// <param name="ObjectUid">Filter by an object asset's unique identifier.</param>
         /// <param name="State">Filter on the state, or status, of a relationship.</param>
-        /// <param name="_pageNum">Allows for changing the current page of results you are requesting.</param>
-        /// <param name="_pageSize">Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.</param>
-        /// <param name="_includeTotal">Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.</param>
         /// <returns></returns>
         [
             HttpGet,
@@ -384,9 +377,16 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse)),
+            SwaggerParameter("RelationshipTypeUid", "Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("PredicateUid", "Filter by an predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("SubjectUid", "Filter by a subject asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("ObjectUid", "Filter by an object asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The maximum page size is 5000, the default is 250.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
        ]
-        public async Task<HttpResponseMessage> GetRelationshipsAsync(Guid? RelationshipTypeUid = null, Guid? PredicateUid = null, Guid? SubjectUid = null, Guid? ObjectUid = null, core.enums.State? State = null, int? _pageSize = null, int? _pageNum = null, bool? _includeTotal = true)
+        public async Task<HttpResponseMessage> GetRelationshipsAsync(State? State = null)
         {
             var prefix = "Relationships.GetRelationshipsAsync => ";
             var errorMessage = "";
@@ -394,34 +394,75 @@ namespace d360.web.Controllers.V2
             try
             {
                 #region Validation
+                var queryParams = Request.GetQueryNameValuePairs().ToList();
 
-                if (RelationshipTypeUid.HasValue)
+
+                if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
                 {
-                    if (!RelationshipRepository.AnyExists(RelationshipTypeUid.Value))
-                        return ReturnApiError(HttpStatusCode.NotFound, $"Relationship Type with Uid [{RelationshipTypeUid.Value}] could not be found.");
+                    Guid RelationshipTypeUid = Guid.Empty;
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "relationshiptypeuid").Value;
+                    Guid.TryParse(value, out RelationshipTypeUid);
+                    if (RelationshipTypeUid == null || RelationshipTypeUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Relationship Type Uid passed in the request");
+                    }
+                    else
+                    {
+                        if (!RelationshipRepository.AnyExists(RelationshipTypeUid))
+                            return ReturnApiError(HttpStatusCode.NotFound, $"Relationship Type with Uid [{RelationshipTypeUid}] could not be found.");
+                    }
                 }
 
-                if (PredicateUid.HasValue)
+                if (queryParams.Any(x => x.Key.ToLower() == "predicateuid"))
                 {
-                    if (!RelationshipRepository.AnyPredicateExists(PredicateUid.Value))
-                        return ReturnApiError(HttpStatusCode.NotFound, $"Predicate with Uid [{PredicateUid.Value}] could not be found.");
+                    Guid PredicateUid = Guid.Empty;
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "predicateuid").Value;
+                    Guid.TryParse(value, out PredicateUid);
+                    if (PredicateUid == null || PredicateUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Predicate Uid passed in the request");
+                    }
+                    else
+                    {
+                        if (!RelationshipRepository.AnyPredicateExists(PredicateUid))
+                            return ReturnApiError(HttpStatusCode.NotFound, $"Predicate with Uid [{PredicateUid}] could not be found.");
+                    }
                 }
 
-                if (SubjectUid.HasValue)
+                if (queryParams.Any(x => x.Key.ToLower() == "subjectuid"))
                 {
-                    if (!AssetRepository.DoesAssetExists(SubjectUid.Value))
-                        return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid.Value}] could not be found.");
+                    Guid SubjectUid = Guid.Empty;
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "subjectuid").Value;
+                    Guid.TryParse(value, out SubjectUid);
+                    if (SubjectUid == null || SubjectUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Subject Uid passed in the request");
+                    }
+                    else
+                    {
+                        if (!AssetRepository.DoesAssetExists(SubjectUid))
+                            return ReturnApiError(HttpStatusCode.NotFound, $"Subject with Uid [{SubjectUid}] could not be found.");
+                    }
                 }
 
-                if (ObjectUid.HasValue)
+                if (queryParams.Any(x => x.Key.ToLower() == "objectuid"))
                 {
-                    if (!AssetRepository.DoesAssetExists(ObjectUid.Value))
-                        return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid.Value}] could not be found.");
+                    Guid ObjectUid = Guid.Empty;
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "objectuid").Value;
+                    Guid.TryParse(value, out ObjectUid);
+                    if (ObjectUid == null || ObjectUid == Guid.Empty)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid Object Uid passed in the request");
+                    }
+                    else
+                    {
+                        if (!AssetRepository.DoesAssetExists(ObjectUid))
+                            return ReturnApiError(HttpStatusCode.NotFound, $"Object with Uid [{ObjectUid}] could not be found.");
+                    }
                 }
 
                 #endregion
 
-                var queryParams = Request.GetQueryNameValuePairs().ToList();
                 string isValid = isPageSizeAndNumValid(queryParams);
 
                 if (!string.IsNullOrEmpty(isValid))
@@ -545,7 +586,7 @@ namespace d360.web.Controllers.V2
         [
            HttpDelete,
            Route("types"),
-           SwaggerRequestExample(typeof(RelationshipTypeDelete),typeof(RelationshipTypeDeleteExample)),
+           SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
@@ -1072,7 +1113,7 @@ namespace d360.web.Controllers.V2
             document.SetCellValue(1, index++, "Object");
             document.SetCellValue(1, index++, "Object Class");
             document.SetCellValue(1, index++, "Relationship Type UID");
-            document.SetCellValue(1, index++, "Relationship Type Id");            
+            document.SetCellValue(1, index++, "Relationship Type Id");
 
             #endregion
 
@@ -1085,7 +1126,7 @@ namespace d360.web.Controllers.V2
                 document.SetCellValue(rowNumber, index++, row.Subject.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Predicate.Name);
                 document.SetCellValue(rowNumber, index++, row.Object.Name);
-                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());                
+                document.SetCellValue(rowNumber, index++, row.Object.Class.ToString());
                 document.SetCellValue(rowNumber, index++, row.Uid.ToString());
                 document.SetCellValue(rowNumber, index++, row.Id);
             }

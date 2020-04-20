@@ -14,6 +14,7 @@ import { Artifact } from '../../models/artifacts.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
+import { Subscription } from 'rxjs';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -26,6 +27,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     private artifactTypeHierarchy: ArtifactType[];
     private sub: any;
     private currentAreaNameSubscription: any;
+    private navigationItemsSubs: Subscription[] = [];
     private currentAreaName: string;
 
 
@@ -42,7 +44,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let artifactTypeId = +params['artifactTypeId']; // (+) converts string 'id' to a number
-            
+
             this.isLoading = true;
             this.artifactTypeHierarchy = [];
             this.headerBreadcrumbService.setCurrentObjectInfo('ArtifactType', artifactTypeId);
@@ -81,13 +83,15 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
     createBreadcrumbHierarchy(artifact: ArtifactType) {
         if (artifact.ParentID) {
-            this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
+            var detailsSub = this.artifactTypeService.getArtifactTypeDetails(artifact.ParentID).subscribe(parent => {
                 this.artifactTypeHierarchy.unshift(parent);
                 if (parent.ParentID)
                     this.createBreadcrumbHierarchy(parent);
                 else
                     this.displayBreadcrumb();
             });
+
+            this.navigationItemsSubs.push(detailsSub);
         } else
             this.displayBreadcrumb();
     }
@@ -112,22 +116,24 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                             true,
                             x.ParentID > 0));
 
-                        this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
-                            this.setCommonSecondaryNavTabs(false, false, this.artifactType.HasDashboards);
-                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true));
-                            this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
-                            if (this.artifactType.HasV2Workflows) {
-                                this.secondaryNavService
-                                    .showItem(
-                                        new SecondaryNavItem(
-                                            'Workflow',
-                                            'workflowmonitor',
-                                            ['fa-usb'],
-                                            `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
-                            }
-                        });
+                    });
+
+                    var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
+                        this.setCommonSecondaryNavTabs(false, false, this.artifactType.HasDashboards);
+                        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true));
+                        this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
+                        if (this.artifactType.HasV2Workflows) {
+                            this.secondaryNavService
+                                .showItem(
+                                    new SecondaryNavItem(
+                                        'Workflow',
+                                        'workflowmonitor',
+                                        ['fa-usb'],
+                                        `/sidebar/workflowmonitor${this.objectContextUrl()};isAdminPage=false`));
+                        }
+                    });
+                    this.navigationItemsSubs.push(breadCrumbsSub);
                 });
-        });
 
     }
 
@@ -135,6 +141,17 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
         if (this.sub) {
             this.sub.unsubscribe();
         }
+
+        if (this.currentAreaNameSubscription) {
+            this.currentAreaNameSubscription.unsubscribe();
+        }
+
+        if (this.navigationItemsSubs) {
+            this.navigationItemsSubs.forEach(s => {
+                s.unsubscribe();
+            });
+        }
+
         this.clearSidebar();
     }
 };

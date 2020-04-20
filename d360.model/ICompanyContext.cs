@@ -96,8 +96,6 @@ namespace d360.model
         DbSet<LoadItemColumn> LoadItemColumns { get; set; }
         DbSet<LoadItem> LoadItems { get; set; }
         DbSet<Load> Loads { get; set; }
-        DbSet<Lookup> Lookups { get; set; }
-        DbSet<LookupType> LookupTypes { get; set; }
         DbSet<MapGroupItem> MapGroupItems { get; set; }
         DbSet<MapGroup> MapGroups { get; set; }
         DbSet<MapItem> MapItems { get; set; }
@@ -187,8 +185,7 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
-        void Enqueue(string queueName, List<QueueObject> items);
+        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);        
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
@@ -233,7 +230,6 @@ namespace d360.model
         LoadDetail GetLoadDetail(int id);
         IEnumerable<LoadDetail> GetLoadDetails();
         IEnumerable<dynamic> GetLoadItemDetails(int id);
-        List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID);
         string GetNoReadSqlStatement(string identifier = null);
         string GetNoReadSqlStatement(Permission permission, string identifier = null);
         ObjectDetail GetObjectDetail(string type, long id);
@@ -258,7 +254,6 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        dynamic GetAssetStatusAndScore(Guid uid);
         int? GetAssetScore(long assetId);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
@@ -278,6 +273,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90);
         Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();
@@ -328,7 +324,7 @@ namespace d360.model
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
-        List<DataQualityResponseModel> UpsertAssetResults(List<DataQualityInsertModel> request, ApiExecution execution, int timeout = 3600);
+        List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
     }
 }

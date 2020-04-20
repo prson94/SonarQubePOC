@@ -56,7 +56,7 @@
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <p-multiSelect *ngIf="field?.MultiSelect; else singleSelect" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
                     <ng-template #singleSelect>
-                        <ng-container *ngIf="!field.UseTypeahead">
+                        <ng-container *ngIf="field.UseNativeLookupControl">
                             <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
                                 <option *ngIf="field.ParentFieldTypeName && (!field.Items || field.Items.length == 0);else blankOption" value="" disabled selected>Select a {{field.ParentFieldTypeName}}</option>
                                 <ng-template #blankOption>
@@ -65,29 +65,41 @@
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>
                         </ng-container>
-                        <ng-container *ngIf="field.UseTypeahead">
-                            <p-autoComplete [placeholder]="'Start typing to select an item'"
-                                            [delay]="350"
-                                            [field]="'Text'"
-                                            [style]="{'width':'100%'}"
-                                            [inputStyle]="{'width':'100%' }"
-                                            [inputId]="field.FieldName + '_input'"
-                                            [formControlName]="field.FieldName"
-                                            (onSelect)="onSelect($event)"
-                                            [suggestions]="field.Items"
-                                            (completeMethod)="search($event)"
-                                            [forceSelection]="field.Required"
-                                            (onClear)="clearTypeahead($event)"
-                                            [dropdown]="false">
-                                <ng-template let-item pTemplate="item">
-                                    <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
-                                        {{item.Text}}
-                                    </div>
-                                    <div *ngIf="!item.Selected">
-                                        {{item.Text}}
-                                    </div>
-                                </ng-template>
-                            </p-autoComplete>
+                        <ng-container *ngIf="!field.UseNativeLookupControl">
+                            <ng-container *ngIf="field.UseTypeahead">
+                                <p-autoComplete [placeholder]="'Start typing to select an item'"
+                                                [delay]="350"
+                                                [field]="'Text'"
+                                                [style]="{'width':'100%'}"
+                                                [inputStyle]="{'width':'100%' }"
+                                                [inputId]="field.FieldName + '_input'"
+                                                [formControlName]="field.FieldName"
+                                                (onSelect)="onSelect($event)"
+                                                [suggestions]="field.Items"
+                                                (completeMethod)="search($event)"
+                                                [forceSelection]="field.Required"
+                                                (onClear)="clearTypeahead($event)"
+                                                [dropdown]="false">
+                                    <ng-template let-item pTemplate="item">
+                                        <div *ngIf="item.Selected" style="font-weight: bold; color: #fff; background: #54a4da">
+                                            {{item.Text}}
+                                        </div>
+                                        <div *ngIf="!item.Selected">
+                                            {{item.Text}}
+                                        </div>
+                                    </ng-template>
+                                </p-autoComplete>
+                            </ng-container>
+                            <ng-container *ngIf="!field.UseTypeahead">
+                                <p-dropdown [formControlName]="field.FieldName"
+                                            [style]="{'height':'auto',width: '100%'}"
+                                            [options]="field.Items | selectItemTextToLabel"
+                                            [virtualScroll]="field.VirtualScroll"
+                                            [itemSize]="field.ItemSize"
+                                            [filter]="true"
+                                            [placeholder]="multiselectLabel()">
+                                </p-dropdown>
+                            </ng-container>
                         </ng-container>
                     </ng-template>
                 </ng-container>

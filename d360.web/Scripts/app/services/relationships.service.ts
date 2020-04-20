@@ -46,6 +46,21 @@ export class RelationshipsService extends BaseObservableService {
         );
     }
 
+    deleteSingleRelationshipV2(intersectTypeUid: string, intersectUid: string): Observable<ApiResult[]> {
+        const model = [{
+            Cascade: true,
+            Uid:intersectUid
+        }];
+
+        const httpHeaders = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model
+        };
+        return this.http.delete(`api/v2/relationships/${intersectTypeUid}/?triggerWorkflow=true`, httpHeaders).pipe(
+            map(response => response),
+            catchError(err => this.handleError(err, true))
+        );
+    }
+
     deleteRelationshipV2(intersectTypeUid: number, model: any[]): Observable<ApiResult[]> {
         const httpHeaders = {
             headers: new HttpHeaders({ 'Content-Type': 'application/json' }), body: model

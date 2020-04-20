@@ -66,14 +66,14 @@ namespace d360.model.validators
                 }
                 if (model.Action == FieldTypesApiEditAction.Replace)
                 {
-                    if (field.Type.IsPartyOfKey())
+                    if (field.Type.IsPartOfKey())
                     {
                         actionIsReplaceAndKeySelected = true;
                     }
                 }
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
                 {
-                    if (field.Type.IsPartyOfKey())
+                    if (field.Type.IsPartOfKey())
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
                     }
@@ -89,6 +89,13 @@ namespace d360.model.validators
                     else if (field.Type.JsonElement != null)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type JsonElement not support for reference item type!");
+                    }
+                }
+                if (relationshipTypeIdentifierInfoModel != null)
+                {
+                    if (field.Type.IsPartOfKey())
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Relationship Types cannot have field property 'IsPartOfKey' set to true.");
                     }
                 }
                 if (field.Type.Tag != null)
@@ -206,9 +213,10 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
                 }
-                    #endregion
+                
+                #endregion
 
-                    if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
+                if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }

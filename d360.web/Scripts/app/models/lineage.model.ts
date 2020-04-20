@@ -480,6 +480,12 @@ export class AssetBrowserTranslationLink {
     back: string;
     predicateIds: number[];
     responsibilityTypeId: number;
+    intersectUids: AssetBrowserTranslationLinkIdentifier[] = [];
+}
+
+export class AssetBrowserTranslationLinkIdentifier {
+    predicateId: number;
+    intersectUid: string;
 }
 
 export class AssetBrowserTranslationNode {
@@ -505,7 +511,6 @@ export class AssetBrowserTranslationNode {
     actionCount: number;
     owners: AssetBrowserTranslationOwnerCount[] = new Array();
     relations: AssetBrowserTranslationRelationCount[] = new Array();
-    ignoredAssetUids: string[] = new Array();
 }
 
 export class AssetBrowserTranslation {
@@ -541,7 +546,7 @@ export class AssetBrowserApiOwnerHopRequestModel {
 
 export class AssetBrowserApiHopRequestModel {
     Assets: AssetBrowserApiHopAssetRequestModel[];
-    AssetsToIgnore: AssetBrowserApiHopIgnoreAssetRequestModel[];
+    RelationsToIgnore: AssetBrowserApiHopIgnoreRequestModel[];
     Initial: boolean;
     Hops: number;
     DiagramType: DiagramType;
@@ -556,7 +561,7 @@ export class AssetBrowserApiHopAssetRequestModel {
     Key: string;
 }
 
-export class AssetBrowserApiHopIgnoreAssetRequestModel {
+export class AssetBrowserApiHopIgnoreRequestModel {
     Uid: string;
 }
 

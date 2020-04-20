@@ -11,7 +11,6 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;
@@ -19,12 +18,10 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Design.PluralizationServices;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -176,10 +173,6 @@ namespace d360.model
         public DbSet<core.entities.IssueType> IssueTypes { get; set; }
 
         public DbSet<IssueTypeRelation> IssueTypeRelations { get; set; }
-
-        public DbSet<Lookup> Lookups { get; set; }
-
-        public DbSet<LookupType> LookupTypes { get; set; }
 
         public DbSet<Nym> Nyms { get; set; }
 
@@ -366,11 +359,6 @@ namespace d360.model
         public void Enqueue(string queueName, QueueObject item)
         {
             QueueSource.CreateMessage(queueName, item);
-        }
-
-        public void Enqueue(string queueName, List<QueueObject> items)
-        {
-            QueueSource.CreateMessages(queueName, items);
         }
 
         public JObject GetPageInformation(SystemObjects o, int oid)
@@ -898,59 +886,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             public string FormattedValue { get; set; }
         }
 
-        public List<Dictionary<string, object>> GetLookupItemsAsDictionary(int typeID)
-        {
-            var items = new List<Dictionary<string, object>>();
-
-            var values = Filter<Lookup>(i => i.LookupTypeID == typeID).ToList();
-
-            var lookupIDs = values.Select(i => i.ID).ToList();
-            var sType = SystemObjects.Lookup.ToString();
-
-            // you cant use fields with relation cause this is called from setup page and cache is not updated instananiously
-            var fields = new List<LookupFieldValueModel>();
-
-            int pageSize = 2000;
-            int pageNumbers = lookupIDs.Count / pageSize;
-
-            pageNumbers += ((lookupIDs.Count % pageSize) > 0) ? 1 : 0;
-
-            for (var i = 0; i < pageNumbers; i++)
-            {
-                var subList = pageNumbers > 1 ? lookupIDs.Skip(i * pageSize).Take(pageSize) : lookupIDs;
-                fields.AddRange(Query<LookupFieldValueModel>(@"
-                        select 
-                            ft.ID,
-                            ft.Name,
-	                        ft.SortOrder,
-	                        f.ObjectID,	
-	                        f.FormattedValue
-                        from 
-	                        [FieldType] ft
-	                        inner join [field] f on (f.fieldTypeID = ft.id)
-                        where 
-	                        f.[objecttype] = @ty and f.objectid in @ids;
-                    "
-                    , new { ids = subList, ty = sType }));
-            }
-
-            values.ForEach(e =>
-            {
-                var item = new Dictionary<string, object>();
-
-                item.Add("ID", e.ID.ToString());
-                foreach (var field in fields.Where(i => i.ObjectID == e.ID).OrderBy(i => i.SortOrder))
-                {
-                    var fieldName = $"Field{field.ID}";
-                    if (!item.ContainsKey(fieldName)) item.Add(fieldName, field.FormattedValue);
-                }
-
-                items.Add(item);
-            });
-
-            return items;
-        }
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
@@ -1227,8 +1162,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
             return Filter<AssetDetail>(i => i.ID == parentId).FirstOrDefault();
         }
-
-
 
         public bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID)
         {
@@ -1588,17 +1521,7 @@ where	R.SourceObject = 'FusionAttribute'
                 FROM	IntersectType IT    
 		                cross apply dbo.GetIntersectTypeNames(IT.ID) ITypeName		
                         {additionalApply}
-                        {relationshipsWhere}
-                UNION
-                SELECT	R.ID,
-		                'Rule Implementation :: ' + A.DisplayValue as Name,
-		                'RuleImplementationType' as Type
-                FROM    [Rule] R
-                inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID
-                UNION
-                SELECT	0 as ID,
-		                'Reference :: List' as Name,
-		                'ReferenceItemType' as Type	";
+                        {relationshipsWhere}";
             }
             else
             {
@@ -1609,6 +1532,14 @@ where	R.SourceObject = 'FusionAttribute'
             }
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+
+            if (subject.HasValue && subjectID.HasValue && limitToClasses != null) 
+            {
+                if (limitToClasses.Contains(AssetTypeClass.Reference))
+                {
+                    noClassLimitSql += @" UNION SELECT	0 as ID, 'Reference :: List' as Name, 'ReferenceItemType' as Type";
+                }
+            }
 
             var sql = $@"
     SELECT		I.ID,
@@ -1625,8 +1556,9 @@ where	R.SourceObject = 'FusionAttribute'
 			                when T.Object = 'PolicyType' then '{CommonNames.AssetTypeClass_Policy.CleanForSql()} :: '
 			                when T.Object = 'ReferenceItemType' then 'Reference :: '
 			                when T.Object = 'ResourceType' then 'Security :: '
-			                when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
-			                when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
+                            when T.Object = 'RuleType' then '{CommonNames.AssetTypeClass_Rule.CleanForSql()} :: '
+                            when T.Object = 'TaskType' and T.[Class] = 15 then '{CommonNames.AssetTypeClass_Task.CleanForSql()} :: ' 
+                            when T.Object = 'TaxonomyType' then '{CommonNames.AssetTypeClass_Model.CleanForSql()} :: '
 		                end + coalesce(P.[Path], T.Name) as Name,
 		                T.Object as Type
                 from	AssetType T
@@ -1672,11 +1604,11 @@ where	R.SourceObject = 'FusionAttribute'
         public List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null)
         {
             var sSubject = subject.ToString();
-            bool removeSpecialPredicateTypes = false;
-
+            var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
+            
             if (sSubject == "IntersectType")
             {
-                removeSpecialPredicateTypes = true;
+                allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
             }
             else
             {
@@ -1685,13 +1617,7 @@ where	R.SourceObject = 'FusionAttribute'
                 {
                     throw new ApplicationException("Subject asset type does not exist.");
                 }
-
-                removeSpecialPredicateTypes = (
-                    subjectAssetType.Class != AssetTypeClass.BusinessAsset &&
-                    subjectAssetType.Class != AssetTypeClass.Model &&
-                    subjectAssetType.Class != AssetTypeClass.Policy &&
-                    subjectAssetType.Class != AssetTypeClass.Rule
-                );
+                allowedFunctionalTypes.RemoveAll(p => !p.SubjectAssetClassesSupported.Contains(subjectAssetType.Class));
             }
 
             var sql = @"
@@ -1716,10 +1642,7 @@ where	I.ID is null";
                         i.Type.AsInfoModel().LineageVersionsSupported.Contains(lineageVersion)
                   );
 
-            if (removeSpecialPredicateTypes)
-            {
-                predicates = predicates.Where(i => i.Type != PredicateType.BusinessToTechnical && i.Type != PredicateType.FusionMapping);
-            }
+            predicates = predicates.Where(i => i.Type.In(allowedFunctionalTypes.Select(p => p.ID).ToArray()));
 
             return predicates.ToList();
         }
@@ -1754,22 +1677,20 @@ where	I.ID is null";
             model.SubjectUid = subjectAssetType?.uid;
             model.ObjectUid = objectAssetType?.uid;
 
+            var predicateInfo = predicateModel.Type.AsInfoModel();
+            
+            if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : {predicateInfo.SubjectAssetClassesSupported}.");
+            }
+            if (!predicateInfo.ObjectAssetClassesSupported.Contains(objectAssetType.Class))
+            {
+                throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be one of the following classes : {predicateInfo.ObjectAssetClassesSupported}.");
+            }
+
             if (predicateModel.Type == PredicateType.BusinessToTechnical || predicateModel.Type == PredicateType.Transformation)
             {
-
-
-                if (predicateModel.Type == PredicateType.BusinessToTechnical)
-                {
-                    if (subjectAssetType.Class != AssetTypeClass.BusinessAsset && subjectAssetType.Class != AssetTypeClass.Model && subjectAssetType.Class != AssetTypeClass.Policy && subjectAssetType.Class != AssetTypeClass.Rule)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : Business, Model, Policy, or Rule.");
-                    }
-                    if (objectAssetType.Class != AssetTypeClass.TechnicalAsset)
-                    {
-                        throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your object must be a Technical Asset class.");
-                    }
-                }
-                else if (predicateModel.Type == PredicateType.Transformation)
+                if (predicateModel.Type == PredicateType.Transformation)
                 {
                     if (!subjectAssetType.UseAsTransformation && !objectAssetType.UseAsTransformation)
                     {
@@ -2216,8 +2137,13 @@ where	I.ID is null";
             return Database.Connection.Query<T>(sql, param, null, false, timeout);
         }
 
+        public async Task<IEnumerable<TReturn>> QueryAsync<TFirst,TSecond,TReturn>(string sql, Func<TFirst,TSecond,TReturn> map, string splitOn, object param = null, int timeout = 90)
+        {            
+            return await Database.Connection.QueryAsync<TFirst,TSecond,TReturn>(sql, map:map, param: param, splitOn: splitOn);
+        }
+
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
-        {
+        {            
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
         }
         public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90)
@@ -2365,40 +2291,6 @@ where	I.ID is null";
         public void RebuildIndexRequest()
         {
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
-        }
-
-        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Node,
-                ChangedFieldNames = changedFieldNames
-            });
-        }
-
-        public void UpdateAssetGraphNodePath(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Path
-            });
-        }
-
-        public void UpdateAssetGraphEdge(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Edge
-            });
         }
 
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
@@ -2702,42 +2594,6 @@ select @err";
                             var updateCheck = Query<string>(sql).SingleOrDefault();
                             if (!string.IsNullOrEmpty(updateCheck))
                                 throw new ConflictException("Relationship Type Cannot Be Updated", updateCheck);
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : Lookup
-                if (entry.Entity is Lookup)
-                {
-                    var o = entry.Entity as Lookup;
-                    var id = o.ID.ToString();
-                    var lookupTypeID = o.LookupTypeID;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Deleted:
-                            var any = Any<Field>(f => f.FieldType.LookupObjectType == "Lookup" && f.FieldType.LookupObjectID == lookupTypeID && f.Value == id);
-                            if (any) throw new ConflictException("Lookup Could not be Removed", "One or more fields reference this lookup.");
-                            break;
-                    }
-                }
-                #endregion
-
-                #region Business logic : LookupType
-                if (entry.Entity is LookupType)
-                {
-                    var o = entry.Entity as LookupType;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<LookupType>(i => i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<LookupType>(i => i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
                             break;
                     }
                 }
@@ -3317,28 +3173,13 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
         }
 
-        public dynamic GetAssetStatusAndScore(Guid uid)
-        {
-            string sql = $@"SELECT 
-                            cast(S.Value * 100 as int) as 'Score',
-                            S.EffectiveDate as 'EffectiveDate',  
-                            COALESCE(f.FormattedValue,ft.DefaultFormattedValue) as Status 
-                            from Asset A
-                            left Join AssetType AT on A.AssetTypeID = AT.ID
-                            left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
-                            left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
-                            left join metrics.Score S on AssetUid = @assetUid and EffectiveDate <= getutcdate()
-                            WHERE A.Uid = @assetUid";
-            return Query<dynamic>(sql, new { @assetUid = uid }).FirstOrDefault();
-        }
-
         public int? GetAssetScore(long assetId)
         {
             string sql = $@"SELECT top 1
                             cast(S.Value * 100 as int) as 'Score'                            
                             from Asset A                            
                             inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE A.ID = @assetId order by S.EffectiveDate desc";
+                            WHERE S.ScoreType = 1 and A.ID = @assetId order by S.EffectiveDate desc";
             return Query<int?>(sql, new { assetId }).FirstOrDefault();
         }
 
@@ -3400,6 +3241,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
         }
+
         public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
         {
             return Query<int>(@"select value

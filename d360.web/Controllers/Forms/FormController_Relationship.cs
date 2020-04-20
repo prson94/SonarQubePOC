@@ -800,15 +800,7 @@ order by r.Name";
                     var predicate = Company.GetById<Predicate>(predicateID.Value);
                     if (predicate != null)
                     {
-                        switch (predicate.Type)
-                        {
-                            case PredicateType.BusinessToTechnical:
-                                classLimits = new List<AssetTypeClass>() { AssetTypeClass.TechnicalAsset };
-                                break;
-                            case PredicateType.FusionMapping:
-                                classLimits = new List<AssetTypeClass>() { AssetTypeClass.FusionAttribute };
-                                break;
-                        }
+                        classLimits = predicate.Type.AsInfoModel().ObjectAssetClassesSupported.ToList();
                     }
                 }
 

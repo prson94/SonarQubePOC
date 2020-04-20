@@ -43,5 +43,34 @@ END
 		]]>
 	</rollback>
   </changeSet>
+<changeSet author="bquinlivan" id="Table.api.ExecutionDeleteAssetResult-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDeleteAssetResult')
+			BEGIN
 
+				ALTER TABLE API.ExecutionDeleteAssetResult
+				ALTER COLUMN [RunDateStart] varchar(100) null
+								
+				ALTER TABLE API.ExecutionDeleteAssetResult
+				ALTER COLUMN [RunDateEnd] varchar(100) null
+				
+				ALTER TABLE API.ExecutionDeleteAssetResult
+				ALTER COLUMN [EffectiveDateStart] varchar(100) null
+
+				ALTER TABLE API.ExecutionDeleteAssetResult
+				ALTER COLUMN [EffectiveDateEnd] varchar(100) null
+
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

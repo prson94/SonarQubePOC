@@ -79,7 +79,7 @@
       [value]="items"
       selectionMode="single"
       [metaKeySelection]="true"
-      dataKey="ID"
+      dataKey="AssetUid"
       [globalFilterFields]="globalFilterFields"
       [sortField]="stateService.artifactTypeFilters.sortField"
       [sortOrder]="stateService.artifactTypeFilters.sortOrder"
@@ -138,6 +138,7 @@
                 [column]="col"
                 [fields]="fields"
                 [item]="item"
+                [useApiName]="true"
               ></d3s-dynamic-field-value
             ></a>
           </td>
@@ -160,19 +161,19 @@
             </div>
           </td>
           <td>
-            <div class="RowTools" *ngIf="item.P_CanEdit">
+            <div class="RowTools" *ngIf="item.Permissions.ModifyAsset">
               <a
                 style="cursor:pointer;"
-                (click)="selected = item; showEditor = true"
+                (click)="onEdit(item)"
                 ><i class="fa fa-pencil"></i
               ></a>
             </div>
           </td>
           <td>
-            <div class="RowTools" *ngIf="item.P_CanDelete">
+            <div class="RowTools" *ngIf="item.Permissions.DeleteAsset">
               <a
                 style="cursor:pointer;"
-                (click)="selected = item; doShowDelete()"
+                (click)="onDelete(item);"
                 ><i class="fa fa-trash-o"></i
               ></a>
             </div>
@@ -181,7 +182,7 @@
             <div class="RowTools">
               <d3s-preview-tooltip
                 objectType="Artifact"
-                [objectId]="item.ObjectID"
+                [uid]="item.AssetUid"
                 (click)="selectArtifact(item)"
                 icon="info"
               ></d3s-preview-tooltip>
@@ -213,7 +214,7 @@
 ></d3s-dynamic-editor>
 <d3s-asset-delete-editor
     *ngIf="showDelete"
-    [uid]="selected?.Uid"
+    [uid]="selected?.AssetUid"
     [assetTypeUid]="artifactType?.AssetTypeUID"
     [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Artifact')"
     (onCancel)="showDelete = false"

@@ -31,6 +31,9 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
+
+        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
@@ -171,15 +174,21 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,P.[Path]
+                                    ,AT.IconBackColor as BackColor
+                                    ,AT.Icon as Icon
+                                    ,AT.IconForeColor as ForeColor
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
-                        where       A.[State] = 1
+                                    left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
+                        where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
-            var assetTypes = await CompanyContext.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
-            return assetTypes;
+
+            // If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
+
+            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param:dbArgs, map:(a, i) => { a.IconStyle = i;return a; }, splitOn:"Path,BackColor");            
         }
         public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -210,8 +219,10 @@ namespace d360.model.DataAccessLayer
             var dbArgs = new DynamicParameters();
             var model = new AssetsApiViewModel();
 
-            dbArgs.Add("@uid", uid.ToString());
-            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID and T.UID = @uid");
+            fieldJoins.Add("inner join AssetType T on T.ID = A.AssetTypeID");
+
+            dbArgs.Add("@assetTypeID", assetTypeID);
+            whereStatements.Add("A.AssetTypeID = @assetTypeID");
 
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
@@ -345,8 +356,10 @@ namespace d360.model.DataAccessLayer
                 whereStatements.Add("R.Relationships is not null");
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-            whereStatements.Add($"A.ID not in ({CompanyContext.GetNoReadSqlStatement()})");
-            whereStatements.Add($"A.AssetTypeID not in ({CompanyContext.GetAssetTypeNoReadSqlStatement()})");
+            whereStatements.Add($"A.ID not in (select AssetID from dbo.UserAssetPermissions(@userId,A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)");
+
+            if (!CompanyContext.CurrentResourceIsAdmin)
+                whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
 
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
@@ -423,27 +436,33 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                    filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
@@ -479,8 +498,6 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
                 bool.TryParse(value, out includePermissionDetails);
             }
-
-
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
             {
@@ -542,10 +559,7 @@ namespace d360.model.DataAccessLayer
                 if (ownerUids.Count > 0)
                 {
                     dbArgs.Add("ownerUids", ownerUids);
-                    string joinStatement = "inner join [ResponsibilityDetail] owners ON (a.ID = owners.AssetID OR a.AssetTypeID = owners.AssetTypeID)";
-                    fieldJoins.Add(joinStatement);
-                    countJoins.Add(joinStatement);
-                    whereStatements.Add("owners.ResourceUid in @ownerUids");
+                    whereStatements.Add("a.ID IN (SELECT AssetID FROM [dbo].[ResponsibilityDetail] rd WHERE rd.SecurityAssetUid in @ownerUids)");
                 }
             }
 
@@ -576,12 +590,11 @@ namespace d360.model.DataAccessLayer
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
-                    A.ObjectID,
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
-                    A.Code,
+                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
                     Node.Path --,
                     --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
@@ -602,7 +615,7 @@ namespace d360.model.DataAccessLayer
             ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
-            var count = countResults.First();
+            int count = countResults.First();
 
             var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs);
 
@@ -677,7 +690,13 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
                 bool.TryParse(value, out includeParent);
             }
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
 
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
@@ -1426,7 +1445,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1460,7 +1482,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1485,7 +1510,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
 
             // Save to the database.
@@ -1510,7 +1538,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
 
             // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
 
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
@@ -1755,6 +1786,20 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             return res;
         }
 
+        public string[] GetAssetPath(Guid assetUid)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid.ToString());
+
+            var sql = $@"SELECT	doc.c.value('.', 'nvarchar(250)')
+                        FROM graph.AssetNode AN
+                		CROSS APPLY AN.Segments.nodes('/path/segment') doc(c)
+                        WHERE Uid = @assetUid
+                        ORDER BY doc.c.value('./@level', 'int')";
+            var res = CompanyContext.Query<string>(sql, dbArgs).ToArray();
+            return res;
+        }
+
         public async Task<dynamic> GetAssetTypeDetails(AssetType type)
         {
             var dbArgs = new DynamicParameters();
@@ -1793,6 +1838,42 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
 
             return await CompanyContext.QueryAsync<dynamic>(scoreSQL, new { assetUid = AssetUid, date = DateTime.UtcNow });
+        }
+
+        public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
+        {
+
+            var countsSQL = @"select AT.uid, 
+	                        ATParent.uid as parentUid,
+	                        case at.class
+	                         when 1 then 'Business Asset'
+	                         when 8 then 'Technical Asset'
+	                         when 2 then 'Model'
+	                         when 6 then 'Policy'
+	                         when 7 then 'Rule'
+	                        end as class,
+	                        at.name,
+	                        at.description,
+	                        Assets.count as count
+                         from AssetType AT
+						 outer apply (select ATParent.uid from IntersectType IT
+							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
+							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
+						 where it.ObjectID = AT.ObjectID and it.Object = at.Object
+						 )ATParent
+                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
+                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
+                        where
+                         at.Class in @filterClasses
+                         and AT.ID not in (select AssetTypeID
+                    from dbo.AssetTypesUserCantRead(@ResourceID))
+                    order by at.name";
+            return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
+        }
+
+        public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
+        {
+            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
         }
     }
 }

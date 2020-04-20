@@ -33,7 +33,7 @@ namespace d360.web.Controllers.V2
         ITagRepository tagRepository;
         IAssetRepository assetRepository;
 
-        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository,IAssetRepository assetRep)
+        public TagsController(ICommunityContext community, ICompanyContext company, ITagRepository repository, IAssetRepository assetRep)
             : base(community, company)
         {
             this.tagRepository = repository;
@@ -559,7 +559,24 @@ namespace d360.web.Controllers.V2
             catch (Exception e)
             {
 
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting assets path", e.Message);
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag tooltip", e.Message);
+            }
+
+        }
+
+        [HttpGet, MapToApiVersion("2.0"), Route("tooltipByName"), ApiExplorerSettings(IgnoreApi = true)]
+        public IHttpActionResult GetTagTooltipByNameData(string tagName, Guid? assetUid = null)
+        {
+            try
+            {
+                var tag = tagRepository.GetTagByName(tagName);
+                return GetTagTooltipData(tag.uid.ToString(), assetUid);
+
+            }
+            catch (Exception e)
+            {
+
+                return errorMessageResponse(HttpStatusCode.BadRequest, "Error while getting tag tooltip", e.Message);
             }
 
         }
@@ -585,14 +602,14 @@ namespace d360.web.Controllers.V2
 
         }
         [HttpGet,
-        Route("getAssetTagDetails"),
+        Route("AssetTagDetails"),
         ApiExplorerSettings(IgnoreApi = true)]
         public IHttpActionResult getAssetTagDetails(int tagID, Guid assetUID)
         {
             try
             {
                 var asset = assetRepository.GetAssetByUID(assetUID);
-                var result = tagRepository.GetAssetTagDetails(tagID,asset.ID);
+                var result = tagRepository.GetAssetTagDetails(tagID, asset.ID);
 
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 

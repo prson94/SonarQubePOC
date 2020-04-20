@@ -125,9 +125,9 @@ namespace d360.model.DataAccessLayer.repositories
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                                fieldColumns.Add($"try_cast(case when {tableAlias}.{valueColumn} is null then null when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
                             else
-                                fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
+                                fieldColumns.Add($"try_cast(case when LEN(ISNULL({tableAlias}.{valueColumn}, '')) < 1 then null else {tableAlias}.{valueColumn} end as {fieldDataType}) as [{columnName}]");
                         }
                         else if (f.Type == "JsonElement")
                         {
@@ -397,7 +397,16 @@ namespace d360.model.DataAccessLayer.repositories
                                     if (field.Type == "Link") valueColumn = "Value";
 
                                     if (!string.IsNullOrEmpty(fieldDataType))
-                                        orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"cast(F{field.ID}.{valueColumn} as {fieldDataType}) {orderDirection}";
+                                    {
+                                        if (fieldDataType == "bit")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(case when F{field.ID}.{valueColumn} is null then null when F{field.ID}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}) {orderDirection}";
+                                        }
+                                        else
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(case when LEN(ISNULL(F{field.ID}.{valueColumn}, '')) < 1 then null else F{field.ID}.{valueColumn} end as {fieldDataType}) {orderDirection}";
+                                        }
+                                    }
                                     else
                                     {
                                         if (field.Type == "JsonElement")

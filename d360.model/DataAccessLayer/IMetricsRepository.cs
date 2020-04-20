@@ -21,8 +21,9 @@ namespace d360.model.DataAccessLayer
         List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreType);
         ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model);
         (MetricScoreApiModel, string) GetMetricScore(AssetType at, IEnumerable<KeyValuePair<string, string>> queryParams);
-        DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd);
+        DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? v, int pageSize, int pageNum, string sort, string direction, DateTime? effectiveDateStart, DateTime? effectiveDateEnd);
         List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution);
+        List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution);
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
     }

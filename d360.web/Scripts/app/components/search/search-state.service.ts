@@ -62,17 +62,7 @@ export class SearchStateService extends BaseObservableService {
     private _needAggregation: boolean = false;
 
     loadState(term: string, searchCategotries: string[], keepFilters: boolean) {
-        this._resultCount.next(0);
-        this._results.next([]);
-        this._categories.next([]);
-        this._query = new SearchQuery({
-            Term: "",
-            From: 0,
-            Size: 10,
-            AggregationFilters: [],
-            FieldFilters: [],
-            Aggregations: []
-        });
+        this.reset(keepFilters);
 
         let sess: SearchState[] = JSON.parse(sessionStorage.getItem(this.sessionKey));
         let limit = new Date().getTime() - (this.sessionAgeMinutes * 60000)
@@ -83,10 +73,9 @@ export class SearchStateService extends BaseObservableService {
             this._searchTypes = state.SearchTypes;
             this.advancedFilters = state.AdvancedFilters;
             this._checkTreeKeys = state.CheckTreeKeys;
-        } else {
-            if (!keepFilters) {
-                this.selectedFilters = [];
-            }
+        }
+        if (!keepFilters) {
+            this.selectedFilters = [];
         }
         this.setSearchCategories(searchCategotries);
     }
@@ -115,12 +104,10 @@ export class SearchStateService extends BaseObservableService {
     /**
      * Resets search state
      */
-    reset() {
+    reset(keepFilters: boolean = false) {
         this._resultCount.next(0);
         this._results.next([]);
         this._categories.next([]);
-        this._aggFilters = [];
-        this._searchTypes = [];
         this._query = new SearchQuery({
             Term: "",
             From: 0,
@@ -129,6 +116,10 @@ export class SearchStateService extends BaseObservableService {
             FieldFilters: [],
             Aggregations: []
         });
+        if (!keepFilters) {
+            this._aggFilters = [];
+            this._searchTypes = [];
+        }
     }
 
     private _baseCategoryTree: CheckTreeNode[];
