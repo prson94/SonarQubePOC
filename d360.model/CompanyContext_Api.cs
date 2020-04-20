@@ -6308,6 +6308,44 @@ insert into #Keys
 			                                or
 			                                A.State = {(int)State.InActive} -- inactive state
 		                                )	
+
+                                    -- check PassCount/FailCount on Put
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + '{String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0)}'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID 
+                                        left join AssetResult AR on AR.Uid = EAR.Uid
+                                    where 
+		                                AE.Method = 'PUT'
+		                                and EAR.ExecutionID = @ExecutionID
+                                        and success is null
+		                                and (
+                                        CASE
+                                            WHEN EAR.FailCount is not null and EAR.PassCount is null and AR.PassCount = 0 and EAR.FailCount = 0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is null and AR.FailCount = 0 and EAR.PassCount = 0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is not null and EAR.Passcount = 0 and EAR.FailCount = 0 THEN 1
+                                            ELSE 0
+                                        END)=1
+
+                                    -- check PassCount/FailCount on Put
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + '{String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0)}'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID 
+                                        left join AssetResult AR on AR.Uid = EAR.Uid
+                                    where 
+		                                AE.Method = 'PUT'
+		                                and EAR.ExecutionID = @ExecutionID
+                                        and success is null
+		                                and (
+                                        CASE
+                                            WHEN EAR.FailCount is not null and EAR.PassCount is null and (9223372036854775807 - AR.PassCount - EAR.FailCount)<0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is null and (9223372036854775807 - AR.FailCount - EAR.PassCount)<0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is not null and (9223372036854775807 - EAR.Passcount - EAR.FailCount)<0 THEN 1
+                                            ELSE 0
+                                        END)=1
                                    ";
 
                     Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
