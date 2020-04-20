@@ -94,7 +94,7 @@
                                 <p-dropdown [formControlName]="field.FieldName"
                                             [style]="{'height':'auto',width: '100%'}"
                                             [options]="field.Items | selectItemTextToLabel"
-                                            [virtualScroll]="false"
+                                            [virtualScroll]="field.VirtualScroll"
                                             [itemSize]="field.ItemSize"
                                             [filter]="true"
                                             [placeholder]="multiselectLabel()">
