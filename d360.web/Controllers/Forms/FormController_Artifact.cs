@@ -45,7 +45,7 @@ namespace d360.web.Controllers
             {
                 var pluralize = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService(System.Globalization.CultureInfo.CurrentCulture);
                 var parents = Company.Query<SelectListItem>($"select convert(nvarchar(36), A.uid) as Value, AD.DisplayValue as Text from Asset a inner join AssetDisplayValue AD on AD.AssetID = A.ID inner join AssetType AT on A.AssetTypeID = AT.ID where AT.[Object] = 'ArtifactType' and AT.[ObjectID] = {intersectType.SubjectID}").OrderBy(i => i.Text).ToList();
-                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = true, ItemSize = 20 });
+                list.Add(new EditableField { Row = 1, Column = 1, Required = true, FieldName = "ParentUid", Name = $"Parent {pluralize.Singularize(intersectType.SubjectName)}", FieldType = DataType.Lookup.ToString(), Value = ((p > 0) ? p.ToString() : null), Items = parents, VirtualScroll = parents.Count > 9, ItemSize = 20 });
             }
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ArtifactType, at).ToList(), 1);
