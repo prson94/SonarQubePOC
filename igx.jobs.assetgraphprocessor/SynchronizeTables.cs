@@ -28,7 +28,7 @@ namespace igx.jobs.assetgraphprocessor
 
             var populatePaths = DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday;
 
-            companies.AsParallel().WithDegreeOfParallelism(5).ForAll(async company => {
+            companies.AsParallel().WithDegreeOfParallelism(3).ForAll(async company => {
                 try
                 {
                     var conn = CompanyConnectionUtils.GetCompanyConnection(company.CompanyID, company.Server, company.Username, company.Password);
