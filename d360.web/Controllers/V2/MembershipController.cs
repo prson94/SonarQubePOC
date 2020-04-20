@@ -515,16 +515,13 @@ namespace d360.web.Controllers.V2
 
             try
             {
-               var results = await membershipRepository.UpsertUsers(users);
+                var results = await membershipRepository.UpsertUsers(users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {
-
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", "An unknown error occurred"));
             }
-
-
-            return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", ""));
-
         }
 
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)

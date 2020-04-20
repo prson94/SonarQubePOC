@@ -10,6 +10,7 @@ using System.Net;
 using System.Data;
 using System.Text.RegularExpressions;
 using System.Data.SqlClient;
+using d360.core.entities;
 
 namespace d360.model.DataAccessLayer
 {
@@ -40,13 +41,13 @@ namespace d360.model.DataAccessLayer
                             condition.Add("A.Uid = @Uid");
                             dbArgs.Add("uid", uid);
                         }
-                        
+
                     }
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "name"))
                 {
-                  
+
                     var name = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "name").Value.Trim();
                     if (!string.IsNullOrEmpty(name))
                     {
@@ -59,7 +60,7 @@ namespace d360.model.DataAccessLayer
             }
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
-;                        var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid from [Group] G
+            ; var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
@@ -106,7 +107,7 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
-                foreach(var model in resources)
+                foreach (var model in resources)
                 {
                     model.Resource.State = CompanyResourceState.Deleted;
                     model.CompanyResource.State = CompanyResourceState.Deleted;
@@ -127,13 +128,20 @@ namespace d360.model.DataAccessLayer
         {
             var executionID = Guid.NewGuid();
             var results = new List<UserApiUpsertResult>();
+            var validationResults = new List<UserApiUpsertResult>();
 
             var fieldTypes = CompanyContext.FieldTypes.Where(f => f.Object == "ResourceType").ToList();
 
             #region Data Tables
-
+            var resourceTable = new DataTable();
             var userTable = new DataTable();
             var fieldTable = new DataTable();
+
+            resourceTable.Columns.Add("ExecutionID", typeof(Guid));
+            resourceTable.Columns.Add("ItemNumber", typeof(int));
+            resourceTable.Columns.Add("ResourceID", typeof(int));
+            resourceTable.Columns.Add("Username", typeof(string));
+
 
             userTable.Columns.Add("ExecutionID", typeof(Guid));
             userTable.Columns.Add("Uid", typeof(Guid));
@@ -147,7 +155,7 @@ namespace d360.model.DataAccessLayer
             userTable.Columns.Add("IsAdministrator", typeof(bool));
             userTable.Columns.Add("IsNew", typeof(bool));
             userTable.Columns.Add("Success", typeof(bool));
-            userTable.Columns.Add("Message", typeof(bool));
+            userTable.Columns.Add("Message", typeof(string));
 
 
             fieldTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -159,10 +167,99 @@ namespace d360.model.DataAccessLayer
 
             #endregion
 
+
+            #region Process Community
+
             int itemNumber = 0;
             foreach (var user in users)
             {
                 itemNumber++;
+                user.ItemNumber = itemNumber;
+
+                var row = resourceTable.NewRow();
+
+                row["ExecutionID"] = executionID;
+                row["ItemNumber"] = itemNumber;
+                row["Username"] = user.Username;
+
+                resourceTable.Rows.Add(row);
+
+            }
+
+            if (CommunityContext.Connection.State == ConnectionState.Closed)
+                await CommunityContext.Connection.OpenAsync();
+
+            using (SqlTransaction trans = CommunityContext.Connection.BeginTransaction())
+            {
+                try
+                {
+                    await CommunityContext.Connection.ExecuteAsync(@"
+                        drop table if exists #UserResources;
+                        create table #UserResources
+                        (
+                            ExecutionID uniqueidentifier,
+                            ItemNumber int,
+                            Username nvarchar(500),
+                            ResourceID int,
+                            HasCompanyResource bit
+                        )
+
+                        ", transaction: trans);
+
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(CommunityContext.Connection, SqlBulkCopyOptions.Default, trans);
+                    bulkCopy.DestinationTableName = "#UserResources";
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("Username", "Username");
+
+
+                    await bulkCopy.WriteToServerAsync(resourceTable);
+
+
+                    await CommunityContext.Connection.ExecuteAsync(@"
+                        update U
+                        set U.ResourceID = R.ID
+                        from #UserResources U
+                        inner join [Resource] R on R.Email = U.Username;
+
+                        update U
+                        set U.HasCompanyResource = case when R.ResourceID is not null then 1 else 0 end
+                        from #UserResources U
+                        left join [CompanyResource] R on R.ResourceID = U.ResourceID and R.CompanyID = @companyId;
+
+                        ", new { companyId = CompanyContext.CurrentCompanyID }, transaction: trans);
+
+                    var communityResults = await CommunityContext.Connection.QueryAsync<dynamic>(@"select * from #UserResources", transaction: trans);
+
+                    foreach (var result in communityResults)
+                    {
+                        var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
+                        if (user != null)
+                        {
+                            user.ResourceID = result.ResourceID;
+                            user.HasCompanyResource = result.HasCompanyResource;
+                        }
+                    }
+
+                    await CommunityContext.Connection.ExecuteAsync(@"drop table if exists #UserResources", transaction: trans);
+
+                    trans.Commit();
+
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
+
+
+            #endregion
+
+            foreach (var user in users)
+            {
                 var row = userTable.NewRow();
 
                 var success = true;
@@ -177,6 +274,12 @@ namespace d360.model.DataAccessLayer
                         messages.Add("Cannot provide Uid for a new user");
                     }
 
+                    if (user.ResourceID.HasValue)
+                    {
+                        success = false;
+                        messages.Add("Resource for this Uid already exists");
+                    }
+
                     if (user.State.HasValue)
                     {
                         success = false;
@@ -189,6 +292,12 @@ namespace d360.model.DataAccessLayer
                     {
                         success = false;
                         messages.Add("Must provide Uid for updated user");
+                    }
+
+                    if (!user.ResourceID.HasValue)
+                    {
+                        success = false;
+                        messages.Add("Resource not found for this Uid");
                     }
                 }
 
@@ -227,7 +336,7 @@ namespace d360.model.DataAccessLayer
 
                         var fieldRow = fieldTable.NewRow();
                         fieldRow["ExecutionID"] = executionID;
-                        fieldRow["ItemNumber"] = itemNumber;
+                        fieldRow["ItemNumber"] = user.ItemNumber;
                         fieldRow["FieldName"] = field;
                         fieldRow["FieldValue"] = user.Fields[field];
 
@@ -236,11 +345,14 @@ namespace d360.model.DataAccessLayer
                 }
 
                 row["Success"] = success;
-                row["Message"] = string.Join(". ", messages);
+                row["Message"] = messages.Any() ? string.Join(". ", messages) : "";
             }
 
 
-            #region Bulk Copy
+            #region Bulk Copy Company
+
+            if (CompanyContext.Connection.State == ConnectionState.Closed)
+             await CompanyContext.Connection.OpenAsync();
 
             using (SqlTransaction trans = CompanyContext.Connection.BeginTransaction())
             {
@@ -318,7 +430,7 @@ namespace d360.model.DataAccessLayer
                         update  U
                         set     U.ResourceID = G.ResourceID
                         from    #UserAssets U
-                                inner join reporting.Global_Resources G on G.[uid] = U.[Uid] and G.[State] <> @deleted
+                                inner join reporting.Global_Resource G on G.[uid] = U.[Uid] and G.[State] <> @deleted
                         where   U.Success = 1 and U.IsNew = 0;
 
                         update  U
@@ -350,19 +462,168 @@ namespace d360.model.DataAccessLayer
                                             and F.ExecutionID = U.ExecutionID
                                             and F.FieldTypeID is null
                                 ) C
-                        where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0
+                        where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0;
+
+                        update  U
+                        set     U.Success = 0,
+                                U.Message = U.Message + ', Missing required fields'
+                        from    #UserAssets U
+                                cross apply (
+                                    select  count(*) as MissingCount
+                                    from    FieldType F
+                                    where   F.Object = 'ResourceType' 
+                                            and F.ObjectID = 1 and F.IsRequired = 1
+                                            and not exists (
+                                                select  1 
+                                                from    #UserFields R 
+                                                where   R.ItemNumber = U.ItemNumber 
+                                                        and R.ExecutionID = U.ExecutionID 
+                                                        and R.FieldTypeID = F.ID
+                                            )
+                                ) C
+                        where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0;
 
                         ", new { executionID, deleted = (int)CompanyResourceState.Deleted }, transaction: trans);
 
-                    #endregion
-
+                    validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>("select * from #UserAssets", transaction: trans)).ToList();
 
                     trans.Commit();
+                    #endregion
                 }
                 catch (Exception ex)
                 {
                     trans.Rollback();
+                    throw ex;
                 }
+            }
+
+
+            #endregion
+
+            #region Upsert records
+
+            foreach (var result in validationResults)
+            {
+
+                if (result.Success == true)
+                {
+                    var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
+
+                    if (user != null)
+                    {
+                        //add resource
+                        if (!user.ResourceID.HasValue)
+                        {
+                            var resource = new Resource()
+                            {
+                                ResourceTypeID = 1,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
+                                Email = user.Username,
+                                Username = user.Username,
+                                Password = "temp"
+                            };
+
+                            CommunityContext.Add(resource);
+
+                            user.ResourceID = resource.ID;
+                            result.uid = resource.Uid;
+
+                            CommunityContext.ChangePassword(resource.ID, "", user.Password);
+                        }
+                        else
+                        {
+                            var resource = CommunityContext.Resources.FirstOrDefault(r => r.ID == (int)user.ResourceID);
+                            if (resource != null)
+                            {
+                                resource.FirstName = user.FirstName;
+                                resource.LastName = user.LastName;
+
+                                if (string.Compare(user.Username, resource.Username, true) != 0)
+                                {
+                                    //check if the resource already exists in community
+                                    var existing = CommunityContext.Filter<Resource>(i => i.Email == user.Username && i.Uid != user.Uid).FirstOrDefault();
+
+                                    if (existing != null)
+                                    {
+                                        result.Success = false;
+                                        result.uid = user.Uid;
+                                        result.Message += ". Cannot update the user because the specified email address / username is already in use";
+                                        results.Add(result);
+                                        continue;
+                                    }
+
+                                    resource.Email = user.Username;
+                                    resource.Username = user.Username;
+                                    resource.UpdatedOn = DateTime.UtcNow;
+
+                                    CommunityContext.Update(resource);
+                                }
+
+                            }
+                        }
+
+                        if (user.HasCompanyResource)
+                        {
+                            var companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
+
+                            if (companyResource != null)
+                            {
+                                companyResource.IsAdministrator = user.IsAdministrator;
+                                companyResource.State = (CompanyResourceState)user.State;
+
+                                CommunityContext.Update(companyResource);
+                            }
+                        }
+                        else
+                        {
+                            var companyResource = new CompanyResource()
+                            {
+                                ResourceID = (int)user.ResourceID,
+                                CompanyID = CompanyContext.CurrentCompanyID,
+                                State = CompanyResourceState.Active,
+                                IsAdministrator = user.IsAdministrator
+                            };
+
+                            CommunityContext.Add(companyResource);
+
+                        }
+
+                        var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
+
+                        if (globalResource == null)
+                        {
+                            globalResource.FirstName = user.FirstName;
+                            globalResource.LastName = user.LastName;
+                            globalResource.Email = user.Username;
+                            globalResource.IsAdministrator = user.IsAdministrator;
+                            globalResource.State = user.State ?? globalResource.State;
+                            globalResource.UpdatedOn = DateTime.UtcNow;
+
+                            CompanyContext.Update(globalResource);
+                        }
+                        else
+                        {
+                            globalResource = new GlobalReportingResource
+                            {
+                                IsAdministrator = user.IsAdministrator,
+                                ResourceID = (int)user.ResourceID,
+                                Email = user.Username,
+                                LastName = user.FirstName,
+                                FirstName = user.LastName,
+                                State = user.State ?? globalResource.State,
+                                UpdatedOn = DateTime.UtcNow,
+                                Uid = (Guid)user.Uid
+                            };
+
+                            CompanyContext.Add(globalResource);
+                        }
+                    }
+
+
+                }
+
+                results.Add(result);
             }
 
 

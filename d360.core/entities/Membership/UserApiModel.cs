@@ -37,6 +37,9 @@ namespace d360.core.entities.Membership
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
 
         public bool IsNew { get; set; }
+        public int? ResourceID { get; set; }
+        public bool HasCompanyResource { get; set; }
+        public int ItemNumber { get; set; }
     }
 
     public class UserApiUpsertResult : IExecutionItem

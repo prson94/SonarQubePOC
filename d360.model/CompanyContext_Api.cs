@@ -465,7 +465,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             new { executionID, r = CurrentResourceID, dt = DateTime.UtcNow, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
         }
 
-        private List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool shouldCheckExistingFieldValues = true)
+        public List<AssetFieldTypeUpdate> MergeFields(Guid executionID, SqlTransaction trans, string tableName, string objectSqlSyntax, string objectIdSqlSyntax, int beginItemNumber, int endItemNumber, bool sendWorkflowEvents, int timeout = 3600, bool shouldCheckExistingFieldValues = true, string fieldTableName = "api.ExecutionField")
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
@@ -473,7 +473,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             {
                 res = Connection.Query<AssetFieldTypeUpdate>($@"
                     select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
-	                    inner join api.ExecutionField EF on EF.ExecutionID = EA.ExecutionID 
+	                    inner join {fieldTableName} EF on EF.ExecutionID = EA.ExecutionID 
                                             and EF.ItemNumber = EA.ItemNumber 
                                             and EA.ObjectID is not null 
                                             and EF.FieldTypeID is not null
@@ -492,7 +492,7 @@ using       (
                     coalesce(F.LookupValue, F.FieldValue) as Value,
                     F.FieldValue as FormattedValue
             from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                    inner {fieldTableName} F on F.ExecutionID = A.ExecutionID
                         and F.ItemNumber = A.ItemNumber 
                         and A.ObjectID is not null 
                         and F.FieldTypeID is not null
