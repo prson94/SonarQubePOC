@@ -45,7 +45,7 @@
                                     [style]="{'height':'auto',width: '100%'}"
                                     [options]="filter.Field?.Data?.filteritems | arraySelectItemPipe"
                                     [virtualScroll]="true"
-                                    itemSize="30"
+                                    itemSize="20"
                                     [filter]="true"
                                     [ngModel]="filter?.Data?.value"
                                     (ngModelChange)="filter.Data.value = $event"
