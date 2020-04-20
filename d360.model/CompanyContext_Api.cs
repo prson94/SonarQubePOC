@@ -1032,10 +1032,6 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"The Code field must be 250 characters or less in length");
                                     success = false;
                                 }
-                                else
-                                {
-                                    success = true;
-                                }
                                 break;
                             case "color":
                                 if ((fieldValue ?? "").Length > 7)
@@ -1043,20 +1039,12 @@ where T.ExecutionId = @executionid;
                                     errorMessages.Add($"The Color field must be a seven character RGB code");
                                     success = false;
                                 }
-                                else
-                                {
-                                    success = true;
-                                }
                                 break;
                             case "icon":
-                                if ((fieldValue ?? "").Length > 50)
+                                if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
-                                    errorMessages.Add($"The Icon field must be fifty characters or less in length");
+                                    errorMessages.Add($"The Icon field must be fifty characters or less in length and start with 'fa-'");
                                     success = false;
-                                }
-                                else
-                                {
-                                    success = true;
                                 }
                                 break;
                         }
@@ -1831,14 +1819,16 @@ from	IntersectType I
 			    inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
         where   P.ItemNumber between @beginItemNumber and @endItemNumber and P.[Level] <= 15
     )
-    insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy])
+    insert into api.ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Uid],[AssetID],[IntersectID],[FromHierarchy],[Object], [ObjectID])
         select  distinct 
                 ExecutionID, 
                 ItemNumber, 
                 [Uid], 
                 AssetID, 
                 IntersectID, 
-                1 
+                1,
+                Object,
+                ObjectID
         from    h 
         where   IntersectID is not null 
                 and [Level] > 0 
@@ -6244,7 +6234,7 @@ insert into #Keys
 			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to create this result.'
 	                                    from    api.ExecutionAssetResult EAR
 			                                    inner join api.Execution E on E.ExecutionID = EAR.ExecutionID 
-											                                    and E.ExecutionID = @executionID and UPPER(E.Method)='POST'
+											                                    and E.ExecutionID = @executionID and EAR.Success is null and UPPER(E.Method)='POST'
 			                                    inner join 
 			                                    Asset A on (EAR.OwningAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
@@ -6255,23 +6245,11 @@ insert into #Keys
 	                                    set		EAR.Success = 0,
 			                                    EAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to update this result.'
 	                                    from    api.ExecutionAssetResult EAR                                                
-                                        inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and UPPER(E.Method)='PUT'
-                                        inner join 
-                                        Asset A on (
-                                                    (EAR.EvaluatedAssetUid is not null	and EAR.EvaluatedAssetUid = A.uid) 
-                                                    or 
-                                                    A.uid in (select 
-	                                                                    AN.Uid
-                                                                    from 
-	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
-                                                                    where 	
-	                                                                    Match (AN -(ARE)-> AR)
-	                                                                    AND
-	                                                                    AR.uid =EAR.Uid
-                                                                        AND 
-                                                                        ARE.Class = {(int)ResultRelationClass.Owns})   
-                                                     )
-			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                        inner join api.Execution E on E.ExecutionID = EAR.ExecutionID and E.ExecutionID=@ExecutionID and EAR.Success is null and UPPER(E.Method)='PUT'
+										inner join AssetResult AR on AR.uid =EAR.Uid
+                                        inner join AssetResultEdge ARE on AR.$node_id = ARE.$to_id and ARE.class = {(int)ResultRelationClass.Owns}
+										inner join graph.AssetNode AN on AN.$node_id = ARE.$from_id
+			                             and AN.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, AN.AssetTypeID) where PermissionsBitMask & @p = @p)
                                     end
 
 	                                -- check Uid on Put
@@ -6330,6 +6308,44 @@ insert into #Keys
 			                                or
 			                                A.State = {(int)State.InActive} -- inactive state
 		                                )	
+
+                                    -- check PassCount/FailCount on Put
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + '{String.Format(DataQualityErrors.BothValuesMinimumError, "PassCount", "FailCount", 0)}'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID 
+                                        left join AssetResult AR on AR.Uid = EAR.Uid
+                                    where 
+		                                AE.Method = 'PUT'
+		                                and EAR.ExecutionID = @ExecutionID
+                                        and success is null
+		                                and (
+                                        CASE
+                                            WHEN EAR.FailCount is not null and EAR.PassCount is null and AR.PassCount = 0 and EAR.FailCount = 0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is null and AR.FailCount = 0 and EAR.PassCount = 0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is not null and EAR.Passcount = 0 and EAR.FailCount = 0 THEN 1
+                                            ELSE 0
+                                        END)=1
+
+                                    -- check PassCount/FailCount on Put
+	                                update EAR
+                                    set		Success = 0,
+		                                    [Message] = coalesce([Message] + '; ', '') + '{String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0)}'
+                                    from api.[ExecutionAssetResult] EAR
+                                        inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID 
+                                        left join AssetResult AR on AR.Uid = EAR.Uid
+                                    where 
+		                                AE.Method = 'PUT'
+		                                and EAR.ExecutionID = @ExecutionID
+                                        and success is null
+		                                and (
+                                        CASE
+                                            WHEN EAR.FailCount is not null and EAR.PassCount is null and (9223372036854775807 - AR.PassCount - EAR.FailCount)<0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is null and (9223372036854775807 - AR.FailCount - EAR.PassCount)<0 THEN 1
+                                            WHEN EAR.PassCount is not null and EAR.FailCount is not null and (9223372036854775807 - EAR.Passcount - EAR.FailCount)<0 THEN 1
+                                            ELSE 0
+                                        END)=1
                                    ";
 
                     Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.ModifyAsset }, commandTimeout: timeout);
@@ -6398,7 +6414,9 @@ insert into #Keys
                                                  UPDATE 
                                                     SET RunDate = (case when S.RunDate is null then AR.RunDate else S.RunDate end),
                                                     PassCount = (case when S.PassCount is null then AR.PassCount else S.PassCount end),
-                                                    FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end)                                                   
+                                                    FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end),
+                                                    UpdatedOn = @requestDate,
+                                                    UpdatedBy = @userId
                                                 output inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableAssetResult;
 
                                                     --Update Exection record with new Uid

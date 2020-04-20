@@ -662,7 +662,8 @@ namespace d360.extensions.search
 
                     coreQuery = new QueryStringQuery
                     {
-                        Query = phrase
+                        Query = phrase,
+                        AnalyzeWildcard = true
                     };
                     tagSearch = phrase;
                 }
@@ -712,7 +713,8 @@ namespace d360.extensions.search
                 }
                 coreQuery = new QueryStringQuery
                 {
-                    Query = compositeSearchTerm
+                    Query = compositeSearchTerm,
+                    AnalyzeWildcard = true
                 };
             }
 
@@ -763,7 +765,8 @@ namespace d360.extensions.search
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
                                             DefaultField = fldTag,
-                                            Query = tagSearch
+                                            Query = tagSearch,
+                                            AnalyzeWildcard = true
                                         }}
                                     },
                                     InnerHits = new InnerHits {
@@ -859,6 +862,41 @@ namespace d360.extensions.search
             return result;
         }
 
+        private const char STRATEGY_NONE = ' ';
+        private const char STRATEGY_QueryString = 'Q';
+        private const char STRATEGY_MatchPhrase = 'M';
+        private const char STRATEGY_MatchPhrasePrefix = 'P';
+        private const char STRATEGY_BestFields = 'B';
+        private const char STRATEGY_MostFields = 'O';
+        private const char STRATEGY_CrossFields = 'C';
+        private const char STRATEGY_FullUID = 'U';
+        private const char STRATEGY_PartialUID = 'W';
+        private const char STRATEGY_Experimental = 'X';
+
+        private TextQueryType MapStrategyToType(char strategy)
+        {
+            switch(strategy)
+            {
+                case STRATEGY_BestFields:
+                case '0':
+                    return TextQueryType.BestFields;
+                case STRATEGY_MostFields:
+                case '1':
+                    return TextQueryType.MostFields;
+                case STRATEGY_CrossFields:
+                case '2':
+                    return TextQueryType.CrossFields;
+                case STRATEGY_MatchPhrase:
+                case '3':
+                    return TextQueryType.Phrase;
+                case STRATEGY_MatchPhrasePrefix:
+                case '4':
+                    return TextQueryType.PhrasePrefix;
+                default:
+                    throw new Exception("Cannot map " + strategy);
+            }
+        }
+
         public IndexResults GetSearchResultsWithAggregation(int companyID, int resourceID, QueryRequest queryRequest, List<IndexTypeList> categories, QueryLimitation queryLimit)
         {
             IndexResults result = new IndexResults();
@@ -869,79 +907,175 @@ namespace d360.extensions.search
             Nest.Field fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Value");
 
             string tagSearch = "";
+
             bool tagMust = false;
-            char tagStrategy = 'Q'; // Q(ueryString), (MatchPhrase)P(refix), M(atchPhrase)
+            char tagStrategy = STRATEGY_NONE;
+            char mainStrategy = STRATEGY_NONE;
+
             List<QueryContainer> shouldQueries = new List<QueryContainer>();
             List<QueryContainer> mustQueries = new List<QueryContainer>();
             List<QueryContainer> filterMustQueries = new List<QueryContainer>();
 
+            /* Experimental strategy settings - Overloading search boost table, taking a float score and turning into a char array with numerica characters
+             * This allows experimenting with combinations of search strategies without new deployments being necessary
+             * 
+             * Pos [0]: Separate name search
+             *      0 = include field boosts in field list
+             *      1 = separate match phrase on boost fields
+             * Pos [1]: Augment search - broarder search with boost 0.5
+             *      0,1,2,3,4 = Search Type as defined by MapStrategyToType (3 and 4 makes little sense)
+             *      9 = disabled
+             * Pos [2]: Core search
+             *      0,1,2,3,4 = Search Type as defined by MapStrategyToType
+             */
+            char[] _strategy = new[] { '0', '0', '0' };
+            int _defaultStrategy = 90; //'Original/current' is 90: best_fields, boosts included, no augment
+            _strategy = ((int?)queryRequest.FieldBoosters.FirstOrDefault(fb => fb.Field == "_strategy")?.Boost ?? _defaultStrategy).ToString().PadLeft(3,'0').ToCharArray();
+
+            //Search in the DYNAMIC_FIELD_PREFIX.* namespace
             List<Nest.Field> mainFields = new List<Nest.Field>
             {
                 new Nest.Field(DYNAMIC_FIELD_PREFIX + "*"),
             };
-            foreach(FieldBoost boost in queryRequest.FieldBoosters)
-            {
-                mainFields.Add(new Nest.Field(boost.Field, boost.Boost));
-            }
 
-            string phrase = queryRequest.Term;
+            //Search phrase
+            string phrase = EscapeSpecialCharacters(queryRequest.Term);
+            tagSearch = phrase;
+
+            //Pick strategy
             if (!string.IsNullOrEmpty(phrase))
             {
-                bool isMatchWords = false;
-                if (phrase.StartsWith("'") && phrase.EndsWith("'"))
-                {
-                    isMatchWords = true;
-                    phrase = phrase.Trim('\'');
-                }
-
-                int isGuid = IsPhraseGuid(phrase);
+                int isGuid = IsPhraseGuid(queryRequest.Term); //Use term and not escaped phrase
                 if (isGuid == 1)
                 {
-                    shouldQueries.Add(new PrefixQuery
-                    {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
-                        Value = phrase.ToLower()
-                    });
-                    fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
-                    tagSearch = phrase.ToLower();
+                    mainStrategy = tagStrategy = STRATEGY_PartialUID;
                 }
                 else if (isGuid == 2)
                 {
-                    shouldQueries.Add(new TermQuery
+                    mainStrategy = tagStrategy = STRATEGY_FullUID;
+                }
+                else if(queryRequest.Term.StartsWith("'") && queryRequest.Term.EndsWith("'")) //Use term and not escaped phrase, need to remove encapsulation '`s
+                {
+                    mainStrategy = STRATEGY_MatchPhrase;
+                    phrase = tagSearch = EscapeSpecialCharacters(queryRequest.Term.Trim('\''));
+                }
+                else if(phrase.Contains("*"))
+                {
+                    if (phrase.EndsWith("*"))
                     {
-                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
-                        Value = phrase.ToLower()
-                    });
-                    fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
-                    tagSearch = phrase.ToLower();
+                        mainStrategy = tagStrategy = STRATEGY_MatchPhrasePrefix;
+                        phrase = phrase.TrimEnd('*');
+                    }
+                    else
+                        mainStrategy = tagStrategy = STRATEGY_QueryString;
                 }
                 else
                 {
-                    //Match Whole Words
-                    if (isMatchWords)
+                    tagStrategy = STRATEGY_MatchPhrase;
+                    mainStrategy = STRATEGY_Experimental;
+                }
+            }
+
+            switch (mainStrategy)
+            {
+                case STRATEGY_NONE:
+                    throw new Exception("Cannot use a search strategy of none");
+                case STRATEGY_PartialUID:
+                    shouldQueries.Add(new PrefixQuery
                     {
-                        phrase = EscapeSpecialCharacters(phrase.Trim('\''));
+                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Value = queryRequest.Term.ToLower()
+                    });
+                    break;
+                case STRATEGY_FullUID:
+                    shouldQueries.Add(new TermQuery
+                    {
+                        Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
+                        Value = queryRequest.Term.ToLower()
+                    });
+                    break;
+                case STRATEGY_QueryString:
+                    //Add any eventual boosts to fields list
+                    shouldQueries.Add(new QueryStringQuery
+                    {
+                        Fields = mainFields.Concat(
+                                queryRequest.FieldBoosters
+                                    .Where(fb => fb.Field.StartsWith("fields."))
+                                    .Select(boost => new Nest.Field(boost.Field, boost.Boost))
+                                    .ToList()
+                                ).ToArray(),
+                        Query = phrase,
+                        AnalyzeWildcard = true
+                    });
+                    break;
+                case STRATEGY_MatchPhrasePrefix:
+                    //Add any eventual boosts to fields list
+                    shouldQueries.Add(new MultiMatchQuery
+                    {
+                        Fields = mainFields.Concat(
+                                queryRequest.FieldBoosters
+                                    .Where(fb => fb.Field.StartsWith("fields."))
+                                    .Select(boost => new Nest.Field(boost.Field, boost.Boost))
+                                    .ToList()
+                                ).ToArray(),
+                        Query = phrase,
+                        Type = TextQueryType.PhrasePrefix
+                    });
+                    break;
+                case STRATEGY_BestFields:
+                case STRATEGY_MostFields:
+                case STRATEGY_CrossFields:
+                case STRATEGY_MatchPhrase:
+                    shouldQueries.Add(new MultiMatchQuery
+                    {
+                        Fields = mainFields.ToArray(),
+                        Query = phrase,
+                        Type = MapStrategyToType(mainStrategy)
+                    });
+                    break;
+                case STRATEGY_Experimental:
+                    if(_strategy[0] == '1') //Separate defined field boosts into separate phrase queries
+                    {
+                        queryRequest.FieldBoosters
+                            .Where(fb => fb.Field.StartsWith("fields."))
+                            .ForEach(boost => shouldQueries.Add(new MatchPhraseQuery
+                            {
+                                Field = boost.Field,
+                                Query = phrase,
+                                Boost = boost.Boost
+                            }));
+
+                    } else
+                    {
+                        //Add boost fields to fields list
+                        mainFields.AddRange(
+                            queryRequest.FieldBoosters
+                                .Where(fb => fb.Field.StartsWith("fields."))
+                                .Select(boost => new Nest.Field(boost.Field, boost.Boost))
+                            );
+                    }
+
+                    //Core query
+                    shouldQueries.Add(new MultiMatchQuery
+                    {
+                        Fields = mainFields.ToArray(),
+                        Query = phrase,
+                        Type = MapStrategyToType(_strategy[2])
+                    });
+
+                    if (_strategy[1] != '9') //Augment search with boost 0.5
+                    {
                         shouldQueries.Add(new MultiMatchQuery
                         {
                             Fields = mainFields.ToArray(),
-                            Query = phrase
+                            Query = phrase,
+                            Type = MapStrategyToType(_strategy[1]),
+                            Boost = 0.5
                         });
-                        tagSearch = phrase;
                     }
-                    else
-                    { //Regular search
-                        if (phrase.EndsWith("*")) //If we have trailing *, remove before escaping
-                            phrase = phrase.Remove(phrase.Length - 1);
-                        phrase = EscapeSpecialCharacters(phrase) + "*";
-
-                        shouldQueries.Add(new QueryStringQuery
-                        {
-                            Fields = mainFields.ToArray(),
-                            Query = phrase
-                        });
-                        tagSearch = phrase;
-                    }
-                }
+                    break;
+                default:
+                    throw new Exception("Unknown search strategy: "+mainStrategy);
             }
 
             foreach (FieldFilter fieldFilter in queryRequest.FieldFilters)
@@ -956,7 +1090,7 @@ namespace d360.extensions.search
                         tagSearch = EscapeSpecialCharacters(fieldFilter.Phrase);
                         tagMust = true;
                         //If filter is MatchWords, strategy is MatchPhrase. Othewise use MatchPhrasePrefix. If search string contains * use QueryStringQuery
-                        tagStrategy = fieldFilter.MatchWords ? 'M' : tagSearch.Contains("*") ? 'Q' : 'P';
+                        tagStrategy = fieldFilter.MatchWords ? STRATEGY_MatchPhrase : tagSearch.Contains("*") ? STRATEGY_QueryString : STRATEGY_MatchPhrasePrefix;
                         continue;
                     case "_type":
                         fld = new Nest.Field(D3S_FIELD_PREFIX + "Category");
@@ -983,7 +1117,8 @@ namespace d360.extensions.search
                     mustQueries.Add(new QueryStringQuery
                     {
                         Fields = fld,
-                        Query = p
+                        Query = p,
+                        AnalyzeWildcard = true
                     });
                 }
             }
@@ -994,25 +1129,39 @@ namespace d360.extensions.search
                 List<QueryContainer> tagQueries = new List<QueryContainer>();
                 switch(tagStrategy)
                 {
-                    case 'P':
+                    case STRATEGY_PartialUID:
+                        tagQueries.Add(new PrefixQuery {
+                            Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
+                            Value = queryRequest.Term.ToLower()
+                        });
+                        break;
+                    case STRATEGY_FullUID:
+                        tagQueries.Add(new TermQuery
+                        {
+                            Field = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid"),
+                            Value = queryRequest.Term.ToLower()
+                        });
+                        break;
+                    case STRATEGY_MatchPhrasePrefix:
                         tagQueries.Add(new MatchPhrasePrefixQuery {
                             Field = fldTag,
                             Query = tagSearch
                         });
                         break;
-                    case 'M':
+                    case STRATEGY_MatchPhrase:
                         tagQueries.Add(new MatchPhraseQuery
                         {
                             Field = fldTag,
                             Query = tagSearch
                         });
                         break;
-                    case 'Q':
+                    case STRATEGY_QueryString:
                     default:
                         tagQueries.Add(new QueryStringQuery
                         {
                             DefaultField = fldTag,
-                            Query = tagSearch
+                            Query = tagSearch,
+                            AnalyzeWildcard = true
                         });
                         break;
 
@@ -1033,6 +1182,10 @@ namespace d360.extensions.search
                         }
                     }
                 };
+
+                if (queryRequest.FieldBoosters.Any(fb => fb.Field == tagQuery.Path))
+                    tagQuery.Boost = queryRequest.FieldBoosters.First(fb => fb.Field == tagQuery.Path).Boost;
+
                 if (tagMust)
                     mustQueries.Add(tagQuery);
                 else
@@ -1389,7 +1542,8 @@ namespace d360.extensions.search
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
                                             DefaultField = fldTag,
-                                            Query = tagSearch
+                                            Query = tagSearch,
+                                            AnalyzeWildcard = true
                                         }}
                                     },
                                     InnerHits = new InnerHits {
@@ -1467,14 +1621,16 @@ namespace d360.extensions.search
                         new BoolQuery{
                             Should = new QueryContainer[] {
                                 new QueryStringQuery {
-                                    Query = phrase
+                                    Query = phrase,
+                                    AnalyzeWildcard = true
                                 },
                                 new NestedQuery {
                                     Path = D3S_FIELD_PREFIX + "Tags",
                                     Query = new BoolQuery{
                                         Must = new QueryContainer[] { new QueryStringQuery {
                                             DefaultField = fldTag,
-                                            Query = phrase
+                                            Query = phrase,
+                                            AnalyzeWildcard = true
                                         }}
                                     },
                                     InnerHits = new InnerHits {

@@ -530,6 +530,21 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Get Asset type object and object id for asset type Uid
+        /// </summary>
+        /// <param name="assetTypeUid">The Uid of the asset type</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("assetTypeLegacyData/{assetTypeUid}"),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<dynamic> GetArtifactTypeUidById(Guid assetTypeUid)
+        {
+            return await AssetRepository.GetAssetTypeObjectAndObjectId(assetTypeUid);
+        }
+
+        /// <summary>
         /// Updates an asset type based on the specific asset type unique identifier (Uid).
         /// </summary>
         /// <remarks>
@@ -858,6 +873,21 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Gets the score and the status of a Asset by its Uid
+        /// </summary>
+        /// <param name="assetUid">The asset Uid</param>
+        /// <returns></returns>
+        [
+            HttpGet, MapToApiVersion("2.0"), Route("GetUIDetails/{assetUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(Object)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public dynamic GetUIDetails(Guid assetUid)
+        {
+            return Company.Query<dynamic>($@"select Object,ObjectId,DisplayValue from AssetDetail where uid = @assetUid", new { assetUid }).FirstOrDefault();
+        }
 
         /// <summary>
         /// Get field types for the given asset type Uid

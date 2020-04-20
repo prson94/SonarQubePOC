@@ -8,7 +8,7 @@ import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 
 import { BaseObservableService } from "./baseObservable.service";
 import { MessagesObservableService } from './messages-observable.service';
-import { AssetEditorModel } from '../models/asset.model';
+import { AssetEditorModel, AssetTypeClass, AssetCount } from '../models/asset.model';
 import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
 import { URLSearchParams } from 'url';
 import { FormResponseType } from '../models/workflow.model';
@@ -97,6 +97,18 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public getAssetCountsByAssetType(cs: AssetTypeClass): Observable<AssetCount[]> {
+        return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}`)
+            .pipe(map(res => { return <AssetCount[]>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
+    public getAssetTypeLegacyData(uid: string): Observable<any> {
+        return this.http.get(`/api/v2/assets/assetTypeLegacyData/${uid}`)
+            .pipe(map(res => { return <any>res[0] }),
+                catchError(err => this.handleError(err, true)));
+    }
+
     public getAssets(assetTypeUid: string, params: any): Observable<any> {
         var qString = '';
         if (params) {
@@ -109,6 +121,12 @@ export class AssetService extends BaseObservableService {
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
             .pipe(debounceTime(500),
                 map(res => { return <any>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
+    public getUIDetailsForAssetUID(uid: string): Observable<any> {
+        return this.http.get('api/v2/assets/GetUIDetails/' + uid)
+            .pipe(map(res => { return <any>res }),
                 catchError(err => this.handleError(err, true)));
     }
 

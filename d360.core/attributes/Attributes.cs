@@ -24,6 +24,16 @@ namespace d360.core
         }
     }
 
+    public class AllowIntersectTypeAsSubjectAttribute : Attribute
+    {
+        private bool _allowed = true;
+        public bool Allowed { get { return _allowed; } }
+        public AllowIntersectTypeAsSubjectAttribute(bool allowed)
+        {
+            _allowed = allowed;
+        }
+    }
+
     public class AllowOwnershipAttribute : Attribute
     {
         private bool _allowed = true;

@@ -159,12 +159,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     selectArtifact(artifact) {
         this
             .router
-            .navigateByUrl(SiteUrlHelpers.getObjectUrl(
-                'Artifact',
-                artifact.ObjectID,
-                this.artifactTypeId
-            )
-            )
-            ;
+            .navigateByUrl(
+                `asset/${artifact.AssetUid}`);
     }
 }

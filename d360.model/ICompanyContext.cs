@@ -274,6 +274,7 @@ namespace d360.model
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);
         Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90);
+        Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90);
         Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null, int timeout = 90);
         Task<SqlMapper.GridReader> QueryMultipleAsync(string sql, object param = null, int timeout = 90);
         void RebuildDisplayValuesRequest();

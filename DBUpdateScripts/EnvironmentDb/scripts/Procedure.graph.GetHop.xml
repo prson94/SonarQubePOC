@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.GetHop-v7">
+  <changeSet author="Pappas" id="Procedure.graph.GetHop-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -114,7 +114,6 @@ begin
 	begin
 		set @expanded = case when @currentHopCount < @hopCount then 1 else 0 end
 		set @revealCheckNeeded = case when @currentHopCount < @hopCount then 0 else 1 end
-
 		set @hopSalt = graph.Hop_GenerateSalt();	-- Reset the salt.
 
 		if @currentHopCount = 0
@@ -165,7 +164,7 @@ begin
 		if @currentHopCount > 0
 		begin
 			insert into #relationsToIgnore
-				select distinct Uid from #links where Uid not in (select Uid from #relationsToIgnore)
+				select distinct Uid from #links where Uid not in (select Uid from #relationsToIgnore) and Uid is not null
 		end
 
 		update	#assetIds set Parsed = 1 where parsed = 0;
@@ -355,14 +354,13 @@ begin
 
 
 	--Now set read access permissions on assets.
+	update #nodes set HasAssetReadAccess = 1;
+
 	update	N
-	set		HasAssetReadAccess = 
-				case 
-					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = N.AssetTypeID) then 0
-					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, N.AssetTypeID) where N.AssetID = assetid) then 0
-					else @isAdmin
-				end
-	from	#nodes N;
+	set		HasAssetReadAccess = 0
+	from	#nodes N
+			cross apply dbo.UserAssetPermissions(@resourceId,N.AssetTypeID) P 
+	where	P.AssetID = N.AssetID and P.PermissionsBitMask & 1 = 0;
 
 	exec graph.Hop_GetResults @diagramType;				-- Return to caller.
 end

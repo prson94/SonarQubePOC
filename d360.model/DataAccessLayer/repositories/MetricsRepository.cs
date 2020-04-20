@@ -776,9 +776,9 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
-        public DataQualityResult GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
         {
-            var result = new DataQualityResult();
+            var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
             string orderBy;
             string effectiveSQL = "";
@@ -891,8 +891,8 @@ namespace d360.model.DataAccessLayer
 
             result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
-            result.items = Company.Query<DataQualityResultItem>(dataQualityResultSql, parameters).ToList();
-            if (result.items == null) result.items = new List<DataQualityResultItem>();
+            result.items = Company.Query<DataQualityGetResultItem>(dataQualityResultSql, parameters).ToList();
+            if (result.items == null) result.items = new List<DataQualityGetResultItem>();
             return result;
         }
 
