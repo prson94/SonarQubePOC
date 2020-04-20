@@ -9,9 +9,9 @@
     SimpleChange
 } from '@angular/core';
 import { SelectItem } from 'primeng/api';
-import {RelationshipsService} from '../../services/relationships.service';
-import {ArtifactTypeService} from '../../services/artifact-type.service';
-import {ArtifactType} from '../../models/artifact-type.model';
+import { RelationshipsService } from '../../services/relationships.service';
+import { ArtifactTypeService } from '../../services/artifact-type.service';
+import { ArtifactType } from '../../models/artifact-type.model';
 import {
     GridFilterColumn,
     GridFilterExpression,
@@ -19,9 +19,8 @@ import {
     GridOwnerFilter,
     GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
-import {ObjectRelationship} from '../../models/relationship.model';
-import {AttributeType} from '../../models/attribute-type.model';
-import {FilterExpression, FilterField, FilterFieldType} from '../../models/filter-field.model';
+import { ObjectRelationship } from '../../models/relationship.model';
+import { FilterExpression, FilterField, FilterFieldType } from '../../models/filter-field.model';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -62,8 +61,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     filterFieldType = FilterFieldType;
 
     private internalFilters: FilterExpression[] = [];
-    private availableFilters: FilterField[] = [];
-    private selectedFilter: any;
+    private availableFilters: FilterField[] = [];    
     private isLoadingFilter = false;
     private ownerShipFilter: FilterField = {
         Data: null,
