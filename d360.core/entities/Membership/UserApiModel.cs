@@ -15,7 +15,51 @@ namespace d360.core.entities.Membership
         public GlobalReportingResource Resource { get; set; }
     }
 
-    public class UserApiUpsertModel : IExecutionItem
+    public interface IUserApiUpsertModel : IExecutionItem
+    {
+        Guid? Uid { get; set; }
+        string Username { get; set; }
+        string FirstName { get; set; }
+        string LastName { get; set; }
+        string Password { get; set; }
+        bool IsAdministrator { get; set; }
+        CompanyResourceState? State { get; set; }
+        Dictionary<string, string> Fields { get; set; }
+
+        bool IsNew { get; set; }
+        int? ResourceID { get; set; }
+        bool HasCompanyResource { get; set; }
+        int ItemNumber { get; set; }
+
+    }
+
+    public class UserApiInsertModel : IUserApiUpsertModel
+    {
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public string Username { get; set; }
+        [DataMember]
+        public string FirstName { get; set; }
+        [DataMember]
+        public string LastName { get; set; }
+        [DataMember]
+        public string Password { get; set; }
+        [DataMember]
+        public bool IsAdministrator { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public CompanyResourceState? State { get; set; }
+        [DataMember]
+        public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
+
+        public bool IsNew { get; set; }
+        public int? ResourceID { get; set; }
+        public bool HasCompanyResource { get; set; }
+        public int ItemNumber { get; set; }
+    }
+
+    public class UserApiUpdateModel : IUserApiUpsertModel
     {
         [DataMember]
         public Guid? Uid { get; set; }

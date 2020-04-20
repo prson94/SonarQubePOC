@@ -195,6 +195,7 @@ namespace d360.web.Models
                 Password = "xxxxxx",
                 IsAdministrator = false,
                 ExecutionItemUid = Guid.Empty,
+                State = "Active|Inactive|Deleted",
                 Fields = new Dictionary<string, string>()
                 {
                     { "MyApiFieldName1", "My Field value" },

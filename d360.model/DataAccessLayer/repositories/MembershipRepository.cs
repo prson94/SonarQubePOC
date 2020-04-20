@@ -124,9 +124,14 @@ namespace d360.model.DataAccessLayer
 
             return new WorkHttpStatus(HttpStatusCode.OK, "Success", "Users deleted successfully");
         }
-        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(IEnumerable<UserApiUpsertModel> users)
+        public async Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users)
         {
-            var executionID = Guid.NewGuid();
+            const int ResourceTypeID = 1;
+
+            CompanyContext.Add(execution);
+
+
+            var executionID = execution.ExecutionID;
             var results = new List<UserApiUpsertResult>();
             var validationResults = new List<UserApiUpsertResult>();
 
@@ -285,6 +290,15 @@ namespace d360.model.DataAccessLayer
                         success = false;
                         messages.Add("Cannot provide State for a new user");
                     }
+
+                    if (!string.IsNullOrEmpty(user.Password))
+                    {
+                        if (!validatePassword(user.Password))
+                        {
+                            success = false;
+                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number");
+                        }
+                    }
                 }
                 else
                 {
@@ -298,6 +312,15 @@ namespace d360.model.DataAccessLayer
                     {
                         success = false;
                         messages.Add("Resource not found for this Uid");
+                    }
+
+                    if (!string.IsNullOrEmpty(user.Password))
+                    {
+                        if (!validatePassword(user.Password))
+                        {
+                            success = false;
+                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number");
+                        }
                     }
                 }
 
@@ -436,9 +459,9 @@ namespace d360.model.DataAccessLayer
                         update  U
                         set     U.FieldTypeID = F.ID
                         from    #UserFields U
-                                inner join FieldType F on F.Name = U.FieldName and F.Object = 'ResourceType' and F.ObjectID = 1
+                                inner join FieldType F on F.Name = U.FieldName and F.Object = 'ResourceType' and F.ObjectID = @ResourceTypeID
                         where   U.ExecutionID = @executionID;
-                        ", new { executionID, deleted = (int)CompanyResourceState.Deleted }, transaction: trans);
+                        ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
 
                     #endregion
 
@@ -447,7 +470,7 @@ namespace d360.model.DataAccessLayer
                     await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
-                                U.Message = U.Message + ', Resource for this uid not found'
+                                U.Message = U.Message + '. Resource for this uid not found'
                         from    #UserAssets U
                         where   U.Success = 1 and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
 
@@ -466,13 +489,13 @@ namespace d360.model.DataAccessLayer
 
                         update  U
                         set     U.Success = 0,
-                                U.Message = U.Message + ', Missing required fields'
+                                U.Message = U.Message + '. Missing required fields'
                         from    #UserAssets U
                                 cross apply (
                                     select  count(*) as MissingCount
                                     from    FieldType F
                                     where   F.Object = 'ResourceType' 
-                                            and F.ObjectID = 1 and F.IsRequired = 1
+                                            and F.ObjectID = @ResourceTypeID and F.IsRequired = 1
                                             and not exists (
                                                 select  1 
                                                 from    #UserFields R 
@@ -483,7 +506,22 @@ namespace d360.model.DataAccessLayer
                                 ) C
                         where   U.Success = 1 and U.ExecutionID = @executionID and C.MissingCount > 0;
 
-                        ", new { executionID, deleted = (int)CompanyResourceState.Deleted }, transaction: trans);
+                        ", new { executionID, deleted = (int)CompanyResourceState.Deleted, ResourceTypeID }, transaction: trans);
+
+
+                    CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
+
+                    await CompanyContext.Connection.ExecuteAsync(@"
+                        insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
+                        select  ExecutionID,
+                        ItemNumber,
+                        FieldName,
+                        FieldValue,
+                        FieldTypeID,
+                        LookupValue,
+                        0 as Ignore
+                        from #UserFields
+                        ", transaction: trans);
 
                     validationResults = (await CompanyContext.Connection.QueryAsync<UserApiUpsertResult>("select * from #UserAssets", transaction: trans)).ToList();
 
@@ -514,6 +552,11 @@ namespace d360.model.DataAccessLayer
                         //add resource
                         if (!user.ResourceID.HasValue)
                         {
+                            if (string.IsNullOrEmpty(user.Password))
+                            {
+                                user.Password = CommunityContext.createRandomPassword();
+                            }
+
                             var resource = new Resource()
                             {
                                 ResourceTypeID = 1,
@@ -521,15 +564,13 @@ namespace d360.model.DataAccessLayer
                                 LastName = user.LastName,
                                 Email = user.Username,
                                 Username = user.Username,
-                                Password = "temp"
+                                Password = CommunityContext.HashPassword(user.Password)
                             };
 
                             CommunityContext.Add(resource);
 
                             user.ResourceID = resource.ID;
                             result.uid = resource.Uid;
-
-                            CommunityContext.ChangePassword(resource.ID, "", user.Password);
                         }
                         else
                         {
@@ -555,11 +596,16 @@ namespace d360.model.DataAccessLayer
 
                                     resource.Email = user.Username;
                                     resource.Username = user.Username;
-                                    resource.UpdatedOn = DateTime.UtcNow;
-
-                                    CommunityContext.Update(resource);
+                                    
                                 }
 
+                                if (!string.IsNullOrEmpty(user.Password))
+                                {
+                                    resource.Password = CommunityContext.HashPassword(user.Password);
+                                }
+
+                                resource.UpdatedOn = DateTime.UtcNow;
+                                CommunityContext.Update(resource);
                             }
                         }
 
@@ -570,7 +616,7 @@ namespace d360.model.DataAccessLayer
                             if (companyResource != null)
                             {
                                 companyResource.IsAdministrator = user.IsAdministrator;
-                                companyResource.State = (CompanyResourceState)user.State;
+                                companyResource.State = user.State ?? companyResource.State;
 
                                 CommunityContext.Update(companyResource);
                             }
@@ -591,7 +637,7 @@ namespace d360.model.DataAccessLayer
 
                         var globalResource = CompanyContext.GlobalReportingResources.FirstOrDefault(r => r.ResourceID == user.ResourceID);
 
-                        if (globalResource == null)
+                        if (globalResource != null)
                         {
                             globalResource.FirstName = user.FirstName;
                             globalResource.LastName = user.LastName;
@@ -620,17 +666,65 @@ namespace d360.model.DataAccessLayer
                         }
                     }
 
-
+                    //merge field values
+                    if (user?.Fields?.Any() ?? false)
+                    {
+                        try
+                        {
+                            await CompanyContext.Connection.ExecuteAsync(@"
+                                merge   [Field] as T
+                                using   (
+                                        select  'Resource' as [Object],
+                                                @objectId as ObjectID,
+                                                F.FieldTypeID,
+                                                coalesce(F.LookupValue, F.FieldValue) as [Value],
+                                                F.FieldValue as FormattedValue
+                                        from    api.ExecutionField F
+                                        where   F.ExecutionID = @executionID
+                                                and F.ItemNumber = @itemNumber  
+                                ) as S
+                                on      (T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.[Object] and T.ObjectID = S.ObjectID)
+                                when matched    and T.[Value] <> S.[Value] COLLATE SQL_Latin1_General_CP1_CS_AS 
+                                                or T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update 
+                                set T.[Value] = S.[Value], 
+                                    T.FormattedValue = S.FormattedValue, 
+                                    T.UpdatedBy = @resourceId 
+                                when not matched by target then
+                                insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy)
+                                values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId);
+                                ", new { objectId = user.ResourceID, executionID, resourceId = CompanyContext.CurrentResourceID, user.ItemNumber});
+                        }
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+                    }
                 }
 
                 results.Add(result);
             }
 
-
             #endregion
 
 
             return results;
+        }
+
+        private bool validatePassword(string password)
+        {
+            if (string.IsNullOrEmpty(password))
+                return false;
+
+            if (password.Length < 7 || password.Length > 25)
+                return false;
+
+            if (!password.Any(char.IsUpper) || !password.Any(char.IsLower))
+                return false;
+
+            if (!password.Any(char.IsDigit))
+                return false;
+
+            return true;
         }
     }
 }
