@@ -389,6 +389,7 @@ select	@pageSize as 'pageSize',
 					when FT.Type = 'Lookup' and LookupOT.Uid is null and FT.LookupObjectID <> 0 then 0 
                     else null 
 				end as 'Type.Lookup.List.Class',
+                case when FT.Type = 'Lookup' then (select Name from FieldType where ID = FT.ParentFieldTypeID) else null end as 'Type.Lookup.List.ParentFieldTypeName',
 		        case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
 		        case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
 		        case when FT.Type = 'Lookup' then FT.IsEditable else null end as 'Type.Lookup.IsEditable',
@@ -980,6 +981,15 @@ from	IntersectType I
                     newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder;
                     newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
                     if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue)) newFieldType.DefaultValue = f.Type.Lookup.DefaultValue.Trim();
+                    if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
+                    {
+                        var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+                        if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid parent Field", $"Parent field [{f.Type.Lookup.ParentFieldTypeName}] of type ReferenceItem not found on this asset.");
+                        }
+                        newFieldType.ParentFieldTypeID = parentField.ID;
+                    }
                     if (f.Type.Lookup.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Lookup.Description.Display;
@@ -1042,7 +1052,7 @@ from	IntersectType I
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
                     }
-                    if (f.Type.Lookup.Filter != null)
+                    if (f.Type.Lookup.Filter != null && !string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
                     {
                         var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
                         if (filterFieldType <= 0)

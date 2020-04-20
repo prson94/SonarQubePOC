@@ -215,7 +215,8 @@
                     <div class="FieldNameRequired">Parent List</div>
                     <p-dropdown name="lookupparent"
                                 [options]="listParentFields"
-                                [(ngModel)]="model.FieldType.Type[currentType].ParentFieldTypeID"
+                                [(ngModel)]="model.FieldType.Type[currentType].ParentFieldTypeName"
+                                (ngModelChange)="model.FieldType.Type[currentType].ParentFieldTypeName = $event;testythingy($event)"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>

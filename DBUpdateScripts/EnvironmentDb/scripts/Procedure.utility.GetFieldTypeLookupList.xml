@@ -10,43 +10,43 @@
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
+		<![CDATA[  
 create or alter procedure [utility].[GetFieldTypeLookupList]
 as
 begin
 	SELECT	'L' as type,
-			Uid as value,
+			convert(nvarchar(50), Uid) as value,
 			'Business Asset : ' + Name as title
 	FROM	AssetType where [Class] = 1
 	UNION
   SELECT	'L' as type,
-			Uid as value,
+			convert(nvarchar(50), Uid) as value,
 			'Technical Asset : ' + Name as title
 	FROM	AssetType where [Class] = 8
 	UNION
 	SELECT	'L' as type,
-			CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) as value,
+			'ReferenceItemType' as value,
 			'Reference List' as title
 	UNION
 	SELECT	'L' as type,
-			Uid as value,
+			convert(nvarchar(50), Uid) as value,
 			'Reference List Item: ' + Name as title
 	FROM	AssetType where [Object] = 'ReferenceItemType'
 	UNION
 	SELECT	'L' as type,
-			Uid as value,
+			convert(nvarchar(50), Uid) as value,
 			'Resource : User' as title
 			FROM AssetType where [Class] = 11
 	UNION
 	SELECT	'L' as type,
-			Uid as value,
+			convert(nvarchar(50), Uid) as value,
 			'Model : ' + Name as title
 	FROM	AssetType where [Object] = 'TaxonomyType'
 	UNION
 	SELECT	'L' as type,
-			CAST(CAST(0 AS BINARY) AS UNIQUEIDENTIFIER) as value,
+			'TaxonomyType' as value,
 			'Model Type' as title
-end
+END
 		]]>
     </sql>
 	<rollback>

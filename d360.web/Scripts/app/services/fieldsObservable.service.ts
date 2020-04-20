@@ -147,29 +147,38 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getReferenceTypeHierarchyFields(
-        id: number,
-        objectType: string,
-        objectId: number
-    ): Observable<SelectItem[]> {
+    getReferenceTypeHierarchyFields(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<SelectItem[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<SelectItem[]>(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
+            .get<SelectItem[]>(`api/v2/fields/GetReferenceHierarchy?${url}`)
             .pipe(
                 map(response => <SelectItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getListFilterOptions(
-        objectType: string,
-        objectId: number,
-        type: string,
-        id: number
-    ): Observable<any> {
+    getListFilterOptions(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+        
+            //.get<any>(`form/FieldType_ListFilter?objectType=ReferenceItemType&objectId=100000017&type=ArtifactType&id=100000016`)
+        
         return this
             .http
-            .get<any>(`form/FieldType_ListFilter?objectType=${objectType}&objectId=${objectId}&type=${type}&id=${id}`)
+            .get<any>(`api/v2/fields/GetLookupListFilter?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -192,7 +201,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
     getLookupTokens(uid: string): Observable<Array<SelectItem>> {
         return this
             .http
-            .get<Array<SelectItem>>(`api/v2/fields/GetFieldTypeLookupTokens?Uid=${uid}`)
+            .get<Array<SelectItem>>(`api/v2/fields/GetFieldTypeLookupTokens?identifier=${uid}`)
             .pipe(
                 map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
@@ -285,26 +294,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             {label: 'Self Reference', value: '1'},
             {label: 'Child Reference', value: '2'},
         ];
-    }
-
-    putFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
-        return this
-            .http
-            .put('form/EditFieldType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteLookupFieldType(id: number): Observable<JsonResult> { 
-        return this
-            .http
-            .delete(`form/DeleteFieldTypeByID?id=${id}`)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
     }
 
     deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {                

@@ -91,7 +91,9 @@ export class FieldType {
 
     ComplexRelationLookup: ComputedRelationshipLookup;
 
+    //need a second ComputedRelationshipReferenceList so the API can serialize the object by the object name
     RefListRelationship: ComputedRelationshipReferenceList;
+    ComputedRelationshipReferenceList: ComputedRelationshipReferenceList;
 
     Date: DateClass;
     DateTime: DateClass;
@@ -364,10 +366,11 @@ export class Lookup implements ICommonOptions{
     Description: Description = new Description();
     AllowAllValue: boolean;
     AllowAllLabel: string;
-    Filter: Filter;
+    Filter: Filter = new Filter();
     Format: Format = new Format();
     List: List = new List();
     Validation: BooleanValidation = new BooleanValidation();
+    ParentFieldTypeName: string;
     ColumnOrder: number;
     ColumnWidth: number = 0;
     SortOrder: number = 0;

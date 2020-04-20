@@ -19,7 +19,7 @@ import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel } from '../../../../models/fieldtype-api.model';
+import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, Empty } from '../../../../models/fieldtype-api.model';
 
 
 @Component({
@@ -437,7 +437,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
             case 'jsonelement':
-                if (!this.model.JsonElementSettings) this.model.JsonElementSettings = new JsonElementSettings();
                 break;
             case 'json':
                 break;
@@ -475,8 +474,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Type[this.currentType].Format.Display = "";
                 this.model.FieldType.Type[this.currentType].Format.Edit = "";
             }
-            console.log(this.model.FieldType.Type[this.currentType]);
-
+            if (uid.length > 36) {
+                this.model.FieldType.Type[this.currentType].List.Uid = null;
+                this.model.FieldType.Type[this.currentType].List.Class = uid;
+            }
             this.loadDefaultValueOptions(uid);
             this.loadHierarchyOptions(uid);
             this.loadListFilterOptions(uid);
@@ -503,7 +504,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .pipe(map(res => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)
-                    this.model.FieldType.IsListable = this.isListableRelationship;
+                    this.model.FieldType.Type[this.currentType].IsListable = this.isListableRelationship;
             }));
     }
 
@@ -544,48 +545,35 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType.LookupObjectFieldTypeID = value;
     }
 
-    private loadHierarchyOptions(objectType: string, objectId: number): void {
+    private loadHierarchyOptions(uid: string): void {
         this.listParentFields = [];
+        
 
-        if (objectType != 'ReferenceItem') {
-            if (this.model != null && this.model.FieldType != null) {
-                this.model.FieldType.ParentFieldTypeID = 0;
-            }
-
-            return;
-        }
-
-        this.fieldsService.getReferenceTypeHierarchyFields(objectId, this.objectType, this.objectID).subscribe(
+        this.fieldsService.getReferenceTypeHierarchyFields(uid, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             r => {
-                this.listParentFields = r.map((x) => { return { label: x.label, value: +x.value }; });
+                this.listParentFields = r.map((x) => { return { label: x.label, value: x.value }; });
 
                 if (this.listParentFields == null || this.listParentFields.length == 0) {
-                    this.model.FieldType.ParentFieldTypeID = 0;
+                    this.model.FieldType.Type[this.currentType].ParentFieldTypeName = null;
                 }
             }
         );
     }
 
-    private loadListFilterOptions(objectType: string, objectId: number): void {
+    testythingy(e) {
+        console.log(e);
+        console.log(this.model.FieldType.Type[this.currentType].ParentFieldTypeName);
+    }
+
+    private loadListFilterOptions(uid: string): void {
         this.listFilterable = false;
         this.listFilterPredicates = [];
         this.listFilterRelatedFields = [];
         this.listFilterOptions.clear();
 
-        //List filter options only available for field defintions for thes asset types
-        if (['IssueType', 'ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType'].indexOf(this.objectType) == -1) {
-            return;
-        }
-
-        //List filter options are only available for lists of Artifacts for Taxonomies
-        if (objectType != 'Artifact' && objectType != 'Taxonomy') {
-            return;
-        }
-
-        this.listFilterable = true;
-
-        this.fieldsService.getListFilterOptions(objectType + 'Type', objectId, this.objectType, this.objectID).subscribe(
+        this.fieldsService.getListFilterOptions(uid, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             r => {
+                this.listFilterable = true;
                 r.forEach(
                     d => {
                         if (!this.listFilterOptions.has(d.PredicateValue)) {
@@ -627,8 +615,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     return;
                 }
 
-                if (this.model.FieldType.FilterPredicateID != null && this.model.FieldType.FilterPredicateDirection != null) {
-                    this.selectPredicate(this.model.FieldType.FilterPredicateID + '|' + (this.model.FieldType.FilterPredicateDirection ? '1' : '0'));
+                if (this.model.FieldType.Type["Lookup"].Filter.PredicateUid != null && this.model.FieldType.Type["Lookup"].Filter.UseDirection != null) {
+                    this.selectPredicate(this.model.FieldType.Type["Lookup"].Filter.PredicateUid + '|' + (this.model.FieldType.Type["Lookup"].Filter.UseDirection ? '1' : '0'));
                     this.expandFilterConfiguration = true;
                 } else {
                     this.selectPredicate(null);
@@ -643,26 +631,26 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
 
             if (this.model.FieldType[this.currentType].FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
-                this.model.FieldType.FilterFieldTypeID = this.listFilterRelatedFields[0].value;
+                this.model.FieldType.Type["Lookup"].Filter.FieldTypeName = this.listFilterRelatedFields[0].value;
             }
         } else {
             value = null;
             this.listFilterRelatedFields = [];
-            this.model.FieldType.FilterFieldTypeID = null;
+            this.model.FieldType.Type["Lookup"].Filter.FieldTypeName = null;
         }
 
         if (value == null || value == '' || value == 'null') {
-            this.model.FieldType.FilterPredicateID = null;
-            this.model.FieldType.FilterPredicateDirection = null;
+            this.model.FieldType.Type["Lookup"].Filter.PredicateUid = null;
+            this.model.FieldType.Type["Lookup"].Filter.UseDirection = null;
         } else {
-            this.model.FieldType.FilterPredicateID = parseInt(value.split('|')[0]);
-            this.model.FieldType.FilterPredicateDirection = parseInt(value.split('|')[1]);
+            this.model.FieldType.Type["Lookup"].Filter.PredicateUid = value.split('|')[0];
+            this.model.FieldType.Type["Lookup"].Filter.UseDirection = parseInt(value.split('|')[1]) == 1;
         }
 
         this.listFilterPredicate = value;
         return;
     }
-
+    
     private loadDefaultValueOptions(uid: string): Subscription {
         if (this.model.FieldType.Type[this.currentType].List.Uid  == undefined) {
             console.log("[ERROR] - NO UID SPECIFIED TO LOAD DEFAULT VALUES FOR ", this.model.FieldType.Type[this.currentType].List.Uid );
@@ -761,12 +749,29 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         } else if (this.currentType == 'Date') {
             this.model.FieldType.Type[this.currentType].DefaultValue = this.defaultDate;
-        }
+        } 
+
+        let apiModel = new FieldTypeAPIModel();
+        apiModel.Action = "Merge";
+        apiModel.ActionTypeUid = this.actionTypeUid;
+        apiModel.AssetTypeUid = this.assetTypeUid;
+        apiModel.RelationshipTypeUid = this.relationshipTypeUid;
+
+        //fix the object names so the API can serialise them
+        if (this.currentType == 'FieldFromRelationship')
+            this.model.FieldType.Type.ComputedRelationshipField = this.model.FieldType.Type.FieldFromRelationship;
+        if (this.currentType == "OwnershipLookup")
+            this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
+        if (this.currentType == "RefListRelationship")
+            this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;
+
+        //add the fieldtype to the API model as an array
+        apiModel.Fields = [this.model.FieldType];
 
         this.isLoading = true;
 
         if (this.actionName == 'Edit') {
-            this.fieldsService.putFieldType(this.model).subscribe(
+            this.fieldsService.putFieldsV2(apiModel).subscribe(
                 r => {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
@@ -777,21 +782,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             );
         } else {
-            let apiModel = new FieldTypeAPIModel();
-            apiModel.Action = "Merge";
-            apiModel.ActionTypeUid = this.actionTypeUid;
-            apiModel.AssetTypeUid = this.assetTypeUid;
-            apiModel.RelationshipTypeUid = this.relationshipTypeUid;
-
-            if (this.currentType == 'FieldFromRelationship') {
-                this.model.FieldType.Type.ComputedRelationshipField = this.model.FieldType.Type.FieldFromRelationship;
-            }
-            if (this.currentType == "OwnershipLookup")
-                this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
-            if (this.currentType == "RefListRelationship")
-                //add the other type for the correct name
-            apiModel.Fields = [ this.model.FieldType ];
-
             this.fieldsService.putFieldsV2(apiModel).subscribe(
                 r => {
                     this.showMessageForResult(this.messagesService, r);

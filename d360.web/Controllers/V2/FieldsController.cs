@@ -798,21 +798,36 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public HttpResponseMessage GetFieldTypeLookupTokens(Guid Uid)
+        public HttpResponseMessage GetFieldTypeLookupTokens(string identifier)
         {
             var prefix = "Fields.GetFieldTypeLookupTokens => ";
             var errorMessage = "";
 
             try
             {
-                var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
-                int id = item.ObjectID;
-                Enum.TryParse(item.Object, out SystemObjects type);
+                SystemObjects type;
+                int id;
+                Dictionary<string, string> list = new Dictionary<string, string>();
+                //special case for reference list
+                if (Enum.TryParse(identifier, out type))
+                {
+                    id = 0;
+                }
+                else if(Guid.TryParse(identifier, out Guid Uid))
+                {
+                    var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
+                    Enum.TryParse(item.Object, out type);
+                    id = item.ObjectID;
+                    list = Company.GetFieldTypesByObject(type, id)
+                        .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                        .Select(i => new { i.ID, i.Name })
+                        .ToDictionary(i => i.Name, i => i.Name);
 
-                var list = Company.GetFieldTypesByObject(type, id)
-                    .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
-                    .Select(i => new { i.ID, i.Name })
-                    .ToDictionary(i => i.Name, i => i.Name);
+                }
+                else
+                {
+                    throw new Exception("Invalid Identifier provided.");
+                }
 
                 switch (type)
                 {
@@ -959,18 +974,23 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)            
         ]
-        public async Task<HttpResponseMessage> GetLookupDefaultValues(Guid Uid)
+        public async Task<HttpResponseMessage> GetLookupDefaultValues(string Uid)
         {
             var prefix = "Fields.GetLookupDefaultValues => ";
             var errorMessage = "";
 
             try
             {
+                Guid assetUid;
+                if(Guid.TryParse(Uid, out assetUid))
+                {
+                    //handle cases for reference list and models 
+                }
                 var list = new List<ListIntItem>();
                 list.Add(new ListIntItem { title = "- No default -", value = null });
                 var usersOnly = false;
                 string sql = "";
-                usersOnly = Company.Filter<AssetType>(x => x.uid == Uid && x.Class == AssetTypeClass.User).Count() > 0;
+                usersOnly = Company.Filter<AssetType>(x => x.uid == assetUid && x.Class == AssetTypeClass.User).Count() > 0;
                 if (usersOnly)
                 {
                     string HideD3SUsers = HideData3SixtyUsers() ? "": " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' "; 
@@ -999,7 +1019,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 list.AddRange(
-                    await Company.QueryAsync<ListIntItem>(sql, new { Uid })
+                    await Company.QueryAsync<ListIntItem>(sql, new { Uid = assetUid })
                 );
 
                 return Request.CreateResponse(HttpStatusCode.OK, list);
@@ -1020,6 +1040,253 @@ namespace d360.web.Controllers.V2
             }
 
         }
+
+        /// <summary>
+        /// Gets the  Reference Hierarchy for the given uid for the Field Form.
+        /// </summary>
+        /// <returns>A select list item list of options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetReferenceHierarchy"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetReferenceHierarchy(string uid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
+        {
+            var prefix = "Fields.GetReferenceHierarchy => ";
+            var errorMessage = "";
+
+            try
+            {
+                int id = 0;
+                SystemObjects type = SystemObjects.ArtifactType;
+                if (AssetTypeUid != null)
+                {
+                    var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
+                    id = assetType.ObjectID;
+                    Enum.TryParse(assetType.Object, out type);
+                }
+                else if (ActionTypeUid != null)
+                {
+                    var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
+                    id = issueType.ID;
+                    Enum.TryParse("IssueType", out type);
+                }
+                else if (RelationshipTypeUid != null)
+                {
+                    var it = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
+                    id = it.ID;
+                }
+                else
+                {
+                    throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+                }
+                AssetType refitem = null;
+                if(Guid.TryParse(uid, out Guid refitemGuid))
+                {
+                    refitem = Company.Filter<AssetType>(x => x.uid == refitemGuid).SingleOrDefault();
+                }
+                
+                var list = new List<PrimeSelectItem>();
+                if (refitem != null && refitem.Object == SystemObjects.ReferenceItemType.ToString()) 
+                {
+
+                    string objectType = type.ToString();
+                    //return possible hierarchy parents for this object type
+                    var parent = Company.GetParentType(refitem.ObjectID, SystemObjects.ReferenceItemType);
+
+                    if (parent != null)
+                    {
+                        //get possible parent reference list types defined for this object / object id they cant already be parents
+                        list = Company.FieldTypes.Where(x => x.Object == objectType && x.ObjectID == id && x.LookupObjectType == "ReferenceItem" && x.LookupObjectID == parent.ObjectID).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = i.Name }).ToList();
+                        if (list.Count > 0) list.Insert(0, new PrimeSelectItem { label = "", value = "" });
+                    }
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, list);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the  GetLookupListFilter for the given uid for the Field Form.
+        /// </summary>
+        /// <returns>A select list item list of options, if any.</returns>
+        [
+            HttpGet,
+            Route("GetLookupListFilter"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetLookupListFilter(string uid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
+        {
+            var prefix = "Fields.GetLookupListFilter => ";
+            var errorMessage = "";
+
+            try
+            {
+                string type = "";
+                int id = 0;
+                string objectType = "";
+                int objectId = 0;
+                if (assetTypeUid != null)
+                {
+                    var assetType = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                    type = assetType.Object;
+                    id = assetType.ID;
+                }
+                else if (actionTypeUid != null)
+                {
+                    var issueType = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
+                    type = SystemObjects.IssueType.ToString();
+                    id = issueType.ID;
+                }
+                else if (relationshipTypeUid != null)
+                {
+                    var intersectType = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
+                    type = SystemObjects.IntersectType.ToString();
+                    id = intersectType.ID;
+                }
+                else
+                {
+                    throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+                }
+
+                string[] allowedAssetTypes = { "IssueType", "ArtifactType", "TaxonomyType", "PolicyType", "RuleType" };
+                string[] allowedListTypes = { "Artifact", "Taxonomy" };
+
+                if (!allowedAssetTypes.Contains(type))
+                {
+                    //return nothing no error
+                    return null;
+                }
+                if (allowedListTypes.Contains(objectType))
+                {
+                    //return nothing no error;
+                    return null;
+                }
+
+                var predicateTypes = string.Join(",", PredicateType.DataLineage.GetAsList()
+                    .Where(f => f.AllowEditFromRelationshipEditor && f.AllowIntersectTypeAssignment)
+                    .Select(i => ((int)i.ID).ToString())
+                    .ToArray());
+
+                string sql = $@"SELECT 
+                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
+                        A.PredicateName, 
+                        A.ObjectName, 
+                        A.[Object], 
+                        A.[ObjectID], 
+                        B.FieldTypeID, 
+                        B.[FriendlyName],
+						B.Type,
+                        B.Class,
+                        B.Name
+                    FROM ( 
+                        SELECT 
+                            it.[ID] as IntersectTypeID, 
+                            0 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Name] as PredicateName, 
+                            ot.[Name] as ObjectName, 
+                            it.[Object] as [Object], 
+                            it.[ObjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                        where it.[Subject] = @objectType 
+                        and it.[SubjectID] = @objectId
+                        and p.Type IN ({predicateTypes})
+                        and it.[Object] in ('ArtifactType', 'TaxonomyType')
+                        UNION ALL 
+                        SELECT 
+                            it.[ID], 
+                            1 AS Direction, 
+                            p.[ID] as PredicateID, 
+                            p.[Inverse] as PredicateName,
+                            st.[Name] as ObjectName, 
+                            it.[Subject] as [Object], 
+                            it.[SubjectID] as [ObjectID] 
+                        FROM [dbo].[IntersectType] it 
+                            join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
+                            join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
+                            join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
+                         where it.[Object] = @objectType 
+                         and it.[ObjectID] = @objectId 
+                         and p.Type IN ({predicateTypes})
+                         and it.[Subject] in ('ArtifactType', 'TaxonomyType')
+                        ) A LEFT OUTER JOIN
+                    (SELECT 
+                        ft.[ID] as FieldTypeID,
+                        ft.[FriendlyName], 
+                        ft.[Object], 
+                        ft.[ObjectID], 
+                        at.Object as LookupObject, 
+                        ft.LookupObjectID,
+                        ft.Type,
+                        at.Class,
+                        at.Name
+                    FROM [dbo].[FieldType] ft
+                    INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
+                    WHERE ft.[ObjectID] = @id AND ft.[Object] = @type  
+                    ) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
+                var parms = new
+                {
+                    objectType = objectType,
+                    objectId = objectId,
+                    type = type,
+                    id = id
+                };
+                var list = await Company.QueryAsync<dynamic>(sql, parms);
+
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new
+                    {
+                        PredicateValue = i.PredicateValue,
+                        PredicateName = i.PredicateName,
+                        FieldTypeID = i.FieldTypeID,
+                        FriendlyName = i.FriendlyName,
+                        Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
+                    })
+                );
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
         #endregion
 
     }
