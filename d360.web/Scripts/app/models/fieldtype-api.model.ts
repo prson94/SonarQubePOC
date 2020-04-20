@@ -81,17 +81,19 @@ export class FieldType {
     Boolean: Boolean;
     ComputedFusionLookup: ComputedFusionLookup;
 
-    //need a second ComputedOwnershipLookup so the API can serialize the object by the object name
+    //need a second ComputedOwnershipLookup so the API can serialize the object by the class name
     OwnershipLookup: ComputedOwnershipLookup;
     ComputedOwnershipLookup: ComputedOwnershipLookup;
 
-    //need a second ComputedRelationshipField so the API can serialize the object by the object name
+    //need a second ComputedRelationshipField so the API can serialize the object by the class name
     FieldFromRelationship: ComputedRelationshipField;
     ComputedRelationshipField: ComputedRelationshipField;
 
+    //need a second ComputedRelationshipLookup so the API can serialize the object by the class name
     ComplexRelationLookup: ComputedRelationshipLookup;
+    ComputedRelationshipLookup: ComputedRelationshipLookup;
 
-    //need a second ComputedRelationshipReferenceList so the API can serialize the object by the object name
+    //need a second ComputedRelationshipReferenceList so the API can serialize the object by the class name
     RefListRelationship: ComputedRelationshipReferenceList;
     ComputedRelationshipReferenceList: ComputedRelationshipReferenceList;
 

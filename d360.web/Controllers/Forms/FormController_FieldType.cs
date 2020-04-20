@@ -103,13 +103,38 @@ namespace d360.web.Controllers
         /// <summary>
         /// Used for complex lookup
         /// </summary>
-        /// <param name="type">The Type></param>
-        /// <param name="id">The Type ID></param>
+        /// <param name="assetTypeUid">The AssetType UID></param>
+        /// <param name="actionTypeUid">The IssueType UID></param>
+        /// <param name="relationshipTypeUid">The IntersectType UID></param>
         /// <returns>A list of relationship types</returns>
-        [Route("FieldType_ComplexLookup_IntersectTypes"), NonNullableParameters]
-        public JsonNetResult FieldType_ComplexLookup_IntersectTypes(SystemObjects type, int id)
+        [Route("FieldType_ComplexLookup_IntersectTypes")]
+        public JsonNetResult FieldType_ComplexLookup_IntersectTypes(Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
         {
-            var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type.ToString()}', {id}) order by title");
+            string type = "";
+            int id = 0;
+            if (assetTypeUid != null)
+            {
+                var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                type = at.Object;
+                id = at.ObjectID;
+            }
+            else if (actionTypeUid != null)
+            {
+                var rt = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
+                type = "IssueType";
+                id = rt.ID;
+            }
+            else if (relationshipTypeUid != null)
+            {
+                var it = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
+                type = "IntersectType";
+                id = it.ID;
+            }
+            else
+            {
+                throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
+            }
+            var intersectTypes = Company.Query<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type}', {id}) order by title");
 
             return new JsonNetResult
             {

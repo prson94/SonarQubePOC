@@ -340,39 +340,52 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getChildRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    getChildRelations(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_ChildItems?type=${type}&id=${id}`)
+            .get(`form/FieldType_ComplexLookup_ChildItems?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getParentRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    getParentRelations(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_ParentItems?type=${type}&id=${id}`)
+            .get(`form/FieldType_ComplexLookup_ParentItems?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getStandardRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    getStandardRelations(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_IntersectTypes?type=${type}&id=${id}`)
+            .get(`form/FieldType_ComplexLookup_IntersectTypes?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

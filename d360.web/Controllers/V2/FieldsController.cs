@@ -629,7 +629,7 @@ namespace d360.web.Controllers.V2
                         IntersectTypes = intersectTypes,
                         FusionAttributeTypes = fusionAttributeTypes,
                         Lookups = lookups,
-                        ComplexLookupRelations = complexLookupRelations 
+                        ComplexLookupRelations = complexLookupRelations.Select(x => new { ID = (int)x.ID, x.Name, x.DisplayName}) 
                 });
             }
             catch (RestApiException ex)

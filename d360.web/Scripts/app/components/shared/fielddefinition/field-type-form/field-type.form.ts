@@ -269,13 +269,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             for (let i = 0; i < this.model.RelationItems.length; i++) {
                 let item = this.model.RelationItems[i];
                 
-                if (i == 0) {
-                    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-                        o => {
-                            this.objectName = o.Name;
-                        }
-                    );
-                }
+                //if (i == 0) {
+                //    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
+                //        o => {
+                //            this.objectName = o.Name;
+                //        }
+                //    );
+                //}
 
                 //load cascading dropdowns
                 this.changeRefType(i).subscribe(
@@ -348,7 +348,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if(!isFromLoad)
             this.model.FieldType.Type = new FieldType(value);
-        
+
 
         switch (value.toLowerCase()) {
             case 'lookup':
@@ -417,7 +417,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let r = new FieldTypeRelationItemEditorModel();
 
                     r.DisplayFields = [];
-                    r.ReferenceType = 1;
+                    r.ReferenceType = ComplexLookupRelationType.StandardRelationhip;
                     r.Object = this.objectType;
                     r.ObjectID = this.objectID;
 
@@ -425,13 +425,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
-                    if (this.objectName == null || this.objectName == '') {
-                        this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-                            o => {
-                                this.objectName = o.Name;
-                            }
-                        );
-                    }
+                    //if (this.objectName == null || this.objectName == '') {
+                    //    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
+                    //        o => {
+                    //            this.objectName = o.Name;
+                    //        }
+                    //    );
+                    //}
 
                     this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
@@ -462,7 +462,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .filter(x => x != null && x != undefined)
             .forEach(obs => obs.pipe(map(() => this.validate('*'))).subscribe());
     }
-
+    
     // called when the lookup type field is changed
     private lookupTypeSelected(uid: string): Observable<any> {
         if (uid == undefined) {
@@ -558,11 +558,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
             }
         );
-    }
-
-    testythingy(e) {
-        console.log(e);
-        console.log(this.model.FieldType.Type[this.currentType].ParentFieldTypeName);
     }
 
     private loadListFilterOptions(uid: string): void {
@@ -764,6 +759,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
         if (this.currentType == "RefListRelationship")
             this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;
+        if (this.currentType == "ComplexRelationLookup")
+            this.model.FieldType.Type.ComputedRelationshipLookup = this.model.FieldType.Type.ComplexRelationLookup;
 
         //add the fieldtype to the API model as an array
         apiModel.Fields = [this.model.FieldType];
@@ -777,6 +774,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.showMessageForResult(this.messagesService, r);
 
                     if (r.type != 'error') {
+                        this.model.FieldType.Type = new FieldType("Empty");
                         this.onComplete.emit({ action: 'edit', field: this.model });
                     }
                 }
@@ -828,25 +826,19 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
 
+        //convert the Dislpay fields to the JSON Definition=>Fields big jobbo
+
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
 
-        let object = this.objectType;
-        let objectId = this.objectID;
-
-        if (index != 0) {
-            object = last.Object;
-            objectId = last.ObjectID;
-        }
-
-        switch (item.ReferenceType.toString()) {
-            case ComplexLookupRelationType.ChildItem.toString(): //child item
-                return this.fieldsService.getChildRelations(object, this.objectID)
+        switch (item.ReferenceType) {
+            case ComplexLookupRelationType.ChildItem: //child item
+                return this.fieldsService.getChildRelations(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.ChildRelationship.toString(): //child relationship
+            case ComplexLookupRelationType.ChildRelationship: //child relationship
                 let intersectIdToGetChildrenFor = item.IntersectType;
 
                 if (last) {
@@ -857,15 +849,25 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.ParentItem.toString():
-                return this.fieldsService.getParentRelations(object, objectId)
+            case ComplexLookupRelationType.ParentItem:
+                return this.fieldsService.getParentRelations(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.StandardRelationhip.toString():
-                return this.fieldsService.getStandardRelations(object, objectId)
+            case ComplexLookupRelationType.StandardRelationhip:
+                return this.fieldsService.getStandardRelations(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                     .pipe(map(
-                        x => { item.relationItems = x; }
+                        x => {
+                            item.relationItems = x;
+                        }
+                    ), map(() => item.relationsLoading = false));
+            default:
+                console.log("--defaulting to standard--");
+                return this.fieldsService.getStandardRelations(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
+                    .pipe(map(
+                        x => {
+                            item.relationItems = x;
+                        }
                     ), map(() => item.relationsLoading = false));
         }
     }

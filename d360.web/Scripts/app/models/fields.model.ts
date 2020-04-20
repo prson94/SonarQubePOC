@@ -157,7 +157,7 @@ export class FieldTypeItemDisplayFieldEditorModel {
 export class FieldTypeRelationItemEditorModel {
     ID: number;
     IntersectType: number;
-    ReferenceType: number;
+    ReferenceType: ComplexLookupRelationType;
     ChildIntersectType: number;
     DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
     HideHeader: boolean;

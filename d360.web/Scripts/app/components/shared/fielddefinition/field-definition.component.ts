@@ -31,6 +31,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
 
+    @Input() objectName: string = "";
+
     @Output() onEdit = new EventEmitter();
     @Output() onAdd = new EventEmitter();
     @Output() onDelete = new EventEmitter();
