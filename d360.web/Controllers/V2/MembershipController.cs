@@ -30,11 +30,13 @@ namespace d360.web.Controllers.V2
     {
         ICompanyContext _company;
         IMembershipRepository membershipRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository)
+        IAssetRepository assetRepository;
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository,IAssetRepository assetRepository)
             : base(community, company)
         {
             _company = company;
             this.membershipRepository = membershipRepository;
+            this.assetRepository = assetRepository;
             
         }
         /// <summary>
@@ -180,7 +182,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Retrieves members of a group for a given group unique identifier.
+        /// Adds members to a group for a given group unique identifier.
         /// </summary>
         /// <param name="groupUid">The unique identifier of the Group.</param>
         /// <param name="users">The users that need to be added to the group</param>
@@ -198,16 +200,22 @@ namespace d360.web.Controllers.V2
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
+            var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+            List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
-            if(isValidGroup.Total == 0)
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if (isValidGroup.Total == 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid provided is not a valid group uid"));
 
             if (users.UserUids.Count != users.UserUids.Distinct().Count())
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User Uid appears multiple times"));
             }
+          
 
-            foreach(var user in users.UserUids)
+            foreach (var user in users.UserUids)
             {
                 var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
                 bool isValid = this.IsValidGuid(userUid,"uid");
@@ -215,8 +223,33 @@ namespace d360.web.Controllers.V2
                 if(!isValid)
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user uids passed in are not valid"));
 
+                var isUser = this.assetRepository.GetAssetByUID(user);
+
+                if(isUser == null || isUser.Object != "Resource")
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user uids passed in are not valid"));
+
+
+                var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
+
+                if(isMember != null)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.ToString()} is already a member of this group"));
+
+                resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
             }
-            return null;
+
+            try
+            {
+                foreach (var m in resourceGroups)
+                    Company.Add(m);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, "User(s) added to group");
         }
 
         /// <summary>
