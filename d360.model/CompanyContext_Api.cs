@@ -6374,7 +6374,9 @@ insert into #Keys
                                                  UPDATE 
                                                     SET RunDate = (case when S.RunDate is null then AR.RunDate else S.RunDate end),
                                                     PassCount = (case when S.PassCount is null then AR.PassCount else S.PassCount end),
-                                                    FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end)                                                   
+                                                    FailCount = (case when S.FailCount is null then AR.FailCount else S.FailCount end),
+                                                    UpdatedOn = @requestDate,
+                                                    UpdatedBy = @userId
                                                 output inserted.Uid, S.ItemNumber, $action into #ObjectMergeTableAssetResult;
 
                                                     --Update Exection record with new Uid
