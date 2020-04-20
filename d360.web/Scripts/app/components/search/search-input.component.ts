@@ -20,7 +20,7 @@ declare var CompanySettings;
                                   [keepFilter]="true">
                         </d3s-header-typeahead-search>
                     </div>
-                    <label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match exact phrase</span></label>
+                    <!--label class="checkbox mr10"><input type="checkbox" [ngModel]="isExactMatch" (ngModelChange)="isExactMatch=$event;isExactMatchChange.emit(isExactMatch);"><span>Match exact phrase</span></label-->
                 </div>
               `,
     providers: [SearchService, TypeaheadSearchService],
