@@ -1,6 +1,5 @@
 ﻿import { Component, Input, OnInit} from '@angular/core';
-import { Lookup, LookupItem } from '../../../models/lookup.model';
-import { LookupGrid, GridColumn, GridField, GridFilterColumn } from '../../../models/grid-definition.model';
+import { LookupGrid, GridFilterColumn } from '../../../models/grid-definition.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { BaseComponent } from '../base.component';
@@ -86,8 +85,7 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         return 'string';
     }
 
-    navigate(url: string) {
-        //TODO: should attempt to generate dynamically by object/objectid eventually
+    navigate(url: string) {        
         this.router.navigateByUrl(SiteUrlHelpers.convertClassicUrl(url)); 
     }
 
@@ -134,6 +132,3 @@ export class DynamicLookupGridComponent extends BaseComponent implements OnInit 
         
     }
 }
-
-
-
