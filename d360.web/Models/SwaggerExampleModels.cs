@@ -91,12 +91,10 @@ namespace d360.web.Models
         public object GetExamples()
         {
             return
-                new InsertUserToGroup
+                new List<Guid>
                 {
-                    UserUids = new List<Guid>() {
-                        { Guid.Empty },
-                        { Guid.Empty }
-                    },
+                    { Guid.Empty },
+                    { Guid.Empty }
 
                 };
         }

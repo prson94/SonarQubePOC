@@ -190,48 +190,51 @@ namespace d360.web.Controllers.V2
            HttpPost,
            MapToApiVersion("2.0"),
            Route("groups/{groupUid:Guid}/members"),
-           SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
+           SwaggerRequestExample(typeof(List<Guid>), typeof(InsertUserToGroupExample)),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group"),
-           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(ResourceApiViewModel)),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
        ]
-        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, InsertUserToGroup users)
+        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<Guid> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
-            var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+            
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
             if (isValidGroup.Total == 0)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group Uid provided is not a valid group uid"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is not a valid group uid."));
 
-            if (users.UserUids.Count != users.UserUids.Distinct().Count())
+            if (users.Count != users.Distinct().Count())
             {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User Uid appears multiple times"));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
             }
-          
+            if(users.Count == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
 
-            foreach (var user in users.UserUids)
+            var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+
+            foreach (var user in users)
             {
                 var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
-                bool isValid = this.IsValidGuid(userUid,"uid");
+                bool isValid = this.IsValidGuid(userUid, "uid");
 
-                if(!isValid)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user uids passed in are not valid"));
+                if (!isValid)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user UIDs passed in are not valid."));
 
                 var isUser = this.assetRepository.GetAssetByUID(user);
 
-                if(isUser == null || isUser.Object != "Resource")
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user uids passed in are not valid"));
+                if (isUser == null || isUser.Object != "Resource")
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user UIDs passed in are not valid."));
 
 
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
 
-                if(isMember != null)
+                if (isMember != null)
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.ToString()} is already a member of this group"));
 
                 resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
@@ -249,7 +252,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
             }
 
-            return Request.CreateResponse(HttpStatusCode.OK, "User(s) added to group");
+            return Request.CreateResponse(HttpStatusCode.OK, users);
         }
 
         /// <summary>
