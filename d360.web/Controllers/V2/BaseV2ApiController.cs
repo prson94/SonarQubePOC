@@ -203,7 +203,10 @@ namespace d360.web.Controllers.V2
             if (parameters.Any(q => q.Key == "_pageSize"))
             {
                 var _pageSize = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageSize").Value;
-                if(_pageSize.Length > 10)
+                if (string.IsNullOrEmpty(_pageSize))
+                    return "Invalid pageSize value provided.";
+
+                if (_pageSize.Length > 10)
                     return "Invalid pageSize value provided.";
                 if (long.TryParse(_pageSize, out pageSize))
                 {
@@ -217,7 +220,10 @@ namespace d360.web.Controllers.V2
             if (parameters.Any(q => q.Key == "_pageNum"))
             {
                 var _pageNum = queryParams.ToList().FirstOrDefault(q => q.Key == "_pageNum").Value;
-                if(_pageNum.Length > 10)
+                if (string.IsNullOrEmpty(_pageNum))
+                    return "Invalid pageNum value provided.";
+
+                if (_pageNum.Length > 10)
                     return "Invalid pageNum value provided.";
                 if (long.TryParse(_pageNum, out pageNum))
                 {
