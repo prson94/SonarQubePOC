@@ -229,4 +229,14 @@ namespace d360.core
             return base.ReadJson(reader, objectType, existingValue, serializer);
         }
     }
+
+    public class QueueSettingNameAttribute : Attribute
+    {
+        private string _name = "";
+        public string Name { get { return _name; } }
+        public QueueSettingNameAttribute(string name)
+        {
+            _name = name;
+        }
+    }
 }

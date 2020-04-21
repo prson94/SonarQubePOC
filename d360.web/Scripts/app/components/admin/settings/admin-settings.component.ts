@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute, NavigationStart } from '@angular/router';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
-import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper } from '../../../models/settings.model';
+import { ICompanySettingsService, CompanySettings, IpRestriction, CompanyImage, SearchType, SettingsHelper, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanyRebuildJobStatusState } from '../../../models/settings.model';
 import { SiteNav } from '../../../models/site-menu.model';
 import { CompanySettingsService } from '../../../services/settings.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
@@ -42,6 +42,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     groups: SelectItem[];
     sub: any;
     routeValidationMessage = "";
+
+    rebuildStatuses: CompanyRebuildJobStatusApiModel[] = [];
 
     disableRebuildAssetGraph: boolean = false;
     graphValidationMessage = "";
@@ -113,6 +115,11 @@ export class AdminSettingsComponent extends AdminBaseComponent {
                     this.save();
                 };
             })
+
+        this.companySettingsService.getRebuildRequestStatuses()
+            .subscribe(data => {
+                this.rebuildStatuses = data;
+            });
     }
 
     save(): void {
@@ -126,9 +133,8 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             .subscribe(data => {                
                 this.isLoading = false;
                 let type = data.type;
-                if (type && type == "error") {
-                    let message = data.message;
-                    this.messagesService.showError("Problem Saving settings", message);
+                if (type && type === "error") {
+                    this.messagesService.showError("Problem Saving settings", data.message);
                 } else {
                     window.location.reload();
                 }
@@ -138,7 +144,7 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     validateRoute() {
         this.routeValidationMessage = "";
 
-        if (this.companySettings.DefaultRoute == '' || this.companySettings.DefaultRoute == '/')
+        if (this.companySettings.DefaultRoute === '' || this.companySettings.DefaultRoute === '/')
             return;
 
         let r = new RegExp('^(?:[a-z]+:)?//', 'i');
@@ -147,44 +153,20 @@ export class AdminSettingsComponent extends AdminBaseComponent {
             this.routeValidationMessage = "The value entered must be a relative url (ex: /artifact/1)";
     }
 
-    rebuildAssetGraph() {
-        this.disableRebuildAssetGraph = true;
-        this.companySettingsService.postAssetGraphRebuildRequest()
+    rebuild(model: CompanyRebuildJobStatusApiModel) {
+        model.state = CompanyRebuildJobStatusState.Active;
+        this.companySettingsService.postRebuildRequest(model.jobToken)
             .subscribe(data => {
-                if (data.type && data.type == "error") {
-                    this.messagesService.showError("Problem with Asset Graph Rebuild", data.message);
-                    this.disableRebuildAssetGraph = false;
+                if (data.type && data.type === "error") {
+                    this.messagesService.showError("Problem with Rebuild", data.message);
+                    model.state = CompanyRebuildJobStatusState.Inactive;
                 } else {
-                    this.graphValidationMessage = data.message;
+                    model.validationMessage = data.message;
                 }
             });
     }
 
-    rebuildDisplayValues() {
-        this.disableRebuildDisplayValue = true;
-        this.companySettingsService.postDisplayRebuildRequest()
-            .subscribe(data => {
-                if (data.type && data.type == "error") {
-                    this.messagesService.showError("Problem with DisplayValue Rebuild", data.message);
-                    this.disableRebuildDisplayValue = false;
-                } else {
-                    this.displayValueValidationMessage = data.message;
-                }
-            });
+    public isDisabled(model: CompanyRebuildJobStatusApiModel): boolean {
+        return (model.state === CompanyRebuildJobStatusState.Active);
     }
-
-    rebuildIndex() {
-        this.disableRebuildIndex = true;
-        this.companySettingsService.postIndexRebuildRequest()
-            .subscribe(data => {
-                if (data.type && data.type == "error") {
-                    this.messagesService.showError("Problem with Index Rebuild", data.message);
-                    this.disableRebuildIndex = false;
-                } else {
-                    this.indexValidationMessage = data.message;
-                }
-            });
-    }
-
-
 }

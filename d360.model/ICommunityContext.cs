@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.entities.Plugins;
+using d360.core.enums;
 
 namespace d360.model
 {
@@ -13,6 +15,7 @@ namespace d360.model
         DbSet<Company> Companies { get; set; }
         DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
         DbSet<CompanyFeature> CompanyFeatures { get; set; }
+        DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
         DbSet<CompanyResource> CompanyResources { get; set; }
         DbSet<CompanySetting> CompanySettings { get; set; }
@@ -41,6 +44,9 @@ namespace d360.model
         string GetCompanyConnectionString(bool skipCacheCheck = false);
         Dictionary<string, string> GetCompanySettings();
         T GetCompanySettingByKey<T>(string key);
+        Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses();
+        Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken);
+        Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);
         string HashPassword(string value);
         IEnumerable<T> Query<T>(string sql, object param = null);
         int SaveChanges();

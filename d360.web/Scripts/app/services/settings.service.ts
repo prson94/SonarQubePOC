@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { CompanySettings, ICompanySettingsService } from '../models/settings.model';
+import { CompanySettings, ICompanySettingsService, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel } from '../models/settings.model';
 import { AuthenticationProperties } from '../models/authentication-properties.model';
 import { SelectItem } from 'primeng/api';
 import { JsonResult } from '../models/jsonresult.model';
@@ -49,29 +49,20 @@ export class CompanySettingsService extends BaseObservableService  implements IC
             );
     }
 
-    postDisplayRebuildRequest(): Observable<JsonResult> {
+    getRebuildRequestStatuses() {
         return this.http
-            .post(`form/rebuildDisplayValues`,'')
+            .get(`api/v2/environment/rebuilds`)
             .pipe(
-                map(res => <JsonResult>res),
+                map(res => res as CompanyRebuildJobStatusApiModel[]),
                 catchError(err => this.handleError(err))
             );
     }
 
-    postAssetGraphRebuildRequest(): Observable<JsonResult> {
+    postRebuildRequest(jobToken: CompanyRebuildJobToken) {
         return this.http
-            .post(`form/rebuildAssetGraph`, '')
+            .post(`api/v2/environment/rebuilds`, { Job: jobToken })
             .pipe(
-                map(res => <JsonResult>res),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postIndexRebuildRequest(): Observable<JsonResult> {
-        return this.http
-            .post(`api/v2/search/rebuildIndex`, '')
-            .pipe(
-                map(res => <JsonResult>res),
+                map(res => res as JsonResult),
                 catchError(err => this.handleError(err))
             );
     }
