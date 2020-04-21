@@ -17,8 +17,6 @@ import {
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
 import { Router, ActivatedRoute } from '@angular/router';
-
-import { Lookup, LookupItem } from '../../models/lookup.model';
 import {
     GridDefinition,
     GridColumn,

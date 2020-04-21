@@ -1713,7 +1713,6 @@
     <TypeScriptCompile Include="Scripts\app\models\form.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\grid-definition.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\jsonresult.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\lookup.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\group.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\policy.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\predicate.model.ts" />
