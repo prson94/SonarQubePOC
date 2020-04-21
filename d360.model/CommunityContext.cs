@@ -205,7 +205,8 @@ namespace d360.model
                 Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");
             }
-                        
+
+            this.ChangeTracker.DetectChanges();
             return  (SaveChanges() > 0);            
         }
 

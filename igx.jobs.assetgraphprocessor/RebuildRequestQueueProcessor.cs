@@ -35,6 +35,7 @@ namespace igx.jobs.assetgraphprocessor
 #endif
 
             #region Create EF connection
+
             var _c = CoreFunction.GetCompaniesByCurrentSlot()
                 .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
 

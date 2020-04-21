@@ -87,13 +87,12 @@ namespace igx.jobs.indexer
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
-                AzureQueueSource queue = new AzureQueueSource();
+                var companies = CoreFunction.UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken.SearchIndex);
 
-
+                var queue = new AzureQueueSource();
                 companies.ForEach(c =>
                 {
-                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
+                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c });
                 });
 
             }

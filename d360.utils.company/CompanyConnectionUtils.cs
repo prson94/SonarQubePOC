@@ -8,6 +8,7 @@ using System.Diagnostics;
 using d360.core.entities;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Configuration;
+using d360.core.enums;
 
 namespace d360.utils.company
 {
@@ -89,6 +90,39 @@ from    company c
             from Setting S 
             left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
             return settings;
+        }
+
+
+        public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
+        {
+            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
+            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+            var companies = cnn.Query<int>(@"
+declare @ids table (CompanyID int)
+
+merge	CompanyRebuildJobStatus as T
+using	(
+		select  C.ID as CompanyID
+		from    Company C
+		where   C.EnvironmentLevel = @level
+				and C.[Status] = 'Active'
+		) as S
+on		(T.CompanyID = S.CompanyID and T.JobToken = @jobToken) 
+when	matched and T.[State] = 2 then
+update	set 
+		T.[State] = 1,
+		T.LastStartedOn = getutcdate(),
+		T.LastStartedBy = 0
+when	not matched by target then
+insert	(CompanyID, JobToken, LastStartedOn, LastStartedBy, [State])
+values	(S.CompanyID, @jobToken, getutcdate(), 0, 1)
+output inserted.CompanyID into @ids;
+
+select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken }).ToList();
+            cnn.Close();
+            cnn.Dispose();
+
+            return companies;
         }
     }
 }
