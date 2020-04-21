@@ -991,16 +991,6 @@ order by	f.SortOrder";
                     responseModel.Items.HasAudit = true;
                 }
 
-                if (model.ObjectType == SystemObjects.LookupType.ToString())
-                {
-                    execProcedure = false;
-                    responseModel.Object = responseModel.ObjectType = SystemObjects.LookupType.ToString();
-                    responseModel.ObjectID = model.ObjectId ?? 0;
-                    responseModel.DisplayValue = "Lookups";
-                    responseModel.MainTabTitle = "Lookup Types";
-                    responseModel.Items.HasAudit = true;
-                }
-
                 if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
                 {
                     execProcedure = false;

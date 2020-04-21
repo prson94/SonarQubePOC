@@ -103,5 +103,25 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
+  <changeSet author="bhoward" id="Table.dbo.LookupType-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'LookupType')
+BEGIN
+ exec sp_rename '[dbo].[LookupType]', 'LookupType_backup'
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'LookupType_backup')
+BEGIN
+ exec sp_rename '[dbo].[LookupType_backup]', 'LookupType'
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

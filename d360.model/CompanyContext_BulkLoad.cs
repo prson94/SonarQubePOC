@@ -906,7 +906,7 @@ from	[Load] L
                         insert into #BulkExecutionField
                         select	BA.ExecutionID,
 		                        I.RowIndex as ItemNumber,
-		                        FT.[Name] as FieldName,
+		                        coalesce(FT.[Name], LC.[Name]) as FieldName,
 		                        I.[Value] as FieldValue,
 		                        FT.ID as FieldTypeID,
 		                        null as LookupValue,
@@ -917,7 +917,7 @@ from	[Load] L
                                 inner join LoadColumn LC on LC.LoadID = L.ID
                                 inner join LoadItemColumn I on I.LoadID = L.ID and I.ColumnIndex = LC.ColumnIndex
 		                        inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
-                                inner join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+                                left join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                         where   L.ID = @ID;
                         "
                             , new { executionID, load.ID }, transaction: trans);
@@ -936,27 +936,55 @@ from	[Load] L
 
                         CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
 
-                        await Connection.ExecuteAsync(@"
-                        update T
-                        set T.AssetUid = K.Uid
-                        from #BulkExecutionAsset T 
-                        cross apply (
-                        select		A.Uid,
-			                        utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
-                        from		Asset A 
-			                        inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
-			                        left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
-                        where	    A.AssetTypeID = @atID
-                        group by    A.Uid
-                        ) K 
-                        where K.ActiveKey = T.ProposedKey
+                        if (assetType.Class == AssetTypeClass.Reference)
+                        {
+                            await Connection.ExecuteAsync(@"
+                                update T
+                                set T.AssetUid = K.Uid
+                                from #BulkExecutionAsset T 
+                                cross apply (
+                                select		A.Uid,
+			                                utility.GetHash(cast(@atID as nvarchar) + '|' + A.Code)  as ActiveKey 
+                                from		Asset A 
+                                where	    A.AssetTypeID = @atID
+                                group by    A.Uid, Code
+                                ) K 
+                                where K.ActiveKey = T.ProposedKey
 
-                        update L
-                        set L.AssetUid = T.AssetUid
-                        from LoadItem L
-                        inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
-                        where L.LoadID = @ID
-                    ", new { atID = assetType.ID, load.ID }, transaction: trans);
+
+                                update L
+                                set L.AssetUid = T.AssetUid
+                                from LoadItem L
+                                inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
+                                where L.LoadID = @ID
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                        }
+                        else
+                        {
+                            await Connection.ExecuteAsync(@"
+                                update T
+                                set T.AssetUid = K.Uid
+                                from #BulkExecutionAsset T 
+                                cross apply (
+                                select		A.Uid,
+			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+                                from		Asset A 
+			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+                                where	    A.AssetTypeID = @atID
+                                group by    A.Uid
+                                ) K 
+                                where K.ActiveKey = T.ProposedKey
+
+                                update L
+                                set L.AssetUid = T.AssetUid
+                                from LoadItem L
+                                inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
+                                where L.LoadID = @ID
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                        }
+
+
 
                         trans.Commit();
                     }

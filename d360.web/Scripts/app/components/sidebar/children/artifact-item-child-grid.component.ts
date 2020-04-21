@@ -1,18 +1,18 @@
-﻿import {Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef} from '@angular/core';
-import {Router} from '@angular/router';
+﻿import { Input, Component, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Router } from '@angular/router';
 
-import {BaseComponent} from '../../shared/base.component';
+import { BaseComponent } from '../../shared/base.component';
 import { ArtifactService } from '../../../services/artifacts.service';
 import { AssetService } from '../../../services/asset.service';
-import {GridDefinitionService} from '../../../services/grid-definition.service';
-import {GridColumn, GridField} from '../../../models/grid-definition.model';
-import {SortOrder} from '../../../models/enums.model';
-import {Artifacts} from '../../../models/artifacts.model';
+import { GridDefinitionService } from '../../../services/grid-definition.service';
+import { GridColumn, GridField } from '../../../models/grid-definition.model';
+import { SortOrder } from '../../../models/enums.model';
+import { Artifacts } from '../../../models/artifacts.model';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import {SiteUrlHelpers} from '../../../static/site-url-helpers';
-import {StringConstants} from '../../../static/string-constants';
-import {  debounceTime } from 'rxjs/operators';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { StringConstants } from '../../../static/string-constants';
+import { debounceTime } from 'rxjs/operators';
 import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 
@@ -84,7 +84,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         }
 
         this.sortOrder = event.sortOrder;
-        this.sortField = event.sortField == undefined ? "" : event.sortField;
+        this.sortField = event.sortField == undefined ? "" : this.getFieldApiName(event.sortField);
         this.numberOfRows = event.rows;
         this.currentPage = (event.first / event.rows) + 1;
         this.getData();
@@ -94,19 +94,26 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
         this.isLoading = true;
         this.assetService.getArtifactType(this.artifactTypeId).subscribe(i => {
             let sortOrderText = this.sortOrder == SortOrder.None ? "" : (this.sortOrder == SortOrder.Descending ? "desc" : "asc");
-            var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: 'name', _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph };
+            var params = { _pagesize: this.numberOfRows, _pagenum: this.currentPage, _subjectUid: i.uid, _filter: "ParentDisplayName eq '" + this.displayName + "'", _order: this.sortField, _direction: sortOrderText, _simpleFilter: this.filter, _includeParent: true, useGraphForParent: this.useGraph, useTypeLevelDefaultSorts: true };
+            if (params._order == '') {
+                delete params['_order'];
+            }
+            else {
+                delete params['useTypeLevelDefaultSorts'];
+            }
+
             this.assetService.getAssets(i.uid, params).pipe(
                 debounceTime(500)).subscribe(res => {
-                this.totalRecords = res.total;
-                this.artifacts = res;
+                    this.totalRecords = res.total;
+                    this.artifacts = res;
 
-                if (this.totalRecords < 1000) {
-                    this.useGraph = false;
-                }
+                    if (this.totalRecords < 1000) {
+                        this.useGraph = false;
+                    }
 
-                this.isLoading = false;
-                this.ref.markForCheck();
-            });
+                    this.isLoading = false;
+                    this.ref.markForCheck();
+                });
         });
     }
 
@@ -122,6 +129,10 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
                 this.getData();
             }
         );
+    }
+
+    getFieldApiName(field: string) {
+        return this.fields.find(x => x.name == field).apiName;
     }
 
     private checkSimpleSearchEnter(event, dt: Table) {
@@ -148,12 +159,7 @@ export class ArtifactItemChildGridComponent extends BaseComponent implements OnC
     selectArtifact(artifact) {
         this
             .router
-            .navigateByUrl(SiteUrlHelpers.getObjectUrl(
-                'Artifact',
-                artifact.ObjectID,
-                this.artifactTypeId
-            )
-            )
-            ;
+            .navigateByUrl(
+                `asset/${artifact.AssetUid}`);
     }
 }

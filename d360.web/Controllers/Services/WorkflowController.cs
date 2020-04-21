@@ -2469,7 +2469,6 @@ order by wi.StartedOn desc";
             var sql = @"select ft.ID as value, ft.FriendlyName + ' (' + coalesce( ri.Name, lt.Name,ft.LookupObjectType) + ')' as [label] from 
                  FieldType ft
                  left join AssetType ri on ri.objectid = ft.lookupobjectid and ri.[object] = 'ReferenceItemType' and ft.LookupObjectType = 'ReferenceItem'
-                 left join LookupType lt on lt.id = lookupobjectid and ft.lookupobjecttype = 'Lookup'
                  where ft.Object = @objectType and ft.ObjectID = @objectId and ft.Type = 'Lookup' and ft.LookupObjectId > 0
                  order by ft.FriendlyName";
 

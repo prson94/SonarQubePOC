@@ -34,6 +34,9 @@ export class EditorField {
     UseTypeahead: boolean;
     DelayedLoadType: string;
     IsSemantic: boolean;
+    VirtualScroll: boolean;
+    ItemSize: number;
+    UseNativeLookupControl: boolean;
 }
 
 export class EditorCategory {

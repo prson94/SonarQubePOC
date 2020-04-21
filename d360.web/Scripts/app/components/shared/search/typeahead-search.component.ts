@@ -140,6 +140,10 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.ref.markForCheck();
         }
     }
+
+    formatPath(path: string[]):string {
+        return path.join('<i class="fa fa-angle-right"></i>');
+    }
 }
 
 import { NgModule } from '@angular/core';

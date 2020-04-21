@@ -1,0 +1,15 @@
+﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
+<div *ngIf="!isLoading"
+     class="row">
+    <div class="col s12">
+        <div class="tile tile-detail">
+            <d3s-object-definition-tile [nymTypes]="assetType?.NymTypes"
+                                        [objectPermissions]="permissions"
+                                        [objectType]="object"
+                                        [useV2Api]="true"
+                                        [objectID]="selected?.ID"
+                                        [hasAttributes]="assetType?.AllowAttributes"
+                                        (onEditComplete)="editComplete($event)"></d3s-object-definition-tile>
+        </div>
+    </div>
+</div>

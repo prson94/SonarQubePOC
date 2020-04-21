@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.api.Execution-v1">
+  <changeSet author="TDuric" id="Table.api.Execution-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -29,11 +29,31 @@ BEGIN
 		CONSTRAINT [PK_ApiExecution] PRIMARY KEY NONCLUSTERED ( [ExecutionID] DESC )
 	)
 END
+
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
+         AND name = 'State'
+)
+BEGIN
+    ALTER TABLE [api].[Execution] ADD [State] int NOT NULL CONSTRAINT [DF_Execution_State]  DEFAULT ((1))
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
+         AND name = 'State'
+)
+BEGIN
+	ALTER TABLE [api].[Execution] DROP CONSTRAINT [DF_Execution_State]
+	ALTER TABLE [api].[Execution] DROP COLUMN [State]
+END
 		]]>
 	</rollback>
   </changeSet>

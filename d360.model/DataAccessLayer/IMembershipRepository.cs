@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace d360.model.DataAccessLayer
 {
-    public interface  IMembershipRepository
+    public interface IMembershipRepository
     {
-      Task<GroupApiModels>  GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
+        Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
+        WorkHttpStatus DeleteResources(IEnumerable<UserApiDeleteModel> resources);
     }
 }

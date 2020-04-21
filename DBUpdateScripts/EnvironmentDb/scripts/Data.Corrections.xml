@@ -5,7 +5,24 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Data.Corrections.GOV-100149">
+  <changeSet author="MDonato" id="Data.Corrections.GOV-10308">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop table if exists metrics.TempScore;
+drop table if exists metrics.TempScoreItem;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="MDonato" id="Data.Corrections.GOV-10149">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -126,7 +143,12 @@ begin
 					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
 		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
 
-		update metrics.Score set EffectiveDate = NewEffectiveDate where FlagForUpdate = 1;
+		update	S
+		set		S.EffectiveDate = S.NewEffectiveDate 
+		from	metrics.Score S
+		where	S.FlagForUpdate = 1
+				and not exists (select 1 from metrics.Score where AssetUid = S.AssetUid and ScoreType = S.ScoreType 
+				and EffectiveDate = S.EffectiveDate);
 		
 
 		update	S
@@ -142,7 +164,12 @@ begin
 					and coalesce(S.NewEffectiveDate,'0001-01-01') between T.EffectiveDate and coalesce(T.EndDate,'9999-01-01')
 		where	coalesce(S.EndDate,'0001-01-01') <> coalesce(T.EndDate,'0001-01-01');
 
-		update metrics.ScoreItem set EffectiveDate = NewEffectiveDate where FlagForUpdate = 1;
+		update	S
+		set		S.EffectiveDate = S.NewEffectiveDate 
+		from	metrics.ScoreItem S
+		where	S.FlagForUpdate = 1
+		and not exists (select 1 from metrics.Scoreitem where AssetUid = S.AssetUid
+			and MetricAssetUid = S.MetricAssetUid and EffectiveDate = S.NewEffectiveDate);
 		
 		drop table if exists #tempScore;
 		drop table if exists #tempScoreItem;
@@ -176,8 +203,6 @@ if (exists (SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = 'metri
 begin
      alter table metrics.ScoreItem drop column FlagForUpdate;
 end
-		
-
 		]]>
     </sql>
 	<rollback>
@@ -199,6 +224,99 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 	<rollback>
 		<![CDATA[	
 
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-9723">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+BEGIN TRY
+    BEGIN TRANSACTION 
+
+	drop table if exists #existingRuleResults
+	create table #existingRuleResults (RuleUid uniqueidentifier,Uid uniqueidentifier, EffectiveDate date, RunDate date, RowsPassed int, RowsFailed int, CreatedOn date, CreatedBy int, UpdatedOn date, UpdatedBy int)
+	
+	insert into #existingRuleResults (RuleUid, uid, EffectiveDate, RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+	select 
+	A.uid as RuleUid, 
+	newid() as Uid, 
+	RR.EffectiveDate,
+	RR.RunDate, 
+	RowsPassed, 
+	RowsFailed, 
+	RR.CreatedOn,
+	RR.CreatedBy, 
+	RR.CreatedOn, 
+	Rr.CreatedBy 
+	from RuleResult RR
+			inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
+			inner join [Rule] R on R.ID = RI.RuleID
+			inner join [RuleType] RT on R.RuleTypeID = RT.ID
+			inner join Asset A on A.Object = 'Rule' and ObjectId = RT.ID    
+	where RowsPassed != 0 or RowsFailed != 0
+
+	INSERT INTO AssetResult
+	 ([Uid]
+			                                                ,[EffectiveDate]
+			                                                ,[RunDate]
+			                                                ,[PassCount]
+			                                                ,[FailCount]
+			                                                ,[CreatedOn]
+			                                                ,[CreatedBy]
+															,[UpdatedOn]
+															,[UpdatedBy])
+		select uid, EffectiveDate,RunDate, RowsPassed, RowsFailed, CreatedOn, CreatedBy, CreatedOn, CreatedBy
+			from #existingRuleResults
+	
+
+		INSERT INTO [dbo].[AssetResultEdge]	($from_id,$to_id,[Class])
+	    select 
+		    AN.$node_Id, AR.$node_Id, 1
+	    from 
+		    #existingRuleResults ERR 
+		    inner join graph.AssetNode AN on AN.Uid = ERR.[RuleUid]
+			inner join dbo.AssetResult AR on AR.Uid = ERR.[Uid]
+
+	COMMIT
+END TRY
+BEGIN CATCH
+    IF @@TRANCOUNT > 0
+        ROLLBACK TRAN
+
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE()
+        DECLARE @ErrorSeverity INT = ERROR_SEVERITY()
+        DECLARE @ErrorState INT = ERROR_STATE()
+
+    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
+END CATCH
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10344">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if not exists (select 1 from [dbo].[Predicate] where [Uid] = '5CD90E11-321C-4925-9E61-C9112940072C')
+begin
+	INSERT INTO [dbo].[Predicate] ([Name], [Inverse], [Type], [IsSystem], [Code], [UID]) VALUES ('evaluates', 'evaluated by', 2, 1, 'eval', '5CD90E11-321C-4925-9E61-C9112940072C')
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+delete [dbo].[Predicate] where [Uid] = '5CD90E11-321C-4925-9E61-C9112940072C'
 		]]>
 	</rollback>
   </changeSet>

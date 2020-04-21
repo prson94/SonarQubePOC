@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Puneet Gupta" id="Table.dbo.FieldTypeFilteredLookupDefinition-v2">
-    <comment>GOV-8571</comment>
+  <changeSet author="Puneet Gupta" id="Table.dbo.FieldTypeFilteredLookupDefinition-v3">
+    <comment>GOV-8571,GOV-9863</comment>
 	<sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -21,10 +21,41 @@
 			BEGIN	
 				ALTER TABLE [dbo].[FieldTypeFilteredLookupDefinition_bak] DROP CONSTRAINT [FK_FieldTypeFilteredLookupDefinition_FieldType]
 			END
+			
+			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition'
+					   and object_name(parent_object_id) = 'FieldTypeFilteredLookupDisplayField_bak')
+			BEGIN	
+				ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField_bak] DROP CONSTRAINT [FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition]
+			END
+			
+			IF EXISTS (select * from sys.foreign_keys where name = 'FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition'
+					   and object_name(parent_object_id) = 'FieldTypeFilteredLookupDisplayField')
+			BEGIN	
+				ALTER TABLE [dbo].[FieldTypeFilteredLookupDisplayField] DROP CONSTRAINT [FK_FieldTypeFilteredLookupDisplayField_FieldTypeFilteredLookupDefinition]
+			END
+
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDefinition_bak')
+			BEGIN
+				DROP TABLE [dbo].[FieldTypeFilteredLookupDefinition_bak]
+			END
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+		<![CDATA[
+
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDefinition_bak')
+			BEGIN
+				CREATE TABLE [dbo].[FieldTypeFilteredLookupDefinition_bak](
+					[ID] [int] IDENTITY(1,1) NOT NULL,
+					[FieldTypeID] [int] NOT NULL,
+					[Object] [varchar](50) NOT NULL,
+					[ObjectID] [int] NOT NULL,
+					[HideHeader] [bit] CONSTRAINT [DF_FieldTypeFilteredLookupDefinition_HideHeader] DEFAULT (1) NOT NULL,
+					[HideFooter] [bit] CONSTRAINT [DF_FieldTypeFilteredLookupDefinition_HideFooter] DEFAULT (1) NOT NULL,
+					CONSTRAINT [PK_FieldTypeFilteredLookupDefinition] PRIMARY KEY CLUSTERED ( [ID] ASC )
+				)
+			END
+		
 			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FieldTypeFilteredLookupDefinition_bak')
 			BEGIN
 				exec sp_rename 'dbo.FieldTypeFilteredLookupDefinition_bak', 'FieldTypeFilteredLookupDefinition';

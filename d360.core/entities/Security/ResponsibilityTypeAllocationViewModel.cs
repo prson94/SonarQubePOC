@@ -18,6 +18,9 @@ namespace d360.core.entities
         [DataMember]
         public string AssetTypeName { get; set; }
 
+        [DataMember]
+        public string AssetTypePath { get; set; }
+
         public AssetTypeClass? AssetClass { get; set; }
 
         [DataMember]

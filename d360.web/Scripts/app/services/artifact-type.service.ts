@@ -48,28 +48,16 @@ export class ArtifactTypeService extends BaseObservableService {
             )
             ;
     }
-
-    getArtifactTypeTree(assetTypeClass: AssetTypeClass): Observable<TreeNode[]> {
-        return this
-            .http.get(`internal/artifacts/types/${assetTypeClass}`)
-            .pipe(
-                map(response => <TreeNode[]>response),
-                map(r => this.formTree(r)),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
-    findArtifactType(
+    findArtifactTypeByUid(
         tree: TreeNode[],
-        id: number
+        uid: string
     ): TreeNode {
         for (var i = 0; i < tree.length; i++) {
             var n;
-            if (tree[i].data.ID == id)
+            if (tree[i].data.uid == uid)
                 return tree[i];
             if (tree[i].children && tree[i].children.length > 0) {
-                n = this.findArtifactType(tree[i].children, id);
+                n = this.findArtifactTypeByUid(tree[i].children, uid);
             }
             if (n) return n;
         }

@@ -89,9 +89,17 @@ namespace d360.model.helpers
             return stringBuilder.ToString();
         }
 
-        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, string fieldSyntax)
+        public string GetSQLForDefaultField(ref Dictionary<string, object> sqlParams, DefaultFilter filter)
         {
             this.sqlParamsRef = sqlParams;
+
+            if (!IsValidOperatorForFieldType(filter))
+            {
+                throw new Exception($"Operator '{@operator}' is not valid for '{filter.SqlFieldType.ToString().ToLower()}' on field {field}");
+            }
+
+            CheckFieldValue(filter);
+
             value = value.ToString().Trim('\'');
             if (this.@operator == "ct")
             {
@@ -100,7 +108,7 @@ namespace d360.model.helpers
 
             stringBuilder.Clear();
 
-            stringBuilder.Append(fieldSyntax);
+            stringBuilder.Append(filter.SqlExpression);
             stringBuilder.Append(GetSQLOperator(@operator));
             stringBuilder.Append($"@filter_{parameterIdx}");
 
@@ -190,48 +198,8 @@ namespace d360.model.helpers
         }
         private void UpdateTokenValueForType()
         {
-            switch (fieldType.Type.ToLower())
-            {
-                case "number":
-                    int number = 0;
-                    if (!int.TryParse(value.ToString(), out number))
-                    {
-                        throw new FormatException($"Invalid numeric value for field '{field}'");
-                    }
-                    value = number;
-                    break;
-                case "decimal":
-                    decimal dnumber = 0;
-                    if (!decimal.TryParse(value.ToString(), out dnumber))
-                    {
-                        throw new FormatException($"Invalid decimal value for field '{field}'");
-                    }
-                    value = dnumber;
-                    break;
-                case "boolean":
-                    bool boolean = false;
-                    if (value.ToString() == "0") value = "false";
-                    if (value.ToString() == "1") value = "true";
-                    if (!bool.TryParse(value.ToString(), out boolean))
-                    {
-                        throw new FormatException($"Invalid boolean value for field '{field}'");
-                    }
-                    value = boolean;
-                    break;
-                case "date":
-                case "datetime":
-                    DateTime date = new DateTime();
-                    if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
-                    {
-                        throw new FormatException($"Invalid date value for field '{field}'");
-                    }
-                    value = date;
+            CheckFieldValue();
 
-                    break;
-                default:
-                    value = value.ToString().Trim('\'');
-                    break;
-            }
             if (@operator == "ct")
             {
                 value = $"%{value.ToString().Replace("*", "%")}%";
@@ -258,6 +226,53 @@ namespace d360.model.helpers
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
 
+        }
+
+        private void CheckFieldValue(DefaultFilter filter = null)
+        {
+            string ft = filter == null ? fieldType.Type : filter.SqlFieldType.ToString();
+            switch (ft.ToLower())
+            {
+                case "number":
+                    int number = 0;
+                    if (!int.TryParse(value.ToString(), out number))
+                    {
+                        throw new FormatException($"Invalid numeric value for field '{field}'");
+                    }
+                    value = number;
+                    break;
+                case "decimal":
+                    decimal dnumber = 0;
+                    if (!decimal.TryParse(value.ToString(), out dnumber))
+                    {
+                        throw new FormatException($"Invalid decimal value for field '{field}'");
+                    }
+                    value = dnumber;
+                    break;
+                case "boolean":
+                    bool boolean = false;
+                    if (value.ToString() == "0") value = "false";
+                    if (value.ToString() == "1") value = "true";
+                    if (!bool.TryParse(value.ToString().ToLower(), out boolean))
+                    {
+                        throw new FormatException($"Invalid boolean value for field '{field}'");
+                    }
+                    value = boolean;
+                    break;
+                case "date":
+                case "datetime":
+                    DateTime date = new DateTime();
+                    if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
+                    {
+                        throw new FormatException($"Invalid date value for field '{field}'");
+                    }
+                    value = date;
+
+                    break;
+                default:
+                    value = value.ToString().Trim('\'');
+                    break;
+            }
         }
 
         private void LoadLookupSql()
@@ -325,10 +340,12 @@ namespace d360.model.helpers
             }
         }
 
-        private bool IsValidOperatorForFieldType()
+        private bool IsValidOperatorForFieldType(DefaultFilter defaultFilter = null)
         {
             var operand = @operator.ToLower();
-            switch (fieldType.Type.ToLower())
+            string fType = defaultFilter == null ? fieldType.Type.ToLower() : defaultFilter.SqlFieldType.ToString().ToLower();
+
+            switch (fType)
             {
                 case "boolean":
                 case "lookup":

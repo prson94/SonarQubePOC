@@ -97,6 +97,38 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.dbo.Asset-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Asset] add [Color] varchar(7) null
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Icon')
+begin
+	alter table [dbo].[Asset] add [Icon] varchar(50) null
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Asset] drop column [Color]
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Icon')
+begin
+	alter table [dbo].[Asset] drop column [Icon]
+end
+]]>
+	</rollback>
+  </changeSet>
+
   <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

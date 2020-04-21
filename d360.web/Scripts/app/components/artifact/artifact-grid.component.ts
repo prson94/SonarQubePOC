@@ -1,5 +1,5 @@
-import {of as observableOf, Subject, Observable} from 'rxjs';
-import {debounceTime, map, distinctUntilChanged, delay, mergeMap} from 'rxjs/operators';
+import { of as observableOf, Subject, Observable, Subscription } from 'rxjs';
+import { debounceTime, map, distinctUntilChanged, delay, mergeMap } from 'rxjs/operators';
 import {
     Component,
     Input,
@@ -10,13 +10,15 @@ import {
     ViewChild,
     OnInit,
     ChangeDetectionStrategy,
-    ChangeDetectorRef
+    ChangeDetectorRef,
+
+    OnDestroy
 } from '@angular/core';
 import { LazyLoadEvent } from 'primeng/api';
 import { Table } from 'primeng/table';
-import {Router, ActivatedRoute} from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
-import {Lookup, LookupItem} from '../../models/lookup.model';
+import { Lookup, LookupItem } from '../../models/lookup.model';
 import {
     GridDefinition,
     GridColumn,
@@ -25,20 +27,22 @@ import {
     GridFilterExpression,
     GridRelationshipFilterExpression
 } from '../../models/grid-definition.model';
-import {GridDefinitionService} from '../../services/grid-definition.service';
+import { GridDefinitionService } from '../../services/grid-definition.service';
 import { ArtifactService } from '../../services/artifacts.service';
 import { AssetService } from '../../services/asset.service';
-import {PermissionsService} from '../../services/permissions.service';
-import {StateService} from '../../services/state.service';
-import {HeaderActionsService} from '../../services/header-actions.service';
-import {ArtifactType} from '../../models/artifact-type.model';
-import {BaseComponent} from '../shared/base.component';
-import {SiteUrlHelpers} from '../../static/site-url-helpers';
-import {StringConstants} from '../../static/string-constants';
-import {ObjectDetailService} from '../../services/object-detail.service';
+import { PermissionsService } from '../../services/permissions.service';
+import { StateService } from '../../services/state.service';
+import { HeaderActionsService } from '../../services/header-actions.service';
+import { ArtifactType } from '../../models/artifact-type.model';
+import { BaseComponent } from '../shared/base.component';
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
+import { StringConstants } from '../../static/string-constants';
+import { ObjectDetailService } from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
+import { GetAssetsFilters } from '../../models/asset-search.model';
+import { SortOrder } from '../../models/enums.model';
 
 @Component({
     selector: 'd3s-artifact-grid',
@@ -50,7 +54,7 @@ import * as _ from 'lodash';
     },
 })
 
-export class ArtifactGridComponent extends BaseComponent implements OnChanges {
+export class ArtifactGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
     @Input() artifactType: ArtifactType;
     @Input() titlePostfix: string = ''; // added to end of header title.
@@ -88,6 +92,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     itemUrl: string;
 
     public simpleSearch = new Subject<any>();
+    private assetSearchSub: Subscription;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -106,7 +111,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         private assetService: AssetService
     ) {
         super();
-                
+
         var me = this;
 
         const subscription = this.simpleSearch.pipe(
@@ -117,7 +122,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 search => observableOf(search).pipe(delay(500))
             )
         )
-            .subscribe( 
+            .subscribe(
                 data => {
                     this.doSimpleSearch(me.dt, me.isLoading);
                 }
@@ -139,11 +144,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);
     }
 
+    ngOnDestroy() {
+        if (this.assetSearchSub) {
+            this.assetSearchSub.unsubscribe();
+        }
+    }
+
     load() {
         this
             .loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID)
             .then(() => this.changeDetectorRef.markForCheck())
-        ;
+            ;
 
         this.getFieldsDefinition();
 
@@ -164,7 +175,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     resetFilters(dt: Table, val) {
         this.stateService.artifactTypeFilters.showSimpleFilter = val;
         this.stateService.artifactTypeFilters.simpleTextFilter = '';
-        this.stateService.artifactTypeFilters.filters = [];        
+        this.stateService.artifactTypeFilters.filters = [];
         this.stateService.artifactTypeFilters.relationships = [];
         this.stateService.artifactTypeFilters.owners = null;
 
@@ -177,7 +188,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showDelete = false;
         this.changeDetectorRef.markForCheck();
     }
-    
+
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.artifactType.ID, StringConstants.ObjectArtifactType).subscribe(
             result => {
@@ -187,12 +198,11 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
-
                 statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
 
                 if (statusField != null) {
                     this.showCertificationStatus = true;
-                    this.certificationStatusIndex = statusField.name;
+                    this.certificationStatusIndex = statusField.apiName;
                 }
 
                 if (result.Columns && result.Columns.length == 0) {
@@ -207,22 +217,112 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         );
     }
 
-    getData() {        
+    getFieldAPINameByOldName(oldname: string) {
+        return this.fields.find(x => x.name == oldname).apiName;
+    }
+
+    getParams() {
+        var params = new GetAssetsFilters();
+        params._includeParent = true;
+        params._loadPermissionDetails = true;
+        params._pageSize = this.rowsPerPage;
+        params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
+
+        if (this.stateService.artifactTypeFilters.sortField) {
+            params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
+            params.useTypeLevelDefaultSorts = false;
+        }
+        else {
+            params.useTypeLevelDefaultSorts = true;
+            delete params['_order'];
+        }
+
+        if (this.stateService.artifactTypeFilters.sortOrder != SortOrder.None)
+            params._direction = this.stateService.artifactTypeFilters.sortOrder == SortOrder.Ascending ? "asc" : "desc";
+        else {
+            delete params['_direction'];
+        }
+
+        if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
+            params._simpleFilter = this.stateService.artifactTypeFilters.simpleTextFilter;
+        }
+        else {
+            delete params['_simpleFilter'];
+        }
+
+        if (this.stateService.artifactTypeFilters.filters && this.stateService.artifactTypeFilters.filters.length > 0) {
+            let expressions: string[] = [];
+            this.stateService.artifactTypeFilters.filters.forEach(f => {
+                expressions.push(f.getAsV2ApiFilter(this.filtercolumns));
+            });
+            params._filter = expressions.join(' and ');
+        }
+        else {
+            delete params['_filter'];
+        }
+
+        if (this.stateService.artifactTypeFilters.relationships && this.stateService.artifactTypeFilters.relationships.length > 0) {
+            let expressions: string[] = [];
+            this.stateService.artifactTypeFilters.relationships.forEach(f => {
+                expressions.push(f.getAsV2ApiFilter());
+            });
+            if (expressions.length > 0) {
+                params._relationFilter = expressions.join(' and ');
+            }
+            else {
+                delete params['_relationFilter'];
+            }
+        }
+        else {
+            delete params['_relationFilter'];
+        }
+
+        if (this.stateService.artifactTypeFilters.owners) {
+            var filter = this.stateService.artifactTypeFilters.owners.getAsV2ApiFilter();
+            if (filter.length > 0) {
+                params._ownedBy = filter;
+            }
+            else {
+                delete params['_ownedBy'];
+            }
+        }
+        else {
+            delete params['_ownedBy'];
+        }
+
+        if (this.totalRecords < 1000) {
+            params.usegraphforparent = false;
+        }
+        else {
+            delete params['usegraphforparent'];
+        }
+
+        return params;
+    }
+
+    getData() {
         this.isLoading = true;
-        this.artifactService.getArtifacts(this.artifactType.AssetTypeID, this.rowsPerPage, this.stateService.artifactTypeFilters.currentPageNumber, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships, this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners).pipe(debounceTime(3000))
-            .subscribe(result => {
-                    this.items = result.results;
-                    this.totalRecords = result.total;
-                    if (this.items && this.items.length > 0) this.selected = this.items[0];
-                    this.isLoading = false;
-                    this.changeDetectorRef.markForCheck();
-                },
+        if (this.assetSearchSub) {
+            this.assetSearchSub.unsubscribe();
+        }
+
+        this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
+            .pipe(debounceTime(200))
+            .subscribe(res => {
+                this.items = res.items;
+
+
+
+                this.totalRecords = res.total;
+                if (this.items && this.items.length > 0) this.selected = this.items[0];
+                this.isLoading = false;
+                this.changeDetectorRef.markForCheck();
+            },
                 err => {
                     this.isLoading = false;
                     this.changeDetectorRef.markForCheck();
                     this.messagesService.showError("Error", err.message);
-                }
-            );
+                });
     }
 
     getCertificationStatusColor(status: string) {
@@ -256,7 +356,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     export(listableOnly) {
-        this.artifactService.getArtifactsXls(listableOnly, this.artifactType, this.stateService.artifactTypeFilters.sortField, this.stateService.artifactTypeFilters.sortOrder, this.stateService.artifactTypeFilters.filters, this.stateService.artifactTypeFilters.relationships,  this.stateService.artifactTypeFilters.simpleTextFilter, this.stateService.artifactTypeFilters.owners);
+        this.assetService.downloadAssetsExcel(this.artifactType.AssetTypeUID, this.getParams(), 'Filtered ' + this.artifactType.Name + ' List');
     }
 
     customExport() {
@@ -274,17 +374,18 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
     }
 
     selectArtifact(artifact) {
-        this
-            .router
-            .navigateByUrl(
-                SiteUrlHelpers
-                    .getObjectUrl(
-                        'Artifact',
-                        artifact.ObjectID,
-                        this.artifactType.ID
-                    )
-            )
-        ;
+
+        this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
+            .subscribe(res => {
+                this.router.navigateByUrl(
+                    SiteUrlHelpers
+                        .getObjectUrl(
+                            'Artifact',
+                            res.ObjectId,
+                            this.artifactType.ID
+                        ));
+            });
+
     }
 
     private loadArtifactsLazy(event: LazyLoadEvent) {
@@ -327,7 +428,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         rightMenu.style.top = (event.screenY - gridRect.top) + 'px';
         rightMenu.style.left = (event.offsetX) + 'px'; //correct
 
-        this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', artifact.ObjectID, this.artifactType.ID);
+        this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
+            .subscribe(res => {
+                this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+            });
 
         return false;
     }
@@ -342,17 +446,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges {
         this.showArtifactDetails = !this.showArtifactDetails;
     }
 
-    protected doShowDelete() {
-        this
-            .objectDetailService
-            .getObject(this.selected.ObjectID, 'Artifact')
-            .subscribe(
-                r => {
-                    this.selected.DisplayValue = r.DisplayValue;
-                    this.showDelete = true;
-                    this.changeDetectorRef.markForCheck();
-                }
-            )
-        ;
+    private onEdit(item) {
+        this.selected = item;
+        this.showEditor = true;
+        this.changeDetectorRef.markForCheck();
     }
+
+    private onDelete(item) {
+        this.selected = item;
+        this.showDelete = true;
+        this.changeDetectorRef.markForCheck();
+    }
+
+
 }

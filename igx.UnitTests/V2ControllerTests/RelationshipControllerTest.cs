@@ -1,12 +1,9 @@
-﻿using d360.core.entities.Workflow;
-using d360.web.Controllers.V2;
+﻿using d360.web.Controllers.V2;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.Http;
 using Xunit;
 using igx.UnitTests.Core;
@@ -16,24 +13,34 @@ using d360.core.enums;
 using System.Threading;
 using System.Net;
 using d360.core;
-
 namespace igx.UnitTests.V2ControllerTests
 {
     [Trait("Unit tests", "Relationship controller")]
     public class RelationshipControllerTest : BaseTest
     {
+
         internal RelationshipsController relationshipsController;
 
         public RelationshipControllerTest()
         {
             this.relationshipsController = new RelationshipsController(GetCommunity(), GetCompany(), GetQueue(), GetStorage(), GetRelationshipRepository(), GetFieldsRepository(), GetAssetRepository())
             {
-                Request = new HttpRequestMessage() {
-                    RequestUri = new Uri("http://unit-tests.eng.data3sixty.local/home")
+                Request = new HttpRequestMessage()
+                {
+                    RequestUri = new Uri("http://unit-tests.eng.data3sixty.local/home"),
                 },
                 Configuration = new HttpConfiguration()
             };
         }
+
+        private string GetUriWithQueryString(Dictionary<string, string> parameters)
+        {
+            return "http://unit-tests.eng.data3sixty.local/api/v2/relationships?" +
+                string.Join("&",
+        parameters.Select(kvp =>
+            string.Format("{0}={1}", kvp.Key, kvp.Value)));
+        }
+
 
         [Fact]
         public async void GetPredicatesAsync()
@@ -52,7 +59,6 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetPredicatesAsyncByGuid()
         {
-
             var actionResult = await relationshipsController.GetPredicatesAsync(DataConstants.GetPredicates().First().Uid);
 
             var str = actionResult.Content.ReadAsStringAsync().Result;
@@ -159,11 +165,31 @@ namespace igx.UnitTests.V2ControllerTests
             Assert.True(data.items.Count > 0);
 
         }
-        [Fact]
-        public async void GetRelationshipsAsyncInvalidRelationshipUid()
+        [Theory]
+        [InlineData(DataConstants.InvalidGUID)]
+        [InlineData("adfadfaadf-asdfasdf-asdfadfa")]
+        [InlineData("ab129a23-91b3-468d-b318-4ea0d5c5641k")]
+        public async void GetRelationshipsAsyncInvalidRelationshipUid(string guid)
         {
+            var qs = new Dictionary<string, string>();
+            qs.Add("RelationshipTypeUid", guid);
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
+            var actionResult = relationshipsController.GetRelationshipsAsync();
 
-            var actionResult = relationshipsController.GetRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID));
+            var str = await actionResult.Result.Content.ReadAsStringAsync();
+
+            Assert.True(!actionResult.Result.IsSuccessStatusCode);
+            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
+
+        }
+
+        [Fact]
+        public async void GetRelationshipsAsyncNonExistingRelationshipUid()
+        {
+            var qs = new Dictionary<string, string>();
+            qs.Add("RelationshipTypeUid", Guid.NewGuid().ToString());
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
+            var actionResult = relationshipsController.GetRelationshipsAsync();
 
             var str = await actionResult.Result.Content.ReadAsStringAsync();
 
@@ -172,11 +198,33 @@ namespace igx.UnitTests.V2ControllerTests
 
         }
 
-        [Fact]
-        public async void GetRelationshipsAsyncInvalidPredicateUid()
+        [Theory]
+        [InlineData(DataConstants.InvalidGUID)]
+        [InlineData("adfadfaadf-asdfasdf-asdfadfa")]
+        [InlineData("ab129a23-91b3-468d-b318-4ea0d5c5641k")]
+        public async void GetRelationshipsAsyncInvalidPredicateUid(string guid)
         {
+            var qs = new Dictionary<string, string>();
+            qs.Add("PredicateUid", guid);
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
-            var actionResult = relationshipsController.GetRelationshipsAsync(null,Guid.Parse(DataConstants.InvalidGUID));
+            var actionResult = relationshipsController.GetRelationshipsAsync();
+
+            var str = await actionResult.Result.Content.ReadAsStringAsync();
+
+            Assert.True(!actionResult.Result.IsSuccessStatusCode);
+            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
+
+        }
+
+        [Fact]
+        public async void GetRelationshipsAsyncNonExistingPredicateUid()
+        {
+            var qs = new Dictionary<string, string>();
+            qs.Add("PredicateUid", Guid.NewGuid().ToString());
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
+
+            var actionResult = relationshipsController.GetRelationshipsAsync();
 
             var str = await actionResult.Result.Content.ReadAsStringAsync();
 
@@ -185,12 +233,35 @@ namespace igx.UnitTests.V2ControllerTests
 
         }
 
+        [Theory]
+        [InlineData(DataConstants.InvalidGUID)]
+        [InlineData("adfadfaadf-asdfasdf-asdfadfa")]
+        [InlineData("ab129a23-91b3-468d-b318-4ea0d5c5641k")]
+        public async void GetRelationshipsAsyncInvalidSubjectUid(string guid)
+        {
+            var qs = new Dictionary<string, string>();
+            qs.Add("SubjectUid", guid);
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
+
+            var actionResult = relationshipsController.GetRelationshipsAsync();
+
+            var str = await actionResult.Result.Content.ReadAsStringAsync();
+
+            Assert.True(!actionResult.Result.IsSuccessStatusCode);
+            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
+
+        }
+
+
         [Fact]
-        public async void GetRelationshipsAsyncInvalidSubjectUid()
+        public async void GetRelationshipsAsyncNonExistantSubjectUid()
         {
 
-            var actionResult = relationshipsController.GetRelationshipsAsync(null,null, Guid.Parse(DataConstants.InvalidGUID));
+            var qs = new Dictionary<string, string>();
+            qs.Add("SubjectUid", Guid.NewGuid().ToString());
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
+            var actionResult = relationshipsController.GetRelationshipsAsync();
             var str = await actionResult.Result.Content.ReadAsStringAsync();
 
             Assert.True(!actionResult.Result.IsSuccessStatusCode);
@@ -198,12 +269,32 @@ namespace igx.UnitTests.V2ControllerTests
 
         }
 
-        [Fact]
-        public async void GetRelationshipsAsyncInvalidObjectUid()
+        [Theory]
+        [InlineData(DataConstants.InvalidGUID)]
+        [InlineData("adfadfaadf-asdfasdf-asdfadfa")]
+        [InlineData("ab129a23-91b3-468d-b318-4ea0d5c5641k")]
+        public async void GetRelationshipsAsyncInvalidObjectUid(string guid)
         {
+            var qs = new Dictionary<string, string>();
+            qs.Add("ObjectUid", guid);
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
-            var actionResult = relationshipsController.GetRelationshipsAsync(null, null,null, Guid.Parse(DataConstants.InvalidGUID));
+            var actionResult = relationshipsController.GetRelationshipsAsync();
+            var str = await actionResult.Result.Content.ReadAsStringAsync();
 
+            Assert.True(!actionResult.Result.IsSuccessStatusCode);
+            Assert.True(actionResult.Result.StatusCode == HttpStatusCode.BadRequest);
+
+        }
+
+        [Fact]
+        public async void GetRelationshipsAsyncNonExistantObjectUid()
+        {
+            var qs = new Dictionary<string, string>();
+            qs.Add("ObjectUid", Guid.NewGuid().ToString());
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
+
+            var actionResult = relationshipsController.GetRelationshipsAsync();
             var str = await actionResult.Result.Content.ReadAsStringAsync();
 
             Assert.True(!actionResult.Result.IsSuccessStatusCode);
@@ -215,8 +306,14 @@ namespace igx.UnitTests.V2ControllerTests
         public async void GetRelationshipsAsyncAllValidUid()
         {
 
-            var actionResult = relationshipsController.GetRelationshipsAsync(Guid.Parse(DataConstants.ValidGUID), Guid.Parse(DataConstants.ValidGUID), Guid.Parse(DataConstants.ValidGUID), Guid.Parse(DataConstants.ValidGUID));
+            var qs = new Dictionary<string, string>();
+            qs.Add("RelationshipUid", DataConstants.ValidGUID);
+            qs.Add("SubjectUid", DataConstants.ValidGUID);
+            qs.Add("ObjectUid", DataConstants.ValidGUID);
+            qs.Add("PredicateUid", DataConstants.ValidGUID);
+            relationshipsController.Request = new HttpRequestMessage(HttpMethod.Get, GetUriWithQueryString(qs));
 
+            var actionResult = relationshipsController.GetRelationshipsAsync();
             var str = await actionResult.Result.Content.ReadAsStringAsync();
 
             Assert.True(actionResult.Result.IsSuccessStatusCode);
@@ -286,7 +383,7 @@ namespace igx.UnitTests.V2ControllerTests
         {
             var model = new RelationshipInserts();
 
-            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID),model);
+            var actionResult = await relationshipsController.PostRelationshipsAsync(Guid.Parse(DataConstants.InvalidGUID), model);
             var result = await actionResult.ExecuteAsync(new CancellationToken());
             var str = result.Content.ReadAsStringAsync();
 
@@ -311,7 +408,7 @@ namespace igx.UnitTests.V2ControllerTests
         public async void ERR_PostRelationshipAsync_MaxLimitReached()
         {
             var model = new RelationshipInserts();
-            for(int i =0; i<= 251; i++)
+            for (int i = 0; i <= 251; i++)
             {
                 model.Add(new RelationshipInsert());
             }
