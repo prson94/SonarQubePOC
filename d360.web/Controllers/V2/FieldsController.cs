@@ -1287,6 +1287,340 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Used for complex lookup
+        /// </summary>
+        /// <param name="assetTypeUid">The uid of the asset Type></param>
+        /// <returns>A list of relationship types</returns>
+        [
+            HttpGet,
+            Route("GetStandardRelations"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetStandardRelations(Guid assetTypeUid)
+        {
+            var prefix = "Fields.GetStandardRelations => ";
+            var errorMessage = "";
+
+            try
+            {
+                string type = "";
+                int id = 0;
+                if (assetTypeUid != null)
+                {
+                    var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                    type = at.Object;
+                    id = at.ObjectID;
+                }
+                else 
+                {
+                    type = "IntersectType";
+                    id = 0;
+                }
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type}', {id}) order by title");
+
+                return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Used to get the parent types of a specific child type.
+        /// </summary>
+        /// <param name="assetTypeUid">The uid of the asset Type></param>
+        /// <returns>A list of parent realtionship types</returns>
+        [
+            HttpGet,
+            Route("GetParentRelations"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetParentRelations(Guid assetTypeUid)
+        {
+            var prefix = "Fields.GetParentRelations => ";
+            var errorMessage = "";
+
+            try
+            {
+                SystemObjects type;
+                int id = 0;
+                if (assetTypeUid != null)
+                {
+                    var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                    Enum.TryParse(at.Object, out type);
+                    id = at.ObjectID;
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
+                }
+                dynamic list = null;
+                BaseIntObject parent;
+
+                switch (type)
+                {
+                    case SystemObjects.ArtifactType:
+                        list = new List<AssetType>();
+                        parent = Company.GetParentType(id, SystemObjects.ArtifactType);
+                        if (parent != null)
+                            list.Add((AssetType)parent);
+
+                        return Request.CreateResponse(HttpStatusCode.OK, ((List<AssetType>)list).Select(i => new { value = $"0|{i.uid}", title = i.Name })
+                        .Where(i => i.title != null)
+                        .ToList());
+                    case SystemObjects.FusionAttributeType:
+                        list = new List<AssetType>();
+                        parent = Company.GetParentType(id, SystemObjects.FusionAttributeType);
+                        if (parent != null)
+                            list.Add((AssetType)parent);
+
+                        return Request.CreateResponse(HttpStatusCode.OK, ((List<AssetType>)list).Select(i => new { value = $"0{i.uid}", title = i.Name })
+                            .Where(i => i.title != null)
+                            .ToList());
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Used to get the child types of a specific parent type.
+        /// </summary>
+        /// <param name="assetTypeUid">The uid of the asset Type></param>
+        /// <returns>A list of child realtionship types</returns>
+        [
+            HttpGet,
+            Route("GetChildRelations"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetChildRelations(Guid assetTypeUid)
+        {
+            var prefix = "Fields.GetChildRelations => ";
+            var errorMessage = "";
+
+            try
+            {
+                SystemObjects type;
+                int id = 0;
+                if (assetTypeUid != null)
+                {
+                    var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                    Enum.TryParse(at.Object, out type);
+                    id = at.ObjectID;
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
+                }
+                
+                switch (type)
+                {
+                    case SystemObjects.ArtifactType:
+                        return Request.CreateResponse(HttpStatusCode.OK, Company.GetChildTypes(id, SystemObjects.ArtifactType)
+                            .ToList()
+                            .Select(i => new { value = $"0|{i.uid}|0", title = i.Name })
+                            .ToList());
+                    case SystemObjects.FusionAttributeType:
+                        return Request.CreateResponse(HttpStatusCode.OK, Company.GetChildTypes(id, SystemObjects.FusionAttributeType)
+                            .ToList()
+                            .Select(i => new { value = $"0|{i.uid}|0", title = i.Name })
+                            .ToList());
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+        /// <summary>
+        /// Gets the dislpay fields for a given intersecttypeid asset type uid
+        /// </summary>
+        /// <param name="intersectTypeUid">intersectTypeUid></param>
+        /// <param name="assetTypeUid">assetTypeUid></param>
+        /// <returns>A list of display fields</returns>
+        [
+            HttpGet,
+            Route("GetRelationLookupDisplayFields"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetRelationLookupDisplayFields(Guid assetTypeUid, Guid intersectTypeUid)
+        {
+            var prefix = "Fields.GetRelationLookupDisplayFields => ";
+            var errorMessage = "";
+
+            try
+            {
+                SystemObjects type;
+                int id = 0;
+                int intersectTypeID = 0;
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
+                if (intersectType != null)
+                    intersectTypeID = intersectType.ID;
+                var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                if (at != null)
+                {
+                    Enum.TryParse(at.Object, out type);
+                    id = at.ObjectID;
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
+                }
+
+                var list = Company.GetFieldTypesByObject(type, id)
+                 .Where(i => i.Type != DataType.Attribute.ToString()
+                         && i.Type != DataType.Relationship.ToString()
+                         && i.Type != DataType.OwnershipLookup.ToString()
+                         && i.Type != DataType.RefListRelationship.ToString()
+                         && i.Type != DataType.ComplexRelationLookup.ToString()
+                         && i.Type != DataType.JSON.ToString()
+                         && i.Type != DataType.Tag.ToString())
+                 .Select(i => new { i.ID, i.Name })
+                 .ToDictionary(i => i.Name, i => i.ID);
+
+                if (type == SystemObjects.ReferenceItemType)
+                {
+                    if (id == 0)
+                    {
+                        list.Add("Name", 0);
+                        if (!list.ContainsKey("Description"))
+                            list.Add("Description", 0);
+                    }
+                    else
+                    {
+                        list.Add("Code", 0);
+                    }
+                }
+                else if (type == SystemObjects.ResourceType)
+                {
+                    list.Add("FirstName", 0);
+                    list.Add("LastName", 0);
+                    list.Add("Email", 0);
+                    list.Add("LastLoggedInOn", 0);
+                    list.Add("DisplayValue", 0);
+                }
+                else if (type == SystemObjects.FusionAttributeType)
+                {
+                    list.Add("Name", 0);
+                }
+                else if (type == SystemObjects.FusionQueryAttributeType)
+                {
+                    list.Add("Name", 0);
+                    list.Add("DisplayValue", 0);
+                }
+                else
+                {
+                    list.Add("DisplayValue", 0);
+                }
+
+                list.Add("TextPath", 0);
+
+                var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
+                    .Where(i => i.Type != DataType.Attribute.ToString())
+                    .Select(i => new { i.ID, i.Name }).ToList();
+                relList.ForEach(r =>
+                {
+                    list.Add($"Relation.{r.Name}", r.ID);
+                });
+
+                var sType = type.ToString();
+                var relatedTypeList = Company.Filter<IntersectTypeDetail>(i =>
+                    (i.Subject == sType && i.SubjectID == id) ||
+                    (i.Object == sType && i.ObjectID == id)
+                    ).ToList().Select(i => new
+                    {
+                        ID = i.ID,
+                        Name = (i.Subject == sType && i.SubjectID == id) ? $"{i.ObjectName} ({i.PredicateName})" : $"{i.SubjectName} ({i.PredicateName})"
+                    }).Distinct().ToList();
+                relatedTypeList.ForEach(r =>
+                {
+                    if (list.ContainsKey($"Related Item.{r.Name}"))
+                    {
+                        list.Add($"Related Item.{r.Name} ({r.ID})", r.ID);
+                    }
+                    else
+                    {
+                        list.Add($"Related Item.{r.Name}", r.ID);
+                    }
+                });
+
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = $"{i.Value}|{i.Key}" }));
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
         #endregion
 
     }

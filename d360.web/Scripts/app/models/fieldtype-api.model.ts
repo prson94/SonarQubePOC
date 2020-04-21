@@ -238,7 +238,7 @@ export class ComputedRelationshipLookup implements ICommonOptions {
     IsPrimaryFilter: boolean = false;
     ColumnOrder: number;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
-    Definition: ComputedRelationshipLookupDefinition;
+    Definition: ComputedRelationshipLookupDefinition = new ComputedRelationshipLookupDefinition();
     IsDisplayable: boolean = true;
     ShowIfEmpty: boolean = false;
     HideFilter: boolean;
@@ -247,8 +247,8 @@ export class ComputedRelationshipLookup implements ICommonOptions {
 }
 
 export class ComputedRelationshipLookupDefinition {
-    Fields: DefinitionField[];
-    Relations: Relation[];
+    Fields: DefinitionField[] = [];
+    Relations: Relation[] = [];
 }
 
 export class DefinitionField {

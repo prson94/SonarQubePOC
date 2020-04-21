@@ -5,25 +5,20 @@ import { FieldTypeAPIModelField } from './fieldtype-api.model';
 export interface IFieldsService {
     getFields(objectID: number, objectType: string): Observable<FieldDefinition[]>;
 
-    getFieldTypeEditor(id: number): Observable<FieldTypeEditorModel>;
+    getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField>;
 
     getFusionLookupDisplayFields(id: number): Observable<SelectItem[]>;
 
     getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]>;
 
-    getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]>;
+    getRelationLookupDisplayFields(assetTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]>;
 
-    getRelationLookupDisplayFields(id: number, type: string, intersectTypeID: number): Observable<SelectItem[]>;
+    getLookupTokens(uid: string): Observable<Array<SelectItem>>;
 
-    getLookupTokens(id: number, type: string): Observable<SelectItem[]>;
+    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldTypeName: string): Observable<Lookups>;
 
-    getLookups(id: number, type: string, fieldtypeid: number): Observable<Lookups>;
+    getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel>;
 
-    getFormData(id: number): Observable<FieldTypeEditorModel>;
-
-    putFieldType(model: FieldTypeEditorModel): Observable<any>;
-
-    postFieldType(model: FieldTypeEditorModel): Observable<any>;
 }
 
 export class FieldDefinition {
@@ -51,7 +46,7 @@ export class FieldTypeEditorModel {
     RelationItems: FieldTypeRelationItemEditorModel[] = [];
     RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
-    cardinalRelationship: number;
+    cardinalRelationship: string;
     LookupTokens: SelectItem[] = [];
     OwnershipLookupSettings: OwnershipLookupSettings;
     JsonElementSettings: JsonElementSettings;
@@ -140,29 +135,25 @@ export class FieldTypeFusionItemEditorModel {
 
 export class FieldTypeItemDisplayFieldEditorModel {
     FieldTypeID: number;
-    FieldTypeName: string;
-    Show: boolean;
-    SortOrder: number;
     FilterValue: string;
     value: string;
 
     Object: string;
     ObjectID: number;
+    FieldTypeName: string;
     Filter: string;
     OverrideDisplayName: string;
     DisplayOrder: number;
+    SortOrder: number;
+    Show: boolean;
     Width: number;
 }
 
 export class FieldTypeRelationItemEditorModel {
     ID: number;
-    IntersectType: number;
     ReferenceType: ComplexLookupRelationType;
     ChildIntersectType: number;
     DisplayFields: FieldTypeItemDisplayFieldEditorModel[] = [];
-    HideHeader: boolean;
-    HideFooter: boolean;
-    HideFilter: boolean;
 
     SortOrderList: any[] = [];
     selectedRelationItemID: string;
@@ -172,9 +163,8 @@ export class FieldTypeRelationItemEditorModel {
     displayValue: string;
 
     //new complex relation
-    IntersectTypeID: number;
-    Object: string;
-    ObjectID: number;
+    IntersectTypeUid: string;
+    AssetUid: string;
     RelationType: number;
     Direction: number;
     selectedIntersectName: string;
@@ -232,4 +222,9 @@ export enum ComplexLookupRelationType {
     ChildRelationship = 2,
     ChildItem = 3,
     ParentItem = 4
+}
+export enum Direction {
+    Both = 0,
+    Back = 1,
+    Forward = 2
 }
