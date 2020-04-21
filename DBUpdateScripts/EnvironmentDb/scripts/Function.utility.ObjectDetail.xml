@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bhoward" id="Function.utility.ObjectDetail-v2">
+  <changeSet author="PuneetGupta" id="Function.utility.ObjectDetail-v3">
+    <comment>GOV-10380</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -52,11 +53,12 @@ BEGIN
 		'Taxonomy',
 		'Group',
 		'FusionQueryAttribute',
-		'Resource'
+		'Resource',
+		'Task'
 	)
 	begin
-		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, AssetTypeUid, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,											TypeID,	[Type],	TypeName, [Class], Status)
-			SELECT			ObjectID,	UID, ID, 		AssetTypeID, AssetTypeUid, DisplayValue,	DisplayValue,	NULL,			null,		null,		dbo.GenerateAssetUrl(ID),	TypeID,	Type,	TypeName, AssetTypeClass, NULL
+		insert into @tbl (	ID,		UID,	AssetID,	AssetTypeID, AssetTypeUid, Name,			TextPath,		[Description],	ParentID,	ParentType, Url,																	    TypeID,	[Type],	TypeName, [Class], Status)
+			SELECT			ObjectID,	UID, ID, 		AssetTypeID, AssetTypeUid, DisplayValue,	DisplayValue,	NULL,			null,		null,		case when Object in ('Task') then Null else dbo.GenerateAssetUrl(ID) end,	TypeID,	Type,	TypeName, AssetTypeClass, NULL
 			FROM	AssetDetail
 			where	Object = @type 
 					and ObjectID = @id
@@ -72,11 +74,12 @@ BEGIN
 		'PolicyType',
 		'ReferenceItemType',
 		'RuleType',
-		'TaxonomyType'
+		'TaxonomyType',
+		'TaskType'
 	)
 	begin
-		insert into @tbl (	ID,		AssetTypeUid, [Uid], Name,	TextPath,	[Description],	ParentID,	ParentType, Url,									TypeID, [Type], TypeName, [Class])
-			SELECT			ObjectID, O.[Uid], O.[Uid],		Name,	Name,		Description,	NULL,		NULL,		turl.[url] as Url,	ObjectID,		@type,	'Asset Type', O.[Class]
+		insert into @tbl (	ID,		AssetTypeUid, [Uid], Name,	TextPath,	[Description],	ParentID,	ParentType, Url,																	TypeID, [Type], TypeName, [Class])
+			SELECT			ObjectID, O.[Uid], O.[Uid],		Name,	Name,		Description,	NULL,		NULL,	case when Object in ('TaskType') then null else	turl.[url] end as Url,	ObjectID,		@type,	'Asset Type', O.[Class]
 			FROM	AssetType O
 			cross apply [dbo].GetAssetTypeUrlById(o.id) turl
 			WHERE	Object = @type
