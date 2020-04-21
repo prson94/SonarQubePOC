@@ -9,9 +9,11 @@ using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -55,24 +57,26 @@ namespace d360.web.Controllers.V2
         /// <param name="_order">The order field to return results by.</param>
         /// <param name="_direction">The direction in which to return results by asc/desc. </param>
         /// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
+        /// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "")
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
-            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
+                    case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end as State ";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
             string orderBySQL = $"";
             long pageSize;
@@ -161,6 +165,42 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (!string.IsNullOrEmpty(_simpleFilter))
+            {
+                dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
+                List<string> simpleFilters = new List<string>();
+
+                foreach (var field in fieldTypes.Where(x => x.IsListable == true))
+                {
+                    _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
+
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    {
+                        if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        }
+                    }
+
+                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+
+                    defaultFields.ForEach(f =>
+                    {
+                        simpleFilters.Add($"{f} like @simpleFilter");
+                    });
+
+                    simpleFilters.Add(@"(case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end) like @simpleFilter");
+                }
+                queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
+            }
+
             if (queries.Count() > 0)
             {
                 whereSql += "where ";
@@ -197,9 +237,21 @@ namespace d360.web.Controllers.V2
 
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
-            model.items = results;
-            model.total = countResults.FirstOrDefault();
-            return Request.CreateResponse(HttpStatusCode.OK, model);
+
+            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+            if (isStreamResponse)
+            {
+                byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
+                return createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
+            }
+            else
+            {
+                model.items = results;
+                model.total = countResults.FirstOrDefault();
+                return Request.CreateResponse(HttpStatusCode.OK, model);
+            }
+
         }
 
         /// <summary>
@@ -452,14 +504,14 @@ namespace d360.web.Controllers.V2
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
-                foreach(var u in users)
+                foreach (var u in users)
                 {
                     if (Guid.TryParse(u, out Guid res))
                     {
                         resources.Add(new UserApiDeleteModel()
                         {
                             Uid = res
-                        }); 
+                        });
                     }
                     else
                     {
@@ -500,6 +552,92 @@ namespace d360.web.Controllers.V2
 
             }
             return isValid;
+        }
+
+        private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
+        {
+            List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();
+            fieldMap.Add(new Tuple<string, string, string>("First name", "FirstName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Last name", "LastName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Email", "Email", "Text"));
+            fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
+             {
+                 fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
+             });
+            fieldMap.Add(new Tuple<string, string, string>("Last logged in on", "LastLoggedInOn", "Date"));
+            fieldMap.Add(new Tuple<string, string, string>("Administrator?", "IsAdministrator", "Boolean"));
+            fieldMap.Add(new Tuple<string, string, string>("Status", "State", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("User UID", "uid", "Text"));
+
+
+            var document = new SLDocument();
+            document.AddWorksheet("Users");
+
+            int colIndex = 1;
+            int rowIndex = 1;
+            foreach (var f in fieldMap)
+            {
+                document.SetCellValue(rowIndex, colIndex, f.Item1);
+                colIndex++;
+            }
+
+            foreach (var row in results)
+            {
+                rowIndex++;
+                colIndex = 1;
+
+                foreach (var f in fieldMap)
+                {
+                    var val = (((row as IDictionary<string, object>)[$"{f.Item2}"]) ?? "").ToString();
+                    SetCellValue(document, rowIndex, colIndex, f.Item3, val);
+                    colIndex++;
+                }
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var result = stream.ToArray();
+            return result;
+        }
+
+        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch (dataType.ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
+            }
         }
     }
 }

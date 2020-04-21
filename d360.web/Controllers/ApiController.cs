@@ -949,7 +949,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "HasAttributes", type = "bool" });
                     break;
                 #endregion
-                     case SystemObjects.PolicyType:
+                case SystemObjects.PolicyType:
                     #region
 
                     remainingWidth = 45;
@@ -1205,30 +1205,31 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
+                    columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
+                    columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
+                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
                     columns.Add(new GridColumn
                     {
                         text = d360.core.resources.Fields.Status_Name,
                         datafield = "State",
                         filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                        fieldType = "Text",
                         filteritems = new List<string>() {
                         CompanyResourceState.Active.ToString(),
-                        CompanyResourceState.Inactive.ToString()
+                        CompanyResourceState.Inactive.ToString(),
                     }
                     });
 
-                    fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
+                    fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Email", type = "string" });
-                    fields.Add(new GridField { name = "FirstName", type = "string" });
-                    fields.Add(new GridField { name = "LastName", type = "string" });
-                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date" });
-                    fields.Add(new GridField { name = "State", type = "string" });
+                    fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
+                    fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                    fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
+                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
+                    fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
                     break;
                 #endregion
                 case SystemObjects.TaxonomyType:
@@ -7213,7 +7214,7 @@ SELECT (
         {
             var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
             var details = Company.Query<dynamic>(sql).Single();
-            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID , details.Id });
+            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
         }
 
         #endregion
