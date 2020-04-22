@@ -39,7 +39,7 @@ import { ObjectDetailService } from '../../services/object-detail.service';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
-import { GetAssetsFilters } from '../../models/asset-search.model';
+import { V2ApiFilters } from '../../models/asset-search.model';
 import { SortOrder } from '../../models/enums.model';
 
 @Component({
@@ -84,6 +84,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
+    isDefinitionLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
 
     selected: any = null;
@@ -209,7 +210,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
                 else {
                     this.hasNoListableColumns = false;
                 }
-
+                this.isDefinitionLoaded = true;
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -220,7 +221,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     }
 
     getParams() {
-        var params = new GetAssetsFilters();
+        var params = new V2ApiFilters();
         params._includeParent = true;
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;

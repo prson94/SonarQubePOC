@@ -70,7 +70,7 @@ export class AssetSearchApiResponse {
     pageNum: number;
 }
 
-export class GetAssetsFilters {
+export class V2ApiFilters {
     _pageSize: number;
     _pageNum: number;
     _order: string;

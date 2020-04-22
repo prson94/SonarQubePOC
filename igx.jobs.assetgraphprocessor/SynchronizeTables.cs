@@ -19,8 +19,8 @@ namespace igx.jobs.assetgraphprocessor
         const string functionName = "AssetGraphProcessor_SynchronizeTables";
 #if DEBUG
         const string timerSettings = "*/2 * * * * *";
-#else
-        const string timerSettings = "0 0 1 * * *";
+#else        
+        const string timerSettings = "0 0 0 * * 6";
 #endif
 
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)

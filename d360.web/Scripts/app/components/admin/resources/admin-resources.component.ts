@@ -23,7 +23,4 @@ export class AdminResourcesComponent extends AdminBaseComponent implements OnIni
     ngOnInit() {
         this.clearSidebar();
     }
-    resourceUri(): string {
-        return `/api/resources/${this.objectID}?$orderby=LastName,FirstName`;
-    }
 }

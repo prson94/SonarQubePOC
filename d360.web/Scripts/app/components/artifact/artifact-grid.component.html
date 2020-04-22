@@ -73,7 +73,7 @@
     [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
     [owner]="stateService.artifactTypeFilters.owners"
   ></d3s-artifact-custom-export>
-  <div class="col s12" [hidden]="showCustomExport">
+  <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded">
     <p-table
       #dt
       [value]="items"

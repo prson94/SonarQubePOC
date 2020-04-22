@@ -87,6 +87,20 @@ namespace d360.web.Models
         }
     }
 
+    public class InsertUserToGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new List<Guid>
+                {
+                    { Guid.Empty },
+                    { Guid.Empty }
+
+                };
+        }
+    }
+
     #region Asset Browser
 
     public class GetAssetLineagePostModelExample : IExamplesProvider

@@ -753,6 +753,7 @@
     <Content Include="Scripts\app\components\shared\small-widgets\status-badge\status-badge.component.html" />
     <Content Include="Scripts\app\components\shared\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
+    <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
@@ -1619,7 +1620,7 @@
     <TypeScriptCompile Include="Scripts\app\components\reference\reference.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-api.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-item.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\user-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\user\user-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\resource\resource.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\rightsidebar\right-sidebar-item.component.ts" />
