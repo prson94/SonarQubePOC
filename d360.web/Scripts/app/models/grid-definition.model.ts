@@ -94,7 +94,10 @@ export class GridFilterExpression {
         if (fieldType == 'Number' || fieldType == 'Decimal' || fieldType == 'Boolean') {
             return value;
         }
-        return `'${value}'`;
+
+        value = (value as string).replace('\'', '&apos;');
+
+        return `'${escape(value)}'`;
     }
 
     private convertCondition(cond: string): string {
