@@ -492,7 +492,7 @@ using       (
                     coalesce(F.LookupValue, F.FieldValue) as Value,
                     F.FieldValue as FormattedValue
             from    {tableName} A
-                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                    inner api.ExecutionField F on F.ExecutionID = A.ExecutionID
                         and F.ItemNumber = A.ItemNumber 
                         and A.ObjectID is not null 
                         and F.FieldTypeID is not null
@@ -820,7 +820,7 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             ", new { executionID }, commandTimeout: timeout);
         }
 
-        private void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
+        public void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
         {
             Connection.Execute($@"
 drop table if exists #RelevantLookupValues;

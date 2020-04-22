@@ -18,6 +18,7 @@ using d360.core.queue;
 using d360.model.DataAccessLayer;
 using Dapper;
 using Newtonsoft.Json.Linq;
+using System.Data.SqlClient;
 
 namespace d360.model
 {
@@ -326,5 +327,7 @@ namespace d360.model
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
+        void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
+
     }
 }
