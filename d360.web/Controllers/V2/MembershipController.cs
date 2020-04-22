@@ -231,7 +231,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
             if (isValidGroup.Total == 0)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group uid."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
 
             if (users.Count != users.Distinct().Count())
             {
@@ -248,12 +248,12 @@ namespace d360.web.Controllers.V2
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not valid."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
 
                 var isUser = this.assetRepository.GetAssetByUID(user);
 
                 if (isUser == null || isUser.Object != "Resource")
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not valid."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
 
 
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
