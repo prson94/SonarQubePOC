@@ -68,7 +68,8 @@ namespace igx.jobs.bulkloadprocessor
                 var community = new CommunityContext(cache, queue, sec);
                 
                 var company = new CompanyContext(community, cache, queue, sec, true);
-                var repository = new AssetRepository(company, queue, storage,community);
+                var assetRepository = new AssetRepository(company, queue, storage, community);
+                var relationshipRepository = new RelationshipRepository(community, company, queue, storage);
 
                 #endregion
                 try
@@ -380,11 +381,11 @@ namespace igx.jobs.bulkloadprocessor
                             await BulkLoadOwnership(company, load.ID);
                             break;
                         case "P":   // Promotions
-                            await BulkLoadAssets(company, repository, load);
+                            await BulkLoadAssets(company, assetRepository, load);
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
-                        case "R":   // Relations                                
-                            await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Relate);
+                        case "R":   // Relations    
+                            await BulkRelate(company, assetRepository, relationshipRepository, load);
                             break;
                         case "U":   // Unrelate
                             await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
@@ -1452,6 +1453,18 @@ where	ID = @loadId", new { loadId }, transaction: trans);
             try
             {
                 await company.BulkLoadAssets(load, repository);
+            }
+            catch (Exception ex)
+            {
+                CoreFunction.AITrackException(functionName, ex, company.CurrentCompanyID);
+            }
+        }
+
+        private static async Task BulkRelate(CompanyContext company, IAssetRepository assetRepository, IRelationshipRepository relationshipRepository, Load load)
+        {
+            try
+            {
+                await company.BulkRelate(load, relationshipRepository, assetRepository);
             }
             catch (Exception ex)
             {
