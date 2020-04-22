@@ -24,8 +24,8 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     private selectedRow = new GroupResourceInfo();
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
-    private resourceList: SelectItem[];
     private selectedResource: string;
+    private users: string[] = [];
 
 
     constructor(private groupService: GroupService) {
@@ -94,14 +94,9 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         if (!(this.field.Value != null && this.field.Value.length > 0)) return;
 
         this.isLoading = true;
-        let resources: ResourceGroup[] = [];
         try {
             this.field.Value.forEach(x => {
-                var rg = new ResourceGroup();
-                rg.GroupID = this.groupId;
-                rg.IsOwner = false;
-                rg.ResourceID = parseInt(x.split('|')[1]);
-                resources.push(rg);
+                this.users.push(x.split('|')[1]);
 
             })
 
@@ -109,15 +104,12 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
             this.isLoading = false;
         }
 
-        let resourceGroupInfo = new ResourceGroupInfo();
-        resourceGroupInfo.GroupGuid = this.groupUid;
-        resourceGroupInfo.ResourceGroups = resources;
-
-        this.groupService.postResourceGroup(resourceGroupInfo).subscribe(
+        this.groupService.addUsersToGroup(this.groupUid, this.users).subscribe(
             r => {
                 this.load();
                 this.formMode = FormMode.Default;
 
+                this.users = [];
                 this.isLoading = false;
             }
         );
