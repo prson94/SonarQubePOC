@@ -273,7 +273,7 @@ namespace d360.model.DataAccessLayer
 
                 if (user.IsNew)
                 {
-                    if (user.Uid.HasValue)
+                    if (user.uid.HasValue)
                     {
                         success = false;
                         messages.Add("Cannot provide Uid for a new user");
@@ -302,7 +302,7 @@ namespace d360.model.DataAccessLayer
                 }
                 else
                 {
-                    if (!user.Uid.HasValue)
+                    if (!user.uid.HasValue)
                     {
                         success = false;
                         messages.Add("Must provide Uid for updated user");
@@ -332,7 +332,7 @@ namespace d360.model.DataAccessLayer
 
 
                 row["ExecutionID"] = executionID;
-                if (user.Uid.HasValue) row["Uid"] = user.Uid;
+                if (user.uid.HasValue) row["Uid"] = user.uid;
                 if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
                 row["ItemNumber"] = itemNumber;
                 row["Username"] = user.Username;
@@ -583,12 +583,12 @@ namespace d360.model.DataAccessLayer
                                 if (string.Compare(user.Username, resource.Username, true) != 0)
                                 {
                                     //check if the resource already exists in community
-                                    var existing = CommunityContext.Filter<Resource>(i => i.Email == user.Username && i.Uid != user.Uid).FirstOrDefault();
+                                    var existing = CommunityContext.Filter<Resource>(i => i.Email == user.Username && i.Uid != user.uid).FirstOrDefault();
 
                                     if (existing != null)
                                     {
                                         result.Success = false;
-                                        result.uid = user.Uid;
+                                        result.uid = user.uid;
                                         result.Message += ". Cannot update the user because the specified email address / username is already in use";
                                         results.Add(result);
                                         continue;
@@ -659,7 +659,7 @@ namespace d360.model.DataAccessLayer
                                 FirstName = user.LastName,
                                 State = user.State ?? globalResource.State,
                                 UpdatedOn = DateTime.UtcNow,
-                                Uid = (Guid)user.Uid
+                                Uid = (Guid)user.uid
                             };
 
                             CompanyContext.Add(globalResource);

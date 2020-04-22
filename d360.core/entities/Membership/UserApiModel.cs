@@ -17,7 +17,7 @@ namespace d360.core.entities.Membership
 
     public interface IUserApiUpsertModel : IExecutionItem
     {
-        Guid? Uid { get; set; }
+        Guid? uid { get; set; }
         string Username { get; set; }
         string FirstName { get; set; }
         string LastName { get; set; }
@@ -35,7 +35,7 @@ namespace d360.core.entities.Membership
 
     public class UserApiInsertModel : IUserApiUpsertModel
     {
-        public Guid? Uid { get; set; }
+        public Guid? uid { get; set; }
         [DataMember]
         public string Username { get; set; }
         [DataMember]
@@ -62,7 +62,7 @@ namespace d360.core.entities.Membership
     public class UserApiUpdateModel : IUserApiUpsertModel
     {
         [DataMember]
-        public Guid? Uid { get; set; }
+        public Guid? uid { get; set; }
         [DataMember]
         public string Username { get; set; }
         [DataMember]

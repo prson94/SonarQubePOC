@@ -241,7 +241,7 @@ namespace d360.web.Models
         {
             return new
             {
-                Uid = Guid.Empty,
+                uid = Guid.Empty,
                 Username = "user@example.com",
                 FirstName = "John",
                 LastName = "Smith",
