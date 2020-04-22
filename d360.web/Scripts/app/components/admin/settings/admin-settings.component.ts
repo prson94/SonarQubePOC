@@ -167,6 +167,14 @@ export class AdminSettingsComponent extends AdminBaseComponent {
     }
 
     public isDisabled(model: CompanyRebuildJobStatusApiModel): boolean {
-        return (model.state === CompanyRebuildJobStatusState.Active);
+        return (+model.state === +CompanyRebuildJobStatusState.Active);
+    }
+
+    public rebuildJobIcon(model: CompanyRebuildJobStatusApiModel): string {
+        let css = 'fa fa-gear mr8';
+        if (+model.state === +CompanyRebuildJobStatusState.Active) {
+            css = 'fa fa-spinner fa-spin mr8';
+        }
+        return css;
     }
 }

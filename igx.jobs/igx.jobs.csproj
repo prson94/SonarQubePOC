@@ -195,7 +195,7 @@
     </None>
     <None Include="App.Release.config">
       <DependentUpon>App.config</DependentUpon>
-      <IsTransformFile>True</IsTransformFile>
+      <IsTransformFile>true</IsTransformFile>
     </None>
     <None Include="ApplicationInsights.config">
       <SubType>Designer</SubType>

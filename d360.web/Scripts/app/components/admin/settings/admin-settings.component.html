@@ -98,11 +98,14 @@
 
             <div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
                 <div>
-                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)"><i class="fa fa-gear mr8"></i>Rebuild {{rs.jobTokenName}}</button>
+                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)"><i [class]="rebuildJobIcon(rs)"></i>Rebuild {{rs.jobTokenName}}</button>
                 </div>
                 <div class="description" [innerHtml]="rs.jobTokenDescription"></div>
                 <div class="status" [innerHtml]="rs.validationMessage"></div>
-                <div class="status" *ngIf="rs.lastStartedOn">Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}}</div>
+                <div class="status" *ngIf="rs.lastStartedOn">
+                    <span *ngIf="isDisabled(rs)">In progress. </span>
+                    Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
+                </div>
             </div>
         </div>
 

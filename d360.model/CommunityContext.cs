@@ -214,15 +214,31 @@ namespace d360.model
 
         public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
         {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
             var list = await CompanyRebuildJobStatuses.Where(j => j.CompanyID == this.CurrentCompanyID).ToListAsync();
+            list.ForEach(i => {
+                if (i.State == CompanyRebuildJobStatusState.Active && i.LastStartedOn <= DateTime.UtcNow.AddHours(-timeoutInHours))
+                {
+                    i.State = CompanyRebuildJobStatusState.Inactive;
+                }
+            });
             return list;
         }
 
         public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken)
         {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
             var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
             CompanyRebuildJobStatusState state = CompanyRebuildJobStatusState.Inactive;
-            if (status != null)
+            if (status != null && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours))
             {
                 state = status.State;
             }
@@ -231,12 +247,17 @@ namespace d360.model
 
         public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
         {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
             var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
             WorkHttpStatus returnValue = null;
 
             if (status != null)
             {
-                if (status.State == CompanyRebuildJobStatusState.Active && state == CompanyRebuildJobStatusState.Active)
+                if (status.State == CompanyRebuildJobStatusState.Active && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours) && state == CompanyRebuildJobStatusState.Active)
                 {
                     returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, "Job is currently running", $"This job is currently in an Active state and cannot be scheduled again until complete.");
                 }

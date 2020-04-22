@@ -95,9 +95,18 @@ from    company c
 
         public static List<int> UpdateRebuildRequestForEnvironmentLevel(EnvironmentLevel level, CompanyRebuildJobToken jobToken)
         {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-            var companies = cnn.Query<int>(@"
+            List<int> companies = null;
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+
+            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                
+                companies = cnn.Query<int>(@"
 declare @ids table (CompanyID int)
 
 merge	CompanyRebuildJobStatus as T
@@ -108,7 +117,7 @@ using	(
 				and C.[Status] = 'Active'
 		) as S
 on		(T.CompanyID = S.CompanyID and T.JobToken = @jobToken) 
-when	matched and T.[State] = 2 then
+when	matched and (T.[State] = 2 OR T.LastStartedOn <= @timeoutOn) then
 update	set 
 		T.[State] = 1,
 		T.LastStartedOn = getutcdate(),
@@ -118,9 +127,10 @@ insert	(CompanyID, JobToken, LastStartedOn, LastStartedBy, [State])
 values	(S.CompanyID, @jobToken, getutcdate(), 0, 1)
 output inserted.CompanyID into @ids;
 
-select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken }).ToList();
-            cnn.Close();
-            cnn.Dispose();
+select CompanyID from @ids", new { level = (int)level, jobToken = (int)jobToken, timeoutOn = DateTime.UtcNow.AddHours(-1*timeoutInHours) }).ToList();
+
+                cnn.Close();
+            }
 
             return companies;
         }
