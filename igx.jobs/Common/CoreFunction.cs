@@ -1,6 +1,7 @@
 using ApplicationInsights.Helpers.WebJobs;
 using d360.core;
 using d360.core.entities;
+using d360.core.enums;
 using d360.utils.company;
 using Dapper;
 using Microsoft.ApplicationInsights;
@@ -212,6 +213,19 @@ namespace igx.jobs
                     return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl && i.IsFusionEnabled).ToList();
                 else
                     return CompanyConnectionUtils.GetCompaniesWithDatabaseServerSettings().Where(i => i.EnvironmentLevel == lvl).ToList();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public static List<int> UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken jobToken)
+        {
+            var lvl = GetEnvironmentLevelCurrentSlot();
+            try
+            {
+                return CompanyConnectionUtils.UpdateRebuildRequestForEnvironmentLevel(lvl, jobToken);
             }
             catch (Exception)
             {

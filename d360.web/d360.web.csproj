@@ -336,6 +336,7 @@
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
+    <Compile Include="Controllers\V2\EnvironmentController.cs" />
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\V2\SurveysController.cs" />

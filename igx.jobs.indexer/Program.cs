@@ -15,6 +15,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using d360.core.entities;
+using d360.extensions.info;
+using d360.extensions.caching;
+using d360.model;
 
 namespace igx.jobs.indexer
 {
@@ -84,13 +87,12 @@ namespace igx.jobs.indexer
             try
             {
                 CoreFunction.AITrackJobStart(functionName);
-                var companies = CoreFunction.GetCompaniesByCurrentSlot();
-                AzureQueueSource queue = new AzureQueueSource();
+                var companies = CoreFunction.UpdateRebuildRequestByCurrentSlot(CompanyRebuildJobToken.SearchIndex);
 
-
+                var queue = new AzureQueueSource();
                 companies.ForEach(c =>
                 {
-                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c.CompanyID });
+                    queue.CreateMessage(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = c });
                 });
 
             }
@@ -102,7 +104,7 @@ namespace igx.jobs.indexer
             CoreFunction.AIFlush();
         }
 
-        public static void RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
+        public static async Task RunViaQueue([QueueTrigger("%SearchIndexQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
         {
             var c = JsonConvert.DeserializeObject<ReindexModel>(myQueueItem);
 
@@ -111,7 +113,7 @@ namespace igx.jobs.indexer
                 var source = new ElasticSearchSource();
                 using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                 {
-                    ProcessCompany(source, company, c);
+                    await ProcessCompany(source, company, c);
                 }
             }
             catch (Exception ex)
@@ -120,7 +122,7 @@ namespace igx.jobs.indexer
             }
         }
 
-        public static void ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
+        public static async Task ProcessCompany(ElasticSearchSource source, SqlConnection company, ReindexModel c)
         {
             IEnumerable<IndexObjectModel> models = null;
 
@@ -287,6 +289,7 @@ namespace igx.jobs.indexer
             }
 
             LogReindexStart("Users", c.CompanyID);
+            
             try
             {
                 models = LoadUsers(company, c.CompanyID, source);
@@ -297,12 +300,32 @@ namespace igx.jobs.indexer
                 CoreFunction.AITrackException(functionName, ex, c.CompanyID);
             }
 
-            LogCompanyReindexComplete(c.CompanyID);
+            await LogCompanyReindexComplete(c.CompanyID);
         }
 
-        private static void LogCompanyReindexComplete(int companyID)
+        private static async Task LogCompanyReindexComplete(int companyID)
         {
             CoreFunction.AITrackTrace(functionName, $"Completed reindex for company {companyID}", companyId: companyID);
+
+            #region Create EF connection
+
+            var _c = CoreFunction.GetCompaniesByCurrentSlot()
+                .FirstOrDefault(x => x.CompanyID == companyID);
+
+            var sec = new UriSecurityContextProvider()
+            {
+                CompanyID = companyID,
+                ResourceID = 0,
+                CompanyPrefix = _c.UrlPrefix,
+                IsAdministrator = true
+            };
+            var cache = new DummyCachingProvider();
+            var queue = new AzureQueueSource();
+            var community = new CommunityContext(cache, queue, sec);
+
+            #endregion
+
+            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.SearchIndex, CompanyRebuildJobStatusState.Inactive);
         }
 
         private static void LogReindexStart(string typeName, int companyID)

@@ -8,6 +8,12 @@ using Dapper;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using d360.core.queue;
+using d360.extensions.info;
+using d360.extensions.caching;
+using d360.extensions.queue;
+using d360.model;
+using d360.core.entities;
+using d360.core.enums;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -23,10 +29,29 @@ namespace igx.jobs.assetgraphprocessor
         {
             RebuildAssetGraphModel queueInfo = null;
 #if DEBUG
-            queueInfo = new RebuildAssetGraphModel { CompanyID = 4, To = 0 };
+            queueInfo = new RebuildAssetGraphModel { CompanyID = 1, To = 0 };
 #else
             queueInfo = JsonConvert.DeserializeObject<RebuildAssetGraphModel>(myQueueItem);
 #endif
+
+            #region Create EF connection
+
+            var _c = CoreFunction.GetCompaniesByCurrentSlot()
+                .FirstOrDefault(x => x.CompanyID == queueInfo.CompanyID);
+
+            var sec = new UriSecurityContextProvider()
+            {
+                CompanyID = queueInfo.CompanyID,
+                ResourceID = 0,
+                CompanyPrefix = _c.UrlPrefix,
+                IsAdministrator = true
+            };
+            var cache = new DummyCachingProvider();
+            var queue = new AzureQueueSource();
+            var community = new CommunityContext(cache, queue, sec);
+
+            #endregion
+
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(queueInfo.CompanyID))
             {
                 const int timeout = 60 * 180;
@@ -40,6 +65,10 @@ namespace igx.jobs.assetgraphprocessor
                 catch (Exception ex)
                 {
                     CoreFunction.AITrackException(functionName, ex, queueInfo.CompanyID);
+                }
+                finally 
+                {
+                    await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.AssetGraph, CompanyRebuildJobStatusState.Inactive);
                 }
             }
 
