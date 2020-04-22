@@ -188,7 +188,7 @@ namespace d360.model.DataAccessLayer
 
             // If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
 
-            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param:dbArgs, map:(a, i) => { a.IconStyle = i;return a; }, splitOn:"Path,BackColor");            
+            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
         }
         public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -1843,7 +1843,18 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
-            var countsSQL = @"select AT.uid, 
+            string assetPermissionWhere = @" and ID NOT IN (select AssetId
+                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))";
+
+            string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
+                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+
+            if (CompanyContext.CurrentResourceIsAdmin)
+            {
+                assetTypePermissionWhere = "";
+            }
+
+            var countsSQL = $@"select AT.uid, 
 	                        ATParent.uid as parentUid,
 	                        case at.class
 	                         when 1 then 'Business Asset'
@@ -1861,12 +1872,10 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
 						 where it.ObjectID = AT.ObjectID and it.Object = at.Object
 						 )ATParent
-                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
-                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
+                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID {assetPermissionWhere})Assets(count)
                         where
                          at.Class in @filterClasses
-                         and AT.ID not in (select AssetTypeID
-                    from dbo.AssetTypesUserCantRead(@ResourceID))
+                         {assetTypePermissionWhere}
                     order by at.name";
             return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
         }
