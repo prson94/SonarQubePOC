@@ -216,6 +216,7 @@ namespace d360.web.Controllers.V2
            SwaggerRequestExample(typeof(List<Guid>), typeof(InsertUserToGroupExample)),
            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
        ]
@@ -230,7 +231,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
             if (isValidGroup.Total == 0)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is not a valid group uid."));
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group uid."));
 
             if (users.Count != users.Distinct().Count())
             {
@@ -247,12 +248,12 @@ namespace d360.web.Controllers.V2
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user UIDs passed in are not valid."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not valid."));
 
                 var isUser = this.assetRepository.GetAssetByUID(user);
 
                 if (isUser == null || isUser.Object != "Resource")
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "One or more user UIDs passed in are not valid."));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not valid."));
 
 
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
