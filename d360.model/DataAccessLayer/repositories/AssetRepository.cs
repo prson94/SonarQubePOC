@@ -190,7 +190,7 @@ namespace d360.model.DataAccessLayer
 
             return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
         }
-        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool includeLegacyData = false)
+        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var assetTypeID = 0;
             var includeRelationships = false;
@@ -593,7 +593,6 @@ namespace d360.model.DataAccessLayer
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
-                    {(includeLegacyData ? "A.ObjectID," : "")}
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
@@ -681,7 +680,7 @@ namespace d360.model.DataAccessLayer
         }
         public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            var results = await GetAssets(uid, queryParams, true);
+            var results = await GetAssets(uid, queryParams);
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
 
@@ -781,7 +780,7 @@ namespace d360.model.DataAccessLayer
 
                     index++;
                 }
-                document.SetCellValue(rowNumber, index, $"artifact/{assetType.ObjectID}/{rowValues["ObjectID"]}");
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
             #endregion
