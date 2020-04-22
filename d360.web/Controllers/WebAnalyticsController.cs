@@ -12,7 +12,7 @@ using System.Web.Http.Description;
 
 namespace d360.web.Controllers
 {
-    [ApiVersion("1.0"), RoutePrefix("webanalytics"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [RoutePrefix("webanalytics"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class D3SWebAnalyticsController : BaseApiController
     {
         #region DI

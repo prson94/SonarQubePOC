@@ -36,7 +36,7 @@ using d360.core.helpers;
 
 namespace d360.web.Controllers.Services
 {
-    [ApiVersion("1.0"), RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [ApiVersionNeutral, RoutePrefix("services/workflow"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class WorkflowController : BaseApiController
     {
 

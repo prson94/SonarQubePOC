@@ -30,7 +30,7 @@ using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
-    [ApiVersion("1.0"), RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class D3SApiController : BaseApiController
     {
         #region DI
