@@ -705,19 +705,15 @@ namespace d360.model.DataAccessLayer
             };
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-            fields.Add(new FieldType { Type = "string", Name = "Path", FriendlyName = "Path" });
-            fields.Add(new FieldType { Type = "date", Name = "UpdatedOn", FriendlyName = "Updated On" });
-            fields.Add(new FieldType { Type = "date", Name = "CreatedOn", FriendlyName = "Created On" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset Uid" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+            if (assetType.Class == AssetTypeClass.ReferenceItemType)
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
             if (includeParent)
             {
-                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = "Parent Asset Uid" });
-                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent Display Name" });
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
 
@@ -753,6 +749,7 @@ namespace d360.model.DataAccessLayer
                     continue;
                 document.SetCellValue(1, index++, (string)field.FriendlyName);
             }
+            document.SetCellValue(1, index++, "Url");
 
 
             if (rowData == null || rowData.Count == 0)
@@ -783,6 +780,7 @@ namespace d360.model.DataAccessLayer
 
                     index++;
                 }
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
             #endregion
