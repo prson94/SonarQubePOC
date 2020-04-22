@@ -1257,7 +1257,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
 
         #region Bulk Relate/Unrelate
 
-        public async Task BulkRelate(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository)
+        public async Task BulkRelation(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository, BulkRelationshipOperation operation)
         {
             if (load == null)
                 throw new ArgumentNullException("load cannot be null");
@@ -1314,48 +1314,98 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                 var loadItemColumns = Query<LoadItemColumn>("select * from LoadItemColumn where LoadID = @id", new { id = load.ID }).ToList();
 
 
-                RelationshipInserts upserts = new RelationshipInserts();
-                foreach (var item in loadItems)
+                if (operation == BulkRelationshipOperation.Relate)
                 {
-                    RelationshipInsert upsert = new RelationshipInsert();
-                    upsert.ExecutionItemUid = item.ExecutionItemUid;
-
-                    var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
-
-                    foreach (var field in rowColumns)
+                    RelationshipInserts upserts = new RelationshipInserts();
+                    foreach (var item in loadItems)
                     {
-                        if (field.ColumnIndex == subjectAssetIDFieldIndex)
+                        RelationshipInsert upsert = new RelationshipInsert();
+                        upsert.ExecutionItemUid = item.ExecutionItemUid;
+
+                        var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
+
+                        foreach (var field in rowColumns)
                         {
-                            Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value})).FirstOrDefault();
-                            upsert.SubjectAssetUid = assetUid;
-                        } 
-                        else if (field.ColumnIndex == objectAssetIDFieldIndex)
-                        {
-                            Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value })).FirstOrDefault();
-                            upsert.ObjectAssetUid = assetUid;
+                            if (field.ColumnIndex == subjectAssetIDFieldIndex)
+                            {
+                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value })).FirstOrDefault();
+                                upsert.SubjectAssetUid = assetUid;
+                            }
+                            else if (field.ColumnIndex == objectAssetIDFieldIndex)
+                            {
+                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value })).FirstOrDefault();
+                                upsert.ObjectAssetUid = assetUid;
+                            }
+                            else
+                            {
+                                var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
+                                upsert.Fields.Add(col.Name, field.Value);
+                            }
                         }
-                        else
-                        {
-                            var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
-                            upsert.Fields.Add(col.Name, field.Value);
-                        }
+                        upserts.Add(upsert);
                     }
-                    upserts.Add(upsert);
-                }
 
 
-                if (upserts.Any())
-                {
-                    var fields = new BulkLoadExecutionFields_Relationships
+                    if (upserts.Any())
                     {
-                        IntersectTypeUid = intersectType.uid,
-                        LoadID = load.ID
-                    };
+                        var fields = new BulkLoadExecutionFields_Relationships
+                        {
+                            IntersectTypeUid = intersectType.uid,
+                            LoadID = load.ID
+                        };
 
-                    var execution = getRelateApiExecution(load, upserts.Count);
-                    ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
-                    load.PutExecutionID = executionInfo.ExecutionID;
+                        var execution = getRelateApiExecution(load, upserts.Count);
+                        ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
+                        load.PostExecutionID = executionInfo.ExecutionID;
+                    }
                 }
+
+                if (operation == BulkRelationshipOperation.Unrelate)
+                {
+                    RelationshipDeletes deletes = new RelationshipDeletes();
+
+                    //populate intersect IDs
+                    Execute(@"
+                        update  L
+                        set     L.[Object] = 'Intersect',
+                                L.ObjectID = I.ID
+                        from    LoadItem L
+                                inner join LoadItemColumn CS on CS.RowIndex = L.RowIndex and CS.ColumnIndex = @subjectAssetIDFieldIndex and CS.LoadID = @id
+                                inner join LoadItemColumn CO on CO.RowIndex = L.RowIndex and CO.ColumnIndex = @objectAssetIDFieldIndex and Co.LoadID = @id
+                                inner join Asset SA on SA.ID = CS.[Value]
+                                inner join Asset OA on OA.ID = CO.[Value]
+                                inner join IntersectType T on T.[uid] = @intersectTypeUid
+                                inner join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
+                                    and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
+                        where   L.LoadID = @id
+                        ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid});
+
+                    deletes = (RelationshipDeletes)(await QueryAsync<RelationshipDelete>(@"
+                        select      L.ExecutionItemUid, 
+                                    cast(0 as bit) as Cascade, 
+                                    I.[uid] as [Uid] 
+                        from    LoadItem L 
+                                inner join IntersectType T on T.[uid] = @intersectTypeUid
+                                inner join [Intersect] I on I.ID = L.ObjectID and I.IntersectTypeID = T.ID
+                        where   L.LoadID = @id and L.ObjectID is not null
+                        ", new { id = load.ID, intersectTypeUid = intersectType.uid })).ToList();
+
+                    if (deletes.Any())
+                    {
+                        var fields = new BulkLoadExecutionFields_Relationships
+                        {
+                            IntersectTypeUid = intersectType.uid,
+                            LoadID = load.ID
+                        };
+
+                        var execution = getRelateApiExecution(load, deletes.Count);
+                        ApiExecutionInfo executionInfo = await relationshipRepository.BulkDeleteRelationships(intersectType.uid, deletes, execution, false);
+                        load.PostExecutionID = executionInfo.ExecutionID;
+                    }
+                }
+
+
+               
 
                 await SaveChangesAsync();
             }
@@ -1363,6 +1413,17 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
             {
                 throw ex;
             }
+        }
+
+        public async Task BulkUnrelate(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository)
+        {
+            if (load == null)
+                throw new ArgumentNullException("load cannot be null");
+
+            if (!load.IntersectTypeUid.HasValue)
+                throw new ArgumentNullException("intersect type uid cannot be null");
+
+            await GenerateExecutionItemUids(load, timeout);
         }
 
         #endregion

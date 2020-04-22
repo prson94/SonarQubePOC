@@ -385,10 +385,10 @@ namespace igx.jobs.bulkloadprocessor
                             company.CreateOrUpdateTypeDisplayValuesAsync(load.ObjectID, load.Object);
                             break;
                         case "R":   // Relations    
-                            await BulkRelate(company, assetRepository, relationshipRepository, load);
+                            await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Relate);
                             break;
                         case "U":   // Unrelate
-                            await company.PerformBulkRelationshipOperation(load.ID, d360.core.enums.BulkRelationshipOperation.Unrelate);
+                            await BulkRelate(company, assetRepository, relationshipRepository, load, BulkRelationshipOperation.Unrelate);
                             break;
                         case "B":
                         case "BL":  // Business Lineage
@@ -1460,11 +1460,11 @@ where	ID = @loadId", new { loadId }, transaction: trans);
             }
         }
 
-        private static async Task BulkRelate(CompanyContext company, IAssetRepository assetRepository, IRelationshipRepository relationshipRepository, Load load)
+        private static async Task BulkRelate(CompanyContext company, IAssetRepository assetRepository, IRelationshipRepository relationshipRepository, Load load, BulkRelationshipOperation operation)
         {
             try
             {
-                await company.BulkRelate(load, relationshipRepository, assetRepository);
+                await company.BulkRelation(load, relationshipRepository, assetRepository, operation);
             }
             catch (Exception ex)
             {
