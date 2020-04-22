@@ -1,21 +1,16 @@
-﻿using d360.core;
-using d360.core.entities.Workflow;
-using d360.core.enums.Workflow;
-using d360.core.queue;
+﻿using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
 using d360.model;
 using d360.utils.company;
+using Dapper;
 using Microsoft.Azure.WebJobs;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Data.Entity;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Dapper;
 
 namespace igx.jobs.displayvalueupdateprocessor
 {
