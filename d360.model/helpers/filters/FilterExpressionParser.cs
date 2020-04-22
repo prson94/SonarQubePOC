@@ -63,7 +63,7 @@ namespace d360.model.helpers
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
             }
-            catch (IndexOutOfRangeException ex)
+            catch (IndexOutOfRangeException)
             {
                 throw new FilterExpressionParserException("Invalid filter expression: ", new Exception("One or more filter expressions has missing operator or value."));
             }

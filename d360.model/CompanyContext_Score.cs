@@ -701,7 +701,7 @@ outer apply(
         {
             var model = new ObjectStatisticTileModel { Items = new List<ObjectStatisticTileItemModel>() };
 
-            var list = Database.Connection.Query<RawObjectStatistic>("[tile].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
+            var list = Database.Connection.Query<RawObjectStatistic>("[dbo].[GetObjectStatistics] @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).ToList();
 
             list.ForEach(i =>
             {

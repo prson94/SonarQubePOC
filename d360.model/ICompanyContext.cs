@@ -211,8 +211,7 @@ namespace d360.model
         IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
         IQueryable<CommentDetail> GetCommentDetailsByID(int id);
         IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
-        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);
-        List<CompanyContext.DetailDisplayableRelationship> GetDetailDisplayableRelationships(SystemObjects type, int id);
+        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);        
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);

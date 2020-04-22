@@ -836,7 +836,7 @@ namespace d360.web.Controllers.V2
                 }
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving Data Quality Results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
             }
