@@ -268,7 +268,6 @@ namespace d360.model
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
         bool ObjectHasChildren(SystemObjects type, int id);
         bool ObjectHasParent(SystemObjects type, int id);
-        Task PerformBulkRelationshipOperation(int loadId, BulkRelationshipOperation operation);
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);

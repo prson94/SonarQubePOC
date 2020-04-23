@@ -51,7 +51,7 @@ namespace d360.model
         coalesce(EA.ErrorMessage, '' ) + iif(EA.ErrorMessage is null, '', '; ') + coalesce(EE.ErrorMessage, '' ) as ErrorMessage,
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
-		case when L.Action = 'P' and L.[File] is null then
+		case when L.Action in ('P','R','U') and L.[File] is null then
             case when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
                 null
             when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
@@ -97,48 +97,98 @@ from	[Load] L
         public IEnumerable<LoadDetail> GetLoadDetails()
         {
             var countSql = @"
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
-";
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+                cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
+
             return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " order by L.ID desc");
         }
 
         public LoadDetail GetLoadDetail(int id)
         {
-            var countSql = @"
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
-        cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T
-";
-
             var load = GetById<Load>(id);
+            var useExecutionTable = false;
 
-            if (load.Action == "P" && (load.PostExecutionID != null || load.PutExecutionID != null))
+            if (v2ApiActions.Contains(load.Action) && (load.PostExecutionID != null || load.PutExecutionID != null))
+                useExecutionTable = true;
+
+            string countSql = "";
+
+            if (useExecutionTable)
+            {
+                switch(load.Action)
+                {
+                    case "P":
+                        countSql = @"
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    union all
+				                    select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
+				                    ) R
+			                    ) T";
+                        break;
+                    case "R":
+                        countSql = @"		
+                            cross apply (
+				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID
+				                    ) R
+			                    ) T";
+                        break;
+                    case "U":
+                        countSql = @"
+                            cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 1
+			                    ) S
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
+				                    ) R
+			                    ) E
+		                    cross apply (
+				                    select count(*) as C from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success is null
+			                    ) I
+		                    cross apply (
+			                    select sum(I) as C from (
+				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
+				                    ) R
+			                    ) T";
+                        break;
+                }
+            }
+            else
             {
                 countSql = @"
-		cross apply (
-				select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 1
-			) S
-		cross apply (
-			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success = 0
-				union all
-				select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-				) R
-			) E
-		cross apply (
-				select count(*) as C from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID) and Success is null
-			) I
-		cross apply (
-			select sum(I) as C from (
-				select count(*) as I from api.ExecutionAsset where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-				union all
-				select count(*) as I from api.ExecutionAssetError where ExecutionID in (L.PostExecutionID, L.PutExecutionID)
-				) R
-			) T";
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 1) S
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status = 0) E
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID and Status is null) I
+                    cross apply (select count(1) as C from LoadItem where LoadID = L.ID) T";
             }
 
             return Query<LoadDetail>(string.Format(LoadDetailBaseSql, countSql) + " where L.ID = " + id).SingleOrDefault();
@@ -162,7 +212,7 @@ from	[Load] L
             var load = GetById<Load>(id);
             var useExecutionTable = false;
 
-            if (load.Action == "P" && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
+            if (v2ApiActions.Contains(load.Action) && (load.PutExecutionID.HasValue || load.PostExecutionID.HasValue))
                 useExecutionTable = true;
 
             var columns = Filter<LoadColumn>(i => i.LoadID == id).OrderBy(i => i.ColumnIndex).ToList();
@@ -172,38 +222,81 @@ from	[Load] L
 
             if (useExecutionTable)
             {
-                AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
-                AssetType parentAssetType = assetType == null ? null : GetParentTypeById(assetType.ID);
-
-                sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-                sqlTables = @"from (
-		select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
-		union all
-		select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
-	 ) EA
-     left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
-                columns.ForEach(c =>
+                
+                switch (load.Action)
                 {
-                    var i = c.ColumnIndex;
-                    if (parentAssetType != null && c.Name == parentAssetType.Name)
-                    {
-                        sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
-                        sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
-                    }
-                    else
-                    {
-                        sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
-                        sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
-                        sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
-                    }
+                    case "P":
+                        AssetType assetType = Filter<AssetType>(a => a.uid == load.AssetTypeUid).FirstOrDefault();
+                        AssetType parentAssetType = assetType == null ? null : GetParentTypeById(assetType.ID);
 
-                });
-                sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-                sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlTables = @"
+                            from (
+		                        select ExecutionId, ItemNumber, ExecutionItemUid, ParentAssetID, Message, Success from api.ExecutionAsset where ExecutionId = {0}
+		                        union all
+		                        select ExecutionID, ItemNumber, ExecutionItemUid, null as ParentAssetID, Message, cast(0 as bit) as Success from api.ExecutionAssetError where ExecutionId = {0}
+	                         ) EA
+                             left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            if (parentAssetType != null && c.Name == parentAssetType.Name)
+                            {
+                                sqlColumns += $",EF{i}.DisplayValue + ' [' + cast(EF{i}.[uid] as varchar(50)) + ']' as Column{i}\n";
+                                sqlTables += $" left join AssetDetail EF{i} on EF{i}.ID = EA.ParentAssetID\n";
+                            }
+                            else
+                            {
+                                sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                                sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+                                sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+                            }
 
-                sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
-                sql += $"union all\n";
-                sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+                        });
+                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then '{0}' else  EA.Message end as StatusMessage\n";
+
+                        sql = $"select * from ({string.Format(sqlColumns, "Item successfully updated.")} {string.Format(sqlTables, "@putExecutionID")} where EA.ExecutionID = @putExecutionID\n";
+                        sql += $"union all\n";
+                        sql += $"{string.Format(sqlColumns, "Item successfully added.")} {string.Format(sqlTables, "@postExecutionID")} where EA.ExecutionID = @postExecutionID) R order by R.RowIndex";
+
+                        break;
+                    case "R":
+                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlTables = @"from api.ExecutionRelationship EA
+                                        left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            sqlColumns += $",coalesce(EF{i}.FieldValue,C{i}.[Value]) as Column{i}\n";
+                            sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+                            sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
+
+                        });
+                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else  EA.Message end as StatusMessage\n";
+
+                        sql = $"{sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID order by RowIndex\n";
+
+                        break;
+                    case "U":
+                        sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
+                        sqlTables = @"from api.ExecutionDeletedRelationship EA
+                                        left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        columns.ForEach(c =>
+                        {
+                            var i = c.ColumnIndex;
+                            sqlColumns += $",C{i}.[Value] as Column{i}\n";
+                            sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
+
+                        });
+                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then 'Relationship successfully removed.' else  EA.Message end as StatusMessage\n";
+
+                        sql = $"{sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID order by RowIndex\n";
+                        break;
+                }
+
 
                 return Query<dynamic>(sql, new { id, putExecutionID = load.PutExecutionID, postExecutionID = load.PostExecutionID });
             }
@@ -222,8 +315,6 @@ from	[Load] L
 
                 return Query<dynamic>(sql, new { id });
             }
-
-
         }
 
         public BulkLoadGetLoadColumnsModel GetLoadColumns(string action, SystemObjects type, int id, bool includeLookupValues)
@@ -240,7 +331,7 @@ from	[Load] L
             return model;
         }
 
-        #endregion Get Methods
+        #endregion
 
         #region Parse Spreadsheet Methods
 
@@ -474,356 +565,12 @@ from	[Load] L
             }
         }
 
-        public async Task PerformBulkRelationshipOperation(int loadId, BulkRelationshipOperation operation)
-        {
-            // get load properties
-            var load = Loads.Where(x => x.ID == loadId).FirstOrDefault();
-
-            if (load == null)
-            {
-                throw new Exception($"Bulk load relate cannot find the load job to run [{loadId}].");
-            }
-
-            var intersectType = IntersectTypeDetails.Where(x => x.ID == load.ObjectID).FirstOrDefault();
-
-            if (intersectType == null)
-            {
-                throw new Exception($"Bulk load relate cannot find the intersect type [{load.ObjectID}] specified by the load job [{loadId}]");
-            }
-
-
-            // get the load columns
-            var columns = LoadColumns.Where(x => x.LoadID == loadId).ToList();
-
-            if (columns == null)
-            {
-                throw new Exception($"Bulk load data doesnt contain any columns in LoadColumn table.  Load ID [{loadId}]");
-            }
-
-            var loaddata = LoadItemColumns.Where(x => x.LoadID == loadId);
-
-            //loop throw rows until there are no more indexes start at 2
-            int currentRowIndex = 2;
-
-            var fieldColumns = columns.ToList();
-            var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, intersectType.SubjectName, intersectType.SubjectID, fieldColumns);
-            var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, intersectType.ObjectName, intersectType.ObjectID, fieldColumns);
-
-            //load any custom field types for this relationship type
-            var customFieldTypes = FieldTypes.Where(x => x.Object == "IntersectType" && x.ObjectID == intersectType.ID);
-            Dictionary<int, int> customFieldTypeMap = new Dictionary<int, int>();
-
-            if (operation == BulkRelationshipOperation.Relate && customFieldTypes.Any())
-            {
-                foreach (var item in customFieldTypes)
-                {
-                    var col = columns.Where(x => string.Compare(x.Name, item.Name, true) == 0).FirstOrDefault();
-
-                    if (col != null)
-                    {
-                        customFieldTypeMap[item.ID] = col.ColumnIndex;
-                    }
-                }
-
-                // call the proc to get lookup values for any custom values
-                await Database.Connection.ExecuteAsync("exec[bulkload].[UpdateDynamicLookupFieldColumns] @loadId", new { loadId = loadId });
-            }
-
-            var rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-
-            while (rowData != null && rowData.Count > 0)
-            {
-                BulkLoadStatusMsg = "";
-
-                var subjectTypeName = (intersectType.Subject == "ReferenceItemType" && intersectType.SubjectID == 0) ? "ReferenceItemType" : intersectType.Subject.Replace("Type", "");
-                var objectTypeName = (intersectType.Object == "ReferenceItemType" && intersectType.ObjectID == 0) ? "ReferenceItemType" : intersectType.Object.Replace("Type", "");
-
-                int subjectId = getItemIdFromKeyFields(rowData, subjectAssetIDFieldIndex, subjectTypeName, intersectType.SubjectID);
-                int objectId = getItemIdFromKeyFields(rowData, objectAssetIDFieldIndex, objectTypeName, intersectType.ObjectID);
-                string errorMsg = string.Empty;
-                int intersectId = 0;
-
-                bool isValidCardinality = operation == BulkRelationshipOperation.Unrelate ? true : IsValidCardinality(intersectType, objectId, subjectId, objectTypeName, subjectTypeName, out errorMsg);
-
-                if (isValidCardinality)
-                {
-                    intersectId = (operation == BulkRelationshipOperation.Relate) ?
-                       RelateObjects(rowData, objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID, customFieldTypes, customFieldTypeMap) :
-                       (UnrelateObjects(objectId, subjectId, objectTypeName, subjectTypeName, intersectType.ID));
-
-                }
-                else
-                {
-                    BulkLoadStatusMsg = errorMsg;
-                }
-
-                // update status for this item
-                var statusSql = "update LoadItem set [Object] = 'Intersect', ObjectID = @objectId, Status = @status, StatusMessage = @msg where LoadID = @loadId and RowIndex = @rowIndex";
-
-                await QueryAsync<int>(statusSql, new { objectId = intersectId, msg = BulkLoadStatusMsg, loadId = loadId, rowIndex = currentRowIndex, status = (intersectId > 0 ? 1 : 0) });
-
-                //next row
-                currentRowIndex++;
-
-                rowData = loaddata.Where(x => x.RowIndex == currentRowIndex).ToList();
-            }
-        }
-
-        private bool IsValidCardinality(IntersectTypeDetail intersectType, int objectId, int subjectId, string objectType, string subjectType, out string message)
-        {
-            message = string.Empty;
-            bool found = false;
-            IQueryable<Intersect> intersects = Intersects.Where(x => x.IntersectTypeID == intersectType.ID);
-
-            if (intersectType.SubjectCardinality == Cardinality.One)
-            {
-                found = intersects.Any(x => x.Object == objectType && x.ObjectID == objectId);
-                message = found ? $"{objectType}  does not satisfy relationship cardinality " : string.Empty;
-
-                if (found) return false;
-            }
-
-            if(intersectType.ObjectCardinality == Cardinality.One)
-            {
-                found = intersects.Any(x => x.Subject == subjectType && x.SubjectID == subjectId);
-                message = found ? $" {subjectType}  does not satisfy relationship cardinality " : string.Empty;
-
-                if (found) return false;
-            }
-
-            return true;
-        }
-        private int UnrelateObjects(int objectId, int subjectId, string objectType, string subjectType, int intersectTypeId)
-        {
-            var intersectId = 0;
-
-            if (objectId > 0 && subjectId > 0)
-            {
-
-                var existingIntersect = Intersects.Where(x => x.Subject == subjectType && x.Object == objectType && x.IntersectTypeID == intersectTypeId && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
-
-                if (existingIntersect == null)
-                {
-                    BulkLoadStatusMsg = "Relationship doesnt exist.";
-                }
-                else
-                {
-                    try
-                    {
-                        intersectId = existingIntersect.ID;
-
-                        DeleteRelationship(intersectId);
-
-                        BulkLoadStatusMsg = "Relationship successfully removed.";
-                    }
-                    catch (core.exceptions.ConflictException ex)
-                    {
-                        intersectId = 0;
-
-                        BulkLoadStatusMsg = $"Relationship could not be removed.  {ex.StatusDescription}";
-                    }
-                    catch (Exception ex)
-                    {
-                        intersectId = 0;
-
-                        BulkLoadStatusMsg = $"Relationship could not be removed.  {ex.Message}";
-                    }
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(BulkLoadStatusMsg))
-                {
-                    if (objectId <= 0) BulkLoadStatusMsg = "Cannot find the object object for the relationship";
-                    else if (subjectId <= 0) BulkLoadStatusMsg = "Cannot find the subject object for the relationship";
-                    else BulkLoadStatusMsg = "Unknown error"; // shouldnt happen
-                }
-            }
-
-            return intersectId;
-        }
-
-        private int RelateObjects(List<LoadItemColumn> rowData, int objectId, int subjectId, string objectType, string subjectType, int intersectTypeId, IQueryable<FieldType> customFieldTypes, Dictionary<int, int> customFieldTypeMap)
-        {
-            var intersectId = 0;
-            if (objectId > 0 && subjectId > 0)
-            {
-                if ( (objectId == subjectId) && (string.Compare(subjectType, objectType, StringComparison.OrdinalIgnoreCase) == 0) )
-                {
-                    BulkLoadStatusMsg = "Object cannot be related to itself";
-                    return 0;
-                }
-                var existingIntersect = Intersects.Where(x => x.Subject == subjectType && x.Object == objectType && x.IntersectTypeID == intersectTypeId && x.ObjectID == objectId && x.SubjectID == subjectId).FirstOrDefault();
-
-                if (existingIntersect == null)
-                {
-                    var newIntersect = new Intersect
-                    {
-                        IntersectTypeID = intersectTypeId,
-                        Subject = subjectType,
-                        SubjectID = subjectId,
-                        Object = objectType,
-                        ObjectID = objectId
-                    };
-
-                    Intersects.Add(newIntersect);
-
-                    SaveChanges();
-
-                    intersectId = newIntersect.ID;
-
-                    BulkLoadStatusMsg = "Item successfully added.";
-                }
-                else
-                {
-                    intersectId = existingIntersect.ID;
-
-                    BulkLoadStatusMsg = "Item successfully updated.";
-                }
-            }
-            else
-            {
-                if (string.IsNullOrEmpty(BulkLoadStatusMsg))
-                {
-                    if (objectId <= 0) BulkLoadStatusMsg = $"Cannot find the object object for the relationship";
-                    else if (subjectId <= 0) BulkLoadStatusMsg = "Cannot find the subject object for the relationship";
-                    else BulkLoadStatusMsg = "Unknown error"; // shouldnt happen
-                }
-            }
-
-            //add any fields to the relationship here
-
-            if (customFieldTypes.Any() && customFieldTypeMap.Any())
-            {
-                foreach (var ft in customFieldTypes)
-                {
-                    if (customFieldTypeMap.ContainsKey(ft.ID))
-                    {
-                        var val = rowData.Where(x => x.ColumnIndex == customFieldTypeMap[ft.ID]).FirstOrDefault();
-
-                        if (val != null && !string.IsNullOrWhiteSpace(val.Value))
-                        {
-                            var existingField = Fields.Where(x => x.ObjectType == "Intersect" && x.ObjectID == intersectId && x.FieldTypeID == ft.ID).FirstOrDefault();
-                            var value = val.Value;
-
-                            if (ft.Type == "Lookup" && val.LookupObjectID.HasValue)
-                                value = val.LookupObjectID.ToString();
-
-                            if (existingField != null)
-                            {
-                                existingField.Value = value;
-                            }
-                            else
-                            {
-                                Fields.Add(new Field
-                                {
-                                    FieldTypeID = ft.ID,
-                                    ObjectID = intersectId,
-                                    ObjectType = "Intersect",
-                                    Value = value
-                                });
-                            }
-                        }
-                    }
-                }
-
-                SaveChanges();
-            }
-
-            return intersectId;
-        }
-        
-        private int getItemIdFromKeyFields(List<LoadItemColumn> rowData, int assetIdIndex, string @object, int objectTypeId)
-        {
-            var valItem = rowData.Where(x => x.ColumnIndex == assetIdIndex).FirstOrDefault();
-
-            if (valItem == null) throw new Exception($"Cannot find relationship load data for the name field");
-
-            if (@object == "FusionAttribute")
-            {
-                //load the fusion attribute where the fusionattribute type id matches the type in the intersecttype and the value 
-                var fusionItem = FusionAttributes.Where(x => x.FusionAttributeTypeID == objectTypeId && string.Compare(x.TextPath, valItem.Value, true) == 0).FirstOrDefault();
-
-                if (fusionItem == null) return -1;
-
-                return fusionItem.ID;
-            }
-            else if (@object == "Intersect")
-            {
-                if (!int.TryParse(valItem.Value, out int intersectId))
-                {
-                    BulkLoadStatusMsg = $"Error intersect id is not a number {valItem.Value}";
-
-                    return -1;
-                }
-
-                return intersectId;
-            }
-            else if (@object == "Intersect")
-            {
-                if (!int.TryParse(valItem.Value, out int intersectId))
-                {
-                    BulkLoadStatusMsg = $"Error intersect id is not a number {valItem.Value}";
-
-                    return -1;
-                }
-
-                return intersectId;
-            }
-            else if (@object == "ReferenceItemType")
-            {
-                if (!int.TryParse(valItem.Value, out int assetTypeId))
-                {
-                    BulkLoadStatusMsg = $"Error asset type id is not a number {valItem.Value}";
-
-                    return -1;
-                }
-
-                var assetType = AssetTypes.Where(x => x.ID == assetTypeId).FirstOrDefault();
-
-                if (assetType == null)
-                {
-                    BulkLoadStatusMsg = $"Specified asset id doesnt exist in the asset table[{valItem.Value}]";
-
-                    return -1;
-                }
-
-                return assetType.ObjectID;
-            }
-            else
-            {
-                if (!int.TryParse(valItem.Value, out int assetId))
-                {
-                    BulkLoadStatusMsg = $"Error asset id is not a number {valItem.Value}";
-
-                    return -1;
-                }
-
-                var asset = Assets.Where(x => x.ID == assetId).Include(x => x.AssetType).FirstOrDefault();
-
-                if (asset == null)
-                {
-                    BulkLoadStatusMsg = $"Specified asset id doesnt exist in the asset table[{valItem.Value}]";
-
-                    return -1;
-                }
-
-                if (asset.AssetType == null || asset.AssetType.ObjectID != objectTypeId)
-                {
-                    BulkLoadStatusMsg = $"Specified asset id type doesnt match those required by the intersect type {asset.ObjectID}";
-
-                    return -1;
-                }
-
-                return asset.ObjectID;
-            }
-        }
-
         #endregion
 
         #region v2 API Methods
 
         private const int timeout = 3600;
+        private readonly List<string> v2ApiActions = new List<string>() { "P", "R", "U" };
 
         internal class BulkLoadExecutionFields_Assets
         {
@@ -1328,12 +1075,18 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         {
                             if (field.ColumnIndex == subjectAssetIDFieldIndex)
                             {
-                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value })).FirstOrDefault();
+                                long id = -1;
+                                long.TryParse(field.Value, out id);
+
+                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id })).FirstOrDefault();
                                 upsert.SubjectAssetUid = assetUid;
                             }
                             else if (field.ColumnIndex == objectAssetIDFieldIndex)
                             {
-                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id = field.Value })).FirstOrDefault();
+                                long id = -1;
+                                long.TryParse(field.Value, out id);
+
+                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id })).FirstOrDefault();
                                 upsert.ObjectAssetUid = assetUid;
                             }
                             else
@@ -1364,31 +1117,32 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                 {
                     RelationshipDeletes deletes = new RelationshipDeletes();
 
+                    if (Connection.State == ConnectionState.Closed)
+                        await Connection.OpenAsync();
+
                     //populate intersect IDs
-                    Execute(@"
-                        update  L
-                        set     L.[Object] = 'Intersect',
-                                L.ObjectID = I.ID
+                    await Connection.ExecuteAsync(@"update L
+                        set     L.IntersectUid = coalesce(I.[uid], 0x0)
                         from    LoadItem L
                                 inner join LoadItemColumn CS on CS.RowIndex = L.RowIndex and CS.ColumnIndex = @subjectAssetIDFieldIndex and CS.LoadID = @id
-                                inner join LoadItemColumn CO on CO.RowIndex = L.RowIndex and CO.ColumnIndex = @objectAssetIDFieldIndex and Co.LoadID = @id
+                                inner join LoadItemColumn CO on CO.RowIndex = L.RowIndex and CO.ColumnIndex = @objectAssetIDFieldIndex and CO.LoadID = @id
                                 inner join Asset SA on SA.ID = CS.[Value]
                                 inner join Asset OA on OA.ID = CO.[Value]
                                 inner join IntersectType T on T.[uid] = @intersectTypeUid
-                                inner join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
+                                left join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
                                     and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
                         where   L.LoadID = @id
                         ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid});
 
-                    deletes = (RelationshipDeletes)(await QueryAsync<RelationshipDelete>(@"
+                    var results = (await QueryAsync<RelationshipDelete>(@"
                         select      L.ExecutionItemUid, 
-                                    cast(0 as bit) as Cascade, 
-                                    I.[uid] as [Uid] 
+                                    cast(0 as bit) as [Cascade], 
+                                    L.IntersectUid as [Uid]
                         from    LoadItem L 
-                                inner join IntersectType T on T.[uid] = @intersectTypeUid
-                                inner join [Intersect] I on I.ID = L.ObjectID and I.IntersectTypeID = T.ID
-                        where   L.LoadID = @id and L.ObjectID is not null
+                        where   L.LoadID = @id and L.IntersectUid is not null
                         ", new { id = load.ID, intersectTypeUid = intersectType.uid })).ToList();
+
+                    deletes.AddRange(results);
 
                     if (deletes.Any())
                     {
@@ -1429,8 +1183,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
         #endregion
 
         #endregion
-
-
 
         #endregion
     }
