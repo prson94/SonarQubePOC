@@ -739,6 +739,100 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Clears the list of favorite items for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpDelete,
+        Route("users/me/favorites"),
+        SwaggerResponse(HttpStatusCode.OK, ""),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> ClearFavorites()
+        {
+            var prefix = "Membership.ClearFavorites => ";
+
+            try
+            {
+                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID);
+
+                if (result.StatusCode != HttpStatusCode.OK)
+                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
+
+                return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Given a route, toggles the favorite status on/off for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpPut,
+            Route("users/me/favorites"),
+            SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
+            SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
+        {
+            return await ToggleFavoriteOrHomepage(favorite, false);
+        }
+
+        /// <summary>
+        /// Given a route, toggles the homepage status on/off for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpPut,
+            Route("users/me/homepage"),
+            SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
+            SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
+        {
+            return await ToggleFavoriteOrHomepage(favorite, true);
+        }
+
+        private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
+        {
+            var prefix = "Membership.ToggleFavoriteOrHomepage => ";
+
+            try
+            {
+                bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
+                if (result)
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
+                else
+                {
+                    string message = "Uid Invalid for " + favorite.Type.ToString();
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, message)));
+                }
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;

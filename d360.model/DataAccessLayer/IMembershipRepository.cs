@@ -14,5 +14,7 @@ namespace d360.model.DataAccessLayer
         WorkHttpStatus DeleteResources(IEnumerable<UserApiDeleteModel> resources);
         Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users);
         Task<List<FavoriteApiModel>> GetFavorites(int resourceID);
+        Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
+        WorkHttpStatus DeleteFavorites(int resourceID);
     }
 }
