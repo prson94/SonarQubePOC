@@ -382,12 +382,12 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
-            if (hasRuleResult) {
+            if (hasRuleResult) {                
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
                     'Rule Results',
                     ['fa-sitemap'],
-                    `/sidebar/ruleResults/${this.objectID}`
+                    `/sidebar/ruleResults/${this.objectID}/${this.uid}`
                     ,null,1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
@@ -800,7 +800,7 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-
+            
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 

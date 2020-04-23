@@ -49,9 +49,25 @@ export class RuleDetail {
 }
 
 export class RuleResultPagedResults {
+    pageSize: number;
+    pageNum: number;
     total: number;
-    results: any[];
-    qualifiers: any[];
+    items: RuleResultItems[];
+}
+
+export class RuleResultItems {
+    ResultUid: string;
+    OwningAssetUid: string;
+    EvaluatedAssetUid: string;
+    EvaluatedAssetPath: string;
+    EvaluatedAssetTypePath: string;
+    EvaluatedAssetClass: string;
+    EffectiveDate: Date;
+    RunDate: Date;
+    PassCount: number;
+    FailCount: number;
+    PassFraction: number;
+    Passed: boolean;
 }
 
 export class RuleResultFilter {

@@ -798,7 +798,7 @@ namespace d360.model.DataAccessLayer
 
             string owningAssetSQL = $@"(
 	                                select 
-		                                AR.Uid resultUid, AR.Passcount, AR.FailCount, AR.EffectiveDate, AR.RunDate, AN.Uid owningAssetUid
+		                                AR.Uid resultUid, AR.Passcount, AR.FailCount, AR.EffectiveDate, AR.RunDate, AR.PassFraction, AN.Uid owningAssetUid
                                     from 
 		                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
 	                                where 
@@ -810,30 +810,31 @@ namespace d360.model.DataAccessLayer
                                         {effectiveSQL}
 	                                ) DQR";
 
-            if (!string.IsNullOrWhiteSpace(sort))
-            {
-                orderBy = $"Order by {sort} {direction ?? ""}";
-            }
-            else
-            {
-                orderBy = $"Order by EffectiveDate {direction ?? ""}";
-            }
+            string sortPhrase = "EffectiveDate";
 
+            if (!string.IsNullOrWhiteSpace(sort))
+            {                                
+                sortPhrase = sort;                
+            }
+            
+            orderBy = $"Order by {sortPhrase} {direction ?? ""}";
 
             if (evaluatedAssetUid != null)
             {
                 evaluatedAssetSQL = $@"inner Join 
 	                            (		
 		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid
-		                            from 
-			                            AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
-		                            where 
-			                            Match (AN -(ARE)-> AR)
-			                            and 
-			                            AN.Uid = @evaluatedAssetUid
-			                            and
-			                            ARE.Class = {(int)ResultRelationClass.EvaluatedBy}	
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, 
+                                        AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
+		                            from 			                            
+                                        AssetResult AR
+				                        inner join 
+				                        assetResultedge ARE on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}		
+				                        inner join 
+				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id and AN.Uid = @evaluatedAssetUid				                        
+				                        inner join
+				                        AssetType AT on AT.Uid = AN.AssetTypeUid
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				                            
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
 
             }
@@ -842,14 +843,18 @@ namespace d360.model.DataAccessLayer
                 evaluatedAssetSQL = $@"left Join
 	                            (		
 		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, 
+                                        AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
 		                            from 
-			                            AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+			                            AssetResult AR
+				                        inner join 
+				                        assetResultedge ARE on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}		
+				                        inner join 
+				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id				                        
+				                        inner join
+				                        AssetType AT on AT.Uid = AN.AssetTypeUid
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				
 		                            where 
-			                            Match (AN -(ARE)-> AR)
-			                            and
-			                            ARE.Class = {(int)ResultRelationClass.EvaluatedBy}	
-				                        and 
 				                        AR.UID in ( 
 							                        select 
 								                        AR1.Uid
@@ -872,7 +877,7 @@ namespace d360.model.DataAccessLayer
 	                            {evaluatedAssetSQL}";
 
             var dataQualityResultSql = $@"select 
-	                        distinct DQR.resultUid as ResultUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQR.OwningAssetUid as OwningAssetUid, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount, P.Passed as Passed
+	                        distinct DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount, DQR.PassFraction as PassFraction, P.Passed as Passed
                         from 
 	                        {owningAssetSQL}
 	                        {evaluatedAssetSQL}
