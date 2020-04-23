@@ -811,10 +811,6 @@ namespace d360.web.Controllers
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
             }
-            else
-            {
-                siteNavs = siteNavs.Where(x => x.Name != "#Technical");
-            }
 
             model.SiteNav = siteNavs.ToList();
 
