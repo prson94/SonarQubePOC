@@ -320,27 +320,48 @@
                 <div class="col s3">
                     <div id='MinimumLengthTip'
                          class="FieldName">Minimum{{currentType == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="minLength"
+                    <input *ngIf="currentType == 'Text'; else minNumberinput" name="minLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}} "
                            min="{{currentType == 'Text' ? minLengthLowerText : minLengthLowerNumeric }}"
                            max="{{currentType == 'Text' ? minLengthUpperText : minLengthUpperNumeric }}"
                            [disabled]="CheckMinRequired(model) || model.FieldType.Type[currentType].Validation.Pattern?.length > 0 "
-                           [(ngModel)]="model.FieldType.Type[currentType].Validation.MinimumValue"
+                           [(ngModel)]="model.FieldType.Type[currentType].Validation.MinimumLength"
                            (input)="validate('MinimumLength')"
                            style="width: 98%; display: block;" />
+                    <ng-template #minNumberinput>
+                        <input name="minLength"
+                               type="number"
+                               step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}} "
+                               min="{{currentType == 'Text' ? minLengthLowerText : minLengthLowerNumeric }}"
+                               max="{{currentType == 'Text' ? minLengthUpperText : minLengthUpperNumeric }}"
+                               [disabled]="CheckMinRequired(model) || model.FieldType.Type[currentType].Validation.Pattern?.length > 0 "
+                               [(ngModel)]="model.FieldType.Type[currentType].Validation.MinimumValue"
+                               (input)="validate('MinimumLength')"
+                               style="width: 98%; display: block;" />
+                    </ng-template>
                 </div>
                 <div class="col s3">
                     <div id='MaximumLengthTip'
                          class="FieldName">Maximum{{currentType == 'Text' ? "Length" : "Value"}}</div>
-                    <input name="maxLength"
+                    <input  *ngIf="currentType == 'Text'; else maxNumberinput" name="maxLength"
                            type="number"
                            step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}}"
                            min="{{currentType == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
                            max="{{currentType == 'Text' ? maxLengthUpperText : maxLengthUpperNumeric }}"
-                           [(ngModel)]="model.FieldType.Type[currentType].Validation.MaximumValue"
+                           [(ngModel)]="model.FieldType.Type[currentType].Validation.MaximumLength"
                            (input)="validate('MaximumLength')"
                            style="width: 98%; display: block;" />
+                    <ng-template #maxNumberinput>
+                        <input name="maxLength"
+                               type="number"
+                               step="{{model.FieldType.Type[currentType].Increment ? model.FieldType.Type[currentType].Increment : 1}}"
+                               min="{{currentType == 'Text' ? maxLengthLowerText : maxLengthLowerNumeric }}"
+                               max="{{currentType == 'Text' ? maxLengthUpperText : maxLengthUpperNumeric }}"
+                               [(ngModel)]="model.FieldType.Type[currentType].Validation.MaximumValue"
+                               (input)="validate('MaximumLength')"
+                               style="width: 98%; display: block;" />
+                    </ng-template>
                 </div>
                 <div *ngIf="currentType == 'Decimal'"
                      class="col s3">

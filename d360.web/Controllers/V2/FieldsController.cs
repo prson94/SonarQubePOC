@@ -662,7 +662,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public HttpResponseMessage GetFieldTypeFormData(string name, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
+        public HttpResponseMessage GetFieldTypeFormData(string name, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
         {
             var prefix = "Fields.GetFieldTypeFormData => ";
             var errorMessage = "";
@@ -1622,21 +1622,23 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets the dislpay fields for a given intersecttypeid asset type uid
+        /// checks if a relationship is listable
         /// </summary>
         /// <param name="intersectTypeUid">intersectTypeUid></param>
         /// <param name="assetTypeUid">assetTypeUid></param>
-        /// <returns>A list of display fields</returns>
+        /// <param name="actionTypeUid">actionTypeUid></param>
+        /// <param name="relationshipTypeUid">relationshipTypeUid></param>
+        /// <returns>bool value for isListable</returns>
         [
             HttpGet,
             Route("IsListableRelationship"),
-            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
+        public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
         {
             var prefix = "Fields.IsListableRelationship => ";
             var errorMessage = "";

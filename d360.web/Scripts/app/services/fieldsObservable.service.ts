@@ -258,7 +258,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<FieldTypeEditorModel>(`form/FieldType_FormData?name=${name}&${url}`)
+            .get<FieldTypeEditorModel>(`api/v2/fields/GetFieldTypeFormData?name=${name}&${url}`)
             .pipe(
                 map(response => <FieldTypeEditorModel>response),
                 catchError(err => this.handleError(err))
@@ -404,14 +404,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationshipFieldIsListable(
-        type: string,
-        id: number,
-        intersectTypeId
-    ): Observable<boolean> {
+    getRelationshipFieldIsListable(intersectTypeUid:string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&assetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&actionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&relationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<boolean>(`form/FieldType_Relationship_IsListable?type=${type}&id=${id}&intersectTypeId=${intersectTypeId}`)
+            .get<any>(`api/v2/fields/IsListableRelationship?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

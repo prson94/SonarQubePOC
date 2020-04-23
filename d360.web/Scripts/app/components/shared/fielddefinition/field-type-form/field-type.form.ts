@@ -158,8 +158,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     //#region load functions
 
     private getFieldTypeEditorHandler = (responseGetFieldTypeEditor: FieldTypeAPIModelField) => {
+
+        this.currentType = this.currentFieldType(responseGetFieldTypeEditor);
+        let DBType = this.currentType;
+        this.currentType = this.checkCurrentTypeName(this.currentType);
+        if (DBType != this.currentType) {
+            let initType = new FieldType(this.currentType);
+            responseGetFieldTypeEditor.Type[this.currentType] = { ...(initType[this.currentType]), ...responseGetFieldTypeEditor.Type[DBType]};
+            responseGetFieldTypeEditor.Type[DBType] = null;//only one type to be defined for editing
+
+        }
         this.model.FieldType = responseGetFieldTypeEditor;
-        this.currentType = this.currentFieldType(responseGetFieldTypeEditor);        
         this.model.cardinalRelationship = null;
         this.model.selectedLookup = null;
     };
@@ -199,7 +208,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.fieldsService.getFieldTypeEditor(this.name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
                 .subscribe(ret => {
                     this.getFieldTypeEditorHandler(ret);
-                    this.isLoading = false;
                     this.fieldsService.getLookups(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, this.name)
                         .subscribe(s => {
                             this.getLookupsHandler(s);
@@ -317,6 +325,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
 
+        console.log(value);
+        console.log(this.currentType);
         if (value == null) {
             this.currentType = "Empty";
             this.model.FieldType.Type = new FieldType("Empty");
@@ -346,11 +356,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     console.log(e);
                 }
                 break;
-            case 'FieldFromRelationship':
+            case 'fieldfromrelationship':
                 try {
                     if (this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid) {
-                        observables.push(this.cardinalFieldFromRelationshipSelected(this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid,
-                            this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
+                        observables.push(this.cardinalFieldFromRelationshipSelected(this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid, this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
                     } else if (this.lookups.Field_CardinalRelationships.length > 0) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_FieldFromRelRelationships[0].value,
                             this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
@@ -475,7 +484,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //update the model to have correct lookuptype object and id
         this.model.FieldType.Type["Relationship"].IntersectTypeUid = value;
 
-        return this.fieldsService.getRelationshipFieldIsListable(this.objectType, this.objectID, value)
+        return this.fieldsService.getRelationshipFieldIsListable(value, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid)
             .pipe(map(res => {
                 this.isListableRelationship = res;
                 if (!this.isListableRelationship)
@@ -489,7 +498,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             console.log("[ERROR] - Intersect TYPE IS UNDEFINED", value);
             return Observable.create();
         }
-
+       
         return this.fieldsService.getRelationObjectFields(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid, value)
             .pipe(map(
                 d => {
@@ -1189,7 +1198,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.currentType ==  'Number' || this.currentType ==  'Decimal') {
             return false;
         } else {
-            return !fem.FieldType.Type[this.currentType].IsRequired;
+            return !fem.FieldType.Type[this.currentType].Validation.IsRequired;
         }
     }
 
@@ -1335,5 +1344,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type.ComplexRelationLookup.Definition.Relations.push(definition);
             this.model.FieldType.Type.ComplexRelationLookup.Definition.Fields.push(...mappedFields);
         });
+    }
+
+    checkCurrentTypeName(name: string): string{
+        if (this.currentType == 'ComputedRelationshipField')
+            return "FieldFromRelationship";
+        if (this.currentType == "ComputedOwnershipLookup")
+            return "OwnershipLookup";
+        if (this.currentType == "ComputedRelationshipReferenceList")
+            return "RefListRelationship";
+        if (this.currentType == "ComputedRelationshipLookup") {
+            return "ComplexRelationLookup";
+        }
+        return name;
     }
 }

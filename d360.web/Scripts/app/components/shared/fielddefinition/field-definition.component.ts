@@ -137,6 +137,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 return "Ownership Lookup";
             case "ComputedRelationshipLookup":
                 return "Relation Lookup";
+            case "Text":
+                return "Simple Text";
             default:
                 return this.currentFieldType(item);
         }
