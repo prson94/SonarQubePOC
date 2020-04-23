@@ -1286,7 +1286,7 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Rows Passed");
             doc.SetCellValue(rowNumber, index++, "Rows Failed");            
             doc.SetCellValue(rowNumber, index++, "Passed");
-            doc.SetCellValue(rowNumber, index++, "Result Uid");
+            doc.SetCellValue(rowNumber, index++, "Rule Result UID");
 
             #endregion
             #region Body
