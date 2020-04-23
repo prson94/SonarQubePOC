@@ -738,7 +738,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key == "_order"))
             {
                 _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
-                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "Passed", "PassFraction" };
+                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "Passed", "PassFraction", "TotalCount" };
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_order value '{_order}' is not valid. Value must be one of the following: {string.Join(",", _orderColumns.ToArray())}.");
@@ -1229,6 +1229,7 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "EvaluatedAssetClass");
             doc.SetCellValue(rowNumber, index++, "EffectiveDate");
             doc.SetCellValue(rowNumber, index++, "RunDate");
+            doc.SetCellValue(rowNumber, index++, "TotalCount");
             doc.SetCellValue(rowNumber, index++, "PassCount");
             doc.SetCellValue(rowNumber, index++, "FailCount");
             doc.SetCellValue(rowNumber, index++, "PassFraction");
@@ -1248,12 +1249,13 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
                 doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
                 doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
                 doc.SetCellValue(rowNumber, index++, row.Passed);
             }
-            doc.AutoFitColumn(1, 12);
+            doc.AutoFitColumn(1, 13);
             #endregion
             #endregion
             return doc;
@@ -1278,10 +1280,11 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Asset Type");
             doc.SetCellValue(rowNumber, index++, "Asset");
             doc.SetCellValue(rowNumber, index++, "Run Date");
-            doc.SetCellValue(rowNumber, index++, "EffectiveDate");            
-            doc.SetCellValue(rowNumber, index++, "Pass Count");
-            doc.SetCellValue(rowNumber, index++, "Fail Count");
+            doc.SetCellValue(rowNumber, index++, "Effective Date");
             doc.SetCellValue(rowNumber, index++, "Pass Fraction");
+            doc.SetCellValue(rowNumber, index++, "Total Rows");
+            doc.SetCellValue(rowNumber, index++, "Rows Passed");
+            doc.SetCellValue(rowNumber, index++, "Rows Failed");            
             doc.SetCellValue(rowNumber, index++, "Passed");
             doc.SetCellValue(rowNumber, index++, "Result Uid");
 
@@ -1296,13 +1299,14 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPath);
                 doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
                 doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
-                doc.SetCellValue(rowNumber, index++, row.PassCount);
-                doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
+                doc.SetCellValue(rowNumber, index++, row.TotalCount);
+                doc.SetCellValue(rowNumber, index++, row.PassCount);
+                doc.SetCellValue(rowNumber, index++, row.FailCount);                
                 doc.SetCellValue(rowNumber, index++, row.Passed);
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
-            doc.AutoFitColumn(1, 10);
+            doc.AutoFitColumn(1, 11);
             #endregion
             #endregion
             return doc;

@@ -64,6 +64,7 @@ export class RuleResultItems {
     EvaluatedAssetClass: string;
     EffectiveDate: Date;
     RunDate: Date;
+    TotalCount: number;
     PassCount: number;
     FailCount: number;
     PassFraction: number;

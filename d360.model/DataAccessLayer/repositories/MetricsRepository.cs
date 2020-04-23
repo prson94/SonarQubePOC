@@ -877,7 +877,7 @@ namespace d360.model.DataAccessLayer
 	                            {evaluatedAssetSQL}";
 
             var dataQualityResultSql = $@"select 
-	                        distinct DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount, DQR.PassFraction as PassFraction, P.Passed as Passed
+	                        distinct DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, P.Passed as Passed
                         from 
 	                        {owningAssetSQL}
 	                        {evaluatedAssetSQL}

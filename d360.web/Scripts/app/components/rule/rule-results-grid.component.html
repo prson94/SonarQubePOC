@@ -25,16 +25,17 @@
              scrollWidth="100%">
         <ng-template pTemplate="colgroup">
             <colgroup>
-                <col style="width: 150px">
+                <col style="width: 100px">
                 <col style="width: 150px">
                 <col style="width: 150px">
                 <col style="width: 120px">
                 <col style="width: 120px">
-                <col style="width: 100px;text-align:center;align-content:center">
-                <col style="width: 100px;text-align:center;align-content:center">
-                <col style="width: 100px;text-align:center;align-content:center">
-                <col style="width: 50px;text-align:center;align-content:center">
-                <col style="width: 20px;text-align:center;align-content:center">
+                <col style="width: 100px">
+                <col style="width: 100px">
+                <col style="width: 100px">
+                <col style="width: 100px">
+                <col style="width: 50px">
+                <col style="width: 20px">
             </colgroup>
         </ng-template>
         <ng-template pTemplate="header">
@@ -63,21 +64,26 @@
                     Pass Fraction
                     <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'PassCount'">
+                <th [pSortableColumn]="'TotalCount'" style="text-align:center;">
+                    Total Rows
+                    <d3s-sortIcon [field]="'TotalCount'"></d3s-sortIcon>
+                </th>
+                <th [pSortableColumn]="'PassCount'" style="text-align:center;">
                     Rows Passed
                     <d3s-sortIcon [field]="'PassCount'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'FailCount'">
+                <th [pSortableColumn]="'FailCount'" style="text-align:center;">
                     Rows Failed
                     <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
                 </th>
-                <th [pSortableColumn]="'Passed'">
+                <th [pSortableColumn]="'Passed'" style="text-align:center;">
                     Passed
                     <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="''"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
+                <th></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -95,11 +101,11 @@
                 <td>
                     <span>{{item.EvaluatedAssetClass}}</span>
                 </td>
-                <td>                    
+                <td>
                     <span>{{item.EvaluatedAssetTypePath}}</span>
                 </td>
                 <td>
-                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>                    
+                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>
                 </td>
                 <td>
                     <span>{{item.RunDate | date : 'short'}}</span>
@@ -108,18 +114,19 @@
                     <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
                 </td>
                 <td>{{item.PassFraction}}</td>
-                <td>{{item.PassCount}}</td>
-                <td>{{item.FailCount}}</td>
-                <td>
+                <td style="text-align:center;">{{item.TotalCount}}</td>
+                <td style="text-align:center;">{{item.PassCount}}</td>
+                <td style="text-align:center;">{{item.FailCount}}</td>
+                <td style="text-align:center;">
                     <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
                     <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
                 </td>
-                <td>
+                <td style="text-align:center;">
                     <div class="RowTools">
                         <a style="cursor:pointer;" (click)="selected=item;">
                             <i [copy-clipboard]="item.ResultUid"
-                                [pTooltip]="'UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
-                                tooltipPosition="top" class="fa fa-info"></i>
+                               [pTooltip]="'UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
+                               tooltipPosition="top" class="fa fa-info"></i>
                         </a>
                     </div>
                 </td>

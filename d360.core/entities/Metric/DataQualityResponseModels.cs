@@ -24,6 +24,7 @@ namespace d360.core.entities.Metric
         public string EvaluatedAssetClass { get; set; }        
         public DateTime EffectiveDate { get; set; }
         public DateTime RunDate { get; set; }
+        public long TotalCount { get; set; }
         public long PassCount { get; set; }
         public long FailCount { get; set; }
         public double PassFraction { get; set; }
