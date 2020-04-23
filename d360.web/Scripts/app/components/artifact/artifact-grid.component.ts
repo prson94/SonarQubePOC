@@ -84,6 +84,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     showDelete: boolean = false;
     showEditor: boolean = false;
     isLoading: boolean = false;
+    isDefinitionLoaded: boolean = false;
     hasNoListableColumns: boolean = false;
 
     selected: any = null;
@@ -209,7 +210,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
                 else {
                     this.hasNoListableColumns = false;
                 }
-
+                this.isDefinitionLoaded = true;
                 this.changeDetectorRef.markForCheck();
             }
         );
@@ -242,7 +243,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
         }
 
         if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
-            params._simpleFilter = this.stateService.artifactTypeFilters.simpleTextFilter;
+            params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
         }
         else {
             delete params['_simpleFilter'];

@@ -8,6 +8,11 @@ using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
 using Dapper;
+using d360.extensions.info;
+using d360.extensions.caching;
+using d360.extensions.queue;
+using d360.model;
+using d360.core.enums;
 
 namespace igx.jobs.displayvaluechecker
 {
@@ -44,22 +49,45 @@ namespace igx.jobs.displayvaluechecker
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
+                companies = companies.Where(x => x.CompanyID == 2).ToList();
 #endif
 
                 foreach(var c in companies)
                 {
-                    try
+                    #region Create EF connection
+
+                    var sec = new UriSecurityContextProvider()
                     {
-                        using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                        CompanyID = c.CompanyID,
+                        ResourceID = 0,
+                        CompanyPrefix = c.UrlPrefix,
+                        IsAdministrator = true
+                    };
+                    var cache = new DummyCachingProvider();
+                    var queue = new AzureQueueSource();
+                    var community = new CommunityContext(cache, queue, sec);
+
+                    #endregion
+
+                    var rs = await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Active);
+                    if (rs.StatusCode == System.Net.HttpStatusCode.OK)
+                    {
+                        try
                         {
-                            company.OpenWithRetry(RetryPolicy.DefaultProgressive);                        
-                            await company.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
-                        }                          
-                    }
-                    catch (Exception ex)
-                    {
-                        CoreFunction.AITrackException(functionName, ex, c.CompanyID);                        
+                            using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
+                            {
+                                company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                await company.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            CoreFunction.AITrackException(functionName, ex, c.CompanyID);
+                        }
+                        finally
+                        {
+                            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                        }
                     }
                 }
 

@@ -57,15 +57,5 @@ namespace d360.web.Controllers.V2
             }
             return null;            
         }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildIndex")]
-        public HttpResponseMessage RebuildIndex()
-        {
-            if (!Company.CurrentResourceIsAdmin) return ReturnApiError(HttpStatusCode.Unauthorized, "User not authorized to perfom this action");
-
-            Company.RebuildIndexRequest();
-
-            return Request.CreateResponse(HttpStatusCode.Created, new { type = "confirm", title = "Success!", action = "add", message = "Rebuild request received and accepted.", id = "" });
-        }
     }
 }

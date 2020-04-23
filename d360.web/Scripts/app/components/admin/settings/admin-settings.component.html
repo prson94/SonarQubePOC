@@ -93,42 +93,20 @@
                 {{routeValidationMessage}}
             </div>
         </div>
-        <div class="tile tile-detail">
+        <div class="tile tile-detail rebuild-panel">
             <header>Rebuild Requests</header>
 
-            <div class="row">
-                <div class="col s9">
-                    <div class="ui-card-subtitle">Asset Graph</div>
-                    <div class="errorMessage">{{graphValidationMessage}}</div>
-                    <div class="directions">To submit a request to rebuild the Asset Browser graph click the button to the right. This request may take up to thirty minutes, depending on the number of assets contained within your environment.</div>
+            <div style="margin-bottom: 20px" *ngFor="let rs of rebuildStatuses">
+                <div>
+                    <button class="link-button" (click)="rebuild(rs)" [disabled]="isDisabled(rs)"><i [class]="rebuildJobIcon(rs)"></i>Rebuild {{rs.jobTokenName}}</button>
                 </div>
-                <div class="right">
-                    <button pButton type="button" (click)="rebuildAssetGraph()" [disabled]="disableRebuildAssetGraph" label="Rebuild"></button>&nbsp;                    
-                </div>
-            </div>
-
-            <div class="row">
-                <div class="col s9">
-                    <div class="ui-card-subtitle">Display Values</div>
-                    <div class="errorMessage">{{displayValueValidationMessage}}</div>
-                    <div class="directions">To submit a request to rebuild the Govern object display values click the button to the right.</div>
-                </div>
-                <div class="right">
-                    <button pButton type="button" (click)="rebuildDisplayValues()" [disabled]="disableRebuildDisplayValue" label="Rebuild"></button>&nbsp;
+                <div class="description" [innerHtml]="rs.jobTokenDescription"></div>
+                <div class="status" [innerHtml]="rs.validationMessage"></div>
+                <div class="status" *ngIf="rs.lastStartedOn">
+                    <span *ngIf="isDisabled(rs)">In progress. </span>
+                    Rebuild last started on {{(rs.lastStartedOn |  date:'medium')}} <span *ngIf="rs.lastCompletedOn">and completed on {{(rs.lastCompletedOn |  date:'medium')}}</span>.
                 </div>
             </div>
-
-            <div class="row">
-                <div class="col s9">
-                    <div class="ui-card-subtitle">Search Index</div>
-                    <div class="errorMessage">{{indexValidationMessage}}</div>
-                    <div class="directions">To submit a request to refresh/rebuild the search index click the button to the right.</div>
-                </div>
-                <div class="right">
-                    <button pButton type="button" (click)="rebuildIndex()" [disabled]="disableRebuildIndex" label="Rebuild"></button>&nbsp;
-                </div>
-            </div>
-
         </div>
 
     </div>

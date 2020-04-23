@@ -33,12 +33,13 @@ namespace d360.web.Controllers.V2
     {
         ICompanyContext _company;
         IMembershipRepository membershipRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository)
+        IAssetRepository assetRepository;
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository,IAssetRepository assetRepository)
             : base(community, company)
         {
             _company = company;
             this.membershipRepository = membershipRepository;
-
+            this.assetRepository = assetRepository;
         }
         /// <summary>
         /// Retrieves a list of users.
@@ -252,6 +253,82 @@ namespace d360.web.Controllers.V2
                 return Request.CreateResponse(HttpStatusCode.OK, model);
             }
 
+        }
+
+
+        /// <summary>
+        /// Adds members to a group for a given group unique identifier.
+        /// </summary>
+        /// <param name="groupUid">The unique identifier of the Group.</param>
+        /// <param name="users">The users that need to be added to the group</param>
+        [
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupUid:Guid}/members"),
+           SwaggerRequestExample(typeof(List<Guid>), typeof(InsertUserToGroupExample)),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+       ]
+        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<Guid> users)
+        {
+            var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
+            var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
+            
+            List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if (isValidGroup.Total == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
+
+            if (users.Count != users.Distinct().Count())
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
+            }
+            if(users.Count == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
+
+            var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+
+            foreach (var user in users)
+            {
+                var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
+                bool isValid = this.IsValidGuid(userUid, "uid");
+
+                if (!isValid)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
+
+                var isUser = this.assetRepository.GetAssetByUID(user);
+
+                if (isUser == null || isUser.Object != "Resource")
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
+
+
+                var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
+
+                if (isMember != null)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.ToString()} is already a member of this group"));
+
+                resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
+            }
+
+            try
+            {
+                foreach (var m in resourceGroups)
+                    Company.Add(m);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, users);
         }
 
         /// <summary>
@@ -526,6 +603,99 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
 
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+
+        /// <summary>
+        /// Adds the specified users.
+        /// </summary>
+        /// <remarks>
+        /// If the password is omitted one will be generated randomly. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to add.</param>
+        [
+            HttpPost,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users)
+        {
+            var prefix = "Membership.PostUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = true);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified users.
+        /// </summary>
+        /// <remarks>
+        /// The Password field is optional and will not be updated if omitted. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to update.</param>
+        [
+            HttpPut,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users)
+        {
+            var prefix = "Membership.PutUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = false);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)
             {

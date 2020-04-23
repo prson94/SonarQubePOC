@@ -77,7 +77,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         this.ruleSub = this.rulesService.getRule(ruleId)
             .subscribe(result => {
                 this.rule = result;
-
+                
                 this.setBrowserTitle(this.titleService, this.rule.Name);
                 this.messages = []; //clear any messages for this rule
                 this.loadItemSurvey();

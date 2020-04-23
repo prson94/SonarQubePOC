@@ -58,6 +58,9 @@ export class ArtifactTopLevelFilterComponent extends BaseComponent implements On
             } else {
                 field.disabled = false;
             }
+            if (field.fieldType == 'Date' && field.value) {
+                field.value = new Date(field.value);
+            }
         }
         this.ref.markForCheck();
     }

@@ -654,10 +654,11 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_evaluatedAssetUid", "Asset UID.  If provided only rule results for the specified asset will be returned", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 250.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
-            SwaggerParameter("_order", "The name of the field to order results by (Default ascending).", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by (Default by Effective Date).", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateEnd all results between the EffectiveDateStart and now will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateStart all results up until the EffectiveDateEnd will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
+            SwaggerParameter("_isFriendlyNameExport", "Additional parameter that can be supplied when doing a file export. If provided response file will replicate format of Result List screen", DataType = "boolean", ParameterType = "query", Required = false),            
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
@@ -737,7 +738,7 @@ namespace d360.web.Controllers.V2
             if (queryParams.Any(q => q.Key == "_order"))
             {
                 _order = queryParams.ToList().FirstOrDefault(q => q.Key == "_order").Value;
-                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EffectiveDate", "RunDate", "Passcount", "FailCount", "Passed" };
+                List<string> _orderColumns = new List<string>() { "ResultUid", "EvaluatedAssetUid", "OwningAssetUid", "EvaluatedAssetPath", "EvaluatedAssetClass", "EffectiveDate", "EvaluatedAssetTypePath", "RunDate", "Passcount", "FailCount", "Passed", "PassFraction", "TotalCount" };
                 if (_orderColumns.FindIndex(x => x.Equals(_order, StringComparison.InvariantCultureIgnoreCase)) == -1)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_order value '{_order}' is not valid. Value must be one of the following: {string.Join(",", _orderColumns.ToArray())}.");
@@ -812,7 +813,18 @@ namespace d360.web.Controllers.V2
 
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    SLDocument document = CreateResponseDocument(dataQualityResult);
+                    SLDocument document = new SLDocument();
+                    bool isExport = false;
+                    if(bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_isFriendlyNameExport").Value, out isExport) && isExport)
+                    {
+                        document = CreateResponseDocumentForExport(dataQualityResult);
+                    }                        
+                    else
+                    {
+                        document = CreateResponseDocument(dataQualityResult);
+                        
+                    }
+                    
                     var stream = new System.IO.MemoryStream();
                     document.SaveAs(stream);
 
@@ -821,9 +833,9 @@ namespace d360.web.Controllers.V2
                         Content = new ByteArrayContent(stream.GetBuffer())
                     };
                     result.Content.Headers.ContentLength = stream.Length;
-
+                    
                     result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-                    {
+                    {                        
                         FileName = $"Data_Quality_Results_{System.DateTime.Now.ToString("yyyy-MM-dd")}.xlsx"
                     };
                     result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
@@ -1212,10 +1224,15 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "ResultUid");
             doc.SetCellValue(rowNumber, index++, "OwningAssetUid");
             doc.SetCellValue(rowNumber, index++, "EvaluatedAssetUid");
+            doc.SetCellValue(rowNumber, index++, "EvaluatedAssetPath");
+            doc.SetCellValue(rowNumber, index++, "EvaluatedAssetTypePath");
+            doc.SetCellValue(rowNumber, index++, "EvaluatedAssetClass");
             doc.SetCellValue(rowNumber, index++, "EffectiveDate");
             doc.SetCellValue(rowNumber, index++, "RunDate");
+            doc.SetCellValue(rowNumber, index++, "TotalCount");
             doc.SetCellValue(rowNumber, index++, "PassCount");
             doc.SetCellValue(rowNumber, index++, "FailCount");
+            doc.SetCellValue(rowNumber, index++, "PassFraction");
             doc.SetCellValue(rowNumber, index++, "Passed");
 
             #endregion
@@ -1227,13 +1244,69 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
                 doc.SetCellValue(rowNumber, index++, row.OwningAssetUid.ToString());
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetUid.ToString());
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPath);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetTypePath);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
                 doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
                 doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
+                doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
                 doc.SetCellValue(rowNumber, index++, row.Passed);
             }
-            doc.AutoFitColumn(1, 8);
+            doc.AutoFitColumn(1, 13);
+            #endregion
+            #endregion
+            return doc;
+        }
+
+        /// <summary>
+        /// Create the Excel document for export
+        /// </summary>
+        /// <returns>A spreadsheet populated with the details of the data quality results formatted to match the results list screen</returns>
+        private SLDocument CreateResponseDocumentForExport(DataQualityGetResultModel dataQualityResult)
+        {
+            SLDocument doc = new SLDocument();
+            doc.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Results");
+
+            #region Create the list sheet
+
+            #region Header
+            int index = 1;
+            int rowNumber = 1;
+
+            doc.SetCellValue(rowNumber, index++, "Asset Class");
+            doc.SetCellValue(rowNumber, index++, "Asset Type");
+            doc.SetCellValue(rowNumber, index++, "Asset");
+            doc.SetCellValue(rowNumber, index++, "Run Date");
+            doc.SetCellValue(rowNumber, index++, "Effective Date");
+            doc.SetCellValue(rowNumber, index++, "Pass Fraction");
+            doc.SetCellValue(rowNumber, index++, "Total Rows");
+            doc.SetCellValue(rowNumber, index++, "Rows Passed");
+            doc.SetCellValue(rowNumber, index++, "Rows Failed");            
+            doc.SetCellValue(rowNumber, index++, "Passed");
+            doc.SetCellValue(rowNumber, index++, "Rule Result UID");
+
+            #endregion
+            #region Body
+            foreach (var row in dataQualityResult.items)
+            {
+                index = 1;
+                rowNumber++;
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetTypePath);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPath);
+                doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
+                doc.SetCellValue(rowNumber, index++, row.TotalCount);
+                doc.SetCellValue(rowNumber, index++, row.PassCount);
+                doc.SetCellValue(rowNumber, index++, row.FailCount);                
+                doc.SetCellValue(rowNumber, index++, row.Passed);
+                doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
+            }
+            doc.AutoFitColumn(1, 11);
             #endregion
             #endregion
             return doc;

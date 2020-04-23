@@ -87,6 +87,20 @@ namespace d360.web.Models
         }
     }
 
+    public class InsertUserToGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new List<Guid>
+                {
+                    { Guid.Empty },
+                    { Guid.Empty }
+
+                };
+        }
+    }
+
     #region Asset Browser
 
     public class GetAssetLineagePostModelExample : IExamplesProvider
@@ -206,6 +220,54 @@ namespace d360.web.Models
                 RunDate = "yyyy-MM-dd HH:mm:ss",
                 PassCount = 0,
                 FailCount = 0
+            };
+        }
+    }
+
+    #endregion
+
+    #region Membership Examples
+
+    public class UserPostExample: IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new 
+            {
+                Username = "user@example.com",
+                FirstName = "John",
+                LastName = "Smith",
+                Password = "xxxxxx",
+                IsAdministrator = false,
+                ExecutionItemUid = Guid.Empty,
+                Fields = new Dictionary<string,string>()
+                {
+                    { "MyApiFieldName1", "My Field value" },
+                    { "MyApiFieldName2", "My Field value" }
+                }
+            };
+        }
+    }
+
+    public class UserPutExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new
+            {
+                uid = Guid.Empty,
+                Username = "user@example.com",
+                FirstName = "John",
+                LastName = "Smith",
+                Password = "xxxxxx",
+                IsAdministrator = false,
+                ExecutionItemUid = Guid.Empty,
+                State = "Active|Inactive|Deleted",
+                Fields = new Dictionary<string, string>()
+                {
+                    { "MyApiFieldName1", "My Field value" },
+                    { "MyApiFieldName2", "My Field value" }
+                }
             };
         }
     }

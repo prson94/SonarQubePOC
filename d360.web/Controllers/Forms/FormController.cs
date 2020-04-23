@@ -811,10 +811,6 @@ namespace d360.web.Controllers
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
             }
-            else
-            {
-                siteNavs = siteNavs.Where(x => x.Name != "#Technical");
-            }
 
             model.SiteNav = siteNavs.ToList();
 
@@ -2930,34 +2926,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
 
         #endregion
-
-        #endregion
-
-        #region UpdateDisplayValues
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildDisplayValues")]
-        public JsonResult RebuildDisplayValues(string objectType, object[] param)
-        {
-            if(!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            Company.RebuildDisplayValuesRequest();
-
-            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
-        }
-
-        #endregion
-
-        #region UpdateAssetGraph
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildAssetGraph")]
-        public JsonResult RebuildAssetGraph()
-        {
-            if (!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            Company.RebuildAssetGraphRequest();
-
-            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
-        }
 
         #endregion
 

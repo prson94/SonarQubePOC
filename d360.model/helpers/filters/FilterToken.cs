@@ -270,7 +270,7 @@ namespace d360.model.helpers
 
                     break;
                 default:
-                    value = value.ToString().Trim('\'');
+                    value = value.ToString().Trim('\'').Replace("&apos;", "'");
                     break;
             }
         }
