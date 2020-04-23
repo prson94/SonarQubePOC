@@ -1043,6 +1043,9 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                     throw new Exception($"Could not find object asset type for uid [{objectUid}]");
                 }
 
+                var subjectIsReferenceItemType = subjectAssetType.Object == "ReferenceItemType" && subjectAssetType.ObjectID == 0;
+                var objectIsReferenceItemType = objectAssetType.Object == "ReferenceItemType" && objectAssetType.ObjectID == 0;
+
                 // get the load columns
                 var columns = LoadColumns.Where(x => x.LoadID == load.ID).ToList();
                 if (columns == null)
@@ -1078,7 +1081,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                 long id = -1;
                                 long.TryParse(field.Value, out id);
 
-                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id })).FirstOrDefault();
+                                Guid assetUid = (await QueryAsync<Guid>($"select [uid] from {(subjectIsReferenceItemType ? "assetType" : "asset")} where id = @id", new { id })).FirstOrDefault();
                                 upsert.SubjectAssetUid = assetUid;
                             }
                             else if (field.ColumnIndex == objectAssetIDFieldIndex)
@@ -1086,7 +1089,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                 long id = -1;
                                 long.TryParse(field.Value, out id);
 
-                                Guid assetUid = (await QueryAsync<Guid>("select [uid] from asset where id = @id", new { id })).FirstOrDefault();
+                                Guid assetUid = (await QueryAsync<Guid>($"select [uid] from {(objectIsReferenceItemType ? "assetType" : "asset")} where id = @id", new { id })).FirstOrDefault();
                                 upsert.ObjectAssetUid = assetUid;
                             }
                             else
@@ -1121,13 +1124,13 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         await Connection.OpenAsync();
 
                     //populate intersect IDs
-                    await Connection.ExecuteAsync(@"update L
+                    await Connection.ExecuteAsync($@"update L
                         set     L.IntersectUid = coalesce(I.[uid], 0x0)
                         from    LoadItem L
                                 inner join LoadItemColumn CS on CS.RowIndex = L.RowIndex and CS.ColumnIndex = @subjectAssetIDFieldIndex and CS.LoadID = @id
                                 inner join LoadItemColumn CO on CO.RowIndex = L.RowIndex and CO.ColumnIndex = @objectAssetIDFieldIndex and CO.LoadID = @id
-                                inner join Asset SA on SA.ID = CS.[Value]
-                                inner join Asset OA on OA.ID = CO.[Value]
+                                left join {(subjectIsReferenceItemType ? "AssetType" : "Asset")} SA on SA.ID = try_cast(CS.[Value] as bigint)
+                                left join {(objectIsReferenceItemType ? "AssetType" : "Asset")} OA on OA.ID = try_cast(CO.[Value] as bigint)
                                 inner join IntersectType T on T.[uid] = @intersectTypeUid
                                 left join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
                                     and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
@@ -1167,17 +1170,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
             {
                 throw ex;
             }
-        }
-
-        public async Task BulkUnrelate(Load load, IRelationshipRepository relationshipRepository, IAssetRepository assetRepository)
-        {
-            if (load == null)
-                throw new ArgumentNullException("load cannot be null");
-
-            if (!load.IntersectTypeUid.HasValue)
-                throw new ArgumentNullException("intersect type uid cannot be null");
-
-            await GenerateExecutionItemUids(load, timeout);
         }
 
         #endregion
