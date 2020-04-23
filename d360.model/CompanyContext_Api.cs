@@ -492,7 +492,7 @@ using       (
                     coalesce(F.LookupValue, F.FieldValue) as Value,
                     F.FieldValue as FormattedValue
             from    {tableName} A
-                    inner api.ExecutionField F on F.ExecutionID = A.ExecutionID
+                    inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                         and F.ItemNumber = A.ItemNumber 
                         and A.ObjectID is not null 
                         and F.FieldTypeID is not null
