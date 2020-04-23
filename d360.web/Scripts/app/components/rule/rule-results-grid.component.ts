@@ -64,11 +64,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
-        }
-        if (!this.ruleUid) {
-            console.log("ERROR - NO RULE Uid");
-            return;
-        }
+        }        
 
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
