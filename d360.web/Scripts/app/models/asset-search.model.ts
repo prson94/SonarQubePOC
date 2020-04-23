@@ -69,3 +69,23 @@ export class AssetSearchApiResponse {
     pageSize: number;
     pageNum: number;
 }
+
+export class V2ApiFilters {
+    _pageSize: number;
+    _pageNum: number;
+    _order: string;
+    _direction: string;
+    _predicateUid: string;
+    _subjectUid: string;
+    _objectUid: string;
+    _assetUid: string;
+    _simpleFilter: string;
+    _ownedBy: string;
+    _filter: string;
+    _relationFilter: string;
+    useTypeLevelDefaultSorts: boolean;
+    _loadPermissionDetails: boolean;
+    _includeParent: boolean;
+    _excludeCount: boolean;
+    usegraphforparent: boolean;
+}

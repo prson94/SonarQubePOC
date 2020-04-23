@@ -51,7 +51,7 @@ namespace d360.web.Controllers
                 fields.Insert(0, new FieldType { Type = "string", Name = "Parent", FriendlyName = "Parent" });
 
             var filters = GetFilterValuesFromRequest(Request, true);
-            
+
             if (!string.IsNullOrEmpty(ownerUsers))
             {
                 try
@@ -282,7 +282,7 @@ where   A.Type = 'ArtifactType'
                     }
                 });
             }
-                       
+
             SLDocument document = null;
             if (template.IncludeParent)
             {
@@ -757,7 +757,7 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
         public async Task<ActionResult> ByType(int id, string sortDataField, string sortOrder, int pagenum, int pagesize, string filter)
         {
             try
-            {                
+            {
                 var filters = GetFilterValuesFromRequest(Request, true);
                 var results = await Company.GetDynamicAssets(id, filters, pagenum, pagesize, sortDataField, sortOrder, filter);
                 return jsonNetResult(new { results = results.Results, total = results.Count });
@@ -767,48 +767,6 @@ where   O.Type = 'ArtifactType' and O.TypeID = @id and O.[State] = 1
                 return new HttpStatusCodeResult(System.Net.HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-
-        [Route("types/{assetTypeClass}")]
-        public JsonNetResult GetTypes(AssetTypeClass assetTypeClass)
-        {
-            var models = Company.Query<AssetTypeTopLevelUiViewModel>(@"
-select	AT.ObjectID as ID,
-		IT.SubjectID as ParentID,
-		AT.Name,
-        AT.Description,
-		AT.AutoDisplayDescription,
-		AT.CanOwnFusion,
-		AT.DisplayFormat,
-		AT.CreatedBy,
-		AT.CreatedOn,
-		AT.UpdatedBy,
-		AT.UpdatedOn,
-        AT.ID as AssetTypeID,
-        AT.[Class],
-        K.[Count],
-        cast(1 as bit) as expanded,
-        cast(AT.UID as nvarchar(200)) as uid
-from    AssetType AT
-		cross apply (
-                    SELECT  count(1) as [Count]
-					FROM    Asset
-                    where   AssetTypeID = AT.ID
-				    ) K
-		outer apply (
-					select  IT.SubjectID
-					from    IntersectType IT 
-							inner join [Predicate] P on IT.Object = 'ArtifactType' and IT.ObjectID = AT.ObjectID and P.ID = IT.PredicateID and P.Type = 3
-					) IT
-	    where  AT.[Class] = @assetTypeClass
-order by    AT.Name", new { assetTypeClass = (int)assetTypeClass }).AsQueryable();
-
-            return new JsonNetResult
-            {
-                Data = models,
-                Formatting = Newtonsoft.Json.Formatting.None
-            };
-        }
-        
         #endregion
     }
 }

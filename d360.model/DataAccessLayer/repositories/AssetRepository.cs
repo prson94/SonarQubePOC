@@ -174,15 +174,21 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,P.[Path]
+                                    ,AT.IconBackColor as BackColor
+                                    ,AT.Icon as Icon
+                                    ,AT.IconForeColor as ForeColor
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
+                                    left join [dbo].[AssetTypeStyle] AT on (A.ID = AT.ID)
                         where       A.[State] = 1 and A.ObjectID != 0
                         {condition}
                         order by    P.[Path]
                         ";
-            var assetTypes = await CompanyContext.QueryAsync<AssetTypeApiViewModel>(sql, dbArgs);
-            return assetTypes;
+
+            // If you change the order of the select columns please pay attention to the dapper multimap split on parameter where it is splitting out the icon class.
+
+            return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
         }
         public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -430,27 +436,33 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_filter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
+                    filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_relationfilter"))
             {
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_relationfilter").Value;
-                var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
-                Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
-
-                foreach (var item in sqlParams)
+                if (!string.IsNullOrEmpty(value))
                 {
-                    dbArgs.Add(item.Key, item.Value);
+                    var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
+                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+
+                    foreach (var item in sqlParams)
+                    {
+                        dbArgs.Add(item.Key, item.Value);
+                    }
                 }
             }
 
@@ -486,8 +498,6 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_loadpermissiondetails").Value;
                 bool.TryParse(value, out includePermissionDetails);
             }
-
-
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_simplefilter"))
             {
@@ -580,7 +590,6 @@ namespace d360.model.DataAccessLayer
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
                     A.AssetTypeId,
-                    A.ObjectID,
                     T.[UID] as AssetTypeUid,
                     A.UpdatedOn,
                     A.CreatedOn,
@@ -606,7 +615,7 @@ namespace d360.model.DataAccessLayer
             ";
 
             var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
-            var count = countResults.First();
+            int count = countResults.First();
 
             var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs);
 
@@ -681,7 +690,13 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeparent").Value;
                 bool.TryParse(value, out includeParent);
             }
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
 
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
             var typesToAvoid = new List<string>() {
                 DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
@@ -690,19 +705,15 @@ namespace d360.model.DataAccessLayer
             };
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-            fields.Add(new FieldType { Type = "string", Name = "Path", FriendlyName = "Path" });
-            fields.Add(new FieldType { Type = "date", Name = "UpdatedOn", FriendlyName = "Updated On" });
-            fields.Add(new FieldType { Type = "date", Name = "CreatedOn", FriendlyName = "Created On" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset Uid" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
+
+            if (assetType.Class == AssetTypeClass.ReferenceItemType)
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
             if (includeParent)
             {
-                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = "Parent Asset Uid" });
-                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent Display Name" });
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
 
@@ -738,6 +749,7 @@ namespace d360.model.DataAccessLayer
                     continue;
                 document.SetCellValue(1, index++, (string)field.FriendlyName);
             }
+            document.SetCellValue(1, index++, "Url");
 
 
             if (rowData == null || rowData.Count == 0)
@@ -768,6 +780,7 @@ namespace d360.model.DataAccessLayer
 
                     index++;
                 }
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
             #endregion
@@ -1828,7 +1841,18 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
-            var countsSQL = @"select AT.uid, 
+            string assetPermissionWhere = @" and ID NOT IN (select AssetId
+                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))";
+
+            string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
+                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+
+            if (CompanyContext.CurrentResourceIsAdmin)
+            {
+                assetTypePermissionWhere = "";
+            }
+
+            var countsSQL = $@"select AT.uid, 
 	                        ATParent.uid as parentUid,
 	                        case at.class
 	                         when 1 then 'Business Asset'
@@ -1841,16 +1865,22 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 	                        at.description,
 	                        Assets.count as count
                          from AssetType AT
-                         left join [IntersectType] ITParent on ITParent.ObjectID = AT.ObjectID and ITParent.Object = AT.Object and PredicateID = 4
-                         left join [AssetType] ATParent on ATParent.Object = ITParent.Subject AND ATParent.ObjectID = ITParent.SubjectID
-                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID and ID NOT IN (select AssetId
-                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID)))Assets(count)
+						 outer apply (select ATParent.uid from IntersectType IT
+							inner join [Predicate] P on P.ID = it.PredicateID and P.Type in (3,4)
+							inner join [AssetType] ATParent on ATParent.Object = IT.Subject AND ATParent.ObjectID = IT.SubjectID
+						 where it.ObjectID = AT.ObjectID and it.Object = at.Object
+						 )ATParent
+                         outer apply (select count(*) from Asset where AssetTypeID = AT.ID {assetPermissionWhere})Assets(count)
                         where
                          at.Class in @filterClasses
-                         and AT.ID not in (select AssetTypeID
-                    from dbo.AssetTypesUserCantRead(@ResourceID))";
+                         {assetTypePermissionWhere}
+                    order by at.name";
             return await CompanyContext.QueryAsync<AssetTypeCountModel>(countsSQL, new { ResourceId = CompanyContext.CurrentResourceID, filterClasses });
         }
 
+        public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
+        {
+            return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
+        }
     }
 }

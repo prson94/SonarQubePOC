@@ -1133,7 +1133,7 @@ from	IntersectType I
                     var relationshipType = Company.Query<int>(@"select ID from IntersectType where Uid = @uid", new { uid = f.Type.Relationship.IntersectTypeUid }).FirstOrDefault();
                     if (relationshipType <= 0)
                     {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type not found based on Uid provided [{f.Type.ComputedRelationshipReferenceList.IntersectTypeUid}].");
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Relationship Type not found", $"Relationship Type not found based on Uid provided [{f.Type.Relationship.IntersectTypeUid}].");
                     }
                     newFieldType.LookupObjectType = "IntersectType";
                     newFieldType.LookupObjectID = relationshipType;

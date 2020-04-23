@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 using System.Collections.Generic;
 using System.Net;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -46,6 +47,9 @@ namespace d360.core.entities
 
         [DataMember, DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public DateTime? ProcessingStartedOn { get; set; }
+
+        [DataMember]
+        public State State { get; set; } = State.Active;
     }
 
     public class ApiExecutionFields_PostAssets

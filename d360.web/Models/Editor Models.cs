@@ -70,7 +70,12 @@ namespace d360.web.Models
 
         public int[] PredicateIDs { get; set; }
     }
-       
+
+    public class CompanyRebuildJobRequest 
+    {
+        public CompanyRebuildJobToken Job { get; set; }
+    }
+    
     public class CompanySettingsIpRestrictionEditorModel
     {
         public string Name { get; set; }
@@ -198,6 +203,19 @@ namespace d360.web.Models
 
         [DataMember]
         public bool IsSemantic{ get; set; }
+        [DataMember]
+        public bool VirtualScroll { get; set; }
+        [DataMember]
+        public int? ItemSize { get; set; }
+
+        [DataMember]
+        public bool UseNativeLookupControl
+        {
+            get
+            {
+                return !(VirtualScroll || UseTypeahead);
+            }
+        }
 
 
     }

@@ -1,23 +1,24 @@
 ﻿import { Input, Component, OnInit } from '@angular/core';
-import { Router, ActivatedRoute }       from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { TreeNode } from 'primeng/api';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ArtifactBaseComponent} from './artifact-base.component';
+import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
-import { AssetTypeClass } from '../../models/asset.model';
+import { AssetTypeClass, AssetCount } from '../../models/asset.model';
+import { AssetService } from '../../services/asset.service';
 
 @Component({
     selector: 'd3s-artifact-top-level-list',
     templateUrl: './artifact-top-level-list.component.html',
-    providers: [ArtifactTypeService],
+    providers: [AssetService],
 })
 
-export class ArtifactTopLevelListComponent extends ArtifactBaseComponent implements OnInit {   
+export class ArtifactTopLevelListComponent extends ArtifactBaseComponent implements OnInit {
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";
@@ -26,11 +27,11 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
     private sub: any;
     assetTypeClass: AssetTypeClass;
     public searchValue: string;
-    
-    constructor(        
+
+    constructor(
         private router: Router,
         private route: ActivatedRoute,
-        private artifactsService: ArtifactTypeService,        
+        private assetService: AssetService,
         headerBreadcrumbService: HeaderBreadcrumbService,
         private titleService: Title,
         secondaryNavService: SecondaryNavService
@@ -58,7 +59,7 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
                         this.setBrowserTitle(this.titleService, res);
                         this.area = res;
                     });
-                    
+
                     break;
                 case AssetTypeClass.TechnicalAsset:
 
@@ -84,14 +85,21 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
     private load() {
         this.isLoading = true;
         this
-            .artifactsService
-            .getArtifactTypeTree(this.assetTypeClass)
+            .assetService
+            .getAssetCountsByAssetType(this.assetTypeClass)
             .subscribe(data => {
+                let dataNodes: TreeNode[] = [];
+
                 for (let i = 0; i < data.length; i++) {
-                    if (data[i].data.Description != null)
-                    data[i].data.Description = this.htmlDecode(data[i].data.Description);
+                    if (data[i].description != null)
+                        data[i].description = this.htmlDecode(data[i].description);
+                    else {
+                        data[i].description = '';
+                    }
+
+                    dataNodes.push(AssetCount.ConvertToTreeNode(data[i]));
                 }
-                this.ArtifactTypes = data;
+                this.ArtifactTypes = AssetCount.ListToTree(dataNodes);
                 if (this.ArtifactTypes != null && this.ArtifactTypes.length > 0) {
                     this.selectedRow = this.ArtifactTypes[0];
                 }
@@ -107,14 +115,17 @@ export class ArtifactTopLevelListComponent extends ArtifactBaseComponent impleme
 
                 this.isLoading = false;
             }
-        ); 
+            );
     }
 
     private htmlDecode(val: string): string {
         return val ? String(val).replace(/<[^>]+>/gm, '') : '';
     }
 
-    navigate(id: number) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', id));
+    navigate(uid: string) {
+        this.assetService.getAssetTypeLegacyData(uid)
+            .subscribe(res => {
+                this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('ArtifactType', res.ObjectID));
+            })
     }
 };

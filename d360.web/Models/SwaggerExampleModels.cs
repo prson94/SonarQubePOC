@@ -1,4 +1,5 @@
 ﻿using d360.core.entities;
+using d360.core.entities.Metric;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using System;
@@ -86,6 +87,20 @@ namespace d360.web.Models
         }
     }
 
+    public class InsertUserToGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new List<Guid>
+                {
+                    { Guid.Empty },
+                    { Guid.Empty }
+
+                };
+        }
+    }
+
     #region Asset Browser
 
     public class GetAssetLineagePostModelExample : IExamplesProvider
@@ -95,7 +110,7 @@ namespace d360.web.Models
             return new AssetBrowserApiHopRequestModel
             {
                 Direction = AssetBrowserApiHopDirection.Both,
-                Hops = 3, 
+                Hops = 3,
                 PredicateUid = Guid.Empty,
                 Assets = new List<AssetBrowserApiHopAssetRequestModel>() { new AssetBrowserApiHopAssetRequestModel { Uid = Guid.Empty } }
             };
@@ -156,6 +171,106 @@ namespace d360.web.Models
     #region Workflow Type Examples
 
 
+
+    #endregion
+    #region Data Quality Examples
+    public class DataQualityUpdateExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new DataQualityUpdateModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                RunDate = "yyyy-MM-dd HH:mm:ss",
+                PassCount = 0,
+                FailCount = 0
+            };
+        }
+    }
+
+    public class DataQualityDeleteExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new DataQualityDeleteModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                Uid = Guid.Empty,
+                OwningAssetUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                RunDateStart = "yyyy-MM-dd HH:mm:ss",
+                RunDateEnd = "yyyy-MM-dd HH:mm:ss",
+                EffectiveDateStart = "yyyy-MM-dd",
+                EffectiveDateEnd = "yyyy-MM-dd"
+            };
+        }
+    }
+
+    public class DataQualityInsertExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {              
+            return new DataQualityInsertModel
+            {
+                ExecutionItemUid = Guid.Empty,
+                OwningAssetUid = Guid.Empty,
+                EvaluatedAssetUid = Guid.Empty,
+                EffectiveDate = "yyyy-MM-dd",
+                RunDate = "yyyy-MM-dd HH:mm:ss",
+                PassCount = 0,
+                FailCount = 0
+            };
+        }
+    }
+
+    #endregion
+
+    #region Membership Examples
+
+    public class UserPostExample: IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new 
+            {
+                Username = "user@example.com",
+                FirstName = "John",
+                LastName = "Smith",
+                Password = "xxxxxx",
+                IsAdministrator = false,
+                ExecutionItemUid = Guid.Empty,
+                Fields = new Dictionary<string,string>()
+                {
+                    { "MyApiFieldName1", "My Field value" },
+                    { "MyApiFieldName2", "My Field value" }
+                }
+            };
+        }
+    }
+
+    public class UserPutExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new
+            {
+                uid = Guid.Empty,
+                Username = "user@example.com",
+                FirstName = "John",
+                LastName = "Smith",
+                Password = "xxxxxx",
+                IsAdministrator = false,
+                ExecutionItemUid = Guid.Empty,
+                State = "Active|Inactive|Deleted",
+                Fields = new Dictionary<string, string>()
+                {
+                    { "MyApiFieldName1", "My Field value" },
+                    { "MyApiFieldName2", "My Field value" }
+                }
+            };
+        }
+    }
 
     #endregion
 }

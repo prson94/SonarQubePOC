@@ -16,6 +16,8 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
+using d360.core.entities;
+using d360.core.enums;
 
 namespace igx.jobs.displayvalueupdateprocessor
 {
@@ -80,7 +82,18 @@ namespace igx.jobs.displayvalueupdateprocessor
                     }
                     else if(updateInfo.RebuildAll)
                     {
-                        await companyConnection.ExecuteAsync("exec GenerateAllAssetTypeDisplayValues",commandTimeout:2400);
+                        try
+                        {
+                            await companyConnection.ExecuteAsync("exec GenerateAllAssetTypeDisplayValues", commandTimeout: 2400);
+                        }
+                        catch
+                        {
+                            throw;
+                        }
+                        finally 
+                        {
+                            await community.UpdateRebuildJobStatus(CompanyRebuildJobToken.DisplayValues, CompanyRebuildJobStatusState.Inactive);
+                        }
                     }
                 }
             }

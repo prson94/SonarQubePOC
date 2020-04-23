@@ -11,7 +11,6 @@ using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using d360.extensions;
-using d360.model.DataAccessLayer;
 using Dapper;
 using Ganss.XSS;
 using Newtonsoft.Json;
@@ -19,12 +18,10 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Core;
 using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Design.PluralizationServices;
-using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Expressions;
@@ -393,7 +390,7 @@ namespace d360.model
             }
             return result;
         }
-        
+
         public Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type)
         {
             return GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
@@ -1536,7 +1533,7 @@ where	R.SourceObject = 'FusionAttribute'
 
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
 
-            if (subject.HasValue && subjectID.HasValue && limitToClasses != null) 
+            if (subject.HasValue && subjectID.HasValue && limitToClasses != null)
             {
                 if (limitToClasses.Contains(AssetTypeClass.Reference))
                 {
@@ -1608,7 +1605,7 @@ where	R.SourceObject = 'FusionAttribute'
         {
             var sSubject = subject.ToString();
             var allowedFunctionalTypes = PredicateType.Simple.GetAsList().Where(p => p.AllowIntersectTypeAssignment && p.AllowEditFromRelationshipEditor).ToList();
-            
+
             if (sSubject == "IntersectType")
             {
                 allowedFunctionalTypes.RemoveAll(p => !p.AllowIntersectTypeAsSubject);
@@ -1681,7 +1678,7 @@ where	I.ID is null";
             model.ObjectUid = objectAssetType?.uid;
 
             var predicateInfo = predicateModel.Type.AsInfoModel();
-            
+
             if (!predicateInfo.SubjectAssetClassesSupported.Contains(subjectAssetType.Class))
             {
                 throw new GenericException(System.Net.HttpStatusCode.Conflict, "Predicate", $"When using this predicate your subject must be one of the following classes : {predicateInfo.SubjectAssetClassesSupported}.");
@@ -2140,6 +2137,11 @@ where	I.ID is null";
             return Database.Connection.Query<T>(sql, param, null, false, timeout);
         }
 
+        public async Task<IEnumerable<TReturn>> QueryAsync<TFirst, TSecond, TReturn>(string sql, Func<TFirst, TSecond, TReturn> map, string splitOn, object param = null, int timeout = 90)
+        {
+            return await Database.Connection.QueryAsync<TFirst, TSecond, TReturn>(sql, map: map, param: param, splitOn: splitOn);
+        }
+
         public async Task<IEnumerable<T>> QueryAsync<T>(string sql, object param = null, int timeout = 90)
         {
             return await Database.Connection.QueryAsync<T>(sql, param, null, timeout);
@@ -2289,40 +2291,6 @@ where	I.ID is null";
         public void RebuildIndexRequest()
         {
             Enqueue(Config.GetValue<string>("SearchIndexQueue"), new ReindexModel { CompanyID = CurrentCompanyID });
-        }
-
-        public void UpdateAssetGraphNode(Guid uid, List<string> changedFieldNames = null)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Node,
-                ChangedFieldNames = changedFieldNames
-            });
-        }
-
-        public void UpdateAssetGraphNodePath(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Path
-            });
-        }
-
-        public void UpdateAssetGraphEdge(Guid uid)
-        {
-
-            QueueSource.CreateTopicMessageAsync<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), new AssetEventInfo
-            {
-                CompanyID = CurrentCompanyID,
-                Uid = uid,
-                Type = AssetEventType.Edge
-            });
         }
 
         private void AddQE(List<EventInfo> events, ChangeType action, EventObjectInfo item)
@@ -3184,6 +3152,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                 case SystemObjects.ReferenceItemType:
                     objectId = AssetTypes.FirstOrDefault(x => x.uid == objectUid)?.ObjectID ?? 0;
                     break;
+                case SystemObjects.ResourceType:
+                    objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
+                    break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;
                     if (objectId <= 0)
@@ -3264,15 +3235,16 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
         }
 
-        public Dictionary<Guid,string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
+        public Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds)
         {
             var dbArgs = new DynamicParameters();
             var sql = $@"select AT.[uid] as AssetUID, P.[Path] as assetTypePath 
                             from AssetType AT cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P 
-                            where AT.class in({string.Join(",",assetClassIds.ToArray())})";
+                            where AT.class in({string.Join(",", assetClassIds.ToArray())})";
 
             return Query<dynamic>(sql).ToDictionary(x => (Guid)x.AssetUID, x => x.assetTypePath as string);
         }
+
         public int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value)
         {
             return Query<int>(@"select value

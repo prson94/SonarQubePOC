@@ -76,6 +76,27 @@ export class CompanyImage {
 
 }
 
+export enum CompanyRebuildJobToken {
+    AssetGraph = 1,
+    DisplayValues = 2,
+    SearchIndex = 3
+}
+
+export enum CompanyRebuildJobStatusState {
+    Active = 1,
+    Inactive = 2
+}
+
+export class CompanyRebuildJobStatusApiModel {
+    jobToken: CompanyRebuildJobToken;
+    jobTokenName: string;
+    jobTokenDescription: string;
+    state: CompanyRebuildJobStatusState;
+    lastStartedOn: Date;
+    lastCompletedOn: Date;
+    validationMessage: string;
+}
+
 export class SearchType {
     title: string;
     value: string;

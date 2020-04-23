@@ -5,15 +5,23 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.FusionProfile-v1">
+  <changeSet author="Sdooley" id="Table.dbo.FusionProfile-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
-		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
+      <![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile_backup')
 BEGIN
-	CREATE TABLE [dbo].[FusionProfile](
+	DROP TABLE [dbo].[FusionProfile_backup];
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile_backup')
+BEGIN
+	CREATE TABLE [dbo].[FusionProfile_backup](
 		[ID] [bigint] IDENTITY(1,1) NOT NULL,
 		[RowCount] [int] NOT NULL,
 		[UniqueCount] [int] NOT NULL,
@@ -217,32 +225,6 @@ BEGIN
 		[UpdatedBy] [int] NULL,
 		CONSTRAINT [PK_FusionProfile] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
 	)
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
-  <changeSet author="Bhoward" id="Table.dbo.FusionProfile-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-      <![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile')
-BEGIN
-	exec sp_rename '[dbo].[FusionProfile]', 'FusionProfile_backup'
-END
-		]]>
-    </sql>
-    <rollback>
-      <![CDATA[	
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'FusionProfile_backup')
-BEGIN
-		exec sp_rename '[dbo].[FusionProfile_backup]', 'FusionProfile'
 END
 		]]>
     </rollback>

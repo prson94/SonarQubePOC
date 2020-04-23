@@ -695,7 +695,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 width = (int)dynamicFieldWidth;
             }
-            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems };
+            var gc = new GridColumn { text = item.FriendlyName, datafield = useNameAsDataField ? $"{item.Name}" : $"Field{item.ID}", columntype = columnType, filtertype = filterType, filteritems = filterItems, cellsformat = cellsFormat, columnWidth = width, parentFieldTypeID = item.ParentFieldTypeID, canHaveMultipleFilters = canHaveMultipleFilterItems, apiName = item.Name, fieldType = item.Type };
             if (!string.IsNullOrEmpty(item.Category))
             {
                 gc.columngroup = item.Category.Replace(" ", "");
@@ -949,7 +949,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "HasAttributes", type = "bool" });
                     break;
                 #endregion
-                     case SystemObjects.PolicyType:
+                case SystemObjects.PolicyType:
                     #region
 
                     remainingWidth = 45;
@@ -1205,30 +1205,31 @@ where   h.ID <> @t order by h.[Level] desc;
                     remainingWidth = 27;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.FirstName_Name, datafield = "FirstName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastName_Name, datafield = "LastName" });
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Email_Name, datafield = "Email" });
+                    columns.Add(new GridColumn { text = Fields.FirstName_Name, datafield = "FirstName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.LastName_Name, datafield = "LastName", fieldType = "Text" });
+                    columns.Add(new GridColumn { text = Fields.Email_Name, datafield = "Email", fieldType = "Text" });
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth);
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F" });
-                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX });
+                    columns.Add(new GridColumn { text = Fields.LastLoggedInOn_Name, datafield = "LastLoggedInOn", filtertype = GridColumn.FILTER_TYPE_RANGE, cellsformat = "F", fieldType = "DateTime" });
+                    columns.Add(new GridColumn { text = "Administrator?", datafield = "IsAdministrator", columntype = GridColumn.COLUMN_TYPE_CHECKBOX, filtertype = GridColumn.FILTER_TYPE_CHECKBOX, fieldType = "Boolean" });
                     columns.Add(new GridColumn
                     {
                         text = d360.core.resources.Fields.Status_Name,
                         datafield = "State",
                         filtertype = GridColumn.FILTER_TYPE_CHECKEDLIST,
+                        fieldType = "Text",
                         filteritems = new List<string>() {
                         CompanyResourceState.Active.ToString(),
-                        CompanyResourceState.Inactive.ToString()
+                        CompanyResourceState.Inactive.ToString(),
                     }
                     });
 
-                    fields.Add(new GridField { name = "IsAdministrator", type = "bool" });
+                    fields.Add(new GridField { name = "IsAdministrator", type = "bool", apiName = "IsAdministrator" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Email", type = "string" });
-                    fields.Add(new GridField { name = "FirstName", type = "string" });
-                    fields.Add(new GridField { name = "LastName", type = "string" });
-                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date" });
-                    fields.Add(new GridField { name = "State", type = "string" });
+                    fields.Add(new GridField { name = "Email", type = "string", apiName = "Email" });
+                    fields.Add(new GridField { name = "FirstName", type = "string", apiName = "FirstName" });
+                    fields.Add(new GridField { name = "LastName", type = "string", apiName = "LastName" });
+                    fields.Add(new GridField { name = "LastLoggedInOn", type = "date", apiName = "LastLoggedInOn" });
+                    fields.Add(new GridField { name = "State", type = "string", apiName = "State" });
                     break;
                 #endregion
                 case SystemObjects.TaxonomyType:
@@ -1423,7 +1424,7 @@ where   h.ID <> @t order by h.[Level] desc;
         {
             var sql = @"
 select  distinct 
-	    cast(ResponsibilityTypeID as varchar) + '|' + cast(SecurityAssetID as varchar) as 'ID', 
+	    ResourceUid as 'ID', 
 	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
 	    case 
             when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
@@ -3747,13 +3748,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
             switch (type)
             {
                 case SystemObjects.ArtifactType:
-                    sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] 
+                    sql = @"select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Artifact' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetDisplayValueById(ASS.ID) disp
 							union
-							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] 
+							select distinct disp.DisplayValue as Name, ASS.ObjectID as ID, 'Artifact' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'ArtifactType')     
                             inner join [Intersect] I on ( (I.Object = 'Artifact' and ASS.ObjectID = I.ObjectID) ) 
@@ -3761,18 +3762,20 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.DisplayValue";
                     break;
                 case SystemObjects.FusionAttributeType:
-                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                    sql = @"select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
                             inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Subject = 'FusionAttribute' and A.ID = I.SubjectID) ) 
+                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             union 
-                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] 
+                            select distinct A.TextPath as Name, A.ID, 'FusionAttribute' as [Type] , ASS.Uid
                             from FusionAttribute A 
                             inner join [Intersect] I on A.FusionAttributeTypeID = @id and ( (I.Object = 'FusionAttribute' and A.ID = I.ObjectID) ) 
+                            inner join Asset ASS on ASS.Object = 'FusionAttribute' and ASS.ObjectID = A.ID
                             order by A.TextPath
                             ";
                     break;
                 case SystemObjects.IntersectType:
-                    sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] 
+                    sql = @"select distinct iname.Name as Name, A.ID, 'Intersect' as [Type] , I.Uid
                             from [Intersect] A 
                             inner join [Intersect] I on A.IntersectTypeID = @id and ( (I.Subject = 'Intersect' and A.ID = I.SubjectID) OR (I.Object = 'Intersect' and A.ID = I.ObjectID) ) 
                             cross apply [dbo].getintersectNames(A.ID) iname
@@ -3780,13 +3783,13 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                     break;
                 case SystemObjects.PolicyType:
                 case SystemObjects.Policy:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] 
+                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Policy' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] 
+							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Policy' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'PolicyType')     
                             inner join [Intersect] I on ( (I.Object = 'Policy' and ASS.ObjectID = I.ObjectID) ) 
@@ -3794,41 +3797,49 @@ where   R.IsVisible = 1 and ((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.
                             order by disp.TextPath";
                     break;
                 case SystemObjects.ReferenceItemType:
-                    sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] 
+                    if (id != 0)
+                    {
+                        sql = @"select distinct AD.DisplayValue as Name, A.ID, 'ReferenceItem' as [Type] , A.uid
                             from Asset A 
                             inner join AssetType AST on AST.ID = A.AssetTypeID
                             inner join AssetDisplayValue AD on AD.AssetID =A.ID
                             inner join [Intersect] I on  ( (I.Subject = 'ReferenceItem' and A.ObjectID = I.SubjectID) OR (I.Object = 'ReferenceItem' and A.ObjectID = I.ObjectID) ) 
                             where AST.ObjectID= @id and AST.[Object]='ReferenceItemType'
                             order by AD.DisplayValue";
+                    }
+                    else
+                    {
+                        sql = @"select distinct Name, ID, 'ReferenceItemType' as [Type] , uid
+                                from AssetType where Object ='ReferenceItemType'";
+                    }
                     break;
                 case SystemObjects.ResourceType:
-                    sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] 
+                    sql = @"select distinct A.LastName + ', ' + A.FirstName as Name, A.ResourceID as ID, 'Resource' as [Type] , A.Uid
                             from reporting.Global_Resource A 
                             inner join [Intersect] I on ( (I.Subject = 'Resource' and A.ResourceID = I.SubjectID) OR (I.Object = 'Resource' and A.ResourceID = I.ObjectID) ) 
                             order by 1";
                     break;
                 case SystemObjects.RuleType:
                 case SystemObjects.Rule:
-                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                    sql = @"select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Subject = 'Rule' and A.ID = I.SubjectID)
                             union
-                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] 
+                            select distinct D.DisplayValue as Name, A.ID, 'Rule' as [Type] , D.Uid
                             from [Rule] A 
                             inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = A.ID
                             inner join [Intersect] I on A.RuleTypeID = @id and (I.Object = 'Rule' and A.ID = I.ObjectID)
                             order by D.DisplayValue";
                     break;
                 case SystemObjects.TaxonomyType:
-                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] 
+                    sql = @"select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
 							from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')                            
                             inner join [Intersect] I on ( (I.Subject = 'Taxonomy' and ASS.ObjectID = I.SubjectID)) 
 							cross apply [dbo].GetAssetTextPathById(ASS.ID,'/') disp
 							union
-							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] 
+							select distinct disp.TextPath as Name, ASS.ObjectID as ID, 'Taxonomy' as [Type] , ASS.Uid
                             from AssetType ATT
 							inner join Asset ASS on (ATT.ID = ASS.AssetTypeID and ATT.ObjectID  = @id and ATT.[Object] = 'TaxonomyType')     
                             inner join [Intersect] I on ( (I.Object = 'Taxonomy' and ASS.ObjectID = I.ObjectID) ) 
@@ -7203,7 +7214,7 @@ SELECT (
         {
             var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
             var details = Company.Query<dynamic>(sql).Single();
-            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID , details.Id });
+            return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
         }
 
         #endregion

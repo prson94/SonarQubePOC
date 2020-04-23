@@ -1,5 +1,5 @@
 
-import {catchError, map} from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
@@ -20,7 +20,7 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get('/resources/HelpResources')
             .pipe(
                 map(response => <HelpResource[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -28,7 +28,7 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get('/api/resources/1')
             .pipe(
                 map(response => <Resource[]>response),
-                catchError(err=>this.handleError(err))
+                catchError(err => this.handleError(err))
             );
 
     }
@@ -37,33 +37,42 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get(`/api/resources/1/${id}`)
             .pipe(
                 map(response => <Resource>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
 
     }
 
 
-    getResourceLazy(typeId: number, pageNum: number, pageSize: number, sortOrder: SortOrder, sortField?: string, simpleFilter?:string, filters?: GridFilterExpression[]): Observable<any> {
-        let sortCol = sortField != undefined ? sortField : "";
+    getResourceLazy(params: any): Observable<any> {
 
-        let url = `/resources/${typeId}/lazy?pagenum=${pageNum}&pagesize=${pageSize}&sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}&simpleFilter=${simpleFilter}`;
-        let indx = 0;
-
-        if (filters != undefined) {
-            url += `&filterscount=${filters.length}`;
-
-            for (let filter of filters) {
-                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
-                indx++;
-            }
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
         }
 
-
-        return this.http.get(url).pipe(
+        return this.http.get('/api/v2/membership/users' + qString).pipe(
             map(response => {
                 return response;
             }),
             catchError(err => this.handleError(err)));
+    }
+
+    exportResources(params: any) {
+        params['_pageNum'] = 1;
+        params['_pageSize'] = 10000;
+
+        var qString = '';
+        if (params) {
+            qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
+            if (qString)
+                qString = '?' + qString;
+        }
+
+        this.http.get('/api/v2/membership/users' + qString,
+            { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+            .subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));
     }
 
     getResponsibilityBreakdownByResource(id: number, responsibilityTypeId: number = 0): Observable<CountObject[]> {
@@ -77,8 +86,8 @@ export class ResourcesService extends BaseObservableService {
 
         return this.http.get(url)
             .pipe(
-            map(response => <CountObject[]>response),
-               catchError(err=>this.handleError(err))
+                map(response => <CountObject[]>response),
+                catchError(err => this.handleError(err))
             );
 
     }
@@ -86,8 +95,8 @@ export class ResourcesService extends BaseObservableService {
     getFollowingBreakdownByResource(id: number): Observable<CountObject[]> {
         return this.http.get(`/api/v2/social/FollowingBreakdownByResource?id=${id}`)
             .pipe(
-            map(response => <CountObject[]> response),
-                catchError(err=>this.handleError(err))
+                map(response => <CountObject[]>response),
+                catchError(err => this.handleError(err))
             );
 
     }
@@ -98,7 +107,7 @@ export class ResourcesService extends BaseObservableService {
             uri += `?responsibilityTypeId=${responsibilityTypeId}`;
         return this.http.get(uri)
             .pipe(
-            map(response => <ResponsibilityDetailForResource[]>response),
+                map(response => <ResponsibilityDetailForResource[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -107,27 +116,27 @@ export class ResourcesService extends BaseObservableService {
     getFollowingByResourceByType(resourceID: number, type: string, id: number): Observable<FollowingDetailForResource[]> {
         return this.http.get(`queries/followingbyresourcebytype?resourceID=${resourceID}&type=${type}&id=${id}`)
             .pipe(
-            map(response => <FollowingDetailForResource[]>response),
-                catchError(err=> this.handleError(err))
+                map(response => <FollowingDetailForResource[]>response),
+                catchError(err => this.handleError(err))
             );
     }
 
     exportFollowingByResourceByType(resourceID: number, type: string, id: number) {
-        window.location.assign(`/resources/${resourceID}/following/${type}/${id}.xlsx`);      
+        window.location.assign(`/resources/${resourceID}/following/${type}/${id}.xlsx`);
     }
 
     exportResponsibilitiesByResourceByType(resourceID: number, type: string, id: number, responsibilityTypeId: number = null) {
         let uri = `/resources/${resourceID}/ownership/${type}/${id}.xlsx`
         if (responsibilityTypeId != null && responsibilityTypeId > 0)
             uri += `?responsibilityTypeId=${responsibilityTypeId}`;
-        window.location.assign(uri);   
+        window.location.assign(uri);
     }
 
     getMyCredentials(): Observable<ResourceAPICredentials> {
         return this.http.get('resources/myapicredentials')
             .pipe(
                 map(response => <ResourceAPICredentials>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -135,10 +144,10 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get(`resources/_GroupsByResourceID?id=${resourceID}`)
             .pipe(
                 map(response => response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
-    
+
     resetResourcesPassword(resourceID: number): Observable<JsonResult> {
         let headers = new HttpHeaders({
             'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' //pass as text since its a dynamic object and mvc has issue with dynamic models
@@ -148,7 +157,7 @@ export class ResourcesService extends BaseObservableService {
             .post(`form/ResetResourcePassword`, 'ID=' + resourceID, { headers: headers })
             .pipe(
                 map(response => response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
@@ -156,31 +165,12 @@ export class ResourcesService extends BaseObservableService {
         return this.http.get(uri)
             .pipe(
                 map(response => <MulitSelectResourceData>response),
-                catchError(err=> this.handleError(err))
+                catchError(err => this.handleError(err))
             );
     }
 
-    exportResources(typeId: number, sortOrder: SortOrder, sortField?: string, simpleFilter?: string, filters?: GridFilterExpression[]) {
-
-        let sortCol = sortField != undefined ? sortField : "";
-
-        let url = `/resources/${typeId}/lazy/excel?sortdatafield=${sortField}&sortorder=${sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Ascending ? "asc" : "desc")}&simpleFilter=${simpleFilter}`;
-        let indx = 0;
-
-        if (filters != undefined) {
-            url += `&filterscount=${filters.length}`;
-
-            for (let filter of filters) {
-                url += `&filtervalue${indx}=${filter.value}&filtercondition${indx}=${filter.condition}&filteroperator${indx}=1&filterdatafield${indx}=${filter.field}`;
-                indx++;
-            }
-        }
-
-        this.http.get(url, { responseType: 'blob' }).subscribe((data: any) => this.downloadFile(data, "Users.xlsx"));  
-    }
-
     downloadFile(data: Blob, filename: string) {
-         if (window.navigator.msSaveOrOpenBlob) {
+        if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
         }
         else {
@@ -192,5 +182,11 @@ export class ResourcesService extends BaseObservableService {
             anchor.href = url;
             anchor.click();
         }
+    }
+
+    getLegacyData(uid: string): Observable<any> {
+        return this.http.get(`/api/v2/membership/legacyData/resource/${uid}`)
+            .pipe(map(res => <any>res),
+                catchError((err) => this.handleError(err)));
     }
 }

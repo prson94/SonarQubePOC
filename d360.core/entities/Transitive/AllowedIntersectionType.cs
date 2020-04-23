@@ -1,4 +1,6 @@
-﻿namespace d360.core.entities
+﻿using System;
+
+namespace d360.core.entities
 {
     public partial class AllowedIntersectionType
     {
@@ -13,5 +15,6 @@
         public int? ParentIntersectID { get; set; }
 
         public string PredicateName { get; set; }
+        public Guid Uid { get; set; }
     }
 }

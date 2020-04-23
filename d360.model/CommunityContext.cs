@@ -1,6 +1,7 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.enums;
+using d360.core.exceptions;
 using d360.extensions;
 using Dapper;
 using System;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace d360.model
 {
@@ -46,6 +48,7 @@ namespace d360.model
         public DbSet<Company> Companies { get; set; }
         public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
         public DbSet<CompanyFeature> CompanyFeatures { get; set; }
+        public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
         public DbSet<CompanySetting> CompanySettings { get; set; }
         public DbSet<DatabaseServer> DatabaseServers { get; set; }
@@ -202,11 +205,86 @@ namespace d360.model
                 Caching.RemoveItem("Users");
                 Caching.RemoveItem("RESOURCES");
             }
-                        
+
+            this.ChangeTracker.DetectChanges();
             return  (SaveChanges() > 0);            
         }
 
         #endregion
+
+        public async Task<List<CompanyRebuildJobStatus>> GetRebuildJobStatuses()
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var list = await CompanyRebuildJobStatuses.Where(j => j.CompanyID == this.CurrentCompanyID).ToListAsync();
+            list.ForEach(i => {
+                if (i.State == CompanyRebuildJobStatusState.Active && i.LastStartedOn <= DateTime.UtcNow.AddHours(-timeoutInHours))
+                {
+                    i.State = CompanyRebuildJobStatusState.Inactive;
+                }
+            });
+            return list;
+        }
+
+        public async Task<CompanyRebuildJobStatusState> GetRebuildJobStatus(CompanyRebuildJobToken jobToken)
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
+            CompanyRebuildJobStatusState state = CompanyRebuildJobStatusState.Inactive;
+            if (status != null && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours))
+            {
+                state = status.State;
+            }
+            return state;
+        }
+
+        public async Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state)
+        {
+            int timeoutInHours = 18;
+            if (int.TryParse(constants.V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS, out int timeout))
+            {
+                timeoutInHours = timeout;
+            }
+            var status = await CompanyRebuildJobStatuses.FirstOrDefaultAsync(j => j.CompanyID == this.CurrentCompanyID && j.JobToken == jobToken);
+            WorkHttpStatus returnValue = null;
+
+            if (status != null)
+            {
+                if (status.State == CompanyRebuildJobStatusState.Active && status.LastStartedOn > DateTime.UtcNow.AddHours(-timeoutInHours) && state == CompanyRebuildJobStatusState.Active)
+                {
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, "Job is currently running", $"This job is currently in an Active state and cannot be scheduled again until complete.");
+                }
+                else
+                {
+                    status.State = state;
+                    status.LastCompletedOn = DateTime.UtcNow;
+                    Update(status);
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+                }
+            }
+            else 
+            {
+                if (state == CompanyRebuildJobStatusState.Inactive)
+                {
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.Conflict, "Job is not currently running", $"This job is not currently running and cannot be marked as complete.");
+                }
+                else 
+                {
+                    status = new CompanyRebuildJobStatus { CompanyID = CurrentCompanyID, JobToken = jobToken, LastStartedBy = CurrentResourceID, LastStartedOn = DateTime.UtcNow, State = state };
+                    Add(status);
+                    returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
+                }
+            }
+            
+            return returnValue;
+        }
 
         void GetCompanySsoModel()
         {

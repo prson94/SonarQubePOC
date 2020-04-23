@@ -8,6 +8,8 @@ namespace d360.core
 
         public static string COMMUNITY_DATABASE_CONNECTION = ConfigurationManager.AppSettings["CommunityContext"];
 
+        public static string V2_ENVIRONMENT_JOB_REBUILD_TIMEOUT_IN_HOURS = ConfigurationManager.AppSettings["V2EnvironmentJobRebuildTimeoutInHours"];
+
         private static string AZURE_STORAGE_NAME = ConfigurationManager.AppSettings["AzureStorageName"];
 
         public static string COMPANY_ICON_FOLDER = "company-icons";

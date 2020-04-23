@@ -774,7 +774,8 @@ INSERT INTO [queue].[Task] ([Action], [Object], [ObjectID],[Custom])
             {
                 sql = @"select	T.Value, 
 									TA.CreatedOn, 
-									ADV.DisplayValue as CreatedBy 
+									ADV.DisplayValue as CreatedBy,
+                                    T.Uid as TagUid
 							from	AssetTag TA
 									inner join Tag T on T.ID = TA.TagID
 									inner join Asset A on A.ID = TA.AssetID

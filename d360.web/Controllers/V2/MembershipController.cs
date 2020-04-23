@@ -9,9 +9,11 @@ using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
 using Newtonsoft.Json;
+using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -31,12 +33,13 @@ namespace d360.web.Controllers.V2
     {
         ICompanyContext _company;
         IMembershipRepository membershipRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository)
+        IAssetRepository assetRepository;
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository,IAssetRepository assetRepository)
             : base(community, company)
         {
             _company = company;
             this.membershipRepository = membershipRepository;
-
+            this.assetRepository = assetRepository;
         }
         /// <summary>
         /// Retrieves a list of users.
@@ -55,24 +58,26 @@ namespace d360.web.Controllers.V2
         /// <param name="_order">The order field to return results by.</param>
         /// <param name="_direction">The direction in which to return results by asc/desc. </param>
         /// <param name="_filter">The filter expression used to filter assets by all listable and non-listable fields. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
+        /// <param name="_simpleFilter">The text or phrase you want to find within the listable fields of an asset. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.</param>
         [
             HttpGet,
             MapToApiVersion("2.0"),
             Route("users"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Gets a list of Users.", typeof(ResourceApiViewModel)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "")
+        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
         {
             string finalSql = "";
             string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
             string whereSql = "";
-            string selectSql = $"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, case gr.State " +
-                $" when 1 then 'Active'" +
-                $"when 2 then 'InActive'" +
-                $"when 3 then 'Deleted' end as State ";
+            string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
+                    case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end as State ";
             string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
             string orderBySQL = $"";
             long pageSize;
@@ -161,6 +166,42 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            if (!string.IsNullOrEmpty(_simpleFilter))
+            {
+                dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
+                List<string> simpleFilters = new List<string>();
+
+                foreach (var field in fieldTypes.Where(x => x.IsListable == true))
+                {
+                    _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
+
+                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    {
+                        if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        {
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                        }
+                        else
+                        {
+                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                        }
+                    }
+
+                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+
+                    defaultFields.ForEach(f =>
+                    {
+                        simpleFilters.Add($"{f} like @simpleFilter");
+                    });
+
+                    simpleFilters.Add(@"(case gr.State 
+                     when 1 then 'Active'
+                     when 2 then 'InActive'
+                     when 3 then 'Deleted' end) like @simpleFilter");
+                }
+                queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
+            }
+
             if (queries.Count() > 0)
             {
                 whereSql += "where ";
@@ -197,9 +238,97 @@ namespace d360.web.Controllers.V2
 
             var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
             var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
-            model.items = results;
-            model.total = countResults.FirstOrDefault();
-            return Request.CreateResponse(HttpStatusCode.OK, model);
+
+            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+            if (isStreamResponse)
+            {
+                byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
+                return createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
+            }
+            else
+            {
+                model.items = results;
+                model.total = countResults.FirstOrDefault();
+                return Request.CreateResponse(HttpStatusCode.OK, model);
+            }
+
+        }
+
+
+        /// <summary>
+        /// Adds members to a group for a given group unique identifier.
+        /// </summary>
+        /// <param name="groupUid">The unique identifier of the Group.</param>
+        /// <param name="users">The users that need to be added to the group</param>
+        [
+           HttpPost,
+           MapToApiVersion("2.0"),
+           Route("groups/{groupUid:Guid}/members"),
+           SwaggerRequestExample(typeof(List<Guid>), typeof(InsertUserToGroupExample)),
+           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+       ]
+        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<Guid> users)
+        {
+            var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
+            var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
+            
+            List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
+
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if (isValidGroup.Total == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
+
+            if (users.Count != users.Distinct().Count())
+            {
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
+            }
+            if(users.Count == 0)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
+
+            var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
+
+            foreach (var user in users)
+            {
+                var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
+                bool isValid = this.IsValidGuid(userUid, "uid");
+
+                if (!isValid)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
+
+                var isUser = this.assetRepository.GetAssetByUID(user);
+
+                if (isUser == null || isUser.Object != "Resource")
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
+
+
+                var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
+
+                if (isMember != null)
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.ToString()} is already a member of this group"));
+
+                resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
+            }
+
+            try
+            {
+                foreach (var m in resourceGroups)
+                    Company.Add(m);
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, users);
         }
 
         /// <summary>
@@ -452,14 +581,14 @@ namespace d360.web.Controllers.V2
 
                 List<UserApiDeleteModel> resources = new List<UserApiDeleteModel>();
 
-                foreach(var u in users)
+                foreach (var u in users)
                 {
                     if (Guid.TryParse(u, out Guid res))
                     {
                         resources.Add(new UserApiDeleteModel()
                         {
                             Uid = res
-                        }); 
+                        });
                     }
                     else
                     {
@@ -486,6 +615,99 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Adds the specified users.
+        /// </summary>
+        /// <remarks>
+        /// If the password is omitted one will be generated randomly. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to add.</param>
+        [
+            HttpPost,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users)
+        {
+            var prefix = "Membership.PostUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = true);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified users.
+        /// </summary>
+        /// <remarks>
+        /// The Password field is optional and will not be updated if omitted. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to update.</param>
+        [
+            HttpPut,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users)
+        {
+            var prefix = "Membership.PutUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = false);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;
@@ -500,6 +722,92 @@ namespace d360.web.Controllers.V2
 
             }
             return isValid;
+        }
+
+        private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
+        {
+            List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();
+            fieldMap.Add(new Tuple<string, string, string>("First name", "FirstName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Last name", "LastName", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("Email", "Email", "Text"));
+            fieldTypes.Where(x => x.IsListable == true).ToList().ForEach(ft =>
+             {
+                 fieldMap.Add(new Tuple<string, string, string>(ft.FriendlyName, ft.Name, ft.Type));
+             });
+            fieldMap.Add(new Tuple<string, string, string>("Last logged in on", "LastLoggedInOn", "Date"));
+            fieldMap.Add(new Tuple<string, string, string>("Administrator?", "IsAdministrator", "Boolean"));
+            fieldMap.Add(new Tuple<string, string, string>("Status", "State", "Text"));
+            fieldMap.Add(new Tuple<string, string, string>("User UID", "uid", "Text"));
+
+
+            var document = new SLDocument();
+            document.AddWorksheet("Users");
+
+            int colIndex = 1;
+            int rowIndex = 1;
+            foreach (var f in fieldMap)
+            {
+                document.SetCellValue(rowIndex, colIndex, f.Item1);
+                colIndex++;
+            }
+
+            foreach (var row in results)
+            {
+                rowIndex++;
+                colIndex = 1;
+
+                foreach (var f in fieldMap)
+                {
+                    var val = (((row as IDictionary<string, object>)[$"{f.Item2}"]) ?? "").ToString();
+                    SetCellValue(document, rowIndex, colIndex, f.Item3, val);
+                    colIndex++;
+                }
+            }
+
+            var stream = new MemoryStream();
+            document.SaveAs(stream);
+            var result = stream.ToArray();
+            return result;
+        }
+
+        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch (dataType.ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
+            }
         }
     }
 }

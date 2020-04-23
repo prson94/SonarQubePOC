@@ -9,6 +9,7 @@ import { TilesModule  } from '../../shared/tiles/tiles.module';
 import { SharedGridPagingInfoModule } from '../../shared/grid-paging-info.component';
 import { ShortcutModule } from '../../shared/shortcuts/shortcut.module';
 import { IconPickerModule } from '../../shared/icon-picker.component';
+import { PipesModule } from '../../../pipes/pipes.module';
 
 import { AdminSettingsComponent } from './admin-settings.component';
 import { AdminSiteMenuComponent } from './admin-site-menu.component';
@@ -26,6 +27,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
+
 
 @NgModule({
     imports: [CommonModule,
@@ -49,6 +51,7 @@ import { TableModule } from 'primeng/table';
         ShortcutModule,
         IconPickerModule,
         D3SSharedModule,
+        PipesModule
     ],
     declarations: [
 //        IconPickerComponent,

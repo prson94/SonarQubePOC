@@ -41,7 +41,7 @@ export class TagView extends BaseComponent implements OnInit {
     private selectedtag: TagType = new TagType();
     private isShowAll: boolean = false;
     showDeleteOption: boolean = false;
-    @ViewChild("container", {static: false}) container: ElementRef;
+    @ViewChild("container", { static: false }) container: ElementRef;
     error: any;
     timeouthandle: any;
 
@@ -55,7 +55,7 @@ export class TagView extends BaseComponent implements OnInit {
         private auth: AuthenticationService) {
         super();
     }
-    
+
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
         try {
@@ -63,8 +63,15 @@ export class TagView extends BaseComponent implements OnInit {
                 this.tags = JSON.parse(this.data);
             else this.tags = this.data;
         }
-        catch (err)
-        {
+        catch (err) {
+            if (this.data && (typeof this.data == 'string')) {
+                this.tags = [];
+                this.data.split('|').forEach(t => {
+                    this.tags.push({ Value: t, uid: null });
+                });
+
+            }
+
             console.warn("d3s-tag-view::Error while parsing tags!");
         }
         if (this.tags) {
@@ -73,7 +80,7 @@ export class TagView extends BaseComponent implements OnInit {
         this.selected = this.tags;
     }
 
-    addTag(event,tag) {
+    addTag(event, tag) {
         this.tagInput.nativeElement.style.background = "white";
         this.selectedtag.Value = tag.name;
         this.selectedtag.uid = tag.code;
@@ -114,8 +121,8 @@ export class TagView extends BaseComponent implements OnInit {
                     }
 
                     this.searchResults.forEach(x => x.Value = x.name);
-                    
-            }, err => this.error = err);
+
+                }, err => this.error = err);
         }, 400);
     }
 
@@ -350,9 +357,18 @@ export class TagView extends BaseComponent implements OnInit {
 
     enter(tag: any, el: HTMLElement) {
         this.isTooltipLoaded = false;
-        this.tagService.getTagTooltip(tag.uid, this.assetUID)
+        this.tagService.getTagTooltip(tag.uid, this.assetUID, tag.Value)
             .subscribe(t => {
                 this.tagTooltip = t[0];
+
+                this.tags.forEach(x => {
+                    if (x.Value == tag.Value) {
+                        if (!x.uid) {
+                            x.uid = t[0].TagUid;
+                        }
+                    }
+                });
+
                 this.isTooltipLoaded = true;
                 this.ref.markForCheck();
             });

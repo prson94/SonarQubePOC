@@ -2933,34 +2933,6 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
         #endregion
 
-        #region UpdateDisplayValues
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildDisplayValues")]
-        public JsonResult RebuildDisplayValues(string objectType, object[] param)
-        {
-            if(!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            Company.RebuildDisplayValuesRequest();
-
-            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
-        }
-
-        #endregion
-
-        #region UpdateAssetGraph
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuildAssetGraph")]
-        public JsonResult RebuildAssetGraph()
-        {
-            if (!Company.CurrentResourceIsAdmin) return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
-
-            Company.RebuildAssetGraphRequest();
-
-            return jsonSuccess("Rebuild request received and accepted.", "", "add", HttpStatusCode.Created);
-        }
-
-        #endregion
-
         #region Export Templates
 
         private JsonResult ExportTemplate_EditFields(int id)
