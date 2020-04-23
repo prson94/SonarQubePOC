@@ -296,6 +296,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
             delete params['usegraphforparent'];
         }
 
+        params._onlyListableFields = true;
+
         return params;
     }
 

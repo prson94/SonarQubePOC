@@ -211,6 +211,16 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlylistablefields"))
+            {
+                bool includeOnlyListableFields = false;
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlylistablefields").Value, out includeOnlyListableFields);
+                if (includeOnlyListableFields)
+                {
+                    fieldTypes = fieldTypes.Where(x => x.IsListable == true).ToList();
+                }
+            }
+
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -438,8 +448,13 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
+                    var tempArgs = new DynamicParameters();
+                    List<string> tempJoins = new List<string>();
+                    List<string> tempFieldColumns = new List<string>();
+                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
+
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                    filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
+                    filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
                     whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
 
