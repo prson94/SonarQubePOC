@@ -55,4 +55,6 @@
   <include file="scripts/GOV-9470.xml"/> <!-- Change the default version of lineage to v3-->
   <include file="scripts/GOV-10013.xml"/> <!-- Remove ArtifactType_TaxonomyTypeID, ArtifactType_TaxonomyTypeIDNodes settings-->
   <include file="scripts/GOV-10314.xml"/> <!-- Add settings to support Process Composer (Governance Role)-->
+  
+  <include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
 </databaseChangeLog>

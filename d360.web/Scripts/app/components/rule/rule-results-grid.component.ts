@@ -7,6 +7,7 @@ import { RuleResultPagedResults } from '../../models/rule.model';
 import { SortOrder } from '../../models/enums.model';
 import { GridColumn, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression  } from '../../models/grid-definition.model';
 import { RuleColumnFilterComponent } from './rule-column-filter.component'
+import { SiteUrlHelpers } from '../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-rule-results-grid',
@@ -17,7 +18,8 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component'
 export class RuleResultsGridComponent extends BaseComponent {
 
     @Input() ruleId: number;
-    @Input() showTitle: boolean = true;
+    @Input() ruleUid: string;
+    @Input() showTitle: boolean = true;    
 
     simpleTextFilter: string;
     showSimpleFilter: boolean = false;
@@ -62,7 +64,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         if (!this.ruleId) {
             console.log("ERROR - NO RULE ID");
             return;
-        }
+        }        
 
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
@@ -72,14 +74,13 @@ export class RuleResultsGridComponent extends BaseComponent {
                 }
             }
         }
-
-        this.ruleService.getResultsByRule(this.ruleId, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleTextFilter)
+        
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder)
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
-                    this.items = this.results.results;
-
+                    this.items = this.results.items;
                 }
 
             });
@@ -117,7 +118,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private doExport() {
-        this.ruleService.getResultsByRuleExcel(this.ruleId);
+        this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);        
     }
 
     resetFilters() {

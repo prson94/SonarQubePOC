@@ -682,7 +682,7 @@ namespace d360.model.DataAccessLayer
         {
             var results = await GetAssets(uid, queryParams);
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
-            var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
+            var fields = new List<FieldType>();
 
             bool includeParent = false;
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
@@ -705,21 +705,19 @@ namespace d360.model.DataAccessLayer
             };
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-            fields.Add(new FieldType { Type = "string", Name = "Path", FriendlyName = "Path" });
-            fields.Add(new FieldType { Type = "date", Name = "UpdatedOn", FriendlyName = "Updated On" });
-            fields.Add(new FieldType { Type = "date", Name = "CreatedOn", FriendlyName = "Created On" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset Uid" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset Id" });
-            fields.Add(new FieldType { Type = "number", Name = "AssetTypeId", FriendlyName = "Asset Type Id" });
-            fields.Add(new FieldType { Type = "string", Name = "AssetTypeUid", FriendlyName = "Asset Type Uid" });
 
             if (includeParent)
             {
-                fields.Add(new FieldType { Type = "string", Name = "ParentAssetUid", FriendlyName = "Parent Asset Uid" });
-                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent Display Name" });
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
+            if (assetType.Class == AssetTypeClass.ReferenceItemType)
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList());
+
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
             var rowData = results.items.ToList();
 
@@ -753,6 +751,7 @@ namespace d360.model.DataAccessLayer
                     continue;
                 document.SetCellValue(1, index++, (string)field.FriendlyName);
             }
+            document.SetCellValue(1, index++, "Url");
 
 
             if (rowData == null || rowData.Count == 0)
@@ -783,6 +782,7 @@ namespace d360.model.DataAccessLayer
 
                     index++;
                 }
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
             #endregion

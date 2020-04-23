@@ -43,6 +43,12 @@
     <Reference Include="Dapper, Version=1.50.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.4\lib\net451\Dapper.dll</HintPath>
     </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Azure.KeyVault.Core, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Azure.KeyVault.Core.3.0.3\lib\net452\Microsoft.Azure.KeyVault.Core.dll</HintPath>
     </Reference>
@@ -89,6 +95,7 @@
       <HintPath>..\packages\Newtonsoft.Json.11.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
@@ -125,6 +132,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config">
+	  <SubType>Designer</SubType>
       <TransformOnBuild>true</TransformOnBuild>
     </None>
     <None Include="App.Release.config">
@@ -144,6 +152,10 @@
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>
       <Name>d360.extensions</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.model\d360.model.csproj">
+      <Project>{B12A1078-5835-43B8-AFB2-C3D24C4AA098}</Project>
+      <Name>d360.model</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
       <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>

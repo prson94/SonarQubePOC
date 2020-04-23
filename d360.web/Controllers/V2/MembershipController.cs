@@ -615,6 +615,99 @@ namespace d360.web.Controllers.V2
             }
         }
 
+
+        /// <summary>
+        /// Adds the specified users.
+        /// </summary>
+        /// <remarks>
+        /// If the password is omitted one will be generated randomly. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to add.</param>
+        [
+            HttpPost,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiInsertModel), typeof(UserPostExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostUsers(List<UserApiInsertModel> users)
+        {
+            var prefix = "Membership.PostUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = true);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Updates the specified users.
+        /// </summary>
+        /// <remarks>
+        /// The Password field is optional and will not be updated if omitted. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        /// </remarks>
+        /// <param name="users">A list users to update.</param>
+        [
+            HttpPut,
+            Route("users"),
+            SwaggerRequestExample(typeof(UserApiUpdateModel), typeof(UserPutExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutUsers(List<UserApiUpdateModel> users)
+        {
+            var prefix = "Membership.PutUsers => ";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
+            if (users == null || users.Count == 0)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Format of the request is not valid"));
+
+            users.ForEach(u => u.IsNew = false);
+
+            try
+            {
+                var execution = getApiExecution(users.Count);
+                var results = await membershipRepository.UpsertUsers(execution, users);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;

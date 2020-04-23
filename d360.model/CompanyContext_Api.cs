@@ -261,7 +261,7 @@ where	ExecutionID = @executionID
 											                and T.AssetID is  null
                             ", new { executionID }, commandTimeout: timeout);
                 }
-            
+
             }
         }
         private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, string apiTableName, int timeout = 3600)
@@ -820,7 +820,7 @@ values		(S.FieldID, S.Name, S.Parent, S.[Path], S.Position, S.IsArray, S.Value, 
             ", new { executionID }, commandTimeout: timeout);
         }
 
-        private void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
+        public void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null)
         {
             Connection.Execute($@"
 drop table if exists #RelevantLookupValues;
@@ -971,10 +971,10 @@ where T.ExecutionId = @executionid;
         public void SendApiGraphEvent(ApiExecutionInfo info)
         {
             var e = new AssetEventInfo()
-            { 
-              execution = info,
-              CompanyID = CurrentCompanyID,
-              Type = AssetEventType.Execution
+            {
+                execution = info,
+                CompanyID = CurrentCompanyID,
+                Type = AssetEventType.Execution
             };
 
 
@@ -1090,6 +1090,10 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                     errorMessages.Add($"{fieldName} must be a valid date");
                                 }
+                                if (success)
+                                {
+                                    fieldValue = dTest.Date.ToString();
+                                }
                                 break;
                             case "DateTime":
                                 DateTime dtTest;
@@ -1097,6 +1101,10 @@ where T.ExecutionId = @executionid;
                                 {
                                     success = false;
                                     errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                }
+                                if (success)
+                                {
+                                    fieldValue = dtTest.ToString();
                                 }
                                 break;
                             case "Decimal":
@@ -1116,7 +1124,7 @@ where T.ExecutionId = @executionid;
                                 break;
                             case "Lookup":
                                 break;
-                            case "Number":                                
+                            case "Number":
                                 if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
                                 {
                                     success = false;
@@ -2899,7 +2907,7 @@ where   ExecutionID = @ExecutionID
                                             }
                                         }
                                     }
-                                    
+
                                     if (at.Object == "ReferenceItemType")
                                     {
                                         // Check to ensure Code is present.
@@ -3692,11 +3700,11 @@ select [uid] from #ParentChildRelationships",
                                 this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
                             }
                             catch
-                            { 
+                            {
 
                             }
                         }
-                       
+
 
 
                         if (sendWorkflowEvents)
@@ -4640,7 +4648,7 @@ from    [Intersect] T
             Guid emptyUid = Guid.Empty;
 
             if (!isInsert)
-            { 
+            {
                 Connection.Execute(@"
 update  api.ExecutionRelationshipType 
 set     Success = 0, Message = 'Uid is missing / incorrect format.' 
@@ -5253,7 +5261,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
-        
+
         public List<PredicateUpsertResult> UpdatePredicates(ApiExecution execution, PredicateUpserts import, int timeout = 3600)
         {
             var results = new List<PredicateUpsertResult>();
@@ -5815,7 +5823,7 @@ where   ER.ExecutionID = @ExecutionID
 
             return results;
         }
-        
+
         public void SetApiExecutionProcessingStartTime(Guid ExecutionId)
         {
             Query<int>("update api.Execution set ProcessingStartedOn = @startedOn where ExecutionId = @ExecutionId and ProcessingStartedOn is null",
@@ -5979,7 +5987,7 @@ insert into #Keys
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             var dupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
-            
+
             if (dupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", dupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
@@ -6031,7 +6039,7 @@ insert into #Keys
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
                             row["ItemNumber"] = i;
-                            
+
                             if (model.RunDate != null)
                             {
                                 row["RunDate"] = model.RunDate;
@@ -6056,12 +6064,12 @@ insert into #Keys
                                         row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
                                         row["Success"] = 0;
                                     }
-                                }                                
-                            }                                                       
+                                }
+                            }
 
                             if (model is DataQualityInsertModel dataQualityInsertModel)
                             {
-                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;                                
+                                row["OwningAssetUid"] = dataQualityInsertModel.OwningAssetUid;
 
                                 if (dataQualityInsertModel.EffectiveDate != null)
                                 {
@@ -6085,7 +6093,7 @@ insert into #Keys
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "EffectiveDate");
                                         row["Success"] = 0;
-                                    }                                    
+                                    }
                                 }
                                 else
                                 {
@@ -6093,7 +6101,7 @@ insert into #Keys
                                     row["Success"] = 0;
                                 }
 
-                                
+
 
                                 if (model.RunDate == null)
                                 {
@@ -6111,7 +6119,7 @@ insert into #Keys
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "FailCount");
                                     row["Success"] = 0;
-                                }                                
+                                }
                             }
 
                             if(model is DataQualityUpdateModel dataQualityUpdateModel)
@@ -6141,7 +6149,7 @@ insert into #Keys
                             {
                                 row["PassCount"] = DBNull.Value;
                             }
-                            
+
                             if(model.FailCount.HasValue)
                             {
                                 row["FailCount"] = model.FailCount.Value;
@@ -6149,19 +6157,19 @@ insert into #Keys
                             else
                             {
                                 row["FailCount"] = DBNull.Value;
-                            }                            
+                            }
 
                             if (model.PassCount.HasValue && (model.PassCount < 0 || model.PassCount > 9223372036854775807))
                             {
                                 row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "PassCount", 0, 9223372036854775807);
-                                row["Success"] = 0;                                
+                                row["Success"] = 0;
                             }
 
                             if (model.FailCount.HasValue && (model.FailCount < 0 || model.FailCount > 9223372036854775807))
                             {
                                 row["Message"] = String.Format(DataQualityErrors.ValueBetweenError, "FailCount", 0, 9223372036854775807);
-                                row["Success"] = 0;                               
-                            }                            
+                                row["Success"] = 0;
+                            }
 
                             if (model.PassCount.HasValue && model.FailCount.HasValue)
                             {
@@ -6177,7 +6185,7 @@ insert into #Keys
                                     row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
                                     row["Success"] = 0;
                                 }
-                                
+
                             }
 
 
@@ -6209,7 +6217,7 @@ insert into #Keys
                     bulkCopy.ColumnMappings.Add("FailCount", "FailCount");
                     bulkCopy.ColumnMappings.Add("Message", "Message");
                     bulkCopy.ColumnMappings.Add("Success", "Success");
-                    bulkCopy.ColumnMappings.Add("Uid", "Uid");                    
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
 
                     bulkCopy.WriteToServer(table);
 
@@ -6367,7 +6375,7 @@ insert into #Keys
                 }
 
                 if (generalChecksCompleted)
-                {                    
+                {
                     int loopSize = 250;
                     int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
                     int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
@@ -6517,7 +6525,7 @@ insert into #Keys
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
                     }
-                        
+
                 }
             }
             return results;
@@ -6562,7 +6570,7 @@ insert into #Keys
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
                     table.Columns.Add("Uid", typeof(Guid));
                     table.Columns.Add("EvaluatedAssetUid", typeof(Guid));
-                    table.Columns.Add("OwningAssetUid", typeof(Guid));                    
+                    table.Columns.Add("OwningAssetUid", typeof(Guid));
                     table.Columns.Add("EffectiveDateStart", typeof(string));
                     table.Columns.Add("EffectiveDateEnd", typeof(string));
                     table.Columns.Add("RunDateStart", typeof(string));
@@ -6586,7 +6594,7 @@ insert into #Keys
 
                             row["ExecutionID"] = execution.ExecutionID;
                             row["ExecutionItemUid"] = model.ExecutionItemUid ?? Guid.NewGuid();
-                            row["ItemNumber"] = i;                            
+                            row["ItemNumber"] = i;
 
                             if (model.Uid.HasValue)
                             {
@@ -6614,11 +6622,11 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-                            
+
                             if (model.EffectiveDateStart != null)
                             {
                                 row["EffectiveDateStart"] = model.EffectiveDateStart;
-                                
+
                                 if (!DateTime.TryParseExact(model.EffectiveDateStart,
                                                        "yyyy-MM-dd",
                                                        System.Globalization.CultureInfo.InvariantCulture,
@@ -6627,8 +6635,8 @@ insert into #Keys
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd");
                                     row["Success"] = 0;
-                                }                                
-                            }                                                 
+                                }
+                            }
 
                             if (model.EffectiveDateEnd != null)
                             {
@@ -6654,7 +6662,7 @@ insert into #Keys
                             if (model.RunDateStart != null)
                             {
                                 row["RunDateStart"] = model.RunDateStart;
-                                
+
                                 if (!DateTime.TryParseExact(model.RunDateStart,
                                                        "yyyy-MM-dd HH:mm:ss",
                                                        System.Globalization.CultureInfo.InvariantCulture,
@@ -6664,7 +6672,7 @@ insert into #Keys
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateStart", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
                                 }
-                            }                            
+                            }
 
                             if (model.RunDateEnd != null)
                             {
@@ -6689,10 +6697,10 @@ insert into #Keys
                             {
                                 messages.Add("At least one of the following MUST be provided: Uid, OwningAssetUid, EvaluatedAssetUid.");
                                 row["Success"] = 0;
-                            }                           
+                            }
 
                             row["Message"] = string.Join(";", messages.ToArray());
-                            
+
 
                             table.Rows.Add(row);
                         }
@@ -6722,7 +6730,7 @@ insert into #Keys
                     bulkCopy.ColumnMappings.Add("RunDateStart", "RunDateStart");
                     bulkCopy.ColumnMappings.Add("RunDateEnd", "RunDateEnd");
                     bulkCopy.ColumnMappings.Add("Message", "Message");
-                    bulkCopy.ColumnMappings.Add("Success", "Success");                    
+                    bulkCopy.ColumnMappings.Add("Success", "Success");
 
                     bulkCopy.WriteToServer(table);
 
@@ -6858,8 +6866,8 @@ insert into #Keys
                     var querySuffix = $"DAR.Success is null and DAR.ExecutionID = @ExecutionID and DAR.ItemNumber between @beginItemNumber and @endItemNumber";
 
                     var updateOnSuccess = $@"update DAR set DAR.Success = 1 from api.ExecutionDeleteAssetResult DAR inner join
-	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";                                        
-                    
+	                                                #ObjectDeleteAssetEdge DAE on DAE.ExecutionItemUid = DAR.ExecutionItemUid where {querySuffix}";
+
                     string deleteAssetResultSQL = $@"create table #ObjectDeleteAssetEdge ([uid] uniqueidentifier, class int, ItemNumber int, ExecutionItemUid uniqueidentifier, [Operation] varchar(10));
                                                 CREATE NONCLUSTERED INDEX IX_TempObjectMergeAssetEdge ON #ObjectDeleteAssetEdge ( ItemNumber ASC );
                                                 merge into AssetResultEdge DARE
@@ -6998,7 +7006,7 @@ insert into #Keys
                         endItemNumber += loopSize;
                     }
 
-                    
+
                 }
             }
 

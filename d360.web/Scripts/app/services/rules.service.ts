@@ -3,7 +3,7 @@ import { GridFilterExpression, GridRelationshipFilterExpression, GridFilterField
 import { RuleType, Rule, RuleDetail, RuleResultPagedResults } from '../models/rule.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { SortOrder } from '../models/enums.model';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { BaseObservableService } from './baseObservable.service';
@@ -64,47 +64,49 @@ export class RulesService extends BaseObservableService {
         return this.putDynamic(this.http, 'ruletype', ruleType);
     }
     
-    getResultsByRule(id: number, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, filters?: GridFilterExpression[], relationships?: GridRelationshipFilterExpression, simpleFilter?: string): Observable<RuleResultPagedResults> {
+    getResultsByRule(uid: string, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, isExport: boolean = false, ruleId?: number): Observable<RuleResultPagedResults> {
         let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `internal/monitor/rules/${id}/results?pagesize=${pageSize}&pagenum=${pageNumber}&sortDataField=${sortField}&sortOrder=${sortOrderText}`;
+        let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`
 
-        if (filters != undefined) {
-            //regular fields
-            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
-            let count = 0;
-            uri += '&filterscount=' + normalFilters.length;
-
-            for (let filter of normalFilters) {
-                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
-                count++;
+        let fileName =" Rule Results"
+        
+        if (sortField) {
+            uri += "&_order=" + sortField
+            if (sortOrder && sortOrderText != "") {
+                uri += "&_direction=" + sortOrderText
             }
+        }        
+        
 
+        if (isExport) {
+            // get Friendly name export
+            uri += "&_isFriendlyNameExport=true&_pageNum=1&_pageSize=20000"
             
-            //hiden filter fields
-            let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
-            count = 0;
-
-            uri += '&hidfilterscount=' + hidFilters.length;
-
-            for (let filter of hidFilters) {
-                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${filter.value}`;
-                count++;
+            this.getRule(ruleId)
+                .subscribe(result => {
+                    fileName = result.Name + fileName;
+                });                
+            this.
+                http
+                .get(uri, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
+                .subscribe(
+                    data => this.downloadFile(data, fileName)                    
+                );
+        } else {
+            if (pageSize) {
+                uri += "&_pageSize=" + pageSize
             }
-        }
-                
-        if (relationships != undefined) {
-            uri += `&RelationshipIncludeType=${relationships.includeType}&RelationshipObjectType=${relationships.relationshipType.TargetType.replace("Type", "")}&RelationshipObjectIDs=${relationships.objectIds.join(",")}`;
-        }
+            if (pageNumber) {
+                uri += "&_pageNum=" + (pageNumber + 1)
+            }
 
-        if (simpleFilter != undefined) {
-            uri += `&filter=${simpleFilter}`;
+            return this.http.get(uri)
+                .pipe(
+                    map(response => <RuleResultPagedResults>response),
+                    catchError(err => this.handleError(err))
+                );
         }
-
-        return this.http.get(uri)
-            .pipe(
-                map(response => <RuleResultPagedResults>response),
-                catchError(err => this.handleError(err))
-            );
+        
     }
 
     getResultsByRuleExcel(id: number) {
@@ -117,7 +119,8 @@ export class RulesService extends BaseObservableService {
         ).subscribe();
     }
 
-    downloadFile(data: any, name: string = 'Rule Data') {
+    downloadFile(data: any, name: string = 'Rule Results') {
+        
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
