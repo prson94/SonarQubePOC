@@ -197,6 +197,7 @@ namespace d360.model.DataAccessLayer
             var fusionAttributeWithParent = false;
             var includeSegments = false;
             var includePermissionDetails = false;
+            string populateRestrictedAssetTableSQL = "";
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -355,12 +356,40 @@ namespace d360.model.DataAccessLayer
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
+
+
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-            whereStatements.Add($"A.ID not in (select AssetID from dbo.UserAssetPermissions(@userId,A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)");
+
+            var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
+                    case when exists(
+                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
+                     then 1
+                     else 0
+                    end as HasAssetRestriction,
+                    case when exists(
+                    select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = @assetTypeID)
+                     then 1
+                     else 0
+                    end as HasAssetTypeRestriction
+                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
+
+
+            if (restrictions.HasAssetRestriction)
+            {
+                whereStatements.Add($"not exists (select AssetID from #restrictedAssets where AssetID = A.ID)");
+                populateRestrictedAssetTableSQL = @"drop table if exists #restrictedAssets;
+                            create table #restrictedAssets(
+                             AssetId int
+                            )
+                            insert into #restrictedAssets
+                            select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeId) where ((PermissionsBitMask & 1)) = 0";
+            }
 
             if (!CompanyContext.CurrentResourceIsAdmin)
-                whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
-
+            {
+                if (restrictions.HasAssetTypeRestriction)
+                    whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
+            }
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             if (assetType.Class == AssetTypeClass.FusionAttribute)
@@ -573,6 +602,7 @@ namespace d360.model.DataAccessLayer
 
 
             var countSql = $@"
+                {populateRestrictedAssetTableSQL}
                 select
                     count(*)
                 from Asset A
@@ -586,6 +616,7 @@ namespace d360.model.DataAccessLayer
 
 
             var sql = $@"
+                {populateRestrictedAssetTableSQL}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
