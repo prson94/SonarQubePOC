@@ -706,7 +706,18 @@ namespace d360.web.Controllers
             {
                 favorite.ResourceID = Company.CurrentResourceID;
                 favorite.SortOrder = Company.Favorites.Count(f => f.ResourceID == favorite.ResourceID) + 1;
-                favorite.IsOverride = false;
+
+                if (string.IsNullOrEmpty(favorite.Object) && favorite.ObjectID == null)
+                {
+                    favorite.Type = "Page";
+                } else if (favorite.Object.EndsWith("Type")) {
+                    favorite.Type = "AssetType";
+                    favorite.Uid = Company.AssetTypes.FirstOrDefault(at => at.Object == favorite.Object && at.ObjectID == favorite.ObjectID).uid;
+                } else
+                {
+                    favorite.Type = "Asset";
+                    favorite.Uid = Company.Assets.FirstOrDefault(a => a.Object == favorite.Object && a.ObjectID == favorite.ObjectID).uid;
+                }
 
                 //only 1 home page allowed at once, remove old one(s)
                 if (favorite.IsHomePage)

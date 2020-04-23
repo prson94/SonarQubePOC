@@ -13,5 +13,6 @@ namespace d360.model.DataAccessLayer
         Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams);
         WorkHttpStatus DeleteResources(IEnumerable<UserApiDeleteModel> resources);
         Task<IEnumerable<UserApiUpsertResult>> UpsertUsers(ApiExecution execution, IEnumerable<IUserApiUpsertModel> users);
+        Task<List<FavoriteApiModel>> GetFavorites(int resourceID);
     }
 }

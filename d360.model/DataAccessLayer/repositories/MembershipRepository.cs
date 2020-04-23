@@ -726,5 +726,36 @@ namespace d360.model.DataAccessLayer
 
             return true;
         }
+
+        public async Task<List<FavoriteApiModel>> GetFavorites(int resourceID)
+        {
+            var dbArgs = new DynamicParameters();
+            dbArgs.Add("resourceId", resourceID);
+
+            string sql = $@"select q.[Name], q.[Route], q.[Type] from (
+select	coalesce(AName.DisplayValue, TA.[Name]) as [Name],
+		lower(f.[Type] +'/' + convert(nvarchar(50),f.[Uid])) as [Route],
+		f.[Type],
+		f.SortOrder
+from	Favorite f
+		left join Asset a on a.[Object] = f.[Object] and a.[ObjectID] = f.[ObjectID]
+		left join AssetType ta on ta.[Object] = f.[Object] and ta.[ObjectID] = f.[ObjectID]
+        outer apply [dbo].[GetAssetDisplayValueById](A.ID) AName
+where	f.ObjectID > 0 and f.ResourceID = @resourceId
+union
+select		coalesce(f.Name, f.Route) as Name,	
+			f.Route as [Route],
+			f.[Type],
+			f.SortOrder
+from		Favorite f	
+where		f.ObjectID is null 
+			and f.ResourceID = @resourceId
+) q
+order by	q.SortOrder";
+
+            var results = await CompanyContext.QueryAsync<FavoriteApiModel>(sql, dbArgs);
+
+            return results.ToList();
+        }
     }
 }

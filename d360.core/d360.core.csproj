@@ -127,6 +127,7 @@
     <Compile Include="entities\Issue\IssueType.cs" />
     <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
     <Compile Include="entities\Issue\IssueTypeRelation.cs" />
+    <Compile Include="entities\Membership\FavoriteApiModel.cs" />
     <Compile Include="entities\Membership\GroupApiModel.cs" />
     <Compile Include="entities\Membership\UserApiModel.cs" />
     <Compile Include="entities\Metric\DataQualityResponseModels.cs" />

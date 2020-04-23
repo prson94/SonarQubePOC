@@ -708,6 +708,37 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of favorite items for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/favorites"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetFavorites()
+        {
+            var prefix = "Membership.GetFavorites => ";
+
+            try
+            {
+                var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;
