@@ -92,6 +92,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship le 'relationshipassetvalue'")]
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
+        [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -185,6 +186,9 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text eq 'some text'")]
         [InlineData("text ne 'text'")]
         [InlineData("text ct 'text'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*()_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*)_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
         public void ValidTextTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -241,6 +245,21 @@ namespace igx.UnitTests.FilterExpressionTests
                 Assert.True(CheckParamOccurance(sql, param.Key));
             }
         }
+
+        [Fact]
+        public void IsSQLEscapingValue()
+        {
+            var filterWithSymbol = "text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'";
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            string sql = filterParser.Parse(filterWithSymbol, out sqlParams);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckParamOccurance(sql, param.Key));
+                Assert.True(param.Value.ToString().ToLower() == "Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All".ToLower());
+            }
+        }
+
+
     }
 
 }

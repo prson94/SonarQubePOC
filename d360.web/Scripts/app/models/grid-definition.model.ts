@@ -95,9 +95,8 @@ export class GridFilterExpression {
             return value;
         }
 
-        value = (value as string).replace('\'', '&apos;');
-
-        return `'${escape(value)}'`;
+        value = (value as string).replace(/'/g, "&apos;");
+        return `'${encodeURIComponent(value)}'`;
     }
 
     private convertCondition(cond: string): string {
