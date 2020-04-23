@@ -716,8 +716,8 @@ from	IntersectType I
 
                     f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
                     {
-
                         
+                        bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
                         var fieldInfo = Company.Query<dynamic>(@"
@@ -726,6 +726,7 @@ from	IntersectType I
                             left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid ", 
                             new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
 
+
                         //invalid uid
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
@@ -733,8 +734,16 @@ from	IntersectType I
                             return;
                         }
 
+                        //skip this validaiton for hard coded fields on certain types.
+                        if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID == 0 && new[] { "Name", "Description" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+                        else if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID != 0 && new[] { "Code" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+                        else if (fieldInfo.Object == "ResourceType" && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+
                         //invalid computed field
-                        if (fieldInfo.FieldTypeID == 0)
+                        if (fieldInfo.FieldTypeID == 0 && !bypassFieldValidation)
                         {
                             if (!computedFields.ContainsKey(i.FieldTypeName))
                             {
@@ -742,8 +751,8 @@ from	IntersectType I
                                 return;
                             }
                         }
-
-                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFields[i.FieldTypeName] : fieldInfo.FieldTypeID;
+                        var coputedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? coputedFieldValue : fieldInfo.FieldTypeID;
                         field.Object = fieldInfo.Object;
                         field.ObjectID = fieldInfo.ObjectID;
                         field.DisplayOrder = i.DisplayOrder;

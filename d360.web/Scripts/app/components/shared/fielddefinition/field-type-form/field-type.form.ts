@@ -735,7 +735,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.currentType == "RefListRelationship")
             this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;
         if (this.currentType == "ComplexRelationLookup") {
-            this.ConvertDisplayFieldsToJSONDefinition();
+            //need to convert the Fields and Relationships to the API expected format
+            this.ConvertDisplayFieldsToAPIDefinition();
             this.model.FieldType.Type.ComputedRelationshipLookup = this.model.FieldType.Type.ComplexRelationLookup;
         }
 
@@ -1308,11 +1309,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     //need this to keep the UI behavior of grouping the fields with their relationships
-    ConvertDisplayFieldsToJSONDefinition() {
+    ConvertDisplayFieldsToAPIDefinition() {
         if (!this.model.RelationItems || this.model.RelationItems.length < 1)
             return;
         this.model.RelationItems.forEach(x => {
-            
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetUid,

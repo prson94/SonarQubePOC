@@ -1621,6 +1621,83 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Gets the dislpay fields for a given intersecttypeid asset type uid
+        /// </summary>
+        /// <param name="intersectTypeUid">intersectTypeUid></param>
+        /// <param name="assetTypeUid">assetTypeUid></param>
+        /// <returns>A list of display fields</returns>
+        [
+            HttpGet,
+            Route("IsListableRelationship"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid, Guid? actionTypeUid, Guid? relationshipTypeUid)
+        {
+            var prefix = "Fields.IsListableRelationship => ";
+            var errorMessage = "";
+
+            try
+            {
+                SystemObjects type;
+                int id = 0;
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == intersectTypeUid).SingleOrDefault();
+                if (intersectType == null)
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No intersect type found for Uid [${intersectTypeUid.ToString()}]");
+                if (assetTypeUid != null)
+                {
+                    var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
+                    Enum.TryParse(at.Object, out type);
+                    id = at.ObjectID;
+                }
+                else if (actionTypeUid != null)
+                {
+                    var at = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
+                    type = SystemObjects.IssueType;
+                    id = at.ID;
+                }
+                else if (relationshipTypeUid != null)
+                {
+                    var it = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
+                    type = SystemObjects.IntersectType;
+                    id = it.ID;
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
+                }
+                bool isListable = false;
+                var sType = type.ToString();
+
+                if (intersectType != null)
+                {
+                    if (intersectType.Subject == sType && intersectType.SubjectID == id && intersectType.ObjectCardinality == Cardinality.One) isListable = true;
+                    else if (intersectType.Object == sType && intersectType.ObjectID == id && intersectType.SubjectCardinality == Cardinality.One) isListable = true;
+                }
+
+                return Request.CreateResponse(HttpStatusCode.OK, isListable);
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
         #endregion
 
     }
