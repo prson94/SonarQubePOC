@@ -101,6 +101,11 @@ namespace d360.model.DataAccessLayer.repositories
                         else
                             fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                     }
+                    else if (f.Type == "Lookup" && f.AllowAllValue)
+                    {
+                        fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                    }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                 }
@@ -114,6 +119,11 @@ namespace d360.model.DataAccessLayer.repositories
                                 fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                             else
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                        }
+                        else if (f.Type == "Lookup" && f.AllowAllValue)
+                        {
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
