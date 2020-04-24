@@ -36,6 +36,7 @@
                 <col style="width: 100px">
                 <col style="width: 50px">
                 <col style="width: 20px">
+                <col style="width: 20px">
             </colgroup>
         </ng-template>
         <ng-template pTemplate="header">
@@ -81,8 +82,10 @@
                     <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
                 </th>
                 <th [pSortableColumn]="''"></th>
+                <th [pSortableColumn]="''"></th>
             </tr>
             <tr [hidden]="showSimpleFilter">
+                <th></th>
                 <th></th>
                 <th></th>
                 <th></th>
@@ -99,24 +102,26 @@
         <ng-template pTemplate="body" let-item>
             <tr [pSelectableRow]="item">
                 <td>
-                    <span>{{item.EvaluatedAssetClass}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
                 </td>
                 <td>
-                    <span>{{item.EvaluatedAssetTypePath}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetTypePath}}</span>
                 </td>
                 <td>
-                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">
+                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>
+                    </span>
                 </td>
                 <td>
-                    <span>{{item.RunDate | date : 'short'}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
                 </td>
                 <td>
-                    <span>{{item.EffectiveDate | date : 'shortDate'}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate'}}</span>
                 </td>
-                <td>{{item.PassFraction}}</td>
-                <td style="text-align:center;">{{item.TotalCount}}</td>
-                <td style="text-align:center;">{{item.PassCount}}</td>
-                <td style="text-align:center;">{{item.FailCount}}</td>
+                <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
+                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount}}</span></td>
+                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount}}</span></td>
+                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount}}</span></td>
                 <td style="text-align:center;">
                     <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
                     <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
@@ -128,6 +133,16 @@
                                [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
                                tooltipPosition="top" class="fa fa-info"></i>
                         </a>
+                    </div>
+                </td>
+                <td style="text-align:center;">
+                    <div class="RowTools">
+                        <div class="duplicate-message" *ngIf="item.IsDuplicate">
+                            <i class="fa fa-exclamation-triangle"></i>
+                            <div class="message">
+                                <strong>Outdated Rule Result</strong> - This rule result will not be used in the calculation of the data quality score because another rule result for the same effective date has been posted.
+                            </div>
+                        </div>
                     </div>
                 </td>
             </tr>

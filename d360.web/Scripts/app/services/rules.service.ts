@@ -45,7 +45,7 @@ export class RulesService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
-    
+
     saveRule(rule: Rule): Observable<JsonResult> {
         if (rule.ID == undefined || !rule.ID) {
             return this.postDynamic(this.http, 'rule', rule);
@@ -63,34 +63,34 @@ export class RulesService extends BaseObservableService {
         }
         return this.putDynamic(this.http, 'ruletype', ruleType);
     }
-    
+
     getResultsByRule(uid: string, pageNumber?: number, pageSize?: number, sortField?: string, sortOrder?: SortOrder, isExport: boolean = false, ruleId?: number): Observable<RuleResultPagedResults> {
-        let sortOrderText = sortOrder == SortOrder.None ? "" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
+        let sortOrderText = sortOrder == SortOrder.None ? "desc" : (sortOrder == SortOrder.Descending ? "desc" : "asc");
         let uri = `api/v2/metrics/quality/results?_owningAssetUid=${uid}`
 
-        let fileName =" Rule Results"
-        
+        let fileName = " Rule Results"
+
         if (sortField) {
             uri += "&_order=" + sortField
             if (sortOrder && sortOrderText != "") {
                 uri += "&_direction=" + sortOrderText
             }
-        }        
-        
+        }
+
 
         if (isExport) {
             // get Friendly name export
             uri += "&_isFriendlyNameExport=true&_pageNum=1&_pageSize=20000"
-            
+
             this.getRule(ruleId)
                 .subscribe(result => {
                     fileName = result.Name + fileName;
-                });                
+                });
             this.
                 http
                 .get(uri, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' })
                 .subscribe(
-                    data => this.downloadFile(data, fileName)                    
+                    data => this.downloadFile(data, fileName)
                 );
         } else {
             if (pageSize) {
@@ -99,6 +99,7 @@ export class RulesService extends BaseObservableService {
             if (pageNumber) {
                 uri += "&_pageNum=" + (pageNumber + 1)
             }
+            uri += "&_includeDuplicateFlag=True";
 
             return this.http.get(uri)
                 .pipe(
@@ -106,7 +107,7 @@ export class RulesService extends BaseObservableService {
                     catchError(err => this.handleError(err))
                 );
         }
-        
+
     }
 
     getResultsByRuleExcel(id: number) {
@@ -120,7 +121,7 @@ export class RulesService extends BaseObservableService {
     }
 
     downloadFile(data: any, name: string = 'Rule Results') {
-        
+
         var filename = `${name} ${new Date().toDateString()}.xlsx`;
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob(data, filename);
@@ -136,14 +137,14 @@ export class RulesService extends BaseObservableService {
         }
     }
 
-    hasCustomExport(uid: string): Observable<boolean>{
+    hasCustomExport(uid: string): Observable<boolean> {
         return this.http.get(`api/v2/exporttemplates/hasCustomExport/${uid}`).pipe(
             response => response,
             catchError(err => this.handleError(err))
         );
     }
 
-    exportRules(uid: string, typeName: string){
+    exportRules(uid: string, typeName: string) {
         this.http.get(`api/v2/exporttemplates/exportRules/${uid}`, { responseType: "blob" }).pipe(
             map((response) => {
                 this.downloadFile(response, typeName);

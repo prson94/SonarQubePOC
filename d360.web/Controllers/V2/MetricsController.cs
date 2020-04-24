@@ -658,7 +658,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateEnd all results between the EffectiveDateStart and now will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateStart all results up until the EffectiveDateEnd will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
-            SwaggerParameter("_isFriendlyNameExport", "Additional parameter that can be supplied when doing a file export. If provided response file will replicate format of Result List screen", DataType = "boolean", ParameterType = "query", Required = false),            
+            SwaggerParameter("_isFriendlyNameExport", "Additional parameter that can be supplied when doing a file export. If provided response file will replicate format of Result List screen", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeDuplicateFlag", "If True response will include IsDuplicate flag. Defaults to false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
@@ -682,6 +683,7 @@ namespace d360.web.Controllers.V2
             DateTime? _effectiveDateEnd = null;
             int _pageSize = 250;
             int _pageNum = 1;
+            bool includeDuplicate = false;
 
             #region Model Validation
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
@@ -786,6 +788,15 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd must be after _effectiveDateStart.");
                 }
             }
+
+            if (queryParams.Any(q => q.Key.ToLower() == "_includeduplicateflag"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeduplicateflag").Value, out includeDuplicate))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_includeDuplicateFlag is not valid.");
+                }
+            }
+
             string isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
@@ -809,22 +820,22 @@ namespace d360.web.Controllers.V2
             {
                 DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
-                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate));
 
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
                     SLDocument document = new SLDocument();
                     bool isExport = false;
-                    if(bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_isFriendlyNameExport").Value, out isExport) && isExport)
+                    if (bool.TryParse(queryParams.ToList().FirstOrDefault(q => q.Key == "_isFriendlyNameExport").Value, out isExport) && isExport)
                     {
                         document = CreateResponseDocumentForExport(dataQualityResult);
-                    }                        
+                    }
                     else
                     {
                         document = CreateResponseDocument(dataQualityResult);
-                        
+
                     }
-                    
+
                     var stream = new System.IO.MemoryStream();
                     document.SaveAs(stream);
 
@@ -833,9 +844,9 @@ namespace d360.web.Controllers.V2
                         Content = new ByteArrayContent(stream.GetBuffer())
                     };
                     result.Content.Headers.ContentLength = stream.Length;
-                    
+
                     result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-                    {                        
+                    {
                         FileName = $"Data_Quality_Results_{System.DateTime.Now.ToString("yyyy-MM-dd")}.xlsx"
                     };
                     result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
@@ -1107,7 +1118,7 @@ namespace d360.web.Controllers.V2
                                    out effectiveDateStart))
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateStart", "yyyy-MM-dd"));
-            }            
+            }
 
             if (model.EffectiveDateEnd != null)
             {
@@ -1120,14 +1131,14 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDateEnd", "yyyy-MM-dd"));
                 }
-                else if(effectiveDateStart > effectiveDateEnd)
+                else if (effectiveDateStart > effectiveDateEnd)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "EffectiveDateStart", "EffectiveDateEnd"));
                 }
-                
+
             }
 
-            if(model.RunDateStart != null && !DateTime.TryParseExact(model.RunDateStart,
+            if (model.RunDateStart != null && !DateTime.TryParseExact(model.RunDateStart,
                                    "yyyy-MM-dd HH:mm:ss",
                                    System.Globalization.CultureInfo.InvariantCulture,
                                    System.Globalization.DateTimeStyles.None,
@@ -1147,10 +1158,10 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss"));
                 }
-                else if(runDateStart > runDateEnd)
+                else if (runDateStart > runDateEnd)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Request", String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
-                }                
+                }
             }
 
             #endregion
@@ -1284,7 +1295,7 @@ namespace d360.web.Controllers.V2
             doc.SetCellValue(rowNumber, index++, "Pass Fraction");
             doc.SetCellValue(rowNumber, index++, "Total Rows");
             doc.SetCellValue(rowNumber, index++, "Rows Passed");
-            doc.SetCellValue(rowNumber, index++, "Rows Failed");            
+            doc.SetCellValue(rowNumber, index++, "Rows Failed");
             doc.SetCellValue(rowNumber, index++, "Passed");
             doc.SetCellValue(rowNumber, index++, "Rule Result UID");
 
@@ -1302,7 +1313,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
-                doc.SetCellValue(rowNumber, index++, row.FailCount);                
+                doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.Passed);
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }

@@ -21,7 +21,7 @@ namespace d360.core.entities.Metric
         public Guid? EvaluatedAssetUid { get; set; }
         public string EvaluatedAssetPath { get; set; }
         public string EvaluatedAssetTypePath { get; set; }
-        public string EvaluatedAssetClass { get; set; }        
+        public string EvaluatedAssetClass { get; set; }
         public DateTime EffectiveDate { get; set; }
         public DateTime RunDate { get; set; }
         public long TotalCount { get; set; }
@@ -29,7 +29,8 @@ namespace d360.core.entities.Metric
         public long FailCount { get; set; }
         public double PassFraction { get; set; }
         public bool Passed { get; set; }
-    }    
+        public bool? IsDuplicate { get; set; }
+    }
 
     public class DataQualityResponseModel
     {

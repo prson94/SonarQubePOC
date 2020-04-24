@@ -6658,3 +6658,32 @@ a.mid-blue {
         }
     }
 }
+
+table {
+    .duplicate {
+        opacity: 0.5;
+    }
+
+    .duplicate-message {
+        position: relative;
+
+        .message {
+            display: none;
+        }
+
+        &:hover {
+            .message {
+                display: block;
+                position: absolute;
+                width: 300px;
+                right: 22px;
+                text-align: left;
+                font-size: 13px;
+                background: white;
+                border: 1px solid #e2e5e8;
+                padding: 16px 12px;
+                top: -34px;
+            }
+        }
+    }
+}
