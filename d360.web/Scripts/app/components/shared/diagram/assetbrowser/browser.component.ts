@@ -182,17 +182,19 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             params => {
                 this.originalAssetUid = params['assetUid'];
 
-                let diagramTypeParameterValue = 'Lineage';
+                this.loadFilter(); // Load the default filter BEFORE updating the pre-selected diagram type.
+
                 if (params['diagramType']) {
-                    diagramTypeParameterValue = params['diagramType'];
+                    let diagramTypeParameterValue: string = params['diagramType'];
 
                     this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
                     if (!this.isDiagramTypeSpecifiedInPath) {
                         diagramTypeParameterValue = 'Lineage';
                     }
+
+                    this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
+                    this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
                 }
-                this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
-                this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
 
                 if (this.diagram) this.diagram.div = null;
                 this.helper_InitializeDiagram();
@@ -1431,8 +1433,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_InitializeDiagram() {
         this.template_BadgeShapes();
 
-        this.loadFilter();
-
         this.diagram = this.template_Diagram();
 
         var forelayer = this.diagram.findLayer("Foreground");
@@ -1480,7 +1480,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns A boolean value on whether the lineage view is selected.
     */
     private helper_LineageDiagramApplies(): boolean {
-        return (this.displayConfiguration.DiagramType == DiagramType.Lineage);
+        return (+this.displayConfiguration.DiagramType === +DiagramType.Lineage);
     }
 
     /**

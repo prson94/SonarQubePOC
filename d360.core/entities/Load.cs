@@ -44,6 +44,9 @@ namespace d360.core.entities
         public Guid? AssetTypeUid { get; set; }
 
         [DataMember]
+        public Guid? IntersectTypeUid { get; set; }
+
+        [DataMember]
         public Guid? PutExecutionID { get; set; }
 
         [DataMember]

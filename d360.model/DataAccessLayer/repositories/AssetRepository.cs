@@ -198,6 +198,7 @@ namespace d360.model.DataAccessLayer
             var includeSegments = false;
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
+            string populateRestrictedAssetTableSQL = "";
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -365,12 +366,40 @@ namespace d360.model.DataAccessLayer
             if (includeRelationships)
                 whereStatements.Add("R.Relationships is not null");
 
+
+
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-            whereStatements.Add($"A.ID not in (select AssetID from dbo.UserAssetPermissions(@userId,A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)");
+
+            var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
+                    case when exists(
+                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
+                     then 1
+                     else 0
+                    end as HasAssetRestriction,
+                    case when exists(
+                    select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = @assetTypeID)
+                     then 1
+                     else 0
+                    end as HasAssetTypeRestriction
+                    ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
+
+
+            if (restrictions.HasAssetRestriction)
+            {
+                whereStatements.Add($"not exists (select AssetID from #restrictedAssets where AssetID = A.ID)");
+                populateRestrictedAssetTableSQL = @"drop table if exists #restrictedAssets;
+                            create table #restrictedAssets(
+                             AssetId int
+                            )
+                            insert into #restrictedAssets
+                            select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeId) where ((PermissionsBitMask & 1)) = 0";
+            }
 
             if (!CompanyContext.CurrentResourceIsAdmin)
-                whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
-
+            {
+                if (restrictions.HasAssetTypeRestriction)
+                    whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
+            }
             getQueryParamsSql(model, assetType, fieldTypes, dbArgs, whereStatements, pagingSql, queryParams);
 
             if (assetType.Class == AssetTypeClass.FusionAttribute)
@@ -604,6 +633,7 @@ namespace d360.model.DataAccessLayer
 
 
             var countSql = $@"
+                {populateRestrictedAssetTableSQL}
                 select
                     count(*)
                 from Asset A
@@ -617,6 +647,7 @@ namespace d360.model.DataAccessLayer
 
 
             var sql = $@"
+                {populateRestrictedAssetTableSQL}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
@@ -713,7 +744,7 @@ namespace d360.model.DataAccessLayer
         {
             var results = await GetAssets(uid, queryParams);
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
-            var fields = CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList();
+            var fields = new List<FieldType>();
 
             bool includeParent = false;
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
@@ -737,16 +768,18 @@ namespace d360.model.DataAccessLayer
 
             //add default fields
 
-            if (assetType.Class == AssetTypeClass.ReferenceItemType)
-                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-
-            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
-
             if (includeParent)
             {
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
+            if (assetType.Class == AssetTypeClass.ReferenceItemType)
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList());
+
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
             var rowData = results.items.ToList();
 

@@ -11,7 +11,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
             <div class="row" *ngIf="!isLoading">
                 <div class="col s12">
                     <div class="tile tile-detail">
-                       <d3s-rule-results-grid [ruleId]="ID" [showTitle]="true"></d3s-rule-results-grid> 
+                       <d3s-rule-results-grid [ruleId]="ID" [ruleUid]="Uid" [showTitle]="true"></d3s-rule-results-grid> 
                     </div>
                 </div>
             </div>
@@ -21,7 +21,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
 export class RuleResultsComponent extends BaseComponent implements OnInit, OnDestroy {
 
     @Input() ID: number;
-   
+    @Input() Uid: string;
 
     private sub: any;
     hasCloseButton: boolean = false;
@@ -45,11 +45,12 @@ export class RuleResultsComponent extends BaseComponent implements OnInit, OnDes
 
         this.sub = this.route.params.subscribe(params => {
             this.ID = params['ID'];
-            
+            this.Uid = params['Uid'];
+
             this.isLoading = false;
             this.showBoard = true;
         });
-        this.buildSecondaryNavigationForObject(this.ID, 'Rule');
+        this.buildSecondaryNavigation(this.Uid, this.ID, 'Rule');
     }
 
     ngOnDestroy() {

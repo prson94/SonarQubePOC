@@ -208,4 +208,10 @@ namespace d360.core.entities
         public int count { get; set; }
 
     }
+
+    public class UserGetAPIRestrictionModel
+    {
+        public bool HasAssetRestriction { get; set; }
+        public bool HasAssetTypeRestriction { get; set; }
+    }
 }

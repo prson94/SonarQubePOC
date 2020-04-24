@@ -87,7 +87,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
 
             this.getFieldsDefinition();
-
+            
             this.isLoading = true;
             this.rulesService.getRuleType(this.ruleTypeId)
                 .subscribe(result => {

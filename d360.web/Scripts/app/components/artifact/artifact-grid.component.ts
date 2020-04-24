@@ -243,7 +243,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
         }
 
         if (this.stateService.artifactTypeFilters.simpleTextFilter && this.stateService.artifactTypeFilters.simpleTextFilter.length > 0) {
-            params._simpleFilter = this.stateService.artifactTypeFilters.simpleTextFilter;
+            params._simpleFilter = encodeURIComponent(this.stateService.artifactTypeFilters.simpleTextFilter);
         }
         else {
             delete params['_simpleFilter'];

@@ -9,7 +9,8 @@ import {
     GroupResourceInfo,
     Group,
     GroupEditorModel,
-    ResourceGroup,
+    ResourceGroup,
+
     GroupApiModels,
     ResourceGroupInfo
 } from '../models/group.model';
@@ -84,9 +85,9 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult> {
-        return this.http.post('form/ResourceGroup', resourceGroupInfo).pipe(
-            map(response => <JsonResult>response),
+    addUsersToGroup(groupUid: string,users:string[]): Observable<any> {
+        return this.http.post(`api/v2/membership/groups/${groupUid}/members`, users).pipe(
+            map(response => <any>response),
             catchError(err => this.handleError(err))
         );
     }

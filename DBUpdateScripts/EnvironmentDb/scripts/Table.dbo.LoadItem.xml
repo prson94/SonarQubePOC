@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.LoadItem-v1">
+  <changeSet author="MDonato" id="Table.dbo.LoadItem-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -38,6 +38,16 @@ END
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_LoadItem_Load')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_LoadItem_Load] ON [dbo].[LoadItem] ( [LoadID] DESC )
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[LoadItem]') 
+         AND name = 'IntersectUid'
+)
+BEGIN
+    ALTER TABLE [dbo].LoadItem ADD IntersectUid uniqueidentifier
 END
 		]]>
     </sql>
