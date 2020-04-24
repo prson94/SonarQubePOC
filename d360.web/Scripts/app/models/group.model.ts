@@ -1,15 +1,14 @@
 ﻿import { SelectItem } from '../models/form.model';
 import { JsonResult } from './jsonresult.model';
-import {Observable} from "rxjs";
+import { Observable } from "rxjs";
 
 export interface IGroupService {
     getGroupList(): Observable<GroupSearchResultModel[]>;
     getGroupResourceList(id: string): Observable<any>;
-    getGroup(id: number,uid:string): Observable<GroupEditorModel>;
+    getGroup(id: number, uid: string): Observable<GroupEditorModel>;
     putGroup(group: Group): Observable<JsonResult>;
     postGroup(group: Group): Observable<JsonResult>;
     deleteGroup(id: number): Observable<JsonResult>;
-    postResourceGroup(resourceGroupInfo: ResourceGroupInfo): Observable<JsonResult>;
     deleteResourceGroup(groupID: number, resourceID: number): Observable<JsonResult>;
     getGroupUserList(id: number, pagenum: number, pagesize: number, sortDataField: string, sortOrder: string): Observable<JsonResult>;
 }
@@ -44,7 +43,7 @@ export class GroupResourceInfo {
 }
 
 export class Group {
-    ID: number;    
+    ID: number;
     Name: string;
     Description: string;
     PrimaryOwnerResourceID: number;
