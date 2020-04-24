@@ -406,6 +406,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
+  <include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderedTemplateBodyNg.xml"/>

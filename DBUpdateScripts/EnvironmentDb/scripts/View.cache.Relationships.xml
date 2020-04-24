@@ -5,55 +5,14 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.cache.Relationships-v1">
+  <changeSet author="kmcnamee" id="View.cache.Relationships-v2">
+    <comment>GOV-10409</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-	create or alter view [cache].[Relationships]
-	as
-		SELECT	IntersectTypeID,
-				ID as IntersectID,
-				0 as SourceIntersectTypeNodeID,
-				0 as SourceIntersectNodeID,
-				Subject as SourceObject,
-				SubjectID as SourceObjectID,
-				SubjectName as SourceObjectName,
-				SubjectType as SourceType,
-				SubjectTypeID as SourceTypeID,
-				SubjectTypeName as SourceTypeName,
-				0 as TargetIntersectTypeNodeID,
-				0 as TargetIntersectNodeID,
-				Object as TargetObject,
-				ObjectID as TargetObjectID,
-				ObjectName as TargetObjectName,
-				ObjectType as TargetType,
-				ObjectTypeID as TargetTypeID,
-				ObjectTypeName as TargetTypeName,
-				'' as [Role]
-		FROM	[IntersectDetail]
-		union
-		SELECT	IntersectTypeID,
-				ID as IntersectID,
-				0 as SourceIntersectTypeNodeID,
-				0 as SourceIntersectNodeID,
-				Object as SourceObject,
-				ObjectID as SourceObjectID,
-				ObjectName as SourceObjectName,
-				ObjectType as SourceType,
-				ObjectTypeID as SourceTypeID,
-				ObjectTypeName as SourceTypeName,
-				0 as TargetIntersectTypeNodeID,
-				0 as TargetIntersectNodeID,
-				Subject as TargetObject,
-				SubjectID as TargetObjectID,
-				SubjectName as TargetObjectName,
-				SubjectType as TargetType,
-				SubjectTypeID as TargetTypeID,
-				SubjectTypeName as TargetTypeName,
-				'' as [Role]
-		FROM	[IntersectDetail]
+	drop view if exists [cache].[Relationships]	
 		]]>
     </sql>
 	<rollback>
