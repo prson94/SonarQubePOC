@@ -14,6 +14,7 @@ namespace igx.jobs.assetgraphprocessor
             config.UseTimers();
             config.UseServiceBus();
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }

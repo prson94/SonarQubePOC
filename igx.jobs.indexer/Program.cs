@@ -32,8 +32,9 @@ namespace igx.jobs.indexer
 
 #if DEBUG
             config.UseDevelopmentSettings();
- #endif
+#endif
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }

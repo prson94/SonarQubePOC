@@ -20,6 +20,8 @@ namespace igx.jobs.databasecleaner
             config.UseDevelopmentSettings();
 #endif
             config.UseTimers();
+            
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }
