@@ -30,6 +30,7 @@ namespace igx.jobs.apiexecutionprocessor
             config.Queues.BatchSize = 2;
             config.Queues.VisibilityTimeout = TimeSpan.FromHours(6);
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }

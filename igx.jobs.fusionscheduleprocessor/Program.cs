@@ -16,7 +16,8 @@ namespace igx.jobs.fusionscheduleprocessor
 #if DEBUG
             config.UseDevelopmentSettings();
 #endif
-            var host = new JobHost(config);
+			System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
+			var host = new JobHost(config);
             host.RunAndBlock();
         }
     }
