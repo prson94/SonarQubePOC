@@ -81,6 +81,11 @@ namespace d360.web.Controllers.V2
             long pageNum;
 
             #region Determine paging
+            if (string.IsNullOrEmpty(_pageSize))
+                _pageSize = "5";
+
+            if (string.IsNullOrEmpty(_pageNum))
+                _pageNum = "1";
 
             Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
             string isValid = isPageSizeAndNumValid(pageParams);
