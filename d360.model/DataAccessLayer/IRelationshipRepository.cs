@@ -22,11 +22,14 @@ namespace d360.model.DataAccessLayer
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
         Task<List<IntersectTypeApiViewModel>> GetActiveIntersectTypesByObjectType(int id, SystemObjects type);
         Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
+        Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool sendWorkflow = false);
         IEnumerable<dynamic> GetExportModelWithCustomFields(int id, IEnumerable<string> customColumns);
         IEnumerable<dynamic> GetExportModel(int id);
         List<DatabaseBulkAssetResult> GetBulkResults(ApiExecutionInfo info);
         List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType intersectType, RelationshipDeletes relationships, int timeout = 3600, bool triggerWorkflow = false);
         Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool sendWorkflow = false);
+        Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, ApiExecution execution, bool sendWorkflow = false);
+
         bool AnyExists(Guid uid);
         bool AnyPredicateExists(Guid uid);
         List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution);
