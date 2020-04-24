@@ -2505,8 +2505,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             initialPosition: new go.Point(125, 125),
             layout: layout,
             "undoManager.isEnabled": true,
-            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" }//,
-            //"draggingTool.canStart": function () { return false; }
+            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" }
         });
 
         let model = (dg.model as go.GraphLinksModel);
