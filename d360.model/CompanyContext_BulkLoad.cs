@@ -543,10 +543,10 @@ from	[Load] L
             }
             else if (objectType == "ReferenceItemType" && objectId == 0)
             {
-                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Type ID", x.Name, true) == 0).FirstOrDefault();
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Type Uid", x.Name, true) == 0).FirstOrDefault();
 
                 if (col == null)
-                    throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
+                    throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{objectName} Asset Uid]");
 
                 columns.Remove(col);
 
@@ -554,10 +554,10 @@ from	[Load] L
             }
             else
             {
-                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset ID", x.Name, true) == 0).FirstOrDefault();
+                var col = columns.OrderBy(x => x.ColumnIndex).Where(x => string.Compare($"{objectName} Asset Uid", x.Name, true) == 0).FirstOrDefault();
 
                 if (col == null)
-                    throw new Exception($"BULK LOAD CANNOT FIND ASSET ID COLUMN : [{objectName} Asset ID]");
+                    throw new Exception($"BULK LOAD CANNOT FIND ASSET UID COLUMN : [{objectName} Asset Uid]");
 
                 columns.Remove(col);
 
@@ -1078,19 +1078,17 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         {
                             if (field.ColumnIndex == subjectAssetIDFieldIndex)
                             {
-                                long id = -1;
-                                long.TryParse(field.Value, out id);
+                                Guid uid = Guid.Empty;
+                                Guid.TryParse(field.Value, out uid);
 
-                                Guid assetUid = (await QueryAsync<Guid>($"select [uid] from {(subjectIsReferenceItemType ? "assetType" : "asset")} where id = @id", new { id })).FirstOrDefault();
-                                upsert.SubjectAssetUid = assetUid;
+                                upsert.SubjectAssetUid = uid;
                             }
                             else if (field.ColumnIndex == objectAssetIDFieldIndex)
                             {
-                                long id = -1;
-                                long.TryParse(field.Value, out id);
+                                Guid uid = Guid.Empty;
+                                Guid.TryParse(field.Value, out uid);
 
-                                Guid assetUid = (await QueryAsync<Guid>($"select [uid] from {(objectIsReferenceItemType ? "assetType" : "asset")} where id = @id", new { id })).FirstOrDefault();
-                                upsert.ObjectAssetUid = assetUid;
+                                upsert.ObjectAssetUid = uid;
                             }
                             else
                             {
@@ -1129,8 +1127,8 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         from    LoadItem L
                                 inner join LoadItemColumn CS on CS.RowIndex = L.RowIndex and CS.ColumnIndex = @subjectAssetIDFieldIndex and CS.LoadID = @id
                                 inner join LoadItemColumn CO on CO.RowIndex = L.RowIndex and CO.ColumnIndex = @objectAssetIDFieldIndex and CO.LoadID = @id
-                                left join {(subjectIsReferenceItemType ? "AssetType" : "Asset")} SA on SA.ID = try_cast(CS.[Value] as bigint)
-                                left join {(objectIsReferenceItemType ? "AssetType" : "Asset")} OA on OA.ID = try_cast(CO.[Value] as bigint)
+                                left join {(subjectIsReferenceItemType ? "AssetType" : "Asset")} SA on SA.Uid = try_cast(CS.[Value] as uniqueidentifier)
+                                left join {(objectIsReferenceItemType ? "AssetType" : "Asset")} OA on OA.Uid = try_cast(CO.[Value] as uniqueidentifier)
                                 inner join IntersectType T on T.[uid] = @intersectTypeUid
                                 left join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
                                     and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
@@ -1160,9 +1158,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         load.PostExecutionID = executionInfo.ExecutionID;
                     }
                 }
-
-
-               
 
                 await SaveChangesAsync();
             }
