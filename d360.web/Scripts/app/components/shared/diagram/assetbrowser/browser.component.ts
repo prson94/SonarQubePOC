@@ -2298,9 +2298,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 background: "transparent",
                 contextMenu: this.template_ContextMenu(),
                 click: (e, obj) => this.helper_HighlightPath(e, obj as any),
-                computesBoundsAfterDrag: true,
+                computesBoundsAfterDrag: true, 
                 handlesDragDropForMembers: true,
                 stretch: go.GraphObject.Horizontal,
+                movable: false,
                 layout:
                     this.g(
                         go.GridLayout,
@@ -2504,7 +2505,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             initialPosition: new go.Point(125, 125),
             layout: layout,
             "undoManager.isEnabled": true,
-            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" },
+            "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" }
         });
 
         let model = (dg.model as go.GraphLinksModel);
@@ -2717,6 +2718,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(go.Node, "Auto",
             {
                 contextMenu: this.template_ContextMenu(),
+                movable: false,
                 click: (e, obj) => this.helper_HighlightPath(e, obj as any)
             },
             this.g(
@@ -2791,6 +2793,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return this.g(go.Node, "Auto",
             {
                 contextMenu: this.template_ContextMenu(),
+                movable: false,
                 click: (e, obj) => this.helper_HighlightPath(e, obj as any)
             },
             this.g(
