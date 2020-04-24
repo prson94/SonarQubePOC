@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.WebJobs;
+using System;
 
 namespace igx.jobs.assetgraphprocessor
 {
