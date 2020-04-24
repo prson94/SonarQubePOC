@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.bulkload.GetLoadColumns-v1">
+  <changeSet author="MDonato" id="Procedure.bulkload.GetLoadColumns-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -256,11 +256,11 @@ begin
 		end		
 		else if @objectType = 'ReferenceItemType' and @objectTypeID = 0
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Type ID', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
 		end		
 		else
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset ID', 1, 1, 0, 0, 1)				
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @objectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)				
 		end
 
 		if @subjectType = 'FusionAttributeType' or @subjectType = 'IntersectType'
@@ -269,11 +269,11 @@ begin
 		end
 		else if @subjectType = 'ReferenceItemType' and @subjectTypeID = 0
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Type ID', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Type Uid', 1, 1, 0, 0, 1)
 		end		
 		else
 		begin
-			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset ID', 1, 1, 0, 0, 1)
+			insert into @fields (FieldTypeID, Name, [Required], PartOfKey, AllowMultipleValues, IsLookup, [Level]) values (0, @subjectTypeName + ' Asset Uid', 1, 1, 0, 0, 1)
 		end
 	end 
 	
