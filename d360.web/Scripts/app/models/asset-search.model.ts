@@ -88,4 +88,5 @@ export class V2ApiFilters {
     _includeParent: boolean;
     _excludeCount: boolean;
     usegraphforparent: boolean;
+    _onlyListableFields: boolean;
 }
