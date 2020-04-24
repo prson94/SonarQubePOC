@@ -86,7 +86,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("lookup ge 'validlookupvalue'")]
         [InlineData("lookup eq 'invalidlookupvalue'")]
         [InlineData("lookup ne 'invalidlookupvalue'")]
-        [InlineData("relationship ct 'relationshipassetvalue'")]
         [InlineData("relationship lt 'relationshipassetvalue'")]
         [InlineData("relationship gt 'relationshipassetvalue'")]
         [InlineData("relationship le 'relationshipassetvalue'")]
@@ -218,6 +217,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("relationship eq 'relationshipassetvalue'")]
         [InlineData("relationship ne 'relationshipassetvalue'")]
+        [InlineData("relationship ct 'relationshipassetvalue'")]
         public void ValidRelationshipTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
