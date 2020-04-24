@@ -228,7 +228,7 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Data.Corrections.GOV-9723">
+  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -256,7 +256,7 @@ BEGIN TRY
 			inner join RuleImplementation RI on RI.ID = RR.RuleImplementationID
 			inner join [Rule] R on R.ID = RI.RuleID
 			inner join [RuleType] RT on R.RuleTypeID = RT.ID
-			inner join Asset A on A.Object = 'Rule' and ObjectId = RT.ID    
+			inner join Asset A on A.Object = 'Rule' and ObjectId = R.ID    
 	where RowsPassed != 0 or RowsFailed != 0
 
 	INSERT INTO AssetResult
