@@ -197,6 +197,7 @@ namespace d360.model.DataAccessLayer
             var fusionAttributeWithParent = false;
             var includeSegments = false;
             var includePermissionDetails = false;
+            bool includeOnlyListableFields = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -213,7 +214,6 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlylistablefields"))
             {
-                bool includeOnlyListableFields = false;
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlylistablefields").Value, out includeOnlyListableFields);
                 if (includeOnlyListableFields)
                 {
@@ -448,6 +448,8 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
+                    //Temp vars for filter expression parsing
+                    //Filter expression parser uses sql definitions from getFieldSql() method
                     var tempArgs = new DynamicParameters();
                     List<string> tempJoins = new List<string>();
                     List<string> tempFieldColumns = new List<string>();
@@ -456,7 +458,20 @@ namespace d360.model.DataAccessLayer
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
                     filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+
+                    if (includeOnlyListableFields)
+                    {
+                        tempArgs = new DynamicParameters();
+                        tempJoins.Clear();
+                        tempFieldColumns.Clear();
+                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        fieldColumns.AddRange(tempFieldColumns);
+                        fieldJoins.AddRange(tempJoins);
+                        countJoins.AddRange(tempJoins);
+                        dbArgs.AddDynamicParams(tempArgs);
+                    }
 
                     foreach (var item in sqlParams)
                     {
@@ -472,7 +487,8 @@ namespace d360.model.DataAccessLayer
                 {
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 
                     foreach (var item in sqlParams)
                     {

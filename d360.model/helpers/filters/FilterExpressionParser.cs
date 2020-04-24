@@ -15,6 +15,7 @@ namespace d360.model.helpers
         ICompanyContext CompanyContext;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
+        private List<int> filteredFieldIDs = new List<int>();
         private FilterExpressionParseType parseType;
         private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
@@ -57,8 +58,9 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
-        public string Parse(string filterString, out Dictionary<string, object> sqlParams)
+        public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
+            fieldIds = this.filteredFieldIDs;
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
@@ -179,6 +181,7 @@ namespace d360.model.helpers
                 {
                     throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
                 }
+
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == token.Field.ToLower()))
@@ -193,6 +196,8 @@ namespace d360.model.helpers
                 }
                 else
                 {
+                    this.filteredFieldIDs.Add(fieldType.ID);
+
                     token.LoadFieldType(fieldType, fieldColumns);
                     sb.Append(token.GetSQLForField(ref sqlParams));
                 }
