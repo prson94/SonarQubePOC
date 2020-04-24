@@ -22,6 +22,7 @@ using Newtonsoft.Json;
 using Microsoft.ApplicationInsights;
 using d360.core.entities;
 using Microsoft.Web.Http;
+using Swashbuckle.Swagger.Annotations;
 
 namespace d360.web.Controllers.Services
 {
@@ -158,7 +159,7 @@ namespace d360.web.Controllers.Services
         public string Message { get; set; }
         [JsonProperty(Order = 2)]
         [DataMember(Order =2)]
-        public int Code { get; set; }        
+        public int Code { get; set; }
     }
 
 
@@ -168,28 +169,28 @@ namespace d360.web.Controllers.Services
     /// This service houses all endpoints handling custom API configurations.
     /// </summary>
     [
-        ApiVersionNeutral, 
-        RoutePrefix("services/custom"), 
+        ApiVersionNeutral,
+        RoutePrefix("services/custom"),
         Authorize
     ]
     public class CustomController : BaseApiController
     {
-        
+
         #region DI
 
         public CustomController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
-            
+
         }
 
         #endregion
 
-        
+
         #region Error Handling Helper
 
         private HttpResponseMessage CreateCustomApiError(HttpStatusCode status, string message)
-        {            
+        {
             HttpCustomApiError err = new HttpCustomApiError(message, status);
 
             var acceptHeaders = Request.Headers.Accept;
@@ -201,7 +202,7 @@ namespace d360.web.Controllers.Services
 
 
         #region Multiselect Helpers
-        
+
         private void GetMultiSelectValues(Dictionary<FieldType, MultiSelectField> multiSelectDetails, dynamic asset, bool asJson)
         {
             if (multiSelectDetails.Any())
@@ -290,7 +291,7 @@ namespace d360.web.Controllers.Services
                         field.Value.Items = items;
                     else //for single fields return an array of values
                         field.Value.Items = items.Select(i => i.value).ToArray();
-                    
+
                     var assetObj = asset as IDictionary<string, object>;
                     //remove the original values as they are no longer needed
                     assetObj.Remove(key);
@@ -357,10 +358,12 @@ namespace d360.web.Controllers.Services
         /// <param name="entityFormat"></param>
         /// <param name="key"></param>
         /// <returns></returns>
-        [HttpGet, Route("{service}/{endpoint}/{version}/{entityFormat}/{key}")]
+        [HttpGet, Route("{service}/{endpoint}/{version}/{entityFormat}/{key}"),
+        SwaggerResponse(HttpStatusCode.NotFound, "Endpoint not found."),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetSingletonBasedOnRoute(string service, string endpoint, string version, string entityFormat, string key)
         {
-            
+
             try
             {
                 var config = (
@@ -469,9 +472,9 @@ namespace d360.web.Controllers.Services
 
                     #endregion
 
-                    switch ((f.FieldType.Type ?? "").ToUpper()) 
+                    switch ((f.FieldType.Type ?? "").ToUpper())
                     {
-                        case "DATE":                            
+                        case "DATE":
                             columnSql += $", convert(varchar, cast(F{ fID}.FormattedValue as date), 120) as [{fieldName}]";
                             break;
                         case "LOOKUP":
@@ -495,7 +498,7 @@ namespace d360.web.Controllers.Services
                             columnSql += $", F{fID}.FormattedValue as [{fieldName}]";
                             break;
                     }
-                    
+
                     fieldSql += $" left join Field F{fID} on F{fID}.AssetID = A.ID and F{fID}.FieldTypeID = {f.FieldType.ID}";
 
                 }
@@ -511,7 +514,7 @@ namespace d360.web.Controllers.Services
 
                 //process multiselect values
                 GetMultiSelectValues(multiSelectDetails, asset, asJson);
-                
+
                 var canoUri = RequestUri();
 
                 //Determine whether it is JSON or XML to send back to caller, and format appropriately
@@ -526,7 +529,7 @@ namespace d360.web.Controllers.Services
                     foreach (var property in dic)
                     {
                         if (property.Value != null) exp.Add(property.Key, property.Value);
-                    }                    
+                    }
 
                     exp.Add("_links", new List<JsonResultLinkModel> { new JsonResultLinkModel { href = canoUri, rel = JsonResultLinkModel.CANO } });
 
@@ -543,7 +546,7 @@ namespace d360.web.Controllers.Services
 
                     ConvertMultiSelectValuesToXml(multiSelectDetails, xAsset, namespaces);
 
-                    XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset); 
+                    XElement xLinks = DynamicHelper.GetXElement("Links", namespaces, xAsset);
                     XElement link = DynamicHelper.GetXElement("link", namespaces, xLinks);
 
                     link.Add(new XAttribute("rel", JsonResultLinkModel.CANO), new XAttribute("href", canoUri));
@@ -580,12 +583,14 @@ namespace d360.web.Controllers.Services
         /// <param name="version"></param>
         /// <param name="entityFormat"></param>
         /// <returns></returns>
-        [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}")]
+        [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}"),
+        SwaggerResponse(HttpStatusCode.NotFound, "Incorrect version provided."),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetCollectionBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
-            
+
             try
-            {                
+            {
                 if (Request.RequestUri.ToString().Length > 16000)
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Request URI must not exceed 16,000 characters.");
 
@@ -726,12 +731,12 @@ namespace d360.web.Controllers.Services
                     var select = queryParams.SingleOrDefault(i => i.Key == "_select");
                     arrSelect = select.Value.Split(',').ToList();
                 }
-                                
+
                 #endregion
 
                 #region Field Filter Processing
 
-                    var filterErrors = new List<string>();
+                var filterErrors = new List<string>();
 
                 var filters = new List<IFilterModel>();
                 foreach (var qp in queryParams.Where(i => i.Key != "_pageNum" && i.Key != "_pageSize" && i.Key != "_order" && i.Key != "_select"))
@@ -900,7 +905,7 @@ namespace d360.web.Controllers.Services
                             var filter = new SearchFilterModel { Negated = isNegated, FieldName = fieldToFilter, Type = SearchFilterType.Suffix };
 
                             if (fieldValueToFilterBy.StartsWith("suffix("))
-                            {                                
+                            {
                                 filter.CaseSensitive = false;
                                 fieldValueToFilterBy = fieldValueToFilterBy.Replace("suffix(", "").ReplaceLast(")", "");
                                 filter.Values = fieldValueToFilterBy.Split(',').Select(i => i.Trim()).ToList();
@@ -1075,7 +1080,7 @@ namespace d360.web.Controllers.Services
                         formattedValueColumnSql =  $"F{fID}.Value";
                     }
 
-                
+
                     if (includeColumn)
                         columnSql += $", {formattedValueColumnSql} as [{fieldName}]";
 
@@ -1145,7 +1150,7 @@ namespace d360.web.Controllers.Services
 
                                     additionalWhereSql += $" where {columnName} in ({values})";
                                     additionalWhereSql += ")";
-                                    
+
                                 }
                                 else
                                 {
@@ -1302,10 +1307,10 @@ namespace d360.web.Controllers.Services
                         else if (filter is MultiValueFilterModel)
                         {
                             var multiValueFilter = filter as MultiValueFilterModel;
-                            
+
                             var loopNumber = 1;
                             var dateFieldString = "";
-     
+
                             additionalWhereSql += "(";
 
                             foreach (var v in multiValueFilter.Values)
@@ -1317,7 +1322,7 @@ namespace d360.web.Controllers.Services
                             }
                             additionalWhereSql += dateFieldString;
                             additionalWhereSql += ") ";
-                            
+
 
                         }
                         else if (filter is RangeValueFilterModel)
@@ -1405,7 +1410,7 @@ namespace d360.web.Controllers.Services
                 if (arrSort != null)
                 {
                     if (arrSort.Count > 0)
-                    {                        
+                    {
                         return CreateCustomApiError(HttpStatusCode.BadRequest, "You have invalid fields in your _order query parameter.");
                     }
                 }
@@ -1456,7 +1461,7 @@ namespace d360.web.Controllers.Services
 
                 // Now, format the SQL to get the items.
                 sql = string.Format(sql, columnSql, fieldSql, additionalWhereSql, orderSql);
-                 lastmodifiedDateSql = string.Format(lastmodifiedDateSql, fieldSql, additionalWhereSql);
+                lastmodifiedDateSql = string.Format(lastmodifiedDateSql, fieldSql, additionalWhereSql);
 
                 if (!sql.Contains("order by"))
                 {
@@ -1475,7 +1480,7 @@ namespace d360.web.Controllers.Services
                 var lastModifiedDate = Company.Query<DateTime?>(lastmodifiedDateSql, dbArgs).SingleOrDefault();
 
                 #region Calculate the page links
-                                        
+
                 var requestUri = RequestUri();
 
                 if (!requestUri.Contains("_pageSize="))
@@ -1489,7 +1494,7 @@ namespace d360.web.Controllers.Services
                     {
                         requestUri += $"&_pageSize={pageSize}";
                     }
-                    
+
                 }
 
                 var canoUri = requestUri;
@@ -1507,7 +1512,7 @@ namespace d360.web.Controllers.Services
                 var showPrevLink = (currentPageNumber > 1) && (count > ((currentPageNumber-1) * pageSize));
                 var showNextLink = (count > (currentPageNumber * pageSize));
 
-                
+
 
                 #endregion
 
@@ -1528,7 +1533,7 @@ namespace d360.web.Controllers.Services
                         foreach (var property in dic)
                         {
                             if (property.Value != null)
-                                exp.Add(property.Key, property.Value);                                
+                                exp.Add(property.Key, property.Value);
                         }
                         res[i] = exp;
                     }
@@ -1572,7 +1577,7 @@ namespace d360.web.Controllers.Services
                     var link = DynamicHelper.GetXElement("link", namespaces, xLinks);
                     link.Add(new XAttribute("rel", JsonResultLinkModel.CANO), new XAttribute("href", canoUri));
                     xLinks.Add(link);
-                        
+
                     if (showNextLink)
                     {
                         link = DynamicHelper.GetXElement("link", namespaces, xLinks);
@@ -1626,7 +1631,9 @@ namespace d360.web.Controllers.Services
         /// <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
         /// <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
         /// <returns></returns>
-        [HttpGet, Route("{service}/{endpoint}/{version}/version")]        
+        [HttpGet, Route("{service}/{endpoint}/{version}/version"),
+        SwaggerResponse(HttpStatusCode.NotFound, "Incorrect version provided."),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
         {
             try
@@ -1650,7 +1657,7 @@ namespace d360.web.Controllers.Services
                              }).FirstOrDefault();
 
                 if (config == null)
-                {                    
+                {
                     return CreateCustomApiError(HttpStatusCode.NotFound, "Endpoint not found.");
                 }
 
@@ -1667,11 +1674,11 @@ namespace d360.web.Controllers.Services
                 if (asJson)
                 {
                     var json = new JsonVersionModel { APIVersionNumber = apiVersion, ImplementationVersion = governVersion };
-                    
+
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, json , "application/json");
                 }
                 else
-                {                    
+                {
                     var serviceID = config.ServiceID;
                     var namespaces = Company.ApiNamespaces.Where(i => i.ServiceID == serviceID).ToDictionary(k => k.Node, v => v.Namespace);
 
@@ -1680,7 +1687,7 @@ namespace d360.web.Controllers.Services
                         DynamicHelper.GetXElement("APIVersionNumber", namespaces, versionDoc, apiVersion),
                         DynamicHelper.GetXElement("ImplementationVersion", namespaces, versionDoc, governVersion)
                         );
-                    
+
                     responseMessage = Request.CreateResponse(HttpStatusCode.OK, versionDoc, "application/xml");
                 }
 
@@ -1689,7 +1696,7 @@ namespace d360.web.Controllers.Services
                 return responseMessage;
             }
             catch (Exception)
-            {                
+            {
                 return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
             }
         }
@@ -1703,7 +1710,9 @@ namespace d360.web.Controllers.Services
         /// <param name="endpoint">The URI segment that defines the service endpoint you are connecting to.</param>
         /// <param name="version">The URI segment that defines the service endpoint version you are connecting to.</param>
         /// <returns></returns>
-        [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health")]
+        [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health"),
+        SwaggerResponse(HttpStatusCode.NotFound, "Incorrect health parameter provided."),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
         {
             try
@@ -1730,7 +1739,7 @@ namespace d360.web.Controllers.Services
 
                 if (config == null)
                 {
-                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found."); 
+                    return Request.CreateResponse(HttpStatusCode.InternalServerError, "Endpoint not found.");
                 }
             }
             catch (Exception)
