@@ -263,7 +263,8 @@ namespace igx.UnitTests.FilterExpressionTests
         {
             var filterWithSymbol = "text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'";
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(filterWithSymbol, out sqlParams);
+            List<int> fieldIds = new List<int>();
+            string sql = filterParser.Parse(filterWithSymbol, out sqlParams, out fieldIds);
             foreach (var param in sqlParams)
             {
                 Assert.True(CheckParamOccurance(sql, param.Key));
