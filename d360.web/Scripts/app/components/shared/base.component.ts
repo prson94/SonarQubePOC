@@ -321,7 +321,7 @@ export class BaseComponent {
                 this.secondaryNavService.showItem(this.ownershipSidebar);
             }
 
-            if (hasDashboard || isCommonAsset) {
+            if (hasDashboard) {
                 this.dashboardSidebar = new SecondaryNavItem(
                     'Dashboards',
                     'dashboards',
