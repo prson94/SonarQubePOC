@@ -495,7 +495,7 @@ namespace d360.model.DataAccessLayer
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
-                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
                         fieldColumns.AddRange(tempFieldColumns);
                         fieldJoins.AddRange(tempJoins);
                         countJoins.AddRange(tempJoins);

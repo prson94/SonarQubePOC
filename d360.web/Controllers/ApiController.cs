@@ -610,7 +610,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                                                                 o.LookupObjectType == item.LookupObjectType &&
                                                                 o.LookupObjectID == item.LookupObjectID)
                                 .OrderBy(o => o.Text)
-                                .Select(o => o.Text + "!~!" + o.Value)
+                                .Select(o => o.Text + "!~!" + o.Text)
                                 .ToList();
                         }
                         else
