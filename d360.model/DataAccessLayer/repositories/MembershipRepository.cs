@@ -150,6 +150,8 @@ namespace d360.model.DataAccessLayer
 
             userTable.Columns.Add("ExecutionID", typeof(Guid));
             userTable.Columns.Add("Uid", typeof(Guid));
+            userTable.Columns.Add("ResourceID", typeof(int));
+
             userTable.Columns.Add("ExecutionItemUid", typeof(Guid));
             userTable.Columns.Add("ItemNumber", typeof(int));
             userTable.Columns.Add("Username", typeof(string));
@@ -206,7 +208,8 @@ namespace d360.model.DataAccessLayer
                             ItemNumber int,
                             Username nvarchar(500),
                             ResourceID int,
-                            HasCompanyResource bit
+                            [uid] uniqueidentifier,
+                            CompanyResourceState int
                         )
 
                         ", transaction: trans);
@@ -230,10 +233,11 @@ namespace d360.model.DataAccessLayer
                         inner join [Resource] R on R.Email = U.Username;
 
                         update U
-                        set U.HasCompanyResource = case when R.ResourceID is not null then 1 else 0 end
+                        set U.CompanyResourceState = R.[State],
+                            U.uid = CR.uid
                         from #UserResources U
-                        left join [CompanyResource] R on R.ResourceID = U.ResourceID and R.CompanyID = @companyId;
-
+                        left join [CompanyResource] R on R.ResourceID = U.ResourceID and R.CompanyID = @companyId
+                        left join [Resource] CR on CR.ID = R.ResourceID;
                         ", new { companyId = CompanyContext.CurrentCompanyID }, transaction: trans);
 
                     var communityResults = await CommunityContext.Connection.QueryAsync<dynamic>(@"select * from #UserResources", transaction: trans);
@@ -244,7 +248,8 @@ namespace d360.model.DataAccessLayer
                         if (user != null)
                         {
                             user.ResourceID = result.ResourceID;
-                            user.HasCompanyResource = result.HasCompanyResource;
+                            user.uid = result.uid;
+                            user.CompanyResourceState = (CompanyResourceState?)result.CompanyResourceState;
                         }
                     }
 
@@ -273,16 +278,20 @@ namespace d360.model.DataAccessLayer
 
                 if (user.IsNew)
                 {
-                    if (user.uid.HasValue)
+                    if (user.CompanyResourceState.HasValue && user.CompanyResourceState == CompanyResourceState.Active)
+                    {
+
+
+                        if (user.ResourceID.HasValue)
+                        {
+                            success = false;
+                            messages.Add("Resource for this Username already exists");
+                        }
+                    }
+                    else if (user.uid.HasValue)
                     {
                         success = false;
                         messages.Add("Cannot provide Uid for a new user");
-                    }
-
-                    if (user.ResourceID.HasValue)
-                    {
-                        success = false;
-                        messages.Add("Resource for this Uid already exists");
                     }
 
                     if (user.State.HasValue)
@@ -331,8 +340,18 @@ namespace d360.model.DataAccessLayer
                 }
 
 
+                if (user.CompanyResourceState.HasValue)
+                {
+                    if (user.IsNew)
+                    {
+                        user.State = CompanyResourceState.Active;
+                        user.IsNew = false;
+                    }
+                }
+
                 row["ExecutionID"] = executionID;
                 if (user.uid.HasValue) row["Uid"] = user.uid;
+                if (user.ResourceID.HasValue) row["ResourceID"] = user.ResourceID;
                 if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
                 row["ItemNumber"] = itemNumber;
                 row["Username"] = user.Username;
@@ -422,6 +441,8 @@ namespace d360.model.DataAccessLayer
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     bulkCopy.ColumnMappings.Add("Username", "Username");
                     bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("ResourceID", "ResourceID");
+
                     bulkCopy.ColumnMappings.Add("FirstName", "FirstName");
                     bulkCopy.ColumnMappings.Add("LastName", "LastName");
                     bulkCopy.ColumnMappings.Add("Password", "Password");
@@ -570,6 +591,7 @@ namespace d360.model.DataAccessLayer
                             CommunityContext.Add(resource);
 
                             user.ResourceID = resource.ID;
+                            user.uid = resource.Uid;
                             result.uid = resource.Uid;
                         }
                         else
@@ -609,9 +631,11 @@ namespace d360.model.DataAccessLayer
                             }
                         }
 
-                        if (user.HasCompanyResource)
+                        CompanyResource companyResource;
+
+                        if (user.CompanyResourceState.HasValue)
                         {
-                            var companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
+                            companyResource = CommunityContext.CompanyResources.FirstOrDefault(c => c.CompanyID == CompanyContext.CurrentCompanyID && c.ResourceID == user.ResourceID);
 
                             if (companyResource != null)
                             {
@@ -623,7 +647,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else
                         {
-                            var companyResource = new CompanyResource()
+                            companyResource = new CompanyResource()
                             {
                                 ResourceID = (int)user.ResourceID,
                                 CompanyID = CompanyContext.CurrentCompanyID,
@@ -643,7 +667,7 @@ namespace d360.model.DataAccessLayer
                             globalResource.LastName = user.LastName;
                             globalResource.Email = user.Username;
                             globalResource.IsAdministrator = user.IsAdministrator;
-                            globalResource.State = user.State ?? globalResource.State;
+                            globalResource.State = user.State ?? companyResource.State;
                             globalResource.UpdatedOn = DateTime.UtcNow;
 
                             CompanyContext.Update(globalResource);
@@ -657,7 +681,7 @@ namespace d360.model.DataAccessLayer
                                 Email = user.Username,
                                 LastName = user.FirstName,
                                 FirstName = user.LastName,
-                                State = user.State ?? globalResource.State,
+                                State = user.State ?? companyResource.State,
                                 UpdatedOn = DateTime.UtcNow,
                                 Uid = (Guid)user.uid
                             };
