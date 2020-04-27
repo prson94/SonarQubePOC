@@ -92,7 +92,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     load(): void {
         this.currentUid = this.GetCurrentUid();
-        console.log(this.objectName);
         if (this.currentUid == null) {
             console.error("No Asset, Action or Relationship type Uid provided.")
             return;

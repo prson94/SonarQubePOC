@@ -328,7 +328,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
-        console.log(this.objectName);
         this.enableAllowMultipleValues = true;
         if (value == null) {
             this.currentType = "Empty";
