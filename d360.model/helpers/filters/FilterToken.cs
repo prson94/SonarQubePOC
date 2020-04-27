@@ -104,7 +104,6 @@ namespace d360.model.helpers
             if (this.@operator == "ct")
             {
                 value = wildcardValue(escapeForSQLLike(value.ToString()));
-                value = $"%{value}%";
             }
 
             stringBuilder.Clear();
@@ -204,7 +203,6 @@ namespace d360.model.helpers
             if (@operator == "ct")
             {
                 value = wildcardValue(escapeForSQLLike(value.ToString()));
-                value = $"%{value}%";
             }
 
             string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
