@@ -621,9 +621,20 @@ namespace d360.web.Controllers.V2
         /// Adds the specified users.
         /// </summary>
         /// <remarks>
-        /// If the password is omitted one will be generated randomly. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        ///###Users###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Username</td><td>Required</td><td>The email the user will use to login</td><td>Must be in a valid email format</td></tr>
+        /// <tr><td>Firstname</td><td>Required</td><td>First name of the user</td><td></td></tr>
+        /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
+        /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
+        /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
+        /// </table>
+        /// <br/>
         /// </remarks>
-        /// <param name="users">A list users to add.</param>
+        /// <param name="users">A list of users to add.</param>
         [
             HttpPost,
             Route("users"),
@@ -667,9 +678,22 @@ namespace d360.web.Controllers.V2
         /// Updates the specified users.
         /// </summary>
         /// <remarks>
-        /// The Password field is optional and will not be updated if omitted. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        ///###Users###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>uid</td><td>Required</td><td>The uid of the user record to update</td><td>Must be in a valid uid format</td></tr>
+        /// <tr><td>Username</td><td>Required</td><td>The email the user will use to login</td><td>Must be in a valid email format</td></tr>
+        /// <tr><td>Firstname</td><td>Required</td><td>First name of the user</td><td></td></tr>
+        /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
+        /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
+        /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>State</td><td>Optional</td><td>State of the user record. If the State is not provided it will remain unchanged</td><td>Must be a valid State value. Valid values are Active, Inactive, and Deleted</td></tr>
+        /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
+        /// </table>
+        /// <br/>
         /// </remarks>
-        /// <param name="users">A list users to update.</param>
+        /// <param name="users">A list of users to update.</param>
         [
             HttpPut,
             Route("users"),
