@@ -184,6 +184,10 @@ namespace d360.web.Controllers.V2
             try
             {
                 var res = AssetRepository.GetExecutionStatusModel(executionUid);
+                if (res == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
                         Request.CreateResponse(
