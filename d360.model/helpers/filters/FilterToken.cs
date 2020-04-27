@@ -103,7 +103,8 @@ namespace d360.model.helpers
             value = value.ToString().Trim('\'');
             if (this.@operator == "ct")
             {
-                value = $"%{value.ToString().Replace("*", "%")}%";
+                value = wildcardValue(escapeForSQLLike(value.ToString()));
+                value = $"%{value}%";
             }
 
             stringBuilder.Clear();
@@ -202,7 +203,8 @@ namespace d360.model.helpers
 
             if (@operator == "ct")
             {
-                value = $"%{value.ToString().Replace("*", "%")}%";
+                value = wildcardValue(escapeForSQLLike(value.ToString()));
+                value = $"%{value}%";
             }
 
             string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
@@ -411,6 +413,31 @@ namespace d360.model.helpers
             else
                 return SplitFilterCriteriaRelationship.Subject;
 
+        }
+
+        private string wildcardValue(string value)
+        {
+            value = value.Replace("*", "%").Replace("?", "_");
+            return value;
+        }
+
+        private string escapeForSQLLike(string value)
+        {
+            char[] escapeChars = new char[] { '%', '_', '^', '[' };
+            string escapedValue = "";
+
+            foreach (char c in value)
+            {
+                if (escapeChars.Contains(c))
+                {
+                    escapedValue += $"[{c}]";
+                }
+                else
+                {
+                    escapedValue += c;
+                }
+            }
+            return escapedValue;
         }
     }
 }
