@@ -1946,5 +1946,38 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         {
             return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
         }
+
+        public dynamic GetExecutionStatusModel(Guid executionUid)
+        {
+            ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
+
+            if (dbExecutionItem == null)
+            {
+                throw new Exception("Execution unique identifier not found.");
+            }
+
+            var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
+
+            List<DatabaseBulkAssetResult> results = null;
+            try
+            {
+                var resultsJson = StorageProvider.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
+                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+            }
+            catch
+            {
+            }
+            var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
+            return new
+            {
+                Total = dbExecutionItem.Total,
+                Processed = dbExecutionItem.Processed,
+                Error = dbExecutionItem.Error,
+                Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
+                StartedOn = dbExecutionItem.StartedOn,
+                CompletedOn = dbExecutionItem.CompletedOn,
+                Results = results
+            };
+        }
     }
 }

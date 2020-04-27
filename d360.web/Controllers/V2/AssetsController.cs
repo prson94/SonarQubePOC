@@ -1313,44 +1313,14 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Assets.GetExecutionStatus => ";
             var errorMessage = "";
-
             try
             {
-                ApiExecution dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
-
-                if (dbExecutionItem == null)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
-                }
-
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
-
-                List<DatabaseBulkAssetResult> results = null;
-                try
-                {
-                    var resultsJson = Storage.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
-                    results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
-                }
-                catch
-                {
-                }
-                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
-                var statusModel = new ApiExecutionStatusModel
-                {
-                    CompletedOn = dbExecutionItem.CompletedOn,
-                    Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
-                    Processed = dbExecutionItem.Processed,
-                    StartedOn = dbExecutionItem.StartedOn,
-                    Total = dbExecutionItem.Total,
-                    Results = results
-                };
-
+                var res = AssetRepository.GetExecutionStatusModel(executionUid);
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
                         Request.CreateResponse(
                             HttpStatusCode.OK,
-                            statusModel
+                            res as object
                         )
                     )
                 );
