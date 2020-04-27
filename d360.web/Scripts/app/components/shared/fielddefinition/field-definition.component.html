@@ -16,6 +16,7 @@
             [objectName]="objectName"
             [showIsListable]="showIsListable"
             [showIsPartOfKey]="showIsPartOfKey"
+            [supportsPrimaryFilterOption]="true"
             (onCancel)="isEditing = false; onCancel.emit()"
             (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>    
@@ -26,7 +27,7 @@
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
                      (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
     <div *ngIf="!isEditing && !isDeleting">
-        <div *ngIf="!isLoading && !hasKeyFields && (objectType == 'ArtifactType' || objectType == 'TaxonomyType' || objectType == 'PolicyType' || objectType == 'RuleType' || objectType == 'LookupType')" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
+        <div *ngIf="!isLoading && !hasKeyFields" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
         <p-table #dt [value]="fieldDefinitions" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','Category','IsListable','IsRequired','IsPartOfKey','ColumnWidth']"
                  [(selection)]="selectedRow" [scrollable]="true" scrollHeight="200px">

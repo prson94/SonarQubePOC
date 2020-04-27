@@ -19,6 +19,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                                                [objectType]="objectType"
                                                [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
+                                               [objectName]="objectName"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>
             </div>

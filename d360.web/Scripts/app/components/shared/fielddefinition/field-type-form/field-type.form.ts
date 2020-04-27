@@ -70,7 +70,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Input() actionTypeUid: string;
     @Input() assetTypeUid: string;
     @Input() relationshipTypeUid: string;
-
+    @Input() supportsPrimaryFilterOption: boolean = false;
     private currentType: string = "Empty";
 
     private lookups: Lookups = new Lookups();
@@ -100,7 +100,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private listFilterRelatedFields: any[] = [];
     private expandFilterConfiguration: boolean = false;
 
-    private supportsPrimaryFilterOption: boolean = false;
     private displayFieldSelected: boolean = true;
     public listParentFields: SelectItem[] = [];
 
@@ -329,6 +328,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private loadDataType(value: string, isFromLoad: boolean = false) {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
+        console.log(this.objectName);
         this.enableAllowMultipleValues = true;
         if (value == null) {
             this.currentType = "Empty";
@@ -745,6 +745,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.model.FieldType.Type.ComputedOwnershipLookup = this.model.FieldType.Type.OwnershipLookup;
         if (this.currentType == "RefListRelationship")
             this.model.FieldType.Type.ComputedRelationshipReferenceList = this.model.FieldType.Type.RefListRelationship;
+        if (this.currentType == "JSON")
+            this.model.FieldType.Type.Json = this.model.FieldType.Type.JSON;
         if (this.currentType == "ComplexRelationLookup") {
             //need to convert the Fields and Relationships to the API expected format
             this.ConvertDisplayFieldsToAPIDefinition();
@@ -786,7 +788,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private valid(): boolean {
         let valid = true;
-
+        if (this.currentType == 'Empty' || this.currentType == null) {
+            valid = false;
+        }
         if (this.currentType == 'RefListRelationship' && !this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
             valid = false;
         }
@@ -1297,21 +1301,21 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'JSON'].indexOf(this.currentType) > -1
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement', 'Tag']
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JsonElement', 'Tag']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JSON', 'JsonElement'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JsonElement'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
@@ -1361,9 +1365,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             return "OwnershipLookup";
         if (this.currentType == "ComputedRelationshipReferenceList")
             return "RefListRelationship";
-        if (this.currentType == "ComputedRelationshipLookup") {
+        if (this.currentType == "ComputedRelationshipLookup") 
             return "ComplexRelationLookup";
-        }
+        if (this.currentType == "Json")
+            return "JSON";
         return name;
     }
 }

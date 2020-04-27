@@ -73,6 +73,7 @@
                                    style="width: 98%; display: block;"
                                    (keyup)="syncApiNameWithName=false;updateApiName($event);"
                                    #apiName="ngModel"
+                                   [ngStyle]="{'background':( actionName=='Edit' ? '#EFEFEF': '')}"
                                    [disabled]="actionName=='Edit'"/>
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>

@@ -51,6 +51,9 @@ export class FieldType {
             case 'JSON':
                 this.JSON = new ComputedRelationshipReferenceList();
                 break;
+            case 'Json':
+                this.Json = new ComputedRelationshipReferenceList();
+                break;
             case 'JsonElement':
                 this.JsonElement = new ComputedRelationshipField();
                 this.JsonElement.JsonAttribute = new JSONAttribute();
@@ -97,11 +100,14 @@ export class FieldType {
     RefListRelationship: ComputedRelationshipReferenceList;
     ComputedRelationshipReferenceList: ComputedRelationshipReferenceList;
 
+    //need a second JSON so the API can serialize the object by the class name
+    JSON: ComputedRelationshipReferenceList;
+    Json: ComputedRelationshipReferenceList;
+
     Date: DateClass;
     DateTime: DateClass;
     Decimal: Decimal;
     Html: HTML;
-    JSON: ComputedRelationshipReferenceList;
     JsonElement: ComputedRelationshipField;
     Link: Link;
     Lookup: Lookup;
@@ -146,7 +152,7 @@ export class Boolean implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
@@ -292,7 +298,7 @@ export class DateClass implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
@@ -308,7 +314,7 @@ export class Decimal implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
@@ -330,7 +336,7 @@ export class HTML implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
@@ -351,7 +357,7 @@ export class Link implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
@@ -404,14 +410,14 @@ export class List {
 export class Tag implements ICommonOptions{
     Validation: BooleanValidation = new BooleanValidation();
     SortOrder: number = 0;
-    IsDisplayable: boolean = true;
+    IsDisplayable: boolean = false;
     IsEditable: boolean = false;
     IsPartOfKey: boolean = false;
-    ShowIfEmpty: boolean = false;
+    ShowIfEmpty: boolean = true;
     ColumnOrder: number;
     ColumnWidth: number = 0;
     Description: DisplayOnlyDescription = new DisplayOnlyDescription();
-    IsListable: boolean = false;
+    IsListable: boolean = true;
     IsPrimaryFilter: boolean = false;
 }
 
@@ -423,7 +429,7 @@ export class Text implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;

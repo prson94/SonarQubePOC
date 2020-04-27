@@ -44,6 +44,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() isAdding = false;
     @Input() isDeleting = false;
 
+    @Input() supportsPrimaryFilterOption: boolean = false;
+
     private fieldDefinitions = new Array<FieldTypeAPIModelField>();
     private selectedRow = new FieldTypeAPIModelField();
 
@@ -90,6 +92,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     load(): void {
         this.currentUid = this.GetCurrentUid();
+        console.log(this.objectName);
         if (this.currentUid == null) {
             console.error("No Asset, Action or Relationship type Uid provided.")
             return;
@@ -103,17 +106,18 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             data => {
                 this.fieldDefinitions = data;
                 let foundKeyField = false;
-                this.fieldDefinitions.forEach(d => {
-                    let type = this.currentFieldType(d);
-                    if (!d.Type[type].SortOrder)
-                        d.Type[type].SortOrder = 0;
-                    if (this.IsPartyOfKey(d.Type)) {
-                        foundKeyField = true;
-                    }
-                });
-                this.sortFields();
-                this.hasKeyFields = foundKeyField;
-
+                if (this.fieldDefinitions && this.fieldDefinitions.length > 0) {
+                    this.fieldDefinitions.forEach(d => {
+                        let type = this.currentFieldType(d);
+                        if (!d.Type[type].SortOrder)
+                            d.Type[type].SortOrder = 0;
+                        if (this.IsPartyOfKey(d.Type)) {
+                            foundKeyField = true;
+                        }
+                    });
+                    this.sortFields();
+                    this.hasKeyFields = foundKeyField;
+                }
                 this.selectedRow = null;
                 this.isLoading = false;
             }

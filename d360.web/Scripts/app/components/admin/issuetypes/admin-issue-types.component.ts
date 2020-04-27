@@ -86,6 +86,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
                                         [showIsListable]="false" 
                                         [showIsPartOfKey]="false"
                                         [actionTypeUid]="selected?.Uid"
+                                        [objectName]="selectedRow?.Name"
                                     ></d3s-field-definition-tile>     
                                 </div>
                             </div>

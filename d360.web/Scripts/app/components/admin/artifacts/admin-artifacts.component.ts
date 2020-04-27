@@ -77,6 +77,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     selectedItemChange() {
+        console.log(this.selectedRow);
         this.loadDataAndExecuteAction(() => {
             this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
         });
