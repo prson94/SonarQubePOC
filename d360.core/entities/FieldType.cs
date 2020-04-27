@@ -554,7 +554,7 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDataTypeHtmlApiViewModel Html { get; set; }
         [DataMember]
-        public FieldTypeDataTypeJsonApiViewModel Json { get; set; }
+        public FieldTypeDataTypeJsonApiViewModel JSON { get; set; }
         [DataMember]
         public FieldTypeDataTypeJsonElementApiViewModel JsonElement { get; set; }
         [DataMember]
@@ -584,7 +584,7 @@ namespace d360.core.entities
             childPopulatedCount += (DateTime != null) ? 1 : 0;
             childPopulatedCount += (Decimal != null) ? 1 : 0;
             childPopulatedCount += (Html != null) ? 1 : 0;
-            childPopulatedCount += (Json != null) ? 1 : 0;
+            childPopulatedCount += (JSON != null) ? 1 : 0;
             childPopulatedCount += (JsonElement != null) ? 1 : 0;
             childPopulatedCount += (Link != null) ? 1 : 0;
             childPopulatedCount += (Lookup != null) ? 1 : 0;

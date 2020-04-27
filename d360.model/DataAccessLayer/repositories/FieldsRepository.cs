@@ -338,12 +338,12 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Html' then FT.IsPrimaryFilter else null end as 'Type.Html.IsPrimaryFilter',
 		        case when FT.Type = 'Html' then FT.ShowIfEmpty else null end as 'Type.Html.ShowIfEmpty',
 
-		        case when FT.Type = 'Json' then FT.ColumnOrder else null end as 'Type.Json.ColumnOrder',
-		        case when FT.Type = 'Json' then FT.DisplayDescription else null end as 'Type.Json.Description.Display',
-		        case when FT.Type = 'Json' then FT.IsDisplayable else null end as 'Type.Json.IsDisplayable',
-		        case when FT.Type = 'Json' then FT.IsEditable else null end as 'Type.Json.IsEditable',
-                case when FT.Type = 'Json' then FT.IsRequired else null end as 'Type.Json.Validation.IsRequired',
-		        case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.Json.ShowIfEmpty',
+		        case when FT.Type = 'Json' then FT.ColumnOrder else null end as 'Type.JSON.ColumnOrder',
+		        case when FT.Type = 'Json' then FT.DisplayDescription else null end as 'Type.JSON.Description.Display',
+		        case when FT.Type = 'Json' then FT.IsDisplayable else null end as 'Type.JSON.IsDisplayable',
+		        case when FT.Type = 'Json' then FT.IsEditable else null end as 'Type.JSON.IsEditable',
+                case when FT.Type = 'Json' then FT.IsRequired else null end as 'Type.JSON.Validation.IsRequired',
+		        case when FT.Type = 'Json' then FT.ShowIfEmpty else null end as 'Type.JSON.ShowIfEmpty',
 
 		        case when FT.Type = 'JsonElement' then FT.ColumnOrder else null end as 'Type.JsonElement.ColumnOrder',
 		        case when FT.Type = 'JsonElement' then FT.DisplayDescription else null end as 'Type.JsonElement.Description.Display',
@@ -370,7 +370,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
 		        case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
-		        case when FT.Type = 'Lookup' then DFA.[Uid] else null end as 'Type.Lookup.DefaultValue',
+		        case when FT.Type = 'Lookup' then COALESCE(TRY_CONVERT(UNIQUEIDENTIFIER, FT.DefaultValue),DFA.[Uid]) else null end as 'Type.Lookup.DefaultValue',
 		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
                 case when FT.Type = 'Lookup' then FT.IsRequired else null end as 'Type.Lookup.Validation.IsRequired',
@@ -389,8 +389,8 @@ select	@pageSize as 'pageSize',
 					when FT.Type = 'Lookup' and LookupOT.Uid is null and FT.LookupObjectID <> 0 then 0 
                     else null 
 				end as 'Type.Lookup.List.Class',
-                case when FT.Type = 'Lookup' then (select Name from FieldType where ID = FT.ParentFieldTypeID) else null end as 'Type.Lookup.List.ParentFieldTypeName',
 		        case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
+                case when FT.Type = 'Lookup' then (select Name from FieldType where ID = FT.ParentFieldTypeID) else null end as 'Type.Lookup.ParentFieldTypeName',
 		        case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
 		        case when FT.Type = 'Lookup' then FT.IsEditable else null end as 'Type.Lookup.IsEditable',
 		        case when FT.Type = 'Lookup' then FT.IsListable else null end as 'Type.Lookup.IsListable',
@@ -679,6 +679,8 @@ from	IntersectType I
                         relation.Object = relationInfo.Object;
                         relation.ObjectID = relationInfo.ObjectID;
                         relation.RelationType = (ComplexLookupRelationType)i.RelationType;
+                        relation.AssetUid = i.AssetTypeUid;
+                        relation.IntersectTypeUid = i.IntersectTypeUid;
 
                         relatedItemUids.Add(i.AssetTypeUid);
                         definitionRelations.Add(relation);
@@ -909,23 +911,23 @@ from	IntersectType I
                         newFieldType.MinimumLength = f.Type.Html.Validation.MinimumLength;
                     }
                 }
-                else if (f.Type.Json != null)
+                else if (f.Type.JSON != null)
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a JSON type on an action type or relationship type for field {f.Name}.");
                     }
                     newFieldType.Type = DataType.JSON.ToString();
-                    newFieldType.ColumnOrder = f.Type.Json.ColumnOrder;
-                    if (f.Type.Json.Description != null)
+                    newFieldType.ColumnOrder = f.Type.JSON.ColumnOrder;
+                    if (f.Type.JSON.Description != null)
                     {
-                        newFieldType.DisplayDescription = f.Type.Json.Description.Display;
+                        newFieldType.DisplayDescription = f.Type.JSON.Description.Display;
                     }
-                    newFieldType.IsDisplayable = f.Type.Json.IsDisplayable;
-                    newFieldType.ShowIfEmpty = f.Type.Json.ShowIfEmpty;
-                    if (f.Type.Json.Validation != null)
+                    newFieldType.IsDisplayable = f.Type.JSON.IsDisplayable;
+                    newFieldType.ShowIfEmpty = f.Type.JSON.ShowIfEmpty;
+                    if (f.Type.JSON.Validation != null)
                     {
-                        newFieldType.IsRequired = f.Type.Json.Validation.IsRequired;
+                        newFieldType.IsRequired = f.Type.JSON.Validation.IsRequired;
                     }
                 }
                 else if (f.Type.JsonElement != null)

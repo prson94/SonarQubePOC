@@ -17,7 +17,7 @@ import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../models/field
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
     @Input() objectID: number;
-    @Input() Uid: string;
+    @Input() currentUid: string;
     @Input() title: string = 'Field Definition';
 
     @Input() actionTypeUid: string;
@@ -56,8 +56,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
-            if (p == 'Uid') {
-                this.uid = changes['Uid'].currentValue;
+            if (p == 'currentUid') {
+                this.currentUid = changes['currentUid'].currentValue;
                 this.isEditing = false;
                 this.isAdding = false;
                 this.isDeleting = false;
@@ -78,24 +78,38 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.load();
     }
 
+    private GetCurrentUid() {
+        if (this.assetTypeUid != null)
+            return this.assetTypeUid;
+        else if (this.actionTypeUid != null)
+            return this.actionTypeUid;
+        else if (this.relationshipTypeUid != null)
+            return this.relationshipTypeUid;
+    }
+
     load(): void {
-        if (this.Uid == null)
+        this.currentUid = this.GetCurrentUid();
+        if (this.currentUid == null) {
+            console.error("No Asset, Action or Relationship type Uid provided.")
             return;
+        }
 
         if (this.objectType == "IntersectType")
             this.showIsPartOfKey = false;
         this.isLoading = true;
         this.hasKeyFields = false
-        this.fieldsService.getFieldsV2(this.Uid).subscribe(
+        this.fieldsService.getFieldsV2(this.currentUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
-                
                 this.fieldDefinitions.forEach(d => {
+                    let type = this.currentFieldType(d);
                     let foundKeyField = false;
                     this.fieldDefinitions.forEach(x => {
                         if (this.IsPartyOfKey(x.Type)) {
                             foundKeyField = true;
                         }
+                        if (!x.Type[type].SortOrder)
+                            x.Type[type].SortOrder = 0;
                     });
                     this.hasKeyFields = foundKeyField;
                 });

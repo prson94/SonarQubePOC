@@ -19,7 +19,7 @@ import { FormHelpers } from '../../../../static/form-helpers';
 import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
-import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField } from '../../../../models/fieldtype-api.model';
+import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
 
 
 @Component({
@@ -163,11 +163,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let DBType = this.currentType;
         this.currentType = this.checkCurrentTypeName(this.currentType);
         if (DBType != this.currentType) {
-            let initType = new FieldType(this.currentType);
-            responseGetFieldTypeEditor.Type[this.currentType] = { ...(initType[this.currentType]), ...responseGetFieldTypeEditor.Type[DBType]};
-            responseGetFieldTypeEditor.Type[DBType] = null;//only one type to be defined for editing
-
+            //only one type to be defined for editing so remove the missnamed DBType after assigning its values to the correct object
+            let correctNameType = new FieldType(this.currentType);
+            responseGetFieldTypeEditor.Type[this.currentType] = { ...(correctNameType[this.currentType]), ...responseGetFieldTypeEditor.Type[DBType] };
+            responseGetFieldTypeEditor.Type[DBType] = null;
+        } else {
+            //requires initialising as some parameters like isRequired will be null from the DB
+            let intiialisedType = new FieldType(this.currentType);
+            responseGetFieldTypeEditor.Type[this.currentType] = { ...(intiialisedType[this.currentType]), ...responseGetFieldTypeEditor.Type[this.currentType] };
         }
+
+
         this.model.FieldType = responseGetFieldTypeEditor;
         this.model.cardinalRelationship = null;
         this.model.selectedLookup = null;
@@ -265,7 +271,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 //load cascading dropdowns
                 this.changeRefType(i).subscribe(
                     () => {
-                        item.selectedRelationItemID = item.IntersectTypeUid + '|' + item.AssetUid + '|' + item.Direction;
+                        item.selectedRelationItemID = item.IntersectTypeUid.toUpperCase() + '|' + item.AssetUid.toUpperCase() + '|' + item.Direction;
                         this.changeRel(i).subscribe(() => {
                             let parent = item;
                             item.DisplayFields.forEach(
@@ -275,7 +281,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                     if (item) {
                                         d.Show = (item.Show == null) ? true : item.Show;
                                         d.DisplayOrder = item.DisplayOrder;
-                                        d.FilterValue = item.Filter;
+                                        d.Filter = item.Filter;
                                         d.OverrideDisplayName = item.OverrideDisplayName;
                                         d.SortOrder = item.SortOrder;
                                         d.Width = item.Width;
@@ -324,9 +330,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         let observables: Array<Observable<any>> = [];
         this.showDescription = true;
         this.enableAllowMultipleValues = true;
-
-        console.log(value);
-        console.log(this.currentType);
         if (value == null) {
             this.currentType = "Empty";
             this.model.FieldType.Type = new FieldType("Empty");
@@ -410,20 +413,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
-                    //if (this.objectName == null || this.objectName == '') {
-                    //    this.objectDetailService.getObject(this.objectID, this.objectType).subscribe(
-                    //        o => {
-                    //            this.objectName = o.Name;
-                    //        }
-                    //    );
-                    //}
 
                     this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
-                break;
-            case 'jsonelement':
-                break;
-            case 'json':
                 break;
             case 'tag':
                 if (!isFromLoad)                
@@ -627,7 +619,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.listFilterPredicate = value;
         return;
     }
-    
+    testmodelChange(event) {
+        console.log(event);
+        console.log(this.model.FieldType.Type[this.currentType].DefaultValue);
+    }
     private loadDefaultValueOptions(uid: string): Subscription {
         if (this.model.FieldType.Type[this.currentType].List.Uid  == undefined) {
             console.log("[ERROR] - NO UID SPECIFIED TO LOAD DEFAULT VALUES FOR ", this.model.FieldType.Type[this.currentType].List.Uid );
@@ -636,9 +631,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         return this.fieldsService.getLookupDefaultValueOptions(this.model.FieldType.Type[this.currentType].List.Uid).pipe(
             map(r => {
-                console.log(r);
                 this.lookupDefaultValueOptions = r;
-                this.lookupDefaultValueOptions.forEach(x => x.value = x.value ? x.value.toString() : x.value);
+                if (this.model.FieldType.Type[this.currentType].DefaultValue) {
+                    var item = this.lookupDefaultValueOptions.filter((x) => {
+                        if (!x.value)
+                            return false;
+                        return x.value.toString().toLowerCase() == this.model.FieldType.Type[this.currentType].DefaultValue.toString().toLowerCase();
+                    })[0];
+                    if (item)
+                        this.model.FieldType.Type[this.currentType].DefaultValue = item.value;
+                }
             })
         ).subscribe();
     }
@@ -900,7 +902,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                 d.FieldTypeID = parseInt(params[0]);
                                 d.FieldTypeName = params[1];
                                 d.Show = false;
-                                d.FilterValue = "";
+                                d.Filter = "";
                                 d.SortOrder = null;
                                 d.value = i.value;
 
@@ -1203,6 +1205,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     }
 
     private updateApiName(event) {
+        if (this.actionName == 'Edit')
+            return;
         let nameValue: string = event.target.value.replace(/[^a-zA-Z0-9_]/g, '');
         this.model.FieldType.Name = nameValue.substring(0, 250);
     }
@@ -1321,6 +1325,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     ConvertDisplayFieldsToAPIDefinition() {
         if (!this.model.RelationItems || this.model.RelationItems.length < 1)
             return;
+        var definitionArray: Relation[] = [];
+        var fieldsArray: DefinitionField[] = [];
         this.model.RelationItems.forEach(x => {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
@@ -1341,9 +1347,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     Width: f.Width
                 };
             });
-            this.model.FieldType.Type.ComplexRelationLookup.Definition.Relations.push(definition);
-            this.model.FieldType.Type.ComplexRelationLookup.Definition.Fields.push(...mappedFields);
+            definitionArray.push(definition);
+            fieldsArray.push(...mappedFields);
         });
+        this.model.FieldType.Type.ComplexRelationLookup.Definition.Relations = definitionArray;
+        this.model.FieldType.Type.ComplexRelationLookup.Definition.Fields = fieldsArray;
     }
 
     checkCurrentTypeName(name: string): string{

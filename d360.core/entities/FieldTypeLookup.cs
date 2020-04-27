@@ -59,6 +59,8 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
         public core.ComplexLookupRelationType RelationType { get; set; }
         public FieldTypeComplexLookupRelationDirection Direction { get; set; } = 0;
+        public Guid? AssetUid { get; set; }
+        public Guid? IntersectTypeUid { get; set; }
 
         /// <summary>
         /// Generated when it comes time to create a dynamic SQL query.

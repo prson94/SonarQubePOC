@@ -717,6 +717,21 @@ namespace d360.web.Controllers.V2
                             relationItems = new List<dynamic>();
                             foreach (var r in definition.Relations)
                             {
+                                Guid assetUid = Guid.Empty;
+                                Guid intUid = Guid.Empty;
+                                if(r.IntersectTypeUid == null && r.IntersectTypeID != null)
+                                {
+                                    int id = (int)r.IntersectTypeID;
+                                    intUid = Company.Filter<IntersectType>(x => x.ID == id).First().uid;
+                                }
+                                if (r.AssetUid == null && r.Object != null && r.ObjectID != null)
+                                {
+
+                                    int id = (int)r.ObjectID;
+                                    string obj = (string)r.Object;
+                                    assetUid = Company.Filter<AssetType>(x => x.Object == obj && x.ObjectID == id).First().uid;
+                                }
+
                                 relationItems.Add(new
                                 {
                                     r.ID,
@@ -729,7 +744,9 @@ namespace d360.web.Controllers.V2
                                     lookup.HideFilter,
                                     Direction = r.Direction ?? 0,
                                     r.Object,
-                                    r.ObjectID
+                                    r.ObjectID,
+                                    IntersectTypeUid = r.IntersectTypeUid ?? intUid,
+                                    AssetUid = r.AssetUid ?? assetUid
                                 });
                             }
                             if (definition.Fields != null)
@@ -982,12 +999,9 @@ namespace d360.web.Controllers.V2
             try
             {
                 Guid assetUid;
-                if(Guid.TryParse(Uid, out assetUid))
-                {
-                    //handle cases for reference list and models 
-                }
-                var list = new List<ListIntItem>();
-                list.Add(new ListIntItem { title = "- No default -", value = null });
+                Guid.TryParse(Uid, out assetUid);
+                var list = new List<ListUidItem>();
+                list.Add(new ListUidItem { title = "- No default -", value = null });
                 var usersOnly = false;
                 string sql = "";
                 usersOnly = Company.Filter<AssetType>(x => x.uid == assetUid && x.Class == AssetTypeClass.User).Count() > 0;
@@ -996,7 +1010,7 @@ namespace d360.web.Controllers.V2
                     string HideD3SUsers = HideData3SixtyUsers() ? "": " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' "; 
                     sql = $@"
                         select 
-                            R.ResourceID as value,
+                            R.Uid as value,
                             (FirstName + ' ' + LastName)  as title  
                         from [reporting].[Global_Resource] r 
                         {HideD3SUsers}
@@ -1007,7 +1021,7 @@ namespace d360.web.Controllers.V2
                 {
                     sql = $@"
                         select 
-                            ast.ObjectID as value,
+                            ast.Uid as value,
                             d.DisplayValue as title  
                         from asset ast 
                             inner join assettype astt on (ast.assettypeid = astt.id) 
@@ -1019,7 +1033,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 list.AddRange(
-                    await Company.QueryAsync<ListIntItem>(sql, new { Uid = assetUid })
+                    await Company.QueryAsync<ListUidItem>(sql, new { Uid = assetUid })
                 );
 
                 return Request.CreateResponse(HttpStatusCode.OK, list);

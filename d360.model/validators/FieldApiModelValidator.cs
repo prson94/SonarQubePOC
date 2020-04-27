@@ -78,7 +78,7 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Reference item types cannot have field property 'IsPartOfKey' set to true.");
                     }
 
-                    if (field.Type.Json != null)
+                    if (field.Type.JSON != null)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type Json not support for reference item type!");
                     }

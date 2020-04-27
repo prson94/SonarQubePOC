@@ -1,4 +1,4 @@
-﻿<div *ngIf="(objectType && objectID) || Uid">
+﻿<div *ngIf="currentUid">
     <div>
         <header>
             {{title}}            
@@ -117,7 +117,7 @@
                         <span><i *ngIf="item.Type[currentFieldType(item)]?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.Type[currentFieldType(item)]?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
                     </td>
-                    <td>{{item.Type[currentFieldType(item)]?.SortOrder}}</td>
+                    <td>{{item.Type[currentFieldType(item)]?.SortOrder ?? 0}}</td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-up"></i></a>

@@ -72,7 +72,8 @@
                                    [(ngModel)]="model.FieldType.Name"
                                    style="width: 98%; display: block;"
                                    (keyup)="syncApiNameWithName=false;updateApiName($event);"
-                                   #apiName="ngModel" />
+                                   #apiName="ngModel"
+                                   [disabled]="actionName=='Edit'"/>
                             <div [hidden]="apiName.valid || apiName.pristine">API name is required</div>
                         </div>
                         <div>
@@ -301,7 +302,7 @@
                     <input name="validationPattern"
                            pInputText
                            type="text"
-                           [(ngModel)]="model.FieldType.Type[currentType].Pattern"
+                           [(ngModel)]="model.FieldType.Type[currentType].Validation.Pattern"
                            (change)="validatePattern(); model.FieldType.Type[currentType].Validation.MinimumValue=0;"
                            style="width: 98%; display: block;" />
                 </div>
@@ -313,7 +314,7 @@
                     </div>
                     <p-dropdown name="validationPattersOpt"
                                 [options]="lookups.Patterns"
-                                (onChange)="model.FieldType.Type[currentType].Pattern = $event.value; validatePattern()"
+                                (onChange)="model.FieldType.Type[currentType].Validation.Pattern = $event.value; validatePattern()"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -379,7 +380,7 @@
                 </div>
             </div>
             <div class="row"
-                 *ngIf="model.FieldType.Type[currentType].Pattern?.length > 0">
+                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0">
                 <div *ngIf="currentType == 'Text'"
                      class="col s3">
                     <div class="FieldNameRequired">Test Pattern</div>
@@ -396,7 +397,7 @@
                 </div>
             </div>
             <div class="row"
-                 *ngIf="model.FieldType.Type[currentType].Pattern?.length > 0 || model.FieldType.Type[currentType].MinimumLength > 0 || model.FieldType.Type[currentType].IsRequired">
+                 *ngIf="model.FieldType.Type[currentType].Validation.Pattern?.length > 0 || model.FieldType.Type[currentType].MinimumLength > 0 || model.FieldType.Type[currentType].IsRequired">
                 <div *ngIf="['Number', 'Decimal'].indexOf(currentType) == -1"
                      class="col s12">
                     <div id='ValidationDescriptionTip'
@@ -405,7 +406,7 @@
                     </div>
                     <textarea pInputTextarea
                               autoResize="'true'"
-                              [(ngModel)]="model.FieldType.Type[currentType].ValidationDescription"
+                              [(ngModel)]="model.FieldType.Type[currentType].Validation.Message"
                               [ngModelOptions]="{standalone: true}"></textarea>
                 </div>
             </div>
@@ -441,6 +442,7 @@
                     <p-dropdown *ngIf="currentType == 'Lookup'"
                                 [options]="lookupDefaultValueOptions"
                                 [(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
+                                (ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;testmodelChange($event)"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"
@@ -761,7 +763,7 @@
                                                 <td style="width:15%; max-width: 100px">
                                                     <input [ngModelOptions]="{standalone: true}"
                                                            type="text"
-                                                           [(ngModel)]="d.FilterValue"
+                                                           [(ngModel)]="d.Filter"
                                                            style="width:95%" />
                                                 </td>
                                             </tr>
