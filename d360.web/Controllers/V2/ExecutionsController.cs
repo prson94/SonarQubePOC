@@ -170,7 +170,7 @@ namespace d360.web.Controllers.V2
         /// <returns></returns>
         [
             HttpGet,
-            Route("executions/{executionUid:Guid}"),
+            Route("{executionUid:Guid}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
