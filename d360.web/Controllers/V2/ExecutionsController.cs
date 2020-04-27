@@ -141,7 +141,7 @@ namespace d360.web.Controllers.V2
                 execution.State = core.enums.State.Deleted;
                 bool isDone = Company.Update(execution);
 
-                response.message = $"Execution with UID {executionUid} has been cancelled sucessfully.";
+                response.message = $"Execution with UID {executionUid} has been cancelled successfully.";
                 if (isDone)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
                 else
