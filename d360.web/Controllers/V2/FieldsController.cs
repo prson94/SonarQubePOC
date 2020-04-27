@@ -1714,6 +1714,133 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <summary>
+        /// Move a fields column order in the given direction
+        /// </summary>
+        /// <param name="model">Contains the nessasary parameters to move a fields sort order></param>
+        /// <returns>Success or Failure</returns>
+        [
+            HttpPost,
+            Route("move"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage PerformMove(MoveModel model)
+        {
+            var prefix = "Fields.PerformMove => ";
+            var errorMessage = "";
+
+            try
+            {
+
+                SystemObjects type;
+                int id = 0;
+                int fieldTypeID = 0;
+                var assetType = Company.Filter<AssetType>(x => x.uid == model.TypeUid).SingleOrDefault();
+                var actionType = Company.Filter<IssueType>(x => x.uid == model.TypeUid).SingleOrDefault();
+                var intersectType = Company.Filter<IntersectType>(i => i.uid == model.TypeUid).SingleOrDefault();
+                var name = "";
+                if (assetType != null)
+                {
+                    Enum.TryParse(assetType.Object, out type);
+                    id = assetType.ObjectID;
+                    name = assetType.Name;
+                    fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == assetType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+                }
+                else if (actionType != null)
+                {
+                    type = SystemObjects.IssueType;
+                    id = actionType.ID;
+                    name = actionType.Name;
+                    fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == actionType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+                }
+                else if (intersectType != null)
+                {
+                    type = SystemObjects.IntersectType;
+                    id = intersectType.ID;
+                    name = "intersectType:" + model.TypeUid.ToString();
+                    fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == intersectType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+                }
+                else
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${model.TypeUid.ToString()}]");
+                }
+                string message = "";
+                errorMessage = string.Format("{0} could not be found for {1}.", model.FieldTypename, name);
+
+                var sType = type.ToString();
+                List<FieldType> list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                if (list != null)
+                {
+                    //Verify the list colum order is an ordered list
+                    //If not Chagne the field defintion to ordered before applying the perform move
+                    int startSeq = list[0].ColumnOrder == 0 || list[0].ColumnOrder == 1 ? list[0].ColumnOrder : 1;
+                    var listColumn = list.Select(x => x.ColumnOrder).ToList();
+                    var seqList = Enumerable.Range(startSeq, list.Count);
+                    if (!Enumerable.SequenceEqual<int>(listColumn, seqList))
+                    {
+                        var j = startSeq;
+                        foreach (var f in list)
+                        {
+                            f.ColumnOrder = j++;
+                        }
+                        Company.Database.Connection.UpdateFieldMove(list, Company.CurrentResourceID);
+                        list = Company.Filter<FieldType>(i => i.Object == sType && i.ObjectID == id).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+                    }
+
+                    var fieldToMove = list.SingleOrDefault(i => i.ID == fieldTypeID);
+
+                    var maxPosition = list.Count;
+
+                    var currentPosition = fieldToMove.ColumnOrder;
+                    var newPosition = (model.Direction == "up") ?
+                        (currentPosition > 0 ? currentPosition - 1 : 0) :
+                        (currentPosition < maxPosition ? currentPosition + 1 : maxPosition);
+
+                    fieldToMove.ColumnOrder = newPosition;
+
+
+                    var fieldFromMove = list.OrderBy(x => x.Name).FirstOrDefault(i => i.ColumnOrder == newPosition && i.ID != fieldTypeID);
+
+
+                    if (fieldFromMove != null && fieldFromMove.ID != 0)
+                    {
+                        fieldFromMove.ColumnOrder = currentPosition;
+                        Company.Database.Connection.UpdateFieldMove(fieldToMove, fieldFromMove, Company.CurrentResourceID);
+                    }
+                    else
+                    {
+                        Company.Database.Connection.UpdateFieldMove(fieldToMove, null, Company.CurrentResourceID);
+                    }
+
+                    return Request.CreateResponse(HttpStatusCode.OK, "Field moved successfully.");
+                }
+                else
+                {
+                    return Request.CreateResponse(HttpStatusCode.NotFound, message);
+                }
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
         #endregion
 
     }

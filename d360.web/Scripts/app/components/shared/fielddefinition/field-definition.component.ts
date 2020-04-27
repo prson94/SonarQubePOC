@@ -7,6 +7,7 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
+import { type } from 'os';
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -101,29 +102,33 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.getFieldsV2(this.currentUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
+                let foundKeyField = false;
                 this.fieldDefinitions.forEach(d => {
                     let type = this.currentFieldType(d);
-                    let foundKeyField = false;
-                    this.fieldDefinitions.forEach(x => {
-                        if (this.IsPartyOfKey(x.Type)) {
-                            foundKeyField = true;
-                        }
-                        if (!x.Type[type].SortOrder)
-                            x.Type[type].SortOrder = 0;
-                    });
-                    this.hasKeyFields = foundKeyField;
+                    if (!d.Type[type].SortOrder)
+                        d.Type[type].SortOrder = 0;
+                    if (this.IsPartyOfKey(d.Type)) {
+                        foundKeyField = true;
+                    }
                 });
+                this.sortFields();
+                this.hasKeyFields = foundKeyField;
 
                 this.selectedRow = null;
                 this.isLoading = false;
             }
         );
     }
-
     currentFieldType(item: FieldTypeAPIModelField): string {
         return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
     }
-
+    sortFields() {
+        this.fieldDefinitions.sort((x, y) => {
+            let xtype = this.currentFieldType(x);
+            let ytype = this.currentFieldType(y);
+            return x.Type[xtype].ColumnOrder - y.Type[ytype].ColumnOrder;
+        });
+    }
     IsPartyOfKey(itemType): boolean {
         let partOfKey = false;
         if (itemType.Boolean != null) partOfKey = itemType.Boolean.IsPartOfKey;
@@ -213,7 +218,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     moveUp(field: FieldDefinition) {
         this.isLoading = true;
 
-        this.fieldsService.moveUp(field.ObjectType, parseInt(field.ObjectID), field.ID).subscribe(
+        this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
             r => {
                 this.load();
                 this.onFieldsChanged.emit();
@@ -223,7 +228,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     moveDown(field: FieldDefinition) {
         this.isLoading = true;
-        this.fieldsService.moveDown(field.ObjectType, parseInt(field.ObjectID), field.ID).subscribe(
+        this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
             r => {
                 this.load();
                 this.onFieldsChanged.emit();

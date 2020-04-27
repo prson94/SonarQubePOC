@@ -359,28 +359,30 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    moveUp(
-        type: string,
-        id: number,
-        fieldId: number
-    ) {
+    moveUp(typeUid: string, fieldTypeName: string) {
+        let model = {
+            TypeUid: typeUid,
+            FieldTypename: fieldTypeName,
+            Direction: "up"
+        }
         return this
             .http
-            .post(`fields/${type}/${id}/${fieldId}/move/up`, null)
+            .post(`api/v2/fields/move`, model)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    moveDown(
-        type: string,
-        id: number,
-        fieldId: number
-    ) {
+    moveDown(typeUid: string, fieldTypeName: string) {
+        let model = {
+            TypeUid: typeUid,
+            FieldTypename: fieldTypeName,
+            Direction: "down"
+        }
         return this
             .http
-            .post(`fields/${type}/${id}/${fieldId}/move/dpwn`, null)
+            .post(`api/v2/fields/move`, model)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

@@ -703,4 +703,16 @@ namespace d360.core.entities
         [DataMember]
         public Guid? RelationshipTypeUid { get; set; } = null;
     }
+
+    public class MoveModel
+    {
+        [DataMember]
+        public Guid? TypeUid { get; set; }
+
+        [DataMember]
+        public string FieldTypename { get; set; }
+
+        [DataMember]
+        public string Direction { get; set; }
+    }
 }
