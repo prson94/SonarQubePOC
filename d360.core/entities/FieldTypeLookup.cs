@@ -49,7 +49,7 @@ namespace d360.core.entities
         public string OverrideDisplayName { get; set; }
         public int DisplayOrder { get; set; }
         public int SortOrder { get; set; }
-        public bool Show { get; set; } = true;
+        public bool Show { get; set; }
         public int? Width { get; set; } = null;
     }
     public class FieldTypeComplexLookupDefinitionRelation

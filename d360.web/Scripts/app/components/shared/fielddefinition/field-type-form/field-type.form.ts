@@ -278,7 +278,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                                     let item = clone[i].DisplayFields.find(f => f.FieldTypeID == d.FieldTypeID && f.FieldTypeName == d.FieldTypeName);
 
                                     if (item) {
-                                        d.Show = (item.Show == null) ? true : item.Show;
+                                        d.Show = item.Show;
                                         d.DisplayOrder = item.DisplayOrder;
                                         d.Filter = item.Filter;
                                         d.OverrideDisplayName = item.OverrideDisplayName;
