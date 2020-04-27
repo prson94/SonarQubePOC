@@ -79,7 +79,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("(text eq 'text') and test and")]
         [InlineData("text bla 'word'")]
         [InlineData("text eq 'word' xor text eq 'test'")]
-        [InlineData("lookup ct 'validlookupvalue'")]
         [InlineData("lookup lt 'validlookupvalue'")]
         [InlineData("lookup gt 'validlookupvalue'")]
         [InlineData("lookup le 'validlookupvalue'")]
@@ -210,6 +209,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("lookup eq 'validlookupvalue'")]
         [InlineData("lookup ne 'validlookupvalue'")]
+        [InlineData("lookup ct 'validlookupvalue'")]
         public void ValidLookupTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -258,17 +258,20 @@ namespace igx.UnitTests.FilterExpressionTests
             }
         }
 
-        [Fact]
-        public void IsSQLEscapingValue()
+        [Theory]
+        [InlineData("text ct 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All")]
+        [InlineData("text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "Chetna's ^&*(_+-={}[]|\\;':\",./<>? Check~` All")]
+        [InlineData("text eq '*&_Bangalore'","*&_Bangalore")]
+        [InlineData("text ct '*&_Bangalore'","%&[_]Bangalore")]
+        public void IsSQLEscapingValue(string expression, string expectedParam)
         {
-            var filterWithSymbol = "text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'";
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             List<int> fieldIds = new List<int>();
-            string sql = filterParser.Parse(filterWithSymbol, out sqlParams, out fieldIds);
+            string sql = filterParser.Parse(expression, out sqlParams, out fieldIds);
             foreach (var param in sqlParams)
             {
                 Assert.True(CheckParamOccurance(sql, param.Key));
-                Assert.True(param.Value.ToString().ToLower() == "Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All".ToLower());
+                Assert.True(param.Value.ToString().ToLower() == expectedParam.ToLower());
             }
         }
 
