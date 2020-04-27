@@ -1905,8 +1905,9 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
-            string assetPermissionWhere = @" and ID NOT IN (select AssetId
-                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))";
+            string assetPermissionWhere = @" and ID NOT IN (select AssetId 
+                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & 1)) = 0
+                        )";
 
             string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
                     from dbo.AssetTypesUserCantRead(@ResourceID))";
