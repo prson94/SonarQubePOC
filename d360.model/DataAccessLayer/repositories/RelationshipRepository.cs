@@ -414,7 +414,7 @@ from	IntersectType I
             return this.GetRelationshipTypes(null, $"where I.State = 1 and ((I.SubjectID = {id} and I.[Subject] = '{type.ToString()}') or (I.ObjectID = {id} and I.Object = '{type.ToString()}'))");
         }
 
-        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
+        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, ApiExecution execution, bool triggerWorkflow = false)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -430,10 +430,15 @@ from	IntersectType I
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
 
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
             return executionInfo;
+        }
+
+        public async Task<ApiExecutionInfo> BulkPostRelationships(Guid intersectTypeUid, RelationshipInserts relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
+        {
+            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_PostRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
+            return await BulkPostRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
         }
 
         public IEnumerable<dynamic> GetExportModel(int id)
@@ -507,7 +512,7 @@ from	IntersectType I
             return companyContext.DeleteRelationships(execution, intersectType, relationships, timeout, triggerWorkflow);
         }
 
-        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
+        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, ApiExecution execution, bool triggerWorkflow = false)
         {
             var executionInfo = new ApiExecutionInfo
             {
@@ -523,10 +528,15 @@ from	IntersectType I
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
 
             await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
-            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
             return executionInfo;
+        }
+
+        public async Task<ApiExecutionInfo> BulkDeleteRelationships(Guid intersectTypeUid, RelationshipDeletes relationships, Func<int, object, int, int, ApiExecution> getApiExecution, bool triggerWorkflow = false)
+        {
+            var execution = getApiExecution(relationships.Count, new ApiExecutionFields_DeleteRelationships { IntersectTypeUid = intersectTypeUid }, 0, 0);
+            return await BulkDeleteRelationships(intersectTypeUid, relationships, execution, triggerWorkflow);
         }
 
         public List<PredicateDeleteResult> DeletePredicates(PredicateDeletes predicates, ApiExecution execution)

@@ -30,7 +30,7 @@ using d360.model.DataAccessLayer;
 
 namespace d360.web.Controllers
 {
-    [ApiVersion("1.0"), RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
+    [RoutePrefix("api"), Authorize, ApiExplorerSettings(IgnoreApi = true)]
     public class D3SApiController : BaseApiController
     {
         #region DI
@@ -532,37 +532,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             dbParams.Add("resId", Company.CurrentResourceID);
 
             return Company.Query<AssetWithoutReadPermission>(sql, dbParams).ToList();
-        }
-
-        List<DetailReadOnlyRowModel> loadDisplayableRelationshipsAsFields(SystemObjects type, int id)
-        {
-            var list = new List<DetailReadOnlyRowModel>();
-            var relationships = Company.GetDetailDisplayableRelationships(type, id);
-
-            foreach (var k in relationships)
-            {
-                var ro = new ReadOnlyField
-                {
-                    Name = k.TargetTypeName,
-                    Value = k.TargetObjectName,
-                    FieldDescription = "",
-                    FieldName = ""
-                };
-                if (k.Count > 0)
-                {
-                    ro.TooltipContext = TemplateAction.LookupPreview.ToString();
-                    ro.TooltipID = k.TargetObjectID;
-                    ro.TooltipType = k.TargetObject;
-                    ro.TooltipUrl = k.TargetUrl;
-                }
-
-                list.Add(new DetailReadOnlyRowModel
-                {
-                    columns = 1,
-                    FirstColumnFields = new List<ReadOnlyField> { ro }
-                });
-            }
-            return list;
         }
 
         #endregion
@@ -1349,24 +1318,6 @@ where   h.ID <> @t order by h.[Level] desc;
                     { "prefix", SecProvider.CompanyPrefix }
                 }
             );
-        }
-
-        #endregion
-
-        #region Attributes
-
-        [HttpGet, Route("{type}/{id:int}/attributetypefilters")]
-        public HttpResponseMessage GetFilterableAttributeTypesByType(SystemObjects type, int id)
-        {
-            var models = Company.Query<dynamic>(QueryConstants.FilterableAttributeTypesByTypeList, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id });
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
-
-        [HttpGet, Route("{type}/{id:int}/{attributeTypeID:int}/attributefiltervalues")]
-        public HttpResponseMessage GetFilterableAttributeValues(SystemObjects type, int id, int attributeTypeID)
-        {
-            var models = Company.Query<dynamic>(QueryConstants.FilterableAttributeValuesList, new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id, attributeTypeID });
-            return Request.CreateResponse(HttpStatusCode.OK, models);
         }
 
         #endregion
@@ -5264,8 +5215,7 @@ where   R.RuleTypeID = @id
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        model.rows.AddRange(loadDisplayableRelationshipsAsFields(type, id));
-
+                        
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -5316,8 +5266,7 @@ where   R.RuleTypeID = @id
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
                     if (fusionQueryAttribute != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        model.rows.AddRange(loadDisplayableRelationshipsAsFields(type, id));
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));                        
                     }
                     fusionQueryAttribute = null;
                     break;

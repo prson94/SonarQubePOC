@@ -319,8 +319,8 @@ namespace d360.model.helpers
                 }
 
                 var whereStatement = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname = @filter_{parameterIdx}
-                                    union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname = @filter_{parameterIdx})";
+                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=" )} @filter_{parameterIdx}
+                                    union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
 
                 stringBuilder.Append(whereStatement);
             }
@@ -350,7 +350,7 @@ namespace d360.model.helpers
                 case "boolean":
                 case "lookup":
                 case "relationship":
-                    return new string[] { "eq", "ne" }.Contains(operand);
+                    return new string[] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
                 case "date":

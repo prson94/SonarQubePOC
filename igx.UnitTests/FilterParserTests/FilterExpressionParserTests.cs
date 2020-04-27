@@ -86,19 +86,20 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("lookup ge 'validlookupvalue'")]
         [InlineData("lookup eq 'invalidlookupvalue'")]
         [InlineData("lookup ne 'invalidlookupvalue'")]
-        [InlineData("relationship ct 'relationshipassetvalue'")]
         [InlineData("relationship lt 'relationshipassetvalue'")]
         [InlineData("relationship gt 'relationshipassetvalue'")]
         [InlineData("relationship le 'relationshipassetvalue'")]
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
+        [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
             try
             {
                 Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                filterParser.Parse(expression, out sqlParams);
+                List<int> filteredFields = new List<int>();
+                filterParser.Parse(expression, out sqlParams, out filteredFields);
             }
             catch
             {
@@ -118,7 +119,8 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidNumberTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -136,7 +138,8 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidDecimalTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -155,7 +158,8 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidBooleanTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -173,7 +177,9 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidDateTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -185,10 +191,15 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("text eq 'some text'")]
         [InlineData("text ne 'text'")]
         [InlineData("text ct 'text'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*()_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*)_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
+        [InlineData("text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'")]
         public void ValidTextTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -202,7 +213,8 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidLookupTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -214,10 +226,13 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("relationship eq 'relationshipassetvalue'")]
         [InlineData("relationship ne 'relationshipassetvalue'")]
+        [InlineData("relationship ct 'relationshipassetvalue'")]
         public void ValidRelationshipTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == 1);
             foreach (var param in sqlParams)
             {
@@ -234,13 +249,30 @@ namespace igx.UnitTests.FilterExpressionTests
         public void ValidFilterCombinationsTests(string expression, int paramCount)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-            string sql = filterParser.Parse(expression, out sqlParams);
+            List<int> filteredFields = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out filteredFields);
             Assert.True(sqlParams.Count == paramCount);
             foreach (var param in sqlParams)
             {
                 Assert.True(CheckParamOccurance(sql, param.Key));
             }
         }
+
+        [Fact]
+        public void IsSQLEscapingValue()
+        {
+            var filterWithSymbol = "text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'";
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            List<int> fieldIds = new List<int>();
+            string sql = filterParser.Parse(filterWithSymbol, out sqlParams, out fieldIds);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckParamOccurance(sql, param.Key));
+                Assert.True(param.Value.ToString().ToLower() == "Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All".ToLower());
+            }
+        }
+
+
     }
 
 }

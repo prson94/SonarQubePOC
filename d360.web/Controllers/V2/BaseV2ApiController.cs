@@ -225,7 +225,7 @@ namespace d360.web.Controllers.V2
                     if (pageNum <= 0) return "Invalid pageNum value provided. Value must be greater than 0";
                 }
                 else
-                    return "Invalid pageNum value provided. Must be a numeric value ";
+                    return "Invalid pageNum value provided. Must be a numeric value.";
             }
 
             return "";

@@ -472,42 +472,8 @@ namespace d360.web.Controllers
         #region Form Get/Post
 
 
-        #region Group : Add User
-
-
-        [HttpPost, AjaxValidateAntiForgeryToken, ValidateInput(false), ActionName("ResourceGroup"), Route("ResourceGroup")]
-        public JsonResult PostResourceGroup(ResourceGroupInfo model)
-        {
-            try
-            {
-                var id = Company.Filter<Asset>(x => x.uid == model.GroupGuid).SingleOrDefault().ObjectID;
-                foreach (var m in model.ResourceGroups)
-                    m.GroupID = id;
-
-                if (!Company.HasAssetPermission(SystemObjects.Group, model.ResourceGroups[0].GroupID, Permission.ModifyAsset))
-                    return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
-                
-                
-
-                foreach (var m in model.ResourceGroups)
-                    Company.Add(m);
-
-                return jsonSuccess("User successfully assigned.", model.ResourceGroups[0].ResourceID.ToString(), "add", HttpStatusCode.Created);
-            }
-            catch (BaseException ex)
-            {
-                return jsonException(ex.StatusDescription, ex.StatusCode, ex.StatusMessage);
-            }
-            catch (Exception ex)
-            {
-                SendException(ex);
-                return jsonException(ex, HttpStatusCode.InternalServerError);
-            }
-        }
-
-
         [HttpGet, Route("GetGroupUserList"), NonNullableParameters]
-        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter,Guid? uid)
+        public JsonNetResult GetGroupUserList(int id, int pagenum, int pagesize, string sortDataField, string sortOrder, string gbfilter, Guid? uid)
         {
 
             if (uid.HasValue && uid.Value != Guid.Empty)
@@ -524,7 +490,7 @@ namespace d360.web.Controllers
             }
 
             querySql = @"
-			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
+			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.uid as varchar(100)) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
 			where r.[State] = @userStatus 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
@@ -740,8 +706,6 @@ namespace d360.web.Controllers
             };
 
         }
-
-        #endregion
 
         #endregion
 

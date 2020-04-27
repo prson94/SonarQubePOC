@@ -212,8 +212,7 @@ namespace d360.model
         IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
         IQueryable<CommentDetail> GetCommentDetailsByID(int id);
         IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
-        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);
-        List<CompanyContext.DetailDisplayableRelationship> GetDetailDisplayableRelationships(SystemObjects type, int id);
+        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);        
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);
@@ -269,7 +268,6 @@ namespace d360.model
         Task<int> MarkStepAsCompleteAndContinue(WorkflowItemStep itemStep, long itemID, EventObjectInfo objectInfo);
         bool ObjectHasChildren(SystemObjects type, int id);
         bool ObjectHasParent(SystemObjects type, int id);
-        Task PerformBulkRelationshipOperation(int loadId, BulkRelationshipOperation operation);
         Task<string> ProcessMessageTokens(string bodyTemplate, EventObjectInfo objectInfo, string prefix, WorkflowItemStep itemStep, bool supportHtml = true);
         Task<string> ProcessMessageTokens(string bodyTemplate, int objectID, SystemObjects obj, string prefix, WorkflowItemStep itemStep, bool supportHtml);
         IEnumerable<T> Query<T>(string sql, object param = null, int timeout = 90);

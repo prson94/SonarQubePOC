@@ -157,7 +157,8 @@ namespace d360.web.Controllers.V2
                     var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
                     filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams) + ")");
+                    List<int> filteredFieldIds = new List<int>();
+                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds) + ")");
 
                     foreach (var item in sqlParams)
                     {

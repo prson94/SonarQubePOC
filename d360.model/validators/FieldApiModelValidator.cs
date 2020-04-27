@@ -59,6 +59,12 @@ namespace d360.model.validators
 
                 #endregion
 
+                if(field.Type == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"The 'Type' object is missing from one or more field type definitions.");
+                }
+
+
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;

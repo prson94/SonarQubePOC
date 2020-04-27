@@ -210,46 +210,6 @@ from	fusion.Result E
         inner join FusionType FT on FT.ID = F.FusionTypeID
 where   ExecutionID = {0}";
 
-        public static string FilterableAttributeTypesByTypeList = @"
-with relations as	(
-					select	'IntersectType' as [Type],
-							ID
-					from	IntersectType
-					where	(Subject = @type and SubjectID = @id) OR (Object = @type and ObjectID = @id)
-					union
-					select	@type as [Type],
-							@id as ID
-					)
-select		T.ID,
-			T.Name
-from		AttributeTypeRelation ATR
-			inner join relations R on R.[Type] = ATR.ObjectType and R.ID = ATR.ObjectID
-			inner join AttributeType T on T.ID = ATR.AttributeTypeID
-where       T.ID not in (select ObjectID from FieldType where [Object] = 'AttributeType' and ObjectID = T.ID and [Type] in ('Html', 'Link', 'UncLink') and CHARINDEX(Name, T.DisplayFormat) > 0)
-group by	T.ID,
-			T.Name
-order by	T.Name";
-
-        public static string FilterableAttributeValuesList = @"
-with types as	(
-				select	'Intersect' as [Object],
-						IntersectID as ID
-				from	cache.Relationships
-				where	SourceType = @type and SourceTypeID = @id
-				union
-				select	[Object] as [Object],
-						ObjectID
-				from	AssetDetail
-				where	[Type] = @type 
-						and TypeID = @id
-				)
-select	A.FormattedValue as Name 
-from	AttributeDetail A
-		inner join types O on O.[Object] = A.ObjectType and O.ID = A.ObjectID and A.AttributeTypeID = @attributeTypeID
-group by A.FormattedValue
-order by A.FormattedValue";
-
-
         public static string FusionConfigurationFromFusionAttributeItem = @"
 select  f.name as 'ItemName',
 	    f.fusionID as 'ID',

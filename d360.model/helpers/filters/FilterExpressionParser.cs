@@ -15,6 +15,7 @@ namespace d360.model.helpers
         ICompanyContext CompanyContext;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
+        private List<int> filteredFieldIDs = new List<int>();
         private FilterExpressionParseType parseType;
         private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
@@ -57,13 +58,14 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
-        public string Parse(string filterString, out Dictionary<string, object> sqlParams)
+        public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
+            fieldIds = this.filteredFieldIDs;
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
             }
-            catch (IndexOutOfRangeException ex)
+            catch (IndexOutOfRangeException)
             {
                 throw new FilterExpressionParserException("Invalid filter expression: ", new Exception("One or more filter expressions has missing operator or value."));
             }
@@ -81,6 +83,21 @@ namespace d360.model.helpers
                 return "";
             }
 
+            filterString = filterString.Trim();
+
+            Regex regex = new Regex(@"\'(.+?)\'");
+            var matchGroups = regex.Matches(filterString);
+
+            List<Tuple<string, string>> valuesMap = new List<Tuple<string, string>>();
+            for (int j = 0; j < matchGroups.Count; j++)
+            {
+                var key = "#valueToken" + Guid.NewGuid();
+                var matchValue = matchGroups[j].Value;
+                filterString = filterString.Replace(matchValue, key.ToLower());
+                valuesMap.Add(new Tuple<string, string>(key, matchValue));
+            }
+
+
             if (!ValidateString(filterString))
             {
                 throw new FormatException("Filter expression contains unclosed quotations or brackets.");
@@ -89,6 +106,15 @@ namespace d360.model.helpers
             string[] tokens = GetTokens(ref filterString);
             StringBuilder sb = new StringBuilder();
 
+            for (int j = 0; j < tokens.Length; j++)
+            {
+                if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
+                {
+                    var value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
+                    value = wildcardValue(escapeForSQLLike(value.ToString()));
+                    tokens[j] = value;
+                }
+            }
             List<FilterToken> FilterTokens = new List<FilterToken>();
 
             bool expectingCondition = false;
@@ -179,6 +205,7 @@ namespace d360.model.helpers
                 {
                     throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
                 }
+
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == token.Field.ToLower()))
@@ -193,6 +220,8 @@ namespace d360.model.helpers
                 }
                 else
                 {
+                    this.filteredFieldIDs.Add(fieldType.ID);
+
                     token.LoadFieldType(fieldType, fieldColumns);
                     sb.Append(token.GetSQLForField(ref sqlParams));
                 }
@@ -201,7 +230,6 @@ namespace d360.model.helpers
 
         private string[] GetTokens(ref string filterString)
         {
-            filterString = filterString.Trim();
             var replaceIndexes = GetAllIndexesOf('\'', filterString);
             var length = filterString.Length;
             for (int i = 0; i < replaceIndexes.Length; i += 2)
@@ -218,7 +246,9 @@ namespace d360.model.helpers
 
             }
 
-            return filterString.Replace("(", " ( ").Replace(")", " ) ").Split(' ').Select(x => x.Trim().Replace("&nbsp;", " ").ToLower()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
+            filterString = filterString.Replace("(", " ( ").Replace(")", " ) ");
+
+            return filterString.Split(' ').Select(x => x.Trim().Replace("&nbsp;", " ").ToLower()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
         }
 
         private bool ValidateString(string str)
@@ -305,6 +335,30 @@ namespace d360.model.helpers
 
             }
 
+        }
+        private string wildcardValue(string value)
+        {
+            value = value.Replace("*", "%").Replace("?", "_");
+            return value;
+        }
+
+        private string escapeForSQLLike(string value)
+        {
+            char[] escapeChars = new char[] { '%', '_', '^', '[' };
+            string escapedValue = "";
+
+            foreach (char c in value)
+            {
+                if (escapeChars.Contains(c))
+                {
+                    escapedValue += $"[{c}]";
+                }
+                else
+                {
+                    escapedValue += c;
+                }
+            }
+            return escapedValue;
         }
     }
 

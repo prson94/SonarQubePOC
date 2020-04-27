@@ -18,11 +18,16 @@ namespace d360.core.entities.Metric
     {
         public Guid ResultUid { get; set; }
         public Guid OwningAssetUid { get; set; }
-        public Guid EvaluatedAssetUid { get; set; }
+        public Guid? EvaluatedAssetUid { get; set; }
+        public string EvaluatedAssetPath { get; set; }
+        public string EvaluatedAssetTypePath { get; set; }
+        public string EvaluatedAssetClass { get; set; }        
         public DateTime EffectiveDate { get; set; }
         public DateTime RunDate { get; set; }
+        public long TotalCount { get; set; }
         public long PassCount { get; set; }
         public long FailCount { get; set; }
+        public double PassFraction { get; set; }
         public bool Passed { get; set; }
     }    
 

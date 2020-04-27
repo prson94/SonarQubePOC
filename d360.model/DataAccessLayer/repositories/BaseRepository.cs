@@ -14,7 +14,8 @@ namespace d360.model.DataAccessLayer.repositories
     public abstract class BaseRepository
     {
         ICompanyContext CompanyContext;
-        public BaseRepository(ICompanyContext ctx)
+        const string RELATIONSHIP_DELIMITER = "|";
+    public BaseRepository(ICompanyContext ctx)
         {
             this.CompanyContext = ctx;
         }
@@ -101,6 +102,11 @@ namespace d360.model.DataAccessLayer.repositories
                         else
                             fieldColumns.Add($"try_cast({tableAlias}.{valueColumn} as {fieldDataType}) as [{columnName}]");
                     }
+                    else if (f.Type == "Lookup" && f.AllowAllValue)
+                    {
+                        fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                    }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                 }
@@ -114,6 +120,11 @@ namespace d360.model.DataAccessLayer.repositories
                                 fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                             else
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                        }
+                        else if (f.Type == "Lookup" && f.AllowAllValue)
+                        {
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -157,33 +168,33 @@ namespace d360.model.DataAccessLayer.repositories
                     {
                         fieldJoins.Add($@"
                             outer apply (
-                            select STRING_AGG(FormattedValue,',') as FormattedValue from Field 
+                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
 							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
 											SELECT        O.Id as TargetAssetId
                                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                                             WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
 							and FormattedValue is not null
-							having string_agg(FormattedValue,',') is not null
+							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                     else if (filtercond == SplitFilterCriteriaRelationship.Subject)
                     {
                         fieldJoins.Add($@"
                             outer apply (
-                            select STRING_AGG(FormattedValue,',') as FormattedValue from Field 
+                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
 							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
 											SELECT       O.Id as TargetAssetId
 											FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
 											WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
 							and FormattedValue is not null
-							having string_agg(FormattedValue,',') is not null
+							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                     else
                     {
                         fieldJoins.Add($@"
                             outer apply (
-                            select STRING_AGG(FormattedValue,',') as FormattedValue from Field 
+                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
 							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
 											SELECT        O.Id as TargetAssetId
                                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
@@ -193,7 +204,7 @@ namespace d360.model.DataAccessLayer.repositories
 											FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
 											WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
 							and FormattedValue is not null
-							having string_agg(FormattedValue,',') is not null
+							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                 }
@@ -208,32 +219,32 @@ namespace d360.model.DataAccessLayer.repositories
                         if (filtercond == SplitFilterCriteriaRelationship.Object)
                         {
                             fieldJoins.Add($@"outer apply (
-                                select  STRING_AGG(S.Name,',') as FormattedValue from FieldType FT
+                                select  STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
 	                                where FT.Id = {f.ID}
-	                                having STRING_AGG(S.Name,',') is not null
+	                                having STRING_AGG(S.Name,'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
                         }
                         else if (filtercond == SplitFilterCriteriaRelationship.Subject)
                         {
                             fieldJoins.Add($@"outer apply (
-                                select  STRING_AGG(O.Name,',') as FormattedValue from FieldType FT
+                                select  STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
 	                                where FT.Id = {f.ID}
-	                                having STRING_AGG(O.Name,',') is not null
+	                                having STRING_AGG(O.Name,'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
                         }
                         else
                         {
                             fieldJoins.Add($@"outer apply (
-                                select  STRING_AGG(ISNULL(S.Name, O.Name),',') as FormattedValue from FieldType FT
+                                select  STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') as FormattedValue from FieldType FT
 	                                inner join [Intersect] I on I.IntersectTypeId = FT.LookupObjectID 
 	                                left join AssetType S on S.Object = I.Subject and S.ObjectID = I.SubjectID and I.Object = A.Object and I.ObjectID = A.ObjectID
 	                                left join AssetType O on O.Object = I.Object and O.ObjectID = I.ObjectID and I.Subject = A.Object and I.SubjectID = A.ObjectID
 	                                where FT.Id = {f.ID}
-	                                having STRING_AGG(ISNULL(S.Name, O.Name),',') is not null
+	                                having STRING_AGG(ISNULL(S.Name, O.Name),'{RELATIONSHIP_DELIMITER}') is not null
                                 ) {tableAlias}");
                         }
                     }
@@ -243,30 +254,30 @@ namespace d360.model.DataAccessLayer.repositories
                         if (filtercond == SplitFilterCriteriaRelationship.Object)
                         {
                             fieldJoins.Add($@"outer apply (
-                            select STRING_AGG(AD.DisplayValue,',') as FormattedValue from AssetDetail AD
+                            select STRING_AGG(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
                             where AD.ID in (        
                             SELECT        O.Id as TargetAssetId
                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                             WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
-                            having string_agg(AD.DisplayValue,',') is not null
+                            having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
                         }
                         else if (filtercond == SplitFilterCriteriaRelationship.Subject)
                         {
                             fieldJoins.Add($@"outer apply (
-                            select STRING_AGG(AD.DisplayValue,',') as FormattedValue from AssetDetail AD
+                            select STRING_AGG(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
                             where AD.ID in ( 
                              SELECT        O.Id as TargetAssetId
                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                             WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
-                            having string_agg(AD.DisplayValue,',') is not null
+                            having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
                         }
                         else
                         {
 
                             fieldJoins.Add($@"outer apply (
-                            select STRING_AGG(AD.DisplayValue,',') as FormattedValue from AssetDetail AD
+                            select STRING_AGG(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from AssetDetail AD
                             where AD.ID in (SELECT        O.Id as TargetAssetId
                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                             WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id
@@ -274,7 +285,7 @@ namespace d360.model.DataAccessLayer.repositories
                             SELECT        O.Id as TargetAssetId
                             FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
                             WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
-                            having string_agg(AD.DisplayValue,',') is not null
+                            having string_agg(AD.DisplayValue,'{RELATIONSHIP_DELIMITER}') is not null
                             ) {tableAlias}");
                         }
                     }
@@ -283,7 +294,7 @@ namespace d360.model.DataAccessLayer.repositories
                 {
                     fieldJoins.Add($@"outer apply (
                         select
-                           STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),',') as FormattedValue
+                           STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),'{RELATIONSHIP_DELIMITER}') as FormattedValue
                         from [Intersect] I
                         left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
 						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID

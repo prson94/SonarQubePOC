@@ -69,7 +69,7 @@ export class GridFilterExpression {
             f.fieldType = 'Lookup';
             f.apiName = 'ParentDisplayName';
         }
-        let forceEqualFields: string[] = ['Relationship', 'Boolean', 'Lookup', 'Decimal', 'Number', 'Date', 'DateTime'];
+        let forceEqualFields: string[] = ['Boolean', 'Lookup', 'Decimal', 'Number', 'Date', 'DateTime'];
 
         if (forceEqualFields.some(x => x == f.fieldType)) {
             cond = 'eq';
@@ -95,9 +95,8 @@ export class GridFilterExpression {
             return value;
         }
 
-        value = (value as string).replace('\'', '&apos;');
-
-        return `'${escape(value)}'`;
+        value = (value as string).replace(/'/g, "&apos;");
+        return `'${encodeURIComponent(value)}'`;
     }
 
     private convertCondition(cond: string): string {

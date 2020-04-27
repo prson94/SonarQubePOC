@@ -811,10 +811,6 @@ namespace d360.web.Controllers
             {
                 siteNavs = siteNavs.Where(x => x.Name != "#Fusion");
             }
-            else
-            {
-                siteNavs = siteNavs.Where(x => x.Name != "#Technical");
-            }
 
             model.SiteNav = siteNavs.ToList();
 
@@ -1781,7 +1777,10 @@ order by Sort, title";
                     if (extension == ".xlsx")
                     {
                         var typeInfo = model.Type.Split('|');
-                        var assetType = Company.Query<AssetType>("select * from AssetType where Object = @object and ObjectID = @objectID", new { @object = typeInfo[0], objectID = typeInfo[1] }).FirstOrDefault();
+                        var typeParams = new { @object = typeInfo[0], objectID = int.Parse(typeInfo[1]) };
+
+                        var assetTypeUid = Company.Query<Guid?>("select [uid] from AssetType where Object = @object and ObjectID = @objectID", typeParams).FirstOrDefault();
+                        var intersectTypeUid = Company.Query<Guid?>("select [uid] from [IntersectType] where ID = @objectID and @object = 'IntersectType'", typeParams).FirstOrDefault();
 
                         load = new Load
                         {
@@ -1789,11 +1788,12 @@ order by Sort, title";
                             Action = model.LoadAction,
                             Extension = extension,
                             Notes = model.Notes,
-                            Object = typeInfo[0],
-                            ObjectID = int.Parse(typeInfo[1]),
+                            Object = typeParams.@object,
+                            ObjectID = typeParams.objectID,
                             DateStarted = DateTime.UtcNow,
                             UpdatedBy = Company.CurrentResourceID,
-                            AssetTypeUid = assetType?.uid
+                            AssetTypeUid = assetTypeUid,
+                            IntersectTypeUid = intersectTypeUid
                         };
 
                         xls = new SLDocument(stream);
