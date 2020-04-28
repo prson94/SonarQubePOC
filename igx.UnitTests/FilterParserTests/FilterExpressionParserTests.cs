@@ -35,7 +35,6 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "text", ID = 5, Type = "Text" });
             fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
-            fieldTypes.Add(new FieldType() { Name = "numberwithdefault", ID = 7, Type = "Number", DefaultValue = "100", DefaultFormattedValue = "100" });
 
             fieldTypes.ForEach(x =>
             {
