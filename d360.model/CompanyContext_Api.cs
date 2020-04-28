@@ -583,6 +583,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                                             T.ID as AssetTypeID
 									from	AssetType T
 									where	T.[Object] = 'ReferenceItemType'
+                                    and     T.ObjectID <> 0
 								) S on {assetJoin}
 									and ((S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID) 
                                     or (S.[Type] = IT.[Subject] AND S.TypeID = IT.SubjectID))
