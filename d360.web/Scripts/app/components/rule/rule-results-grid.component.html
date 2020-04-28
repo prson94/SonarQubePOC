@@ -104,8 +104,8 @@
                 <td>
                     <span>{{item.EvaluatedAssetTypePath}}</span>
                 </td>
-                <td>
-                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>
+                <td>                    
+                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPathElements.join(' > ')}}</d3s-preview-tooltip>
                 </td>
                 <td>
                     <span>{{item.RunDate | date : 'short'}}</span>
