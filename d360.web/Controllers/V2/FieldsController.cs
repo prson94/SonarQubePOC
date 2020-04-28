@@ -470,13 +470,14 @@ namespace d360.web.Controllers.V2
                 {
                     var issueType = Company.Filter<IssueType>(x => x.uid == ActionTypeUid).SingleOrDefault();
                     id = issueType.ID;
-                    Enum.TryParse("IssueType", out type);
+                    type = SystemObjects.IssueType;
                     fieldType = Company.Filter<FieldType>(x => x.Object == "IssueType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else if (RelationshipTypeUid != null)
                 {
                     var intersectType = Company.Filter<IntersectType>(i => i.uid == RelationshipTypeUid).SingleOrDefault();
                     id = intersectType.ID;
+                    type = SystemObjects.IntersectType;
                     fieldType = Company.Filter<FieldType>(x => x.Object == "IntersectType" && x.ObjectID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else
@@ -531,7 +532,7 @@ namespace d360.web.Controllers.V2
                     .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy
                                 && x.Object != SystemObjects.IntersectType.ToString()
                                 && x.Subject != SystemObjects.IntersectType.ToString()
-                                && !LookupObjectIDs.Contains(x.ID))
+                               )
                     .Select(i => new
                     {
                         title = ((i.Subject == sType && i.SubjectID == id) ?

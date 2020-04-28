@@ -161,6 +161,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 return "Relation Lookup";
             case "Text":
                 return "Simple Text";
+            case "Lookup":
+                return "List";
             default:
                 return this.currentFieldType(item);
         }

@@ -183,7 +183,7 @@
                                 name="lookup"
                                 [options]="lookups.Lookups"
                                 [(ngModel)]="model.FieldType.Type[currentType].List.Uid"
-                                (ngModelChange)="model.FieldType.Type[currentType].List.Uid=$event;lookupTypeSelected($event).subscribe();"
+                                (ngModelChange)="model.FieldType.Type[currentType].List.Uid=$event;lookupTypeSelected($event,true).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -238,7 +238,7 @@
                          style="display:block">
                         &nbsp;
                     </div>
-                    <select [ngModel]="selectedFormatToken"
+                    <select [ngModel]=" "
                             (ngModelChange)="selectEditToken($event)"
                             [disabled]="model.LookupTokens?.length < 1"
                             style="width:98%"
@@ -443,7 +443,7 @@
                     <p-dropdown *ngIf="currentType == 'Lookup'"
                                 [options]="lookupDefaultValueOptions"
                                 [(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
-                                (ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;testmodelChange($event)"
+                                (ngModelChange)="model.FieldType.Type[currentType].DefaultValue = $event;"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"
@@ -791,8 +791,8 @@
                     <div class="FieldName">Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_Relationships"
-                                [ngModel]="model.cardinalRelationship"
-                                (ngModelChange)="model.cardinalRelationship=$event;cardinalRelationshipSelected($event).subscribe();"
+                                [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
+                                (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>
                 </div>
@@ -809,7 +809,7 @@
                     <div class="FieldName">One-to-Many Relationship</div>
                     <p-dropdown [ngModelOptions]="{standalone: true}"
                                 [options]="lookups.Field_FieldFromRelRelationships"
-                                [ngModel]="model.cardinalRelationship"
+                                [ngModel]="model.FieldType.Type[currentType].IntersectTypeUid"
                                 (ngModelChange)="model.FieldType.Type[currentType].IntersectTypeUid=$event;cardinalFieldFromRelationshipSelected($event).subscribe();"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl></p-dropdown>

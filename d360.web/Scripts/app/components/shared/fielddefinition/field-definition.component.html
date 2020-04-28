@@ -17,6 +17,7 @@
             [showIsListable]="showIsListable"
             [showIsPartOfKey]="showIsPartOfKey"
             [supportsPrimaryFilterOption]="true"
+            [fields]="fieldDefinitions"
             (onCancel)="isEditing = false; onCancel.emit()"
             (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>    

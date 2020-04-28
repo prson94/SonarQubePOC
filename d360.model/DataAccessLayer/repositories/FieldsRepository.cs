@@ -991,7 +991,6 @@ from	IntersectType I
                     newFieldType.Type = DataType.Lookup.ToString();
                     newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder;
                     newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
-                    if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue)) newFieldType.DefaultValue = f.Type.Lookup.DefaultValue.Trim();
                     if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
                     {
                         var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
@@ -1044,10 +1043,16 @@ from	IntersectType I
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
                         {
                             var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+                            var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
                             if (listAssetType != null)
                             {
                                 newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
                                 newFieldType.LookupObjectID = listAssetType.ObjectID;
+                                if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue) && defaultOptions.Any(s => s.uid.ToString() == f.Type.Lookup.DefaultValue))
+                                {
+                                    int defaultListItemID = defaultOptions.First(s => s.uid.ToString() == f.Type.Lookup.DefaultValue).ObjectID;
+                                    newFieldType.DefaultValue = defaultListItemID.ToString();
+                                }
                             }
                             else
                             {
