@@ -35,6 +35,7 @@ namespace igx.UnitTests.FilterExpressionTests
             fieldTypes.Add(new FieldType() { Name = "text", ID = 5, Type = "Text" });
             fieldTypes.Add(new FieldType() { Name = "lookup", ID = 6, Type = "Lookup", LookupObjectType = "ArtifactType", LookupObjectID = 1 });
             fieldTypes.Add(new FieldType() { Name = "relationship", ID = 6, Type = "Relationship", LookupObjectType = "IntersectType", LookupObjectID = 1 });
+            fieldTypes.Add(new FieldType() { Name = "numberwithdefault", ID = 7, Type = "Number", DefaultValue = "100", DefaultFormattedValue = "100" });
 
             fieldTypes.ForEach(x =>
             {
@@ -91,6 +92,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
+        [InlineData("lookup ct 'validlookupvalue'")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -209,7 +211,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [Theory]
         [InlineData("lookup eq 'validlookupvalue'")]
         [InlineData("lookup ne 'validlookupvalue'")]
-        [InlineData("lookup ct 'validlookupvalue'")]
         public void ValidLookupTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
@@ -259,11 +260,14 @@ namespace igx.UnitTests.FilterExpressionTests
         }
 
         [Theory]
-        [InlineData("text ct 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All")]
+        [InlineData("text ct 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "%Chetna's [^]&%([_]+-={}[[]]|\\;':\",./<>_ Check~` All%")]
         [InlineData("text eq 'Chetna&apos;s ^&*(_+-={}[]|\\;&apos;:\",./<>? Check~` All'", "Chetna's ^&*(_+-={}[]|\\;':\",./<>? Check~` All")]
-        [InlineData("text eq '*&_Bangalore'","*&_Bangalore")]
-        [InlineData("text ct '*&_Bangalore'","%&[_]Bangalore")]
-        public void IsSQLEscapingValue(string expression, string expectedParam)
+        [InlineData("text eq '*&_Bangalore'", "*&_Bangalore")]
+        [InlineData("text ct '*&_Bangalore'", "%%&[_]Bangalore%")]
+        [InlineData("text ct 'string for contains'", "%string for contains%")]
+        [InlineData("text eq 'string for equal'", "string for equal")]
+        [InlineData("text ne 'string for equal'", "string for equal")]
+        public void CheckSQLQueryParsing(string expression, string expectedParam)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
             List<int> fieldIds = new List<int>();
@@ -275,6 +279,69 @@ namespace igx.UnitTests.FilterExpressionTests
             }
         }
 
+        [Theory]
+        [InlineData("number eq 100", "F1.FormattedValue = @filter_1")]
+        [InlineData("number ne 100", "F1.FormattedValue <> @filter_1")]
+        [InlineData("number ge 100", "F1.FormattedValue >= @filter_1")]
+        [InlineData("number gt 100", "F1.FormattedValue > @filter_1")]
+        [InlineData("number le 100", "F1.FormattedValue <= @filter_1")]
+        [InlineData("number lt 100", "F1.FormattedValue < @filter_1")]
+        [InlineData("decimal eq 100.34", "F2.FormattedValue = @filter_1")]
+        [InlineData("decimal ne 100.34", "F2.FormattedValue <> @filter_1")]
+        [InlineData("decimal ge 100.34", "F2.FormattedValue >= @filter_1")]
+        [InlineData("decimal gt 100.34", "F2.FormattedValue > @filter_1")]
+        [InlineData("decimal le 100.34", "F2.FormattedValue <= @filter_1")]
+        [InlineData("decimal lt 100.34", "F2.FormattedValue < @filter_1")]
+        [InlineData("boolean eq True", "F3.FormattedValue = @filter_1")]
+        [InlineData("boolean ne True", "F3.FormattedValue <> @filter_1")]
+        [InlineData("date eq '02-10-2020'", "F4.FormattedValue = @filter_1")]
+        [InlineData("date ne '02-10-2020'", "F4.FormattedValue <> @filter_1")]
+        [InlineData("date ge '02-10-2020'", "F4.FormattedValue >= @filter_1")]
+        [InlineData("date gt '02-10-2020'", "F4.FormattedValue > @filter_1")]
+        [InlineData("date le '02-10-2020'", "F4.FormattedValue <= @filter_1")]
+        [InlineData("date lt '02-10-2020'", "F4.FormattedValue < @filter_1")]
+        [InlineData("text eq 'string'", "F5.FormattedValue = @filter_1")]
+        [InlineData("text ne 'string'", "F5.FormattedValue <> @filter_1")]
+        [InlineData("text ct 'string'", "F5.FormattedValue like @filter_1")]
+        [InlineData("lookup eq 'validlookupvalue'", "@filter_1 in (select * from string_split(F6.Value,','))")]
+        [InlineData("lookup ne 'validlookupvalue'", "@filter_1 not in (select * from string_split(F6.Value,','))")]
+        [InlineData("number gt 100 and text eq '100' or boolean eq true", "F1.FormattedValue > @filter_1 and F5.FormattedValue = @filter_2 or F3.FormattedValue = @filter_3")]
+        public void CheckSQLStatementForOperators(string expression, string expectedQuery)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            List<int> fieldIds = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out fieldIds);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckParamOccurance(sql, param.Key));
+            }
+            Assert.True(sql.ToLower().Replace(Environment.NewLine, "") == expectedQuery.ToLower().Replace(Environment.NewLine, ""));
+
+        }
+
+        [Theory]
+        [InlineData("relationship eq 'relationshipassetvalue'", @"exists
+                                    (select id from intersectdetail where intersecttypeid = 1 and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname = @filter_1
+                                    union select id from IntersectDetail where intersecttypeid = 1 and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname = @filter_1)")]
+        [InlineData("relationship ne 'relationshipassetvalue'", @"not exists
+                                    (select id from intersectdetail where intersecttypeid = 1 and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname = @filter_1
+                                    union select id from IntersectDetail where intersecttypeid = 1 and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname = @filter_1)")]
+        [InlineData("relationship ct 'relationshipassetvalue'", @"exists
+                                    (select id from intersectdetail where intersecttypeid = 1 and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname like @filter_1
+                                    union select id from IntersectDetail where intersecttypeid = 1 and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname like @filter_1)")]
+
+        public void CheckSQLStatementForOperatorsAndRelationships(string expression, string expectedQuery)
+        {
+            Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+            List<int> fieldIds = new List<int>();
+            string sql = filterParser.Parse(expression, out sqlParams, out fieldIds);
+            foreach (var param in sqlParams)
+            {
+                Assert.True(CheckMultipleParamOccurance(sql, param.Key));
+            }
+            Assert.True(sql.ToLower().Replace(Environment.NewLine, "") == expectedQuery.ToLower().Replace(Environment.NewLine, ""));
+
+        }
 
     }
 
