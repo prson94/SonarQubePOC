@@ -1300,8 +1300,8 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetTypePath);
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPathElements != null ? string.Join(" > ", row.EvaluatedAssetPathElements) : null);
-                doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
-                doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
+                doc.SetCellValue(rowNumber, index++, row.RunDate.ToString("yyyy-MM-dd HH:mm:ss"));
+                doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString("yyyy-MM-dd"));
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
