@@ -35,6 +35,7 @@ END
 	</rollback>
   </changeSet>
   <changeSet author="Tklok" id="Table.dbo.Favorite-v2">
+	<validCheckSum>7:205efb9f52219e33baa7a52bffa473b3</validCheckSum>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -85,9 +86,6 @@ INNER JOIN [dbo].[Asset] a on f.Object = a.[Object] AND f.[ObjectID] = a.[Object
 WHERE F.[Type] IS NULL AND F.[Uid] IS NULL
 AND F.[Object] NOT LIKE '%Type' AND F.[Object] IS NOT NULL;
 GO
-
-ALTER TABLE [dbo].[Favorite] ALTER COLUMN [Type] [varchar](50) NOT NULL
-GO
 		]]>
     </sql>
 	<rollback>
@@ -117,7 +115,21 @@ GO
 		</sql>
 	</rollback>
   </changeSet>
-
+  <changeSet author="Tklok" id="Table.dbo.Favorite-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [dbo].[Favorite] where [Type] is null)
+BEGIN
+	ALTER TABLE [dbo].[Favorite] ALTER COLUMN [Type] [varchar](50) NOT NULL
+END
+GO
+		]]>
+    </sql>
+	<rollback/>
+  </changeSet>
   <changeSet author="Core" id="Table.dbo.Favorite-Favorite_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
