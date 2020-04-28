@@ -15,7 +15,6 @@ using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
 using System.Web.Http.Description;
 using d360.web.Filters;
-using d360.core.entities.Quality;
 using d360.core.enums;
 
 namespace d360.web.Controllers.V2
