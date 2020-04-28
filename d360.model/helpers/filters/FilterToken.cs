@@ -103,7 +103,7 @@ namespace d360.model.helpers
             value = value.ToString().Trim('\'');
             if (this.@operator == "ct")
             {
-                value = wildcardValue(escapeForSQLLike(value.ToString()));
+                value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
             }
 
             stringBuilder.Clear();
@@ -202,7 +202,7 @@ namespace d360.model.helpers
 
             if (@operator == "ct")
             {
-                value = wildcardValue(escapeForSQLLike(value.ToString()));
+                value = $"%{wildcardValue(escapeForSQLLike(value.ToString()))}%";
             }
 
             string[] lookupFieldTypes = new string[] { "Lookup", "Relationship" };
@@ -286,7 +286,7 @@ namespace d360.model.helpers
                 value = lookupValue.ToString();
 
                 string condition = "in";
-                if (field == "ne")
+                if (@operator == "ne")
                 {
                     condition = "not in";
                 }
