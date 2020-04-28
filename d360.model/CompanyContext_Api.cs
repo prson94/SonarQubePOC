@@ -6263,7 +6263,7 @@ insert into #Keys
 	                                -- check Uid on Put
 	                                update EAR
                                     set		Success = 0,
-		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid UID value'
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid Rule Result UID value'
                                     from api.[ExecutionAssetResult] EAR
                                         inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
                                         left join AssetResult AR on AR.Uid = EAR.Uid
