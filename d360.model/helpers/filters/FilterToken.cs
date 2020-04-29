@@ -22,6 +22,7 @@ namespace d360.model.helpers
         private bool isLookupField { get; set; }
         private StringBuilder stringBuilder = new StringBuilder();
         private Dictionary<string, object> sqlParamsRef;
+        private bool convertToNVarChar = false;
 
         private AssetType assetType { get; set; }
         private IntersectType intersectType { get; set; }
@@ -107,6 +108,11 @@ namespace d360.model.helpers
             }
 
             stringBuilder.Clear();
+
+            if (this.convertToNVarChar)
+            {
+                filter.SqlExpression = $"CONVERT(VARCHAR,{filter.SqlExpression},120)";
+            }
 
             stringBuilder.Append(filter.SqlExpression);
             stringBuilder.Append(GetSQLOperator(@operator));
@@ -219,7 +225,14 @@ namespace d360.model.helpers
 
             if (!this.isLookupField)
             {
-                stringBuilder.Append(GetColumnValueSyntax(fieldType.ID));
+                var fieldSql = GetColumnValueSyntax(fieldType.ID);
+
+                if (this.convertToNVarChar)
+                {
+                    fieldSql = $"CONVERT(VARCHAR,{fieldSql},120)";
+                }
+
+                stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
                 stringBuilder.Append($"@filter_{parameterIdx}");
             }
@@ -264,9 +277,29 @@ namespace d360.model.helpers
                     DateTime date = new DateTime();
                     if (!DateTime.TryParse(value.ToString().Trim('\''), out date))
                     {
-                        throw new FormatException($"Invalid date value for field '{field}'");
+                        if (@operator == "ct")
+                        {
+                            value = value.ToString().Trim('\'').Replace("&apos;", "'");
+                            this.convertToNVarChar = true;
+                        }
+                        else
+                        {
+                            throw new FormatException($"Invalid date value for field '{field}'");
+                        }
                     }
-                    value = date;
+                    else
+                    {
+                        value = date;
+                        if (@operator == "ct")
+                        {
+                            this.convertToNVarChar = true;
+
+                            if (date == date.Date)
+                            {
+                                value = date.ToString("yyyy-MM-dd");
+                            }
+                        }
+                    }
 
                     break;
                 default:
@@ -319,7 +352,7 @@ namespace d360.model.helpers
                 }
 
                 var whereStatement = $@"{condition}
-                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=" )} @filter_{parameterIdx}
+                                    (select id from intersectdetail where intersecttypeid = {fieldType.LookupObjectID} and subjectuid = a.uid and subjecttypeid = T.ObjectId and subjecttype = T.Object and objectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx}
                                     union select id from IntersectDetail where intersecttypeid = {fieldType.LookupObjectID} and objectuid = a.uid and objecttypeid = T.ObjectId and objecttype = T.Object and subjectname {(@operator == "ct" ? "like" : "=")} @filter_{parameterIdx})";
 
                 stringBuilder.Append(whereStatement);
@@ -353,9 +386,10 @@ namespace d360.model.helpers
                     return new string[] { "eq", "ne", "ct" }.Contains(operand);
                 case "number":
                 case "decimal":
+                    return !(new string[] { "ct" }.Contains(operand));
                 case "date":
                 case "datetime":
-                    return !(new string[] { "ct" }.Contains(operand));
+                    return true;
                 default:
                     return new string[] { "eq", "ne", "ct" }.Contains(operand);
             }
