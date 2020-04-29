@@ -104,24 +104,28 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.getFieldsV2(this.currentUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
-                let foundKeyField = false;
-                if (this.fieldDefinitions && this.fieldDefinitions.length > 0) {
-                    this.fieldDefinitions.forEach(d => {
-                        let type = this.currentFieldType(d);
-                        if (!d.Type[type].SortOrder)
-                            d.Type[type].SortOrder = 0;
-                        if (this.IsPartyOfKey(d.Type)) {
-                            foundKeyField = true;
-                        }
-                    });
-                    this.sortFields();
-                    this.hasKeyFields = foundKeyField;
-                }
+                this.checkKeyFields();
                 this.selectedRow = null;
                 this.isLoading = false;
             }
         );
     }
+    private checkKeyFields() {
+        let foundKeyField = false;
+        if (this.fieldDefinitions && this.fieldDefinitions.length > 0) {
+            this.fieldDefinitions.forEach(d => {
+                let type = this.currentFieldType(d);
+                if (!d.Type[type].SortOrder)
+                    d.Type[type].SortOrder = 0;
+                if (this.IsPartyOfKey(d.Type)) {
+                    foundKeyField = true;
+                }
+            });
+            this.sortFields();
+            this.hasKeyFields = foundKeyField;
+        }
+    }
+
     currentFieldType(item: FieldTypeAPIModelField): string {
         return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
     }
@@ -206,7 +210,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     let index = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
 
                     this.isDeleting = false;
-
+                    this.checkKeyFields();
                     if (index >= 0 && index < this.fieldDefinitions.length) {
                         this.fieldDefinitions.splice(index, 1);
                     }
