@@ -491,13 +491,13 @@ namespace d360.model.DataAccessLayer
                     await CompanyContext.Connection.ExecuteAsync(@"
                         update  U
                         set     U.Success = 0,
-                                U.Message = U.Message + '. Resource for this uid not found'
+                                U.Message = U.Message + 'Resource for this uid not found. '
                         from    #UserAssets U
                         where   U.Success = 1 and U.IsNew = 0 and U.ResourceID is null and U.ExecutionID = @executionID;
 
                         update  U
                         set     U.Success = 0,
-                                U.Message = U.Message + ', One or more field values supplied is missing a field type'
+                                U.Message = U.Message + 'One or more field values supplied is missing a field type. '
                         from    #UserAssets U
                                 cross apply (
                                     select  count(*) as MissingCount 
@@ -510,7 +510,7 @@ namespace d360.model.DataAccessLayer
 
                         update  U
                         set     U.Success = 0,
-                                U.Message = U.Message + '. Missing required fields'
+                                U.Message = U.Message + 'Missing required fields. '
                         from    #UserAssets U
                                 cross apply (
                                     select  count(*) as MissingCount
@@ -611,7 +611,7 @@ namespace d360.model.DataAccessLayer
                                     {
                                         result.Success = false;
                                         result.uid = user.uid;
-                                        result.Message += ". Cannot update the user because the specified email address / username is already in use";
+                                        result.Message += "Cannot update the user because the specified email address / username is already in use. ";
                                         results.Add(result);
                                         continue;
                                     }
@@ -679,8 +679,8 @@ namespace d360.model.DataAccessLayer
                                 IsAdministrator = user.IsAdministrator,
                                 ResourceID = (int)user.ResourceID,
                                 Email = user.Username,
-                                LastName = user.FirstName,
-                                FirstName = user.LastName,
+                                FirstName = user.FirstName,
+                                LastName = user.LastName,
                                 State = user.State ?? companyResource.State,
                                 UpdatedOn = DateTime.UtcNow,
                                 Uid = (Guid)user.uid
