@@ -368,6 +368,9 @@ namespace d360.web.Models
         public string urlfield { get; set; }
 
         [DataMember]
+        public string uidfield { get; set; }
+
+        [DataMember]
         public string contextfield { get; set; }
 
         [DataMember]
