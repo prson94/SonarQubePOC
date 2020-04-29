@@ -84,5 +84,5 @@ export class SurveyQuestionResponseApiModel {
 
 export class SurveyResultsApiModel {
     AssetUid: string;
-    Questions: SurveyQuestionResponseApiModel[];
+    Questions: SurveyQuestionResponseApiModel[] = [];
 }

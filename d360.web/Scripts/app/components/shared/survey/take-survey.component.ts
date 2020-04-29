@@ -74,27 +74,15 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
         this.submitting = true;
         this.currentQuestion = null;
 
-        //convert to a API post type
-        console.log(this.surveyDetails);
-        let surveyResponse = new SurveyResultsApiModel();
-        surveyResponse.AssetUid = this.surveyDetails.AssetTypeUid; 
-        this.surveyDetails.Questions.forEach(x => {
-            let q = new SurveyQuestionResponseApiModel();
-            q.Comments = x.Comments;
-            q.Responses = x.Options.map(x => { if (x.IsChecked) return x.Value });
-            q.SurveyQuestionUid = x.Uid;
-            surveyResponse.Questions.push(q)
+        this.surveysService.saveSurveyResponse(this.surveyDetails.Uid, this.getSurveyResponseObject()).subscribe(res => {
+            this.submitting = false
+            this.surveyComplete.emit(res);
         });
-        console.log(surveyResponse);
-        //this.surveysService.saveSurveyResponse(this.surveyDetails.Uid, this.surveyDetails).subscribe(res => {
-        //    this.submitting = false
-        //    this.surveyComplete.emit(res);
-        //});
     }
 
     private isValid(): boolean {
         this.errorMessage = '';
-        var item = this.currentQuestion.Options.find(x => x.Value != null);
+        var item = this.currentQuestion.Options.find(x => x.IsChecked);
         if (!item) {
             this.errorMessage = 'You must select at least one answer';
         }
@@ -121,6 +109,19 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
             return;
         }
         this.currentQuestion = this.surveyDetails.Questions[--this.currentQuestionIndex];
+    }
+
+    private getSurveyResponseObject(): SurveyResultsApiModel {
+        let surveyResponse = new SurveyResultsApiModel();
+        surveyResponse.AssetUid = this.assetUid;
+        this.surveyDetails.Questions.forEach(x => {
+            let q = new SurveyQuestionResponseApiModel();
+            q.Comments = x.Comments;
+            q.Responses = x.Options.filter(x => { return x.IsChecked }).map(x => x.Value);
+            q.SurveyQuestionUid = x.Uid;
+            surveyResponse.Questions.push(q)
+        });
+        return surveyResponse;
     }
 }
 
