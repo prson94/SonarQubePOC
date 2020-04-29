@@ -583,6 +583,7 @@ values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resour
                                             T.ID as AssetTypeID
 									from	AssetType T
 									where	T.[Object] = 'ReferenceItemType'
+                                    and     T.ObjectID <> 0
 								) S on {assetJoin}
 									and ((S.[Type] = IT.[Object] AND S.TypeID = IT.ObjectID) 
                                     or (S.[Type] = IT.[Subject] AND S.TypeID = IT.SubjectID))
@@ -6263,7 +6264,7 @@ insert into #Keys
 	                                -- check Uid on Put
 	                                update EAR
                                     set		Success = 0,
-		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid UID value'
+		                                    [Message] = coalesce([Message] + '; ', '') + 'Invalid Rule Result UID value'
                                     from api.[ExecutionAssetResult] EAR
                                         inner join api.Execution AE on AE.ExecutionID = EAR.ExecutionID
                                         left join AssetResult AR on AR.Uid = EAR.Uid

@@ -5,11 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetReferenceItemDisplayValue-v1">
+  <changeSet author="PuneetGupta" id="Function.dbo.GetReferenceItemDisplayValue-v2">
+  <comment>GOV-10390</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<![CDATA[
+		drop function if exists [dbo].[GetReferenceItemDisplayValue]	
+		]]>
+    </sql>
+	<rollback>
 		<![CDATA[
 CREATE OR ALTER FUNCTION [dbo].[GetReferenceItemDisplayValue]
 (
@@ -38,11 +44,6 @@ RETURN
 							) D
 	where FT_1.ID = @fieldTypeId
 )
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

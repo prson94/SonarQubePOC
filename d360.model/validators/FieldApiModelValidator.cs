@@ -227,6 +227,17 @@ namespace d360.model.validators
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
                 }
 
+                if (assetTypeIdentifierInfoModel != null && field?.Type?.Json != null)
+                {
+                    if (field.Type.Json.Validation != null)
+                    {
+                        if (field.Type.Json.Validation.IsRequired && assetTypeIdentifierInfoModel.Object != SystemObjects.FusionAttributeType.ToString())
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
+                        }
+                    }
+                }
+
             }
             if (fieldsHaveErrors)
             {
