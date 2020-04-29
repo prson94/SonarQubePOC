@@ -278,20 +278,13 @@ namespace d360.model.DataAccessLayer
 
                 if (user.IsNew)
                 {
-                    if (user.CompanyResourceState.HasValue && user.CompanyResourceState == CompanyResourceState.Active)
+                    if (user.ResourceID.HasValue)
                     {
-
-
-                        if (user.ResourceID.HasValue)
+                        if (user.CompanyResourceState.HasValue && user.CompanyResourceState != CompanyResourceState.Deleted)
                         {
                             success = false;
                             messages.Add("Resource for this Username already exists");
                         }
-                    }
-                    else if (user.uid.HasValue)
-                    {
-                        success = false;
-                        messages.Add("Cannot provide Uid for a new user");
                     }
 
                     if (user.State.HasValue)
@@ -626,6 +619,7 @@ namespace d360.model.DataAccessLayer
                                     resource.Password = CommunityContext.HashPassword(user.Password);
                                 }
 
+                                user.uid = resource.Uid;
                                 resource.UpdatedOn = DateTime.UtcNow;
                                 CommunityContext.Update(resource);
                             }
