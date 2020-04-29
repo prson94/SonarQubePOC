@@ -6247,7 +6247,21 @@ insert into #Keys
 			                                    inner join 
 			                                    Asset A on (EAR.OwningAssetUid = A.uid) 
 			                                    and EAR.OwningAssetUid is not null												
-			                                    and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                                outer apply dbo.UserAssetPermissions(E.ResourceID, A.AssetTypeID) P 
+                                                Where 
+                                                P.PermissionsBitMask is null
+                                                or 
+                                                (
+	                                                P.AssetTypeID = A.AssetTypeID 
+	                                                and 
+	                                                (
+		                                                P.AssetID <> A.ID 
+		                                                and
+		                                                P.AssetID <> 0
+	                                                ) 
+	                                                and 
+	                                                P.PermissionsBitMask & @p <> @p
+                                                )			                                    
                                         
                                         -- Check on update
                                         update	EAR
@@ -6258,7 +6272,21 @@ insert into #Keys
 										inner join AssetResult AR on AR.uid =EAR.Uid
                                         inner join AssetResultEdge ARE on AR.$node_id = ARE.$to_id and ARE.class = {(int)ResultRelationClass.Owns}
 										inner join graph.AssetNode AN on AN.$node_id = ARE.$from_id
-			                             and AN.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, AN.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                        outer apply dbo.UserAssetPermissions(E.ResourceID, AN.AssetTypeID) P 
+                                        Where 
+                                        P.PermissionsBitMask is null
+                                        or 
+                                        (
+	                                        P.AssetTypeID = AN.AssetTypeID 
+	                                        and 
+	                                        (
+		                                        P.AssetID <> AN.ID 
+		                                        and
+		                                        P.AssetID <> 0
+	                                        ) 
+	                                        and 
+	                                        P.PermissionsBitMask & @p <> @p
+                                        )
                                     end
 
 	                                -- check Uid on Put
@@ -6753,41 +6781,26 @@ insert into #Keys
 			                                    DAR.[Message] = coalesce([Message] + '; ', '') + 'User does not have permission to delete this result.'
 	                                    from    api.ExecutionDeleteAssetResult DAR                                                
                                         inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
-                                        inner join 
-                                        Asset A on (
-                                                    (DAR.OwningAssetUid is not null and DAR.OwningAssetUid = A.uid)                                                    
-                                                    or 
-                                                    (
-                                                        DAR.EvaluatedAssetUid is not null 
-                                                        and -- find the owning asset for each result linked to the evaluated asset
-                                                        A.uid in (select 
-		                                                                distinct AN_own.Uid 
-	                                                                from 
-		                                                                graph.AssetNode AN_eval
-		                                                                inner join
-		                                                                assetResultedge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = 2 and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
-		                                                                inner join 
-		                                                                assetResultedge ARE_own on ARE_eval.$to_id = ARE_own.$to_id and ARE_own.class = 1 -- join the edge table to itself but only get the owning records.
-		                                                                inner join 
-		                                                                graph.AssetNode AN_own on ARE_own.$From_id = AN_own.$node_id)
-                                                    ) 
-                                                    or 
-                                                    (
-                                                        DAR.Uid is not null 
-                                                        and                                                             
-                                                        A.uid in (select 
-	                                                                    AN.Uid
-                                                                    from 
-	                                                                    AssetResult AR, assetResultedge ARE, graph.AssetNode AN
-                                                                    where 	
-	                                                                    Match (AN -(ARE)-> AR)
-	                                                                    AND
-	                                                                    AR.uid =DAR.Uid
-                                                                        AND 
-                                                                        ARE.Class = 1)
-                                                    )
-                                                    )											
-			                             and A.ID not in (select AssetID from UserAssetPermissions(E.ResourceID, A.AssetTypeID) where PermissionsBitMask & @p = @p)
+                                        left join AssetResult AR_result on DAR.Uid = AR_result.uid
+                                        left join graph.AssetNode AN_eval on DAR.EvaluatedAssetUid = AN_eval.uid 
+                                        left join AssetResultEdge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = 2 and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
+                                        left join AssetResultEdge ARE_own on (ARE_eval.$to_id = ARE_own.$to_id or ARE_own.$to_id = AR_result.$node_id) and ARE_own.class = 1 -- join the edge table to itself but only get the owning records.
+                                        left join graph.AssetNode AN_own on DAR.OwningAssetUid = AN_own.uid or ARE_own.$From_id = AN_own.$node_id
+                                        outer apply dbo.UserAssetPermissions(E.ResourceID, AN_own.AssetTypeID) P 
+                                        Where 
+                                        P.PermissionsBitMask is null
+                                        or 
+                                        (
+	                                        P.AssetTypeID = AN_own.AssetTypeID 
+	                                        and 
+	                                        (
+		                                        P.AssetID <> AN_own.ID 
+		                                        and
+		                                        P.AssetID <> 0
+	                                        ) 
+	                                        and 
+	                                        P.PermissionsBitMask & @p <> @p
+                                        )
                                                 
                                     end
                                                                         
