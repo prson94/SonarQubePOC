@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { SurveyType, SurveyQuestionType, SurveyQuestionTypeDetails, SurveyResponse } from '../models/survey.model';
+import { SurveyType, SurveyQuestionType, SurveyTypeDetails, Survey, SurveyQuestionTypeDetails, SurveyResultsApiModel } from '../models/survey.model';
 import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map } from 'rxjs/operators';
@@ -20,18 +20,18 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    getSurveyTypeQuestions(survey: SurveyType): Observable<SurveyQuestionType[]> {
-        return this.http.get(`api/surveys/${survey.ID}/questions`)
+    getSurveyTypeDetails(surveyTypeUid: string): Observable<SurveyTypeDetails> {
+        return this.http.get(`api/v2/survey/types?SurveyTypeUid=${surveyTypeUid}`)
             .pipe(
-                map(response => <SurveyQuestionType[]>response),
+                map((response: any) => { return response.items[0]; }),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getSurveyTypeQuestionDetails(id: number, surveyTypeId: number): Observable<SurveyQuestionTypeDetails> {
-        return this.http.get(`form/questiontype_formdata?id=${id}&surveyTypeID=${surveyTypeId}`)
+    getSurveyTypeQuestions(survey: SurveyType): Observable<SurveyQuestionType[]> {
+        return this.http.get(`api/surveys/${survey.ID}/questions`)
             .pipe(
-                map(response => <SurveyQuestionTypeDetails>response),
+                map(response => <SurveyQuestionType[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -86,27 +86,22 @@ export class SurveysService extends BaseObservableService {
             );
     }
 
-    getObjectSurvey(parentObjectID: number, parentObjectType: string, objectID: number, objectType: string): Observable<SurveyType> {
-        return this.http.get(`api/surveys/${parentObjectType}/${parentObjectID}/${objectType}/${objectID}/survey`)
+    getObjectSurvey(assetUid: string): Observable<Survey> {
+        return this.http.get(`/api/v2/survey/${assetUid}`)
             .pipe(
-                map(response => <SurveyType>response),
+                map(response => <Survey>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    saveSurveyResponse(response: SurveyQuestionTypeDetails[], surveyId: number, objectType: string, objectId: number): Observable<JsonResult> {
+    saveSurveyResponse(surveyUid: string, response: SurveyTypeDetails): Observable<JsonResult> {
         let headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
-
-        let surveyResponse = new SurveyResponse();
-        for (let question of response) {
-            question.Values = question.Items;
-        }
-        surveyResponse.Questions = response;
+        let surveyResponse = new SurveyResultsApiModel();
 
         return this.http
-            .post(`api/survey/${surveyId}/${objectId}/${objectType}`, JSON.stringify(surveyResponse), { headers })
+            .post(`/api/v2/survey/${surveyUid}}`, JSON.stringify(surveyResponse), { headers })
             .pipe(
                 map(res => <JsonResult>res),
                 catchError(err => this.handleError(err))

@@ -1,22 +1,22 @@
 ﻿
 <d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" (onClose)="closeDialog()" [isVisible]="isModalVisible">
-    <form (ngSubmit)="onSubmit()" #surveyForm="ngForm">
+    <form *ngIf="surveyDetails && surveyDetails.Questions" (ngSubmit)="onSubmit()" #surveyForm="ngForm">
         <div class="content">
             <div class="row" *ngIf="currentQuestion">
-                <span class="question-count" *ngIf="questions.length > 1">Question {{currentQuestionIndex+1}} of {{questions.length}}</span>
+                <span class="question-count" *ngIf="surveyDetails.Questions.length > 1">Question {{currentQuestionIndex+1}} of {{surveyDetails.Questions.length}}</span>
                 <h4 style="padding-bottom:10px;padding-top:10px">{{currentQuestion.Name}}</h4>
                 <span *ngIf="currentQuestion.Description" [innerHtml]="currentQuestion.Description"></span>
                 <span [ngSwitch]="currentQuestion.DisplayStyle">
-                    <span *ngSwitchCase="SurveyTypeDisplayStyle.RadioList">
-                        <div *ngFor="let option of currentQuestion?.Items" style="padding:2px">
+                    <span *ngSwitchCase="'Radio'">
+                        <div *ngFor="let option of currentQuestion?.Options" style="padding:2px">
                             <label>
                                 <input type="radio" name="options" (click)="option.IsChecked=$event.target.checked" [value]="option.Value" [checked]="option.IsChecked">
                                 {{option.Name}}
                             </label>
                         </div>
                     </span>
-                    <span *ngSwitchCase="SurveyTypeDisplayStyle.CheckList">
-                        <div *ngFor="let option of currentQuestion?.Items;index as i" style="padding:2px">
+                    <span *ngSwitchCase="'CheckList'">
+                        <div *ngFor="let option of currentQuestion?.Options;index as i" style="padding:2px">
                             <label>
                                 <input type="checkbox" name="options_{{i}}" [(ngModel)]="option.IsChecked" [value]="option.Value" [checked]="option.IsChecked">
                                 {{option.Name}}
@@ -38,11 +38,11 @@
                 <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting"><i class="fa fa-arrow-circle-left"></i>Previous</span>
             </button>
-            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
+            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex + 1 < surveyDetails.Questions.length" type="button" [disabled]="!surveyForm.form.valid || submitting" label="Next" (click)="nextQuestion(currentQuestionIndex)">
                 <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting"><i class="fa fa-arrow-circle-right"></i>Next</span>
             </button>
-            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
+            <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == surveyDetails.Questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
                 <span *ngIf="submitting" class="spinner"></span>    
                 <span *ngIf="!submitting">Submit Survey</span>
             </button>

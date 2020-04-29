@@ -9,7 +9,7 @@ import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
-import { SurveyType } from '../../../models/survey.model';
+import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -48,7 +48,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
     private currentObject: any;
-    private surveyType: SurveyType;
+    private surveyType: Survey;
     @ViewChild('badge', { static: false }) badge: ElementRef;
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
@@ -316,7 +316,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.ref.markForCheck();
             });
 
-        this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
+        this.surveysService.getObjectSurvey(this.currentObject.Uid)
             .subscribe(result => {
                 this.surveyType = undefined;
                 if (result) {
