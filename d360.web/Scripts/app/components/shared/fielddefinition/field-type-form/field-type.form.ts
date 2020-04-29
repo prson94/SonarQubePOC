@@ -353,9 +353,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (value.toLowerCase()) {
             case 'lookup':
-                if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid) 
+                if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid)
                     observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
-                else 
+                else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
+                    let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
+                    observables.push(this.lookupTypeSelected(valToPass));    
+                }
+                else
                     observables.push(this.lookupTypeSelected(this.lookups.Lookups[0].value));
                 break;
             case 'relationship':
@@ -462,11 +466,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Type[this.currentType].Format.Display = "";
                 this.model.FieldType.Type[this.currentType].Format.Edit = "";
             }
-
             if (!this.isUid(uid)) {
-                this.model.FieldType.Type[this.currentType].List.Uid = '';
+                this.model.FieldType.Type[this.currentType].List.Uid = uid;
                 this.model.FieldType.Type[this.currentType].List.Class = uid;
-
             }
 
             this.loadDefaultValueOptions(uid);
@@ -765,6 +767,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             //need to convert the Fields and Relationships to the API expected format
             this.ConvertDisplayFieldsToAPIDefinition();
             this.model.FieldType.Type.ComputedRelationshipLookup = this.model.FieldType.Type.ComplexRelationLookup;
+        }
+        //special cases for Model and reference item types 
+        if (this.currentType == 'Lookup') {
+            if (!this.isUid(this.model.FieldType.Type.Lookup.List.Uid)) {
+                this.model.FieldType.Type.Lookup.List.Uid = null;
+                if (this.model.FieldType.Type.Lookup.List.Class == 'TaxonomyType')
+                    this.model.FieldType.Type.Lookup.List.Class = 'Model';
+            }
         }
 
 
