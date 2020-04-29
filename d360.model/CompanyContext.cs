@@ -195,10 +195,6 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
-        public DbSet<RuleImplementation> RuleImplementations { get; set; }
-
-        public DbSet<RuleResult> RuleResults { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
