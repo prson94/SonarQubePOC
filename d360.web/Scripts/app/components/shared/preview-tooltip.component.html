@@ -8,7 +8,9 @@
        [ngClass]="['fa-' + this.icon, class ? class : '']"
        [ngStyle]="{ color: iconColor }"
        class="fa"></i>
-    <ng-content></ng-content>
+    <span class="preview-text">
+        <ng-content></ng-content>
+    </span>
     <div *ngIf="innerHtmlContent != null" [innerHtml]="innerHtmlContent"></div>
     <div #tip class="tooltip-child tooltip-panel">
         <h3 style="position: relative">

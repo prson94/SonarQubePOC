@@ -108,8 +108,8 @@
                     <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetTypePath}}</span>
                 </td>
                 <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">
-                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetUid" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPath}}</d3s-preview-tooltip>
+                    <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
+                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">{{item.EvaluatedAssetPathElements.join(' > ')}}</d3s-preview-tooltip>
                     </span>
                 </td>
                 <td>
