@@ -60,7 +60,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("boolean le true")]
         [InlineData("boolean gt true")]
         [InlineData("boolean ge true")]
-        [InlineData("date ct '12-02-2020'")]
         [InlineData("date eq 'fasdfasdf'")]
         [InlineData("date ne '32.56.2020'")]
         [InlineData("text ct 2.4")]
@@ -174,6 +173,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("date gt '02-10-2020'")]
         [InlineData("date ge '02-10-2020'")]
         [InlineData("date ne '02-10-2020'")]
+        [InlineData("date ct '12-02-2020'")]
         public void ValidDateTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();
