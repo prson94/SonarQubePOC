@@ -248,7 +248,7 @@ namespace d360.model.DataAccessLayer
                         if (user != null)
                         {
                             user.ResourceID = result.ResourceID;
-                            user.uid = result.uid;
+                            user.uid = user.IsNew ? result.uid : user.uid;
                             user.CompanyResourceState = (CompanyResourceState?)result.CompanyResourceState;
                         }
                     }
@@ -310,7 +310,7 @@ namespace d360.model.DataAccessLayer
                         messages.Add("Must provide Uid for updated user");
                     }
 
-                    if (!user.ResourceID.HasValue)
+                    if (!user.ResourceID.HasValue && user.uid.HasValue)
                     {
                         success = false;
                         messages.Add("Resource not found for this Uid");
@@ -346,7 +346,7 @@ namespace d360.model.DataAccessLayer
                 if (user.uid.HasValue) row["Uid"] = user.uid;
                 if (user.ResourceID.HasValue) row["ResourceID"] = user.ResourceID;
                 if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
-                row["ItemNumber"] = itemNumber;
+                row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
@@ -568,12 +568,8 @@ namespace d360.model.DataAccessLayer
             foreach (var result in validationResults)
             {
 
-                
-
                 if (result.Success == true)
                 {
-
-
                     var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
 
                     if (user != null)

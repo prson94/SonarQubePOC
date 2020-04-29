@@ -628,7 +628,7 @@ namespace d360.web.Controllers.V2
         /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
         /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
         /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
-        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of users in the request</td><td>Must be a valid Uid</td></tr>
         /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
         /// </table>
         /// <br/>
@@ -686,7 +686,7 @@ namespace d360.web.Controllers.V2
         /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
         /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
         /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
-        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of users in the request</td><td>Must be a valid Uid</td></tr>
         /// <tr><td>State</td><td>Optional</td><td>State of the user record. If the State is not provided it will remain unchanged</td><td>Must be a valid State value. Valid values are Active, Inactive, and Deleted</td></tr>
         /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
         /// </table>
