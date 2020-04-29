@@ -52,7 +52,9 @@ namespace d360.model
 		'MyFile.' + L.Extension as FilePath,
 		L.DateStarted,
 		case when L.Action in ('P','R','U') and L.[File] is null then
-            case when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
+            case when (select count(*) from LoadItem where LoadID = L.ID) = (select count(*) from LoadItem where LoadID = L.ID and Status = 0) then
+                L.DateCompleted
+            when (L.PutExecutionId is not null and EE.CompletedOn is null) or (L.PostExecutionId is not null and EA.CompletedOn is null) then
                 null
             when coalesce(EE.CompletedOn, '1/1/1900') > coalesce(EA.CompletedOn, '1/1/1900') then
                 EE.CompletedOn
@@ -150,6 +152,8 @@ from	[Load] L
 		                    cross apply (
 			                    select sum(I) as C from (
 				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 0
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) E
 		                    cross apply (
@@ -158,6 +162,8 @@ from	[Load] L
 		                    cross apply (
 			                    select sum(I) as C from (
 				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) T";
                         break;
@@ -169,6 +175,8 @@ from	[Load] L
 		                    cross apply (
 			                    select sum(I) as C from (
 				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID and Success = 0
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) E
 		                    cross apply (
@@ -177,6 +185,8 @@ from	[Load] L
 		                    cross apply (
 			                    select sum(I) as C from (
 				                    select count(*) as I from api.ExecutionDeletedRelationship where ExecutionID = L.PostExecutionID
+                                    union all
+                                    select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) T";
                         break;
@@ -263,8 +273,8 @@ from	[Load] L
                         break;
                     case "R":
                         sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-                        sqlTables = @"from api.ExecutionRelationship EA
-                                        left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        sqlTables = @"from LoadItem I
+                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
                         columns.ForEach(c =>
                         {
                             var i = c.ColumnIndex;
@@ -273,16 +283,16 @@ from	[Load] L
                             sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
 
                         });
-                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else  EA.Message end as StatusMessage\n";
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
-                        sql = $"{sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID order by RowIndex\n";
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
 
                         break;
                     case "U":
                         sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
-                        sqlTables = @"from api.ExecutionDeletedRelationship EA
-                                        left join LoadItem I on I.LoadID = @id and I.ExecutionItemUid = EA.ExecutionItemUid";
+                        sqlTables = @"from LoadItem I
+                                        left join api.ExecutionDeletedRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
                         columns.ForEach(c =>
                         {
                             var i = c.ColumnIndex;
@@ -290,10 +300,10 @@ from	[Load] L
                             sqlTables += $" left join LoadItemColumn C{i} on C{i}.LoadID = I.LoadID and C{i}.RowIndex = I.RowIndex and C{i}.ColumnIndex = {i}\n";
 
                         });
-                        sqlColumns += $", case EA.Success when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
-                        sqlColumns += ", case when EA.Message is null and EA.Success = 1 then 'Relationship successfully removed.' else  EA.Message end as StatusMessage\n";
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then 'Relationship successfully removed.' else  coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
-                        sql = $"{sqlColumns} {sqlTables} where EA.ExecutionID = @postExecutionID order by RowIndex\n";
+                        sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
                         break;
                 }
 
@@ -1118,6 +1128,8 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                     {
                         RelationshipInsert upsert = new RelationshipInsert();
                         upsert.ExecutionItemUid = item.ExecutionItemUid;
+                        item.StatusMessage = "";
+                        item.Status = null;
 
                         var rowColumns = loadItemColumns.Where(l => l.RowIndex == item.RowIndex).ToList();
 
@@ -1126,14 +1138,24 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                             if (field.ColumnIndex == subjectAssetIDFieldIndex)
                             {
                                 Guid uid = Guid.Empty;
-                                Guid.TryParse(field.Value, out uid);
+                                
+                                if (!Guid.TryParse(field.Value, out uid))
+                                {
+                                    item.Status = false;
+                                    item.StatusMessage += "Subject asset uid is not in a valid format.";
+                                }
 
                                 upsert.SubjectAssetUid = uid;
                             }
                             else if (field.ColumnIndex == objectAssetIDFieldIndex)
                             {
                                 Guid uid = Guid.Empty;
-                                Guid.TryParse(field.Value, out uid);
+                                
+                                if (!Guid.TryParse(field.Value, out uid))
+                                {
+                                    item.Status = false;
+                                    item.StatusMessage += "Subject asset uid is not in a valid format.";
+                                }
 
                                 upsert.ObjectAssetUid = uid;
                             }
@@ -1143,7 +1165,21 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                 upsert.Fields.Add(col.Name, field.Value);
                             }
                         }
-                        upserts.Add(upsert);
+
+                        if (item.Status == false)
+                        {
+                            await Connection.ExecuteAsync(@"
+                                update  LoadItem 
+                                set     Status = 0, 
+                                        StatusMessage = @msg 
+                                where   LoadID = @id 
+                                        and RowIndex = @rowIndex", 
+                                        new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex});
+                        }
+                        else
+                        {
+                            upserts.Add(upsert);
+                        }
                     }
 
 
@@ -1180,6 +1216,14 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                 left join [Intersect] I on I.IntersectTypeID = T.ID and I.[Subject] = SA.[Object] and I.SubjectID = SA.ObjectID 
                                     and I.[Object] = OA.[Object] and I.ObjectID = OA.ObjectID
                         where   L.LoadID = @id
+
+                        update  L
+                        set     L.Status = 0,
+                                L.StatusMessage = 'Relationship could not be found.'
+                        from    LoadItem L
+                        where   L.LoadID = @id 
+                                and (L.IntersectUid = 0x0 or L.IntersectUid is null);
+
                         ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid});
 
                     var results = (await QueryAsync<RelationshipDelete>(@"
@@ -1187,7 +1231,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                     cast(0 as bit) as [Cascade], 
                                     L.IntersectUid as [Uid]
                         from    LoadItem L 
-                        where   L.LoadID = @id and L.IntersectUid is not null
+                        where   L.LoadID = @id and L.IntersectUid is not null and L.IntersectUid != 0x0
                         ", new { id = load.ID, intersectTypeUid = intersectType.uid })).ToList();
 
                     deletes.AddRange(results);
