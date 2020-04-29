@@ -984,7 +984,7 @@ where T.ExecutionId = @executionid;
 
         #region Validation
 
-        private List<DataRow> ValidateFields(
+        public List<DataRow> ValidateFields(
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
@@ -1220,16 +1220,20 @@ where T.ExecutionId = @executionid;
                     errorMessage += "."; //ending period
                 }
 
-                var fieldRow = fieldTable.NewRow();
+                if (fieldTable != null)
+                {
+                    var fieldRow = fieldTable.NewRow();
 
-                fieldRow["ExecutionID"] = executionID;
-                fieldRow["ItemNumber"] = itemNumber;
-                fieldRow["FieldName"] = fieldName;
-                fieldRow["FieldValue"] = fieldValue;
-                if (fieldTypeId.HasValue)
-                    fieldRow["FieldTypeID"] = fieldTypeId.Value;
+                    fieldRow["ExecutionID"] = executionID;
+                    fieldRow["ItemNumber"] = itemNumber;
+                    fieldRow["FieldName"] = fieldName;
+                    fieldRow["FieldValue"] = fieldValue;
+                    if (fieldTypeId.HasValue)
+                        fieldRow["FieldTypeID"] = fieldTypeId.Value;
 
-                fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
+                    fieldRows.Add(fieldRow);    // Added temporarily, but may be invalidated based on success flag.
+                }
+
             }
 
             return fieldRows;
