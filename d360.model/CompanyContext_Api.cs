@@ -6783,8 +6783,8 @@ insert into #Keys
                                         inner join api.Execution E on E.ExecutionID = DAR.ExecutionID and E.ExecutionID=@ExecutionID
                                         left join AssetResult AR_result on DAR.Uid = AR_result.uid
                                         left join graph.AssetNode AN_eval on DAR.EvaluatedAssetUid = AN_eval.uid 
-                                        left join AssetResultEdge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = 2 and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
-                                        left join AssetResultEdge ARE_own on (ARE_eval.$to_id = ARE_own.$to_id or ARE_own.$to_id = AR_result.$node_id) and ARE_own.class = 1 -- join the edge table to itself but only get the owning records.
+                                        left join AssetResultEdge ARE_eval on ARE_eval.$From_id = AN_eval.$node_id and ARE_eval.class = {(int)ResultRelationClass.EvaluatedBy} and AN_eval.Uid = DAR.EvaluatedAssetUid -- find all the matching recored in the edge table for the evaludated asset
+                                        left join AssetResultEdge ARE_own on (ARE_eval.$to_id = ARE_own.$to_id or ARE_own.$to_id = AR_result.$node_id) and ARE_own.class = {(int)ResultRelationClass.Owns} -- join the edge table to itself but only get the owning records.
                                         left join graph.AssetNode AN_own on DAR.OwningAssetUid = AN_own.uid or ARE_own.$From_id = AN_own.$node_id
                                         outer apply dbo.UserAssetPermissions(E.ResourceID, AN_own.AssetTypeID) P 
                                         Where 
