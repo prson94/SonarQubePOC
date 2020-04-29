@@ -956,11 +956,9 @@ namespace d360.web.Controllers.V2
                             i.Type != DataType.Relationship.ToString() &&
                             i.Type != DataType.JSON.ToString()
                             && i.Type != DataType.Tag.ToString())
-                    .Select(i => new { i.ID, i.Name })
-                    .Distinct()
-                    .ToDictionary(i => i.Name, i => i.ID);
+                    .Select(i => new { i.Name, i.FriendlyName});
 
-                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Key, value = i.Value }));
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
             }
             catch (RestApiException ex)
             {
