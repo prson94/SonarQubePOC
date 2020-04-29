@@ -111,7 +111,6 @@ namespace d360.model.helpers
                 if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
                 {
                     var value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
-                    value = wildcardValue(escapeForSQLLike(value.ToString()));
                     tokens[j] = value;
                 }
             }
@@ -335,30 +334,6 @@ namespace d360.model.helpers
 
             }
 
-        }
-        private string wildcardValue(string value)
-        {
-            value = value.Replace("*", "%").Replace("?", "_");
-            return value;
-        }
-
-        private string escapeForSQLLike(string value)
-        {
-            char[] escapeChars = new char[] { '%', '_', '^', '[' };
-            string escapedValue = "";
-
-            foreach (char c in value)
-            {
-                if (escapeChars.Contains(c))
-                {
-                    escapedValue += $"[{c}]";
-                }
-                else
-                {
-                    escapedValue += c;
-                }
-            }
-            return escapedValue;
         }
     }
 

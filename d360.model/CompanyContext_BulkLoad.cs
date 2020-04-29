@@ -749,6 +749,23 @@ from	[Load] L
                             ", new { load.ID }, transaction: trans);
                         }
 
+                        if (intersectTypeId.HasValue)
+                        {
+                            //need to parse parent column here to be used in proposed key
+                            await Connection.ExecuteAsync(@"
+                                update A
+                                set A.ParentUid =
+                                reverse(
+	                                substring(	reverse(F.FieldValue), 
+				                                charindex(']',reverse(F.FieldValue)) + 1, 
+				                                charindex('[',reverse(F.FieldValue)) - charindex(']',reverse(F.FieldValue)) - 1))
+                                from #BulkExecutionAsset A
+                                inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
+                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
+                                where A.ExecutionID = @executionID
+                            ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans);
+                        }
+
                         CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
 
                         if (assetType.Class == AssetTypeClass.Reference)
@@ -776,7 +793,37 @@ from	[Load] L
                         }
                         else
                         {
-                            await Connection.ExecuteAsync(@"
+
+                            if (intersectTypeId.HasValue)
+                            {
+                                await Connection.ExecuteAsync(@"
+                                update T
+                                set T.AssetUid = K.Uid
+                                from #BulkExecutionAsset T 
+                                cross apply (
+                                select		A.Uid,
+                                            utility.GetHash(cast(@atID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+                                from		Asset A 
+                                            left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = A.Object and I.ObjectID = A.ObjectID
+			                                left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
+			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
+                                where	    A.AssetTypeID = @atID
+                                group by    A.Uid, P.Uid
+                                ) K 
+                                where K.ActiveKey = T.ProposedKey
+
+                                update L
+                                set L.AssetUid = T.AssetUid
+                                from LoadItem L
+                                inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
+                                where L.LoadID = @ID
+                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans);
+
+                            }
+                            else
+                            {
+                                await Connection.ExecuteAsync(@"
                                 update T
                                 set T.AssetUid = K.Uid
                                 from #BulkExecutionAsset T 
@@ -797,9 +844,9 @@ from	[Load] L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
                             ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                            }
+
                         }
-
-
 
                         trans.Commit();
                     }

@@ -28,7 +28,7 @@ namespace d360.core.entities.Membership
 
         bool IsNew { get; set; }
         int? ResourceID { get; set; }
-        bool HasCompanyResource { get; set; }
+        CompanyResourceState? CompanyResourceState { get; set; }
         int ItemNumber { get; set; }
 
     }
@@ -55,7 +55,8 @@ namespace d360.core.entities.Membership
 
         public bool IsNew { get; set; }
         public int? ResourceID { get; set; }
-        public bool HasCompanyResource { get; set; }
+        public CompanyResourceState? CompanyResourceState { get; set; }
+
         public int ItemNumber { get; set; }
     }
 
@@ -82,7 +83,8 @@ namespace d360.core.entities.Membership
 
         public bool IsNew { get; set; }
         public int? ResourceID { get; set; }
-        public bool HasCompanyResource { get; set; }
+        public CompanyResourceState? CompanyResourceState { get; set; }
+
         public int ItemNumber { get; set; }
     }
 

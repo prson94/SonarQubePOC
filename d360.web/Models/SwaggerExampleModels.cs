@@ -1,5 +1,6 @@
 ﻿using d360.core.entities;
 using d360.core.entities.Metric;
+using d360.core.entities.Membership;
 using d360.core.entities.Workflow;
 using d360.core.enums;
 using System;
@@ -100,6 +101,18 @@ namespace d360.web.Models
                 };
         }
     }
+    public class FavoriteApiModelExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new FavoriteApiModel
+            {
+                Route = "asset/"+Guid.Empty.ToString(),
+                Type = FavoriteType.Asset
+            };
+        }
+    }
+
 
     #region Asset Browser
 

@@ -141,7 +141,7 @@ namespace d360.web.Controllers.V2
                 execution.State = core.enums.State.Deleted;
                 bool isDone = Company.Update(execution);
 
-                response.message = $"Execution with UID {executionUid} has been cancelled sucessfully.";
+                response.message = $"Execution with UID {executionUid} has been cancelled successfully.";
                 if (isDone)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
                 else
@@ -161,6 +161,52 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
 
+        }
+
+        /// <summary>
+        /// GETs the status of an execution record, including the results for the execution.
+        /// </summary>
+        /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{executionUid:Guid}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of assets.", typeof(ApiExecutionStatusModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your status was not found.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
+        {
+
+            var prefix = "Executions.GetExecutionStatus => ";
+            var errorMessage = "";
+
+            try
+            {
+                var res = AssetRepository.GetExecutionStatusModel(executionUid);
+                if (res == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+                }
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            res as object
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "ExecutionUid", executionUid.ToString() }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
         }
 
         #endregion

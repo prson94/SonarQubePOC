@@ -495,7 +495,7 @@ namespace d360.model.DataAccessLayer
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
-                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID)).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
                         fieldColumns.AddRange(tempFieldColumns);
                         fieldJoins.AddRange(tempJoins);
                         countJoins.AddRange(tempJoins);
@@ -1905,8 +1905,9 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
-            string assetPermissionWhere = @" and ID NOT IN (select AssetId
-                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))";
+            string assetPermissionWhere = @" and ID NOT IN (select AssetId 
+                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & 1)) = 0
+                        )";
 
             string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
                     from dbo.AssetTypesUserCantRead(@ResourceID))";
@@ -1945,6 +1946,39 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
         {
             return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
+        }
+
+        public dynamic GetExecutionStatusModel(Guid executionUid)
+        {
+            ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
+
+            if (dbExecutionItem == null)
+            {
+                throw new Exception("Execution unique identifier not found.");
+            }
+
+            var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
+
+            List<DatabaseBulkAssetResult> results = null;
+            try
+            {
+                var resultsJson = StorageProvider.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
+                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+            }
+            catch
+            {
+            }
+            var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
+            return new
+            {
+                Total = dbExecutionItem.Total,
+                Processed = dbExecutionItem.Processed,
+                Error = dbExecutionItem.Error,
+                Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
+                StartedOn = dbExecutionItem.StartedOn,
+                CompletedOn = dbExecutionItem.CompletedOn,
+                Results = results
+            };
         }
     }
 }
