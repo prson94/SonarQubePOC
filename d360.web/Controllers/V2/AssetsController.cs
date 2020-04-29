@@ -206,6 +206,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_loadPermissionDetails", "If the value is set to True, the results will include permission details for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeParent", "If the value is True, the results will include parent UID and parent display name for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -1312,44 +1313,18 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Assets.GetExecutionStatus => ";
             var errorMessage = "";
-
             try
             {
-                ApiExecution dbExecutionItem = AssetRepository.GetExecutionItemByUid(executionUid);
-
-                if (dbExecutionItem == null)
+                var res = AssetRepository.GetExecutionStatusModel(executionUid);
+                if (res == null)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
                 }
-
-                var info = new ApiExecutionInfo { CompanyID = Company.CurrentCompanyID, ExecutionID = executionUid };
-
-                List<DatabaseBulkAssetResult> results = null;
-                try
-                {
-                    var resultsJson = Storage.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
-                    results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
-                }
-                catch
-                {
-                }
-                var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
-                var statusModel = new ApiExecutionStatusModel
-                {
-                    CompletedOn = dbExecutionItem.CompletedOn,
-                    Error = dbExecutionItem.Error,
-                    Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
-                    Processed = dbExecutionItem.Processed,
-                    StartedOn = dbExecutionItem.StartedOn,
-                    Total = dbExecutionItem.Total,
-                    Results = results
-                };
-
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
                         Request.CreateResponse(
                             HttpStatusCode.OK,
-                            statusModel
+                            res as object
                         )
                     )
                 );

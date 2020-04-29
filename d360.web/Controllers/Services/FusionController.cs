@@ -29,7 +29,7 @@ namespace d360.web.Controllers.Services
     /// <summary>
     /// This service houses all endpoints handling third-party metadata synchronization.
     /// </summary>
-    [ApiVersion("1.0"), RoutePrefix("services/fusion"), Authorize, Name("Fusion Service"), ApiExplorerSettings(IgnoreApi = true)]
+    [ApiVersionNeutral, RoutePrefix("services/fusion"), Authorize, Name("Fusion Service"), ApiExplorerSettings(IgnoreApi = true)]
     public class FusionController : BaseApiController
     {
         #region DI

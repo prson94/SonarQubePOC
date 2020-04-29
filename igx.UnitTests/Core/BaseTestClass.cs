@@ -276,6 +276,18 @@ namespace igx.UnitTests
             mockRepo.Setup(x => x.DoesAssetExists(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? true : false);
 
+            mockRepo.Setup(x => x.GetExecutionStatusModel(It.IsAny<Guid>()))
+               .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new
+               {
+                   Total = 1,
+                   Processed = 1,
+                   Error = "",
+                   Fields = JObject.Parse("{}"),
+                   StartedOn = DateTime.Now,
+                   CompletedOn = DateTime.Now,
+                   Results = new List<DatabaseBulkAssetResult>()
+               } : null
+               );
             return mockRepo.Object;
         }
 

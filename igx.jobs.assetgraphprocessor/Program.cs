@@ -1,4 +1,5 @@
 ﻿using Microsoft.Azure.WebJobs;
+using System;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -14,6 +15,7 @@ namespace igx.jobs.assetgraphprocessor
             config.UseTimers();
             config.UseServiceBus();
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }

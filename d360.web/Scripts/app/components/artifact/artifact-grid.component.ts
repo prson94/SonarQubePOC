@@ -295,7 +295,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
         else {
             delete params['usegraphforparent'];
         }
-
         return params;
     }
 
@@ -305,7 +304,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
             this.assetSearchSub.unsubscribe();
         }
 
-        this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams())
+        this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams(), true)
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;

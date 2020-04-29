@@ -109,8 +109,11 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
-    public getAssets(assetTypeUid: string, params: any): Observable<any> {
+    public getAssets(assetTypeUid: string, params: any, onlyListableFields: boolean = false): Observable<any> {
         var qString = '';
+        if (onlyListableFields) {
+            params._onlyListableFields = true;
+        }
         if (params) {
             qString = Object.keys(params).map(key => key + '=' + params[key]).join('&');
             if (qString)

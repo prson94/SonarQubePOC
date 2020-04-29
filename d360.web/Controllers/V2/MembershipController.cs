@@ -157,7 +157,8 @@ namespace d360.web.Controllers.V2
                     var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
                     filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams) + ")");
+                    List<int> filteredFieldIds = new List<int>();
+                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds) + ")");
 
                     foreach (var item in sqlParams)
                     {
@@ -620,9 +621,20 @@ namespace d360.web.Controllers.V2
         /// Adds the specified users.
         /// </summary>
         /// <remarks>
-        /// If the password is omitted one will be generated randomly. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        ///###Users###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Username</td><td>Required</td><td>The email the user will use to login</td><td>Must be in a valid email format</td></tr>
+        /// <tr><td>Firstname</td><td>Required</td><td>First name of the user</td><td></td></tr>
+        /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
+        /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
+        /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
+        /// </table>
+        /// <br/>
         /// </remarks>
-        /// <param name="users">A list users to add.</param>
+        /// <param name="users">A list of users to add.</param>
         [
             HttpPost,
             Route("users"),
@@ -666,9 +678,22 @@ namespace d360.web.Controllers.V2
         /// Updates the specified users.
         /// </summary>
         /// <remarks>
-        /// The Password field is optional and will not be updated if omitted. Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number
+        ///###Users###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>uid</td><td>Required</td><td>The uid of the user record to update</td><td>Must be in a valid uid format</td></tr>
+        /// <tr><td>Username</td><td>Required</td><td>The email the user will use to login</td><td>Must be in a valid email format</td></tr>
+        /// <tr><td>Firstname</td><td>Required</td><td>First name of the user</td><td></td></tr>
+        /// <tr><td>Lastname</td><td>Required</td><td>Last name of the user</td><td></td></tr>
+        /// <tr><td>Password</td><td>Optional</td><td>Password for the user, one will be generated randomly if not provided</td><td>Passwords must contain between 7 and 25 characters, at least 1 upper case and lower case letter and 1 number</td></tr>
+        /// <tr><td>IsAdministrator</td><td>Required</td><td>Flag for whether or not the user should have administrator privileges</td><td></td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Uid to track this item in the set of posted users</td><td>Must be a valid Uid</td></tr>
+        /// <tr><td>State</td><td>Optional</td><td>State of the user record. If the State is not provided it will remain unchanged</td><td>Must be a valid State value. Valid values are Active, Inactive, and Deleted</td></tr>
+        /// <tr><td>Fields</td><td>Optional</td><td>Set of field values for the user. If there are required fields, they must be provided here</td><td>Field values must be valid for their respective type</td></tr>
+        /// </table>
+        /// <br/>
         /// </remarks>
-        /// <param name="users">A list users to update.</param>
+        /// <param name="users">A list of users to update.</param>
         [
             HttpPut,
             Route("users"),
@@ -696,6 +721,131 @@ namespace d360.web.Controllers.V2
                 var execution = getApiExecution(users.Count);
                 var results = await membershipRepository.UpsertUsers(execution, users);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a list of favorite items for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/favorites"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(List<FavoriteApiModel>)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> GetFavorites()
+        {
+            var prefix = "Membership.GetFavorites => ";
+
+            try
+            {
+                var results = await membershipRepository.GetFavorites(_company.CurrentResourceID);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Clears the list of favorite items for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpDelete,
+        Route("users/me/favorites"),
+        SwaggerResponse(HttpStatusCode.OK, ""),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<IHttpActionResult> ClearFavorites()
+        {
+            var prefix = "Membership.ClearFavorites => ";
+
+            try
+            {
+                var result = membershipRepository.DeleteFavorites(_company.CurrentResourceID);
+
+                if (result.StatusCode != HttpStatusCode.OK)
+                    return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
+
+                return await Task.FromResult(successMessageResponse(result.StatusCode, "Success", result.Message));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Given a route, toggles the favorite status on/off for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpPut,
+            Route("users/me/favorites"),
+            SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
+            SwaggerResponse(HttpStatusCode.Created, "Favorite status toggled."),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ToggleFavorite(FavoriteApiModel favorite)
+        {
+            return await ToggleFavoriteOrHomepage(favorite, false);
+        }
+
+        /// <summary>
+        /// Given a route, toggles the homepage status on/off for the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpPut,
+            Route("users/me/homepage"),
+            SwaggerRequestExample(typeof(FavoriteApiModel), typeof(FavoriteApiModelExample)),
+            SwaggerResponse(HttpStatusCode.Created, "Homepage status toggled."),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - the format or contents of this request are not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
+        {
+            return await ToggleFavoriteOrHomepage(favorite, true);
+        }
+
+        private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
+        {
+            var prefix = "Membership.ToggleFavoriteOrHomepage => ";
+
+            try
+            {
+                bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
+                if (result)
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
+                else
+                {
+                    string message = "Uid Invalid for " + favorite.Type.ToString();
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, message)));
+                }
             }
             catch (Exception ex)
             {

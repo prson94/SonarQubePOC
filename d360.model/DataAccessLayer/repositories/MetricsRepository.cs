@@ -824,7 +824,7 @@ namespace d360.model.DataAccessLayer
                 evaluatedAssetSQL = $@"inner Join 
 	                            (		
 		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, 
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, AN.Segments EvaluatedAssetSegments,
                                         AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
 		                            from 			                            
                                         AssetResult AR
@@ -843,7 +843,7 @@ namespace d360.model.DataAccessLayer
                 evaluatedAssetSQL = $@"left Join
 	                            (		
 		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, 
+			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, AN.Segments EvaluatedAssetSegments,
                                         AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
 		                            from 
 			                            AssetResult AR
@@ -871,7 +871,7 @@ namespace d360.model.DataAccessLayer
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
             }
             var countSql = $@"select 
-	                            Count(distinct DQR.resultUid)
+	                            Count(DQR.resultUid)
                             from 
 	                            {owningAssetSQL}
 	                            {evaluatedAssetSQL}";
@@ -902,6 +902,8 @@ namespace d360.model.DataAccessLayer
 
             var dataQualityResultSql = $@";with ResultsTable as (select 
 	                        distinct DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, P.Passed as Passed
+            var dataQualityResultSql = $@"select 
+	                        DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetSegments as EvaluatedAssetSegments, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, P.Passed as Passed
                         from 
 	                        {owningAssetSQL}
 	                        {evaluatedAssetSQL}

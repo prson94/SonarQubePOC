@@ -26,9 +26,6 @@ namespace d360.core.entities
         public int SortOrder { get; set; }
 
         [DataMember]
-        public bool IsOverride { get; set; } = false;
-
-        [DataMember]
         [Column(TypeName = "varchar"), StringLength(50)]
         public string Object { get; set; }
 
@@ -37,5 +34,12 @@ namespace d360.core.entities
         
         [DataMember]
         public bool IsHomePage { get; set; }
+
+        [DataMember]
+        [Column(TypeName = "varchar"), StringLength(50)]
+        public string Type { get; set; }
+
+        [DataMember]
+        public Guid? Uid { get; set; }
     }
 }

@@ -15,6 +15,7 @@ namespace d360.model.helpers
         ICompanyContext CompanyContext;
         private List<FieldType> fieldTypes = new List<FieldType>();
         private List<string> fieldColumns = new List<string>();
+        private List<int> filteredFieldIDs = new List<int>();
         private FilterExpressionParseType parseType;
         private List<DefaultFilter> allowedDefaultFields = new List<DefaultFilter>();
         private List<string> disallowedFieldTypes = new List<string>() { "ComplexRelationLookup", "", "OwnershipLookup", "RefListRelationship" };
@@ -57,13 +58,14 @@ namespace d360.model.helpers
             this.fieldColumns = columns;
         }
 
-        public string Parse(string filterString, out Dictionary<string, object> sqlParams)
+        public string Parse(string filterString, out Dictionary<string, object> sqlParams, out List<int> fieldIds)
         {
+            fieldIds = this.filteredFieldIDs;
             try
             {
                 return GetSQL(filterString.Trim(), out sqlParams);
             }
-            catch (IndexOutOfRangeException ex)
+            catch (IndexOutOfRangeException)
             {
                 throw new FilterExpressionParserException("Invalid filter expression: ", new Exception("One or more filter expressions has missing operator or value."));
             }
@@ -109,7 +111,6 @@ namespace d360.model.helpers
                 if (valuesMap.Any(x => x.Item1.ToLower() == tokens[j].ToLower()))
                 {
                     var value = valuesMap.FirstOrDefault(x => x.Item1.ToLower() == tokens[j].ToLower()).Item2;
-                    value = wildcardValue(escapeForSQLLike(value.ToString()));
                     tokens[j] = value;
                 }
             }
@@ -203,6 +204,7 @@ namespace d360.model.helpers
                 {
                     throw new Exception("Field with name '" + token.Field + "' is not supported (" + fieldType.Type + ")!");
                 }
+
                 if (fieldType == null)
                 {
                     if (allowedDefaultFields.Any(x => x.ApiName.ToLower() == token.Field.ToLower()))
@@ -217,6 +219,8 @@ namespace d360.model.helpers
                 }
                 else
                 {
+                    this.filteredFieldIDs.Add(fieldType.ID);
+
                     token.LoadFieldType(fieldType, fieldColumns);
                     sb.Append(token.GetSQLForField(ref sqlParams));
                 }
@@ -330,30 +334,6 @@ namespace d360.model.helpers
 
             }
 
-        }
-        private string wildcardValue(string value)
-        {
-            value = value.Replace("*", "%").Replace("?", "_");
-            return value;
-        }
-
-        private string escapeForSQLLike(string value)
-        {
-            char[] escapeChars = new char[] { '%', '_', '^', '[' };
-            string escapedValue = "";
-
-            foreach (char c in value)
-            {
-                if (escapeChars.Contains(c))
-                {
-                    escapedValue += $"[{c}]";
-                }
-                else
-                {
-                    escapedValue += c;
-                }
-            }
-            return escapedValue;
         }
     }
 

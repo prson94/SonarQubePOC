@@ -20,6 +20,8 @@ namespace igx.jobs.databasecleaner
             config.UseDevelopmentSettings();
 #endif
             config.UseTimers();
+            
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -28,8 +30,12 @@ namespace igx.jobs.databasecleaner
     public static class DatabaseCleaner
     {
         const string functionName = "DatabaseMaintenance_Cleaner";
+
+#if DEBUG
+        const string timerSettings = "*/1 * * * * *";
+#else
         const string timerSettings = "0 0 4 * * *";
-       // const string timerSettings = "*/10 * * * * *";
+#endif
 
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)
         {
@@ -40,7 +46,7 @@ namespace igx.jobs.databasecleaner
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(x => x.CompanyID == 4).ToList();
+                companies = companies.Where(x => x.CompanyID == 2).ToList();
 #endif
 
                 foreach(var c in companies)

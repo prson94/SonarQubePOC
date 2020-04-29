@@ -105,19 +105,20 @@ namespace d360.web.Controllers.V2
 
             catch (Exception ex)
             {
+                HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
 
                 if (ex is FormatException)
                 {
                     errorMessage = errorMessage.Replace("Guid", "Uid");
+                    errorCode = HttpStatusCode.BadRequest;
                 }
-
 
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(errorCode, "Unknown error", errorMessage));
             }
 
         }
@@ -282,10 +283,12 @@ namespace d360.web.Controllers.V2
 
             catch (Exception ex)
             {
+                HttpStatusCode errorCode = HttpStatusCode.InternalServerError;
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 if (ex is FormatException)
                 {
                     errorMessage = errorMessage.Replace("Guid", "Uid");
+                    errorCode = HttpStatusCode.BadRequest;
                 }
 
 
@@ -293,7 +296,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(errorCode, "Unknown error", errorMessage));
             }
 
         }

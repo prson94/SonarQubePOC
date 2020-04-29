@@ -61,6 +61,7 @@ export class RuleResultItems {
     EvaluatedAssetUid: string;
     EvaluatedAssetPath: string;
     EvaluatedAssetTypePath: string;
+    EvaluatedAssetPathElements: string[];
     EvaluatedAssetClass: string;
     EffectiveDate: Date;
     RunDate: Date;

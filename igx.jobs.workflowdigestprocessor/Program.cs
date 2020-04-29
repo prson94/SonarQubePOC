@@ -21,6 +21,7 @@ namespace igx.jobs.workflowdigestprocessor
             config.UseDevelopmentSettings();
 #endif
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }

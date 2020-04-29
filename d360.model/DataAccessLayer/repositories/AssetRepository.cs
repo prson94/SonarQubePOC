@@ -197,6 +197,7 @@ namespace d360.model.DataAccessLayer
             var fusionAttributeWithParent = false;
             var includeSegments = false;
             var includePermissionDetails = false;
+            bool includeOnlyListableFields = false;
             string populateRestrictedAssetTableSQL = "";
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
@@ -211,6 +212,15 @@ namespace d360.model.DataAccessLayer
 
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid"))
                 includeRelationships = true;
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_onlylistablefields"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_onlylistablefields").Value, out includeOnlyListableFields);
+                if (includeOnlyListableFields)
+                {
+                    fieldTypes = fieldTypes.Where(x => x.IsListable == true).ToList();
+                }
+            }
 
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
@@ -467,10 +477,30 @@ namespace d360.model.DataAccessLayer
                 var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
                 if (!string.IsNullOrEmpty(value))
                 {
+                    //Temp vars for filter expression parsing
+                    //Filter expression parser uses sql definitions from getFieldSql() method
+                    var tempArgs = new DynamicParameters();
+                    List<string> tempJoins = new List<string>();
+                    List<string> tempFieldColumns = new List<string>();
+                    getFieldSql(allFieldTypes, tempArgs, tempJoins, tempFieldColumns);
+
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.CustomFields, includeParent);
-                    filterExpressionParser.LoadFieldTypes(allFieldTypes, fieldColumns);
+                    filterExpressionParser.LoadFieldTypes(allFieldTypes, tempFieldColumns);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
+
+                    if (includeOnlyListableFields)
+                    {
+                        tempArgs = new DynamicParameters();
+                        tempJoins.Clear();
+                        tempFieldColumns.Clear();
+                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        fieldColumns.AddRange(tempFieldColumns);
+                        fieldJoins.AddRange(tempJoins);
+                        countJoins.AddRange(tempJoins);
+                        dbArgs.AddDynamicParams(tempArgs);
+                    }
 
                     foreach (var item in sqlParams)
                     {
@@ -486,7 +516,8 @@ namespace d360.model.DataAccessLayer
                 {
                     var filterExpressionParser = new FilterExpressionParser(CompanyContext, FilterExpressionParseType.Relationships);
                     Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams) + ")");
+                    List<int> filteredFields = new List<int>();
+                    whereStatements.Add("(" + filterExpressionParser.Parse(value, out sqlParams, out filteredFields) + ")");
 
                     foreach (var item in sqlParams)
                     {
@@ -1874,8 +1905,9 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses)
         {
 
-            string assetPermissionWhere = @" and ID NOT IN (select AssetId
-                            from [dbo].[AssetWithAssetsByTypeUserCantRead](@ResourceID))";
+            string assetPermissionWhere = @" and ID NOT IN (select AssetId 
+                        from dbo.UserAssetPermissions(@resourceId,AT.Id) where ((PermissionsBitMask & 1)) = 0
+                        )";
 
             string assetTypePermissionWhere = @" and AT.ID not in (select AssetTypeID
                     from dbo.AssetTypesUserCantRead(@ResourceID))";
@@ -1914,6 +1946,39 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         public async Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid)
         {
             return await CompanyContext.QueryAsync<dynamic>("select Object, ObjectID, Id as AssetTypeID from assettype where uid = @uid", new { uid });
+        }
+
+        public dynamic GetExecutionStatusModel(Guid executionUid)
+        {
+            ApiExecution dbExecutionItem = GetExecutionItemByUid(executionUid);
+
+            if (dbExecutionItem == null)
+            {
+                throw new Exception("Execution unique identifier not found.");
+            }
+
+            var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
+
+            List<DatabaseBulkAssetResult> results = null;
+            try
+            {
+                var resultsJson = StorageProvider.GetFileContentsAsString(info.StorageFolder, info.ResponseFileName);
+                results = JsonConvert.DeserializeObject<List<DatabaseBulkAssetResult>>(resultsJson);
+            }
+            catch
+            {
+            }
+            var f = string.IsNullOrEmpty(dbExecutionItem.Fields) ? "{}" : dbExecutionItem.Fields;
+            return new
+            {
+                Total = dbExecutionItem.Total,
+                Processed = dbExecutionItem.Processed,
+                Error = dbExecutionItem.Error,
+                Fields = Newtonsoft.Json.Linq.JObject.Parse(f),
+                StartedOn = dbExecutionItem.StartedOn,
+                CompletedOn = dbExecutionItem.CompletedOn,
+                Results = results
+            };
         }
     }
 }

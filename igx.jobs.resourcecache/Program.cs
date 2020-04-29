@@ -23,6 +23,7 @@ namespace igx.jobs.resourcecache
             config.UseDevelopmentSettings();
 #endif
 
+            System.Net.ServicePointManager.DefaultConnectionLimit = Int32.MaxValue;
             var host = new JobHost(config);
             host.RunAndBlock();
         }
@@ -42,7 +43,7 @@ namespace igx.jobs.resourcecache
             try
             {                
 #if DEBUG
-                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 4).ToList();
+                var companies = CoreFunction.GetCompaniesByCurrentSlot().Where(i => i.CompanyID == 2).ToList();
 #else
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 #endif

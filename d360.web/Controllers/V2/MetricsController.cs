@@ -26,6 +26,8 @@ using System.ComponentModel.DataAnnotations;
 using Resources;
 using SpreadsheetLight;
 using d360.core.resources;
+using System.Xml.Linq;
+using AngleSharp.Common;
 
 namespace d360.web.Controllers.V2
 {
@@ -822,6 +824,8 @@ namespace d360.web.Controllers.V2
 
                 dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate));
 
+                dataQualityResult.items.FindAll(x => x.EvaluatedAssetSegments != null).ForEach(x => x.EvaluatedAssetPathElements = GetPathFromSegments(x.EvaluatedAssetSegments));
+
                 if (Request.Headers.Accept.ToString().Equals("application/octet-stream", StringComparison.InvariantCultureIgnoreCase) || Request.Headers.Accept.ToString().Equals("application/vnd.ms-excel", StringComparison.InvariantCultureIgnoreCase))
                 {
                     SLDocument document = new SLDocument();
@@ -854,7 +858,7 @@ namespace d360.web.Controllers.V2
                     return ResponseMessage(result);
                 }
                 else
-                {
+                {                    
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, dataQualityResult));
                 }
 
@@ -903,7 +907,6 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> PostDataQualityResultAsync(List<DataQualityInsertModel> request)
         {
             List<DataQualityResponseModel> responseList = new List<DataQualityResponseModel>();
-
 
             var execution = getApiExecution(request.Count);
 
@@ -1307,7 +1310,7 @@ namespace d360.web.Controllers.V2
                 rowNumber++;
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetTypePath);
-                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPath);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPathElements != null ? string.Join(" > ", row.EvaluatedAssetPathElements) : null);
                 doc.SetCellValue(rowNumber, index++, row.RunDate.ToString());
                 doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString());
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
@@ -1321,6 +1324,55 @@ namespace d360.web.Controllers.V2
             #endregion
             #endregion
             return doc;
+        }
+
+        private string[] GetPathFromSegments(string segments) 
+        {
+            List<string> returnlist = new List<string>();
+
+            if (!string.IsNullOrWhiteSpace(segments) && segments.IndexOf('<')>=0)
+            {
+                XElement segmentXML = XElement.Parse(segments);
+                List<XElement> segmentList = segmentXML.Descendants("segment").OrderBy(order => order.Attribute("level").Value).ThenBy(x => x.Attribute("position").Value).ToList();
+                int currentlevel = 1;
+                int level = 0;
+                int position = 0;
+                string elementPath = "";
+                
+                foreach (XElement element in segmentList)
+                {
+                    if(int.TryParse(element.Attribute("level").Value, out level))
+                    {                        
+                        if(int.TryParse(element.Attribute("position").Value, out position))
+                        {
+                            if(level != currentlevel)
+                            {
+                                returnlist.Add(elementPath);
+                                currentlevel = level;
+                                elementPath = "";                                
+                            }
+
+                            if (position == 1)
+                            {
+                                elementPath = element.Value;
+                            }
+                            else
+                            {
+                                elementPath += " / " + element.Value;
+                            }
+                        }
+                    }
+                }
+                //capture the last element path
+                if (elementPath != "")
+                {
+                    returnlist.Add(elementPath);
+                }
+
+                return returnlist.ToArray();
+            }
+
+            return null;
         }
     }
 }

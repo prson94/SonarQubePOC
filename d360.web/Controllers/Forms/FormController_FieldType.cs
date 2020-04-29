@@ -1541,9 +1541,7 @@ offset 0 rows fetch next 25 rows only
                 {
                     if (!ft.IsRequired) ft.MinimumLength = 0;
                 }
-
-                bool isNew;
-
+                                
                 var fl = Company.Filter<FieldTypeLookup>(i => i.FieldTypeID == ft.ID).FirstOrDefault();
 
                 if (ft.Type == "Date")

@@ -38,6 +38,27 @@ namespace igx.UnitTests.ValidatorTests
         }
 
         [Fact]
+        public void PostInvalidModel_NoType()
+        {
+            model = new FieldTypesApiEditModel();
+            model.RelationshipTypeUid = Guid.NewGuid();
+            model.Action = FieldTypesApiEditAction.Merge;
+            relationshipTypeModels = new TypeIdentifierInfoModel();
+
+            model.Fields = new List<FieldTypeApiEditModel>();
+            model.Fields.Add(new FieldTypeApiEditModel()
+            {
+                FriendlyName = "test",
+                Type = null,
+                Name = "test"
+            });
+
+            var valResults = FieldApiModelValidator.ValidateModel(model, actionTypeModels, assetTypeModels, relationshipTypeModels);
+
+            Assert.True(valResults.StatusCode == System.Net.HttpStatusCode.BadRequest, XMsg.BadResponseCode);
+        }
+
+        [Fact]
         public void PostInvalidModel_ActionNotFound()
         {
             model = new FieldTypesApiEditModel();

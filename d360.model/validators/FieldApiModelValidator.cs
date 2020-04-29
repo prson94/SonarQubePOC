@@ -59,6 +59,12 @@ namespace d360.model.validators
 
                 #endregion
 
+                if(field.Type == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"The 'Type' object is missing from one or more field type definitions.");
+                }
+
+
                 if (!field.Type.IsOnlyOneTypeModelDefined())
                 {
                     fieldsHaveErrors = true;
@@ -219,6 +225,17 @@ namespace d360.model.validators
                 if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
+                }
+
+                if (assetTypeIdentifierInfoModel != null && field?.Type?.Json != null)
+                {
+                    if (field.Type.Json.Validation != null)
+                    {
+                        if (field.Type.Json.Validation.IsRequired && assetTypeIdentifierInfoModel.Object != SystemObjects.FusionAttributeType.ToString())
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"IsRequired property can not be true for JSON field types defined on this asset type!");
+                        }
+                    }
                 }
 
             }
