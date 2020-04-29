@@ -763,7 +763,7 @@ from	IntersectType I
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
-
+                        field.Show = i.Show;
 
                         definitionFields.Add(field);
                     });
