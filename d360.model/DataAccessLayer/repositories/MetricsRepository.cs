@@ -776,7 +776,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
-        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null)
+        public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false)
         {
             var result = new DataQualityGetResultModel();
             var parameters = new DynamicParameters();
@@ -813,10 +813,10 @@ namespace d360.model.DataAccessLayer
             string sortPhrase = "EffectiveDate";
 
             if (!string.IsNullOrWhiteSpace(sort))
-            {                                
-                sortPhrase = sort;                
+            {
+                sortPhrase = sort;
             }
-            
+
             orderBy = $"Order by {sortPhrase} {direction ?? ""}";
 
             if (evaluatedAssetUid != null)
@@ -876,13 +876,42 @@ namespace d360.model.DataAccessLayer
 	                            {owningAssetSQL}
 	                            {evaluatedAssetSQL}";
 
-            var dataQualityResultSql = $@"select 
+            string includeDuplicateSQL = @",
+							case 
+							  when ResultsTable.ResultUid = MainRecord.ResultUid then 0
+							  else 1
+							end as IsDuplicate";
+
+            string includeDuplicateApply = @"outer apply (
+							
+							select top 1 * from ResultsTable as T
+							where (ResultsTable.EvaluatedAssetUid = t.evaluatedassetuid
+							or (ResultsTable.EvaluatedAssetUid is null and t.evaluatedassetuid is null)
+							) 
+							and 
+							try_cast(ResultsTable.effectivedate as date) = try_cast(t.effectivedate as date)
+							and
+							try_cast(ResultsTable.rundate as date) = try_cast(t.rundate as date)
+							order by t.rundate desc
+							)MainRecord";
+
+            if (includeDuplicateFlag != true)
+            {
+                includeDuplicateSQL = includeDuplicateApply = "";
+            }
+
+            var dataQualityResultSql = $@";with ResultsTable as (select 
 	                        DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetSegments as EvaluatedAssetSegments, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, P.Passed as Passed
                         from 
 	                        {owningAssetSQL}
 	                        {evaluatedAssetSQL}
 	                        cross apply 
 	                        CalculatePassedPropertyForAssetResult(DQR.resultUid) P
+                                )
+                            select ResultsTable.*
+                            {includeDuplicateSQL}
+							from ResultsTable
+                            {includeDuplicateApply}
 	                        {orderBy}
 	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
 

@@ -32,6 +32,7 @@ namespace d360.core.entities.Metric
         public string EvaluatedAssetPath { get; set; }
         [DataMember]
         public string EvaluatedAssetTypePath { get; set; }       
+        [DataMember]
         public string EvaluatedAssetSegments { get; set; }
         [DataMember]
         public string[] EvaluatedAssetPathElements { get; set; }
@@ -51,7 +52,9 @@ namespace d360.core.entities.Metric
         public double PassFraction { get; set; }
         [DataMember]
         public bool Passed { get; set; }
-    }    
+        [DataMember]
+        public bool? IsDuplicate { get; set; }
+    }
 
     public class DataQualityResponseModel
     {

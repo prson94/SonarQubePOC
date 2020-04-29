@@ -661,6 +661,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_effectiveDateStart", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateEnd all results between the EffectiveDateStart and now will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Additional parameter that can be supplied when the Rule or Asset UID is provided.    If provided with no EffectiveDateStart all results up until the EffectiveDateEnd will be returned.", DataType = "date-time", ParameterType = "query", Required = false),
             SwaggerParameter("_isFriendlyNameExport", "Additional parameter that can be supplied when doing a file export. If provided response file will replicate format of Result List screen", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeDuplicateFlag", "If True response will include IsDuplicate flag. Defaults to false.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/vnd.ms-excel", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
@@ -684,6 +685,7 @@ namespace d360.web.Controllers.V2
             DateTime? _effectiveDateEnd = null;
             int _pageSize = 250;
             int _pageNum = 1;
+            bool includeDuplicate = false;
 
             #region Model Validation
             if (queryParams.Any(q => q.Key == "_owningAssetUid"))
@@ -788,6 +790,15 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_effectiveDateEnd must be after _effectiveDateStart.");
                 }
             }
+
+            if (queryParams.Any(q => q.Key.ToLower() == "_includeduplicateflag"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includeduplicateflag").Value, out includeDuplicate))
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Parameter", $"_includeDuplicateFlag is not valid.");
+                }
+            }
+
             string isValid = isPageSizeAndNumValid(queryParams);
 
             if (!string.IsNullOrEmpty(isValid))
@@ -811,7 +822,7 @@ namespace d360.web.Controllers.V2
             {
                 DataQualityGetResultModel dataQualityResult = new DataQualityGetResultModel();
 
-                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd));
+                dataQualityResult = await Task.FromResult(MetricsRepository.GetDataQualityResults(_owningAssetUid, _evaluatedAssetUid, _pageSize, _pageNum, _order, _direction, _effectiveDateStart, _effectiveDateEnd, includeDuplicate));
 
                 dataQualityResult.items.FindAll(x => x.EvaluatedAssetSegments != null).ForEach(x => x.EvaluatedAssetPathElements = GetPathFromSegments(x.EvaluatedAssetSegments));
 
