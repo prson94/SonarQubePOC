@@ -410,7 +410,7 @@ export class List {
 export class Tag implements ICommonOptions{
     Validation: BooleanValidation = new BooleanValidation();
     SortOrder: number = 0;
-    IsDisplayable: boolean = false;
+    IsDisplayable: boolean = true;
     IsEditable: boolean = false;
     IsPartOfKey: boolean = false;
     ShowIfEmpty: boolean = true;

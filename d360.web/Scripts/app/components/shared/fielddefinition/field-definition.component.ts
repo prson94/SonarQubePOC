@@ -123,6 +123,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             });
             this.sortFields();
             this.hasKeyFields = foundKeyField;
+
+            console.log(this.hasKeyFields);
+        }
+        else {
+            this.hasKeyFields = false;
         }
     }
 
@@ -216,8 +221,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     }
 
                     this.onFieldsChanged.emit();
-                } else {                       
+                } else {      
                     this.isDeleting = false;
+                    this.checkKeyFields();
                 }                    
             }
         );

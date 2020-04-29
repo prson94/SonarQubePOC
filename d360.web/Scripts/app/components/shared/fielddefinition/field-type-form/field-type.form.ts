@@ -1031,9 +1031,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (fieldname == '*' || fieldname == "NameTaken") {
             this.setValidation('name_already_taken', 'API Name already in use.', (() => {
                 if (this.model.FieldType.Name && this.actionName == 'Add') {
-                    return this.fields.filter((x) => {
-                        return x.Name.toLowerCase().trim() == this.model.FieldType.Name.toLowerCase().trim();
-                    }).length > 0;
+                    if (this.fields && this.fields.length > 0) {
+                        return this.fields.filter((x) => {
+                            return x.Name.toLowerCase().trim() == this.model.FieldType.Name.toLowerCase().trim();
+                        }).length > 0;
+                    } else
+                        return false;
                 } else {
                     return false;
                 }
