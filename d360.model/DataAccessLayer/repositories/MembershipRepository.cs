@@ -532,6 +532,17 @@ namespace d360.model.DataAccessLayer
 
                     CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
 
+                    //validate lookup fields
+                    await CompanyContext.Connection.ExecuteAsync(@"
+                        update  U
+                        set     U.Success = 0,
+                                U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
+                        from    #UserAssets U
+                        inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
+                        inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+                        where U.ExecutionID = @executionID and F.LookupValue is null
+                        ", new { executionID }, transaction: trans);
+
                     await CompanyContext.Connection.ExecuteAsync(@"
                         insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
                         select  ExecutionID,
@@ -564,12 +575,43 @@ namespace d360.model.DataAccessLayer
             foreach (var result in validationResults)
             {
 
+                
+
                 if (result.Success == true)
                 {
+
+
                     var user = users.SingleOrDefault(u => u.ItemNumber == result.ItemNumber);
 
                     if (user != null)
                     {
+
+                        bool success;
+                        string message;
+                        var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+
+                        CompanyContext.ValidateFields("ResourceType", 
+                            ResourceTypeID, 
+                            !user.ResourceID.HasValue, 
+                            fieldTypes, 
+                            requiredFieldNames, 
+                            user.Fields, 
+                            executionID, 
+                            user.ItemNumber, 
+                            null,
+                            out success, 
+                            out message);
+
+                        if (success == false)
+                        {
+                            result.Success = false;
+                            result.Message += message;
+
+                            results.Add(result);
+                            continue;
+                        }
+
+
                         //add resource
                         if (!user.ResourceID.HasValue)
                         {
