@@ -187,19 +187,18 @@ namespace d360.web.Controllers.V2
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
                         }
                     }
+                }
+                List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
 
-                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+                defaultFields.ForEach(f =>
+                {
+                    simpleFilters.Add($"{f} like @simpleFilter");
+                });
 
-                    defaultFields.ForEach(f =>
-                    {
-                        simpleFilters.Add($"{f} like @simpleFilter");
-                    });
-
-                    simpleFilters.Add(@"(case gr.State 
+                simpleFilters.Add(@"(case gr.State 
                      when 1 then 'Active'
                      when 2 then 'InActive'
                      when 3 then 'Deleted' end) like @simpleFilter");
-                }
                 queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
             }
 
