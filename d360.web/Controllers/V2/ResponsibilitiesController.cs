@@ -220,11 +220,12 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+
         /// <summary>
-        /// Adds a list of all allocations for the specified Asset.
+        /// Adds a list of all allocations for the specified asset.
         /// </summary>
-        /// <param name="uid">The Uid of the Responsibilty type.</param>
-        /// <param name="model">A list of AssetTypeUid and Permissions to add allocations for.</param>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids and permissions to add allocations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -237,7 +238,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> PostResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
-            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
+            var prefix = "Responsibilities.PostResponsibilityTypeAllocationsAsync => ";
             var errorMessage = "";
 
             if (!Company.CurrentResourceIsAdmin)
@@ -255,7 +256,6 @@ namespace d360.web.Controllers.V2
 
                 foreach (var allocation in model)
                 {
-                    //check each asset is valid
                     AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
                     if (assetType == null)
                     {
@@ -267,7 +267,6 @@ namespace d360.web.Controllers.V2
                         });
                         continue;
                     }
-                    //check the assetclass is allower for an allocation
                     List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
                     {
                         AssetTypeClass.BusinessAsset,
@@ -289,7 +288,6 @@ namespace d360.web.Controllers.V2
                         continue;
                     } 
 
-                    //check all permission values are valid
                     var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
                     if (allocation.Permissions.Any(x => !validValues.Contains(x)))
                     {
@@ -301,19 +299,214 @@ namespace d360.web.Controllers.V2
                         });
                         continue;
                     }
-                    //validate if there is an existing allocation with the same configuration 
+
                     if (Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation already exists. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Message = $"Allocation already exists.",
                             Success = false
                         });
                         continue;
                     }
-                    //add allocation 
+
                     results.Add(ResponsibilityRepository.AddAllocation(responsibility, assetType, allocation.Permissions));
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        /// <summary>
+        /// Edits a list of all allocations for the specified asset.
+        /// </summary>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids and permissions to edit allocations.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            Route("types/{uid:Guid}/allocations"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeAllocationResponseModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to edit responsibility type allocations.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
+        {
+            var prefix = "Responsibilities.PutResponsibilityTypeAllocationsAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+
+            try
+            {
+                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+
+                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+                if (responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid ResponsibilityType uid for this request."));
+
+                foreach (var allocation in model)
+                {
+                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+                    if (assetType == null)
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeUid uid privided.",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+                    {
+                        AssetTypeClass.BusinessAsset,
+                        AssetTypeClass.TechnicalAsset,
+                        AssetTypeClass.FusionAttribute,
+                        AssetTypeClass.Model,
+                        AssetTypeClass.Rule,
+                        AssetTypeClass.Policy,
+                        AssetTypeClass.ReferenceItemType
+                    };
+                    if (!allowedClasses.Contains(assetType.Class))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
+                    if (allocation.Permissions.Any(x => !validValues.Contains(x)))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid Permission privided. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Allocation not found.",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    results.Add(ResponsibilityRepository.EditAllocation(responsibility, assetType, allocation.Permissions));
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
+
+        /// <summary>
+        /// Deletes a list of all allocations for the specified asset.
+        /// </summary>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids to delete allocations for.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("types/{uid:Guid}/allocations"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeAllocationResponseModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete responsibility type allocations.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteResponsibilityTypeAllocationsAsync(Guid uid, ResponsibilityTypeAllocationDeleteModel model)
+        {
+            var prefix = "Responsibilities.DeleteResponsibilityTypeAllocationsAsync => ";
+            var errorMessage = "";
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+
+            try
+            {
+                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+
+                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+                if (responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid ResponsibilityType uid for this request."));
+
+                foreach (var allocation in model.Items)
+                {
+                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+                    if (assetType == null)
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeUid uid privided.",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+                    {
+                        AssetTypeClass.BusinessAsset,
+                        AssetTypeClass.TechnicalAsset,
+                        AssetTypeClass.FusionAttribute,
+                        AssetTypeClass.Model,
+                        AssetTypeClass.Rule,
+                        AssetTypeClass.Policy,
+                        AssetTypeClass.ReferenceItemType
+                    };
+                    if (!allowedClasses.Contains(assetType.Class))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Success = false
+                        });
+                        continue;
+                    }
+
+                    if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Allocation not found.",
+                            Success = false
+                        });
+                        continue;
+                    }
+                    results.Add(await ResponsibilityRepository.DeleteAllocation(responsibility, assetType, model.Cascade));
                 }
 
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
