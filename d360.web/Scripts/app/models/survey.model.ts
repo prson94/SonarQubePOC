@@ -5,14 +5,44 @@ export enum SurveyTypeDisplayStyle {
     Rating = 2,
     CheckList = 3,
 }
-
-export class SurveyType {
+export class Survey {
     Name: string;
-    Description: string;
+    SurveyTypeUid: string;
+}
+export class SurveyType {
+    //legacy IDs for admin section
     ID: number;
     Object: string;
     ObjectID: number;
+
+    Name: string;
+    Description: string;
+    Uid: string;
+    AssetTypeUid: string;
     ValidForDays: number;
+}
+
+export class SurveyTypeDetails {
+    Uid: string;
+    AssetTypeUid: string;
+    Name: string;
+    Description: string;
+    ValidForDays: number;
+    Questions: Question[];
+
+}
+export class Question {
+    Uid: string;
+    Name: string;
+    DisplayStyle: SurveyTypeDisplayStyle;
+    Comments: string;
+    Options: Option[];
+}
+
+export class Option {
+    Name: string;
+    Value: number;
+    IsChecked: boolean = false;
 }
 
 export class SurveyQuestionType {
@@ -44,4 +74,15 @@ export class SurveyQuestionTypeDetails {
 
 export class SurveyResponse {
     Questions: SurveyQuestionTypeDetails[];
+}
+
+export class SurveyQuestionResponseApiModel {
+    Responses: number[];
+    SurveyQuestionUid: string;
+    Comments: string;
+}
+
+export class SurveyResultsApiModel {
+    AssetUid: string;
+    Questions: SurveyQuestionResponseApiModel[] = [];
 }
