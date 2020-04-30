@@ -458,9 +458,9 @@ namespace d360.web.Controllers
 
                 if (at.Class == AssetTypeClass.Reference)
                 {
-                    var governanceRole = Community.CompanySettings.Where(x => x.CompanyID == Company.CurrentCompanyID && x.SettingID == 73 && x.Value == at.uid.ToString()).FirstOrDefault();
+                    var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
 
-                    if (governanceRole != null)
+                    if (governanceRole == at.uid.ToString())
                         throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", $"UID {at.uid} is a reference list and is configured as the Governance Role and cannot be deleted.");
                 }
 

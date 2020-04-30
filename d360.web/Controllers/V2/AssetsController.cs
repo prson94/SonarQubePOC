@@ -1262,10 +1262,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var governanceRoles = Community.CompanySettings.Where(x => x.CompanyID == Company.CurrentCompanyID && x.SettingID == 73).FirstOrDefault();
+                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
                 foreach (var asset in assetTypes)
                 {
-                    if (governanceRoles != null && governanceRoles.Value == asset.Uid.ToString())
+                    if (governanceRole == asset.Uid.ToString())
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {asset.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
                 }
 
