@@ -366,7 +366,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Link' then FT.IsDisplayable else null end as 'Type.Link.IsDisplayable',
 		        case when FT.Type = 'Link' then FT.IsEditable else null end as 'Type.Link.IsEditable',
 		        case when FT.Type = 'Link' then FT.IsListable else null end as 'Type.Link.IsListable',
-		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty,
+		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty',
 		        case when FT.Type = 'Link' then FT.IsPartOfKey else null end as 'Type.Link.IsPartOfKey',
 		        case when FT.Type = 'Link' then FT.IsPrimaryFilter else null end as 'Type.Link.IsPrimaryFilter',
 
