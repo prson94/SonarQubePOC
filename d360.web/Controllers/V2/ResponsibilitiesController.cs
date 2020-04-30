@@ -220,12 +220,12 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
-        
+
         /// <summary>
-        /// Adds a list of all allocations for the specified Asset.
+        /// Adds a list of all allocations for the specified asset.
         /// </summary>
-        /// <param name="uid">The Uid of the Responsibilty type.</param>
-        /// <param name="model">A list of AssetTypeUid and Permissions to add allocations for.</param>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids and permissions to add allocations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
@@ -326,10 +326,10 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Edits a list of all allocations for the specified Asset.
+        /// Edits a list of all allocations for the specified asset.
         /// </summary>
-        /// <param name="uid">The Uid of the Responsibilty type.</param>
-        /// <param name="model">A list of AssetTypeUid and Permissions to edits allocations for.</param>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids and permissions to edit allocations.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
@@ -430,10 +430,10 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes a list of all allocations for the specified Asset.
+        /// Deletes a list of all allocations for the specified asset.
         /// </summary>
-        /// <param name="uid">The Uid of the Responsibilty type.</param>
-        /// <param name="model">A list of AssetTypeUids to delete allocations for.</param>
+        /// <param name="uid">The Uid of the responsibility type.</param>
+        /// <param name="model">A list of assetType Uids to delete allocations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
