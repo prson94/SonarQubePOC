@@ -138,7 +138,7 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-        DbSet<Rule> Rules { get; set; }
+        DbSet<d360.core.entities.Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
