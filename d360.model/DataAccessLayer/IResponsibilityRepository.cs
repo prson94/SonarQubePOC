@@ -21,5 +21,6 @@ namespace d360.model.DataAccessLayer
         Task<dynamic> GetResponsibilityType(Guid uid);
         ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType ResponsibiltyType, AssetType AssetType, IEnumerable<int> PermissionsBitMask);
         ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibility, AssetType assetType, List<int> permissions);
+        //ResponsibilityTypeAllocationResponseModel DeleteAllocation(ResponsibilityType responsibility, AssetType assetType, List<int> permissions);
     }
 }

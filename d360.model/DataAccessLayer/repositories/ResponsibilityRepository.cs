@@ -536,17 +536,20 @@ where 1=1
 
         }
 
-        public ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibiltyType, AssetType assetType, IEnumerable<int> permissionsBitMask)
+
+        public ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibility, AssetType assetType, List<int> permissions)
         {
             try
             {
-                var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibiltyType.ID).FirstOrDefault();
-                rtr.PermissionsBitMask = permissionsBitMask.Sum(i => i);
+                var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
+                rtr.PermissionsBitMask = permissions.Sum(i => i);
+                rtr.UpdatedBy = Company.CurrentResourceID;
+                rtr.UpdatedOn = DateTime.UtcNow;
                 Company.SaveChanges();
                 return new ResponsibilityTypeAllocationResponseModel()
                 {
                     AssetTypeUid = assetType.uid,
-                    Message = $"Allocation added.",
+                    Message = $"Allocation edited.",
                     Success = true
                 };
             }
@@ -559,7 +562,6 @@ where 1=1
                     Success = false
                 };
             }
-
         }
     }
 }

@@ -308,7 +308,7 @@ namespace d360.web.Controllers.V2
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation already exists. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Message = $"Allocation already exists.",
                             Success = false
                         });
                         continue;
@@ -335,7 +335,7 @@ namespace d360.web.Controllers.V2
         /// <param name="model">A list of AssetTypeUid and Permissions to add allocations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
-            HttpPost,
+            HttpPut,
             Route("types/{uid:Guid}/allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeAllocationResponseModel>)),
@@ -343,7 +343,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility type allocations.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> PostResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
+        public async Task<IHttpActionResult> PutResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
         {
             var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
             var errorMessage = "";
@@ -410,12 +410,12 @@ namespace d360.web.Controllers.V2
                         continue;
                     }
                     //validate if there is an existing allocation with the same configuration 
-                    if (Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+                    if (!Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
                     {
                         results.Add(new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = allocation.AssetTypeUid,
-                            Message = $"Allocation already exists. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Message = $"Allocation not found.",
                             Success = false
                         });
                         continue;
