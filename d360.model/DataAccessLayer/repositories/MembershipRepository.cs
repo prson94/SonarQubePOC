@@ -11,6 +11,7 @@ using System.Data;
 using System.Text.RegularExpressions;
 using System.Data.SqlClient;
 using d360.core.entities;
+using d360.core;
 
 namespace d360.model.DataAccessLayer
 {
@@ -80,8 +81,9 @@ namespace d360.model.DataAccessLayer
             return new GroupApiModels() { items = results, Total = count };
 
         }
-        public WorkHttpStatus DeleteResources(IEnumerable<UserApiDeleteModel> resources)
+        public WorkHttpStatus DeleteResources(ApiExecution execution, IEnumerable<UserApiDeleteModel> resources)
         {
+
             try
             {
                 List<UserApiDeleteModel> models = new List<UserApiDeleteModel>();
@@ -107,6 +109,10 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
+                CompanyContext.Add(execution);
+                CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
                 foreach (var model in resources)
                 {
                     model.Resource.State = CompanyResourceState.Deleted;
@@ -116,9 +122,17 @@ namespace d360.model.DataAccessLayer
                     CommunityContext.Update(model.CompanyResource);
                 }
 
+                execution.Processed = resources.Count();
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+
             }
-            catch
+            catch (Exception ex)
             {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+
                 return new WorkHttpStatus(HttpStatusCode.InternalServerError, "Internal Server Error", $"An internal server error occurred");
             }
 
@@ -196,6 +210,9 @@ namespace d360.model.DataAccessLayer
             if (CommunityContext.Connection.State == ConnectionState.Closed)
                 await CommunityContext.Connection.OpenAsync();
 
+            CompanyContext.SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
             using (SqlTransaction trans = CommunityContext.Connection.BeginTransaction())
             {
                 try
@@ -260,6 +277,10 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    CompanyContext.Update(execution);
+
                     trans.Rollback();
                     throw ex;
                 }
@@ -555,6 +576,10 @@ namespace d360.model.DataAccessLayer
                 }
                 catch (Exception ex)
                 {
+                    execution.ErrorMessage = ex.GetFullExceptionData(false);
+                    execution.CompletedOn = DateTime.UtcNow;
+                    CompanyContext.Update(execution);
+
                     trans.Rollback();
                     throw ex;
                 }
@@ -752,6 +777,10 @@ namespace d360.model.DataAccessLayer
                         }
                         catch (Exception ex)
                         {
+                            execution.ErrorMessage = ex.GetFullExceptionData(false);
+                            execution.CompletedOn = DateTime.UtcNow;
+                            CompanyContext.Update(execution);
+
                             throw ex;
                         }
                     }
@@ -762,6 +791,10 @@ namespace d360.model.DataAccessLayer
 
             #endregion
 
+            execution.CompletedOn = DateTime.UtcNow;
+            execution.Error = results.Count(r => !r.Success);
+            execution.Processed = results.Count(r => r.Success);
+            CompanyContext.Update(execution);
 
             return results;
         }
