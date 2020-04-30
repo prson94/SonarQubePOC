@@ -6,7 +6,6 @@ import { ArtifactService } from '../../services/artifacts.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
-import { SurveysService } from '../../services/surveys.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Artifact } from '../../models/artifacts.model';
 import { ArtifactBaseComponent } from './artifact-base.component';
@@ -42,7 +41,6 @@ export class ArtifactItemComponent extends ArtifactBaseComponent implements OnIn
         private titleService: Title,
         webAnalyticsService: WebAnalyticsService,
         headerBreadcrumbService: HeaderBreadcrumbService,
-        private surveysService: SurveysService,
         protected permissionsService: PermissionsService
     ) {
         super(headerBreadcrumbService, secondaryNavService, webAnalyticsService);

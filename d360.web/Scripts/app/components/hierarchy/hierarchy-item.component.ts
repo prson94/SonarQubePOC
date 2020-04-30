@@ -3,7 +3,6 @@ import { BaseComponent } from '../shared/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
-import { SurveysService } from '../../services/surveys.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ModelsService } from '../../services/models.service';
@@ -23,7 +22,6 @@ declare var CompanySettings;
         ModelsService,
         PoliciesService,
         PermissionsService,
-        SurveysService,
     ],
     templateUrl: 'hierarchy-item.component.html'
 })

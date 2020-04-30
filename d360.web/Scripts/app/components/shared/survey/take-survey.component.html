@@ -1,6 +1,6 @@
 ﻿
 <d3s-modal [title]="'Survey - ' + surveyType.Name" additionalClasses="medium-dialog" (onClose)="closeDialog()" [isVisible]="isModalVisible">
-    <form *ngIf="surveyDetails && surveyDetails.Questions" (ngSubmit)="onSubmit()" #surveyForm="ngForm">
+    <form *ngIf="surveyDetails && surveyDetails.Questions && !isLoading" (ngSubmit)="onSubmit()" #surveyForm="ngForm">
         <div class="content">
             <div class="row" *ngIf="currentQuestion">
                 <span class="question-count" *ngIf="surveyDetails.Questions.length > 1">Question {{currentQuestionIndex+1}} of {{surveyDetails.Questions.length}}</span>
@@ -43,9 +43,10 @@
                 <span *ngIf="!submitting"><i class="fa fa-arrow-circle-right"></i>Next</span>
             </button>
             <button class="button primary" [ngClass]="{'loader':submitting}" *ngIf="currentQuestionIndex+1 == surveyDetails.Questions.length" type="submit" [disabled]="!surveyForm.form.valid || submitting" label="Save">
-                <span *ngIf="submitting" class="spinner"></span>    
+                <span *ngIf="submitting" class="spinner"></span>
                 <span *ngIf="!submitting">Submit Survey</span>
             </button>
         </div>
     </form>
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
 </d3s-modal>

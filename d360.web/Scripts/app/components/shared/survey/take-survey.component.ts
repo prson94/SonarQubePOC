@@ -58,6 +58,7 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
             this.surveyDetails = res;
             this.currentQuestion = this.surveyDetails.Questions[0];
             this.isLoading = false;
+            this.ref.markForCheck();
         });
     }
 

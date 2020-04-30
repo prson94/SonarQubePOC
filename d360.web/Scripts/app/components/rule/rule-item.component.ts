@@ -6,7 +6,6 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { SurveysService } from '../../services/surveys.service';
 import { RuleDetail, RuleType } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
@@ -45,8 +44,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        protected surveysService: SurveysService
+        protected permissionsService: PermissionsService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
