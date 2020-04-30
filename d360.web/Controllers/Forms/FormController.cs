@@ -1589,7 +1589,7 @@ order by Sort, title";
                 case "R":   // Relation
                 case "U":   // Unrelation
                     #region
-                    sql = @"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName	 where itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType') order by IName.Name";
+                    sql = @"select 'IntersectType|' + cast(itd.ID as varchar(10)) as value, IName.Name as title from intersecttypedetail itd cross apply dbo.GetIntersectTypeNames(itd.ID) IName where (itd.IsSystem = 0 or (itd.Subject = 'ReferenceItemType' and itd.Object = 'ReferenceItemType')) and itd.predicatetype not in (3,4) order by IName.Name";
                     break;
                 #endregion
                 case "M":   // Users/Groups

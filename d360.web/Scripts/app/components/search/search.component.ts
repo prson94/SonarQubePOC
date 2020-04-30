@@ -118,7 +118,7 @@ export class SearchComponent extends BaseComponent implements OnInit {
     }
 
     public doSearch() {
-        this.searchStateService.search(this.isExactMatch ? `'${this.searchText}'` : this.searchText);
+        this.searchStateService.search(this.searchText);
     }
 
     public filterCheckTree(selectedNodes: CheckTreeNode[]) {
