@@ -12,7 +12,8 @@ import {
     ResourceGroup,
 
     GroupApiModels,
-    ResourceGroupInfo
+    ResourceGroupInfo,
+    AddUserToGroup
 } from '../models/group.model';
 import {JsonResult} from '../models/jsonresult.model';
 import {CountObject} from '../models/resource.model';
@@ -85,7 +86,7 @@ export class GroupService extends BaseObservableService implements IGroupService
         );
     }
 
-    addUsersToGroup(groupUid: string,users:string[]): Observable<any> {
+    addUsersToGroup(groupUid: string, users: AddUserToGroup[]): Observable<any> {
         return this.http.post(`api/v2/membership/groups/${groupUid}/members`, users).pipe(
             map(response => <any>response),
             catchError(err => this.handleError(err))
