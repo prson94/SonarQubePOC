@@ -74,7 +74,7 @@ END
             stripComments="false">
 		<![CDATA[
 
-if not exists (select * from information_schema.columns where table_schema='api' table_name = 'ExecutionAsset' and column_name = 'UpdateGraph')
+if not exists (select * from information_schema.columns where table_schema='api' and table_name = 'ExecutionAsset' and column_name = 'UpdateGraph')
 begin
   alter table api.ExecutionAsset add UpdateGraph bit constraint DF_ApiExecutionAsset_UpdateGraph default(0) not null
 end
