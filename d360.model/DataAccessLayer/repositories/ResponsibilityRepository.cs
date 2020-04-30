@@ -507,10 +507,10 @@ where 1=1
                 var rtr = new ResponsibilityTypeRelation()
                 {
                     PermissionsBitMask = permissionsBitMask.Sum(i => i),
-                    ObjectID = assetType.ObjectID,//
-                    ObjectType = assetType.Object,//
-                    ResponsibilityType = responsibiltyType,//
-                    ResponsibilityTypeID = responsibiltyType.ID,//
+                    ObjectID = assetType.ObjectID,
+                    ObjectType = assetType.Object,
+                    ResponsibilityType = responsibiltyType,
+                    ResponsibilityTypeID = responsibiltyType.ID,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
                     UpdatedBy = Company.CurrentResourceID,
@@ -525,6 +525,32 @@ where 1=1
                     Success = true
                 };
             }catch(Exception e)
+            {
+                return new ResponsibilityTypeAllocationResponseModel()
+                {
+                    AssetTypeUid = assetType.uid,
+                    Message = e.InnerException != null ? e.InnerException.Message : e.Message,
+                    Success = false
+                };
+            }
+
+        }
+
+        public ResponsibilityTypeAllocationResponseModel EditAllocation(ResponsibilityType responsibiltyType, AssetType assetType, IEnumerable<int> permissionsBitMask)
+        {
+            try
+            {
+                var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibiltyType.ID).FirstOrDefault();
+                rtr.PermissionsBitMask = permissionsBitMask.Sum(i => i);
+                Company.SaveChanges();
+                return new ResponsibilityTypeAllocationResponseModel()
+                {
+                    AssetTypeUid = assetType.uid,
+                    Message = $"Allocation added.",
+                    Success = true
+                };
+            }
+            catch (Exception e)
             {
                 return new ResponsibilityTypeAllocationResponseModel()
                 {
