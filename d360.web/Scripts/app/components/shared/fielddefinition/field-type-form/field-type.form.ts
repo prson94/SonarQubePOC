@@ -63,7 +63,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
     @Input() showIsEditable: boolean = true;
@@ -328,7 +327,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }
 
                         r.SortOrderList = s;
-
                     }
                 );
 
@@ -660,6 +658,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             console.log("[ERROR] - NO UID SPECIFIED TO LOAD DEFAULT VALUES FOR ", this.model.FieldType.Type[this.currentType].List.Uid );
             return;
         }
+
 
         return this.fieldsService.getLookupDefaultValueOptions(uid).pipe(
             map(r => {
