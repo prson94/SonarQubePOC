@@ -19,5 +19,6 @@ namespace d360.model.DataAccessLayer
         ResponsibilityTypeDeleteResult DeleteResponsibilityTypes(ResponsibilityTypeDeleteModel responsibilityTypeDelete);
         Task<IEnumerable<ClaimsViewModel>> GetClaims();
         Task<dynamic> GetResponsibilityType(Guid uid);
+        ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType ResponsibiltyType, AssetType AssetType, IEnumerable<int> PermissionsBitMask);
     }
 }

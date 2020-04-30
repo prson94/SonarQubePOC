@@ -16,6 +16,7 @@ using d360.model.DataAccessLayer;
 using Resources;
 using System.Diagnostics;
 using System.Web.Http.Description;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -219,7 +220,90 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        /// <summary>
+        /// Adds a list of all allocations for the specified Asset.
+        /// </summary>
+        /// <param name="uid">The Uid of the Responsibilty type.</param>
+        /// <param name="model">A list of AsetTypeUid and Permissions to add allocations for.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("types/{uid:Guid}/allocations"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<ResponsibilityTypeAllocationResponseModel>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add responsibility type allocations.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostResponsibilityTypeAllocationsAsync(Guid uid, IEnumerable<ResponsibilityTypeAllocationInsertModel> model)
+        {
+            var prefix = "Responsibilities.GetResponsibilityTypeAllocationsAsync => ";
+            var errorMessage = "";
 
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
+
+
+            try
+            {
+                List<ResponsibilityTypeAllocationResponseModel> results = new List<ResponsibilityTypeAllocationResponseModel>();
+                
+                //valdiate the responsibilitytype uid passed in
+                ResponsibilityType responsibility = Company.Filter<ResponsibilityType>(x => x.UID == uid).FirstOrDefault();
+                if(responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid ResponsibilityType uid for this request."));
+
+                foreach (var allocation in model)
+                {
+                    //check each asset is valid
+                    AssetType assetType = Company.Filter<AssetType>(x => x.uid == allocation.AssetTypeUid).FirstOrDefault();
+                    if (assetType == null)
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeUid uid privided.",
+                            Success = false
+                        });
+                        continue;
+                    }
+                    //check all permission values are valid
+                    var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
+                    if (allocation.Permissions.Any(x => !validValues.Contains(x)))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid Permission privided. [{string.Join(",",allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Success = false
+                        });
+                        continue;
+                    }
+                    //validate if there is an existing allocation with the same configuration 
+                    if (Company.ResponsibilityTypeRelations.Any(x => x.ObjectType == assetType.Object && x.ObjectID == assetType.ObjectID && x.ResponsibilityTypeID == responsibility.ID))
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Allocation already exists. [{string.Join(",", allocation.Permissions.Where(x => !validValues.Contains(x)).ToArray())}]",
+                            Success = false
+                        });
+                        continue;
+                    }
+                    //add allocation 
+                    results.Add(ResponsibilityRepository.AddAllocation(responsibility, assetType, allocation.Permissions));
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
+            }
+        }
 
 
         /// <summary>
