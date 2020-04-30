@@ -884,6 +884,7 @@ namespace d360.model.DataAccessLayer
             string includeDuplicateSQL = @",
 							case 
 							  when ResultsTable.ResultUid = MainRecord.ResultUid then 0
+                              when ResultsTable.EvaluatedAssetUid is null then 0
 							  else 1
 							end as IsDuplicate";
 
