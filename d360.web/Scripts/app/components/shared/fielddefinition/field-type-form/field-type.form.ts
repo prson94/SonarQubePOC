@@ -327,7 +327,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }
 
                         r.SortOrderList = s;
-
                     }
                 );
 
