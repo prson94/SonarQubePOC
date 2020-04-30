@@ -373,7 +373,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     } else if (this.lookups.Field_Relationships.length > 0) {
                         observables.push(this.cardinalRelationshipSelected(this.lookups.Field_Relationships[0].value));
                     }
-                    
+                    this.showDescription = false;
                 } catch (e) {
                     console.log(e);
                 }
@@ -450,8 +450,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'jsonelement':
                 this.showDescription = false;
                 break;
-            case 'boolean':
-                console.log(this.model.FieldType.Type["Boolean"].DefaultValue);
+            case 'computedownershiplookup':
+                this.showDescription = false;
+                break;
+            case 'ownershiplookup':
+                this.showDescription = false;
                 break;
             default:
                 break;
@@ -742,6 +745,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
     private onSubmit(): any {
         //convert DisplayFields to objects
+        this.isLoading = true;
         if (this.model.FusionItems) {
             this.model.FusionItems.forEach(
                 i => {
@@ -754,8 +758,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         if (this.currentType == 'Link') {
             {
-                this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName != null ? this.defaultLinkName : '';
-                this.model.FieldType.Type[this.currentType].DefaultValue.Url = this.defaultLinkAdress != null ? this.defaultLinkAdress : '';
+                if (!this.defaultLinkName && !this.defaultLinkAdress)
+                    this.model.FieldType.Type[this.currentType].DefaultValue = null;
+                else {
+                    this.model.FieldType.Type[this.currentType].DefaultValue.Text = this.defaultLinkName;
+                    this.model.FieldType.Type[this.currentType].DefaultValue.Url = this.defaultLinkAdress;
+                }
             }
         } else if (this.currentType == 'Date') {
             this.model.FieldType.Type[this.currentType].DefaultValue = this.defaultDate;
@@ -798,7 +806,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //add the fieldtype to the API model as an array
         apiModel.Fields = [this.model.FieldType];
 
-        this.isLoading = true;
+        
 
         if (this.actionName == 'Edit') {
             this.fieldsService.putFieldsV2(apiModel).subscribe(
@@ -1358,7 +1366,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
@@ -1368,14 +1376,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 else
                     return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JsonElement', 'Tag']
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JsonElement'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
