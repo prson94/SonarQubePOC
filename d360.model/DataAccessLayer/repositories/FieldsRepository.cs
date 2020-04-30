@@ -320,6 +320,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.IsEditable else null end as 'Type.Decimal.IsEditable',
 		        case when FT.Type = 'Decimal' then FT.IsListable else null end as 'Type.Decimal.IsListable',
 		        case when FT.Type = 'Decimal' then FT.IsPartOfKey else null end as 'Type.Decimal.IsPartOfKey',
+		        case when FT.Type = 'Decimal' then FT.IsPrimaryFilter else null end as 'Type.Decimal.IsPrimaryFilter',
 		        case when FT.Type = 'Decimal' then FT.ShowIfEmpty else null end as 'Type.Decimal.ShowIfEmpty',
 
 		        case when FT.Type = 'Html' then FT.ColumnOrder else null end as 'Type.Html.ColumnOrder',
@@ -366,11 +367,13 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Link' then FT.IsEditable else null end as 'Type.Link.IsEditable',
 		        case when FT.Type = 'Link' then FT.IsListable else null end as 'Type.Link.IsListable',
 		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty',
+		        case when FT.Type = 'Link' then FT.IsPartOfKey else null end as 'Type.Link.IsPartOfKey',
+		        case when FT.Type = 'Link' then FT.IsPrimaryFilter else null end as 'Type.Link.IsPrimaryFilter',
 
 		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',
 		        case when FT.Type = 'Lookup' then FT.SortOrder else null end as 'Type.Lookup.SortOrder',
-		        case when FT.Type = 'Lookup' then DFA.[Uid] else null end as 'Type.Lookup.DefaultValue',
+		        case when FT.Type = 'Lookup' then COALESCE(TRY_CONVERT(UNIQUEIDENTIFIER, FT.DefaultValue),DFA.[Uid]) else null end as 'Type.Lookup.DefaultValue',
 		        case when FT.Type = 'Lookup' then FT.DisplayDescription else null end as 'Type.Lookup.Description.Display',
 		        case when FT.Type = 'Lookup' then FT.FormDescription else null end as 'Type.Lookup.Description.Form',
                 case when FT.Type = 'Lookup' then FT.IsRequired else null end as 'Type.Lookup.Validation.IsRequired',
@@ -390,6 +393,7 @@ select	@pageSize as 'pageSize',
                     else null 
 				end as 'Type.Lookup.List.Class',
 		        case when FT.Type = 'Lookup' then FT.AllowMultipleValues else null end as 'Type.Lookup.List.AllowMultipleValues',
+                case when FT.Type = 'Lookup' then (select Name from FieldType where ID = FT.ParentFieldTypeID) else null end as 'Type.Lookup.ParentFieldTypeName',
 		        case when FT.Type = 'Lookup' then FT.IsDisplayable else null end as 'Type.Lookup.IsDisplayable',
 		        case when FT.Type = 'Lookup' then FT.IsEditable else null end as 'Type.Lookup.IsEditable',
 		        case when FT.Type = 'Lookup' then FT.IsListable else null end as 'Type.Lookup.IsListable',
@@ -678,6 +682,8 @@ from	IntersectType I
                         relation.Object = relationInfo.Object;
                         relation.ObjectID = relationInfo.ObjectID;
                         relation.RelationType = (ComplexLookupRelationType)i.RelationType;
+                        relation.AssetUid = i.AssetTypeUid;
+                        relation.IntersectTypeUid = i.IntersectTypeUid;
 
                         relatedItemUids.Add(i.AssetTypeUid);
                         definitionRelations.Add(relation);
@@ -715,8 +721,8 @@ from	IntersectType I
 
                     f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
                     {
-
                         
+                        bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
                         var fieldInfo = Company.Query<dynamic>(@"
@@ -725,6 +731,7 @@ from	IntersectType I
                             left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid ", 
                             new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
 
+
                         //invalid uid
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
@@ -732,8 +739,16 @@ from	IntersectType I
                             return;
                         }
 
+                        //skip this validaiton for hard coded fields on certain types.
+                        if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID == 0 && new[] { "Name", "Description" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+                        else if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID != 0 && new[] { "Code" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+                        else if (fieldInfo.Object == "ResourceType" && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
+
                         //invalid computed field
-                        if (fieldInfo.FieldTypeID == 0)
+                        if (fieldInfo.FieldTypeID == 0 && !bypassFieldValidation)
                         {
                             if (!computedFields.ContainsKey(i.FieldTypeName))
                             {
@@ -741,8 +756,8 @@ from	IntersectType I
                                 return;
                             }
                         }
-
-                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFields[i.FieldTypeName] : fieldInfo.FieldTypeID;
+                        var coputedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? coputedFieldValue : fieldInfo.FieldTypeID;
                         field.Object = fieldInfo.Object;
                         field.ObjectID = fieldInfo.ObjectID;
                         field.DisplayOrder = i.DisplayOrder;
@@ -751,7 +766,7 @@ from	IntersectType I
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
-
+                        field.Show = i.Show;
 
                         definitionFields.Add(field);
                     });
@@ -979,7 +994,15 @@ from	IntersectType I
                     newFieldType.Type = DataType.Lookup.ToString();
                     newFieldType.ColumnOrder = f.Type.Lookup.ColumnOrder;
                     newFieldType.ColumnWidth = f.Type.Lookup.ColumnWidth;
-                    if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue)) newFieldType.DefaultValue = f.Type.Lookup.DefaultValue.Trim();
+                    if (!string.IsNullOrEmpty(f.Type.Lookup.ParentFieldTypeName))
+                    {
+                        var parentField = Company.Filter<FieldType>(x => x.AssetTypeID == typeIdentifierInfoModel.ID && x.Name == f.Type.Lookup.ParentFieldTypeName).SingleOrDefault();
+                        if (parentField == null || parentField.LookupObjectType != "ReferenceItem")
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Invalid parent Field", $"Parent field [{f.Type.Lookup.ParentFieldTypeName}] of type ReferenceItem not found on this asset.");
+                        }
+                        newFieldType.ParentFieldTypeID = parentField.ID;
+                    }
                     if (f.Type.Lookup.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Lookup.Description.Display;
@@ -993,10 +1016,16 @@ from	IntersectType I
                         if (f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
                         {
                             var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+                            var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
                             if (listAssetType != null)
                             {
                                 newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
                                 newFieldType.LookupObjectID = listAssetType.ObjectID;
+                                if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue) && defaultOptions.Any(s => s.uid.ToString() == f.Type.Lookup.DefaultValue))
+                                {
+                                    int defaultListItemID = defaultOptions.First(s => s.uid.ToString() == f.Type.Lookup.DefaultValue).ObjectID;
+                                    newFieldType.DefaultValue = defaultListItemID.ToString();
+                                }
                             }
                             else
                             {
@@ -1023,10 +1052,16 @@ from	IntersectType I
                         else if (!f.Type.Lookup.List.Class.HasValue && f.Type.Lookup.List.Uid.HasValue)
                         {
                             var listAssetType = Company.Filter<AssetType>(i => i.uid == f.Type.Lookup.List.Uid.Value).SingleOrDefault();
+                            var defaultOptions = Company.Filter<Asset>(a => a.AssetTypeID == listAssetType.ID);
                             if (listAssetType != null)
                             {
                                 newFieldType.LookupObjectType = listAssetType.Object.Replace("Type", "");
                                 newFieldType.LookupObjectID = listAssetType.ObjectID;
+                                if (!string.IsNullOrEmpty(f.Type.Lookup.DefaultValue) && defaultOptions.Any(s => s.uid.ToString() == f.Type.Lookup.DefaultValue))
+                                {
+                                    int defaultListItemID = defaultOptions.First(s => s.uid.ToString() == f.Type.Lookup.DefaultValue).ObjectID;
+                                    newFieldType.DefaultValue = defaultListItemID.ToString();
+                                }
                             }
                             else
                             {
@@ -1042,7 +1077,7 @@ from	IntersectType I
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
                     }
-                    if (f.Type.Lookup.Filter != null)
+                    if (f.Type.Lookup.Filter != null && !string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
                     {
                         var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
                         if (filterFieldType <= 0)

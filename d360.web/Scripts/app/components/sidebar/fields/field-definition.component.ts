@@ -19,6 +19,7 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
                                                [objectType]="objectType"
                                                [assetTypeUid]="assetTypeUid"
                                                [relationshipTypeUid]="relationshipTypeUid"
+                                               [objectName]="objectName"
                                                [title]="objectName"></d3s-field-definition-tile>
                 </div>
             </div>
@@ -48,6 +49,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
+        this.isLoading = true;
         this.sub = this.route.params.subscribe(
             params => {
                 this.objectID = +params['objectId']; // (+) converts string 'id' to a number
@@ -63,8 +65,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnInit, O
                             else {
                                 this.assetTypeUid = res.AssetTypeUid;
                             }
-
+                            this.isLoading = false;
                         }
+                        this.isLoading = false;
                     }
                 );
 

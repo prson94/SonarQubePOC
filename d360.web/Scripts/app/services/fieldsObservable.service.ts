@@ -4,17 +4,18 @@ import {Injectable} from '@angular/core';
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {SelectItem} from 'primeng/components/common/api';
 
-import {FieldDefinition, FieldTypeEditorModel, Lookups} from '../models/fields.model';
+import {FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel} from '../models/fields.model';
 import {EditorDropDownItem} from '../models/editor-field.model'
 import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesObservableService} from './messages-observable.service';
 import {BaseObservableService} from "./baseObservable.service";
-import {IFieldsObservableService} from "../models/fields-observable.model";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
+import { AssetTypeEditorUseAsTransformationComponent } from '../components/shared/assettypeeditor/asset-type-editor-use-as-transformation.component';
 
 @Injectable()
-export class FieldsObservableService extends BaseObservableService implements IFieldsObservableService {
+export class FieldsObservableService extends BaseObservableService implements IFieldsService {
     constructor(
         private http: HttpClient,
         messagesService: MessagesObservableService
@@ -35,6 +36,35 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
+    getFieldsV2(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+        return this
+            .http
+            .get<any>(`api/v2/fields?${url}`)
+            .pipe(
+                map(response => <FieldTypeAPIModelField[]>response.items),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    putFieldsV2(
+        model: FieldTypeAPIModel
+    ): any {
+        return this
+            .http
+            .put<any>(`api/v2/fields`, model)
+            .pipe(
+                map(response => <any>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     getAssetTypeFields(assetTypeUID: string): Observable<FieldDefinition[]> {
         return this
             .http
@@ -45,12 +75,20 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFieldTypeEditor(id: number): Observable<any> {
+    getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<any>(`form/FieldType?id=${id}`)
+            .get<any>(`api/v2/fields?${url}&Name=${name}`)
             .pipe(
-                map(response => <any>response),
+            map(response => <FieldTypeAPIModelField>response.items[0]),
                 catchError(err => this.handleError(err))
             );
     }
@@ -80,14 +118,18 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationObjectFields(
-        type: string,
-        id: number,
-        intersectTypeID: number
-    ): Observable<SelectItem[]> {
+    getRelationObjectFields(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_FieldFromRelationship_Fields?type=${type}&id=${id}&intersectTypeID=${intersectTypeID}`)
+            .get<SelectItem[]>(`api/v2/fields/GetFieldFromRelationshipFields?${url}`)
             .pipe(
                 map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
@@ -95,14 +137,10 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationLookupDisplayFields(
-        id: number,
-        type: string,
-        intersectTypeID: number
-    ): Observable<SelectItem[]> {
+    getRelationLookupDisplayFields(assetTypeUid: string,intersectTypeUid: string): Observable<SelectItem[]> {
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_RelationLookup_DisplayFields?id=${id}&type=${type}&intersectTypeID=${intersectTypeID}`)
+            .get<SelectItem[]>(`api/v2/fields/GetRelationLookupDisplayFields?assetTypeUid=${assetTypeUid}&intersectTypeUid=${intersectTypeUid}`)
             .pipe(
                 map(response => <FtItem[]>response),
                 map(r => this.ftItemToSelectItem(r)),
@@ -110,29 +148,38 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getReferenceTypeHierarchyFields(
-        id: number,
-        objectType: string,
-        objectId: number
-    ): Observable<SelectItem[]> {
+    getReferenceTypeHierarchyFields(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<SelectItem[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<SelectItem[]>(`form/Reference_Hierarchy?id=${id}&objectType=${objectType}&objectId=${objectId}`)
+            .get<SelectItem[]>(`api/v2/fields/GetReferenceHierarchy?${url}`)
             .pipe(
                 map(response => <SelectItem[]>response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getListFilterOptions(
-        objectType: string,
-        objectId: number,
-        type: string,
-        id: number
-    ): Observable<any> {
+    getListFilterOptions(uid: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `uid=${uid}&AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
+        
+            //.get<any>(`form/FieldType_ListFilter?objectType=ReferenceItemType&objectId=100000017&type=ArtifactType&id=100000016`)
+        
         return this
             .http
-            .get<any>(`form/FieldType_ListFilter?objectType=${objectType}&objectId=${objectId}&type=${type}&id=${id}`)
+            .get<any>(`api/v2/fields/GetLookupListFilter?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -140,12 +187,11 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
     getLookupDefaultValueOptions(
-        id: number,
-        type: string
+        Uid: string
     ): Observable<SelectItem[]> {
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_Lookup_DefaultValueOptions?id=${id}&type=${type}`)
+            .get<SelectItem[]>(`api/v2/fields/GetLookupDefaultValues?Uid=${Uid}`)
             .pipe(
                 map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
@@ -153,27 +199,28 @@ export class FieldsObservableService extends BaseObservableService implements IF
     }
 
 
-    getLookupTokens(
-        id: number,
-        type: string
-    ): Observable<SelectItem[]> {
+    getLookupTokens(uid: string): Observable<Array<SelectItem>> {
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_Lookup_Tokens?id=${id}&type=${type}`)
+            .get<Array<SelectItem>>(`api/v2/fields/GetFieldTypeLookupTokens?identifier=${uid}`)
             .pipe(
                 map(r => this.ftItemToSelectItem(<FtItem[]>r)),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getLookups(
-        id: number,
-        type: string,
-        fieldtypeid: number
-    ): Observable<Lookups> {
+    getLookups(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, fieldTypeName: string): Observable<Lookups> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
+
         return this
             .http
-            .get<Lookups>(`form/FieldType_Lookups?id=${id}&type=${type}&fieldtypeid=${fieldtypeid}&isNg=true`)
+            .get<Lookups>(`api/v2/fields/GetLookups?fieldtypename=${fieldTypeName}&${url}&isNg=true`)
             .pipe(
                 map(response => <any>response),
                 map(
@@ -206,10 +253,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFormData(id: number): Observable<FieldTypeEditorModel> {
+    getFormData(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeEditorModel> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<FieldTypeEditorModel>(`form/FieldType_FormData?id=${id}`)
+            .get<FieldTypeEditorModel>(`api/v2/fields/GetFieldTypeFormData?name=${name}&${url}`)
             .pipe(
                 map(response => <FieldTypeEditorModel>response),
                 catchError(err => this.handleError(err))
@@ -241,36 +295,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             {label: 'Self Reference', value: '1'},
             {label: 'Child Reference', value: '2'},
         ];
-    }
-
-    putFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
-        return this
-            .http
-            .put('form/EditFieldType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    postFieldType(model: FieldTypeEditorModel): Observable<JsonResult> {
-        return this
-            .http
-            .post('form/AddFieldType', model)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    deleteLookupFieldType(id: number): Observable<JsonResult> { 
-        return this
-            .http
-            .delete(`form/DeleteFieldTypeByID?id=${id}`)
-            .pipe(
-                map(response => <JsonResult>response),
-                catchError(err => this.handleError(err))
-            );
     }
 
     deleteFieldType(name: string, assetTypeUid?: string, actionTypeUid?: string, relationshipTypeUid?: string): Observable<ApiResult & ErrorResponse> {                
@@ -307,77 +331,63 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return s;
     }
 
-    getRelationLookupChildIntersectTypes(id: number): Observable<SelectItem[]> {
+    getChildRelations(assetTypeUid: string): Observable<any> {
+        let url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
-            .get<SelectItem[]>(`form/FieldType_RelationLookup_ChildIntersectTypes?id=${id}`)
+            .get(`api/v2/fields/GetChildRelations?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getChildRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    getParentRelations(assetTypeUid: string): Observable<any> {
+        let url = `AssetTypeUid=${assetTypeUid}`;
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_ChildItems?type=${type}&id=${id}`)
+            .get(`api/v2/fields/GetParentRelations?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getParentRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    getStandardRelations(assetTypeUid: string): Observable<any> {
+        let url = `AssetTypeUid=${assetTypeUid}`;        
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_ParentItems?type=${type}&id=${id}`)
+            .get(`api/v2/fields/GetStandardRelations?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    getStandardRelations(
-        type: string,
-        id: number
-    ): Observable<any> {
+    moveUp(typeUid: string, fieldTypeName: string) {
+        let model = {
+            TypeUid: typeUid,
+            FieldTypename: fieldTypeName,
+            Direction: "up"
+        }
         return this
             .http
-            .get(`form/FieldType_ComplexLookup_IntersectTypes?type=${type}&id=${id}`)
+            .post(`api/v2/fields/move`, model)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
             );
     }
 
-    moveUp(
-        type: string,
-        id: number,
-        fieldId: number
-    ) {
+    moveDown(typeUid: string, fieldTypeName: string) {
+        let model = {
+            TypeUid: typeUid,
+            FieldTypename: fieldTypeName,
+            Direction: "down"
+        }
         return this
             .http
-            .post(`fields/${type}/${id}/${fieldId}/move/up`, null)
-            .pipe(
-                map(response => response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    moveDown(
-        type: string,
-        id: number,
-        fieldId: number
-    ) {
-        return this
-            .http
-            .post(`fields/${type}/${id}/${fieldId}/move/dpwn`, null)
+            .post(`api/v2/fields/move`, model)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -401,14 +411,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getRelationshipFieldIsListable(
-        type: string,
-        id: number,
-        intersectTypeId
-    ): Observable<boolean> {
+    getRelationshipFieldIsListable(intersectTypeUid:string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<any> {
+        let url = "";
+        if (assetTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&assetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&actionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `intersectTypeUid=${intersectTypeUid}&relationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<boolean>(`form/FieldType_Relationship_IsListable?type=${type}&id=${id}&intersectTypeId=${intersectTypeId}`)
+            .get<any>(`api/v2/fields/IsListableRelationship?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
@@ -487,8 +500,15 @@ export class FieldsObservableService extends BaseObservableService implements IF
             }));
     }
 
-    getTypeaheadJsonPropertyOptionsForJsonField(fieldTypeId: number, phrase: string): Observable<string[]> {
-        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldTypeId=${fieldTypeId}&phrase=${encodeURIComponent(phrase)}`)
+    getTypeaheadJsonPropertyOptionsForJsonField(fieldName: string, phrase: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<string[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `assetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `actionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `relationshipTypeUid=${relationshipTypeUid}`;
+        return this.http.get(`form/FieldType_TypeaheadJsonPropertyOptionsForJsonField?fieldName=${fieldName}&phrase=${encodeURIComponent(phrase)}&${url}`)
             .pipe(
                 map(response => <string[]>response),
                 catchError(err => this.handleError(err))
