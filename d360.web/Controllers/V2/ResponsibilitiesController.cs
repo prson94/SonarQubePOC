@@ -224,7 +224,7 @@ namespace d360.web.Controllers.V2
         /// Adds a list of all allocations for the specified Asset.
         /// </summary>
         /// <param name="uid">The Uid of the Responsibilty type.</param>
-        /// <param name="model">A list of AsetTypeUid and Permissions to add allocations for.</param>
+        /// <param name="model">A list of AssetTypeUid and Permissions to add allocations for.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPost,
