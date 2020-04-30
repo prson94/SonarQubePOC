@@ -8,6 +8,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
 import { type } from 'os';
+import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -81,27 +82,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.load();
     }
 
-    private GetCurrentUid() {
-        if (this.assetTypeUid != null)
-            return this.assetTypeUid;
-        else if (this.actionTypeUid != null)
-            return this.actionTypeUid;
-        else if (this.relationshipTypeUid != null)
-            return this.relationshipTypeUid;
-    }
-
     load(): void {
-        this.currentUid = this.GetCurrentUid();
-        if (this.currentUid == null) {
-            console.error("No Asset, Action or Relationship type Uid provided.")
-            return;
-        }
-
         if (this.objectType == "IntersectType")
             this.showIsPartOfKey = false;
         this.isLoading = true;
         this.hasKeyFields = false
-        this.fieldsService.getFieldsV2(this.currentUid).subscribe(
+        this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
                 this.checkKeyFields();

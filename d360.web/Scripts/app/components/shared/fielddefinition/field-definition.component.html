@@ -1,32 +1,31 @@
-﻿<div *ngIf="currentUid">
+﻿<div *ngIf="!isLoading">
     <div>
         <header>
-            {{title}}            
-            <d3s-tile-actions *ngIf="!isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>                            
+            {{title}}
+            <d3s-tile-actions *ngIf="!isEditing && !isDeleting" [hasAdd]="showAddButton" (addClick)="add()" [hasFilterMode]="true" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
         </header>
-    </div>    
+    </div>
     <div *ngIf="isEditing">
-        <d3s-field-type-form
-            [name]="selectedRow != null? selectedRow.Name : ''"
-            [actionTypeUid]="actionTypeUid"
-            [assetTypeUid]="assetTypeUid"
-            [relationshipTypeUid]="relationshipTypeUid"
-            [objectType]="objectType"
-            [objectID]="objectID"
-            [objectName]="objectName"
-            [showIsListable]="showIsListable"
-            [showIsPartOfKey]="showIsPartOfKey"
-            [supportsPrimaryFilterOption]="true"
-            [fields]="fieldDefinitions"
-            (onCancel)="isEditing = false; onCancel.emit()"
-            (onComplete)="editComplete($event)"></d3s-field-type-form>
-    </div>    
+        <d3s-field-type-form [name]="selectedRow != null? selectedRow.Name : ''"
+                             [actionTypeUid]="actionTypeUid"
+                             [assetTypeUid]="assetTypeUid"
+                             [relationshipTypeUid]="relationshipTypeUid"
+                             [objectType]="objectType"
+                             [objectID]="objectID"
+                             [objectName]="objectName"
+                             [showIsListable]="showIsListable"
+                             [showIsPartOfKey]="showIsPartOfKey"
+                             [supportsPrimaryFilterOption]="true"
+                             [fields]="fieldDefinitions"
+                             (onCancel)="isEditing = false; onCancel.emit()"
+                             (onComplete)="editComplete($event)"></d3s-field-type-form>
+    </div>
     <d3s-delete-form *ngIf="isDeleting"
                      [callback]="theDeleteCallback"
                      [itemId]="selectedRow?.Name"
                      [method]="'callback'"
                      [prompt]="'Are you sure you want to delete the field type [' + [selectedRow?.Name] + ']?'"
-                     (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>            
+                     (onCancel)="isDeleting=false; onCancel.emit();"></d3s-delete-form>
     <div *ngIf="!isEditing && !isDeleting">
         <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
@@ -67,7 +66,7 @@
                     <th style="width: 12%">
                         Required?
                     </th>
-                    <th  style="width: 12%" *ngIf="showIsPartOfKey">
+                    <th style="width: 12%" *ngIf="showIsPartOfKey">
                         Key?
                     </th>
                     <th style="width: 12%">
@@ -100,7 +99,7 @@
                 <tr (dblclick)="isEditing=showEditButton;" style="word-wrap: break-word" [pSelectableRow]="item">
                     <td>{{item.FriendlyName}}</td>
                     <td>{{getDisplayTypeName(item)}}</td>
-                    <td >{{item.Category}}</td>
+                    <td>{{item.Category}}</td>
                     <td *ngIf="showIsListable">
                         <span><i *ngIf="item.Type[currentFieldType(item)]?.IsListable" class="fa fa-check enabled" title="True"></i></span>
                         <span><i *ngIf="!item.Type[currentFieldType(item)]?.IsListable" class="fa fa-times disabled" title="False"></i></span>
@@ -143,3 +142,4 @@
         </p-table>
     </div>
 </div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>

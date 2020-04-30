@@ -36,12 +36,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFieldsV2(
-        uid: string
-    ): Observable<FieldTypeAPIModelField[]> {
+    getFieldsV2(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField[]> {
+        let url = "";
+        if (assetTypeUid)
+            url = `AssetTypeUid=${assetTypeUid}`;
+        if (actionTypeUid)
+            url = `ActionTypeUid=${actionTypeUid}`;
+        if (relationshipTypeUid)
+            url = `RelationshipTypeUid=${relationshipTypeUid}`;
         return this
             .http
-            .get<any>(`api/v2/fields?AssetTypeUid=${uid}`)
+            .get<any>(`api/v2/fields?${url}`)
             .pipe(
                 map(response => <FieldTypeAPIModelField[]>response.items),
                 catchError(err => this.handleError(err))
