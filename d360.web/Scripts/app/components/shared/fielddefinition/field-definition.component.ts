@@ -153,7 +153,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
         return partOfKey;
     }
-
+    CheckObjectType() {
+        if (this.objectType) {
+           return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
+        }
+    }
     getDisplayTypeName(item: FieldTypeAPIModelField): string {
         switch (this.currentFieldType(item)) {
             case "ComputedRelationshipField":
