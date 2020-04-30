@@ -499,5 +499,41 @@ where 1=1
             return Task.FromResult<IEnumerable<ClaimsViewModel>>(claims);
         }
 
+
+        public ResponsibilityTypeAllocationResponseModel AddAllocation(ResponsibilityType responsibiltyType, AssetType assetType, IEnumerable<int> permissionsBitMask)
+        {
+            try
+            {
+                var rtr = new ResponsibilityTypeRelation()
+                {
+                    PermissionsBitMask = permissionsBitMask.Sum(i => i),
+                    ObjectID = assetType.ObjectID,//
+                    ObjectType = assetType.Object,//
+                    ResponsibilityType = responsibiltyType,//
+                    ResponsibilityTypeID = responsibiltyType.ID,//
+                    CreatedBy = Company.CurrentResourceID,
+                    CreatedOn = DateTime.UtcNow,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow,
+                };
+                Company.ResponsibilityTypeRelations.Add(rtr);
+                Company.SaveChanges();
+                return new ResponsibilityTypeAllocationResponseModel()
+                {
+                    AssetTypeUid = assetType.uid,
+                    Message = $"Allocation added.",
+                    Success = true
+                };
+            }catch(Exception e)
+            {
+                return new ResponsibilityTypeAllocationResponseModel()
+                {
+                    AssetTypeUid = assetType.uid,
+                    Message = e.InnerException != null ? e.InnerException.Message : e.Message,
+                    Success = false
+                };
+            }
+
+        }
     }
 }
