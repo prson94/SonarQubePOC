@@ -45,17 +45,15 @@ namespace igx.jobs.assetgraphprocessor
                     
                     company.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
-
-                    var execution = (await company.QueryAsync<ApiExecution>(@"select * from api.Execution where ExecutionID = @executionID"
-                        , new { info.execution.ExecutionID }))
-                        .SingleOrDefault();
+                    var execution = (
+                        await company.QueryAsync<ApiExecution>(@"select * from api.Execution where ExecutionID = @executionID", new { info.execution.ExecutionID })
+                        ).SingleOrDefault();
 
                     if (info.execution == null)
                         throw new Exception("Event execution info is null");
 
                     if (execution == null)
                         throw new Exception("Execution record not found");
-
 
                     switch (info.execution.Action)
                     {
@@ -79,7 +77,7 @@ namespace igx.jobs.assetgraphprocessor
 
                             break;
                         default:
-                            throw new Exception($"Action {info.execution.Action.ToString()} is not supported");
+                            throw new Exception($"Action {info.execution.Action} is not supported");
                     }
 
                     if (assets == null || !assets.Any())
@@ -99,7 +97,6 @@ namespace igx.jobs.assetgraphprocessor
                             , new { assetTypeUid }
                             , transaction: trans))
                             .ToList();
-
 
                             #region Bulk Copy
 
@@ -145,12 +142,12 @@ namespace igx.jobs.assetgraphprocessor
 
 
                             var rr = (await company.QueryAsync("select * from #GraphAssets", transaction: trans)).ToList();
+                            
                             #endregion
-
 
                             #region Update Graph Tables
 
-                            //update temp table flags
+                            // Update temp table flags
                             await company.ExecuteAsync(@"
                             update  G
                             set     AssetExists = 1
@@ -165,7 +162,7 @@ namespace igx.jobs.assetgraphprocessor
                             update  #GraphAssets set GraphExists = 0 where GraphExists is null;
                             update  #GraphAssets set AssetExists = 0 where AssetExists is null;", transaction: trans);
 
-                            //update graph records
+                            // Update graph records
                             await company.ExecuteAsync(@"
 		                    delete  E
 		                    from    graph.AssetEdge E
@@ -200,125 +197,17 @@ namespace igx.jobs.assetgraphprocessor
 				                    inner join AssetType T on T.ID = A.AssetTypeID
                                     inner join #GraphAssets G on G.uid = A.uid and G.GraphExists = 0;
 
-                            ", transaction: trans);
+                            update  T
+                            set     T.UpdateGraph = S.UpdatePath
+                            from    api.ExecutionAsset T
+                                    inner join #GraphAssets S on S.Uid = T.Uid;", transaction: trans);
 
 
-                            //update paths/segments for applicable assets
-                            await company.ExecuteAsync(@"
-                            	declare @class int = 1,
-			                    @predicateType int = 3,
-                                @assetTypeId int = 0;
+                            // Update paths/segments for applicable assets
+                            await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null", new { executionId = info.execution.ExecutionID }, transaction: trans);
 
-                                select  @class = T.[Class], 
-                                        @assetTypeId = T.ID 
-                                from    AssetType T 
-                                where   T.[uid] = @assetTypeUid;
-
-                                if @class = 2 or @class = 6
-	                                begin
-		                                declare @hierarchy table (ID bigint, [Level] int, Segments xml, [Path] nvarchar(2500));
-		                                set @predicateType = 4;
-
-		                                with p as (
-			                                select	A.ID,
-					                                A.Object,
-					                                A.ObjectID,
-					                                cast(null as varchar(50)) as ParentObject,
-					                                cast(null as int) as ParentObjectID,
-					                                1 as [Level],
-					                                cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
-					                                cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
-			                                from	Asset A
-					                                left join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-                                                    inner join #GraphAssets G on G.[uid] = A.[uid] and G.UpdatePath = 1
-			                                where	I.ID is null
-			                                union all
-			                                select	A.ID,
-					                                A.Object,
-					                                A.ObjectID,
-					                                p.Object as ParentObject,
-					                                p.ObjectID as ParentObjectID,
-					                                p.[Level]+1 as [Level],
-					                                cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
-					                                cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
-			                                from	Asset A
-					                                inner join [IntersectDetail] I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-					                                inner join p on p.Object = I.Subject and p.ObjectID = I.SubjectID
-			                                where	A.AssetTypeID = @assetTypeID
-					                                and p.[Level] <= 25
-		                                )
-		                                insert into @hierarchy
-			                                select ID, [Level], Segments, Segment from p
-
-		                                delete	T
-		                                from	@hierarchy T
-				                                left join (
-					                                select	ID,
-							                                max([Level]) as [Level]
-					                                from	@hierarchy
-					                                group by	ID
-				                                ) S on S.ID = T.ID and S.[Level] = T.[Level]
-		                                where	S.ID is null;
-
-		                                update	T 
-		                                set		T.[Path] = S.[Path], 
-				                                T.[Segments] = S.[Segments] 
-		                                from	graph.AssetNode T 
-				                                inner join @hierarchy S on S.ID = T.ID;
-	                                end
-	                                else
-	                                begin
-
-		                                declare @h table (ID int, [Level] int)
-		                                insert into @h
-			                                select ID, [Level] from dbo.GetAssetTypeAncestry(@assetTypeID) order by [Level];
-
-		                                with p2 as (
-			                                select	A.AssetTypeID,
-					                                A.ID,
-					                                A.Object,
-					                                A.ObjectID,
-					                                cast(null as varchar(50)) as ParentObject,
-					                                cast(null as int) as ParentObjectID,
-					                                1 as [Level],
-					                                cast(graph.GetXmlSegment(cast(null as xml), @assetTypeID, A.ID, 1) as xml) as Segments,
-					                                cast(graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
-			                                from	Asset A
-					                                inner join @h H on H.[Level] = 1 and H.ID = A.AssetTypeID
-					                                left join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-                                                    inner join #GraphAssets G on G.[uid] = A.[uid] and G.UpdatePath = 1
-			                                where	I.IntersectID is null
-			                                union all
-			                                select	A.AssetTypeID,
-					                                A.ID,
-					                                A.Object,
-					                                A.ObjectID,
-					                                p.Object as ParentObject,
-					                                p.ObjectID as ParentObjectID,
-					                                p.[Level]+1 as [Level],
-					                                cast(graph.GetXmlSegment(p.Segments, @assetTypeID, A.ID, p.[Level]+1) as xml) as Segments,
-					                                cast(p.Segment+'.'+ graph.GetPathSegment(A.ID) as nvarchar(2500)) as Segment
-			                                from	Asset A
-					                                inner join PredicateIntersect I on I.PredicateType = @predicateType and I.Object = A.Object and I.ObjectID = A.ObjectID
-					                                inner join p2 as p on p.Object = I.Subject and p.ObjectID = I.SubjectID
-					                                inner join @h H on H.[Level] = p.[Level]+1 and H.ID = A.AssetTypeID
-		                                )
-
-		                                update	T 
-		                                set		T.[Path] = S.Segment, 
-				                                T.[Segments] = S.[Segments] 
-		                                from	graph.AssetNode T 
-				                                inner join p2 S on S.AssetTypeID = @assetTypeID and S.ID = T.ID; 
-	                                end
-                            "
-                                , new { assetTypeUid }
-                                , transaction: trans);
-
-
-                            //cleanup 
-                            await company.ExecuteAsync(@"
-		                    drop table if exists #GraphAssets;
-                            ", transaction: trans);
+                            // Cleanup 
+                            await company.ExecuteAsync(@"drop table if exists #GraphAssets;", transaction: trans);
 
                             #endregion
 
@@ -334,8 +223,10 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 catch (Exception ex)
                 {
-                    var values = new Dictionary<string, string>();
-                    values.Add("uid", info.Uid.ToString());
+                    var values = new Dictionary<string, string>
+                    {
+                        { "uid", info.Uid.ToString() }
+                    };
 
                     if (info.execution != null)
                     {

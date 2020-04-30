@@ -126,8 +126,8 @@
 	<include file="scripts/Table.dbo.Contract.xml"/>
 	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
-  <include file="scripts/Table.dbo.ReportTile_backup.xml"/>
-  <include file="scripts/Table.dbo.ReportLayout_backup.xml"/>
+	<include file="scripts/Table.dbo.ReportTile_backup.xml"/>
+	<include file="scripts/Table.dbo.ReportLayout_backup.xml"/>
 	<include file="scripts/Table.dbo.ReportResponsibility.xml"/>
 	<include file="scripts/Table.dbo.ResourceGroup.xml"/>
 	<include file="scripts/Table.dbo.ResourcePasswordReset.xml"/>
@@ -406,7 +406,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
-  <include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
+	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.dbo.GetPageInformation.xml"/>
 	<include file="scripts/Procedure.dbo.GetReferenceItemValues.xml"/>
 	<include file="scripts/Procedure.dbo.GetRenderedTemplateBodyNg.xml"/>
@@ -439,6 +439,7 @@
 	<include file="scripts/Procedure.graph.SynchronizeTables.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetEdge.xml"/>
 	<include file="scripts/Procedure.graph.UpdateAssetNode.xml"/>
+	<include file="scripts/Procedure.graph.UpdateGraphTableHierarchyBy.xml"/>
 	<include file="scripts/Procedure.integration.CompleteExecution.xml"/>
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
