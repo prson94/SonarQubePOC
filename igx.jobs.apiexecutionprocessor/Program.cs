@@ -118,7 +118,9 @@ namespace igx.jobs.apiexecutionprocessor
             {
                 bool jobAlreadyRunning = false;
 
-                if (dbExecutionItem != null && dbExecutionItem.ProcessingStartedOn.HasValue)
+                // jobs with a error message a retrying make them wait in line like the other batch jobs otherwise what happens is > 2 batch jobs start running 
+                // at the same time filling all the batch slots causing people to say why is my job stuck in line. 
+                if ( ( dbExecutionItem != null) && dbExecutionItem.ProcessingStartedOn.HasValue && string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
                     jobAlreadyRunning = true;
 
                 //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
