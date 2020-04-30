@@ -456,6 +456,14 @@ namespace d360.web.Controllers
                 var at = Company.GetById<AssetType>(id);
                 if (at == null) throw new NotFoundException("asset type");
 
+                if (at.Class == AssetTypeClass.Reference)
+                {
+                    var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+
+                    if (governanceRole == at.uid.ToString())
+                        throw new GenericException(HttpStatusCode.BadRequest, "Invalid request", $"UID {at.uid} is a reference list and is configured as the Governance Role and cannot be deleted.");
+                }
+
                 SystemObjects ot;
 
                 if (!Enum.TryParse<SystemObjects>(at.Object, out ot))
