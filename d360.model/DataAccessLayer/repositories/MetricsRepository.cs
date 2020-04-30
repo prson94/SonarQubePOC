@@ -16,6 +16,7 @@ using Dapper;
 using Newtonsoft.Json;
 using d360.core.entities.Scoring;
 using System.Data;
+using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {
@@ -23,11 +24,15 @@ namespace d360.model.DataAccessLayer
     {
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
+        internal IStorageProvider StorageProvider;
 
-        public MetricsRepository(ICompanyContext context, IQueueSource queueSource)
+        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+
+        public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider)
         {
             this.Company = context;
             this.QueueSource = queueSource;
+            this.StorageProvider = storageProvider;
         }
 
         public void DeleteMetric(MetricAsset model)
@@ -879,6 +884,7 @@ namespace d360.model.DataAccessLayer
             string includeDuplicateSQL = @",
 							case 
 							  when ResultsTable.ResultUid = MainRecord.ResultUid then 0
+                              when ResultsTable.EvaluatedAssetUid is null then 0
 							  else 1
 							end as IsDuplicate";
 
@@ -1002,5 +1008,34 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+
+
+        public async Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true)
+        {
+            var executionInfo = new ApiExecutionInfo
+            {
+                CompanyID = Company.CurrentCompanyID,
+                CompanyDomainPrefix = Company.CurrentCompanyDomain,
+                ExecutionID = Guid.NewGuid(),
+                ResourceID = execution.ResourceID,
+                Action = ApiExecutionAction.PostDataQualityResults,
+                SendWorkflowEvents = sendWorkflowEvents
+            };
+
+            // Save to storage container.
+            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
+
+            // Save to queue.
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+
+            Company.Add(execution);
+            return executionInfo;
+        }               
     }
 }

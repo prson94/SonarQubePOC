@@ -248,7 +248,7 @@ namespace d360.model.DataAccessLayer
                         if (user != null)
                         {
                             user.ResourceID = result.ResourceID;
-                            user.uid = result.uid;
+                            user.uid = user.IsNew ? result.uid : user.uid;
                             user.CompanyResourceState = (CompanyResourceState?)result.CompanyResourceState;
                         }
                     }
@@ -278,20 +278,13 @@ namespace d360.model.DataAccessLayer
 
                 if (user.IsNew)
                 {
-                    if (user.CompanyResourceState.HasValue && user.CompanyResourceState == CompanyResourceState.Active)
+                    if (user.ResourceID.HasValue)
                     {
-
-
-                        if (user.ResourceID.HasValue)
+                        if (user.CompanyResourceState.HasValue && user.CompanyResourceState != CompanyResourceState.Deleted)
                         {
                             success = false;
                             messages.Add("Resource for this Username already exists");
                         }
-                    }
-                    else if (user.uid.HasValue)
-                    {
-                        success = false;
-                        messages.Add("Cannot provide Uid for a new user");
                     }
 
                     if (user.State.HasValue)
@@ -317,7 +310,7 @@ namespace d360.model.DataAccessLayer
                         messages.Add("Must provide Uid for updated user");
                     }
 
-                    if (!user.ResourceID.HasValue)
+                    if (!user.ResourceID.HasValue && user.uid.HasValue)
                     {
                         success = false;
                         messages.Add("Resource not found for this Uid");
@@ -353,7 +346,7 @@ namespace d360.model.DataAccessLayer
                 if (user.uid.HasValue) row["Uid"] = user.uid;
                 if (user.ResourceID.HasValue) row["ResourceID"] = user.ResourceID;
                 if (user.ExecutionItemUid.HasValue) row["ExecutionItemUId"] = user.ExecutionItemUid;
-                row["ItemNumber"] = itemNumber;
+                row["ItemNumber"] = user.ItemNumber;
                 row["Username"] = user.Username;
                 row["FirstName"] = user.FirstName;
                 row["LastName"] = user.LastName;
@@ -532,6 +525,17 @@ namespace d360.model.DataAccessLayer
 
                     CompanyContext.ResolveFieldLookupValues(executionID, "#UserFields", 3600, trans);
 
+                    //validate lookup fields
+                    await CompanyContext.Connection.ExecuteAsync(@"
+                        update  U
+                        set     U.Success = 0,
+                                U.Message = U.Message + 'Invalid lookup value for field ' + F.FieldName + '. '
+                        from    #UserAssets U
+                        inner join #UserFields F on F.ItemNumber = U.ItemNumber and F.ExecutionID = @executionID
+                        inner join FieldType FT on FT.ID = F.FieldTypeID and FT.Type = 'Lookup'
+                        where U.ExecutionID = @executionID and F.LookupValue is null
+                        ", new { executionID }, transaction: trans);
+
                     await CompanyContext.Connection.ExecuteAsync(@"
                         insert into api.ExecutionField (ExecutionID, ItemNumber, FieldName, FieldValue, FieldTypeID, LookupValue, Ignore)
                         select  ExecutionID,
@@ -570,6 +574,33 @@ namespace d360.model.DataAccessLayer
 
                     if (user != null)
                     {
+
+                        bool success;
+                        string message;
+                        var requiredFieldNames = fieldTypes.Where(f => f.IsRequired).Select(f => f.Name).ToList();
+
+                        CompanyContext.ValidateFields("ResourceType", 
+                            ResourceTypeID, 
+                            !user.ResourceID.HasValue, 
+                            fieldTypes, 
+                            requiredFieldNames, 
+                            user.Fields, 
+                            executionID, 
+                            user.ItemNumber, 
+                            null,
+                            out success, 
+                            out message);
+
+                        if (success == false)
+                        {
+                            result.Success = false;
+                            result.Message += message;
+
+                            results.Add(result);
+                            continue;
+                        }
+
+
                         //add resource
                         if (!user.ResourceID.HasValue)
                         {
@@ -626,6 +657,7 @@ namespace d360.model.DataAccessLayer
                                     resource.Password = CommunityContext.HashPassword(user.Password);
                                 }
 
+                                user.uid = resource.Uid;
                                 resource.UpdatedOn = DateTime.UtcNow;
                                 CommunityContext.Update(resource);
                             }

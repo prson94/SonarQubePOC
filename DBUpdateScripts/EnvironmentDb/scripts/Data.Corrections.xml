@@ -321,4 +321,72 @@ delete [dbo].[Predicate] where [Uid] = '5CD90E11-321C-4925-9E61-C9112940072C'
 	</rollback>
   </changeSet>
   
-</databaseChangeLog>
+  <changeSet author="Tklok" id="Data.Corrections.GOV-9034">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+merge [dbo].[SearchBoost] as target
+using (values ('fields.Name', 2))
+    as source (field, boost)
+    on target.Field = source.field
+when matched then
+    update
+    set [Boost] = source.boost
+when not matched then
+    insert ( [Field], [Boost] )
+    values ( source.field, source.boost );
+GO
+
+merge [dbo].[SearchBoost] as target
+using (values ('3ds.Tags', 1.5))
+    as source (field, boost)
+    on target.Field = source.field
+when matched then
+    update
+    set [Boost] = source.boost
+when not matched then
+    insert ( [Field], [Boost] )
+    values ( source.field, source.boost );
+GO
+
+merge [dbo].[SearchBoost] as target
+using (values ('_strategy', 103))
+    as source (field, boost)
+    on target.Field = source.field
+when matched then
+    update
+    set [Boost] = source.boost
+when not matched then
+    insert ( [Field], [Boost] )
+    values ( source.field, source.boost );
+GO
+		]]>
+    </sql>
+	<rollback>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+	<![CDATA[	
+delete [dbo].[SearchBoost] where [Field] <> 'fields.Name'
+GO
+
+merge [dbo].[SearchBoost] as target
+using (values ('fields.Name', 1.25))
+    as source (field, boost)
+    on target.Field = source.field
+when matched then
+    update
+    set [Boost] = source.boost
+when not matched then
+    insert ( [Field], [Boost] )
+    values ( source.field, source.boost );
+GO
+		]]>
+		</sql>
+	</rollback>
+  </changeSet>
+ 
+ </databaseChangeLog>

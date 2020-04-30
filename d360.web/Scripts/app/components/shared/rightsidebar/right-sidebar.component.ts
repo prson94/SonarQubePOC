@@ -1,4 +1,4 @@
-import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
+import { Component, ElementRef, ChangeDetectionStrategy, ChangeDetectorRef, Input, SimpleChange, OnChanges, OnDestroy, AfterViewInit, Output, EventEmitter, ViewChild, ViewChildren, QueryList } from '@angular/core';
 import { Router, NavigationEnd, NavigationStart } from '@angular/router';
 import { Event as NavigationEvent } from "@angular/router";
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -9,10 +9,9 @@ import { ObjectStatistics } from '../../../models/object-statistics.model';
 import { ObjectStatisticsService } from '../../../services/object-statistics.service';
 import { SurveysService } from '../../../services/surveys.service';
 import { ArtifactService } from '../../../services/artifacts.service';
-import { SurveyType } from '../../../models/survey.model';
+import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SearchDetail } from '../../../models/search-result.model';
 
 
@@ -48,7 +47,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     @Input() menuOpen: boolean;
     @Output() changed = new EventEmitter();
     private currentObject: any;
-    private surveyType: SurveyType;
+    private survey: Survey;
     @ViewChild('badge', { static: false }) badge: ElementRef;
     @ViewChild('noScore', { static: false }) noScore: ElementRef;
     @ViewChildren('tabScroller') tabScroller: QueryList<ElementRef>;
@@ -316,11 +315,11 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.ref.markForCheck();
             });
 
-        this.surveysService.getObjectSurvey(objectTypeID, objectType, objectID, objectName)
+        this.surveysService.getObjectSurvey(this.currentObject.Uid)
             .subscribe(result => {
-                this.surveyType = undefined;
+                this.survey = undefined;
                 if (result) {
-                    this.surveyType = result;
+                    this.survey = result;
                     this.showSurvey = true;
                     this.ref.markForCheck();
                 }

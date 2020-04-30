@@ -15,6 +15,7 @@ using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
 using System.Web.Http.Description;
 using d360.web.Filters;
+using d360.core.enums;
 
 namespace d360.web.Controllers.V2
 {
@@ -37,8 +38,6 @@ namespace d360.web.Controllers.V2
 
         #endregion
 
-        private static string DefaultImplementationName = "default";
-
         /// <summary>
         /// Returns all rule results for the specified rule Uid the default implementation.
         /// If the user is not an admin, http status code 403 (forbidden) is returned.
@@ -55,7 +54,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),            
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
         ]
-        public IQueryable<core.entities.RuleResult> GetRuleResults(Guid ruleUid)
+        public IQueryable<dynamic> GetRuleResults(Guid ruleUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
@@ -65,13 +64,32 @@ namespace d360.web.Controllers.V2
             if (rule == null)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleUid}"));
 
-            //get the default implemenation
-            var impl = Company.RuleImplementations.FirstOrDefault(x => x.RuleID == rule.ObjectID && x.Name == DefaultImplementationName);
+            return  Company.Query<dynamic>(@"
+                        select  null as ID,
+                                null as RuleImplementationID,
+                                I.EffectiveDate,
+                                I.RunDate,
+                                I.RowsPassed,
+                                I.RowsFailed,
+                                I.PassFraction,
+                                I.FailFraction,
+                                cast(P.Passed as bit) as Passed
+                        from    (
+                            select	R.[uid],
+                                    R.EffectiveDate,
+		                            R.RunDate,
+		                            R.PassCount as RowsPassed,
+		                            R.FailCount as RowsFailed,
+		                            R.PassFraction,
+		                            (1.0 - R.PassFraction) as FailFraction
+                            from	graph.AssetNode A,
+		                            dbo.AssetResultEdge E,
+		                            dbo.AssetResult R
+                            where	MATCH(A-(E)->R)
+		                            and A.[uid] = @uid) I
+                            cross apply dbo.CalculatePassedPropertyForAssetResult(I.[uid]) P
+                        ", new { rule.uid }).AsQueryable();
 
-            if (impl == null)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No default rule implementation for rule {ruleUid}"));
-
-            return Company.RuleResults.Where(x => x.RuleImplementationID == impl.ID);
         }
 
         /// <summary>
@@ -106,22 +124,6 @@ namespace d360.web.Controllers.V2
                 // run validation of rule id
                 if (rule == null) throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Rule with the specified uid was not found."));
 
-                // look for the implementations for the rule
-                var ruleImpl = Company.RuleImplementations.FirstOrDefault(x => x.Name == DefaultImplementationName && x.RuleID == rule.ObjectID);
-
-                if (ruleImpl == null)
-                {
-                    //create the implementation and use this.
-                    ruleImpl = new core.entities.RuleImplementation
-                    {
-                        Name = DefaultImplementationName,
-                        RuleID = rule.ObjectID
-                    };
-
-                    Company.RuleImplementations.Add(ruleImpl);
-
-                    Company.SaveChanges();
-                }
 
                 // user has created a request with no rule results just return back request nothing to do
                 if (ruleResults.Results == null || ruleResults.Results.Count == 0)
@@ -136,28 +138,19 @@ namespace d360.web.Controllers.V2
 
                 int timeout = ruleResults.Timeout.HasValue ? ruleResults.Timeout.Value : 600;
 
-                var mustOpen = Company.Database.Connection.State != ConnectionState.Open;
                 Company.Database.Connection.Open();
 
                 //start a transaction for the insertion of data
                 using (var transaction = (SqlTransaction)Company.Database.Connection.BeginTransaction())
                 {
-                    // 3. insert the rule results into ruleresult table
                     // merge the rule results
-                    await SaveRuleResults(resultList, timeout, transaction, ruleImpl.ID);
+                    await SaveRuleResults(ruleUid, resultList, timeout, transaction);
 
                     //select from result id table
-                    var ruleResultIds = (await Company.Database.Connection.QueryAsync("select RowIndex, RuleResultID from #RuleResultIdentifiers", transaction: transaction)).ToDictionary(
-                                            row => (int)row.RowIndex,
-                                            row => (int)row.RuleResultID);
+                    var resultCount = (await Company.Database.Connection.QueryAsync<int>("select count(*) from #AssetResultUids", transaction: transaction)).FirstOrDefault();
 
-                    if (ruleResultIds.Count != ruleResults.Results.Count)
+                    if (resultCount != ruleResults.Results.Count)
                         throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, "Rule Result insert count doesnt match the expected number of items."));
-
-                    PopulateRuleResultIDs(ruleResults.Results, ruleResultIds);
-
-                    // build a structure of the asset ids and the rule result ids that we need to store mappings for
-                    List<DataQualityRuleAssetMapping> AssetIDRuleMapping = GenerateAssetIDRuleMapping(ruleResults.Results);
 
 
                     transaction.Commit();
@@ -175,62 +168,29 @@ namespace d360.web.Controllers.V2
             return ruleResults;
         }
 
-        /// <summary>
-        /// Deletes a rule result with the specified Rule Result ID.
-        /// </summary>
-        /// <param name="ruleResultId">The id of the rule result</param>
-        /// <returns>Http Status code OK if item was deleted, Http Status code of Not Found if item could not be deleted</returns>
-        [
-            HttpDelete,
-            MapToApiVersion("2.0"),
-            Route("{ruleResultId:int}"),
-            SwaggerResponse(HttpStatusCode.OK, "Indicates the request succeeded"),
-            SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
-            SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule result could be deleted."),
-            SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
-        ]
-        public async Task<HttpResponseMessage> DeleteByRuleResultID(int ruleResultId)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
-                        
-            //deletes the rule result record
-            var res = await Company.Database.Connection.ExecuteAsync("delete ruleresult where id = @ruleResultId", new { ruleResultId });
-
-            if (res > 0) return Request.CreateResponse(HttpStatusCode.OK); // deleted
-
-            return Request.CreateResponse(HttpStatusCode.NotFound); // nothing deleted
-        }
-
-        private async Task SaveRuleResults(List<DataQualityResult> resultList, int timeout, SqlTransaction transaction, int implementationId)
+        private async Task SaveRuleResults(Guid ruleUid, List<DataQualityResult> resultList, int timeout, SqlTransaction transaction)
         {
             await Company.Database.Connection.ExecuteAsync(@"
-                                    IF OBJECT_ID('tempdb..#RuleResult') IS NOT NULL
-			                            DROP TABLE #RuleResult;
-
-		                            create table #RuleResult (    
-                                            ID int identity not null,
-			                                EffectiveDate datetime not null, 
-                                            RowsPassed int not null,
-			                                RowsFailed int not null,
-                                            RunDate datetime not null,
-                                            RuleImplementationID int not null
+			                        drop table if exists #AssetResult;
+		                            create table #AssetResult 
+                                    (    
+			                            EffectiveDate datetime not null, 
+                                        PassCount bigint not null,
+			                            FailCount bigint not null,
+                                        RunDate datetime not null,
                                     );
 
-                                    IF OBJECT_ID('tempdb..#RuleResultIdentifiers') IS NOT NULL
-			                                DROP TABLE #RuleResultIdentifiers;
-
-		                                create table #RuleResultIdentifiers (    
-                                            RowIndex int not null,
-			                                RuleResultID int not null
-		                                );
+			                        drop table if exists #AssetResultUids;
+		                            create table #AssetResultUids 
+                                    (    
+			                            [uid] uniqueidentifier
+                                    );
                                 ", transaction: transaction);
 
             using (var bulkCopy = new SqlBulkCopy(Company.Database.Connection as SqlConnection, SqlBulkCopyOptions.Default, transaction))
             {
                 bulkCopy.BatchSize = resultList.Count;
-                bulkCopy.DestinationTableName = "#RuleResult";
+                bulkCopy.DestinationTableName = "#AssetResult";
                 bulkCopy.BulkCopyTimeout = timeout;
                 bulkCopy.EnableStreaming = true;
 
@@ -239,11 +199,11 @@ namespace d360.web.Controllers.V2
                 table.Columns.Add(columnName, typeof(DateTime));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                columnName = "RowsPassed";
+                columnName = "PassCount";
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                columnName = "RowsFailed";
+                columnName = "FailCount";
                 table.Columns.Add(columnName, typeof(int));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
@@ -251,19 +211,15 @@ namespace d360.web.Controllers.V2
                 table.Columns.Add(columnName, typeof(DateTime));
                 bulkCopy.ColumnMappings.Add(columnName, columnName);
 
-                columnName = "RuleImplementationID";
-                table.Columns.Add(columnName, typeof(int));
-                bulkCopy.ColumnMappings.Add(columnName, columnName);
 
                 foreach (var item in resultList)
                 {
                     var row = table.NewRow();
 
                     row["EffectiveDate"] = item.EffectiveDate;
-                    row["RowsPassed"] = item.PassCount;
-                    row["RowsFailed"] = item.FailCount;
+                    row["PassCount"] = item.PassCount;
+                    row["FailCount"] = item.FailCount;
                     row["RunDate"] = item.RunDate;
-                    row["RuleImplementationID"] = implementationId;
 
                     table.Rows.Add(row);
                 }
@@ -274,54 +230,29 @@ namespace d360.web.Controllers.V2
             //merge into rule results 
             await Company.Database.Connection.ExecuteAsync(@"
                             MERGE
-	                            INTO    RuleResult d
-	                            USING   (
-			                            select
-									        EffectiveDate,
-									        RowsPassed,
-                                            RowsFailed,
-                                            RunDate,
-                                            RuleImplementationID,
-                                            ID
-								        from
-									        #RuleResult r                                        
-			                            ) S
-	                            ON      (1 != 1)
-	                            WHEN NOT MATCHED THEN
-	                                INSERT  (EffectiveDate, RowsPassed, RowsFailed, RunDate, RuleImplementationID, CreatedOn, CreatedBy)
-	                                VALUES  (S.EffectiveDate, S.RowsPassed, S.RowsFailed, S.RunDate, S.RuleImplementationID, getutcdate(), @u)                      
-                                OUTPUT S.ID, inserted.Id INTO #RuleResultIdentifiers;
-                        ", new { u = Company.CurrentResourceID }, transaction: transaction, commandTimeout: timeout);
-        }
+	                        INTO    dbo.AssetResult D
+	                        USING   (
+			                        select  EffectiveDate,
+									        PassCount,
+                                            FailCount,
+                                            RunDate
+								    from    #AssetResult R                                        
+			                        ) S
+	                        ON      (1 != 1)
+	                        WHEN NOT MATCHED THEN
+	                            INSERT ([uid], EffectiveDate, PassCount, FailCount, RunDate, CreatedOn, CreatedBy, UpdatedOn, UpdatedBy)
+	                            VALUES (newid(), S.EffectiveDate, S.PassCount, S.FailCount, S.RunDate, getutcdate(), @u, getutcdate(), @u)                      
+                            OUTPUT inserted.[uid] INTO #AssetResultUids;
 
-
-        private List<DataQualityRuleAssetMapping> GenerateAssetIDRuleMapping(List<DataQualityResultItem> results)
-        {
-            List<DataQualityRuleAssetMapping> map = new List<DataQualityRuleAssetMapping>();
-
-            foreach (var result in results)
-            {
-                foreach (var mapping in result.AssetsMappings)
-                {
-                    if(mapping.AssetUID.HasValue)
-                        map.Add(new DataQualityRuleAssetMapping { RuleID = result.Result.ID, AssetUID = mapping.AssetUID.Value });
-                    else
-                        throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Invalid mapping specified no AssetUID."));
-                }                
-            }
-            return map;
-        }
-
-        private void PopulateRuleResultIDs(List<DataQualityResultItem>  results, Dictionary<int, int> mappings)
-        {
-            // populate the rule result ids
-            for (var i = 0; i < results.Count; i++)
-            {
-                if (!mappings.TryGetValue(i +1, out int ruleResultId))
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, $"Rule Result insert map doesnt contain the expected item. Index {i}"));
-
-                results[i].Result.ID = ruleResultId;
-            }
+                            insert into dbo.AssetResultEdge ($from_id, $to_id, [Class])
+                            select  N.$node_id as from_id, 
+                                    R.$node_id as to_id,
+                                    @class as [Class]
+                            from    #AssetResultUids AR
+                                    inner join dbo.AssetResult R on R.[uid] = AR.[uid]
+                                    inner join graph.AssetNode N on N.[uid] = @ruleUid
+                            
+                        ", new { u = Company.CurrentResourceID, ruleUid, @class = ResultRelationClass.Owns }, transaction: transaction, commandTimeout: timeout);
         }
 
         public class DataQualityResultModel
@@ -352,11 +283,5 @@ namespace d360.web.Controllers.V2
     {
         public string AssetPath { get; set; }
         public Guid? AssetUID { get; set; }
-    }
-
-    public class DataQualityRuleAssetMapping
-    {
-        public Guid AssetUID { get; set; }
-        public int RuleID { get; set; }
     }
 }

@@ -3,7 +3,6 @@ import { BaseComponent } from '../shared/base.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { Title } from '@angular/platform-browser';
-import { SurveysService } from '../../services/surveys.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { ModelsService } from '../../services/models.service';
@@ -14,7 +13,6 @@ import { StringConstants } from '../../static/string-constants';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { TreeNode } from 'primeng/api';
 import { MessageBarItem } from '../../models/message-bar-item.model';
-import { SurveyType } from '../../models/survey.model';
 
 declare var CompanySettings;
 
@@ -24,7 +22,6 @@ declare var CompanySettings;
         ModelsService,
         PoliciesService,
         PermissionsService,
-        SurveysService,
     ],
     templateUrl: 'hierarchy-item.component.html'
 })
@@ -45,7 +42,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
     treeNodeArray: TreeNode[] = [];
     crumbs: Breadcrumb[] = [];
     messages: MessageBarItem[] = [];
-    surveyType: SurveyType;
 
     constructor(
         private route: ActivatedRoute,
@@ -54,7 +50,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         protected modelsService: ModelsService,
         protected policiesService: PoliciesService,
         protected titleService: Title,
-        protected surveysService: SurveysService,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
         protected permissionsService: PermissionsService) {
         super();
@@ -163,7 +158,6 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
 
                     this.selectHierarchy(selectedHierarchyId);
                     this.messages = []; //clear any messages for this model
-                    this.loadItemSurvey(this.objectTypeId);
 
                     this.setBrowserTitle(this.titleService, this.assetType.Name);
                 });
@@ -221,25 +215,5 @@ export class HierarchyItemComponent extends BaseComponent implements OnInit, OnD
         }
 
         return res;
-    }
-
-    private loadItemSurvey(id: number) {
-        if (!this.selected) {
-            console.log("ERROR NO ASSET ITEM SELECTED TO LOAD SURVEY INFO FOR.");
-            return;
-        }
-
-        this.surveysService.getObjectSurvey(id, this.objectType, this.selected.ID, this.object)
-            .subscribe(result => {
-                this.surveyType = undefined;
-                if (result) {
-                    this.surveyType = result;
-                    this.messages.push({
-                        content: `<u>Click here</u> to take the survey: <em>${result.Name}</em>.`,
-                        showClose: true,
-                        data: 'Survey'
-                    });
-                }
-            });
     }
 }

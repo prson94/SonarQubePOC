@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1522,9 +1522,6 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\score\score.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\sidebar\survey\survey.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\impact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\visualization\browser.component.ts" />
@@ -1574,6 +1571,7 @@
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\export-template.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\fieldtype-api.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\header.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\icon-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\impact.model.ts" />

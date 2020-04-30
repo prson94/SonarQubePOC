@@ -82,7 +82,8 @@ import { AssetTypeClass } from '../../../models/asset.model';
         <div class="row">
             <div class="col s12">
                 <div class="tile tile-detail">
-                    <d3s-field-definition-tile [objectType]="'RuleType'" 
+                    <d3s-field-definition-tile [objectType]="'RuleType'"
+                                               [objectName]="selected?.Name" 
                                             [objectID]="selected?.ID" [assetTypeUid]="selected?.uid"></d3s-field-definition-tile>
                 </div>
             </div>

@@ -93,12 +93,7 @@ namespace d360.web.Models
         public object GetExamples()
         {
             return
-                new List<Guid>
-                {
-                    { Guid.Empty },
-                    { Guid.Empty }
-
-                };
+                new InsertUserToGroup { Uid = Guid.Empty };
         }
     }
     public class FavoriteApiModelExample : IExamplesProvider

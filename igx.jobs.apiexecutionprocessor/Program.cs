@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using d360.extensions.storage;
 using System.Text;
 using d360.core;
+using d360.core.entities.Metric;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -321,6 +322,27 @@ namespace igx.jobs.apiexecutionprocessor
                                 storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postCrossReferenceResult));
                                 log.WriteLine($"Post Cross References (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
 
+                                break;
+                            case ApiExecutionAction.PostDataQualityResults:
+                                #region Process DataQualityResults
+                                string postDataQualityResultsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                                List<IDataQualityUpsert> postDataQualityResultsRequest = new List<IDataQualityUpsert>();
+                                
+                                postDataQualityResultsRequest.AddRange(JsonConvert.DeserializeObject<List<DataQualityInsertModel>>(postDataQualityResultsJson));
+
+                                log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
+                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest, dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
+                                dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
+                                dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
+                                log.WriteLine($"POST DataQualityResults (DB Complete): Total results: {postDataQualityResultsResponse.Count}.");
+
+                                log.WriteLine($"POST DataQualityResults (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postDataQualityResultsResponse));
+                                log.WriteLine($"POST DataQualityResults (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+                                company.SendApiGraphEvent(Info);
+                                #endregion
                                 break;
                         }
                     }
