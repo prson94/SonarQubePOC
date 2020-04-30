@@ -350,21 +350,23 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if(!isFromLoad)
             this.model.FieldType.Type = new FieldType(value);
 
-
         switch (value.toLowerCase()) {
             case 'lookup':
                 if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid) {
                     observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
+                    console.log();
                 }
                 else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
                     let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-                    observables.push(this.lookupTypeSelected(valToPass));    
+                    observables.push(this.lookupTypeSelected(valToPass));
                 }
-                else
+                else {
+                    this.model.FieldType.Type[this.currentType].List.Uid = this.lookups.Lookups[0].value;
                     observables.push(this.lookupTypeSelected(this.lookups.Lookups[0].value));
-                this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
+                    this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
+                }
                 break;
             case 'relationship':
                 try {
@@ -379,6 +381,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 }
                 break;
             case 'fieldfromrelationship':
+            case 'computedrelationshipfield':
                 try {
                     if (this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.model.FieldType.Type["FieldFromRelationship"].IntersectTypeUid, this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
@@ -420,8 +423,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         }
                     );
                 break;
-            case 'complexrelationlookup':
-             
+            case 'complexrelationlookup':             
+                this.showDescription = false;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
                     let r = new FieldTypeRelationItemEditorModel();
 
@@ -432,9 +435,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.RelationItems = [];
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
-
-                    this.showDescription = false;
-
                     this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
                 break;
@@ -451,8 +451,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 break;
             case 'computedownershiplookup':
-                this.showDescription = false;
-                break;
             case 'ownershiplookup':
                 this.showDescription = false;
                 break;
@@ -797,9 +795,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Type.Lookup.List.Uid = null;
                 if (this.model.FieldType.Type.Lookup.List.Class == 'TaxonomyType')
                     this.model.FieldType.Type.Lookup.List.Class = 'Model';
-                if (this.model.FieldType.Type.Lookup.AllowMultipleValues)
-                    this.model.FieldType.Type.Lookup.List.AllowMultipleValues = true;
             }
+            if (this.model.FieldType.Type.Lookup.AllowMultipleValues)
+                this.model.FieldType.Type.Lookup.List.AllowMultipleValues = true;
         }
 
 
@@ -848,6 +846,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType == 'Relationship' && !this.model.FieldType.Type[this.currentType].IntersectTypeUid) {
+            valid = false;
+        }
+
+        if (this.currentType == 'Lookup' && !this.model.FieldType.Type[this.currentType].List.Uid) {
             valid = false;
         }
 
@@ -1368,7 +1370,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsEditable':
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json'].indexOf(this.currentType) > -1
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
