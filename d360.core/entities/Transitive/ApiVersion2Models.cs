@@ -599,6 +599,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public bool Cascade { get; set; }
+        [DataMember]
         public List<ResponsibilityTypeAllocationDeleteItemModel> Items { get; set; }
     }
 

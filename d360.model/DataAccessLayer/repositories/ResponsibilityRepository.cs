@@ -580,13 +580,13 @@ where 1=1
                     {
                         //delete rules
                         var ruleUids = rules.Select(x => x.uid).ToList();
-                        await Company.QueryAsync<int>("DELETE FROM [dbo].[ResponsibilityTypeRelationRule] WHERE Uid in @ruleUids", ruleUids);
+                        await Company.QueryAsync<int>("DELETE FROM [dbo].[ResponsibilityTypeRelationRule] WHERE Uid in @ruleUids", new { ruleUids });
                         Company.ResponsibilityTypeRelations.Remove(rtr);
                         Company.SaveChanges();
                         return new ResponsibilityTypeAllocationResponseModel()
                         {
                             AssetTypeUid = assetType.uid,
-                            Message = $"Allocation and Responsibility Rules deleted.",
+                            Message = $"Allocation and {ruleUids.Count()} Responsibility Rule(s) deleted.",
                             Success = true
                         };
                     }

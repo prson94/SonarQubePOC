@@ -755,7 +755,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (objectType != "DomainItem" && objectType != "ReferenceItemType" && objectType != "TaxonomyType") {
-            objectType += 'Type';
+            objectType += 'Type'; 
         }
 
         return this.fieldsService.getLookupDefaultValueOptions(objectId, objectType).pipe(
