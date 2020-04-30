@@ -267,6 +267,28 @@ namespace d360.web.Controllers.V2
                         });
                         continue;
                     }
+                    //check the assetclass is allower for an allocation
+                    List<AssetTypeClass> allowedClasses = new List<AssetTypeClass>()
+                    {
+                        AssetTypeClass.BusinessAsset,
+                        AssetTypeClass.TechnicalAsset,
+                        AssetTypeClass.FusionAttribute,
+                        AssetTypeClass.Model,
+                        AssetTypeClass.Rule,
+                        AssetTypeClass.Policy,
+                        AssetTypeClass.ReferenceItemType
+                    };
+                    if (!allowedClasses.Contains(assetType.Class)) 
+                    {
+                        results.Add(new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = allocation.AssetTypeUid,
+                            Message = $"Invalid AssetTypeClass. [{assetType.Class.ToString()}] is not valid.",
+                            Success = false
+                        });
+                        continue;
+                    } 
+
                     //check all permission values are valid
                     var validValues = Permission.DeleteAsset.GetList().Select(x => x.Value);
                     if (allocation.Permissions.Any(x => !validValues.Contains(x)))
