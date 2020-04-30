@@ -1,5 +1,5 @@
 ﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import {GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo} from '../../models/group.model';
+import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo, AddUserToGroup } from '../../models/group.model';
 import {GroupService} from '../../services/group.service';
 import {FormMode, FormHelper, SelectItem} from '../../models/form.model';
 import {BaseComponent} from '../shared/base.component';
@@ -25,7 +25,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     private formMode: FormMode = FormMode.Default;
     private FormMode = FormMode;
     private selectedResource: string;
-    private users: string[] = [];
+    private members = new Array<AddUserToGroup>();
 
 
     constructor(private groupService: GroupService) {
@@ -96,20 +96,21 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         this.isLoading = true;
         try {
             this.field.Value.forEach(x => {
-                this.users.push(x.split('|')[1]);
-
+                var user = new AddUserToGroup();
+                user.Uid = x.split('|')[1];
+                this.members.push(user);
             })
 
         } catch (e) {
             this.isLoading = false;
         }
 
-        this.groupService.addUsersToGroup(this.groupUid, this.users).subscribe(
+        this.groupService.addUsersToGroup(this.groupUid, this.members).subscribe(
             r => {
                 this.load();
                 this.formMode = FormMode.Default;
 
-                this.users = [];
+                this.members = [];
                 this.isLoading = false;
             }
         );

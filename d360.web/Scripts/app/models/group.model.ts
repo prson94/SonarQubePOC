@@ -69,4 +69,8 @@ export class GroupEditorModel {
     resourceList: SelectItem[];
 }
 
+export class AddUserToGroup {
+    Uid: string;
+}
+
 
