@@ -252,7 +252,7 @@ export class BaseComponent {
         hasChild?: boolean,
         hasRuleResult?:boolean
     ) {
-        if (this.secondaryNavService) {
+        if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
             var isCommonAsset: boolean = this.objectType == 'Artifact' || this.objectType == 'Policy' || this.objectType == 'Taxonomy' || this.objectType == 'Rule';
 
@@ -274,19 +274,24 @@ export class BaseComponent {
                         ['fa-random'],
                         `/sidebar/visualization/lineage${urlLineage}`, null, 15
                     );
+                    this.secondaryNavService.showItem(this.lineageSidebar);
                 }
                 else {
-                    this.lineageSidebar = new SecondaryNavItem(
-                        'Visualization',
-                        'lineage',
-                        ['fa-random'],
-                        `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
-                    );
+                    let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
+                    if (!isVisualizationDisabled) {
+                        this.lineageSidebar = new SecondaryNavItem(
+                            'Visualization',
+                            'lineage',
+                            ['fa-random'],
+                            `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
+                        );
 
-                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
-                    this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+
+                        this.secondaryNavService.showItem(this.lineageSidebar);
+                    }
                 }
-                this.secondaryNavService.showItem(this.lineageSidebar);
             }
 
             if (hasAudit || hasAudit === undefined) {
