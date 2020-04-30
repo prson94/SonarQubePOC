@@ -353,14 +353,18 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         switch (value.toLowerCase()) {
             case 'lookup':
-                if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid)
+                if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid) {
                     observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
+                    this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
+                }
                 else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
                     let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
+                    this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
                     observables.push(this.lookupTypeSelected(valToPass));    
                 }
                 else
                     observables.push(this.lookupTypeSelected(this.lookups.Lookups[0].value));
+                this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
                 break;
             case 'relationship':
                 try {
@@ -774,6 +778,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.model.FieldType.Type.Lookup.List.Uid = null;
                 if (this.model.FieldType.Type.Lookup.List.Class == 'TaxonomyType')
                     this.model.FieldType.Type.Lookup.List.Class = 'Model';
+                if (this.model.FieldType.Type.Lookup.AllowMultipleValues)
+                    this.model.FieldType.Type.Lookup.List.AllowMultipleValues = true;
             }
         }
 

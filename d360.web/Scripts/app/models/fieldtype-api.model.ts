@@ -50,9 +50,11 @@ export class FieldType {
                 break;
             case 'JSON':
                 this.JSON = new ComputedRelationshipReferenceList();
+                this.JSON.ShowIfEmpty = true;
                 break;
             case 'Json':
                 this.Json = new ComputedRelationshipReferenceList();
+                this.Json.ShowIfEmpty = true;
                 break;
             case 'JsonElement':
                 this.JsonElement = new ComputedRelationshipField();
@@ -373,6 +375,7 @@ export class Lookup implements ICommonOptions{
     DefaultValue: string;
     Description: Description = new Description();
     AllowAllValue: boolean;
+    AllowMultipleValues: boolean;
     AllowAllLabel: string;
     Filter: Filter = new Filter();
     Format: Format = new Format();
