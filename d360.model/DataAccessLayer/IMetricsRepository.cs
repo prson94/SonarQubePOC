@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.entities.Scoring;
 using d360.core.enums;
+using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {
@@ -26,5 +28,6 @@ namespace d360.model.DataAccessLayer
         List<DataQualityResponseModel> UpdateDataQualityResult(List<DataQualityUpdateModel> request, ApiExecution execution);
         List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value);
         List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> list, ApiExecution execution);
+        Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true);
     }
 }
