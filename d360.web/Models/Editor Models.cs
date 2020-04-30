@@ -33,6 +33,11 @@ namespace d360.web.Models
         public string value { get; set; }
     }
 
+    public class InsertUserToGroup
+    {
+        public Guid Uid { get; set; }
+    }
+
     public class AssetTypeEditorModel : BaseEditorModel
     {
         public AssetTypeUpsert AssetType { get; set; }
