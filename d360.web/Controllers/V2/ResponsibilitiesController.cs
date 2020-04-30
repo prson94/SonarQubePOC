@@ -275,7 +275,7 @@ namespace d360.web.Controllers.V2
                         AssetTypeClass.Model,
                         AssetTypeClass.Rule,
                         AssetTypeClass.Policy,
-                        AssetTypeClass.ReferenceItemType
+                        AssetTypeClass.Reference
                     };
                     if (!allowedClasses.Contains(assetType.Class)) 
                     {
