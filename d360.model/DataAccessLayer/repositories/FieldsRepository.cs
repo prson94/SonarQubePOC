@@ -320,6 +320,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Decimal' then FT.IsEditable else null end as 'Type.Decimal.IsEditable',
 		        case when FT.Type = 'Decimal' then FT.IsListable else null end as 'Type.Decimal.IsListable',
 		        case when FT.Type = 'Decimal' then FT.IsPartOfKey else null end as 'Type.Decimal.IsPartOfKey',
+		        case when FT.Type = 'Decimal' then FT.IsPrimaryFilter else null end as 'Type.Decimal.IsPrimaryFilter',
 		        case when FT.Type = 'Decimal' then FT.ShowIfEmpty else null end as 'Type.Decimal.ShowIfEmpty',
 
 		        case when FT.Type = 'Html' then FT.ColumnOrder else null end as 'Type.Html.ColumnOrder',
@@ -365,7 +366,9 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Link' then FT.IsDisplayable else null end as 'Type.Link.IsDisplayable',
 		        case when FT.Type = 'Link' then FT.IsEditable else null end as 'Type.Link.IsEditable',
 		        case when FT.Type = 'Link' then FT.IsListable else null end as 'Type.Link.IsListable',
-		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty',
+		        case when FT.Type = 'Link' then FT.ShowIfEmpty else null end as 'Type.Link.ShowIfEmpty
+		        case when FT.Type = 'Link' then FT.IsPartOfKey else null end as 'Type.Link.IsPartOfKey',
+		        case when FT.Type = 'Link' then FT.IsPrimaryFilter else null end as 'Type.Link.IsPrimaryFilter',
 
 		        case when FT.Type = 'Lookup' then FT.ColumnOrder else null end as 'Type.Lookup.ColumnOrder',
 		        case when FT.Type = 'Lookup' then FT.ColumnWidth else null end as 'Type.Lookup.ColumnWidth',

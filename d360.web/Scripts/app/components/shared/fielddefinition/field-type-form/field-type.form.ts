@@ -138,8 +138,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.FieldType = new FieldTypeAPIModelField();
         this.booleanDefaultValueOptions = [
             { label: '-No Default-', value: null },
-            { label: 'True', value: 'true' },
-            { label: 'False', value: 'false' },
+            { label: 'True', value: true },
+            { label: 'False', value: false },
         ]
     }
 
@@ -387,6 +387,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             this.model.FieldType.Type["FieldFromRelationship"].FieldTypeName));
                     }
                     this.model.FieldType.Type.FieldFromRelationship.IsEditable = false;
+                    this.showDescription = false;
                 } catch (e) {
                     console.log(e);
                 }
@@ -432,6 +433,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     this.model.RelationItems.push(r);
                     this.relationItemCount = 1;
 
+                    this.showDescription = false;
 
                     this.changeRefType(this.model.RelationItems.length - 1).subscribe();
                 }
@@ -441,6 +443,15 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showIsEditable = false;
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
+                break;
+            case 'json':
+                this.showDescription = false;
+                break;
+            case 'jsonelement':
+                this.showDescription = false;
+                break;
+            case 'boolean':
+                console.log(this.model.FieldType.Type["Boolean"].DefaultValue);
                 break;
             default:
                 break;
@@ -1353,7 +1364,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean'].indexOf(this.currentType) > -1);
                 else
                     return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
