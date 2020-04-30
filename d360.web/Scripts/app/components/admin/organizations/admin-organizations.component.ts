@@ -26,7 +26,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
     <div class="row" *ngIf="selectedType">
         <div class="col s12">
             <div class="tile tile-detail">  
-                <d3s-field-definition-tile [objectType]="'OrganizationType'" [objectID]="selectedType.ID" [showIsListable]="false" [showIsPartOfKey]="false" [assetTypeUid]="selectedType?.uid"></d3s-field-definition-tile>
+                <d3s-field-definition-tile [objectName]="selectedType?.Name" [objectType]="'OrganizationType'" [objectID]="selectedType.ID" [showIsListable]="false" [showIsPartOfKey]="false" [assetTypeUid]="selectedType?.uid"></d3s-field-definition-tile>
             </div>
         </div>
         <div class="col s12">

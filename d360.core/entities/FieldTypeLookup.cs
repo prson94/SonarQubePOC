@@ -49,7 +49,7 @@ namespace d360.core.entities
         public string OverrideDisplayName { get; set; }
         public int DisplayOrder { get; set; }
         public int SortOrder { get; set; }
-        public bool Show { get; set; } = true;
+        public bool Show { get; set; }
         public int? Width { get; set; } = null;
     }
     public class FieldTypeComplexLookupDefinitionRelation
@@ -59,6 +59,8 @@ namespace d360.core.entities
         public int ObjectID { get; set; }
         public core.ComplexLookupRelationType RelationType { get; set; }
         public FieldTypeComplexLookupRelationDirection Direction { get; set; } = 0;
+        public Guid? AssetUid { get; set; }
+        public Guid? IntersectTypeUid { get; set; }
 
         /// <summary>
         /// Generated when it comes time to create a dynamic SQL query.

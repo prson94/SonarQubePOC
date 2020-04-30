@@ -462,6 +462,8 @@ namespace d360.core.entities
         [DataMember]
         public string AllowAllLabel { get; set; }
         [DataMember]
+        public string ParentFieldTypeName { get; set; }
+        [DataMember]
         public FieldTypeDataTypeLookupApiViewModel_Filter Filter { get; set; }
         [DataMember]
         public FieldTypeDataTypeLookupApiViewModel_Format Format { get; set; }
@@ -700,5 +702,17 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? RelationshipTypeUid { get; set; } = null;
+    }
+
+    public class MoveModel
+    {
+        [DataMember]
+        public Guid? TypeUid { get; set; }
+
+        [DataMember]
+        public string FieldTypename { get; set; }
+
+        [DataMember]
+        public string Direction { get; set; }
     }
 }
