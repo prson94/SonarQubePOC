@@ -33,18 +33,15 @@ namespace igx.jobs.assetgraphprocessor
                 try
                 {
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    await companyConnection.ExecuteAsync(@"
-begin
-declare @assetTypeId bigint, @assetId bigint;
+                    await companyConnection.ExecuteAsync(@"begin
+    declare @assetId bigint;
 
-select  @assetId = id,
-        @assetTypeId = assetTypeId
-from    Asset
-where   [uid] = @uid;
+    select  @assetId = id
+    from    Asset
+    where   [uid] = @uid;
 
-exec graph.PopulatePathsForAssetType @assetTypeId, @assetId;
-end
-", new { uid = info.Uid }, commandTimeout: timeout);
+    exec graph.UpdateGraphTableHierarchyBy null, null, @assetId 
+end", new { uid = info.Uid }, commandTimeout: timeout);
                 }
                 catch (Exception ex)
                 {
