@@ -111,6 +111,7 @@ export class GridFilterExpression {
 export class GridFilterColumn {
     text: string;
     datafield: string;
+    uidfield: string;
     columntype: string;
     filteritems: string[];
     hiddenfield: boolean;
