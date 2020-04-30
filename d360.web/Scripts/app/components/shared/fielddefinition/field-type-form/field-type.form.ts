@@ -63,7 +63,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-
     @Input() showIsListable: boolean = true;
     @Input() showIsPartOfKey: boolean = true;
     @Input() showIsEditable: boolean = true;
