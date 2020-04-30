@@ -796,8 +796,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Type.Lookup.List.Class == 'TaxonomyType')
                     this.model.FieldType.Type.Lookup.List.Class = 'Model';
             }
-            if (this.model.FieldType.Type.Lookup.AllowMultipleValues)
-                this.model.FieldType.Type.Lookup.List.AllowMultipleValues = true;
+            this.model.FieldType.Type.Lookup.List.AllowMultipleValues = this.model.FieldType.Type.Lookup.AllowMultipleValues;
         }
 
 
