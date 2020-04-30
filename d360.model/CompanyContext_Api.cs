@@ -5983,7 +5983,7 @@ insert into #Keys
 
         }
 
-        public List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> import, ApiExecution execution, int timeout = 3600)
+        public List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> import, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DataQualityResponseModel>();
             bool generalChecksCompleted = false;
@@ -6008,7 +6008,7 @@ insert into #Keys
                     {
                         results.AddRange(
                             Query<DataQualityResponseModel>(
-                                $"select Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                $"select ItemNumber, Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
                                 new { execution.ExecutionID }
                             )
                         );
@@ -6550,7 +6550,7 @@ insert into #Keys
 
                         results.AddRange(
                                 Query<DataQualityResponseModel>(
-                                    $"select Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    $"select ItemNumber, Uid, ExecutionItemUid, Success, Message from api.ExecutionAssetResult where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );

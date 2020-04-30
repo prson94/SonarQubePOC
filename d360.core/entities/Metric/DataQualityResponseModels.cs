@@ -58,7 +58,7 @@ namespace d360.core.entities.Metric
 
     public class DataQualityResponseModel
     {
-
+        public int ItemNumber { get; set; }
         public Guid? Uid { get; set; }
         public Guid ExecutionItemUid { get; set; }
         public bool Success { get; set; } = false;
