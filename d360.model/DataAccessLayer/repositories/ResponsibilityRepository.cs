@@ -563,5 +563,64 @@ where 1=1
                 };
             }
         }
+
+        public async Task<ResponsibilityTypeAllocationResponseModel> DeleteAllocation(ResponsibilityType responsibility, AssetType assetType, bool cascade)
+        {
+            try
+            {
+                //find the responsibility type
+                var rtr = Company.Filter<ResponsibilityTypeRelation>(x => x.ObjectID == assetType.ObjectID && x.ObjectType == assetType.Object && x.ResponsibilityTypeID == responsibility.ID).FirstOrDefault();
+
+                //check is there responsibility rules for this responsibility type
+                var rules = await GetResponsibilityRules(responsibility.UID);
+                if(rules.Any(x=>x.AssetTypeUid == assetType.uid))
+                {
+                    //if it has rules and cascade id false the error this response
+                    if (cascade)
+                    {
+                        //delete rules
+                        var ruleUids = rules.Select(x => x.uid).ToList();
+                        await Company.QueryAsync<int>("DELETE FROM [dbo].[ResponsibilityTypeRelationRule] WHERE Uid in @ruleUids", ruleUids);
+                        Company.ResponsibilityTypeRelations.Remove(rtr);
+                        Company.SaveChanges();
+                        return new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = assetType.uid,
+                            Message = $"Allocation and Responsibility Rules deleted.",
+                            Success = true
+                        };
+                    }
+                    else
+                    {
+                        return new ResponsibilityTypeAllocationResponseModel()
+                        {
+                            AssetTypeUid = assetType.uid,
+                            Message = $"Cannot remove Allocation. Allocation has Responsibility Rules defined and Cascade was set to false.",
+                            Success = false
+                        };
+                    }
+                }
+                else
+                {
+                    Company.ResponsibilityTypeRelations.Remove(rtr);
+                    Company.SaveChanges();
+                    return new ResponsibilityTypeAllocationResponseModel()
+                    {
+                        AssetTypeUid = assetType.uid,
+                        Message = $"Allocation deleted.",
+                        Success = true
+                    };
+                }
+            }
+            catch (Exception e)
+            {
+                return new ResponsibilityTypeAllocationResponseModel()
+                {
+                    AssetTypeUid = assetType.uid,
+                    Message = e.InnerException != null ? e.InnerException.Message : e.Message,
+                    Success = false
+                };
+            }
+        }
     }
 }
