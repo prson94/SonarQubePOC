@@ -23,7 +23,10 @@ export enum PredicateType {
     ObjectOwnerhip ='ObjectOwnerhip',
     Transformation ='Transformation',
     BusinessToTechnical = 'BusinessToTechnical',
-    SemanticRelation = 'SemanticRelation'
+    SemanticRelation = 'SemanticRelation',
+    Diagram = 'Diagram',
+    DiagramUse = 'DiagramUse',
+    DiagramReference = 'DiagramReference'
 }
 
 export enum PredicateFriendlyType {
@@ -41,5 +44,8 @@ export enum PredicateFriendlyType {
     ObjectOwnerhip = 'Object Ownerhip',
     Transformation = 'Transformation',
     BusinessToTechnical = 'Business To Technical',
-    SemanticRelation = 'Semantic Relation'
+    SemanticRelation = 'Semantic Relation',
+    Diagram = 'Diagram',
+    DiagramUse = 'Diagram Use',
+    DiagramReference = 'Diagram Reference'
 }
