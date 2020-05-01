@@ -64,6 +64,7 @@ begin
 				@assetTypeUid = F.AssetTypeUid
 		from	api.Execution E
 				cross apply openjson(E.Fields, N'lax $') with (AssetTypeUid uniqueidentifier) F
+		where	E.ExecutionID = @executionId
 
 		if @assetTypeUid is not null
 		begin
