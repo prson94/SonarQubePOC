@@ -209,7 +209,7 @@ namespace d360.core.entities
     public class FieldTypeEditableApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public int? ColumnWidth { get; set; }
         [DataMember]
@@ -239,7 +239,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedFusionLookupApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
@@ -249,7 +249,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedOwnershipLookupApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
@@ -270,7 +270,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedRelationshipFieldApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public int? ColumnWidth { get; set; }
         [DataMember]
@@ -292,7 +292,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
@@ -313,7 +313,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedRelationshipReferenceListApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
@@ -367,7 +367,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeJsonApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
@@ -384,7 +384,7 @@ namespace d360.core.entities
         public JsonAttributeApiViewModel JsonAttribute { get; set; }
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public int? ColumnWidth { get; set; }
         [DataMember]
@@ -492,7 +492,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid IntersectTypeUid { get; set; }
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public int? ColumnWidth { get; set; }
         [DataMember]
@@ -519,7 +519,7 @@ namespace d360.core.entities
     public class FieldTypeDataTypeTagApiViewModel
     {
         [DataMember]
-        public int ColumnOrder { get; set; }
+        public int? ColumnOrder { get; set; }
         [DataMember]
         public int? ColumnWidth { get; set; }
         [DataMember]
