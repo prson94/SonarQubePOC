@@ -97,7 +97,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
         try {
             this.field.Value.forEach(x => {
                 var user = new AddUserToGroup();
-                user.Uid = x.split('|')[1];
+                user.Uid = x.split('|')[3];
                 this.members.push(user);
             })
 
