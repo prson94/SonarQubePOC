@@ -139,9 +139,6 @@ namespace igx.jobs.assetgraphprocessor
 
 
                             await bulkCopy.WriteToServerAsync(table);
-
-
-                            var rr = (await company.QueryAsync("select * from #GraphAssets", transaction: trans)).ToList();
                             
                             #endregion
 
