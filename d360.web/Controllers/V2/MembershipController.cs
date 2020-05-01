@@ -596,7 +596,8 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var result = membershipRepository.DeleteResources(resources);
+                var execution = getApiExecution(users.Count);
+                var result = membershipRepository.DeleteResources(execution, resources);
 
                 if (result.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));
