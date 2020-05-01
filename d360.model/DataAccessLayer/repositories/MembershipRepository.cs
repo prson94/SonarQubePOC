@@ -160,6 +160,7 @@ namespace d360.model.DataAccessLayer
             resourceTable.Columns.Add("ItemNumber", typeof(int));
             resourceTable.Columns.Add("ResourceID", typeof(int));
             resourceTable.Columns.Add("Username", typeof(string));
+            resourceTable.Columns.Add("uid", typeof(Guid));
 
 
             userTable.Columns.Add("ExecutionID", typeof(Guid));
@@ -202,6 +203,8 @@ namespace d360.model.DataAccessLayer
                 row["ExecutionID"] = executionID;
                 row["ItemNumber"] = itemNumber;
                 row["Username"] = user.Username;
+                if (user.uid.HasValue)
+                    row["uid"] = user.uid;
 
                 resourceTable.Rows.Add(row);
 
@@ -238,18 +241,20 @@ namespace d360.model.DataAccessLayer
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     bulkCopy.ColumnMappings.Add("Username", "Username");
+                    bulkCopy.ColumnMappings.Add("uid", "uid");
 
 
                     await bulkCopy.WriteToServerAsync(resourceTable);
 
 
                     await CommunityContext.Connection.ExecuteAsync(@"
-                        update U
-                        set U.ResourceID = R.ID
-                        from #UserResources U
-                        inner join [Resource] R on R.Email = U.Username;
+                        update  U
+                        set     U.ResourceID = coalesce(R2.ID, R.ID)
+                        from    #UserResources U
+                                left join [Resource] R on R.Email = U.Username
+                                left join [Resource] R2 on R2.[uid] = U.[uid];
 
-                        update U
+                        update  U
                         set U.CompanyResourceState = R.[State],
                             U.uid = CR.uid
                         from #UserResources U
