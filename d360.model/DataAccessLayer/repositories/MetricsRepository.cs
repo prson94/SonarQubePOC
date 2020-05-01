@@ -907,7 +907,7 @@ namespace d360.model.DataAccessLayer
             }
 
             var dataQualityResultSql = $@";with ResultsTable as (select 
-	                        DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetSegments as EvaluatedAssetSegments, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, P.Passed as Passed
+	                        DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetSegments as EvaluatedAssetSegments, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, CASE WHEN PassCount = 0 and FailCount = 0 THEN null else P.Passed END as Passed
                         from 
 	                        {owningAssetSQL}
 	                        {evaluatedAssetSQL}
