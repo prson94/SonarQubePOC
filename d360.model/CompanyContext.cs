@@ -2579,18 +2579,7 @@ select @err";
                     if (string.IsNullOrEmpty(o.Name.Trim())) throw new ArgumentException(Messages.Error_Name_Required);
 
 
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
-                                throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
-                            break;
-                        case EntityState.Modified:
-                            if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-                            break;
-                    }
+                    PerformAssetTypeNameCheck(o,entry.State);                    
                 }
                 #endregion
 
@@ -2791,6 +2780,72 @@ select @err";
             return returnValue;
         }
 
+        private void PerformAssetTypeNameCheck(AssetType o,EntityState state)
+        {
+            switch (state)
+            {
+                case EntityState.Added:
+                    if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        int count = 0;
+                        if (o.Parent != null) {
+                            count = Database.Connection.QuerySingleOrDefault<int>($@"
+                            select 
+	                            count(1)
+                            from
+	                            intersecttype I
+	                            inner join [Predicate] P on P.ID = I.PredicateID
+	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
+                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name", new { parentObjectId = o.Parent.ObjectID,  name = o.Name, cls = o.Class });
+                        }
+                        else
+                        {
+                            // only root level artifact types with the same class type IE tech asset vs business asset
+                            count = Database.Connection.QuerySingleOrDefault<int>($@"
+	                            select count(1) from assettype a
+                                where a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
+		                                and a.Name = @name", new { name = o.Name, cls = o.Class });
+                        }
+
+                        if(count > 0)
+                            throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
+                    }
+                    else if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
+                        throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
+                    break;
+                case EntityState.Modified:
+                    if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        int count = 0;
+                        if (o.Parent != null)
+                        {
+                            count = Database.Connection.QuerySingleOrDefault<int>($@"
+                            select 
+	                            count(1)
+                            from
+	                            intersecttype I
+	                            inner join [Predicate] P on P.ID = I.PredicateID
+	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
+                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name and a.id <> @id", new { parentObjectId = o.Parent.ObjectID, name = o.Name, cls = o.Class, id = o.ID });
+                        }
+                        else
+                        {
+                            // only root level artifact types with the same class type IE tech asset vs business asset
+                            count = Database.Connection.QuerySingleOrDefault<int>($@"
+	                            select count(1) from assettype a
+                                where
+	                                a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
+		                                and a.Name = @name and a.ID = @id", new { name = o.Name, cls = o.Class, id = o.ID });
+                        }
+
+                        if (count > 0)
+                            throw new ArgumentException(Messages.Error_NameTaken);
+                    }
+                    else if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
+                        throw new ArgumentException(Messages.Error_NameTaken);
+                    break;
+            }
+        }
 
         private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {

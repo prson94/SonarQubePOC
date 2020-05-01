@@ -1048,7 +1048,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false
+                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        Parent = parentAssetType
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -1126,7 +1127,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model
+                        Class = AssetTypeClass.Model                        
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
@@ -1297,6 +1298,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
                         assetType.CanOwnFusion = model.CanOwnFusion ?? false;
+                        assetType.Parent = parentAssetType;
                     }
                     else
                     {
