@@ -2800,7 +2800,7 @@ select @err";
                         }
                         else
                         {
-                            // only root level artifact types with the same class type IE tech asset vs 
+                            // only root level artifact types with the same class type IE tech asset vs business asset
                             count = Database.Connection.QuerySingleOrDefault<int>($@"
 	                            select count(1) from assettype a
                                 where a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
@@ -2830,7 +2830,7 @@ select @err";
                         }
                         else
                         {
-                            // only root level artifact types with the same class type IE tec
+                            // only root level artifact types with the same class type IE tech asset vs business asset
                             count = Database.Connection.QuerySingleOrDefault<int>($@"
 	                            select count(1) from assettype a
                                 where
