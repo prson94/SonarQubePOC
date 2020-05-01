@@ -2839,7 +2839,7 @@ select @err";
                         }
 
                         if (count > 0)
-                            throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
+                            throw new ArgumentException(Messages.Error_NameTaken);
                     }
                     else if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
                         throw new ArgumentException(Messages.Error_NameTaken);
