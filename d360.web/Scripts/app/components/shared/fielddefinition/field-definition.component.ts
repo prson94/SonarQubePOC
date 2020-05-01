@@ -18,8 +18,7 @@ import { clearLine } from 'readline';
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: number;
-    @Input() currentUid: string;
+    @Input() objectID: number;    
     @Input() title: string = 'Field Definition';
 
     @Input() actionTypeUid: string;
@@ -59,13 +58,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {
-            if (p == 'currentUid') {
-                this.currentUid = changes['currentUid'].currentValue;
-                this.isEditing = false;
-                this.isAdding = false;
-                this.isDeleting = false;
-            }
+        for (let p in changes) {            
             if (p == 'objectID') {
                 this.objectID = changes['objectID'].currentValue;
                 this.isEditing = false;
@@ -82,6 +75,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.load();
     }
 
+
+
     load(): void {
         if (this.objectType == "IntersectType")
             this.showIsPartOfKey = false;
@@ -96,6 +91,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             }
         );
     }
+
+    get currentUid(): string {
+        return this.actionTypeUid || this.assetTypeUid || this.relationshipTypeUid;        
+    }
+
     private checkKeyFields() {
         let foundKeyField = false;
         if (this.fieldDefinitions && this.fieldDefinitions.length > 0) {
