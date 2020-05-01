@@ -1359,6 +1359,7 @@ from	IntersectType I
         public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
+            var graphResults = new List<DatabaseBulkAssetResult>();
             var dt = DateTime.UtcNow;
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
@@ -2093,6 +2094,14 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
                                 )
                             );
 
+                            //include hierarchical records for graph tables
+                            graphResults.AddRange(
+                                Query<DatabaseBulkAssetResult>(
+                                    $"select * from api.ExecutionDeletedAsset where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                                )
+                            );
+
                             OnAssetsPartiallyProcessed(new AssetsPartiallyProcessedEventArgs
                             {
                                 Results = results
@@ -2104,7 +2113,7 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
 
                         Connection.Close();
 
-                        SendAssetGraphEvents(results);
+                        SendAssetGraphEvents(graphResults);
 
                         if (sendWorkflowEvents)
                         {
