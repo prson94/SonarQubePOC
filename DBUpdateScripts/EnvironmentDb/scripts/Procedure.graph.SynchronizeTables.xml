@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.graph.SynchronizeTables-v2">
+  <changeSet author="Core" id="Procedure.graph.SynchronizeTables-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -158,7 +158,7 @@ begin
 			
 			print @id
 			
-			exec graph.PopulatePathsForAssetType @id;
+			exec [graph].[UpdateGraphTableHierarchyBy] null, @id, null
 		
 			delete from #assetTypes where id = @id;
 		end
@@ -183,7 +183,7 @@ begin
                     @assetId bigint;
 			select top 1 @assetTypeId = AssetTypeID, @assetId = ID from #assets;
 
-			exec graph.PopulatePathsForAssetType @assetTypeId, @assetId;
+			exec [graph].[UpdateGraphTableHierarchyBy] null, null, @assetId
 
 			delete from #assets where ID = @assetId;
 		end 
@@ -222,6 +222,30 @@ begin
 	from	graph.AssetEdge E
 			inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
 			inner join #DeleteNodes D on D.ID = N.ID
+
+	-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
+	drop table if exists #Uids
+	create table #Uids (Uid uniqueidentifier)
+	create clustered index CIX_TempUids on #Uids (Uid)
+
+	insert into #Uids
+		select	R.Uid
+		from	graph.AssetNode A,
+				dbo.AssetResultEdge E,
+				dbo.AssetResult R,
+				#DeleteNodes D
+		where	MATCH(A-(E)->R)
+				and E.Class = 1
+				and A.ID = D.ID;
+
+	delete	E
+	from    dbo.AssetResultEdge E
+			inner join graph.AssetNode N on E.$from_id = N.$node_id
+			inner join #DeleteNodes D on D.ID = N.ID;
+
+	delete	T
+	from	dbo.AssetResult T
+			inner join #Uids S on S.Uid = T.Uid;
 
 	delete	N
 	from	graph.AssetNode N
