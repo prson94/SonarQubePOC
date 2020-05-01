@@ -227,15 +227,30 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V3">
+  
+   <changeSet author="TDuric" id="Data.Corrections.GOV-9723-DeleteStatement-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-BEGIN TRY
-    BEGIN TRANSACTION 
+	delete from [dbo].[AssetResultEdge]
+	delete from [dbo].[AssetResult]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V6">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 
 	drop table if exists #existingRuleResults
 	create table #existingRuleResults (RuleUid uniqueidentifier,Uid uniqueidentifier, EffectiveDate date, RunDate date, RowsPassed int, RowsFailed int, CreatedOn date, CreatedBy int, UpdatedOn date, UpdatedBy int)
@@ -257,7 +272,6 @@ BEGIN TRY
 			inner join [Rule] R on R.ID = RI.RuleID
 			inner join [RuleType] RT on R.RuleTypeID = RT.ID
 			inner join Asset A on A.Object = 'Rule' and ObjectId = R.ID    
-	where RowsPassed != 0 or RowsFailed != 0
 
 	INSERT INTO AssetResult
 	 ([Uid]
@@ -281,18 +295,6 @@ BEGIN TRY
 		    inner join graph.AssetNode AN on AN.Uid = ERR.[RuleUid]
 			inner join dbo.AssetResult AR on AR.Uid = ERR.[Uid]
 
-	COMMIT
-END TRY
-BEGIN CATCH
-    IF @@TRANCOUNT > 0
-        ROLLBACK TRAN
-
-        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE()
-        DECLARE @ErrorSeverity INT = ERROR_SEVERITY()
-        DECLARE @ErrorState INT = ERROR_STATE()
-
-    RAISERROR (@ErrorMessage, @ErrorSeverity, @ErrorState);
-END CATCH
 		]]>
     </sql>
 	<rollback>
