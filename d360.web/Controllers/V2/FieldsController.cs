@@ -1317,35 +1317,19 @@ namespace d360.web.Controllers.V2
         public async Task<HttpResponseMessage> GetStandardRelations(Guid assetTypeUid)
         {
             var prefix = "Fields.GetStandardRelations => ";
-            var errorMessage = "";
 
             try
             {
-                string type = "";
-                int id = 0;
-                if (assetTypeUid != null)
-                {
-                    var at = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
-                    type = at.Object;
-                    id = at.ObjectID;
-                }
-                else 
-                {
-                    type = "IntersectType";
-                    id = 0;
-                }
-                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType('{type}', {id}) order by title");
-
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeID)", new { assetTypeUid });
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
             {
-                errorMessage = ex.GetFullExceptionData(false);
-                return ReturnApiError(ex.Status, errorMessage);
+                return ReturnApiError(ex.Status, ex.GetFullExceptionData(false));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
