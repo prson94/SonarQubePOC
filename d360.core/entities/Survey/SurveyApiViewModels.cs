@@ -49,7 +49,7 @@ namespace d360.core.entities.SurveyModels
 
     public class QuestionDescriptive
     {
-        public string Uid { get; set; }
+        public Guid Uid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string DisplayStyle { get; set; }
@@ -58,8 +58,8 @@ namespace d360.core.entities.SurveyModels
 
     public class SurveyTypeApiModel
     {
-        public string Uid { get; set; }
-        public string AssetTypeUid { get; set; }
+        public Guid Uid { get; set; }
+        public Guid AssetTypeUid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int ValidForDays { get; set; }
@@ -90,13 +90,13 @@ namespace d360.core.entities.SurveyModels
 
     public class Questions
     {
-        public string Uid { get; set; }
+        public Guid Uid { get; set; }
         public List<Response> Responses { get; set; } = new List<Response>();
     }
 
     public class SurveyResultSummaryApiModel
     {
-        public string AssetUid { get; set; }
+        public Guid AssetUid { get; set; }
         public int NumberOfResponders { get; set; }
         public DateTime FirstRespondedOn { get; set; }
         public DateTime LastRespondedOn { get; set; }
