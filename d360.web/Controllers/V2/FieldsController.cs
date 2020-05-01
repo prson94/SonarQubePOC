@@ -1754,14 +1754,14 @@ namespace d360.web.Controllers.V2
                     type = SystemObjects.IssueType;
                     id = actionType.ID;
                     name = actionType.Name;
-                    fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == actionType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+                    fieldTypeID = Company.Filter<FieldType>(x => x.ObjectID == actionType.ID && x.Object == "IssueType" && x.Name == model.FieldTypename).SingleOrDefault().ID;
                 }
                 else if (intersectType != null)
                 {
                     type = SystemObjects.IntersectType;
                     id = intersectType.ID;
                     name = "intersectType:" + model.TypeUid.ToString();
-                    fieldTypeID = Company.Filter<FieldType>(x => x.AssetTypeID == intersectType.ID && x.Name == model.FieldTypename).SingleOrDefault().ID;
+                    fieldTypeID = Company.Filter<FieldType>(x => x.ObjectID == intersectType.ID && x.Object == "IntersectType" && x.Name == model.FieldTypename).SingleOrDefault().ID;
                 }
                 else
                 {
