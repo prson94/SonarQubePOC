@@ -802,33 +802,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         //add the fieldtype to the API model as an array
         apiModel.Fields = [this.model.FieldType];
 
-        
-
-        if (this.actionName == 'Edit') {
-            this.fieldsService.putFieldsV2(apiModel).subscribe(
-                r => {
-                    this.isLoading = false;
-                    this.showMessageForResult(this.messagesService, r);
-
-                    if (r.type != 'error') {
-                        this.model.FieldType.Type = new FieldType("Empty");
-                        this.onComplete.emit({ action: 'edit', field: this.model });
-                    }
+        this.fieldsService.putFieldsV2(apiModel).subscribe(
+            r => {
+                this.isLoading = false;
+                if (r.Success) {
+                    r.Message = this.actionName == "Edit" ? "Field Type successfully updated" : "Field Type successfully added";
+                    this.showMessageForApiResponse(this.messagesService, r);
+                    this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
+                    this.model.FieldType.Type = new FieldType("Empty");
                 }
-            );
-        } else {
-            this.fieldsService.putFieldsV2(apiModel).subscribe(
-                r => {
-                    this.showMessageForResult(this.messagesService, r);
-                    this.isLoading = false;
-
-                    if (r.type != 'error') {
-                        this.model.FieldType.Type = new FieldType("Empty");
-                        this.onComplete.emit({ action: 'add', field: this.model });
-                    }
-                }
-            );
-        }
+            }
+        );
     }
 
     private valid(): boolean {
