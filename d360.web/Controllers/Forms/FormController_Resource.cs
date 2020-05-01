@@ -490,7 +490,7 @@ namespace d360.web.Controllers
             }
 
             querySql = @"
-			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.uid as varchar(100)) + '|' + r.LastName + ', ' + r.FirstName  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
+			select  r.LastName + ', ' + r.FirstName as Text, 'Resource|' + cast(r.ResourceID as varchar) + '|' + r.LastName + ', ' + r.FirstName + '|' + cast(r.uid as varchar(100))  as [Value],'User' as [Type] from reporting.Global_Resource r                                    
 			where r.[State] = @userStatus 
 			and  not exists   (select 1 from ResourceGroup where Groupid =@id   and ResourceID= r.ResourceID) "
             + hideUsersSql;
