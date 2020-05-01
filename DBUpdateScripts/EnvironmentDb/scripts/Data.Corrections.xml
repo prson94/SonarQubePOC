@@ -227,17 +227,30 @@ update [Predicate] set Name = 'Parent Of', Inverse = 'Child Of' where [Uid] = '7
 		]]>
 	</rollback>
   </changeSet>
-
-  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V4">
+  
+   <changeSet author="TDuric" id="Data.Corrections.GOV-9723-DeleteStatement-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-
 	delete from [dbo].[AssetResultEdge]
 	delete from [dbo].[AssetResult]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-9723-V6">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
 
 	drop table if exists #existingRuleResults
 	create table #existingRuleResults (RuleUid uniqueidentifier,Uid uniqueidentifier, EffectiveDate date, RunDate date, RowsPassed int, RowsFailed int, CreatedOn date, CreatedBy int, UpdatedOn date, UpdatedBy int)
