@@ -96,7 +96,7 @@ namespace igx.jobs.communitypackagedeployer
                 if (f.Type.Boolean != null)
                 {
                     newFieldType.Type = DataType.Boolean.ToString();
-                    newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
                     if (f.Type.Boolean.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Boolean.DefaultValue.Value.ToString().ToLower();
                     if (f.Type.Boolean.Description != null)
@@ -115,7 +115,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Date != null)
                 {
                     newFieldType.Type = DataType.Date.ToString();
-                    newFieldType.ColumnOrder = f.Type.Date.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Date.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
                     if (f.Type.Date.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Date.DefaultValue.Value.ToString();
                     if (f.Type.Date.Description != null)
@@ -138,7 +138,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.DateTime != null)
                 {
                     newFieldType.Type = DataType.DateTime.ToString();
-                    newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.DateTime.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.DateTime.ColumnWidth;
                     if (f.Type.DateTime.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.DateTime.DefaultValue.Value.ToString();
                     if (f.Type.DateTime.Description != null)
@@ -161,7 +161,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Decimal != null)
                 {
                     newFieldType.Type = DataType.Decimal.ToString();
-                    newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
                     if (f.Type.Decimal.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
                     if (f.Type.Decimal.Description != null)
@@ -188,7 +188,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Html != null)
                 {
                     newFieldType.Type = DataType.Html.ToString();
-                    newFieldType.ColumnOrder = f.Type.Html.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Html.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
                     newFieldType.DefaultValue = f.Type.Html.DefaultValue;
                     if (f.Type.Html.Description != null)
@@ -213,7 +213,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Link != null)
                 {
                     newFieldType.Type = DataType.Link.ToString();
-                    newFieldType.ColumnOrder = f.Type.Link.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Link.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Link.ColumnWidth;
                     if (f.Type.Link.Description != null)
                     {
@@ -235,7 +235,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Number != null)
                 {
                     newFieldType.Type = DataType.Number.ToString();
-                    newFieldType.ColumnOrder = f.Type.Number.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Number.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
                     if (f.Type.Number.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
                     if (f.Type.Number.Description != null)
@@ -261,7 +261,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Text != null)
                 {
                     newFieldType.Type = DataType.Text.ToString();
-                    newFieldType.ColumnOrder = f.Type.Text.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Text.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
                     newFieldType.DefaultValue = f.Type.Text.DefaultValue;
                     if (f.Type.Text.Description != null)
@@ -288,7 +288,7 @@ namespace igx.jobs.communitypackagedeployer
                 else if (f.Type.Tag != null)
                 {
                     newFieldType.Type = DataType.Tag.ToString();
-                    newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder;
+                    newFieldType.ColumnOrder = f.Type.Tag.ColumnOrder.Value;
                     newFieldType.ColumnWidth = f.Type.Tag.ColumnWidth;
                     if (f.Type.Tag.Description != null)
                     {
