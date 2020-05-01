@@ -892,7 +892,6 @@ namespace d360.web.Controllers.V2
         /// <br/>
         /// **Notes:** 
         /// * Edit permissions on the rule are required.
-        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
@@ -1241,7 +1240,6 @@ namespace d360.web.Controllers.V2
         /// <br/>
         /// **Notes:** 
         /// * Edit permissions on the rule are required.
-        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>An HTTP status code, executionId of the request and message.</returns>
@@ -1341,7 +1339,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
-                doc.SetCellValue(rowNumber, index++, row.Passed);
+                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
             }
             doc.AutoFitColumn(1, 13);
             #endregion
@@ -1391,7 +1389,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
-                doc.SetCellValue(rowNumber, index++, row.Passed);
+                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString(): "");
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);
