@@ -404,6 +404,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailByID.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByFollower.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
+  <include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
@@ -451,8 +452,8 @@
 	<include file="scripts/Procedure.utility.GetFieldTypeLookupList.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
-	
-	<!-- Data Changes -->
+    
+  <!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
 </databaseChangeLog>
