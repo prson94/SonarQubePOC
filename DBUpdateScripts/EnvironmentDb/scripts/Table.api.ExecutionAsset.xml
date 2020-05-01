@@ -67,4 +67,31 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.api.ExecutionAsset-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+
+if not exists (select * from information_schema.columns where table_schema='api' and table_name = 'ExecutionAsset' and column_name = 'UpdateGraph')
+begin
+  alter table api.ExecutionAsset add UpdateGraph bit constraint DF_ApiExecutionAsset_UpdateGraph default(0) not null
+end
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_ApiExecutionAsset_UpdateGraph')
+BEGIN
+	create nonclustered index IX_ApiExecutionAsset_UpdateGraph on api.ExecutionAsset (ExecutionID asc, UpdateGraph asc)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+alter table api.ExecutionAsset DROP CONSTRAINT IF EXISTS DF_ApiExecutionAsset_UpdateGraph
+drop index if exists IX_ApiExecutionAsset_UpdateGraph on api.ExecutionAsset
+alter table api.ExecutionAsset DROP COLUMN IF EXISTS UpdateGraph
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

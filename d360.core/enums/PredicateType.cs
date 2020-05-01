@@ -260,7 +260,7 @@ namespace d360.core.enums
         SemanticRelation = 14,
         [
             Category(""),
-            Name("Task"),
+            Name("Diagram"),
             Description(""),
             ReadOnly(false),
             SingleRelationshipByFunctionalType(true),
@@ -271,13 +271,13 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.Task),
+            ObjectAssetClassesSupported(AssetTypeClass.Diagram),
             AllowIntersectTypeAsSubject(false)
         ]
-        Task = 15,
+        Diagram = 15,
         [
             Category(""),
-            Name("Task Use"),
+            Name("Diagram Use"),
             Description(""),
             ReadOnly(false),
             SingleRelationshipByFunctionalType(false),
@@ -287,14 +287,14 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.Task),
+            SubjectAssetClassesSupported(AssetTypeClass.Diagram),
             ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
         ]
-        TaskUse = 16,
+        DiagramUse = 16,
         [
             Category(""),
-            Name("Task Diagram Sub-reference"),
+            Name("Diagram Reference"),
             Description(""),
             ReadOnly(false),
             SingleRelationshipByFunctionalType(true),
@@ -304,11 +304,11 @@ namespace d360.core.enums
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
-            SubjectAssetClassesSupported(AssetTypeClass.Task),
+            SubjectAssetClassesSupported(AssetTypeClass.Diagram),
             ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
             AllowIntersectTypeAsSubject(false)
         ]
-        TaskDiagramReference = 17
+        DiagramReference = 17
     }
 
 

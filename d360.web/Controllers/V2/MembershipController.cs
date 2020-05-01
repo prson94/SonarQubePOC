@@ -262,21 +262,21 @@ namespace d360.web.Controllers.V2
         /// <param name="groupUid">The unique identifier of the Group.</param>
         /// <param name="users">The users that need to be added to the group</param>
         [
-           HttpPost,
-           MapToApiVersion("2.0"),
-           Route("groups/{groupUid:Guid}/members"),
-           SwaggerRequestExample(typeof(List<Guid>), typeof(InsertUserToGroupExample)),
-           SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-           SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
-           SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-       ]
-        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<Guid> users)
+   HttpPost,
+   MapToApiVersion("2.0"),
+   Route("groups/{groupUid:Guid}/members"),
+   SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
+   SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+   SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
+   SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
+   SwaggerResponse(HttpStatusCode.OK, "Members added to group.", typeof(List<Guid>)),
+   SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+]
+        public async Task<HttpResponseMessage> AddMembers(Guid groupUid, List<InsertUserToGroup> users)
         {
             var kvpGroupUid = new Dictionary<string, string> { { "Uid", groupUid.ToString() } };
             var isValidGroup = await this.membershipRepository.GetGroups(kvpGroupUid);
-            
+
             List<ResourceGroup> resourceGroups = new List<ResourceGroup>();
 
             if (!Company.CurrentResourceIsAdmin)
@@ -289,20 +289,20 @@ namespace d360.web.Controllers.V2
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
             }
-            if(users.Count == 0)
+            if (users.Count == 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
 
             var id = Company.Filter<Asset>(x => x.uid == groupUid).SingleOrDefault().ObjectID;
 
             foreach (var user in users)
             {
-                var userUid = new Dictionary<string, string> { { "Uid", user.ToString() } }; ;
+                var userUid = new Dictionary<string, string> { { "Uid", user.Uid.ToString() } }; ;
                 bool isValid = this.IsValidGuid(userUid, "uid");
 
                 if (!isValid)
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs do not exist."));
 
-                var isUser = this.assetRepository.GetAssetByUID(user);
+                var isUser = this.assetRepository.GetAssetByUID(user.Uid);
 
                 if (isUser == null || isUser.Object != "Resource")
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "One or more user UIDs passed in are not a user."));
@@ -311,7 +311,7 @@ namespace d360.web.Controllers.V2
                 var isMember = Company.Filter<ResourceGroup>(x => x.GroupID == id && x.ResourceID == isUser.ObjectID).SingleOrDefault();
 
                 if (isMember != null)
-                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.ToString()} is already a member of this group"));
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"User {user.Uid.ToString()} is already a member of this group"));
 
                 resourceGroups.Add(new ResourceGroup { GroupID = id, ResourceID = isUser.ObjectID });
             }
@@ -596,7 +596,8 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                var result = membershipRepository.DeleteResources(resources);
+                var execution = getApiExecution(users.Count);
+                var result = membershipRepository.DeleteResources(execution, resources);
 
                 if (result.StatusCode != HttpStatusCode.OK)
                     return await Task.FromResult(errorMessageResponse(result.StatusCode, result.Error, result.Message));

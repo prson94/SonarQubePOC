@@ -28,6 +28,7 @@ using SpreadsheetLight;
 using d360.core.resources;
 using System.Xml.Linq;
 using AngleSharp.Common;
+using d360.core.queue;
 
 namespace d360.web.Controllers.V2
 {
@@ -891,7 +892,6 @@ namespace d360.web.Controllers.V2
         /// <br/>
         /// **Notes:** 
         /// * Edit permissions on the rule are required.
-        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
@@ -1221,6 +1221,78 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Create the data quality result for an asset / Rule. This endpoint is meant for a greater number of items as it stores the result list for asynchronous or batch processing.
+        /// </summary>
+        /// <remarks>
+        ///
+        /// The endpoint creates rule results for a specific rule and optional asset
+        ///###Rules###
+        /// <table>
+        /// <tr><td>**Field**</td><td>**Required / Optional**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>OwningAssetUid</td><td>Required</td><td>UID of the Rule in which to post the results to</td><td>Must be a valid Rule UID</td></tr>
+        /// <tr><td>ExecutionItemUid</td><td>Optional</td><td>Used to identify the request. One can be provided but if not, one will be generated</td><td>If provided must be in the correct format</td></tr>
+        /// <tr><td>EvaluatedAssetUid</td><td>Optional</td><td>Asset UID  of the asset that the result is for</td><td>Must be valid Business or Technical Asset UID</td></tr>
+        /// <tr><td>EffectiveDate</td><td>Required</td><td>Effective date of the rule result</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>RunDate</td><td>Required</td><td>Run date of the rule result</td><td>Must not be in the future. Date format is strictly enforced.</td></tr>
+        /// <tr><td>PassCount</td><td>Required</td><td>Number of rows that passed the rule</td><td>Must be greater than or equal to zero</td></tr>
+        /// <tr><td>FailCount</td><td>Required</td><td>Number of rows that failed the rule</td><td>Must be greater than or equal to zero</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Edit permissions on the rule are required.
+        /// 
+        /// </remarks>
+        /// <returns>An HTTP status code, executionId of the request and message.</returns>
+        [
+            HttpPost,
+            Route("quality/batch/results"),
+            SwaggerRequestExample(typeof(DataQualityInsertModel), typeof(DataQualityInsertExample)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Permission denied", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PostBulkDataQualityResultAsync(List<DataQualityInsertModel> request, bool triggersWorkflow = true)
+        {
+            var prefix = "Metrics.PostBulkDataQualityResultAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (request == null)
+                    request = readRequestJsonContent<List<DataQualityInsertModel>>(Request).Result;
+
+                if (request == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var execution = getApiExecution(request.Count);
+
+                ApiExecutionInfo executionInfo = await MetricsRepository.PostBulkDataQualityResults(request, execution, triggersWorkflow);
+
+                var result = Request.CreateResponse(
+                            HttpStatusCode.OK,
+                            new ApiExecutionRecievedResponse
+                            {
+                                ExecutionID = executionInfo.ExecutionID,
+                                Message = "Now processing request. Please check back with this ExecutionID for status.",
+                                Uri = $"{Request.RequestUri.Scheme}://{Request.RequestUri.Host}/api/v2/executions/{executionInfo.ExecutionID}"
+                            });
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(result));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "requestCount", $"{((request != null) ? request.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }        
+
+        /// <summary>
         /// Create the Excel document for export
         /// </summary>
         /// <returns>A spreadsheet populated with the details of the data quality results</returns>
@@ -1267,7 +1339,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());
-                doc.SetCellValue(rowNumber, index++, row.Passed);
+                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString() : "");
             }
             doc.AutoFitColumn(1, 13);
             #endregion
@@ -1317,7 +1389,7 @@ namespace d360.web.Controllers.V2
                 doc.SetCellValue(rowNumber, index++, row.TotalCount);
                 doc.SetCellValue(rowNumber, index++, row.PassCount);
                 doc.SetCellValue(rowNumber, index++, row.FailCount);
-                doc.SetCellValue(rowNumber, index++, row.Passed);
+                doc.SetCellValue(rowNumber, index++, row.Passed.HasValue ? row.Passed.Value.ToString(): "");
                 doc.SetCellValue(rowNumber, index++, row.ResultUid.ToString());
             }
             doc.AutoFitColumn(1, 11);

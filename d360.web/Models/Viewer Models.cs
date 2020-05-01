@@ -368,6 +368,9 @@ namespace d360.web.Models
         public string urlfield { get; set; }
 
         [DataMember]
+        public string uidfield { get; set; }
+
+        [DataMember]
         public string contextfield { get; set; }
 
         [DataMember]
@@ -432,6 +435,11 @@ namespace d360.web.Models
     {
         public string title { get; set; }
         public int? value { get; set; }
+    }
+    public class ListUidItem
+    {
+        public string title { get; set; }
+        public Guid? value { get; set; }
     }
 
     public class SourceTargetIntersectModels

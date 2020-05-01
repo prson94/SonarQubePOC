@@ -123,8 +123,10 @@
                 <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount}}</span></td>
                 <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount}}</span></td>
                 <td style="text-align:center;">
-                    <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                    <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
+                    <span *ngIf="item.Passed!=undefined && item.Passed!=null">
+                        <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
+                        <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
+                    </span>
                 </td>
                 <td style="text-align:center;">
                     <div class="RowTools">

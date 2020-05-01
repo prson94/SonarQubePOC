@@ -264,7 +264,15 @@ namespace d360.model
                 else
                 {
                     status.State = state;
-                    status.LastCompletedOn = DateTime.UtcNow;
+                    if (state == CompanyRebuildJobStatusState.Active)
+                    {
+                        status.LastStartedOn = DateTime.UtcNow;
+                        status.LastCompletedOn = null;
+                    }
+                    else 
+                    {
+                        status.LastCompletedOn = DateTime.UtcNow;
+                    }
                     Update(status);
                     returnValue = new WorkHttpStatus(System.Net.HttpStatusCode.OK, "", "");
                 }

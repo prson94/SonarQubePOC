@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using d360.extensions.storage;
 using System.Text;
 using d360.core;
+using d360.core.entities.Metric;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -117,7 +118,9 @@ namespace igx.jobs.apiexecutionprocessor
             {
                 bool jobAlreadyRunning = false;
 
-                if (dbExecutionItem != null && dbExecutionItem.ProcessingStartedOn.HasValue)
+                // jobs with a error message a retrying make them wait in line like the other batch jobs otherwise what happens is > 2 batch jobs start running 
+                // at the same time filling all the batch slots causing people to say why is my job stuck in line. 
+                if ( ( dbExecutionItem != null) && dbExecutionItem.ProcessingStartedOn.HasValue && string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
                     jobAlreadyRunning = true;
 
                 //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
@@ -321,6 +324,27 @@ namespace igx.jobs.apiexecutionprocessor
                                 storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postCrossReferenceResult));
                                 log.WriteLine($"Post Cross References (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
 
+                                break;
+                            case ApiExecutionAction.PostDataQualityResults:
+                                #region Process DataQualityResults
+                                string postDataQualityResultsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
+                                List<IDataQualityUpsert> postDataQualityResultsRequest = new List<IDataQualityUpsert>();
+                                
+                                postDataQualityResultsRequest.AddRange(JsonConvert.DeserializeObject<List<DataQualityInsertModel>>(postDataQualityResultsJson));
+
+                                log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
+                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest, dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
+                                dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
+                                dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
+                                log.WriteLine($"POST DataQualityResults (DB Complete): Total results: {postDataQualityResultsResponse.Count}.");
+
+                                log.WriteLine($"POST DataQualityResults (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postDataQualityResultsResponse));
+                                log.WriteLine($"POST DataQualityResults (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+                                company.SendApiGraphEvent(Info);
+                                #endregion
                                 break;
                         }
                     }

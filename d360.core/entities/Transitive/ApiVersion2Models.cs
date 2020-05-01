@@ -569,4 +569,46 @@ namespace d360.core.entities
         public bool Cascade { get; set; }
 
     }
+
+    #region Allocations
+
+    [DataContract]
+    public class ResponsibilityTypeAllocationInsertModel
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+
+        [DataMember]
+        public List<int> Permissions { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeAllocationResponseModel
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeAllocationDeleteModel
+    {
+        [DataMember]
+        public bool Cascade { get; set; }
+        [DataMember]
+        public List<ResponsibilityTypeAllocationDeleteItemModel> Items { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityTypeAllocationDeleteItemModel
+    {
+        [DataMember]
+        public Guid AssetTypeUid { get; set; }
+    }
+    #endregion
+
 }

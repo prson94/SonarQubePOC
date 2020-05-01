@@ -6,10 +6,8 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { RulesService } from '../../services/rules.service';
 import { PermissionsService } from '../../services/permissions.service';
-import { SurveysService } from '../../services/surveys.service';
 import { RuleDetail, RuleType } from '../../models/rule.model';
 import { MessageBarItem } from '../../models/message-bar-item.model';
-import { SurveyType } from '../../models/survey.model';
 import { StringConstants } from '../../static/string-constants';
 import { Subscription } from 'rxjs';
 
@@ -17,7 +15,7 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-rule-item',
-    providers: [RulesService, PermissionsService, SurveysService],
+    providers: [RulesService, PermissionsService],
     template: ` 
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
                 <div class="row" *ngIf="!isLoading">
@@ -36,7 +34,6 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     private ruleSub: Subscription;
     private rule: RuleDetail;
     private messages: MessageBarItem[] = [];
-    private surveyType: SurveyType;
     private showSurvey: boolean = false;    
     private showSocialScoreBar: boolean = true;
     private ruleType: RuleType;
@@ -47,8 +44,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
         secondaryNavService: SecondaryNavService,
         protected titleService: Title,
         protected headerBreadcrumbService: HeaderBreadcrumbService,
-        protected permissionsService: PermissionsService,
-        protected surveysService: SurveysService
+        protected permissionsService: PermissionsService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -80,8 +76,7 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
                 
                 this.setBrowserTitle(this.titleService, this.rule.Name);
                 this.messages = []; //clear any messages for this rule
-                this.loadItemSurvey();
-
+          
                 this.rulesService.getRuleType(this.rule.TypeID).subscribe(r => { this.ruleType = r; });
                 this.headerBreadcrumbService.setCurrentObjectInfo('Rule', ruleId);
                 this.setObjectInfo('Rule', ruleId, this.rule.Name, this.rule.AssetID, undefined, this.rule.UID);
@@ -96,27 +91,4 @@ export class RuleItemComponent extends BaseComponent implements OnInit, OnDestro
     editRule(e: any) {
         this.load(e.ID);
     }
-
-    private loadItemSurvey() {
-
-        this.surveysService.getObjectSurvey(this.rule.TypeID, 'RuleType', this.rule.ID, 'Rule')
-            .subscribe(result => {
-                this.surveyType = undefined;
-                if (result) {
-                    this.surveyType = result;
-                    this.messages.push({
-                        content: `<u>Click here</u> to take the survey: <em>${result.Name}</em>.`, showClose: true, data: 'Survey'
-                    });
-                }
-
-            });
-    }
-
-    private completeSurvey() {
-        this.showSurvey = false;
-        var index = this.messages.findIndex(x => x.data == 'Survey');
-        if (index >= 0 && index < this.messages.length)
-            this.messages.splice(index, 1);
-    }
-
 };

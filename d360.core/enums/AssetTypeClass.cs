@@ -84,10 +84,10 @@ namespace d360.core.enums
         ]
         ReferenceItemType = 14,
         [
-            Name("Task"),
-            Description("Task asset.")
+            Name("Diagram"),
+            Description("Diagram asset.")
         ]
-        Task = 15,
+        Diagram = 15,
         [
             Name("Glossary-Obsolete"),
             Obsolete("Use BusinessAsset instead", false),

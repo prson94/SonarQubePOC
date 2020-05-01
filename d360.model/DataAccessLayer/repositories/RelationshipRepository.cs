@@ -283,18 +283,18 @@ select	@pageSize as 'pageSize',
 		@pageNum as 'pageNum',
 		@total as 'total',
 		(
-		select	I.Uid,
-				T.Uid as RelationshipTypeUid,
+		select	lower(I.Uid) as Uid,
+				lower(T.Uid) as RelationshipTypeUid,
 				{stateSql}
 				{fieldColumnsSql}
-				P.UID as 'Predicate.Uid',
+				lower(P.UID) as 'Predicate.Uid',
 				{predicateTypeSql}
 				P.Name as 'Predicate.Name',
 				P.Inverse as 'Predicate.Inverse',
-				S.Uid as 'Subject.Uid',
-				ISNULL(ST1.Uid,ST2.Uid) as 'Subject.AssetTypeUid',
-				O.Uid as 'Object.Uid',
-				ISNULL(OT1.Uid,OT2.Uid) as 'Object.AssetTypeUid'
+				lower(S.Uid) as 'Subject.Uid',
+				ISNULL(lower(ST1.Uid),lower(ST2.Uid)) as 'Subject.AssetTypeUid',
+				lower(O.Uid) as 'Object.Uid',
+				ISNULL(lower(OT1.Uid),lower(OT2.Uid)) as 'Object.AssetTypeUid'
 		{baseTableSql}
         {string.Join("\n", fieldJoins)}
         {whereClause} 
