@@ -892,7 +892,6 @@ namespace d360.web.Controllers.V2
         /// <br/>
         /// **Notes:** 
         /// * Edit permissions on the rule are required.
-        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>A list of data quality results including any error messages.</returns>
@@ -1241,7 +1240,6 @@ namespace d360.web.Controllers.V2
         /// <br/>
         /// **Notes:** 
         /// * Edit permissions on the rule are required.
-        /// * Both Pass Count and Fail Count cannot be zero.
         /// 
         /// </remarks>
         /// <returns>An HTTP status code, executionId of the request and message.</returns>
