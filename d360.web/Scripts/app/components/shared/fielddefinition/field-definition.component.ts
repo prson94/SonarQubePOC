@@ -148,6 +148,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         switch (this.currentFieldType(item)) {
             case "ComputedRelationshipField":
                 return "Field from Relationship";
+            case "ComputedRelationshipReferenceList":
+                return "Reference Item List from Relationship";
             case "ComputedFusionLookup":
                 return "Fusion Lookup";
             case "DateTime":
