@@ -120,6 +120,19 @@ export class FieldType {
     Empty: Empty;
 }
 
+export class FieldDisplayModel {
+    Name: string;
+    FriendlyName: string;
+    Category: string;
+    FieldType: string;
+    IsListable: boolean;
+    IsPartOfKey: boolean;
+    IsRequired: boolean;
+    ShowIfEmpty: boolean;
+    SortOrder: number;
+    ColumnOrder: number;
+}
+
 export interface ICommonOptions {
     ColumnOrder: number;
     ColumnWidth: number;

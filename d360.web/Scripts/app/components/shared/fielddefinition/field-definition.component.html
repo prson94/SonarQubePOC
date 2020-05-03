@@ -29,7 +29,7 @@
     <div *ngIf="!isEditing && !isDeleting">
         <div *ngIf="!isLoading && !hasKeyFields && CheckObjectType()" class="error">Warning: No key fields are defined. Please consider adding one or more key fields to uniquely identify your data.</div>
         <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-        <p-table #dt [value]="fieldDefinitions" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','Category','IsListable','IsRequired','IsPartOfKey','ColumnWidth']"
+        <p-table #dt [value]="fieldDisplayModel" selectionMode="single" [loading]="isLoading" loadingIcon="fa fa-spinner" [metaKeySelection]="true" [globalFilterFields]="['FriendlyName','FieldType','Category','IsListable','IsRequired','IsPartOfKey','SortOrder']"
                  [(selection)]="selectedRow" [scrollable]="true" scrollHeight="200px">
             <ng-template pTemplate="colgroup" let-columns>
                 <colgroup>
@@ -53,27 +53,32 @@
                         Field
                         <d3s-sortIcon [field]="'FriendlyName'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 15%">
+                    <th [pSortableColumn]="'FieldType'" style="width: 15%">
                         Type
                     </th>
                     <th [pSortableColumn]="'Category'" style="width: 15%">
                         Category
                         <d3s-sortIcon [field]="'Category'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 12%" *ngIf="showIsListable">
+                    <th [pSortableColumn]="'IsListable'" style="width: 12%" *ngIf="showIsListable">
                         Listable?
+                        <d3s-sortIcon [field]="'IsListable'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 12%">
+                    <th [pSortableColumn]="'IsRequired'" style="width: 12%">
                         Required?
+                        <d3s-sortIcon [field]="'IsRequired'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 12%" *ngIf="showIsPartOfKey">
+                    <th [pSortableColumn]="'IsPartOfKey'" style="width: 12%" *ngIf="showIsPartOfKey">
                         Key?
+                        <d3s-sortIcon [field]="'IsPartOfKey'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 12%">
+                    <th [pSortableColumn]="'ShowIfEmpty'" style="width: 12%">
                         Show if Empty?
+                        <d3s-sortIcon [field]="'ShowIfEmpty'"></d3s-sortIcon>
                     </th>
-                    <th style="width: 12%">
+                    <th [pSortableColumn]="'SortOrder'" style="width: 12%">
                         Sort
+                        <d3s-sortIcon [field]="'SortOrder'"></d3s-sortIcon>
                     </th>
                     <th style="width: 30px"></th>
                     <th style="width: 30px"></th>
@@ -101,22 +106,22 @@
                     <td>{{getDisplayTypeName(item)}}</td>
                     <td>{{item.Category}}</td>
                     <td *ngIf="showIsListable">
-                        <span><i *ngIf="item.Type[currentFieldType(item)]?.IsListable" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item.Type[currentFieldType(item)]?.IsListable" class="fa fa-times disabled" title="False"></i></span>
+                        <span><i *ngIf="item?.IsListable" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item?.IsListable" class="fa fa-times disabled" title="False"></i></span>
                     </td>
                     <td>
-                        <span><i *ngIf="item.Type[currentFieldType(item)]?.Validation?.IsRequired" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item.Type[currentFieldType(item)]?.Validation?.IsRequired" class="fa fa-times disabled" title="False"></i></span>
+                        <span><i *ngIf="item?.IsRequired" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item?.IsRequired" class="fa fa-times disabled" title="False"></i></span>
                     </td>
                     <td *ngIf="showIsPartOfKey">
-                        <span><i *ngIf="item.Type[currentFieldType(item)]?.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item.Type[currentFieldType(item)]?.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
+                        <span><i *ngIf="item?.IsPartOfKey" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item?.IsPartOfKey" class="fa fa-times disabled" title="False"></i></span>
                     </td>
                     <td>
-                        <span><i *ngIf="item.Type[currentFieldType(item)]?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
-                        <span><i *ngIf="!item.Type[currentFieldType(item)]?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
+                        <span><i *ngIf="item?.ShowIfEmpty" class="fa fa-check enabled" title="True"></i></span>
+                        <span><i *ngIf="!item?.ShowIfEmpty" class="fa fa-times disabled" title="False"></i></span>
                     </td>
-                    <td>{{item.Type[currentFieldType(item)].SortOrder}}</td>
+                    <td>{{item.SortOrder}}</td>
                     <td>
                         <div class="RowTools">
                             <a (click)="moveUp(item)" style="cursor:pointer;margin:0px;"><i class="fa fa-caret-up"></i></a>
