@@ -804,13 +804,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
         this.fieldsService.putFieldsV2(apiModel).subscribe(
             r => {
-                this.isLoading = false;
-                if (r.Success) {
+                if (r && r.Success) {
                     r.Message = this.actionName == "Edit" ? "Field Type successfully updated" : "Field Type successfully added";
                     this.showMessageForApiResponse(this.messagesService, r);
-                    this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
                     this.model.FieldType.Type = new FieldType("Empty");
+                    this.onComplete.emit({ action: this.actionName.toLowerCase(), field: this.model });
                 }
+                this.isLoading = false;
             }
         );
     }

@@ -1,14 +1,11 @@
 ﻿import { Input, Output, Component, OnChanges, SimpleChange, EventEmitter } from '@angular/core';
 
-import { FieldDefinition, IFieldsService, FieldType } from '../../../models/fields.model';
-
 import { FieldsObservableService } from '../../../services/fieldsObservable.service';
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../../../models/fieldtype-api.model';
-import { type } from 'os';
-import { clearLine } from 'readline';
+import { FieldTypeAPIModel, FieldTypeAPIModelField, FieldDisplayModel } from '../../../models/fieldtype-api.model';
+
 
 @Component({
     selector: 'd3s-field-definition-tile',
@@ -47,7 +44,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     @Input() supportsPrimaryFilterOption: boolean = false;
 
     private fieldDefinitions = new Array<FieldTypeAPIModelField>();
-    private selectedRow = new FieldTypeAPIModelField();
+    private fieldDisplayModel = new Array<FieldDisplayModel>();
+    private selectedRow = new FieldDisplayModel();
 
     private theDeleteCallback: Function;
     public hasKeyFields: boolean = false;
@@ -85,6 +83,21 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
+                this.fieldDisplayModel = data.map((field) => {
+                    let displayField = new FieldDisplayModel();
+                    let type = this.currentFieldType(field);
+                    displayField.Name = field.Name;
+                    displayField.FriendlyName = field.FriendlyName;
+                    displayField.Category = field.Category;
+                    displayField.FieldType = type;
+                    displayField.IsListable = field.Type[type].IsListable;
+                    displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
+                    displayField.SortOrder = field.Type[type].SortOrder;
+                    displayField.ColumnOrder = field.Type[type].ColumnOrder;
+                    displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
+                    displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
+                    return displayField;
+                });
                 this.checkKeyFields();
                 this.selectedRow = null;
                 this.isLoading = false;
@@ -98,12 +111,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     private checkKeyFields() {
         let foundKeyField = false;
-        if (this.fieldDefinitions && this.fieldDefinitions.length > 0) {
-            this.fieldDefinitions.forEach(d => {
-                let type = this.currentFieldType(d);
-                if (!d.Type[type].SortOrder)
-                    d.Type[type].SortOrder = 0;
-                if (this.IsPartyOfKey(d.Type)) {
+        if (this.fieldDisplayModel && this.fieldDisplayModel.length > 0) {
+            this.fieldDisplayModel.forEach(d => {
+                if (!d.SortOrder)
+                    d.SortOrder = 0;
+                if (d.IsPartOfKey) {
                     foundKeyField = true;
                 }
             });
@@ -118,34 +130,19 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     currentFieldType(item: FieldTypeAPIModelField): string {
         return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
     }
-    sortFields() {
-        this.fieldDefinitions.sort((x, y) => {
-            let xtype = this.currentFieldType(x);
-            let ytype = this.currentFieldType(y);
-            return x.Type[xtype].ColumnOrder - y.Type[ytype].ColumnOrder;
-        });
-    }
-    IsPartyOfKey(itemType): boolean {
-        let partOfKey = false;
-        if (itemType.Boolean != null) partOfKey = itemType.Boolean.IsPartOfKey;
-        if (itemType.Date != null) partOfKey = itemType.Date.IsPartOfKey;
-        if (itemType.DateTime != null) partOfKey = itemType.DateTime.IsPartOfKey;
-        if (itemType.Decimal != null) partOfKey = itemType.Decimal.IsPartOfKey;
-        if (itemType.Html != null) partOfKey = itemType.Html.IsPartOfKey;
-        if (itemType.Link != null) partOfKey = itemType.Link.IsPartOfKey;
-        if (itemType.Lookup != null) partOfKey = itemType.Lookup.IsPartOfKey;
-        if (itemType.Number != null) partOfKey = itemType.Number.IsPartOfKey;
-        if (itemType.Text != null) partOfKey = itemType.Text.IsPartOfKey;
 
-        return partOfKey;
+    sortFields() {
+        this.fieldDisplayModel.sort((x, y) => {
+            return x.ColumnOrder - y.ColumnOrder;
+        });
     }
     CheckObjectType() {
         if (this.objectType) {
            return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
         }
     }
-    getDisplayTypeName(item: FieldTypeAPIModelField): string {
-        switch (this.currentFieldType(item)) {
+    getDisplayTypeName(item: FieldDisplayModel): string {
+        switch (item.FieldType) {
             case "ComputedRelationshipField":
                 return "Field from Relationship";
             case "ComputedFusionLookup":
@@ -161,11 +158,11 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             case "Lookup":
                 return "List";
             default:
-                return this.currentFieldType(item);
+                return item.FieldType;
         }
     }
     edit(name: string): void {
-        this.selectedRow = this.fieldDefinitions.find(f => f.Name == name);
+        this.selectedRow = this.fieldDisplayModel.find(f => f.Name == name);
         this.isEditing = true;
         this.isDeleting = false;
         this.isAdding = false;
@@ -180,7 +177,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     delete(name: string): void {
-        this.selectedRow = this.fieldDefinitions.find(f => f.Name == name);
+        this.selectedRow = this.fieldDisplayModel.find(f => f.Name == name);
         this.isEditing = false;
         this.isDeleting = true;
         this.isAdding = false;
@@ -200,12 +197,12 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             res => {                                        
                 if (res != null && res.Success === true) {
                     this.messagesService.showInfoMessage('Success', 'Field definition successfully removed.');
-                    let index = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
+                    let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
 
                     this.isDeleting = false;
                     this.checkKeyFields();
-                    if (index >= 0 && index < this.fieldDefinitions.length) {
-                        this.fieldDefinitions.splice(index, 1);
+                    if (index >= 0 && index < this.fieldDisplayModel.length) {
+                        this.fieldDisplayModel.splice(index, 1);
                     }
 
                     this.onFieldsChanged.emit();
@@ -218,7 +215,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
        
     }
 
-    moveUp(field: FieldDefinition) {
+    moveUp(field) {
         this.isLoading = true;
 
         this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
@@ -229,7 +226,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         );
     }
 
-    moveDown(field: FieldDefinition) {
+    moveDown(field) {
         this.isLoading = true;
         this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
             r => {
