@@ -166,6 +166,7 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         this.artifactsService.deleteArtifactType(id).subscribe(result => {
             this.showMessageForResult(this.messagesService, result);
             this.isDeleting = false;
+            this.selectedRow = { data: { ID: 0 } };
             this.load();
             this.stateService.reloadLeftNavMenu();
         })
