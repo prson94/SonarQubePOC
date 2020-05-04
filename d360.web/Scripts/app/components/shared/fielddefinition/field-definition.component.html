@@ -15,7 +15,7 @@
                              [objectName]="objectName"
                              [showIsListable]="showIsListable"
                              [showIsPartOfKey]="showIsPartOfKey"
-                             [supportsPrimaryFilterOption]="true"
+                             [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
                              [fields]="fieldDefinitions"
                              (onCancel)="isEditing = false; onCancel.emit()"
                              (onComplete)="editComplete($event)"></d3s-field-type-form>
