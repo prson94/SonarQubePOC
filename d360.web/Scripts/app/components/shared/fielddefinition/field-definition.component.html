@@ -17,7 +17,7 @@
                              [showIsPartOfKey]="showIsPartOfKey"
                              [supportsPrimaryFilterOption]="supportsPrimaryFilterOption"
                              [fields]="fieldDefinitions"
-                             (onCancel)="isEditing = false; onCancel.emit()"
+                             (onCancel)="cancel()"
                              (onComplete)="editComplete($event)"></d3s-field-type-form>
     </div>
     <d3s-delete-form *ngIf="isDeleting"

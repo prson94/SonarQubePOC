@@ -353,7 +353,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid) {
                     observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-                    console.log();
                 }
                 else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
                     let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
