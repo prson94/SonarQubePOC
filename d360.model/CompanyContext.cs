@@ -2835,7 +2835,7 @@ select @err";
 	                            select count(1) from assettype a
                                 where
 	                                a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
-		                                and a.Name = @name and a.ID = @id", new { name = o.Name, cls = o.Class, id = o.ID });
+		                                and a.Name = @name and a.ID <> @id", new { name = o.Name, cls = o.Class, id = o.ID });
                         }
 
                         if (count > 0)
