@@ -151,7 +151,7 @@ export class Empty implements ICommonOptions {
     ColumnWidth: number = 0;
     SortOrder: number = 0;
     IsDisplayable: boolean = true;
-    IsEditable: boolean = false;
+    IsEditable: boolean = true;
     IsListable: boolean = false;
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
