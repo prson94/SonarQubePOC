@@ -83,21 +83,23 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
-                this.fieldDisplayModel = data.map((field) => {
-                    let displayField = new FieldDisplayModel();
-                    let type = this.currentFieldType(field);
-                    displayField.Name = field.Name;
-                    displayField.FriendlyName = field.FriendlyName;
-                    displayField.Category = field.Category;
-                    displayField.FieldType = type;
-                    displayField.IsListable = field.Type[type].IsListable;
-                    displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
-                    displayField.SortOrder = field.Type[type].SortOrder;
-                    displayField.ColumnOrder = field.Type[type].ColumnOrder;
-                    displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
-                    displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
-                    return displayField;
-                });
+                if (data) {
+                    this.fieldDisplayModel = data.map((field) => {
+                        let displayField = new FieldDisplayModel();
+                        let type = this.currentFieldType(field);
+                        displayField.Name = field.Name;
+                        displayField.FriendlyName = field.FriendlyName;
+                        displayField.Category = field.Category;
+                        displayField.FieldType = type;
+                        displayField.IsListable = field.Type[type].IsListable;
+                        displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
+                        displayField.SortOrder = field.Type[type].SortOrder;
+                        displayField.ColumnOrder = field.Type[type].ColumnOrder;
+                        displayField.ShowIfEmpty = field.Type[type].ShowIfEmpty;
+                        displayField.IsRequired = field.Type[type].Validation != null ? field.Type[type].Validation.IsRequired : false;
+                        return displayField;
+                    });
+                }
                 this.checkKeyFields();
                 this.selectedRow = null;
                 this.isLoading = false;
