@@ -1,5 +1,4 @@
 ﻿import { Component } from '@angular/core';
-import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { WorkflowIssueType } from '../../../models/workflow.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
@@ -183,16 +182,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
             .subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 if (result.type != 'error') {
-                    if (event.item.ID == undefined) {
-                        event.item.ID = Number(result.id);
-                        this.issueTypes[this.issueTypes.length] = event.item;
-                    }
-                    else {
-                        let index = this.issueTypes.findIndex(x => x.ID == event.item.ID);
-                        if (index >= 0 && index < this.issueTypes.length)
-                            this.issueTypes[index] = event.item;
-                    }
-                    this.selected = event.item;
+                    this.load();                    
                 }
                 this.showEditor = false;
             });
