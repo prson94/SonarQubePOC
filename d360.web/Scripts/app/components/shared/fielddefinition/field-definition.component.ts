@@ -237,4 +237,10 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             }
         );
     }
+
+    cancel() {
+        this.isEditing = false;
+        this.fieldDefinitions = [];
+        this.onCancel.emit();
+    }
 }
