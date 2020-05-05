@@ -857,10 +857,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
         let uid = this.GetCurrentUid();
-        if (index != 0) {
+        if (index !== 0) {
             uid = last.AssetTypeUid;
         }
-
+        console.log(item);
         switch (item.ReferenceType.toString()) {
             case ComplexLookupRelationType.ChildItem.toString(): //child item
                 return this.fieldsService.getChildRelations(uid)
@@ -874,7 +874,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     intersectIdToGetChildrenFor = last.IntersectTypeUid;
                 }
 
-                return this.fieldsService.getStandardRelations(intersectIdToGetChildrenFor || null)
+                return this.fieldsService.getTechnicalRelations(intersectIdToGetChildrenFor)
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
@@ -919,14 +919,13 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return;
             }
 
-            let assetTypeUid = params[1];
             let intersectType = params[0];
+            let assetTypeUid = params[1];
             let direction = params[2];
 
             item.IntersectTypeUid = intersectType.toLowerCase();
             item.Direction = direction;
             item.AssetTypeUid = assetTypeUid;
-
             item.DisplayFields = [];
             return this.fieldsService.getRelationLookupDisplayFields(assetTypeUid, intersectType)
                 .pipe(map(
