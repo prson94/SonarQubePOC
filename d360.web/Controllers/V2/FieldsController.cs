@@ -1191,12 +1191,12 @@ namespace d360.web.Controllers.V2
                 if (!allowedAssetTypes.Contains(type))
                 {
                     //return nothing no error
-                    return null;
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
                 }
                 if (allowedListTypes.Contains(objectType))
                 {
                     //return nothing no error;
-                    return null;
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
                 }
 
                 var predicateTypes = string.Join(",", PredicateType.DataLineage.GetAsList()
