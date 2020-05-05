@@ -380,7 +380,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetExportRules(string uid)
         {
@@ -424,7 +424,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Export custom templates.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> CustomExport(Guid assetTypeUid, int templateID)
         {
@@ -479,7 +479,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Check if the asset has custom export templates.", typeof(bool)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult HasCustomExport(Guid uid)
         {

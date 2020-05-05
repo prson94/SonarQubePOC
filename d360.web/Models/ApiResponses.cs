@@ -72,7 +72,7 @@ namespace d360.web.Models
         public string type { get; set; } = "error";
 
         [DataMember]
-        public string title { get; set; } = "An error occured";
+        public string title { get; set; } = "An error occurred";
 
         [DataMember]
         public string message { get; set; } = "error";

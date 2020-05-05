@@ -73,7 +73,7 @@ namespace d360.web.Controllers.V2
             Route("predicates"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of predicates.", typeof(PredicatesApiViewModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
        ]
         public async Task<HttpResponseMessage> GetPredicatesAsync(Guid? PredicateUid = null, PredicateType? Type = null, string Name = null, string Inverse = null, bool? IsUsed = null)
         {
@@ -106,7 +106,7 @@ namespace d360.web.Controllers.V2
             Route("predicates"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<PredicateDeleteResult>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete predicates of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -163,7 +163,7 @@ namespace d360.web.Controllers.V2
             Route("predicates"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the POST request.", typeof(List<PredicateUpsertResult>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to add predicates.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -222,7 +222,7 @@ namespace d360.web.Controllers.V2
             Route("predicates/types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of predicate functional types.", typeof(List<PredicateTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
        ]
         public HttpResponseMessage GetPredicatesTypesAsync()
         {
@@ -267,7 +267,7 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "Exported relationships to Excel.", typeof(List<PredicateTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public IHttpActionResult ExportToExcel(string intersectTypeUid)
         {
@@ -376,7 +376,7 @@ namespace d360.web.Controllers.V2
             Route(""),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse)),
             SwaggerParameter("RelationshipTypeUid", "Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("PredicateUid", "Filter by an predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
@@ -494,7 +494,7 @@ namespace d360.web.Controllers.V2
             Route("types"),
             SwaggerRequestExample(typeof(RelationshipTypeInsert), typeof(RelationshipTypeInsertExample)),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
         ]
@@ -541,7 +541,7 @@ namespace d360.web.Controllers.V2
            Route("types"),
            SwaggerRequestExample(typeof(RelationshipTypeUpdate), typeof(RelationshipTypeUpdateExample)),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
        ]
@@ -588,7 +588,7 @@ namespace d360.web.Controllers.V2
            Route("types"),
            SwaggerRequestExample(typeof(RelationshipTypeDelete), typeof(RelationshipTypeDeleteExample)),
            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
-           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+           SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the relationship type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
        ]
@@ -637,7 +637,7 @@ namespace d360.web.Controllers.V2
             Route("types"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
        ]
         public async Task<HttpResponseMessage> GetRelationshipTypesAsync(Guid? PredicateUid = null, Guid? AssetTypeUid = null, core.enums.State? State = null)
         {
@@ -688,7 +688,7 @@ namespace d360.web.Controllers.V2
             Route("isTransformPredicateExists/{assetTypeId}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "true/false based on relationship exists on assettype.", typeof(bool)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
             ]
         public async Task<HttpResponseMessage> IsTransformPredicateExists(int assetTypeId)
         {
@@ -721,7 +721,7 @@ namespace d360.web.Controllers.V2
             Route("types/{id}/{type}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types by a given Type and Id, including types names of both the subject and object.", typeof(List<IntersectTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
        ]
         public async Task<HttpResponseMessage> GetRelationshipTypesAsync(int id, string type)
         {
@@ -773,7 +773,7 @@ namespace d360.web.Controllers.V2
             Route("{intersectTypeUid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A list of bulk relationship results, including any error messages.", typeof(List<DatabaseBulkRelationshipResult>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false, bool lookupFieldsPassedByValue = false)
@@ -844,7 +844,7 @@ namespace d360.web.Controllers.V2
             Route("batch/{intersectTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipInserts relationships, bool triggerWorkflow = false)
@@ -902,7 +902,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "An execution status including a list of relationships.", typeof(ApiExecutionStatusModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
         public async Task<IHttpActionResult> GetExecutionStatus(Guid executionUid)
         {
@@ -966,7 +966,7 @@ namespace d360.web.Controllers.V2
             Route("batch/{intersectTypeUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution ID to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)), SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(AssetCrossReference)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteBulkRelationshipsAsync(Guid intersectTypeUid, RelationshipDeletes relationships, bool triggerWorkflow = false)
@@ -1031,7 +1031,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A message indicating the status of the DELETE request.", typeof(List<DatabaseBulkRelationshipResult>)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete relationship of this type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse))
         ]
@@ -1092,7 +1092,7 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
             SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> ExportTypesToExcel()
         {
