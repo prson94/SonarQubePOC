@@ -7,7 +7,6 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { Artifact } from '../../models/artifacts.model';
@@ -15,6 +14,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Subscription } from 'rxjs';
+import { ArtifactBaseComponent } from '../assets-grid/artifact-base.component';
 
 @Component({
     selector: 'd3s-artifact-list',

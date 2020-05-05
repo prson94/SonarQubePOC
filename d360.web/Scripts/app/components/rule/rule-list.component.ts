@@ -23,6 +23,8 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { Artifact } from '../../models/artifacts.model';
+import { ArtifactType } from '../../models/artifact-type.model';
 
 @Component({
     selector: 'd3s-rule-list',

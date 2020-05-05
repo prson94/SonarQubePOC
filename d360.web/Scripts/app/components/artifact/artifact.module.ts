@@ -18,15 +18,9 @@ import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-ed
 
 import { ArtifactRoutingModule } from './artifact.routes';
 
-import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
 import { ArtifactComponent } from './artifact.component';
-import { ArtifactDefnintionComponent } from './artifact-definition.component';
-import { ArtifactGridComponent } from './artifact-grid.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
-import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
-import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
-import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
 
@@ -53,6 +47,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { AssetTypeGridModule } from '../assets-grid/asset-type-grid.module';
 
 
 @NgModule({
@@ -90,18 +85,13 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         SharedObjectGovernanceModule,
         SharedAssetEditorsModule,
         TilesModule,
-        WorkflowModule,        
+        WorkflowModule,
+        AssetTypeGridModule
     ],
     declarations: [        
-        ArtifactColumnFilterComponent,
         ArtifactComponent,
-        ArtifactCustomExportComponent,
-        ArtifactDefnintionComponent,
-        ArtifactGridComponent,
         ArtifactItemComponent,
         ArtifactListComponent,
-        ArtifactTopLevelListComponent,        
-        ArtifactTopLevelFilterComponent,
     ],
     providers: [
         {

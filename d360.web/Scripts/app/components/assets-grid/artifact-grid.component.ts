@@ -55,11 +55,12 @@ import { SortOrder } from '../../models/enums.model';
 export class ArtifactGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
     @Input() artifactType: ArtifactType;
+
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
 
-    private gridObjectType = StringConstants.ObjectArtifactType;
+    @Input() gridObjectType: string = StringConstants.ObjectArtifactType;
 
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;

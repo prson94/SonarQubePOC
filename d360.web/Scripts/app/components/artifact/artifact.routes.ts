@@ -3,7 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { ArtifactComponent } from './artifact.component';
 import { ArtifactItemComponent } from './artifact-item.component';
 import { ArtifactListComponent } from './artifact-list.component';
-import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
+import { ArtifactTopLevelListComponent } from '../assets-grid/artifact-top-level-list.component';
 
 const routes: Routes = [
     {

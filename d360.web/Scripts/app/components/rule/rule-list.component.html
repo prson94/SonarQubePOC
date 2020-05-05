@@ -4,7 +4,7 @@
         <div class="tile tile-detail">
             <div class="row" *ngIf="!isLoading && !showDelete && !showEditor && !showCustomExport">
                 <div class="col s12">
-                    <d3s-artifact-grid [artifactType]="ruleType"></d3s-artifact-grid>
+                    <d3s-artifact-grid [artifactType]="ruleType" [gridObjectType]="'RuleType'"></d3s-artifact-grid>
                 </div>
             </div>
 

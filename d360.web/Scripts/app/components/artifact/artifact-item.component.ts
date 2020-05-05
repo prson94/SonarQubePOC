@@ -8,12 +8,12 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { Artifact } from '../../models/artifacts.model';
-import { ArtifactBaseComponent } from './artifact-base.component';
 import { MessageBarItem } from '../../models/message-bar-item.model';
 import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
+import { ArtifactBaseComponent } from '../assets-grid/artifact-base.component';
 
 declare var CompanySettings;
 
