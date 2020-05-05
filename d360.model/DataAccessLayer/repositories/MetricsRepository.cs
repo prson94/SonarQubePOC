@@ -16,11 +16,12 @@ using Dapper;
 using Newtonsoft.Json;
 using d360.core.entities.Scoring;
 using System.Data;
+using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {
-    public class MetricsRepository : IMetricsRepository
+    public class MetricsRepository : BaseRepository, IMetricsRepository
     {
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
@@ -28,7 +29,7 @@ namespace d360.model.DataAccessLayer
 
         readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-        public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider)
+        public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
         {
             this.Company = context;
             this.QueueSource = queueSource;
@@ -933,6 +934,9 @@ namespace d360.model.DataAccessLayer
 
             result.items = Company.Query<DataQualityGetResultItem>(dataQualityResultSql, parameters).ToList();
             if (result.items == null) result.items = new List<DataQualityGetResultItem>();
+
+            result.items.FindAll(x => x.EvaluatedAssetSegments != null).ForEach(x => x.EvaluatedAssetPathElements = GetPathFromSegments(x.EvaluatedAssetSegments));
+
             return result;
         }
 
@@ -1036,6 +1040,6 @@ namespace d360.model.DataAccessLayer
 
             Company.Add(execution);
             return executionInfo;
-        }               
+        }
     }
 }

@@ -12,6 +12,7 @@ import { ObjectStatisticsService } from '../../services/object-statistics.servic
 import { MenuItem } from 'primeng/api';
 import { Menu } from 'primeng/menu';
 import { isUndefined } from 'util';
+import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
 
 declare var CompanySettings;
 
@@ -35,8 +36,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
     private searchDetails: SearchDetail;
     private formattedPath: string;
     private displayInfopopup: boolean = false;
-
-    private assetPathSeparator: string = '<i class="fa fa-angle-right"></i>'
 
     @ViewChild('cardmenu', { static: false }) cardmenuRef: Menu;
     @ViewChild('cardmenubutton', { static: false }) cardmenubuttonRef: ElementRef;
@@ -70,7 +69,8 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         private shoppingCartService: ShoppingCartService,
         private messagesService: MessagesObservableService,
         private objectStatisticsService: ObjectStatisticsService,
-        private ref: ChangeDetectorRef) {
+        private ref: ChangeDetectorRef,
+        private assetSeparatorPipe: AssetpathSeparatorPipe) {
         super();
     }
 
@@ -80,7 +80,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
 
         this.loadDetails();
         if (this.result.AssetPath) {
-            this.formattedPath = this.result.AssetPath.join(this.assetPathSeparator);
+            this.formattedPath = this.assetSeparatorPipe.transform(this.result.AssetPath);
             this.showPath = true;
             this.ref.markForCheck();
         } else {
@@ -88,8 +88,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         }
 
     }
-
-  
 
     private loadDetails() {
         if (this.result.Uid) {
@@ -104,7 +102,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
                     }
                     if (isUndefined(this.formattedPath)) {
                         if (this.searchDetails && this.searchDetails.AssetDetail.Path) {
-                            this.formattedPath = this.formatPath(this.searchDetails.AssetDetail.Path);
+                            this.formattedPath = this.assetSeparatorPipe.transform(this.searchDetails.AssetDetail.Path);
                             this.showPath = true;
                         } else {
                             this.showPath = false;
@@ -142,19 +140,6 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
             });
         }
         return menu;
-    }
-
-    private formatPath(Path: string): string {
-        let res = Path;
-        if (Path[0] == "[") {
-            res = res.substr(1, Path.length - 1);
-        }
-        if (Path[Path.length - 1] == "]") {
-            res = res.substr(0, Path.length - 2);
-        }
-        res = res.replace(/(\]\.\[)+/g, this.assetPathSeparator);
-
-        return res;
     }
 
     private navigateLink() {
