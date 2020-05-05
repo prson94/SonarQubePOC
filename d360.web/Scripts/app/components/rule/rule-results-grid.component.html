@@ -105,7 +105,7 @@
                     <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
                 </td>
                 <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetTypePath}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span> 
                 </td>
                 <td>
                     <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">

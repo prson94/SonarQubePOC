@@ -790,6 +790,7 @@ namespace d360.model.DataAccessLayer
             string effectiveSQL = "";
             string evaluatedAssetSQL;
 
+            string pathSeparator = " > ";
 
             if (effectiveDateStart.HasValue)
             {
@@ -840,7 +841,7 @@ namespace d360.model.DataAccessLayer
 				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id and AN.Uid = @evaluatedAssetUid				                        
 				                        inner join
 				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				                            
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				                            
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
 
             }
@@ -859,7 +860,7 @@ namespace d360.model.DataAccessLayer
 				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id				                        
 				                        inner join
 				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				
 		                            where 
 				                        AR.UID in ( 
 							                        select 

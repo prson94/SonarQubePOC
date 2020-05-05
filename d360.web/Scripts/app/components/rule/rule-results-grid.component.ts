@@ -121,6 +121,10 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder, true, this.ruleId);        
     }
 
+    private formatPath(s: string) {
+        return s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>');
+    }
+
     resetFilters() {
         this.simpleTextFilter = '';
         this.filtersComponent.resetFilters();
