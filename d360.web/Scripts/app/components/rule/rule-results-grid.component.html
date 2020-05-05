@@ -109,11 +109,14 @@
                 </td>
                 <td>
                     <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
-                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid" [innerHTML]="item.EvaluatedAssetPathElements|assetpathSeparator"></d3s-preview-tooltip>
+                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">
+                            <span [innerHTML]="item.EvaluatedAssetPathElements|assetpathSeparator"></span></d3s-preview-tooltip>
                     </span>
                 </td>
                 <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
+                    <span class="{{item.IsDuplicate ? 'duplicate' : ''
+                            }}">{{item.RunDate | date : 'short'}}
+</span>
                 </td>
                 <td>
                     <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate'}}</span>
