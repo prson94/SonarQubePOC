@@ -353,7 +353,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type[this.currentType].List.Uid) {
                     observables.push(this.lookupTypeSelected(this.model.FieldType.Type[this.currentType].List.Uid));
                     this.model.FieldType.Type['Lookup'].AllowMultipleValues = this.model.FieldType.Type['Lookup'].List.AllowMultipleValues;
-                    console.log();
                 }
                 else if (this.model.FieldType.Type[this.currentType].List && this.model.FieldType.Type['Lookup'].List.Class && !this.model.FieldType.Type[this.currentType].List.Uid) {
                     let valToPass = this.model.FieldType.Type['Lookup'].List.Class == 'Reference' ? 'ReferenceItemType' : 'TaxonomyType';
@@ -404,6 +403,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         //this.model.FieldType.LookupObjectID = null;
                         //this.model.FieldType.LookupObjectType = null;
                     }
+                    this.showDescription = false;
                 } catch (e) {
                     console.log(e);
                 }
@@ -1348,9 +1348,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private isSettingDisabled(val: string) {
         switch (val) {
             case 'IsDisplayable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup'].indexOf(this.currentType) > -1);
+                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
@@ -1360,14 +1360,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 else
                     return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag']
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
