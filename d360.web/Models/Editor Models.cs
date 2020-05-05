@@ -38,6 +38,11 @@ namespace d360.web.Models
         public Guid Uid { get; set; }
     }
 
+    public class UpdateCss
+    {
+        public string css { get; set; }
+    }
+
     public class AssetTypeEditorModel : BaseEditorModel
     {
         public AssetTypeUpsert AssetType { get; set; }
