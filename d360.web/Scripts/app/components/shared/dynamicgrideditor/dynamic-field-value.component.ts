@@ -17,6 +17,7 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
     @Input() item: any;
     @Input() isComplex: boolean = false;
     @Input() useApiName: boolean = false;
+    @Input() isDateUTC: boolean = false;
 
     public fieldType: string;
     private fieldValue: any;
