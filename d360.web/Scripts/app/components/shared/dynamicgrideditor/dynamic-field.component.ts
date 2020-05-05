@@ -399,8 +399,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
                 || this.form.controls[this.field.FieldName + '_Url'] == undefined
                 || this.form.controls[this.field.FieldName + '_Url'].disabled
-                || this.form.controls[this.field.FieldName] == undefined
-                || this.form.controls[this.field.FieldName].disabled
             ) {
                 return true;
             }
