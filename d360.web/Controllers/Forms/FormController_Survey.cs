@@ -173,6 +173,60 @@ namespace d360.web.Controllers
 
         #region QuestionType
 
+        #region JSON Feeds
+
+        [Route("QuestionType_FormData"), NonNullableParameters]
+        public JsonNetResult QuestionType_FormData(int surveyTypeID, int id = 0)
+        {
+            QuestionType qt = null;
+            List<QuestionTypeItemEditorModel> items = null;
+
+            var options = QuestionDisplayStyle.Radio.GetResponseTypeDisplayStyleInfoList().Where(x => x.ID != QuestionDisplayStyle.Rating).Select(i => new KnockoutDisplayItem { title = i.Description, value = ((int)i.ID).ToString() });
+
+            if (id > 0)
+            {
+                qt = Company.GetById<QuestionType>(id, i => i.QuestionTypeOptions);
+
+                if (qt.QuestionTypeOptions != null)
+                {
+                    if (qt.QuestionTypeOptions.Count > 0)
+                    {
+                        items = new List<QuestionTypeItemEditorModel>();
+                        foreach (var i in qt.QuestionTypeOptions)
+                        {
+                            items.Add(new QuestionTypeItemEditorModel
+                            {
+                                ID = i.ID,
+                                Name = i.Name,
+                                Value = i.Value
+                            });
+                        }
+                    }
+                }
+            }
+            else
+            {
+                qt = new QuestionType { Name = "", DisplayStyle = QuestionDisplayStyle.Radio, SurveyTypeID = surveyTypeID, Description = "" };
+            }
+
+            return new JsonNetResult
+            {
+                Data = new QuestionTypeEditorModel
+                {
+                    Name = qt.Name,
+                    Description = qt.Description,
+                    DisplayStyle = qt.DisplayStyle,
+                    SurveyTypeID = surveyTypeID,
+                    DisplayStyleOptions = options.ToList(),
+                    ID = id,
+                    Items = items,
+                    LimitedChangesOnly = false
+                },
+                Formatting = Newtonsoft.Json.Formatting.None
+            };
+        }
+
+        #endregion
 
         #region Form Get/Post
 
