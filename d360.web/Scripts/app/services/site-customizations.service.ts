@@ -20,7 +20,7 @@ export class SiteCustomizationsService extends BaseObservableService  {
     }
 
     saveCustomCss(css: string): Observable<JsonResult> {
-        return this.http.put(`/api/v2/environment/styles?css=${css}`, null)
+        return this.http.put('/api/v2/environment/styles', { css: css })
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

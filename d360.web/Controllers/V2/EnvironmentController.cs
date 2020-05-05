@@ -119,7 +119,7 @@ namespace d360.web.Controllers.V2
         }
 
         [HttpPut, Route("styles")]
-        public async Task<HttpResponseMessage> UpdateStyleCustomizations(string css)
+        public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");
@@ -137,7 +137,7 @@ namespace d360.web.Controllers.V2
 
                 var stylesSetting = settings.SingleOrDefault(i => i.SettingID == 24);
                 //if the css is not empty or null create a new css
-                if (!string.IsNullOrWhiteSpace(css))
+                if (!string.IsNullOrWhiteSpace(UpdateCss.css))
                 {
                     //update the company setting to sya where the files is 
 
@@ -153,7 +153,7 @@ namespace d360.web.Controllers.V2
                         Community.SaveChanges();
                     }
 
-                    _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
+                    _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", UpdateCss.css, "text/css", false);
                 }
                 else
                 {
