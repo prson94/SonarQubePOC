@@ -711,28 +711,13 @@ namespace d360.web.Controllers.V2
                     var lookup = Company.FieldTypeLookups.Where(i => i.FieldTypeID == ft.ID).FirstOrDefault();
                     if (lookup != null)
                     {
-                        var definition = (dynamic)Newtonsoft.Json.JsonConvert.DeserializeObject(lookup.Definition);
+                        var definition = (dynamic)JsonConvert.DeserializeObject(lookup.Definition);
 
                         if (ft.Type == DataType.ComplexRelationLookup.ToString())
                         {
                             relationItems = new List<dynamic>();
                             foreach (var r in definition.Relations)
                             {
-                                Guid assetUid = Guid.Empty;
-                                Guid intUid = Guid.Empty;
-                                if(r.IntersectTypeUid == null && r.IntersectTypeID != null)
-                                {
-                                    int id = (int)r.IntersectTypeID;
-                                    intUid = Company.Filter<IntersectType>(x => x.ID == id).First().uid;
-                                }
-                                if (r.AssetUid == null && r.Object != null && r.ObjectID != null)
-                                {
-
-                                    int id = (int)r.ObjectID;
-                                    string obj = (string)r.Object;
-                                    assetUid = Company.Filter<AssetType>(x => x.Object == obj && x.ObjectID == id).First().uid;
-                                }
-
                                 relationItems.Add(new
                                 {
                                     r.ID,
@@ -743,19 +728,18 @@ namespace d360.web.Controllers.V2
                                     lookup.HideHeader,
                                     lookup.HideFooter,
                                     lookup.HideFilter,
-                                    Direction = r.Direction ?? 0,
+                                    Direction = r.Direction ?? 2,
                                     r.Object,
                                     r.ObjectID,
-                                    IntersectTypeUid = r.IntersectTypeUid ?? intUid,
-                                    AssetUid = r.AssetUid ?? assetUid
+                                    r.IntersectTypeUid,
+                                    r.AssetTypeUid
                                 });
                             }
                             if (definition.Fields != null)
                             {
                                 foreach (var f in definition.Fields)
                                 {
-                                    var r = relationItems.Where(i => i.Object == f.Object && i.ObjectID == f.ObjectID).FirstOrDefault();
-
+                                    var r = relationItems.Where(i => i.AssetTypeUid == f.AssetTypeUid).FirstOrDefault();
                                     if (r != null)
                                     {
                                         r.DisplayFields.Add(f);
@@ -1320,7 +1304,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeID)", new { assetTypeUid });
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"select value, title from utility.GetIntersectTypesByType(@assetTypeUid)", new { assetTypeUid });
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
