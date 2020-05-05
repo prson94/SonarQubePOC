@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
@@ -28,8 +29,10 @@ namespace d360.web.Controllers.V2
     ]
     public class EnvironmentController : BaseV2ApiController
     {
-        public EnvironmentController(ICommunityContext community, ICompanyContext company) : base(community, company)
+        IStorageProvider _storage;
+        public EnvironmentController(ICommunityContext community, ICompanyContext company, IStorageProvider storage) : base(community, company)
         {
+            _storage = storage;
         }
 
         [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds")]
@@ -88,6 +91,78 @@ namespace d360.web.Controllers.V2
             {
                 return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
             }
+        }
+
+        [HttpGet,Route("styles")]
+        public async Task<HttpResponseMessage> StyleCustomizations()
+        {
+            var css = "";
+
+            //only admins can access this route
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+            }
+
+
+            //go to azure storage for this company try to get the custom css
+            try
+            {
+                css = _storage.GetFileContentsAsString(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+            return Request.CreateResponse(HttpStatusCode.OK, css);
+        }
+
+        [HttpPut, Route("styles")]
+        public async Task<HttpResponseMessage> UpdateStyleCustomizations(string css)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ReturnApiError(HttpStatusCode.Forbidden, "You do not have permissions to update this.");
+
+            //delete the old css file
+            try
+            {
+                _storage.DeleteFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css");
+            }
+            catch { }
+
+            try
+            {
+                var settings = Community.Filter<CompanySetting>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+
+                var stylesSetting = settings.SingleOrDefault(i => i.SettingID == 24);
+                //if the css is not empty or null create a new css
+                if (!string.IsNullOrWhiteSpace(css))
+                {
+                    //update the company setting to sya where the files is 
+
+
+                    if (stylesSetting == null)
+                    {
+                        stylesSetting = new CompanySetting { CompanyID = Company.CurrentCompanyID, SettingID = 24, Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css" };
+                        Community.Add(stylesSetting);
+                    }
+                    else
+                    {
+                        stylesSetting.Value = $"{constants.COMPANY_STYLES_URL}{Company.CurrentCompanyID}.css";
+                        Community.SaveChanges();
+                    }
+
+                    _storage.CreateFile(constants.COMPANY_STYLES_FOLDER, $"{Company.CurrentCompanyID}.css", css, "text/css", false);
+                }
+                else
+                {
+                    Community.Delete<CompanySetting>(stylesSetting);
+                }
+            }
+            catch { }
+
+            return Request.CreateResponse(HttpStatusCode.OK, "Syles successfully updated.");
         }
     }
 }

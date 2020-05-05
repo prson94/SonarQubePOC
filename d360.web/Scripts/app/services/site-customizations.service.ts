@@ -12,7 +12,7 @@ export class SiteCustomizationsService extends BaseObservableService  {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getCustomCss(): Observable<string> {
-        return this.http.get('/form/stylecustomizations')
+        return this.http.get('/api/v2/environment/styles')
             .pipe(
                 map(response => <string>response),
                 catchError(err => this.handleError(err))
@@ -20,7 +20,7 @@ export class SiteCustomizationsService extends BaseObservableService  {
     }
 
     saveCustomCss(css: string): Observable<JsonResult> {
-        return this.http.put('form/UpdateStyleCustomizations', { css: css })
+        return this.http.put(`/api/v2/environment/styles?css=${css}`, null)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
