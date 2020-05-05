@@ -132,7 +132,7 @@ namespace d360.web.Controllers.V2
                         isOrderByFieldValid = true;
                         break;
                     case "AssetTypeUid":
-                        _order = $"CAST(AT.uid AS VARCHAR(36))";
+                        _order = $"CAST(A.AssetTypeUid AS VARCHAR(36))";
                         isOrderByFieldValid = true;
                         break;
                     case "ActionTypeName":
