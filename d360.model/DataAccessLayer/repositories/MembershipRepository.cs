@@ -324,7 +324,7 @@ namespace d360.model.DataAccessLayer
                         if (!validatePassword(user.Password))
                         {
                             success = false;
-                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number");
+                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
                     }
                 }
@@ -347,7 +347,7 @@ namespace d360.model.DataAccessLayer
                         if (!validatePassword(user.Password))
                         {
                             success = false;
-                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase chacter; at least 1 number");
+                            messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
                     }
                 }
@@ -406,7 +406,8 @@ namespace d360.model.DataAccessLayer
                 }
 
                 row["Success"] = success;
-                row["Message"] = messages.Any() ? string.Join(". ", messages) : "";
+                row["Message"] = messages.Any() ? string.Join(". ", messages) + ". " : "";
+
             }
 
 
