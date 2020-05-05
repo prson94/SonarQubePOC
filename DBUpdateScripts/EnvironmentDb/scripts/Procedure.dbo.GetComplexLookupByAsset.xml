@@ -5,12 +5,522 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v1">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [dbo].[GetComplexLookupByAsset]
+	@object varchar(50),
+	@objectId int,
+	@fieldTypeId int,
+	@resourceId int,
+	@countOnly bit = 0
+as
+begin
+	set nocount on;
+
+	declare @assetId bigint,
+			@type varchar(50)
+	select top 1 @assetId = ID from Asset where Object = @object and ObjectID = @objectId
+	select top 1 @type = [Type] from FieldType where ID = @fieldTypeId
+
+	-- Working tables.
+	declare @columns table (
+		[text] nvarchar(250), datafield varchar(50), columntype varchar(25), 
+		uidfield varchar(50), urlfield varchar(50), objectfield varchar(50), objectidfield varchar(50), 
+		description nvarchar(2500), columnwidth int
+	)
+	declare @datafields table ([name] varchar(50), [type] varchar(25))
+
+	declare @relations table (
+		RowNumber int identity, RN varchar(3), 
+		IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int, 
+		IntersectTypeID int, Object varchar(50), ObjectID int)
+	declare @fields table (
+		RowNumber int identity, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
+		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
+		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
+		IsRelationLink bit
+	)
+	
+	-- The tables to hold the statements that are used to build the SQL below.
+	declare @selects table (ColumnName varchar(500), Alias varchar(250))
+	declare @tables table ([Statement] varchar(500))
+	declare @wheres table ([Statement] varchar(500))
+	declare @orders table ([Statement] varchar(500))
+	
+	declare @count int = 0
+
+	if @type = 'ComplexRelationLookup'
+	begin
+		--Parse the stored json for this field type. Get field type definition as rows.
+		insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction)
+			select	R.* 
+			from	FieldTypeLookup O
+					cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
+						IntersectTypeUid uniqueidentifier, 
+						AssetTypeUid uniqueidentifier,
+						RelationType int, 
+						Direction int
+					) R
+			where	O.FieldTypeID = @fieldTypeId;
+
+		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width)
+			select		F.*
+			from		FieldTypeLookup O
+						cross apply OPENJSON(O.[Definition], N'lax $.Fields') with (
+							AssetTypeUid uniqueidentifier,
+							Object varchar(50), 
+							ObjectID int, 
+							FieldTypeID int, 
+							FieldTypeName nvarchar(250), 
+							[Filter] nvarchar(max), 
+							OverrideDisplayName nvarchar(250), 
+							DisplayOrder int, 
+							SortOrder int, 
+							Show bit, 
+							Width int
+						) F
+			where		O.FieldTypeID = @fieldTypeId
+			order by	F.DisplayOrder, coalesce(F.OverrideDisplayName, F.FieldTypeName);
+
+		update	R 
+		set		R.RN = cast(R.RowNumber as varchar(5)),
+				R.IntersectTypeID = I.ID,
+				R.Object = A.Object,
+				R.ObjectID = A.ObjectID
+		from	@relations R
+				left join IntersectType I on I.Uid = R.IntersectTypeUid
+				left join AssetType A on A.Uid = R.AssetTypeUid;
+
+		update	F
+		set		F.FT = cast(F.FieldTypeID as varchar(15)), 
+				F.Object = A.Object,
+				F.ObjectID = A.ObjectID,
+				F.IsRelationLink = IIF(F.FieldTypeName like 'Related Item.%', 1, 0)
+		from	@fields F
+				left join AssetType A on A.Uid = F.AssetTypeUid;
+
+		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+
+		--select * from @relations	-- testing only
+		--select * from @fields		-- testing only
+
+		update	F
+		set		F.DataField = 'H' + F.RRN + '_' + 
+					case 
+						when F.IsRelationLink = 1 then F.FT +'_DisplayValue' 
+						when F.IsRelationLink = 0 and F.FieldTypeID > 0 then F.FT
+						else F.FieldTypeName 
+					end,
+				F.BaseField = 'H' + F.RRN + '_' + 
+					case 
+						when F.IsRelationLink = 1 then F.FT +'_' 
+						when F.FieldTypeName = 'Name' then ''
+						when F.FieldTypeID = 0 then ''
+						else null 
+					end,
+				F.FieldDataType = case 
+									when F.FieldTypeName = 'Name' then 'preview'
+									when F.FieldTypeName = 'TextPath' then 'preview'
+									when F.FieldTypeName = 'DisplayValue' then 'preview'
+									when F.IsRelationLink = 1 then 'preview'
+									else coalesce(FT.[Type], 'text')
+								  end,
+				F.Description = FT.DisplayDescription
+		from	@fields F
+				left join FieldType FT on FT.ID = F.FieldTypeID and F.IsRelationLink = 0 and F.FieldTypeID <> 0;
+
+		-- Now get the real column from correct table that we should be going after. This will be the first part of the select statement.
+		insert into @selects
+			select		'H' + F.RRN + 
+						case 
+							when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+							when F.IsRelationLink = 0 and F.FieldTypeID > 0 and F.FieldDataType = 'JsonElement' then '_F' + F.FT + '.Value'
+							when F.IsRelationLink = 0 and F.FieldTypeID > 0 and F.FieldDataType <> 'JsonElement' then '_F' + F.FT + '.FormattedValue'
+							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+							else null
+						end as ColumnName,
+						F.DataField as Alias
+			from		@fields F
+			order by	F.RowNumber;
+
+		insert into @selects
+			select		'graph.GetPath(H' + F.RRN + '.Segments, '' > '', '' / '')',
+						DataField as Alias
+			from		@fields F
+			where		FieldTypeID = 0 
+						and FieldTypeName = 'TextPath'
+			order by	F.RowNumber;
+
+		insert into @selects
+			select		'F' + F.RRN + '.' + FieldTypeName,
+						DataField as Alias
+			from		@fields F
+			where		Object = 'FusionAttributeType' 
+						and FieldTypeID = 0 
+						and FieldTypeName = 'Name'
+			order by	F.RowNumber;
+
+		insert into @selects
+			select		'U' + F.RRN + '.' + FieldTypeName,
+						DataField as Alias
+			from		@fields F
+			where		Object = 'ResourceType' 
+						and FieldTypeID = 0 
+						and FieldTypeName in ('FirstName', 'LastName', 'Email', 'LastLoggedInOn')
+			order by	F.RowNumber;
+
+		insert into @selects
+			select	'dbo.GenerateAssetUrl(H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.ID', '.ID') + ')' as ColumnName,
+					F.BaseField + 'Url' as Alias 
+			from	@fields F 
+			where	F.BaseField is not null;
+
+		insert into @selects
+			select	'H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.Uid', '.Uid') as ColumnName,
+					F.BaseField + 'Uid' as Alias 
+			from	@fields F 
+			where	F.BaseField is not null;
+
+		insert into @wheres
+			select	'H' + F.RRN + 
+					case 
+						when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+						when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
+						when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+						else null
+					end + ' = ''' + replace(F.[Filter], '''', '''''') + '''' 
+			from	@fields F
+			where	F.[Filter] is not null and F.[Filter] <> '';
+
+		insert into @wheres
+			select	'F' + F.RRN + '.Name = ''' + replace(F.[Filter], '''', '''''') + ''''
+			from	@fields F
+			where	Object = 'FusionAttributeType' and FieldTypeID = 0 and FieldTypeName = 'Name' and F.[Filter] is not null and F.[Filter] <> '';
+
+		insert into @wheres
+			select	'U' + F.RRN + '.' + F.FieldTypeName + ' = ''' + replace(F.[Filter], '''', '''''') + ''''
+			from	@fields F
+			where	Object = 'ResourceType' and FieldTypeID = 0 and F.[Filter] is not null and F.[Filter] <> '' and F.FieldTypeName in ('FirstName', 'LastName', 'Email', 'LastLoggedInOn');
+
+		-- Add permissions check
+		insert into @wheres values ('H1.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', H1.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)')
+		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = H1.AssetTypeID)')
+
+		insert into @orders
+			select		'H' + F.RRN + 
+						case 
+							when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue asc'
+							when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue asc'
+							when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue asc'
+							else null
+						end 
+			from		@fields F
+			where		F.SortOrder is not null and F.SortOrder > 0
+			order by	F.SortOrder;
+
+		-- Build joins required.
+		insert into @tables
+			select	case RowNumber 
+						when 1 then ' from graph.AssetNode H'+RN+
+									' inner join graph.AssetEdge R'+RN+' on R'+RN + IIF(Direction = 1,'.$from_id', '.$to_id') + ' = H'+RN+'.$node_id and R'+RN+'.IntersectTypeID = ' + cast(IntersectTypeID as varchar) + 
+									' inner join graph.AssetNode A'+RN+' on A'+RN+'.$node_id = R'+RN + IIF(Direction = 1,'.$to_id', '.$from_id') + ' and A'+RN+'.ID = @assetId' +
+									case [Object]
+										when 'FusionAttributeType' then ' inner join Asset FA'+RN+' on FA'+RN+'.ID = H'+RN+'.ID inner join FusionAttribute F'+RN+' on FA'+RN+'.Object = ''FusionAttribute'' and F'+RN+'.ID = FA'+RN+'.ObjectID'
+										when 'ResourceType' then ' inner join reporting.Global_Resource U'+RN+' on U'+RN+'.uid = H'+RN+'.Uid'
+										else ''
+									end
+						else ' left join graph.AssetEdge R'+RN+' on R'+RN + IIF(Direction = 1,'.$to_id', '.$from_id') + ' = H'+cast(RowNumber-1 as varchar)+'.$node_id and R'+RN+'.IntersectTypeID = ' + cast(IntersectTypeID as varchar) + 
+							 ' left join graph.AssetNode H'+RN+' on H'+RN+'.$node_id = R'+RN + IIF(Direction = 1,'.$from_id', '.$to_id') +
+							 case [Object]
+								when 'FusionAttributeType' then ' inner join Asset FA'+RN+' on FA'+RN+'.ID = H'+RN+'.ID inner join FusionAttribute F'+RN+' on FA'+RN+'.Object = ''FusionAttribute'' and F'+RN+'.ID = FA'+RN+'.ObjectID'
+								when 'ResourceType' then ' inner join reporting.Global_Resource U'+RN+' on U'+RN+'.uid = H'+RN+'.Uid'
+								else ''
+							 end
+					end			
+			from	@relations
+			order by RowNumber;
+
+		if @countOnly = 0
+		begin
+			insert into @tables
+				select	case 
+							when T.IsRelationLink = 1 then 
+								' left join graph.AssetEdge H'+T.RRN+'_R'+T.FT+' on H'+T.RRN+'_R'+T.FT+'.' + IIF(I.Subject = T.Object and I.SubjectID = T.ObjectID, '$from_id', '$to_id') + ' = H'+T.RRN+'.$node_id and H'+T.RRN+'_R'+T.FT+'.IntersectTypeID = ' + T.FT + 
+								' left join graph.AssetNode H'+T.RRN+'_A'+T.FT+' on H'+T.RRN+'_A'+T.FT+'.$node_id = H'+T.RRN+'_R'+T.FT+'.' + IIF(I.Subject = T.Object and I.SubjectID = T.ObjectID, '$to_id', '$from_id') + 
+								' left join AssetDisplayValue H'+T.RRN+'_A'+T.FT+'_DV on H'+T.RRN+'_A'+T.FT+'_DV.AssetID = H'+T.RRN+'_A'+T.FT+'.ID'
+							when T.FieldTypeID > 0 and T.FieldDataType = 'JsonElement' then 
+								' left join FieldType H'+T.RRN+'_FT_F'+T.FT+' on H'+T.RRN+'_FT_F'+T.FT+'.ID = '+T.FT + 
+								' outer apply OPENJSON(H'+T.RRN+'_FT_F'+T.FT+'.[Definition], N''lax $'') with (FieldTypeID int, Path varchar(250), DataType varchar(250)) H'+T.RRN+'_FT_FD'+T.FT +
+								' left join Field H'+T.RRN+'_JF_F'+T.FT+' on H'+T.RRN+'_JF_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_FT_FD'+T.FT+'.FieldTypeID and H'+T.RRN+'_JF_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
+								' left join FieldJsonProperty H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldID = H'+T.RRN+'_JF_F'+T.FT+'.ID and H'+T.RRN+'_F'+T.FT+'.[Path] = H'+T.RRN+'_FT_FD'+T.FT+'.[Path]'
+							when T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
+							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
+						end
+			from	@fields T 
+					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
+
+			-- Resolve data types to send back to caller.
+			update	T
+			set		T.FieldDataType = case T.FieldDataType 
+										when 'Boolean' then 'bool' 
+										when 'Date' then 'date' 
+										when 'DateTime' then 'datetime' 
+										when 'Decimal' then 'number'
+										when 'Lookup' then 'text'--'lookup'
+										when 'Number' then 'number'
+										when 'Html' then 'html'
+										when 'Text' then 'html'
+										else T.FieldDataType
+									end,
+					T.ColumnDataType = case T.FieldDataType 
+										when 'Boolean' then 'checkbox' 
+										when 'Date' then 'datetimeinput' 
+										when 'DateTime' then 'datetimeinput' 
+										when 'Decimal' then 'numberinput'
+										when 'Lookup' then 'textbox'--'lookup'
+										when 'Number' then 'numberinput'
+										when 'Html' then 'textbox'
+										when 'Text' then 'textbox'
+										else T.FieldDataType
+									end,
+					T.DataFormat = case T.FieldDataType 
+										when 'Date' then 'MM/dd/yyyy' 
+										when 'DateTime' then 'MM/dd/yyyy hh:mm tt' 
+										when 'Decimal' then 'd'
+										when 'Number' then 'n'
+									end
+			from	@fields  T;
+
+			-- Resolve JsonElement data types
+			update	T
+			set		T.FieldDataType = case J.DataType
+										when 'bigint' then 'number'
+										when 'bit' then 'bool'
+										when 'date' then 'date'
+										when 'datetime' then 'datetime'
+										when 'float' then 'number' 
+										when 'int' then 'number' 
+										else 'text'
+									end,
+					T.ColumnDataType = case T.FieldDataType 
+										when 'bigint' then 'numberinput'
+										when 'bit' then 'checkbox'
+										when 'date' then 'datetimeinput'
+										when 'datetime' then 'datetimeinput'
+										when 'float' then 'numberinput' 
+										when 'int' then 'numberinput' 
+										else 'textbox'
+									end,
+					T.DataFormat = case T.FieldDataType 
+										when 'bigint' then 'n'
+										when 'date' then 'MM/dd/yyyy' 
+										when 'datetime' then 'MM/dd/yyyy hh:mm tt' 
+										when 'float' then 'd'
+										when 'int' then 'n'
+									end
+			from	@fields  T
+					inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'JsonElement' 
+					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
+
+			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth)
+				select coalesce(OverrideDisplayName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width from @fields;
+
+			insert into @datafields
+				select distinct DataField, FieldDataType from @fields where DataField is not null
+				union
+				select distinct BaseField+'Uid', 'text' from @fields where BaseField is not null
+				union
+				select distinct BaseField+'Url', 'text' from @fields where BaseField is not null
+		end
+	end
+	else if @type = 'OwnershipLookup'
+	begin
+		-- {"DisplayAssignmentSource":false,"ExpandGroupMembership":true}
+		declare @displayAssignmentSource bit,
+				@expandGroupMembership bit
+
+		select	@displayAssignmentSource = R.DisplayAssignmentSource,
+				@expandGroupMembership = R.ExpandGroupMembership
+		from	FieldTypeLookup O
+				cross apply OPENJSON(O.[Definition], N'lax $') with (DisplayAssignmentSource bit, ExpandGroupMembership bit) R
+		where	O.FieldTypeID = @fieldTypeId;
+
+		if @countOnly = 0
+		begin
+			insert into @columns ([text], datafield, columntype) values ('Responsibility', 'ResponsibilityTypeName', 'textbox')
+			insert into @columns ([text], datafield, columntype, urlfield, uidfield) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid')
+			if @displayAssignmentSource = 1
+			begin
+				insert into @columns ([text], datafield, columntype, uidfield) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid')
+			end
+			insert into @columns ([text], datafield, columntype) values ('Context', 'Context', 'textbox')
+
+			insert into @datafields values 
+				('ResponsibilityTypeName', 'string'), 
+				('ResourceName', 'preview'), 
+				('ResourceUid', 'string'), 
+				('ResourceItemUrl', 'string'), 
+				('SecurityAssetUid', 'string'), 
+				('SecurityAssetName', 'preview'), 
+				('Context', 'html');
+
+			insert into @selects values 
+				('R.ResponsibilityTypeName', 'ResponsibilityTypeName'),
+				('SecurityAssetUid', 'SecurityAssetUid'),
+				('case SecurityAsset when ''R'' then '''' else SecurityAssetName end', 'SecurityAssetName'),
+				('R.Context', 'Context'),
+				('R.ResourceUid', 'ResourceUid');
+			
+			if @expandGroupMembership = 1
+			begin
+				insert into @selects values ('ResourceName', 'ResourceName');
+				insert into @selects values ('''/resource/'' + cast(R.ResourceID as varchar)', 'ResourceItemUrl');
+			end
+			else
+			begin
+				insert into @selects values ('case SecurityAssetName when ResourceName then ''Resource'' else ''Group'' end', 'ResourceObject');
+				insert into @selects values ('SecurityAssetName', 'ResourceName');
+				insert into @selects values ('case SecurityAssetName when ResourceName then ''/resource/'' + cast(R.ResourceID as varchar) else ''/group/'' + cast(SecurityAssetID as varchar) end', 'ResourceItemUrl');
+			end
+		end
+
+		insert into @tables values 
+			(' from [dbo].[ResponsibilityDetail] R'),
+			('inner join Asset A on A.ID = @assetId');
+
+		insert into @wheres values 
+			('R.IsVisible = 1'),
+			('((R.AssetID = @assetId) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))');
+
+	end
+	else if @type = 'RefListRelationship'
+	begin
+		declare @isSubject bit,
+				@referenceItemTypeID int
+		select	@isSubject = iif(I.Object = 'ReferenceItemType' and I.ObjectID = 0, 1, 0) 
+		from	IntersectType I 
+				inner join FieldType F on F.LookupObjectType = 'IntersectType' and F.LookupObjectID = I.ID and F.ID = @fieldTypeId;
+		
+		if @isSubject = 1
+		begin
+			select	top 1
+					@referenceItemTypeID = A.ID
+			from	[Intersect] I
+					inner join AssetType A on A.Object = I.Object and A.ObjectID = I.ObjectID and I.Subject = @object and I.Subjectid = @objectId
+		end
+		else
+		begin 
+			select	top 1
+					@referenceItemTypeID = A.ID
+			from	[Intersect] I
+					inner join AssetType A on A.Object = I.Subject and A.ObjectID = I.SubjectID and I.Object = @object and I.Objectid = @objectId
+		end
+
+		insert into @tables values (' from Asset A');		
+		insert into @wheres values ('A.AssetTypeID = ' + cast(@referenceItemTypeID as varchar));
+
+		if @countOnly = 0
+		begin
+			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
+				select	ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
+				from	FieldType
+				where	AssetTypeID = @referenceItemTypeID;
+
+			insert into @tables
+				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar)
+				from	FieldType
+				where	AssetTypeID = @referenceItemTypeID;
+
+			-- Resolve data types to send back to caller.
+			update	@fields 
+			set		FieldDataType = case FieldDataType 
+										when 'Boolean' then 'bool' 
+										when 'Date' then 'date' 
+										when 'DateTime' then 'datetime' 
+										when 'Decimal' then 'number'
+										when 'Number' then 'number'
+										else 'html'
+									end,
+					ColumnDataType = case FieldDataType 
+										when 'Boolean' then 'checkbox' 
+										when 'Date' then 'datetimeinput' 
+										when 'DateTime' then 'datetimeinput' 
+										when 'Decimal' then 'numberinput'
+										when 'Number' then 'numberinput'
+										else 'textbox'
+									end,
+					DataFormat = case FieldDataType 
+										when 'Date' then 'MM/dd/yyyy' 
+										when 'DateTime' then 'MM/dd/yyyy hh:mm tt' 
+										when 'Decimal' then 'd'
+										when 'Number' then 'n'
+									end;
+
+			insert into @columns ([text], datafield, columntype, description, columnwidth)
+				select 'Code', 'Code', 'text', null, null
+				union
+				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width from @fields;
+
+			insert into @datafields
+				select 'Code', 'text'
+				union
+				select distinct FieldTypeName, FieldDataType from @fields
+
+			insert into @selects
+				select 'A.[Code]', 'Code'
+				union
+				select 'F'+cast(FieldTypeID as varchar)+'.FormattedValue', FieldTypeName from @fields
+		end
+	end
+
+	declare @sql nvarchar(max) = 'select '
+
+	if @countOnly = 1
+	begin
+		set  @sql = @sql + '@count = count(1) '
+	end
+	else
+	begin
+		select  @sql = @sql + ' distinct ' + STRING_AGG(ColumnName + ' as ' + Alias, ', ') from (select distinct ColumnName, Alias from @selects) O
+	end
+	select  @sql = @sql + STRING_AGG([Statement], ' ') from @tables
+	if exists(select 1 from @wheres)
+	begin
+		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
+	end
+
+--select @sql -- testing only
+print @sql
+
+	-- Output to caller.
+	if @countOnly = 0
+	begin
+		--finally, add the order by, if there is any.
+		if exists(select 1 from @orders)
+		begin
+			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders group by [Statement]) O
+		end
+
+		select * from @columns
+		select * from @datafields
+		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
+	end
+	else
+	begin
+		if @sql is not null
+			exec sp_executesql @sql, N'@assetId bigint, @count int output', @assetId = @assetId, @count = @count OUTPUT;
+		
+		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
+	end
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure dbo.GetComplexLookupByAsset
 	@object varchar(50),
 	@objectId int,
@@ -452,11 +962,6 @@ begin
 		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
 	end
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop procedure if exists GetComplexLookupByAsset
 		]]>
 	</rollback>
   </changeSet>

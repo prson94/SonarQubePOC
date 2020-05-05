@@ -138,8 +138,7 @@ export class FieldTypeItemDisplayFieldEditorModel {
     FilterValue: string;
     value: string;
 
-    Object: string;
-    ObjectID: number;
+    AssetTypeUid: string;
     FieldTypeName: string;
     Filter: string;
     OverrideDisplayName: string;
@@ -164,7 +163,7 @@ export class FieldTypeRelationItemEditorModel {
 
     //new complex relation
     IntersectTypeUid: string;
-    AssetUid: string;
+    AssetTypeUid: string;
     RelationType: number;
     Direction: number;
     selectedIntersectName: string;
@@ -224,7 +223,6 @@ export enum ComplexLookupRelationType {
     ParentItem = 4
 }
 export enum Direction {
-    Both = 0,
     Back = 1,
     Forward = 2
 }

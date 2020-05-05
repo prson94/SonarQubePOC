@@ -281,7 +281,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 //load cascading dropdowns
                 this.changeRefType(i).subscribe(
                     () => {
-                        item.selectedRelationItemID = item.IntersectTypeUid.toUpperCase() + '|' + item.AssetUid.toUpperCase() + '|' + item.Direction;
+                        item.selectedRelationItemID = item.IntersectTypeUid.toUpperCase() + '|' + item.AssetTypeUid.toUpperCase() + '|' + item.Direction;
                         this.changeRel(i).subscribe(() => {
                             let parent = item;
                             item.DisplayFields.forEach(
@@ -428,7 +428,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
 
                     r.DisplayFields = [];
                     r.ReferenceType = ComplexLookupRelationType.StandardRelationhip;
-                    r.AssetUid = this.GetCurrentUid()
+                    r.AssetTypeUid = this.GetCurrentUid()
 
                     this.model.RelationItems = [];
                     this.model.RelationItems.push(r);
@@ -858,7 +858,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         item.selectedRelationItemID = selected;
         let uid = this.GetCurrentUid();
         if (index != 0) {
-            uid = last.AssetUid;
+            uid = last.AssetTypeUid;
         }
 
         switch (item.ReferenceType.toString()) {
@@ -910,8 +910,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             params = item.selectedRelationItemID.split('|');
         } else {
             params.push(item.IntersectTypeUid);
-            params.push(item.AssetUid);
-            item.selectedRelationItemID = item.IntersectTypeUid + '|' + item.AssetUid;
+            params.push(item.AssetTypeUid);
+            item.selectedRelationItemID = item.IntersectTypeUid + '|' + item.AssetTypeUid;
         }
 
         try {
@@ -919,16 +919,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 return;
             }
 
-            let assetUid = params[1];
+            let assetTypeUid = params[1];
             let intersectType = params[0];
             let direction = params[2];
 
             item.IntersectTypeUid = intersectType.toLowerCase();
             item.Direction = direction;
-            item.AssetUid = assetUid;
+            item.AssetTypeUid = assetTypeUid;
 
             item.DisplayFields = [];
-            return this.fieldsService.getRelationLookupDisplayFields(assetUid, intersectType)
+            return this.fieldsService.getRelationLookupDisplayFields(assetTypeUid, intersectType)
                 .pipe(map(
                     r => {
                         r.forEach(
@@ -1283,10 +1283,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private addRelation(item: FieldTypeRelationItemEditorModel) {
         let i = new FieldTypeRelationItemEditorModel();
         let params = item.selectedRelationItemID.split('|');
-        let assetuid = params[1];
+        let assetTypeUid = params[1];
         let intersectType = params[0];
 
-        i.AssetUid = assetuid;
+        i.AssetTypeUid = assetTypeUid;
         i.IntersectTypeUid = intersectType.toLocaleLowerCase();
         i.displayValue = item.relationItems.find(i => i.value == item.selectedRelationItemID).title;
 
@@ -1386,14 +1386,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.model.RelationItems.forEach(x => {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
-                AssetTypeUid: x.AssetUid,
+                AssetTypeUid: x.AssetTypeUid,
                 RelationType: ComplexLookupRelationType[x.ReferenceType],
                 Direction: Direction[x.Direction]
             };
 
             let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show).map((f) => {
                 return {
-                    AssetTypeUid: x.AssetUid,
+                    AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,
                     Filter: f.Filter,
                     OverrideDisplayName: f.OverrideDisplayName,
