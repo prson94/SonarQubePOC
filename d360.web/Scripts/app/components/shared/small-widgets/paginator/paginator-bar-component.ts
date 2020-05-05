@@ -148,18 +148,19 @@ export class PaginatorComponent implements OnChanges, OnInit {
         }
 
         for (let i = start; i <= ((start + range) - 1); i++) {
-            paging.push(i); 
+            if (i <= totalPages)
+                paging.push(i); 
         }
 
-        if (this.page < 2 && this.getPageCount() <= 3) {
-            this.pageOptions = paging.splice(0, (this.getPageCount()));
+        if (this.page < 2 && totalPages <= 3) {
+            this.pageOptions = paging.splice(0, (totalPages));
         }
-        else if (this.page < 2 && this.getPageCount() > 3) {
+        else if (this.page < 2 && totalPages > 3) {
             this.pageOptions = paging.splice(0, 3);
         }
         else {
             this.pageOptions = paging;
-        }   
+        }
     }
 
     GetToDisplayValue() {
