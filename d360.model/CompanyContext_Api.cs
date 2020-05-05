@@ -1481,8 +1481,21 @@ from	IntersectType I
     update	api.ExecutionDeletedAsset
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-    where	ExecutionID = @ExecutionID and AssetID is null;",
-                        new { execution.ExecutionID }, commandTimeout: timeout);
+    where	ExecutionID = @ExecutionID and AssetID is null;
+
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
+    from    api.ExecutionDeletedAsset T
+            inner join graph.AssetNode AN on AN.ID = T.AssetID
+			inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+            cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
+            new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
 
@@ -2282,7 +2295,19 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     where	T.ExecutionID = @ExecutionID
             and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
-            and A.ChildCount > 0;",
+            and A.ChildCount > 0;
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
+    from    api.ExecutionDeletedAssetType T
+            inner join graph.AssetNode AN on AN.AssetTypeID = T.AssetTypeID
+            inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+			cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
