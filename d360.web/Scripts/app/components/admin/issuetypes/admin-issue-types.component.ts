@@ -135,6 +135,7 @@ export class AdminIssueTypesComponent extends AdminBaseComponent {
                 if (result.type != 'error') {
                     this.issueTypes = this.issueTypes.filter(x => x.ID != id);
                 }
+                this.selected = this.issueTypes.length > 0 ? this.issueTypes[0] : null;
                 this.isLoading = false;
                 this.showDelete = false;
             });
