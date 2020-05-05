@@ -12,7 +12,7 @@ export class SearchResult {
     Url: string;
     Icon: string;
     ImageUrl: string;
-    AssetPath: string[];
+    AssetPath: string[][];
     Uid: string;
     AssetTypeUid: string;
     Tags: SearchResultTags[];
@@ -107,7 +107,7 @@ export class AdvancedSearchFilter {
 export class SearchAssetDetail {
     uid: string;
     Status: string;
-    Path: string;
+    Path: string[][];
 }
 
 export class AssetScore {

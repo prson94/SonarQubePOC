@@ -41,7 +41,7 @@ namespace d360.model.DataAccessLayer
 
         Guid GetRuleUIDFromRuleID(int id);
         Task<dynamic> GetAssetDetails(Asset asset);
-        string[] GetAssetPath(Guid assetUid);
+        string[][] GetAssetPath(Guid assetUid);
         Task<dynamic> GetAssetTypeDetails(AssetType type);
         Task<SLDocument> GetAssetsExcel(Guid assetTypeUid, IEnumerable<KeyValuePair<string, string>> queryParams);
         Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
