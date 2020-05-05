@@ -59,6 +59,8 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
 
+    private gridObjectType = StringConstants.ObjectArtifactType;
+
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
@@ -150,8 +152,9 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     }
 
     load() {
+        console.log(this.artifactType);
         this
-            .loadPermissions(this.permissionsService, StringConstants.ObjectArtifactType, this.artifactType.ID)
+            .loadPermissions(this.permissionsService, this.gridObjectType, this.artifactType.ID)
             .then(() => this.changeDetectorRef.markForCheck())
             ;
 
@@ -189,8 +192,10 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, StringConstants.ObjectArtifactType).subscribe(
+        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, this.gridObjectType).subscribe(
             result => {
+                console.log(result);
+
                 let statusField;
 
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');

@@ -41,6 +41,16 @@ import { TableModule } from 'primeng/table';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { RuleCustomExportComponent } from './rule-custom-export.component';
+import { ArtifactGridComponent } from '../artifact/artifact-grid.component';
+import { ArtifactColumnFilterComponent } from '../artifact/artifact-column-filter.component';
+import { ArtifactComponent } from '../artifact/artifact.component';
+import { ArtifactCustomExportComponent } from '../artifact/artifact-custom-export.component';
+import { ArtifactDefnintionComponent } from '../artifact/artifact-definition.component';
+import { ArtifactItemComponent } from '../artifact/artifact-item.component';
+import { ArtifactListComponent } from '../artifact/artifact-list.component';
+import { ArtifactTopLevelListComponent } from '../artifact/artifact-top-level-list.component';
+import { ArtifactTopLevelFilterComponent } from '../artifact/artifact-top-level-filter.component';
+import { CalendarModule } from 'primeng/calendar';
 
 @NgModule({
     imports: [
@@ -64,6 +74,7 @@ import { RuleCustomExportComponent } from './rule-custom-export.component';
         TabViewModule,
         TooltipModule,                
         SharedModule,
+        CalendarModule,
         TableModule,
                 
         //d3s
@@ -86,6 +97,15 @@ import { RuleCustomExportComponent } from './rule-custom-export.component';
         RuleResultsGridComponent,
         RuleColumnFilterComponent,           
         RuleCustomExportComponent,
+        ArtifactColumnFilterComponent,
+        ArtifactComponent,
+        ArtifactCustomExportComponent,
+        ArtifactDefnintionComponent,
+        ArtifactGridComponent,
+        ArtifactItemComponent,
+        ArtifactListComponent,
+        ArtifactTopLevelListComponent,
+        ArtifactTopLevelFilterComponent
     ],
     exports: [
         RuleResultsGridComponent

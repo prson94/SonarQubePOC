@@ -995,6 +995,34 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "RuleTypeID", type = "number" });
+
+                    filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                    //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                    foreach (var column in columns)
+                    {
+                        column.filteritems = new List<string>();
+                    }
+
+                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
+
+                    filterColumns = filterColumns.OrderBy(x => x.text).ToList();
+
+                    //Load any field types that are top level filter fields
+                    var topFiltersHiddenRuleType = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                    topFiltersHiddenRuleType.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+
+                        col.id = i.ID.ToString();
+                        col.hiddenfield = !i.IsListable;
+
+                        topLevelFilterFields.Add(col);
+
+                    });
+
                     break;
                 #endregion  
                 case SystemObjects.FusionAttributeType:
