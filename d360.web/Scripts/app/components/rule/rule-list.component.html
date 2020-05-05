@@ -1,37 +1,11 @@
 <div class="row">
     <div class="col s12">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div class="tile tile-detail">
-            <div class="row" *ngIf="!isLoading && !showDelete && !showEditor && !showCustomExport">
-                <div class="col s12">
-                    <d3s-artifact-grid [artifactType]="ruleType" [gridObjectType]="'RuleType'"></d3s-artifact-grid>
+            <div class="row">
+                <div class="col s12" *ngIf="ruleType">
+                    <d3s-artifact-grid [artifactType]="ruleType" [gridObjectType]="'RuleType'" [object]="'Rule'"></d3s-artifact-grid>
                 </div>
             </div>
-
-            <!--<d3s-dynamic-editor *ngIf="showEditor"
-                                [objectID]="selected ? selected.ID : ruleType.ID"
-                                objectType="Rule"
-                                [objectTypeUid]="ruleType.AssetTypeUID"
-                                [title]="'Rule'"
-                                [selection]="selected"
-                                (saveClick)="saveRule()"
-                                (closeClick)="showEditor = false;"
-                                [isV2API]="true"></d3s-dynamic-editor>
-
-            <d3s-asset-delete-editor *ngIf="showDelete"
-                                     [uid]="selected?.Uid"
-                                     [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Rule')"
-                                     [assetTypeUid]="ruleType?.AssetTypeUID"
-                                     (onCancel)="showDelete = false"
-                                     (onDeleted)="onDeleted()">
-            </d3s-asset-delete-editor>
-            <d3s-rule-custom-export 
-                                    *ngIf="showCustomExport"
-                                    [ruleType]="ruleType"
-                                    (closeClick)="showCustomExport = false"
-                            >
-            </d3s-rule-custom-export>-->
-
-        </div>                        
+        </div>
     </div>
 </div>

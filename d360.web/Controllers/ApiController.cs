@@ -983,17 +983,14 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 #endregion
                 case SystemObjects.RuleType:
                     #region
-
-                    remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
+                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", apiName = "Name" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "RuleTypeID", type = "number" });
 
                     filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
@@ -1398,8 +1395,8 @@ where   h.ID <> @t order by h.[Level] desc;
 
 
 
-        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
-        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+        [Route("{objectType}/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(string objectType, int artifactTypeId)
         {
             var sql = @"
 select  distinct 
@@ -1412,7 +1409,7 @@ select  distinct
         end as [Type]
 from    ResponsibilityDetail
 where   TypeID = @id 
-        and [Type] = 'ArtifactType' 
+        and [Type] = @objectType 
         and IsVisible = 1 
 order by 'Name'";
 
@@ -1420,7 +1417,7 @@ order by 'Name'";
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(
                     sql,
-                    new { id = artifactTypeId }
+                    new { id = artifactTypeId, objectType }
                 )
             );
         }
@@ -2015,7 +2012,7 @@ order by    rnk, [Name]";
                 case DataType.OwnershipLookup:
                     resultString = await GetComplexLookupGridField(type, id, fieldTypeID).Result.Content.ReadAsStringAsync();
 
-                    if ((DataType)lookupType == DataType.RefListRelationship) 
+                    if ((DataType)lookupType == DataType.RefListRelationship)
                     {
                         var assetType = Company.AssetTypes.FirstOrDefault(f => f.ObjectID == id && f.Object == "ReferenceItemType");
                         if (assetType != null)
@@ -2105,7 +2102,8 @@ order by    rnk, [Name]";
                         var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
                         var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
 
-                        referenceListRowModel = new DetailReadOnlyRowModel {
+                        referenceListRowModel = new DetailReadOnlyRowModel
+                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
@@ -2244,11 +2242,11 @@ order by    rnk, [Name]";
                 "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
                 new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
             );
-            
+
             var Columns = reader.Read<GridColumn>().ToList();
             var Fields = reader.Read<GridField>().ToList();
             var Values = reader.Read<dynamic>().ToList();
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
         }
 
@@ -3124,12 +3122,17 @@ order by    Name
         public HttpResponseMessage GetRuleType(int id)
         {
             var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
+
+            int objectId = int.Parse(row.ID.ToString());
+            var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "HasCustomExportTemplates", hasCustomExports },
                     { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
@@ -3789,7 +3792,7 @@ where   R.RuleTypeID = @id
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -3840,7 +3843,7 @@ where   R.RuleTypeID = @id
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
                     if (fusionQueryAttribute != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));                        
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     fusionQueryAttribute = null;
                     break;

@@ -61,7 +61,7 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     @ViewChild('dt', { static: false }) dt: Table;
 
     @Input() gridObjectType: string = StringConstants.ObjectArtifactType;
-
+    @Input() object: string = 'Artifact';
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
@@ -195,8 +195,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
     getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.artifactType.ID, this.gridObjectType).subscribe(
             result => {
-                console.log(result);
-
                 let statusField;
 
                 this.columns = result.Columns.filter(x => x.datafield != 'Name');
@@ -315,8 +313,6 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
             .subscribe(res => {
                 this.items = res.items;
 
-
-
                 this.totalRecords = res.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
@@ -381,13 +377,17 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
-                this.router.navigateByUrl(
-                    SiteUrlHelpers
-                        .getObjectUrl(
-                            'Artifact',
-                            res.ObjectId,
-                            this.artifactType.ID
-                        ));
+                if (this.gridObjectType == StringConstants.ObjectArtifactType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+                }
+                else if (this.gridObjectType == StringConstants.ObjectRuleType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.artifactType.ID);
+                }
+                else {
+                    console.warn("onRightClick => Invalid object type");
+                }
+
+                this.router.navigateByUrl(this.itemUrl);
             });
 
     }
@@ -434,7 +434,15 @@ export class ArtifactGridComponent extends BaseComponent implements OnChanges, O
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
-                this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+                if (this.gridObjectType == StringConstants.ObjectArtifactType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+                }
+                else if (this.gridObjectType == StringConstants.ObjectRuleType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.artifactType.ID);
+                }
+                else {
+                    console.warn("onRightClick => Invalid object type");
+                }
             });
 
         return false;

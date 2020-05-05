@@ -60,6 +60,7 @@
     [(filters)]="stateService.artifactTypeFilters.filters"
     [artifactType]="artifactType"
     [fields]="filtercolumns"
+    [objectType]="gridObjectType"
     (filterChanged)="filterGridData(dt)"
   ></d3s-artifact-column-filter>
   <d3s-artifact-custom-export
@@ -203,7 +204,7 @@
 <d3s-dynamic-editor
   *ngIf="showEditor"
   [objectID]="selected ? selected?.ObjectID : artifactType?.ID"
-  objectType="Artifact"
+  [objectType]="object"
   [title]="artifactType?.Name + ' Item'"
   [selection]="selected"
   [rowID]="rowID"

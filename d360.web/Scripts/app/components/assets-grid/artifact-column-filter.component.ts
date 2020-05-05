@@ -43,6 +43,7 @@ import { Observable } from 'rxjs';
 export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     @Input() fields: GridFilterColumn[];
     @Input() artifactType: ArtifactType;
+    @Input() objectType: string = 'ArtifactType';
     @Output() filterChanged = new EventEmitter();
 
     @Input() filters: GridFilterExpression[] = [];
@@ -50,18 +51,18 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
     @Input() relationshipFilters: GridRelationshipFilterExpression[] = [];
     @Output() relationshipFiltersChange = new EventEmitter();
-        
+
     @Input() ownerFilter: GridOwnerFilter = null;
     @Output() ownerFilterChange = new EventEmitter();
 
     relationshipTypes: ObjectRelationship[];
-    connectors: SelectItem[] = [{label: "And", value: "All"}, {label: "Or", value: "Any"}];    
+    connectors: SelectItem[] = [{ label: "And", value: "All" }, { label: "Or", value: "Any" }];
     ownerValues: SelectItem[] = [];
 
     filterFieldType = FilterFieldType;
 
     private internalFilters: FilterExpression[] = [];
-    private availableFilters: FilterField[] = [];    
+    private availableFilters: FilterField[] = [];
     private isLoadingFilter = false;
     private ownerShipFilter: FilterField = {
         Data: null,
@@ -70,13 +71,13 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
     };
 
     constructor(
-        private relationshipsService: RelationshipsService,        
+        private relationshipsService: RelationshipsService,
         private artifactTypeService: ArtifactTypeService,
         private ref: ChangeDetectorRef
     ) {
     }
 
-    ngOnInit() {        
+    ngOnInit() {
         if (this.ownerFilter && (this.ownerFilter.ownerGroups || this.ownerFilter.ownerUsers)) {
             this.ownerSelected();
         }
@@ -113,7 +114,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
                 this.resetFilters();
             }
-                        
+
             this.getRelationships();
             this.availableFilters.push(this.ownerShipFilter);
         }
@@ -123,7 +124,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
         let hasOwnerFilter = false;
 
         this.filters = [];
-        this.relationshipFilters = [];        
+        this.relationshipFilters = [];
         this.ownerFilter = null;
 
         let usedFilters = [];
@@ -141,7 +142,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     this.filters.push(internalFilter.Data);
                     usedFilters.push(internalFilter.Data.field);
                 }
-            }  else if (internalFilter.Type == FilterFieldType.Relationship) {
+            } else if (internalFilter.Type == FilterFieldType.Relationship) {
                 if (usedFilters.indexOf("R" + internalFilter.Data.relationshipType.IntersectTypeID) !== -1) {
                     filterIndicesToRemove.push(currentIndex);
                 }
@@ -178,7 +179,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.internalFilters.splice(ix, 1);
             }
         }
-                
+
         this.relationshipFiltersChange.emit(this.relationshipFilters);
         this.ownerFilterChange.emit(this.ownerFilter);
         this.filtersChange.emit(this.filters);
@@ -194,11 +195,11 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
         this.relationshipFilters.splice(0, this.relationshipFilters.length);
         this.relationshipFiltersChange.emit(this.relationshipFilters);
-                
+
         this.ownerFilter = null;
         this.ownerFilterChange.emit(this.ownerFilter);
 
-        this.filterChanged.emit({filter: this.filters, relationshipFilter: this.relationshipFilters});
+        this.filterChanged.emit({ filter: this.filters, relationshipFilter: this.relationshipFilters });
     }
 
     private changeFilterField(target, filter) {
@@ -214,7 +215,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                     this.isLoadingFilter = true;
                     this
                         .artifactTypeService
-                        .getFilterListItems(this.artifactType.ID, 'ArtifactType', fieldId)
+                        .getFilterListItems(this.artifactType.ID, this.objectType, fieldId)
                         .subscribe(r => {
                             filter.Field.Data.filteritems = r;
                             this.isLoadingFilter = false;
@@ -225,7 +226,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 this.isLoadingFilter = true;
                 this
                     .artifactTypeService
-                    .getObjectTypeParentsListItems(this.artifactType.ID, 'ArtifactType')
+                    .getObjectTypeParentsListItems(this.artifactType.ID, this.objectType)
                     .subscribe(r => {
                         filter.Field.Data.filteritems = r;
                         this.isLoadingFilter = false;
@@ -241,7 +242,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
             //determine the field type
             if (target.Data.hiddenfield) {
-                filter.Data.fieldtype = GridFilterFieldType.Hidden;            
+                filter.Data.fieldtype = GridFilterFieldType.Hidden;
             } else {
                 filter.Data.fieldtype = GridFilterFieldType.Normal;
             }
@@ -275,10 +276,10 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
 
         this
             .artifactTypeService
-            .getPossibleArtifactOwners(this.artifactType.ID)
+            .getPossibleArtifactOwners(this.objectType, this.artifactType.ID)
             .subscribe(result => {
                 for (let item of result) {
-                    this.ownerValues.push({label: item.Name, value: item});
+                    this.ownerValues.push({ label: item.Name, value: item });
                 }
 
                 //add an internal filter in case we need to init the ui this way
@@ -319,12 +320,12 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
             .getRelatedObjects(expr.relationshipType.TargetType, expr.relationshipType.TargetTypeID, expr.relationshipType.IntersectTypeID)
             .pipe(
                 map(result => {
-                expr.options = [];
+                    expr.options = [];
                     for (let item of result) {
                         expr.options.push({ label: item.Name, value: item.Uid });
-                }
-                this.ref.markForCheck();
-            }));
+                    }
+                    this.ref.markForCheck();
+                }));
     }
 
     private addRelationshipTypesToAvailable(relTypes) {
@@ -358,7 +359,7 @@ export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
                 if (!this.artifactType || this.artifactType.ID <= 0) return;
 
                 this.relationshipsService
-                    .getObjectRelations('ArtifactType', this.artifactType.ID)
+                    .getObjectRelations(this.objectType, this.artifactType.ID)
                     .subscribe(result => {
                         this.relationshipTypes = result;
                         this.addRelationshipTypesToAvailable(this.relationshipTypes);
