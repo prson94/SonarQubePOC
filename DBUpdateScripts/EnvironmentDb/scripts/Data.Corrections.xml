@@ -375,7 +375,7 @@ GO
   </changeSet>
 
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-10532-V2">
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10532-V3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -516,7 +516,7 @@ set		R.Direction = case
 						else R.Direction
 					  end
 from	@relations R
-		inner join IntersectType I on I.ID = R.IntersectTypeID and R.RelationType = 1
+		inner join IntersectType I on I.Uid = R.IntersectTypeUid and R.RelationType = 1
 		inner join AssetType A on A.Uid = R.AssetTypeUid;
 
 update	@relations
