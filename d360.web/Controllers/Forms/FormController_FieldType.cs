@@ -332,7 +332,7 @@ namespace d360.web.Controllers
             {
                 if (exceptionMessage == "")
                 {
-                    exceptionMessage = "Filter disabled. An error occurred when attempting to apply it.";
+                    exceptionMessage = "Filter disabled. An error occured when attempting to apply it.";
                 }
             }
             selectList = selectList.OrderBy(i => i.Selected ? 0 : 1).ToList();

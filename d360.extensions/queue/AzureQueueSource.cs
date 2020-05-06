@@ -65,7 +65,7 @@ namespace d360.extensions.queue
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Error occurred trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
                 return false;
             }
             return true;
@@ -95,7 +95,7 @@ namespace d360.extensions.queue
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Error occurred trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
                 return false;
             }
             return true;

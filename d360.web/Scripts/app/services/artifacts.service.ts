@@ -169,7 +169,7 @@ export class ArtifactService extends BaseObservableService {
             )
             .pipe(map(res => {
                 if (res.type.toString() != 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-                    this.messages.showError('Error', 'An error has occurred');
+                    this.messages.showError('Error', 'An error has occured');
                 }
                 else {
                     return res;

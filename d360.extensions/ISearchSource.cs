@@ -213,7 +213,7 @@ namespace d360.extensions
     public class AddToIndexException : Exception
     {
         public AddToIndexException(Exception ex)
-            : base("An error occurred while trying to add item to index.", ex)
+            : base("An error occured while trying to add item to index.", ex)
         {
         }
     }
@@ -221,7 +221,7 @@ namespace d360.extensions
     public class SearchResultsException : Exception
     {
         public SearchResultsException(Exception ex)
-            : base("An error occurred while trying to get search results.", ex)
+            : base("An error occured while trying to get search results.", ex)
         {
         }
     }
