@@ -3,7 +3,7 @@ import {catchError, map} from "rxjs/operators";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 
-import {Favorite} from '../models/favorite.model';
+import {FavoriteApiModel} from '../models/favorite.model';
 import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesObservableService} from './messages-observable.service';
@@ -18,12 +18,12 @@ export class FavoritesService extends BaseObservableService {
         super(messagesService);
     }
 
-    getFavorites(adminOnly: boolean = false): Observable<Favorite[]> {
+    getFavorites(adminOnly: boolean = false): Observable<FavoriteApiModel[]> {
         return this
             .http
-            .get(`navigation/getfavorites?adminOnly=${adminOnly}`)
+            .get(`api/v2/membership/users/me/favorites`)
             .pipe(
-                map(response => <Favorite[]>response),
+                map(response => <FavoriteApiModel[]>response),
                 catchError(err => this.handleError(err))
             );
     }
@@ -38,7 +38,7 @@ export class FavoritesService extends BaseObservableService {
             );
     }
 
-    toggleFavorite(favorite: Favorite) {
+    toggleFavorite(favorite: FavoriteApiModel) {
         return this
             .http
             .put(`navigation/togglefavorite`, favorite)

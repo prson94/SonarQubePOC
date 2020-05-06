@@ -105,7 +105,6 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.favoritesService.getFavorites().subscribe(
             favorites => {
-            favorites = _.sortBy(favorites, 'SortOrder'); // sort the favorites
             this.favorites = new SiteMenu();
             this.favorites.MenuID = '*Favourites';
             this.favorites.NavigationItems = [];
@@ -116,7 +115,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
                     Url: favorite.Route,
                     IsLink: false,
                     Items: null,
-                    IsHomePage: favorite.IsHomePage,
+                    IsHomePage: favorite.Route == 'home',
                     count: null
                 });
             }

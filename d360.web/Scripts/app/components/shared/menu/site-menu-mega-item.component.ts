@@ -1,13 +1,8 @@
 ﻿import { Input, Component, Output, EventEmitter, ChangeDetectionStrategy, OnInit} from '@angular/core';
 import { Router } from '@angular/router';
 import { BaseComponent } from '../base.component';
-import { StateService } from '../../../services/state.service';
-import { FavoritesService } from '../../../services/favorites.service';
-import { AuthenticationService } from '../../../services/authentication.service';
 import { SiteMenuService } from '../../../services/site-menu.service';
-import { SiteMenu, SiteMenuItem, SiteNav, NavigationState } from '../../../models/site-menu.model';
-import { Favorite } from '../../../models/favorite.model';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { SiteMenuItem, NavigationState } from '../../../models/site-menu.model';
 
 @Component({
     selector: 'd3s-site-menu-mega-item',    

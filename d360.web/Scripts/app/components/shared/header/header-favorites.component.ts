@@ -10,7 +10,7 @@
 } from '@angular/core';
 import {Router} from '@angular/router';
 import {FavoritesService} from '../../../services/favorites.service';
-import {Favorite} from '../../../models/favorite.model';
+import { FavoriteApiModel} from '../../../models/favorite.model';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {HeaderActionsService} from '../../../services/header-actions.service';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
@@ -41,7 +41,7 @@ import {SiteUrlHelpers} from '../../../static/site-url-helpers';
 export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
     @Input() isFavoriteItem: boolean = false;
-    @Input() favItems: Favorite[] = [];
+    @Input() favItems: FavoriteApiModel[] = [];
     @Input() currentObject: string;
     @Input() currentObjectId: number;
 
@@ -100,9 +100,10 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             return;
 
         this.isLoading = true;
-        let f = new Favorite();
-        f.ObjectID = this.currentObjectId;
-        f.Object = this.currentObject;
+        let f = new FavoriteApiModel();
+       //check these to determine fav type
+        //f.ObjectID = this.currentObjectId;
+        //f.Object = this.currentObject;
         f.Name = this.name;
         f.Route = this.uri ? this.uri : 'home';//null route is home        
         this.isFavoriteItem = !this.isFavoriteItem;
@@ -129,7 +130,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isHomePageItem = false;
         if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => x.Route == this.uri && x.IsHomePage == true);
+        let index = this.favItems.findIndex(x => x.Route == this.uri && x.Route == 'home');
 
         this.isHomePageItem = index >= 0;
     }

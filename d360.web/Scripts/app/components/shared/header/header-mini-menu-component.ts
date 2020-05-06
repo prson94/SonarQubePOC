@@ -4,7 +4,7 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { FavoritesService } from '../../../services/favorites.service';
-import { Favorite } from '../../../models/favorite.model';
+import { FavoriteApiModel } from '../../../models/favorite.model';
 import * as _ from 'lodash'; 
 
 declare var CurrentResourceID;
@@ -62,7 +62,7 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     private subObjectChange: any;
     private subFavorites: any;
 
-    private favItems: Favorite[] = [];
+    private favItems: FavoriteApiModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;
