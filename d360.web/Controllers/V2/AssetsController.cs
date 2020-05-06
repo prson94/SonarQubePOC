@@ -29,6 +29,7 @@ using d360.core.resources;
 using Resources;
 using System.IO;
 using d360.model.helpers.filters;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -246,13 +247,73 @@ namespace d360.web.Controllers.V2
 
                 if (isStreamResponse)
                 {
-                    var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
 
-                    var stream = new MemoryStream();
-                    results.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
+                    int templateId = 4086;
+                    if (templateId > 0)
+                    {
+                        var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+                        var data = results.items;
+                        var template = Company.AssetTypeExportTemplates.Where(x => x.ID == templateId).FirstOrDefault();
+                        List<FieldType> fieldsForCustomExport = new List<FieldType>();
+                        if (!string.IsNullOrEmpty(template.IncludeFields))
+                        {
+                            var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
 
-                    response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                            fieldsForCustomExport.Clear();
+
+                            //done this way to set order of fields in spreadsheet to the order specified in include fields.
+                            foreach (var fieldId in fieldIdList)
+                            {
+                                var field = Company.FieldTypes.FirstOrDefault(x => x.ID == fieldId);
+                                if (field != null) fieldsForCustomExport.Add(field);
+                            }
+                        }
+                        SLDocument document = null;
+                        if (template.IncludeParent)
+                        {
+                            var assetType = Company.AssetTypes.FirstOrDefault(a => a.uid == assetTypeUid);
+                            if (Company.TypeHasParent(SystemObjects.ArtifactType, assetType.ObjectID)) fieldsForCustomExport.Insert(0, new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+                        }
+
+                        if (template.IncludeUrl) fieldsForCustomExport.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+
+                        switch (template.ExportViewType)
+                        {
+                            case core.enums.ExportView.None:
+                                document = GenerateDefaultSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                                break;
+                            case core.enums.ExportView.Pivot:
+                                document = GeneratePivotedSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                                break;
+                            case core.enums.ExportView.Grouped:
+                                document = GenerateGroupedSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                                break;
+                            default:
+                                throw new Exception("INVALID EXPORT VIEW TYPE SPECIFIED");
+                        }
+
+                        // Select the first worksheet as the active one.
+                        var firstSheet = document.GetWorksheetNames()[0];
+                        document.SelectWorksheet(firstSheet);
+
+                        var stream = new MemoryStream();
+                        document.SaveAs(stream);
+
+                        byte[] bytes = stream.ToArray();
+
+                        response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                    }
+                    else
+                    {
+                        var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+
+                        var stream = new MemoryStream();
+                        results.SaveAs(stream);
+                        byte[] bytes = stream.ToArray();
+
+                        response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                    }
                 }
                 else
                 {
