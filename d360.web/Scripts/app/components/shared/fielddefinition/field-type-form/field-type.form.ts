@@ -852,7 +852,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private changeRefType(index: number, selected: string = null): Observable<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-        console.log(selected);
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;

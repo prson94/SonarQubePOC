@@ -90,9 +90,14 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         this.isLoading = true;
         let f = new FavoriteApiModel();
         //check these to determine fav type
-        //f.ObjectID = this.currentObjectId;
-        //f.Object = this.currentObject;
-
+        //check these to determine fav type
+        if (!this.currentObject && !this.currentObjectId) {
+            f.Type = "Page";
+        } else if (this.currentObject.endsWith("Type")) {
+            f.Type = "AssetType";
+        } else {
+            f.Type = "Asset";
+        }
         f.Name = this.name;
         f.Route = this.uri ? this.uri : 'home';//null route is home    
         this.isHomePageItem = !this.isHomePageItem;    

@@ -31,7 +31,7 @@ export class FavoritesService extends BaseObservableService {
     deleteCurrentUsersFavorites(): Observable<JsonResult> {
         return this
             .http
-            .delete('navigation/deletemyfavorites')
+            .delete('api/v2/membership/users/me/favorites')
             .pipe(
                 map(response => <JsonResult>response),
                 catchError(err => this.handleError(err))
@@ -41,7 +41,7 @@ export class FavoritesService extends BaseObservableService {
     toggleFavorite(favorite: FavoriteApiModel) {
         return this
             .http
-            .put(`navigation/togglefavorite`, favorite)
+            .put(`api/v2/membership/users/me/favorites`, favorite)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))
