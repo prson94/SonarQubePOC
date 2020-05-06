@@ -15,6 +15,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { AssetGridObject } from '../assets-grid/asset-grid.model';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -27,6 +28,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
     ruleTypeId: number;
+    gridObject: AssetGridObject;
     private ruleType: RuleType;
 
 
@@ -47,7 +49,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
-            
+
             this.ruleTypeId = +params['ruleTypeId'];
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
@@ -56,12 +58,14 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
             this.headerBreadcrumbService.setCurrentObjectInfo('RuleType', this.ruleTypeId);
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
-            
+
             this.isLoading = true;
             this.rulesService.getRuleType(this.ruleTypeId)
                 .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
+                    this.gridObject = RuleType.AsGridObject(this.ruleType);
+                    console.log(this.gridObject);
                     this.setObjectInfo('RuleType', this.ruleType.ID);
 
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {

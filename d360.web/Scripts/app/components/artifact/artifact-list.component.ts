@@ -15,6 +15,7 @@ import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Subscription } from 'rxjs';
 import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+import { AssetGridObject } from '../assets-grid/asset-grid.model';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -23,6 +24,8 @@ import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component
 })
 
 export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+
+    private gridObject: AssetGridObject;
     private artifactType: ArtifactType;
     private artifactTypeHierarchy: ArtifactType[];
     private sub: any;
@@ -69,6 +72,7 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
                         this.area = res;
 
                         this.artifactType = artifactType;
+                        this.gridObject = ArtifactType.AsGridObject(this.artifactType);
                         this.setObjectInfo('ArtifactType', this.artifactType.ID);
 
                         this.artifactTypeHierarchy.push(this.artifactType);

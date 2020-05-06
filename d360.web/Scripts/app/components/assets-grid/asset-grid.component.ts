@@ -41,6 +41,7 @@ import { AssetEditorModel } from '../../models/asset.model';
 import * as _ from 'lodash';
 import { V2ApiFilters } from '../../models/asset-search.model';
 import { SortOrder } from '../../models/enums.model';
+import { AssetGridObject } from './asset-grid.model';
 
 @Component({
     selector: 'd3s-asset-grid',
@@ -54,14 +55,12 @@ import { SortOrder } from '../../models/enums.model';
 
 export class AssetGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
-    @Input() artifactType: ArtifactType;
+    @Input() gridObject: AssetGridObject;
 
     @Input() titlePostfix: string = ''; // added to end of header title.
     @Input() rowsPerPage: number = 25;
     @ViewChild('dt', { static: false }) dt: Table;
 
-    @Input() gridObjectType: string = StringConstants.ObjectArtifactType;
-    @Input() object: string = 'Artifact';
     showEditButton: boolean = true;
     showDeleteButton: boolean = true;
     showAddButton: boolean = true;
@@ -138,12 +137,12 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['artifactType'] && this.artifactType != null) {
+        if (changes['gridObject'] && this.gridObject != null) {
             this.load();
         }
 
         //clear out the filters if the artifacttype is different
-        this.stateService.resetArtifactTypeFilterIfRequired(this.artifactType.ID);
+        this.stateService.resetArtifactTypeFilterIfRequired(this.gridObject.ID);
     }
 
     ngOnDestroy() {
@@ -153,15 +152,14 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     load() {
-        console.log(this.artifactType);
         this
-            .loadPermissions(this.permissionsService, this.gridObjectType, this.artifactType.ID)
+            .loadPermissions(this.permissionsService, this.gridObject.ObjectType, this.gridObject.ID)
             .then(() => this.changeDetectorRef.markForCheck())
             ;
 
         this.getFieldsDefinition();
 
-        if (this.artifactType.AutoDisplayDescription) {
+        if (this.gridObject.AutoDisplayDescription) {
             this.toggleArtifactDetail();
         }
     }
@@ -193,7 +191,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.artifactType.ID, this.gridObjectType).subscribe(
+        this.gridDefinitionService.getGridDefinition(this.gridObject.ID, this.gridObject.ObjectType).subscribe(
             result => {
                 let statusField;
 
@@ -308,7 +306,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             this.assetSearchSub.unsubscribe();
         }
 
-        this.assetSearchSub = this.assetService.getAssets(this.artifactType.AssetTypeUID, this.getParams(), true)
+        this.assetSearchSub = this.assetService.getAssets(this.gridObject.AssetTypeUID, this.getParams(), true)
             .pipe(debounceTime(200))
             .subscribe(res => {
                 this.items = res.items;
@@ -356,7 +354,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     export(listableOnly) {
-        this.assetService.downloadAssetsExcel(this.artifactType.AssetTypeUID, this.getParams(), 'Filtered ' + this.artifactType.Name + ' List');
+        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, this.getParams(), 'Filtered ' + this.gridObject.Name + ' List');
     }
 
     customExport() {
@@ -377,11 +375,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
-                if (this.gridObjectType == StringConstants.ObjectArtifactType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+                if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.gridObject.ID);
                 }
-                else if (this.gridObjectType == StringConstants.ObjectRuleType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.artifactType.ID);
+                else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.gridObject.ID);
                 }
                 else {
                     console.warn("onRightClick => Invalid object type");
@@ -434,11 +432,11 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
         this.assetService.getUIDetailsForAssetUID(artifact.AssetUid)
             .subscribe(res => {
-                if (this.gridObjectType == StringConstants.ObjectArtifactType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.artifactType.ID);
+                if (this.gridObject.ObjectType == StringConstants.ObjectArtifactType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Artifact', res.ObjectId, this.gridObject.ID);
                 }
-                else if (this.gridObjectType == StringConstants.ObjectRuleType) {
-                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.artifactType.ID);
+                else if (this.gridObject.ObjectType == StringConstants.ObjectRuleType) {
+                    this.itemUrl = SiteUrlHelpers.getObjectUrl('Rule', res.ObjectId, this.gridObject.ID);
                 }
                 else {
                     console.warn("onRightClick => Invalid object type");

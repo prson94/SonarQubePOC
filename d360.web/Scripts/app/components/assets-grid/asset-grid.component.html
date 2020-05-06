@@ -1,8 +1,8 @@
 <d3s-loading [isLoading]="isEditing"></d3s-loading>
 <header class="grid-header" *ngIf="!showEditor && !showDelete && !isEditing && !hasNoListableColumns">
     <d3s-tile-actions [hasAdd]="showAddButton && hasModifyAssetPermissions()"
-                      [hasExport]="!artifactType.HasCustomExportTemplates"
-                      [hasCustomExport]="artifactType.HasCustomExportTemplates"
+                      [hasExport]="!gridObject.HasCustomExportTemplates"
+                      [hasCustomExport]="gridObject.HasCustomExportTemplates"
                       (addClick)="add()"
                       [isExportDisabled]="!canExportRecords()"
                       [exportDisabledMessage]="'Export not available for over ' + maxExportRows + ' rows'"
@@ -11,10 +11,10 @@
                       [hasFilterMode]="true"
                       [filterMode]="showGridSimpleFilter"
                       (filterModeChange)="resetFilters(dt,$event)"></d3s-tile-actions>
-    <div *ngIf="showArtifactDetails && artifactType && artifactType.Description"
-         [innerHtml]="artifactType.Description | safeHtml"
+    <div *ngIf="showArtifactDetails && gridObject && gridObject.Description"
+         [innerHtml]="gridObject.Description | safeHtml"
          class="tile-description"></div>
-    <span *ngIf="artifactType && artifactType.Description"
+    <span *ngIf="gridObject && gridObject.Description"
           aria-hidden="true"
           title="Details"
           class="action-tile-span"
@@ -58,15 +58,16 @@
     [(ownerFilter)]="stateService.artifactTypeFilters.owners"
     [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
     [(filters)]="stateService.artifactTypeFilters.filters"
-    [artifactType]="artifactType"
+    [gridObject]="gridObject"
     [fields]="filtercolumns"
-    [objectType]="gridObjectType"
+    [objectType]="gridObject.ObjectType"
     (filterChanged)="filterGridData(dt)"
   ></d3s-asset-grid-column-filter>
   <d3s-asset-grid-custom-export
     *ngIf="showCustomExport && canExportRecords()"
     (closeClick)="showCustomExport = false"
-    [artifactType]="artifactType"
+    [gridObject]="gridObject"
+    [objectType]="gridObject.ObjectType"
     [sortOrder]="stateService.artifactTypeFilters.sortOrder"
     [sortField]="stateService.artifactTypeFilters.sortField"
     [filters]="stateService.artifactTypeFilters.filters"
@@ -203,12 +204,12 @@
 </div>
 <d3s-dynamic-editor
   *ngIf="showEditor"
-  [objectID]="selected ? selected?.ObjectID : artifactType?.ID"
-  [objectType]="object"
-  [title]="artifactType?.Name + ' Item'"
+  [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
+  [objectType]="gridObject.Object"
+  [title]="gridObject?.Name + ' Item'"
   [selection]="selected"
   [rowID]="rowID"
-  [objectTypeUid]="artifactType?.AssetTypeUID"
+  [objectTypeUid]="gridObject?.AssetTypeUID"
   (saveClick)="saveItem($event)"
   [isV2API]="true"
   (closeClick)="closeEditor()"
@@ -216,7 +217,7 @@
 <d3s-asset-delete-editor
     *ngIf="showDelete"
     [uid]="selected?.AssetUid"
-    [assetTypeUid]="artifactType?.AssetTypeUID"
+    [assetTypeUid]="gridObject?.AssetTypeUID"
     [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Artifact')"
     (onCancel)="showDelete = false"
     (onDeleted)="onDeleted()">

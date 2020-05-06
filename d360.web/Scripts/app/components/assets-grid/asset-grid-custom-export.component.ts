@@ -5,6 +5,7 @@ import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
+import { RulesService } from '../../services/rules.service';
 
 @Component({
     selector: 'd3s-asset-grid-custom-export',
@@ -20,26 +21,28 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
                         <button pButton type="button" style="width: '150px';" label="Close" (click)="closeClick.emit()"></button>                        
                     </div>                    
                 </div>        
-                `,    
-        changeDetection: ChangeDetectionStrategy.OnPush,  
-    providers: [ArtifactService, ExportTemplateService]
+                `,
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    providers: [ArtifactService, ExportTemplateService, RulesService]
 })
 
 export class AssetGridCustomExportComponent extends BaseComponent implements OnInit {
-    @Input() artifactType: ArtifactType;
+    @Input() gridObject: ArtifactType;
+    @Input() objectType: string = 'ArtifactType';
     @Input() sortField: string;
     @Input() sortOrder: SortOrder;
     @Input() filters: GridFilterExpression[]
-    @Input() relationships: GridRelationshipFilterExpression[];    
+    @Input() relationships: GridRelationshipFilterExpression[];
     @Input() simpleFilter: string;
     @Input() owner: GridOwnerFilter;
 
     @Output() closeClick = new EventEmitter();
 
     private exportOptions: AssetTypeExportTemplate[];
-    
+
     constructor(
         protected artifactService: ArtifactService,
+        protected rulesService: RulesService,
         protected exportTempalteService: ExportTemplateService,
         private changeDetectorRef: ChangeDetectorRef
     ) { super(); }
@@ -47,10 +50,10 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     ngOnInit() {
         this.load();
     }
-    
+
     private load() {
         this.isLoading = true;
-        this.exportTempalteService.getExportTemplatesForAssetType(this.artifactType.AssetTypeUID).subscribe(res => {
+        this.exportTempalteService.getExportTemplatesForAssetType(this.gridObject.AssetTypeUID).subscribe(res => {
             this.isLoading = false;
             this.exportOptions = res;
             this.changeDetectorRef.markForCheck();
@@ -58,10 +61,15 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     }
 
     private doDefaultExport() {
-        this.artifactService.getArtifactsXls(false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
+        this.artifactService.getArtifactsXls(false, this.gridObject, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
     }
 
     private doExport(option: AssetTypeExportTemplate) {
-        this.artifactService.getArtifactsCustomXls(option.ID, false, this.artifactType, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
+        if (this.objectType == 'ArtifactType')
+            this.artifactService.getArtifactsCustomXls(option.ID, false, this.gridObject, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
+
+        if (this.objectType == 'RuleType')
+            this.rulesService.exportRulesCustomXls(option.ID, this.gridObject.AssetTypeUID, this.gridObject.Name);
+
     }
 };

@@ -23,6 +23,7 @@ import { ObjectRelationship } from '../../models/relationship.model';
 import { FilterExpression, FilterField, FilterFieldType } from '../../models/filter-field.model';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
+import { AssetGridObject } from './asset-grid.model';
 
 @Component({
     selector: 'd3s-asset-grid-column-filter',
@@ -42,7 +43,7 @@ import { Observable } from 'rxjs';
 
 export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
     @Input() fields: GridFilterColumn[];
-    @Input() artifactType: ArtifactType;
+    @Input() gridObject: AssetGridObject;
     @Input() objectType: string = 'ArtifactType';
     @Output() filterChanged = new EventEmitter();
 
@@ -215,7 +216,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
                     this.isLoadingFilter = true;
                     this
                         .artifactTypeService
-                        .getFilterListItems(this.artifactType.ID, this.objectType, fieldId)
+                        .getFilterListItems(this.gridObject.ID, this.objectType, fieldId)
                         .subscribe(r => {
                             filter.Field.Data.filteritems = r;
                             this.isLoadingFilter = false;
@@ -226,7 +227,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
                 this.isLoadingFilter = true;
                 this
                     .artifactTypeService
-                    .getObjectTypeParentsListItems(this.artifactType.ID, this.objectType)
+                    .getObjectTypeParentsListItems(this.gridObject.ID, this.objectType)
                     .subscribe(r => {
                         filter.Field.Data.filteritems = r;
                         this.isLoadingFilter = false;
@@ -276,7 +277,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
 
         this
             .artifactTypeService
-            .getPossibleArtifactOwners(this.objectType, this.artifactType.ID)
+            .getPossibleArtifactOwners(this.objectType, this.gridObject.ID)
             .subscribe(result => {
                 for (let item of result) {
                     this.ownerValues.push({ label: item.Name, value: item });
@@ -356,10 +357,10 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
         try {
             //fetch relationships for this artifacttypeid
             if (!this.relationshipTypes) {
-                if (!this.artifactType || this.artifactType.ID <= 0) return;
+                if (!this.gridObject || this.gridObject.ID <= 0) return;
 
                 this.relationshipsService
-                    .getObjectRelations(this.objectType, this.artifactType.ID)
+                    .getObjectRelations(this.objectType, this.gridObject.ID)
                     .subscribe(result => {
                         this.relationshipTypes = result;
                         this.addRelationshipTypesToAvailable(this.relationshipTypes);
