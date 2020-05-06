@@ -360,7 +360,7 @@ namespace d360.web.Controllers.Services
         /// <returns></returns>
         [HttpGet, Route("{service}/{endpoint}/{version}/{entityFormat}/{key}"),
         SwaggerResponse(HttpStatusCode.NotFound, "Endpoint not found."),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetSingletonBasedOnRoute(string service, string endpoint, string version, string entityFormat, string key)
         {
 
@@ -571,7 +571,7 @@ namespace d360.web.Controllers.Services
             {
                 SendException(r, new Dictionary<string, string>());
 
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
             }
         }
 
@@ -585,7 +585,7 @@ namespace d360.web.Controllers.Services
         /// <returns></returns>
         [HttpGet, Route("{service}/{endpoint}/{version}/{*entityFormat}"),
         SwaggerResponse(HttpStatusCode.NotFound, "Incorrect version provided."),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetCollectionBasedOnRoute(string service, string endpoint, string version, string entityFormat)
         {
 
@@ -1613,7 +1613,7 @@ namespace d360.web.Controllers.Services
             {
                 SendException(r, new Dictionary<string,string>());
 
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
             }
         }
 
@@ -1633,7 +1633,7 @@ namespace d360.web.Controllers.Services
         /// <returns></returns>
         [HttpGet, Route("{service}/{endpoint}/{version}/version"),
         SwaggerResponse(HttpStatusCode.NotFound, "Incorrect version provided."),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetEndpointVersion(string service, string endpoint, string version)
         {
             try
@@ -1697,7 +1697,7 @@ namespace d360.web.Controllers.Services
             }
             catch (Exception)
             {
-                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occured. Please try your request again at a later time");
+                return CreateCustomApiError(HttpStatusCode.InternalServerError, "A server error occurred. Please try your request again at a later time");
             }
         }
         #endregion
@@ -1712,7 +1712,7 @@ namespace d360.web.Controllers.Services
         /// <returns></returns>
         [AllowAnonymous, HttpGet, Route("{service}/{endpoint}/{version}/health"),
         SwaggerResponse(HttpStatusCode.NotFound, "Incorrect health parameter provided."),
-        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))]
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))]
         public HttpResponseMessage GetEndpointHealth(string service, string endpoint, string version)
         {
             try

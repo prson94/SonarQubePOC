@@ -61,7 +61,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult GetAllocations()
         {
@@ -85,7 +85,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -103,7 +103,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your asset type was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to insert this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostAllocation(AllocationApiUpsertModel model)
         {
@@ -168,7 +168,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding allocations", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -185,7 +185,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your allocation was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to update this allocation is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PutAllocation(Guid allocationUid, AllocationApiUpsertModel model)
         {
@@ -267,7 +267,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error updating allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error updating allocations", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -284,7 +284,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult DeleteAllocation(Guid allocationUid)
         {
@@ -312,7 +312,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error deleting allocations", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -329,7 +329,7 @@ namespace d360.web.Controllers.V2
             FileDownload,
             SwaggerConsumes("application/vnd.ms-excel"), SwaggerProduces("application/vnd.ms-excel"),
             SwaggerResponse(HttpStatusCode.OK, "Exported realtionship types to Excel.", typeof(List<PredicateTypeApiViewModel>)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public IHttpActionResult ExportAllocationsToExcel()
         {
@@ -405,7 +405,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns a list of asset types that are not yet allocated to the score type provided.", typeof(List<AllocationApiGetUnallocatedAssetTypeModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> GetUnallocatedAssetTypesForScoreType(string scoreType)
         {
@@ -425,7 +425,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error retrieving allocations", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -441,7 +441,7 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of results, containing any potential errors. A value of true for the IsSuccess property indicates that the metric was saved.", typeof(List<ExternalScoreResultsApiResultsModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostExternalResults(string scoreType, List<ExternalScoreResultsApiPostModel> model)
         {
@@ -463,7 +463,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
 
@@ -482,7 +482,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate you are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your score type was not valid.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request model was invalid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
         ]
         public IHttpActionResult PostScoreResults(string scoreType, List<ScoreResultApiPostModel> model)
         {
@@ -503,7 +503,7 @@ namespace d360.web.Controllers.V2
             }
             catch
             {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occured and has been logged for further investigation. Please try your request again later.");
+                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error adding score results", $"An unknown error occurred and has been logged for further investigation. Please try your request again later.");
             }
         }
     }
