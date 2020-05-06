@@ -232,7 +232,7 @@ where   A.Type = 'ArtifactType'
 
             sql = string.Format(@"select * from ({0}) A", sql);
 
-            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields, fromArtifact: true);
+            sql = applyFilteringSuffixBind(sql, Request, dbArgs, fields: oldFields, fromArtifact: true, v2ApiFilterValues: true);
 
             if (string.IsNullOrEmpty(sortDataField))
             {
