@@ -1,4 +1,4 @@
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { SearchResult } from '../models/search-result.model';
 import { Observable } from 'rxjs';
@@ -11,13 +11,17 @@ export class TypeaheadSearchService extends BaseObservableService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
-    getResults(size, term, types?: string[]): Observable<SearchResult[]> {
-
-        return this.http.get(`search/typeahead?q=${encodeURIComponent(term.substring(0, 255))}&num=${size}&t=${types != undefined ? types.join(',') : ''}`)
-            .pipe(
-                map(response => <SearchResult[]>response),
-                catchError(err => this.handleError(err))
-            );
+    getResults(term: Observable<string>, size, types?: string[]): Observable<SearchResult[]> {
+        return term.pipe(
+            debounceTime(400),
+            distinctUntilChanged(),
+            switchMap(term => {
+                let uri = `search/typeahead?q=${encodeURIComponent(term.substring(0, 255))}&num=${size}&t=${types != undefined ? types.join(',') : ''}`;
+                return this.http.get(uri).pipe(
+                    map(response => <SearchResult[]>response),
+                    catchError(err => this.handleError(err))
+                );
+            }));
     }
 
     getObjectItems(size: number, term: string, objectType: string, objectId: number) {
