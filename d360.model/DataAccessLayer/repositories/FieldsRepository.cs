@@ -760,6 +760,8 @@ from	IntersectType I
                             bypassFieldValidation = true;
                         else if (fieldInfo.Class == AssetTypeClass.User && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
+                        else if (fieldInfo.Class == AssetTypeClass.FusionAttribute && new[] { "Name", "TextPath" }.Contains(i.FieldTypeName))
+                            bypassFieldValidation = true;
 
                         // Invalid computed field
                         if (fieldInfo.FieldTypeID == 0 && !bypassFieldValidation)

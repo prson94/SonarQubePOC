@@ -643,8 +643,7 @@
                                             style="width:95%"
                                             (ngModelChange)="changeRefType(x).subscribe()"
                                             [disabled]="x < relationItemCount-1">
-                                        <option *ngFor="let j of lookups.ComplexLookupRelations"
-                                                [value]="j.ID">
+                                        <option *ngFor="let j of lookups.ComplexLookupRelations" [value]="j.ID" [disabled]="x==0 && j.ID == 2">
                                             {{j.DisplayName}}
                                         </option>
                                     </select>
