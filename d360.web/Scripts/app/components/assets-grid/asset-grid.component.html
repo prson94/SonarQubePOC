@@ -45,15 +45,15 @@
       autofocus
       autocomplete="off"
     />
-    <d3s-artifact-top-level-filter
+    <d3s-asset-grid-top-level-filter
       *ngIf="topLevelFilters.length > 0"
       [(filters)]="stateService.artifactTypeFilters.filters"
       [fields]="topLevelFilters"
       (filterChanged)="filterGridData(dt)"
     >
-    </d3s-artifact-top-level-filter>
+    </d3s-asset-grid-top-level-filter>
   </div>
-  <d3s-artifact-column-filter
+  <d3s-asset-grid-column-filter
     *ngIf="!showGridSimpleFilter"    
     [(ownerFilter)]="stateService.artifactTypeFilters.owners"
     [(relationshipFilters)]="stateService.artifactTypeFilters.relationships"
@@ -62,8 +62,8 @@
     [fields]="filtercolumns"
     [objectType]="gridObjectType"
     (filterChanged)="filterGridData(dt)"
-  ></d3s-artifact-column-filter>
-  <d3s-artifact-custom-export
+  ></d3s-asset-grid-column-filter>
+  <d3s-asset-grid-custom-export
     *ngIf="showCustomExport && canExportRecords()"
     (closeClick)="showCustomExport = false"
     [artifactType]="artifactType"
@@ -73,7 +73,7 @@
     [relationships]="stateService.artifactTypeFilters.relationships"    
     [simpleFilter]="stateService.artifactTypeFilters.simpleTextFilter"
     [owner]="stateService.artifactTypeFilters.owners"
-  ></d3s-artifact-custom-export>
+  ></d3s-asset-grid-custom-export>
   <div class="col s12" [hidden]="showCustomExport" *ngIf="isDefinitionLoaded">
     <p-table
       #dt

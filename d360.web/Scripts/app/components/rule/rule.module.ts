@@ -42,7 +42,7 @@ import { TableModule } from 'primeng/table';
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
 import { RuleCustomExportComponent } from './rule-custom-export.component';
 import { CalendarModule } from 'primeng/calendar';
-import { AssetTypeGridModule } from '../assets-grid/asset-type-grid.module';
+import { AssetGridModule } from '../assets-grid/asset-grid.module';
 
 @NgModule({
     imports: [
@@ -81,7 +81,7 @@ import { AssetTypeGridModule } from '../assets-grid/asset-type-grid.module';
         SharedObjectDetailsModule,
         SharedObjectGovernanceModule,
         SharedAssetEditorsModule,
-        AssetTypeGridModule
+        AssetGridModule
     ],
     declarations: [
         RuleComponent,

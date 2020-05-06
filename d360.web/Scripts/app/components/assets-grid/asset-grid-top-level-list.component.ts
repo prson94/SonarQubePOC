@@ -5,20 +5,20 @@ import { TreeNode } from 'primeng/api';
 
 import { ArtifactTypeService } from '../../services/artifact-type.service';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
-import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { AssetTypeClass, AssetCount } from '../../models/asset.model';
 import { AssetService } from '../../services/asset.service';
+import { AssetGridBaseComponent } from './asset-grid-base.component';
 
 @Component({
-    selector: 'd3s-artifact-top-level-list',
-    templateUrl: './artifact-top-level-list.component.html',
+    selector: 'd3s-asset-grid-top-level-list',
+    templateUrl: './asset-grid-top-level-list.component.html',
     providers: [AssetService],
 })
 
-export class ArtifactTopLevelListComponent extends ArtifactBaseComponent implements OnInit {
+export class AssetGridTopLevelListComponent extends AssetGridBaseComponent implements OnInit {
     searchFilter: string = "";
     objectType: string = "ArtifactType";
     adminType: string = "Artifacts";

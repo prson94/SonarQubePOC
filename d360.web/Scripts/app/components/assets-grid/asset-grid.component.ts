@@ -43,16 +43,16 @@ import { V2ApiFilters } from '../../models/asset-search.model';
 import { SortOrder } from '../../models/enums.model';
 
 @Component({
-    selector: 'd3s-artifact-grid',
+    selector: 'd3s-asset-grid',
     providers: [GridDefinitionService, ArtifactService, PermissionsService, ObjectDetailService, AssetService],
-    templateUrl: './artifact-grid.component.html',
+    templateUrl: './asset-grid.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     host: {
         '(document:click)': 'clickedOutside()',
     },
 })
 
-export class ArtifactGridComponent extends BaseComponent implements OnChanges, OnDestroy {
+export class AssetGridComponent extends BaseComponent implements OnChanges, OnDestroy {
     @Input() rowID: string = 'ObjectID';
     @Input() artifactType: ArtifactType;
 

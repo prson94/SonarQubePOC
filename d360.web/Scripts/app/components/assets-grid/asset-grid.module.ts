@@ -15,13 +15,6 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedDynamicGridEditorModule } from '../shared/dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SharedAssetEditorsModule } from '../shared/asseteditors/shared-asset-editor.module';
-
-import { ArtifactColumnFilterComponent } from './artifact-column-filter.component';
-import { ArtifactDefnintionComponent } from './artifact-definition.component';
-import { ArtifactGridComponent } from './artifact-grid.component';
-import { ArtifactTopLevelListComponent } from './artifact-top-level-list.component';
-import { ArtifactTopLevelFilterComponent } from './artifact-top-level-filter.component';
-import { ArtifactCustomExportComponent } from './artifact-custom-export.component';
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
 
 
@@ -48,6 +41,11 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
+import { AssetGridColumnFilterComponent } from './asset-grid-column-filter.component';
+import { AssetGridCustomExportComponent } from './asset-grid-custom-export.component';
+import { AssetGridTopLevelListComponent } from './asset-grid-top-level-list.component';
+import { AssetGridTopLevelFilterComponent } from './asset-grid-top-level-filter.component';
+import { AssetGridComponent } from './asset-grid.component';
 
 
 @NgModule({
@@ -86,20 +84,18 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         WorkflowModule,
     ],
     declarations: [
-        ArtifactColumnFilterComponent,
-        ArtifactCustomExportComponent,
-        ArtifactDefnintionComponent,
-        ArtifactGridComponent,
-        ArtifactTopLevelListComponent,
-        ArtifactTopLevelFilterComponent,
+        AssetGridColumnFilterComponent,
+        AssetGridCustomExportComponent,
+        AssetGridComponent,
+        AssetGridTopLevelFilterComponent,
+        AssetGridTopLevelListComponent
     ],
     exports: [
-        ArtifactColumnFilterComponent,
-        ArtifactCustomExportComponent,
-        ArtifactDefnintionComponent,
-        ArtifactGridComponent,
-        ArtifactTopLevelListComponent,
-        ArtifactTopLevelFilterComponent
+        AssetGridColumnFilterComponent,
+        AssetGridCustomExportComponent,
+        AssetGridComponent,
+        AssetGridTopLevelListComponent,
+        AssetGridTopLevelFilterComponent
     ],
     providers: [
         {
@@ -114,4 +110,4 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
     ]
 })
 
-export class AssetTypeGridModule { }
+export class AssetGridModule { }

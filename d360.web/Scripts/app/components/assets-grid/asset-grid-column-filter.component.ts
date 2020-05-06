@@ -25,7 +25,7 @@ import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 @Component({
-    selector: 'd3s-artifact-column-filter',
+    selector: 'd3s-asset-grid-column-filter',
     providers: [RelationshipsService, ArtifactTypeService],
     styles: [`
         div.filter {
@@ -37,10 +37,10 @@ import { Observable } from 'rxjs';
             padding-bottom: 5px;
         }
     `],
-    templateUrl: './artifact-column-filter.component.html'
+    templateUrl: './asset-grid-column-filter.component.html'
 })
 
-export class ArtifactColumnFilterComponent implements OnInit, OnChanges {
+export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
     @Input() fields: GridFilterColumn[];
     @Input() artifactType: ArtifactType;
     @Input() objectType: string = 'ArtifactType';

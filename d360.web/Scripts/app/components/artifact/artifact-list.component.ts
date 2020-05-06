@@ -14,7 +14,7 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Subscription } from 'rxjs';
-import { ArtifactBaseComponent } from '../assets-grid/artifact-base.component';
+import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -22,7 +22,7 @@ import { ArtifactBaseComponent } from '../assets-grid/artifact-base.component';
     providers: [ArtifactTypeService],
 })
 
-export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
+export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
     private artifactType: ArtifactType;
     private artifactTypeHierarchy: ArtifactType[];
     private sub: any;

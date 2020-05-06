@@ -13,7 +13,7 @@ import { StringConstants } from '../../static/string-constants';
 import { SiteUrlHelpers } from "../../static/site-url-helpers";
 import { finalize } from 'rxjs/operators';
 import { SiteMenuService } from '../../services/site-menu.service';
-import { ArtifactBaseComponent } from '../assets-grid/artifact-base.component';
+import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
 
 declare var CompanySettings;
 
@@ -23,7 +23,7 @@ declare var CompanySettings;
     providers: [ArtifactService, PermissionsService, SiteMenuService]
 })
 
-export class ArtifactItemComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
+export class ArtifactItemComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
     private artifact: Artifact
     private sub: any;
     private currentAreaNameSubscription: any;

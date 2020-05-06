@@ -47,7 +47,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { GovernRequestInterceptor } from "../../http-interceptors/govern-request.interceptor";
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { AssetTypeGridModule } from '../assets-grid/asset-type-grid.module';
+import { AssetGridModule } from '../assets-grid/asset-grid.module';
 
 
 @NgModule({
@@ -86,7 +86,7 @@ import { AssetTypeGridModule } from '../assets-grid/asset-type-grid.module';
         SharedAssetEditorsModule,
         TilesModule,
         WorkflowModule,
-        AssetTypeGridModule
+        AssetGridModule
     ],
     declarations: [        
         ArtifactComponent,

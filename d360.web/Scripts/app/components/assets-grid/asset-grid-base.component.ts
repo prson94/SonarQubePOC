@@ -9,7 +9,7 @@ import { SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
 
-export class ArtifactBaseComponent extends BaseComponent {            
+export class AssetGridBaseComponent extends BaseComponent {            
     public area: string = StringConstants.AssetTypeClass_Business;
     public folderTitle: string; 
     public areaLink: string = SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT;

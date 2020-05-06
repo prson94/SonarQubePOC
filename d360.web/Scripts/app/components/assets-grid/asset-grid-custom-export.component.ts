@@ -7,7 +7,7 @@ import { SortOrder } from '../../models/enums.model';
 import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
 
 @Component({
-    selector: 'd3s-artifact-custom-export',
+    selector: 'd3s-asset-grid-custom-export',
     template: `
                 <div class="row">    
                     <div class="col s12">&nbsp;</div>
@@ -25,7 +25,7 @@ import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpr
     providers: [ArtifactService, ExportTemplateService]
 })
 
-export class ArtifactCustomExportComponent extends BaseComponent implements OnInit {
+export class AssetGridCustomExportComponent extends BaseComponent implements OnInit {
     @Input() artifactType: ArtifactType;
     @Input() sortField: string;
     @Input() sortOrder: SortOrder;
