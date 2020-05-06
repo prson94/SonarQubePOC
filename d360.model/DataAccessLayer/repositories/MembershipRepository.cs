@@ -357,7 +357,7 @@ namespace d360.model.DataAccessLayer
                     success = false;
                     messages.Add("Username is not in a valid email format");
                 }
-                else if(users.Count(u=>u.Username == user.Username)>1)
+                else if(users.Count(u=>u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase))>1)
                 {
                     success = false;
                     messages.Add("Username must be unique within the request");
