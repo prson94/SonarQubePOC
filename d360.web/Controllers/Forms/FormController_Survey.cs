@@ -79,6 +79,23 @@ namespace d360.web.Controllers
                 var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), otVal[0]);
                 var oid = int.Parse(otVal[1]);
 
+                var validForDays = form["ValidForDays"];
+                if (int.TryParse(validForDays, out int res))
+                {
+                    if(res < 1)
+                    {
+                        return jsonException("The ValidForDays value must be greater than 0.", HttpStatusCode.BadRequest);
+                    }
+                    if(res > 365)
+                    {
+                        return jsonException("The ValidForDays value cannot be greater than 365.", HttpStatusCode.BadRequest);
+                    }
+                }
+                else
+                {
+                    return jsonException("The ValidForDays value is not a valid day.", HttpStatusCode.BadRequest);
+                }
+
                 var model = new SurveyType
                 {
                     Name = parseTextField(form, "Name"),
