@@ -204,6 +204,15 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
 
                     this.isDeleting = false;
+
+                    if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
+                        let ix = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
+                        if (ix > -1) {
+                            this.fieldDefinitions.splice(ix, 1);
+                            this.fieldDefinitions = this.fieldDefinitions.slice();
+                        }
+                    }
+
                     this.checkKeyFields();
                     if (index >= 0 && index < this.fieldDisplayModel.length) {
                         this.fieldDisplayModel.splice(index, 1);
@@ -242,7 +251,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     cancel() {
         this.isEditing = false;
-        this.fieldDefinitions = [];
         this.onCancel.emit();
     }
 }
