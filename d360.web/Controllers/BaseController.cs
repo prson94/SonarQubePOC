@@ -1694,7 +1694,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return sb.ToString();
         }
 
-        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null)
+        internal string applyHiddenFilteringSuffix(HttpRequestBase Request, Dapper.DynamicParameters dbParams, string idColumn = "A.ID", List<FieldType> fields = null, bool v2ApiFilterValues = false)
         {
             var query = Request.Params;
 
@@ -1717,7 +1717,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
 
                     var fieldType = fields.Where(x => x.ID == fieldID).SingleOrDefault();
                     if (fieldType != null && fieldType.AllowMultipleValues)
-                        filter= applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn);
+                        filter= applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, fieldType, idColumn, v2ApiFilterValues);
                     else
                         filter = $" inner join field {tableId} on ({idColumn} = {tableId}.objectID and {tableId}.ObjectType = 'Artifact'  and {tableId}.fieldtypeid={fieldID} and {getFilteringConditionBind(tableId +".FormattedValue", fCondition, i, dbParams, fValue, tableId, true)} )  ";
                     
@@ -1731,12 +1731,31 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return filters;
         }
 
-        private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID")
+        private string applyMulitSelectFilteringSuffix(Dapper.DynamicParameters dbParams, string value, string prefix, int filterNumber,FieldType fieldType, string idColumn = "A.ID", bool v2ApiFilterValues = false)
         {
             value = value.Replace("!~!", ",");
 
-            if (fieldType.AllowAllValue)
-                value += ",0";
+            if (v2ApiFilterValues)
+            {
+                var resolveValueSQL = @"select string_agg(FLV.Value,',') from 
+                        STRING_SPLIT (@input,',') S  
+                        inner join 
+                        FieldLookupValue FLV
+                        ON fieldtypeid = @ftId AND Text = TRIM(S.value)";
+
+                value = Company.Query<string>(resolveValueSQL, new { input = value, ftId = fieldType.ID }).FirstOrDefault();
+
+                if (fieldType.AllowAllValue)
+                {
+                    value += "," + fieldType.AllowAllLabel;
+                }
+            }
+            else
+            {
+                if (fieldType.AllowAllValue)
+                    value += ",0";
+            }
+
             var bind = $"{prefix}{filterNumber}val";
             dbParams.Add(bind, $"{value}");
 
@@ -1751,9 +1770,9 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return filter;
         }
 
-        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false)
+        internal string applyFilteringSuffixBind(string sql, HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, bool fromArtifact = false, bool v2ApiFilterValues = false)
         {
-            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields,fromArtifact: fromArtifact);
+            return sql + applyFilteringSuffixBindRaw(Request, dbParams, applyHiddenFilters, fields,fromArtifact: fromArtifact, v2ApiFilterValues: v2ApiFilterValues);
         }
 
         internal List<UiRequestFilterValue> GetFilterValuesFromRequest(HttpRequestBase Request, bool applyHiddenFilters = false)
@@ -1927,14 +1946,14 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
             return filters;
         }
 
-        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID", bool fromArtifact = false)
+        internal string applyFilteringSuffixBindRaw(HttpRequestBase Request, Dapper.DynamicParameters dbParams, bool applyHiddenFilters = false, List<FieldType> fields = null, string idColumn = "A.ID", bool fromArtifact = false, bool v2ApiFilterValues = false)
         {
             var query = Request.Params;
 
             #region Field Filters
 
             int filterscount = 0;
-            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn, fields) : string.Empty;
+            var filters = applyHiddenFilters ? applyHiddenFilteringSuffix(Request, dbParams, idColumn, fields, v2ApiFilterValues) : string.Empty;
             var whereFilter = string.Empty;
             if (int.TryParse(query["filterscount"], out filterscount))
             {
@@ -1962,7 +1981,7 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         }
                     }
                     if(fromArtifact && filterFieldType != null && filterFieldType.AllowMultipleValues)
-                        filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn);
+                        filters +=  applyMulitSelectFilteringSuffix(dbParams, fValue, tableId, i, filterFieldType, idColumn, v2ApiFilterValues);
                    else
                         filter = getFilteringConditionBind(fField, fCondition, i, dbParams, fValue, "", ft: filterFieldType);// "flt");
 
@@ -2002,6 +2021,13 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         RelationshipObjectType = query.AllKeys.Any(k => k == qs_object) ? query[qs_object] : "";
                         RelationshipObjectIDs = query.AllKeys.Any(k => k == qs_objectids) ? Server.UrlDecode(query[qs_objectids]) : "";
                         RelationshipIntersectTypeID = query.AllKeys.Any(k => k == qs_typeid) ? Server.UrlDecode(query[qs_typeid]) : "";
+                    }
+
+                    if (v2ApiFilterValues)
+                    {
+                        RelationshipObjectIDs = Company.Query<string>(@"select string_agg(A.ObjectID,',')
+                                from string_split(@objectUids,',')S
+                                inner join Asset A on A.Uid = S.value", new { objectUids = RelationshipObjectIDs }).FirstOrDefault();
                     }
 
                     if (!string.IsNullOrEmpty(RelationshipObjectIDs))
