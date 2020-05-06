@@ -676,6 +676,8 @@ from	[Load] L
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
                 int? intersectTypeId = null;
                 PredicateType? predicateType = null;
+                bool calculateParentHashByUid = false;
+
                 switch (assetType.Class)
                 {
                     case AssetTypeClass.BusinessAsset:
@@ -683,10 +685,12 @@ from	[Load] L
                     case AssetTypeClass.FusionAttribute:
                     case AssetTypeClass.ReferenceItemType:
                         predicateType = PredicateType.InterTypeHierarchy;
+                        calculateParentHashByUid = true;
                         break;
                     case AssetTypeClass.Policy:
                     case AssetTypeClass.Model:
                         predicateType = PredicateType.IntraTypeHierarchy;
+                        calculateParentHashByUid = false;
                         break;
                 }
 
@@ -759,7 +763,7 @@ from	[Load] L
                             ", new { load.ID }, transaction: trans);
                         }
 
-                        if (intersectTypeId.HasValue)
+                        if (intersectTypeId.HasValue && calculateParentHashByUid)
                         {
                             //need to parse parent column here to be used in proposed key
                             await Connection.ExecuteAsync(@"
@@ -804,7 +808,7 @@ from	[Load] L
                         else
                         {
 
-                            if (intersectTypeId.HasValue)
+                            if (intersectTypeId.HasValue && calculateParentHashByUid)
                             {
                                 await Connection.ExecuteAsync(@"
                                 update T
@@ -860,10 +864,10 @@ from	[Load] L
 
                         trans.Commit();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         trans.Rollback();
-                        throw;
+                        throw ex;
                     }
                 }
 
