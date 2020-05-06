@@ -22,14 +22,6 @@ export class RulesService extends BaseObservableService {
             );
     }
 
-    getRules(id: number): Observable<any[]> {
-        return this.http.get(`api/rules/${id}`)
-            .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
             .pipe(
