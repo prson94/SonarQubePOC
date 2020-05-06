@@ -375,7 +375,7 @@ GO
   </changeSet>
 
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-10532">
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10532-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -495,15 +495,6 @@ from	@relations R
 		inner join IntersectTypeDetail T on R.RelationType = 4 and T.Subject = R.Object and T.SubjectID = R.ObjectID and T.PredicateType in (3,4) and R.IntersectTypeID = 0
 
 update	R
-set		R.Direction = case 
-						when R.Direction = 0 and R.Object = I.Object and R.ObjectID = I.ObjectID then 1
-						when R.Direction = 0 and R.Object = I.Subject and R.ObjectID = I.SubjectID then 2
-						else R.Direction
-					  end
-from	@relations R
-		inner join IntersectType I on I.ID = R.IntersectTypeID;
-
-update	R
 set		R.IntersectTypeUid = I.Uid
 from	@relations R
 		inner join IntersectType I on I.ID = R.IntersectTypeID;
@@ -517,6 +508,26 @@ update	R
 set		R.AssetTypeUid = A.Uid
 from	@fields R
 		inner join AssetType A on A.Object = R.Object and A.ObjectID = R.ObjectID;
+
+update	R
+set		R.Direction = case 
+						when A.Object = I.Object and A.ObjectID = I.ObjectID then 2
+						when A.Object = I.Subject and A.ObjectID = I.SubjectID then 1
+						else R.Direction
+					  end
+from	@relations R
+		inner join IntersectType I on I.ID = R.IntersectTypeID and R.RelationType = 1
+		inner join AssetType A on A.Uid = R.AssetTypeUid;
+
+update	@relations
+set		Direction = case RelationType 
+						when 3 then 2
+						when 4 then 1
+						else Direction
+					end
+where	RelationType in (3,4);
+
+
 
 update	T
 set		T.[Definition] = S.[Definition]
