@@ -264,9 +264,9 @@ namespace d360.model.helpers
                     break;
                 case "boolean":
                     bool boolean = false;
-                    var stringValue = value.ToString().ToLower();
-                    if (value.ToString() == "0") value = "false";
-                    if (value.ToString() == "1") value = "true";
+                    var stringValue = value.ToString().ToLower().Trim();
+                    if (stringValue == "0") stringValue = "false";
+                    if (stringValue == "1") stringValue = "true";
 
                     if ("true".Contains(stringValue))
                     {
