@@ -151,17 +151,17 @@ from	[Load] L
 			                    ) S
 		                    cross apply (
 			                    select sum(I) as C from (
-				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 0
+				                    select Error as I from api.Execution where ExecutionID = L.PostExecutionID
                                     union all
                                     select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) E
 		                    cross apply (
-				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success is null
+				                select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
 			                    ) I
 		                    cross apply (
 			                    select sum(I) as C from (
-				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID
+				                    select Total as I from api.Execution where ExecutionID = L.PostExecutionID
                                     union all
                                     select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
@@ -274,7 +274,8 @@ from	[Load] L
                     case "R":
                         sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
-                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
+                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
+                                      left join api.Execution E on E.ExecutionID = @postExecutionID ";
                         columns.ForEach(c =>
                         {
                             var i = c.ColumnIndex;
@@ -283,7 +284,7 @@ from	[Load] L
                             sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
 
                         });
-                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
@@ -1143,7 +1144,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                 }
 
                 var fieldColumns = columns.ToList();
-                var loaddata = LoadItemColumns.Where(x => x.LoadID == load.ID);
 
                 var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, subjectAssetType.Name, intersectType.SubjectID, fieldColumns);
                 var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, objectAssetType.Name, intersectType.ObjectID, fieldColumns);
@@ -1217,12 +1217,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
 
                     if (upserts.Any())
                     {
-                        var fields = new BulkLoadExecutionFields_Relationships
-                        {
-                            IntersectTypeUid = intersectType.uid,
-                            LoadID = load.ID
-                        };
-
                         var execution = getRelateApiExecution(load, upserts.Count);
                         ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
                         load.PostExecutionID = executionInfo.ExecutionID;
