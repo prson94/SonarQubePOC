@@ -777,7 +777,7 @@ from	[Load] L
                             delete from #BulkExecutionField where FieldTypeID is null;
                         end
                         "
-                            , new { executionID, load.ID }, transaction: trans, commandTimeout: timeout);
+                            , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class }, transaction: trans, commandTimeout: timeout);
 
                         if (hasLookups)
                         {
