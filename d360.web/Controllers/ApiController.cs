@@ -3528,6 +3528,14 @@ where   R.RuleTypeID = @id
                                 }
                             });
                         }
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "UID", Value = template.uid.ToString() }
+                                }
+                        });
                     }
                     group = null;
                     break;
