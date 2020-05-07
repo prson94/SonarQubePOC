@@ -121,7 +121,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     foundKeyField = true;
                 }
             });
-            this.sortFields();
             this.hasKeyFields = foundKeyField;
         }
         else {
@@ -133,11 +132,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
     }
 
-    sortFields() {
-        this.fieldDisplayModel.sort((x, y) => {
-            return x.ColumnOrder - y.ColumnOrder;
-        });
-    }
     CheckObjectType() {
         if (this.objectType) {
            return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;

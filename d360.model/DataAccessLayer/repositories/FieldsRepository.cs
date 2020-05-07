@@ -34,7 +34,7 @@ namespace d360.model.DataAccessLayer
             int pageSize = 250;
 
             var whereClause = "";
-
+            string orderByClause = " order by FT.Object, FT.ObjectID, FT.Name ";
             #region Parameter Checking
 
             var dbArgs = new DynamicParameters();
@@ -119,6 +119,10 @@ namespace d360.model.DataAccessLayer
                         }
                     }
                 }
+            }
+            if (actionTypeUid.HasValue || assetTypeUid.HasValue || relationshipTypeUid.HasValue)
+            {
+                orderByClause = " order by FT.ColumnOrder, FT.Name ";
             }
 
             if (workHttpStatus.StatusCode != HttpStatusCode.OK)
@@ -487,7 +491,7 @@ select	@pageSize as 'pageSize',
 									and ObjectID = try_cast(FT.DefaultValue as int)
 							) DFA 
         {whereClause}
-        order by FT.Object, FT.ObjectID, FT.Name
+        {orderByClause}
         offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
         for json path
         ) as 'items'
