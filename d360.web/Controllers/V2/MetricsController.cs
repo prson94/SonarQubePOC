@@ -733,7 +733,7 @@ namespace d360.web.Controllers.V2
             }
 
 
-            if (!Company.HasAssetPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID, Permission.ReadAsset))
+            if (!Company.HasAssetDefaultReadPermission(ruleAsset.AssetType.Object, ruleAsset.AssetType.ObjectID))
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
             }
