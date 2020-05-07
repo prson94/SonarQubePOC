@@ -122,7 +122,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private formatPath(s: string) {
-        return s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>');
+        return s ? s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>') : s;
     }
 
     resetFilters() {
