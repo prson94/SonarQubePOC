@@ -90,7 +90,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
-        [InlineData("lookup ct 'validlookupvalue'")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
