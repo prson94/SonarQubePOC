@@ -965,6 +965,8 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Policy,
                     AssetTypeClass.Rule };
 
+                List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();
+
                 var param = Request.GetQueryNameValuePairs();
                 if (param.Any(x => x.Key.ToLower() == "class"))
                 {
@@ -977,6 +979,10 @@ namespace d360.web.Controllers.V2
                         {
                             if (Enum.TryParse(cs, true, out AssetTypeClass assetTypeClass))
                             {
+                                if (!allowedClasses.Any(x => x == assetTypeClass))
+                                {
+                                    return ReturnApiError(HttpStatusCode.BadRequest, $"Class '{assetTypeClass}' is not supported. Allowed values are BusinessAsset, TechnicalAsset, Model, Policy, Rule.");
+                                }
                                 classFilters.Add(assetTypeClass);
                             }
                             else
