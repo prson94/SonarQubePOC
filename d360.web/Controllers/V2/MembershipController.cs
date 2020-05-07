@@ -285,10 +285,13 @@ namespace d360.web.Controllers.V2
             if (isValidGroup.Total == 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
 
-            if (users.Count != users.Distinct().Count())
+            var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
+
+            if(duplicatedUsers.Count() != 0)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
             }
+
             if (users.Count == 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "No user UIDs provided."));
 

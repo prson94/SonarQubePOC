@@ -128,7 +128,7 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.User),
             AllowIntersectTypeAsSubject(false)
         ]
         Simple = 7,
@@ -181,7 +181,7 @@ namespace d360.core.enums
             AllowEditFromRelationshipEditor(true),
             LineageVersionsSupported(1),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.FusionAttribute, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Rule, AssetTypeClass.TechnicalAsset, AssetTypeClass.User),
             AllowIntersectTypeAsSubject(true)
         ]
         Usage = 10,

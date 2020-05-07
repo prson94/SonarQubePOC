@@ -497,6 +497,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
             return new Tuple<FieldTypesApiViewModel, WorkHttpStatus>(model, workHttpStatus);
         }
 
+        internal class FieldInfo
+        {
+            public int FieldTypeID { get; set; }
+            public AssetTypeClass Class { get; set; }
+        }
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
             var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
@@ -673,8 +678,10 @@ from	IntersectType I
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
                     {
                         var relation = new FieldTypeComplexLookupDefinitionRelation();
-                        var relationInfo = Company.Query<dynamic>("select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid"
-                            , new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }).SingleOrDefault();
+                        var relationInfo = Company.Query<dynamic>(
+                            "select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid", 
+                            new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
+                        ).SingleOrDefault();
 
                         if (relationInfo == null || i.RelationType == null)
                         {
@@ -682,26 +689,27 @@ from	IntersectType I
                             return;
                         }
 
-                        relation.Direction = i.Direction ?? FieldTypeComplexLookupRelationDirection.Both;
-                        relation.IntersectTypeID = relationInfo.IntersectTypeID;
-                        relation.Object = relationInfo.Object;
-                        relation.ObjectID = relationInfo.ObjectID;
-                        relation.RelationType = (ComplexLookupRelationType)i.RelationType;
-                        relation.AssetUid = i.AssetTypeUid;
+                        string relationObject = relationInfo.Object;
+                        int relationObjectId = relationInfo.ObjectID;
+                        int relationIntersectId = relationInfo.IntersectTypeID;
+
+                        relation.Direction = i.Direction ?? FieldTypeComplexLookupRelationDirection.Forward;
+                        relation.RelationType = i.RelationType ?? ComplexLookupRelationType.StandardRelationhip;
+                        relation.AssetTypeUid = i.AssetTypeUid;
                         relation.IntersectTypeUid = i.IntersectTypeUid;
 
                         relatedItemUids.Add(i.AssetTypeUid);
                         definitionRelations.Add(relation);
 
                         var relatedTypeList = Company.Filter<IntersectTypeDetail>(r =>
-                           (r.Subject == relation.Object && r.SubjectID == relation.ObjectID) ||
-                           (r.Object == relation.Object && r.ObjectID == relation.ObjectID)
+                           (r.Subject == relationObject && r.SubjectID == relationObjectId) ||
+                           (r.Object == relationObject && r.ObjectID == relationObjectId)
                            )
                         .ToList()
                         .Select(r => new
                            {
                                r.ID,
-                               Name = (r.Subject == relation.Object && r.SubjectID == relation.ObjectID)
+                               Name = (r.Subject == relationObject && r.SubjectID == relationObjectId)
                                ? $"{r.ObjectName} ({r.PredicateName})"
                                : $"{r.SubjectName} ({r.PredicateName})"
                            })
@@ -730,29 +738,30 @@ from	IntersectType I
                         bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
-                        var fieldInfo = Company.Query<dynamic>(@"
-                            select coalesce(F.ID, 0) as FieldTypeID, T.Object, T.ObjectID 
-                            from AssetType T 
-                            left join FieldType F on F.AssetTypeID = T.ID and F.Name = @name where T.uid = @uid ", 
-                            new { name = i.FieldTypeName, uid = i.AssetTypeUid }).SingleOrDefault();
 
+                        var fieldInfo = Company.Query<FieldInfo>(@"
+                            select coalesce(F.ID, 0) as FieldTypeID, T.Class
+                            from   AssetType T 
+                                   left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
+                            where  T.uid = @AssetTypeUid", 
+                            new { i.FieldTypeName, i.AssetTypeUid }).SingleOrDefault();
 
-                        //invalid uid
+                        // Invalid uid
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
                         {
                             hasDefinitionError = true;
                             return;
                         }
 
-                        //skip this validaiton for hard coded fields on certain types.
-                        if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID == 0 && new[] { "Name", "Description" }.Contains(i.FieldTypeName))
+                        // Skip this validation for hard-coded fields on certain types.
+                        if (fieldInfo.Class == AssetTypeClass.Reference && i.AssetTypeUid == Guid.Empty && new[] { "Name", "Description" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
-                        else if (fieldInfo.Object == "ReferenceItemType" && fieldInfo.ObjectID != 0 && new[] { "Code" }.Contains(i.FieldTypeName))
+                        else if (fieldInfo.Class == AssetTypeClass.Reference && i.AssetTypeUid != Guid.Empty && new[] { "Code" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
-                        else if (fieldInfo.Object == "ResourceType" && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
+                        else if (fieldInfo.Class == AssetTypeClass.User && new[] { "FirstName", "LastName", "Email", "LastLoggedInOn", "DisplayValue" }.Contains(i.FieldTypeName))
                             bypassFieldValidation = true;
 
-                        //invalid computed field
+                        // Invalid computed field
                         if (fieldInfo.FieldTypeID == 0 && !bypassFieldValidation)
                         {
                             if (!computedFields.ContainsKey(i.FieldTypeName))
@@ -763,8 +772,7 @@ from	IntersectType I
                         }
                         var coputedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
                         field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? coputedFieldValue : fieldInfo.FieldTypeID;
-                        field.Object = fieldInfo.Object;
-                        field.ObjectID = fieldInfo.ObjectID;
+                        field.AssetTypeUid = i.AssetTypeUid;
                         field.DisplayOrder = i.DisplayOrder;
                         field.FieldTypeName = i.FieldTypeName;
                         field.Filter = i.Filter;

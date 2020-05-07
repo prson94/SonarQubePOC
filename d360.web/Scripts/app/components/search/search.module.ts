@@ -37,7 +37,7 @@ import { TypeaheadSearchModule } from '../shared/search/typeahead-search.compone
 import { SearchStateService } from './search-state.service';
 import { TagViewModule } from '../shared/tags/d3s-tag-view.module';
 import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
-
+import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
 
 @NgModule({
     imports: [
@@ -93,7 +93,8 @@ import { PreviewpopupModule } from '../shared/previewpopup/previewpopup.module';
             useClass: GovernRequestInterceptor,
             multi: true
         },
-        SearchStateService
+        SearchStateService,
+        AssetpathSeparatorPipe
     ]
 })
 export class SearchModule { }

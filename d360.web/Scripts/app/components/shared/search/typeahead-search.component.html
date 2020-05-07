@@ -36,7 +36,7 @@
                                 </span>
                             </div>
                             <div class="card-row description-row" *ngIf="result?.AssetPath">
-                                <span class="asset-path" [innerHtml]="formatPath(result.AssetPath)"></span>
+                                <span class="asset-path" [innerHtml]="result.AssetPath|assetpathSeparator"></span>
                             </div>
                             <div class="card-row tags-row">
                                 <span *ngIf="result?.Tags" class="tag-list-container">

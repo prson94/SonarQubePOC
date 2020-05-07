@@ -1992,8 +1992,8 @@ order by    rnk, [Name]";
             }
         }
 
-        [HttpGet, Route("dynamiclookup/export/{type}/{id:int}/{fieldTypeID:int}/{lookupType:int}/excel.xls")]
-        public async Task<HttpResponseMessage> ExportDynamicLookup(string type, int id, int fieldTypeID, int lookupType)
+        [HttpGet, Route("dynamiclookup/export/{type}/{id:int}/{fieldTypeID:int}/{lookupType}/excel.xls")]
+        public async Task<HttpResponseMessage> ExportDynamicLookup(string type, int id, int fieldTypeID, DataType lookupType)
         {
             string resultString = "";
             var ft = Company.GetById<FieldType>(fieldTypeID);
@@ -2010,15 +2010,21 @@ order by    rnk, [Name]";
                 case DataType.RefListRelationship:
                 case DataType.ComplexRelationLookup:
                 case DataType.OwnershipLookup:
-                    resultString = await GetComplexLookupGridField(type, id, fieldTypeID).Result.Content.ReadAsStringAsync();
+                    var dataResponse = await GetComplexLookupGridField(type, id, fieldTypeID);
+                    resultString = await dataResponse.Content.ReadAsStringAsync();
 
                     if ((DataType)lookupType == DataType.RefListRelationship)
                     {
-                        var assetType = Company.AssetTypes.FirstOrDefault(f => f.ObjectID == id && f.Object == "ReferenceItemType");
-                        if (assetType != null)
+                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+                        if (intersect != null)
                         {
-                            fileName = assetType.Name.GetSafeFilename();
-                            fileName += " List";
+                            var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
+                            var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+                            if (assetType != null)
+                            {
+                                fileName = assetType.Name.GetSafeFilename();
+                                fileName += " List";
+                            }
                         }
                     }
                     break;
@@ -2187,44 +2193,6 @@ order by    rnk, [Name]";
             }
 
             return list;
-        }
-
-        internal class ComplexColumnModel
-        {
-            public ComplexColumnModel()
-            {
-                SortColumn = null;
-                SortOrder = null;
-                DisplayOrder = 1;
-                OutputColumn = false;
-            }
-
-            public string text { get; set; }
-            public string texttype { get; set; }
-            public string datafield { get; set; }
-            public string format { get; set; }
-            public string description { get; set; }
-
-            public string datafieldtype { get; set; }
-
-            public string DisplayColumn { get; set; }
-            public int DisplayOrder { get; set; }
-
-            public string SortColumn { get; set; }
-            public int? SortOrder { get; set; }
-            public int? Width { get; set; }
-
-            public string Filter { get; set; }
-
-            public bool OutputColumn { get; set; }
-
-            public string objectfield { get; set; }
-
-            public string objectidfield { get; set; }
-
-            public string urlfield { get; set; }
-
-            public string contextfield { get; set; }
         }
 
         private bool AnyComplexLookupGridValues(string type, int id, int fieldTypeId)
@@ -3157,9 +3125,7 @@ order by    Name
             if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
 
             var sql = @"select 
-										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
-										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
-										else	c.[Object] end [object], 
+										c.[Object],
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
 										cU.Url, 
@@ -3527,6 +3493,14 @@ order by    Name
                                 }
                             });
                         }
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "UID", Value = template.uid.ToString() }
+                                }
+                        });
                     }
                     group = null;
                     break;

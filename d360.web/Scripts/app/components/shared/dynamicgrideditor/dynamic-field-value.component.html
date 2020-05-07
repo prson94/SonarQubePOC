@@ -9,8 +9,16 @@
     }
 </style>
 <span [ngSwitch]="fieldType">
-    <span *ngSwitchCase="'date'"><span *ngIf="fieldValue">{{fieldValue | date:'shortDate'}}</span></span>
-    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span></span>
+    <span *ngSwitchCase="'date'">
+        <span *ngIf="fieldValue && !isDateUTC">
+            {{fieldValue | date:'shortDate'}}
+        </span>
+        <span *ngIf="fieldValue && isDateUTC">
+            {{fieldValue | utcDate | date:'shortDate'}}
+        </span>
+    </span>
+    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span>
+    </span>
     <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">
         <i *ngIf="fieldValue == 'TRUE'"
@@ -29,7 +37,7 @@
     </span>
     <span *ngSwitchCase="'preview'">
         <d3s-preview-tooltip [objectType]="item[column.objectfield]"
-                            [objectId]="item[column.objectidfield]">
+                             [objectId]="item[column.objectidfield]">
             <a (click)="navigate(item[column.urlfield])"
                [innerText]="fieldValue"></a>
         </d3s-preview-tooltip>

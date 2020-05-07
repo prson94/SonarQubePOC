@@ -90,7 +90,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                         displayField.Name = field.Name;
                         displayField.FriendlyName = field.FriendlyName;
                         displayField.Category = field.Category;
-                        displayField.FieldType = type;
+                        displayField.FieldType = this.getDisplayTypeName(type);
                         displayField.IsListable = field.Type[type].IsListable;
                         displayField.IsPartOfKey = field.Type[type].IsPartOfKey;
                         displayField.SortOrder = field.Type[type].SortOrder;
@@ -143,8 +143,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
            return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
         }
     }
-    getDisplayTypeName(item: FieldDisplayModel): string {
-        switch (item.FieldType) {
+    getDisplayTypeName(name: string): string {
+        switch (name) {
             case "ComputedRelationshipField":
                 return "Field from Relationship";
             case "ComputedRelationshipReferenceList":
@@ -162,7 +162,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             case "Lookup":
                 return "List";
             default:
-                return item.FieldType;
+                return name;
         }
     }
     edit(name: string): void {

@@ -29,6 +29,7 @@
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
+	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathSegment.xml"/>
 	<include file="scripts/Function.graph.GetXmlSegment.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>

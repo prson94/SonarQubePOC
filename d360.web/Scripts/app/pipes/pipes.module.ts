@@ -14,6 +14,7 @@ import { UtcDatePipe } from './utc-date.pipe';
 import { MetricConditionDisabledFilterPipe } from './metric-condition-disabled-filter.pipe';
 import { SelectItemTextToLabelPipe } from './selectitem-text-to-label.pipe';
 import { SimpleSearch } from './simple-search-pipe';
+import { AssetpathSeparatorPipe  } from './assetpath-separator.pipe';
 import { GenericFilter } from './generic-filter.pipe';
 
 @NgModule({
@@ -32,6 +33,7 @@ import { GenericFilter } from './generic-filter.pipe';
         UtcDatePipe,
         SelectItemTextToLabelPipe,
         SimpleSearch,
+        AssetpathSeparatorPipe,
         GenericFilter
     ],
     exports: [
@@ -48,6 +50,7 @@ import { GenericFilter } from './generic-filter.pipe';
         UtcDatePipe,
         SelectItemTextToLabelPipe,
         SimpleSearch,
+        AssetpathSeparatorPipe,
         GenericFilter
     ]
 })

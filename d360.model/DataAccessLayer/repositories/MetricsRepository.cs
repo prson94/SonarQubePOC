@@ -16,11 +16,12 @@ using Dapper;
 using Newtonsoft.Json;
 using d360.core.entities.Scoring;
 using System.Data;
+using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 
 namespace d360.model.DataAccessLayer
 {
-    public class MetricsRepository : IMetricsRepository
+    public class MetricsRepository : BaseRepository, IMetricsRepository
     {
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
@@ -28,7 +29,7 @@ namespace d360.model.DataAccessLayer
 
         readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
 
-        public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider)
+        public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
         {
             this.Company = context;
             this.QueueSource = queueSource;
@@ -789,6 +790,7 @@ namespace d360.model.DataAccessLayer
             string effectiveSQL = "";
             string evaluatedAssetSQL;
 
+            string pathSeparator = " > ";
 
             if (effectiveDateStart.HasValue)
             {
@@ -839,7 +841,7 @@ namespace d360.model.DataAccessLayer
 				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id and AN.Uid = @evaluatedAssetUid				                        
 				                        inner join
 				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				                            
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				                            
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
 
             }
@@ -858,7 +860,7 @@ namespace d360.model.DataAccessLayer
 				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id				                        
 				                        inner join
 				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'/') AP				
+				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				
 		                            where 
 				                        AR.UID in ( 
 							                        select 
@@ -933,6 +935,9 @@ namespace d360.model.DataAccessLayer
 
             result.items = Company.Query<DataQualityGetResultItem>(dataQualityResultSql, parameters).ToList();
             if (result.items == null) result.items = new List<DataQualityGetResultItem>();
+
+            result.items.FindAll(x => x.EvaluatedAssetSegments != null).ForEach(x => x.EvaluatedAssetPathElements = GetPathFromSegments(x.EvaluatedAssetSegments));
+
             return result;
         }
 
@@ -1036,6 +1041,6 @@ namespace d360.model.DataAccessLayer
 
             Company.Add(execution);
             return executionInfo;
-        }               
+        }
     }
 }
