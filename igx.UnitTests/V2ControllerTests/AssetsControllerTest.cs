@@ -636,9 +636,6 @@ namespace igx.UnitTests
             Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
 
             insertItem.Name = "testName";
-            responseMessageResult = await GetResponseForPutAsset(insertItem);
-            Assert.True(responseMessageResult.StatusCode == HttpStatusCode.BadRequest, XMsg.BadResponseCode);
-
             insertItem.DisplayFormat = "{name}";
             insertItem.Uid = Guid.Parse(DataConstants.InvalidGUID);
             responseMessageResult = await GetResponseForPutAsset(insertItem);
