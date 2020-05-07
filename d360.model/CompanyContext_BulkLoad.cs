@@ -719,7 +719,7 @@ from	[Load] L
                         ", transaction: trans, commandTimeout: timeout);
 
                         //load temp tables and calculate key hashes
-                        await Connection.ExecuteAsync(@"
+                        await Connection.ExecuteAsync($@"
                         insert into #BulkExecutionAsset
                         select	@executionID as ExecutionID,
 		                        RowIndex as ItemNumber,
@@ -748,8 +748,36 @@ from	[Load] L
 		                        inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
                                 left join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                         where   L.ID = @ID;
+
+                        --handle ref lists
+                        if @class = 9
+                        begin
+                            delete from #BulkExecutionField where (FieldTypeID is null and FieldName <> 'Code');
+                        end
+
+                        --handle model levels
+                        if @class = 2
+                        begin
+                            declare @maxLevel int = 1;
+
+                            select @maxLevel = coalesce(max(L.[Level]), 1) from LoadColumn LC
+                            inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
+                            inner join AssetTypeLevel L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+                            where LC.Loadid = @ID;
+
+                            update  F
+                            set     F.FieldName = FT.Name,
+                                    F.FieldTypeID = FT.ID
+                            from    #BulkExecutionField F
+                                    inner join AssetType T on T.ID = @atID
+                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] = @maxLevel
+                                    inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+                            where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
+
+                            delete from #BulkExecutionField where FieldTypeID is null;
+                        end
                         "
-                            , new { executionID, load.ID }, transaction: trans, commandTimeout: timeout);
+                            , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class }, transaction: trans, commandTimeout: timeout);
 
                         if (hasLookups)
                         {
