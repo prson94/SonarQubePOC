@@ -148,7 +148,12 @@ export class UserListComponent extends BaseComponent implements OnInit, OnDestro
                     this.changeDetectorRef.markForCheck();
                 }
             },
-                null,
+                (err) => {
+                    this.items = [];
+                    this.totalRecords = 0;
+                    this.isLoading = false;
+                    this.changeDetectorRef.markForCheck();
+                },
                 () => {
                     this.isLoading = false;
                     this.changeDetectorRef.markForCheck();
