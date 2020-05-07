@@ -44,7 +44,7 @@ namespace d360.core.validators
             if (string.IsNullOrEmpty(model.Name) || model.Name.Trim() == string.Empty)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidName} {AssetTypeErrors.CheckRequest}");
 
-            if (isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty))
+            if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
 
             #region Basic Model Validation
