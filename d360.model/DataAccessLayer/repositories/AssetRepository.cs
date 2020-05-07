@@ -1290,7 +1290,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     }
 
                     assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
@@ -1463,8 +1463,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             }
 
             // If we made it this far, then we can save the asset type.
-            CompanyContext.Update(assetType);
-
+            try
+            {
+                CompanyContext.Update(assetType);
+            }catch(Exception ex)
+            {
+                throw ex.InnerException;
+            }
 
             return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.OK, "", "");
         }
