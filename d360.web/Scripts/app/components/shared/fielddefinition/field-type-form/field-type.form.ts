@@ -693,13 +693,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 ) {
                     this.model.FieldType.Type[this.currentType].Format.Display = this.model.LookupTokens[0].value;
                 }
-                if (this.model.LookupTokens
-                    && this.model.LookupTokens.length > 0
-                    && (this.model.FieldType.Type[this.currentType].Format.Edit == null
-                    || this.model.FieldType.Type[this.currentType].Format.Edit.length == 0)
-                ) {
-                    this.model.FieldType.Type[this.currentType].Format.Edit = this.model.LookupTokens[0].value;
-                }
+                
             }
         ));
     }
