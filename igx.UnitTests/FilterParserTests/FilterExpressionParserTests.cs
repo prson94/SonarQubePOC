@@ -154,6 +154,8 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("boolean ne False")]
         [InlineData("boolean ne 0")]
         [InlineData("boolean ne 1")]
+        [InlineData("boolean eq tr")]
+        [InlineData("boolean eq fal")]
         public void ValidBooleanTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();

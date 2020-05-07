@@ -264,9 +264,20 @@ namespace d360.model.helpers
                     break;
                 case "boolean":
                     bool boolean = false;
-                    if (value.ToString() == "0") value = "false";
-                    if (value.ToString() == "1") value = "true";
-                    if (!bool.TryParse(value.ToString().ToLower(), out boolean))
+                    var stringValue = value.ToString().ToLower().Trim();
+                    if (stringValue == "0") stringValue = "false";
+                    if (stringValue == "1") stringValue = "true";
+
+                    if ("true".Contains(stringValue))
+                    {
+                        stringValue = "true";
+                    }
+                    if ("false".Contains(stringValue))
+                    {
+                        stringValue = "false";
+                    }
+
+                    if (!bool.TryParse(stringValue, out boolean))
                     {
                         throw new FormatException($"Invalid boolean value for field '{field}'");
                     }
