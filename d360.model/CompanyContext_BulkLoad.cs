@@ -779,8 +779,6 @@ from	[Load] L
                         "
                             , new { executionID, load.ID, @class = assetType.Class, atID = assetType.ID }, transaction: trans);
 
-                        var removethis = Connection.Query<dynamic>("select * from #BulkExecutionField", transaction: trans).ToList();
-
                         if (hasLookups)
                         {
                             ResolveFieldLookupValues(executionID, "#BulkExecutionField", timeout, trans);
