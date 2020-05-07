@@ -716,7 +716,7 @@ from	[Load] L
 
                         drop table if exists #BulkExecutionField;
                         create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
-                        ", transaction: trans);
+                        ", transaction: trans, commandTimeout: timeout);
 
                         //load temp tables and calculate key hashes
                         await Connection.ExecuteAsync($@"
@@ -777,7 +777,7 @@ from	[Load] L
                             delete from #BulkExecutionField where FieldTypeID is null;
                         end
                         "
-                            , new { executionID, load.ID, @class = assetType.Class, atID = assetType.ID }, transaction: trans);
+                            , new { executionID, load.ID }, transaction: trans, commandTimeout: timeout);
 
                         if (hasLookups)
                         {
@@ -788,7 +788,7 @@ from	[Load] L
                             from    LoadItemColumn I
                                     inner join #BulkExecutionField B on B.ItemNumber = I.RowIndex and B.ColumnIndex = I.ColumnIndex
                             where   B.LookupValue is not null and I.LoadID = @ID
-                            ", new { load.ID }, transaction: trans);
+                            ", new { load.ID }, transaction: trans, commandTimeout: timeout);
                         }
 
                         if (intersectTypeId.HasValue && calculateParentHashByUid)
@@ -805,7 +805,7 @@ from	[Load] L
                                 inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
                                 inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
                                 where A.ExecutionID = @executionID
-                            ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans);
+                            ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans, commandTimeout: timeout);
                         }
 
                         CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
@@ -831,7 +831,7 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
                         }
                         else
                         {
@@ -860,7 +860,7 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
 
                             }
                             else
@@ -885,7 +885,7 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
                             }
 
                         }
@@ -1086,7 +1086,7 @@ from    LoadItem T
 				        ) A
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
-where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID })).FirstOrDefault();
+where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
         }
 
         #endregion
@@ -1206,7 +1206,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                         StatusMessage = @msg 
                                 where   LoadID = @id 
                                         and RowIndex = @rowIndex", 
-                                        new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex});
+                                        new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex }, commandTimeout: timeout);
                         }
                         else
                         {
@@ -1256,7 +1256,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         where   L.LoadID = @id 
                                 and (L.IntersectUid = 0x0 or L.IntersectUid is null);
 
-                        ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid});
+                        ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid}, commandTimeout: timeout);
 
                     var results = (await QueryAsync<RelationshipDelete>(@"
                         select      L.ExecutionItemUid, 
@@ -1264,7 +1264,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                     L.IntersectUid as [Uid]
                         from    LoadItem L 
                         where   L.LoadID = @id and L.IntersectUid is not null and L.IntersectUid != 0x0
-                        ", new { id = load.ID, intersectTypeUid = intersectType.uid })).ToList();
+                        ", new { id = load.ID, intersectTypeUid = intersectType.uid }, timeout: timeout)).ToList();
 
                     deletes.AddRange(results);
 
