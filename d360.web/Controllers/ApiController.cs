@@ -985,8 +985,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     #region
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name", apiName = "Name" });
-
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });

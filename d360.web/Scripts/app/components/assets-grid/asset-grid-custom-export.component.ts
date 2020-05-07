@@ -37,6 +37,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
     @Input() owner: GridOwnerFilter;
 
     @Output() closeClick = new EventEmitter();
+    @Output() customExportClick = new EventEmitter();
 
     private exportOptions: AssetTypeExportTemplate[];
 
@@ -60,16 +61,7 @@ export class AssetGridCustomExportComponent extends BaseComponent implements OnI
         });
     }
 
-    private doDefaultExport() {
-        this.artifactService.getArtifactsXls(false, this.gridObject, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
-    }
-
     private doExport(option: AssetTypeExportTemplate) {
-        if (this.objectType == 'ArtifactType')
-            this.artifactService.getArtifactsCustomXls(option.ID, false, this.gridObject, this.sortField, this.sortOrder, this.filters, this.relationships, this.simpleFilter, this.owner);
-
-        if (this.objectType == 'RuleType')
-            this.rulesService.exportRulesCustomXls(option.ID, this.gridObject.AssetTypeUID, this.gridObject.Name);
-
+        this.customExportClick.emit(option);
     }
 };

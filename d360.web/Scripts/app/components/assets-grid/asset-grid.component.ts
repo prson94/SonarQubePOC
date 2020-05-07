@@ -31,7 +31,7 @@ import { AssetService } from '../../services/asset.service';
 import { PermissionsService } from '../../services/permissions.service';
 import { StateService } from '../../services/state.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
-import { ArtifactType } from '../../models/artifact-type.model';
+import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
 import { BaseComponent } from '../shared/base.component';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { StringConstants } from '../../static/string-constants';
@@ -355,6 +355,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     export(listableOnly) {
         this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, this.getParams(), 'Filtered ' + this.gridObject.Name + ' List');
+    }
+
+    downloadCustomExcel(option: AssetTypeExportTemplate) {
+        var params = JSON.parse(JSON.stringify(this.getParams()));
+        params['exporttemplateuid'] = option.uid;
+
+        this.assetService.downloadAssetsExcel(this.gridObject.AssetTypeUID, params, 'Filtered ' + this.gridObject.Name + ' List');
     }
 
     customExport() {

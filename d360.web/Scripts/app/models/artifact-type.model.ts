@@ -49,4 +49,5 @@ export class AssetTypeExportTemplate {
     ID: number;
     Name: string;
     Description: string;
+    uid: string;
 }

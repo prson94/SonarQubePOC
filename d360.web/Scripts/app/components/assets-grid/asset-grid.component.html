@@ -66,6 +66,7 @@
   <d3s-asset-grid-custom-export
     *ngIf="showCustomExport && canExportRecords()"
     (closeClick)="showCustomExport = false"
+    (customExportClick)="downloadCustomExcel($event)"
     [gridObject]="gridObject"
     [objectType]="gridObject.ObjectType"
     [sortOrder]="stateService.artifactTypeFilters.sortOrder"

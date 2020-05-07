@@ -65,7 +65,7 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
                     this.isLoading = false;
                     this.ruleType = result;
                     this.gridObject = RuleType.AsGridObject(this.ruleType);
-                    console.log(this.gridObject);
+
                     this.setObjectInfo('RuleType', this.ruleType.ID);
 
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {

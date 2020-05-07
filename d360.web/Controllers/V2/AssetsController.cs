@@ -1659,6 +1659,16 @@ namespace d360.web.Controllers.V2
                 fieldsForCustomExport.Insert(0, new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
+            if (assetType.Class == AssetTypeClass.Rule)
+            {
+                fieldsForCustomExport.Add(new FieldType { Type = "string", Name = "RuleUID", FriendlyName = "Rule UID" });
+
+                foreach (var item in data)
+                {
+                    item.RuleUID = item.AssetUid;
+                }
+            }
+
             if (template.IncludeUrl)
             {
                 fieldsForCustomExport.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
