@@ -404,9 +404,6 @@
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
-    <Compile Include="Controllers\FieldsController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\FusionController.cs">
       <SubType>Code</SubType>
     </Compile>
