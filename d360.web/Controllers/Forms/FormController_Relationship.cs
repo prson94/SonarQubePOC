@@ -605,53 +605,6 @@ order by r.Name";
                     }
                     break;
                 #endregion
-                case "RuleImplementationType":
-                    #region
-                    if (targetTypeID == 0)
-                    {
-                        sql = $@"
-select	'RuleImplementation' as [Object], 
-        r.ID as ObjectID, 
-        coalesce(r.Name, 'Implementation ' + cast(r.ID as varchar)) as Name
-from	RuleImplementation r with(nolock)
-where   r.ID not in (
-					select	case 
-                                when SubjectType = 'RuleImplementation' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'RuleImplementation') ) OR
-							 ( (SubjectType = 'RuleImplementation') AND (Object = @source and ObjectID = @id) )
-							)
-					)
-        and r.ID != @id
-order by r.Name";
-                    }
-                    else
-                    {
-                        sql = $@"
-select	'RuleImplementation' as [Object], 
-        r.ID as ObjectID, 
-        coalesce(r.Name, 'Implementation ' + cast(r.ID as varchar)) as Name
-from	RuleImplementation r with(nolock)
-where   r.ID not in (
-					select	case 
-                                when SubjectType = 'RuleImplementation' then SubjectID
-                                else ObjectID
-                            end
-					from	[IntersectDetail]
-					where	IntersectTypeID = @it and (
-							 ( (Subject = @source and SubjectID = @id) AND (ObjectType = 'RuleImplementation' and ObjectTypeID = r.RuleID) ) OR
-							 ( (SubjectType = 'RuleImplementation' and SubjectTypeID = r.RuleID) AND (Object = @source and ObjectID = @id) )
-							)
-					)
-        and r.ID != @id
-        and r.RuleID = @targetTypeID 
-order by r.Name";
-                    }
-                    break;
-                #endregion
                 case "ArtifactType":
                 case "LookupType":
                 case "RuleType":
