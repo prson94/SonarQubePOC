@@ -25,7 +25,7 @@ export class AdvancedFiltersHelper {
                         ret += `${fieldName} eq ${value}`;
                         break;
                     case 'date':
-                        ret += `${fieldName} eq '${value}'`;
+                        ret += `${fieldName} ct '${value}'`;
                         break;
                     default:
                         ret += `${fieldName} ct '${value}'`;
