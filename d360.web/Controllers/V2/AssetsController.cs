@@ -1007,7 +1007,53 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        /// <summary>
+        /// Retrieves a list of all asset types and asset counts for current user.
+        /// </summary>
+        /// <returns>Returns a list of asset type counts for current user.</returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/fields/{fieldApiName}"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+        ]
+        public async Task<HttpResponseMessage> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
+        {
+            var prefix = "Assets.GetComplexFieldValueForAsset => ";
+            var errorMessage = "";
 
+            try
+            {
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+
+
+                if (asset == null)
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"Asset with UID '{assetUid}' not found!");
+                }
+
+                var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == asset.AssetTypeID && x.Name.ToLower().Trim() == fieldApiName.ToLower().Trim());
+                if (fieldType == null)
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, $"Field Type '{fieldApiName}' not found for asset.");
+                }
+
+                
+
+                return Request.CreateResponse(HttpStatusCode.OK, new { message = "works" });
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
 
         #region Batch
 
