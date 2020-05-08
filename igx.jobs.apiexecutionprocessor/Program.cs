@@ -185,10 +185,7 @@ namespace igx.jobs.apiexecutionprocessor
                     if (dbExecutionItem.State == d360.core.enums.State.Deleted)
                     {
                         executeJob = false;
-                        dbExecutionItem.ErrorMessage = "Execution job was canceled by user.";
-                        dbExecutionItem.CompletedOn = DateTime.UtcNow;
                         log.WriteLine($"Execution job with UID {dbExecutionItem.ExecutionID} was canceled by user.");
-
                     }
 
                     if (executeJob)
