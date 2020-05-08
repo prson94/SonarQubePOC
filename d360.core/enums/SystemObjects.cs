@@ -129,8 +129,6 @@ namespace d360.core
         IssueType,
         [Description("Issue"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         Issue,
-        [Description("Rule Implementation"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
-        RuleImplementation,
         [Description("Score Type Metric"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         ScoreTypeMetric,
         [Description("Organization"), EnableAudit(false), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
@@ -145,8 +143,6 @@ namespace d360.core
         ShoppingCartType,
         [Description("Shopping Cart"), EnableAudit(true), IsType(false),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         ShoppingCart,
-        [Description("Rule Implementation Type"), EnableAudit(true), IsType(true),ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
-        RuleImplementationType,
         [Description("Organization Type"), EnableAudit(true), IsType(true), 
             ExcludeDataType(DataType.FieldFromRelationship |
             DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup | DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Tag)]
