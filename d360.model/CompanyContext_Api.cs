@@ -1773,15 +1773,6 @@ from	IntersectType I
                     AssetID	bigint,
                     FromHierarchy	bit
                 );
-
-            insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root])
-                select distinct 
-                        S.ExecutionID, 
-                        S.ItemNumber, 
-                        S.[Uid]
-	            from	RuleImplementation T
-			            inner join api.ExecutionDeletedAsset S on S.Object = 'Rule' and S.ObjectID = T.RuleID 
-                where   {querySuffix} ;
             
 			update  S 
             set     S.Success = 0 ,
@@ -1949,15 +1940,6 @@ from	IntersectType I
 
                                             if (!string.IsNullOrEmpty(legacyTable))
                                             {
-                                                if (legacyTable == "[Rule]") //You need to also remove rule implementations, results, and other legacy dependent tables.
-                                                {
-                                                    Connection.Execute($@"
-delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
-delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
-                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
-                                                    );
-                                                }
-
                                                 Connection.Execute(
                                                     $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);

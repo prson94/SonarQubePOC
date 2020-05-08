@@ -182,8 +182,6 @@
     <Compile Include="entities\Community\Plugins\FusionAttributeTypeField.cs" />
     <Compile Include="entities\Fusion\FusionAgentError.cs" />
     <Compile Include="entities\Fusion\FusionAgentErrorItem.cs" />
-    <Compile Include="entities\Quality\RuleImplementation.cs" />
-    <Compile Include="entities\Quality\RuleResult.cs" />
     <Compile Include="entities\Relation\Predicate.cs" />
     <Compile Include="entities\Social\CommentVote.cs" />
     <Compile Include="entities\Social\CommentCount.cs" />
