@@ -2,15 +2,9 @@
 import {Observable} from "rxjs";
 import { FieldTypeAPIModelField } from './fieldtype-api.model';
 
-export interface IFieldsService {
-    getFields(objectID: number, objectType: string): Observable<FieldDefinition[]>;
-
+export interface IFieldsService {    
     getFieldTypeEditor(name: string, assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string): Observable<FieldTypeAPIModelField>;
-
-    getFusionLookupDisplayFields(id: number): Observable<SelectItem[]>;
-
-    getFusionLookupTargetAttributeTypes(sourceID: number, referenceTypeID: number): Observable<SelectItem[]>;
-
+        
     getRelationLookupDisplayFields(assetTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]>;
 
     getLookupTokens(uid: string): Observable<Array<SelectItem>>;
@@ -41,8 +35,7 @@ export class FieldDefinition {
 
 export class FieldTypeEditorModel {
     FieldIsUsed: boolean;
-    FieldType: FieldTypeAPIModelField;
-    FusionItems: FieldTypeFusionItemEditorModel[] = new Array<FieldTypeFusionItemEditorModel>();
+    FieldType: FieldTypeAPIModelField;    
     RelationItems: FieldTypeRelationItemEditorModel[] = [];
     RelationItem: FieldTypeRelationItemEditorModel;
     selectedLookup: string;
@@ -119,18 +112,6 @@ export class Field {
     Value: string;
     FormattedValue: string;
     FieldType: FieldType;
-}
-
-export class FieldTypeFusionItemEditorModel {
-    ID: number;
-    SourceFusionAttributeType: string;
-    ReferenceType: number;
-    TargetFusionAttributeType: string;
-    HideHeader: boolean;
-    HideFooter: boolean;
-
-    TargetFusionAttributeTypes: SelectItem[] = new Array<SelectItem>();
-    FusionDisplayFields: SelectItem[] = new Array<SelectItem>();
 }
 
 export class FieldTypeItemDisplayFieldEditorModel {
