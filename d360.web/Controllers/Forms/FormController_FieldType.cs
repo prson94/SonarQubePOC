@@ -33,7 +33,7 @@ namespace d360.web.Controllers
         public JsonNetResult FieldType_FusionLookup_DisplayFields(int id)
         {
             var list = Company.GetFieldTypesByObject(SystemObjects.FusionAttributeType, id)
-                .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                .Where(i => i.Type != DataType.Path.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                 .Select(i => new { i.ID, i.Name })
                 .ToDictionary(i => i.Name, i => i.ID);
             list.Add("Name", 0);

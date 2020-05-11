@@ -9,10 +9,70 @@ namespace d360.core.helpers
 {
     public static class DataTypeHelper
     {
+        public static List<string> GetNotAllowedInExport(this DataType dt)
+        {
+            List<string> types = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.File.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.RefListRelationship.ToString()
+            };
+
+            return types;
+        }
+
+        public static List<string> GetNotAllowedInReportingViews(this DataType dt)
+        {
+            List<string> types = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.File.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.RefListRelationship.ToString(),
+                DataType.Path.ToString()
+            };
+
+            return types;
+        }
+
+        public static List<string> GetNotAllowedInFieldFromRelationship(this DataType dt)
+        {
+            List<string> types = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.File.ToString(),
+                DataType.JSON.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.Relationship.ToString(),
+                DataType.RefListRelationship.ToString(),
+                DataType.Tag.ToString()
+            };
+
+            return types;
+        }
+
+        public static List<string> GetNotAllowedInRelationshipLookup(this DataType dt)
+        {
+            List<string> types = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.File.ToString(),
+                DataType.JSON.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.Path.ToString(),
+                DataType.Relationship.ToString(),
+                DataType.RefListRelationship.ToString(),
+                DataType.Tag.ToString()
+            };
+
+            return types;
+        }
+
         public static List<string> GetComputedFields(this DataType dt)
         {
             List<string> types = new List<string>() {
-                DataType.Attribute.ToString(),
+                DataType.Path.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),
@@ -27,7 +87,6 @@ namespace d360.core.helpers
         public static List<string> GetNonlistableFields(this DataType dt)
         {
             List<string> types = new List<string>() {
-                DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(),

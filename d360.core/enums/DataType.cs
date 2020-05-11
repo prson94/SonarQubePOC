@@ -40,8 +40,8 @@ namespace d360.core
         UncLink= 1 << 12,
         [Description("Color Picker"), ReadOnly(true)]
         Color= 1 << 13,
-        [Description("Attribute Hierarchy"), ReadOnly(true)]
-        Attribute= 1 << 15,
+        [Description("Asset Path")]
+        Path = 1 << 15,
         [Description("Relation Lookup")]
         ComplexRelationLookup = 1 << 17,
         [Description("Percentage"), ReadOnly(true)]

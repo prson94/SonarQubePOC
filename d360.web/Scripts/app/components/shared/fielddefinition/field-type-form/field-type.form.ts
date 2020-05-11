@@ -442,14 +442,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 break;
-            case 'json':
-                this.showDescription = false;
-                break;
-            case 'jsonelement':
-                this.showDescription = false;
-                break;
             case 'computedownershiplookup':
+            case 'json':
+            case 'jsonelement':
             case 'ownershiplookup':
+            case 'path':
                 this.showDescription = false;
                 break;
             default:
@@ -1343,28 +1340,28 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
+                return (['ComplexRelationLookup', 'FusionLookup', 'Json', 'JSON', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean'].indexOf(this.currentType) > -1);
+                    return (['Boolean', 'Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
                 else
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
+                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship']
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Tag'].indexOf(this.currentType) > -1);
+                return (['Path', 'Tag'].indexOf(this.currentType) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }

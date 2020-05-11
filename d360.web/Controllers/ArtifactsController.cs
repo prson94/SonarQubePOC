@@ -16,6 +16,7 @@ using System.Web.Mvc;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using d360.core.helpers;
 
 namespace d360.web.Controllers
 {
@@ -35,12 +36,7 @@ namespace d360.web.Controllers
         [Route("download/excel/{id:int}.xls"), FileDownload, HttpGet]
         public async Task<FileResult> ToExcel(int id, string sortDataField, string sortOrder, string filter, string ownerUsers = "", string ownerGroups = "", bool listableOnly = true)
         {
-            var typesToAvoid = new List<string>() {
-                DataType.Attribute.ToString(),
-                DataType.ComplexRelationLookup.ToString(),
-                DataType.DataTableSelect.ToString(),
-                DataType.OwnershipLookup.ToString()
-            };
+            var typesToAvoid = DataType.Text.GetNotAllowedInExport();
             var assetType = Company.AssetTypes.FirstOrDefault(a => a.Object == "ArtifactType" && a.ObjectID == id);
             var fields = getFieldTypesByObjectType("ArtifactType", id, listableOnly).Where(i => !typesToAvoid.Contains(i.Type)).ToList();
             fields.Add(new FieldType { Type = "string", Name = "UID", FriendlyName = "Asset UID" });
@@ -141,7 +137,6 @@ namespace d360.web.Controllers
             var columns = "";
 
             var typesToAvoid = new List<string>() {
-                DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.OwnershipLookup.ToString()

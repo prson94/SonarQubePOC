@@ -82,12 +82,13 @@ namespace d360.model.DataAccessLayer.repositories
                 if (f.Type == "Link")
                     valueColumn = "Value";
 
+                FieldType relatedField = null;
                 if (f.Type == "FieldFromRelationship")
                 {
                     if (!f.LookupObjectFieldTypeID.HasValue || !f.LookupObjectID.HasValue)
                         return;
 
-                    var relatedField = CompanyContext.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
+                    relatedField = CompanyContext.GetById<FieldType>((int)f.LookupObjectFieldTypeID);
                     if (relatedField == null)
                         return;
 
@@ -108,6 +109,11 @@ namespace d360.model.DataAccessLayer.repositories
                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
                         dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                     }
+                    else if (f.Type == "Path")
+                    {
+                        fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                        //dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                    }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                 }
@@ -126,6 +132,10 @@ namespace d360.model.DataAccessLayer.repositories
                         {
                             fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                        }
+                        else if (f.Type == "Path")
+                        {
+                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -154,6 +164,11 @@ namespace d360.model.DataAccessLayer.repositories
                             fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
                             dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
+                        else if (f.Type == "Path")
+                        {
+                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                            //dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                        }
                         else
                         {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -165,47 +180,40 @@ namespace d360.model.DataAccessLayer.repositories
                 {
                     bool hasReferenceList = false;
                     var filtercond = GetSplitFilterCriteriaRelationship(f.LookupObjectID.GetValueOrDefault(), f.Object, f.ObjectID, out hasReferenceList);
-                    if (filtercond == SplitFilterCriteriaRelationship.Object)
+
+                    var assetIdBackwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S<-(E)-O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+                    var assetIdForwardQuery = $@"select O.Id as TargetAssetId from graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O where MATCH(S-(E)->O) AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id";
+                    var assetIdFinalQuery = "";
+
+                    switch (filtercond)
                     {
-                        fieldJoins.Add($@"
-                            outer apply (
-                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
-							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
-											SELECT        O.Id as TargetAssetId
-                                            FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-                                            WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id)
-							and FormattedValue is not null
-							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
+                        case SplitFilterCriteriaRelationship.Object:
+                            assetIdFinalQuery = assetIdBackwardQuery;
+                            break;
+                        case SplitFilterCriteriaRelationship.Subject:
+                            assetIdFinalQuery = assetIdForwardQuery;
+                            break;
+                        default:
+                            assetIdFinalQuery = assetIdBackwardQuery + " union " + assetIdForwardQuery;
+                            break;
+                    }
+
+                    if (relatedField.Type == "Path")
+                    {
+                        fieldJoins.Add($@"outer apply (
+                            select  STRING_AGG(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+                            from    graph.AssetNode 
+					        where   ID IN ({assetIdFinalQuery})
+                            having  string_agg(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
-                    else if (filtercond == SplitFilterCriteriaRelationship.Subject)
-                    {
-                        fieldJoins.Add($@"
-                            outer apply (
-                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
-							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
-											SELECT       O.Id as TargetAssetId
-											FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-											WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
-							and FormattedValue is not null
-							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
-                        ) {tableAlias}");
-                    }
-                    else
-                    {
-                        fieldJoins.Add($@"
-                            outer apply (
-                            select STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue from Field 
-							where FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN  ( 
-											SELECT        O.Id as TargetAssetId
-                                            FROM            graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-                                            WHERE        MATCH(S <- (E) - O)  AND E.IntersectTypeID = {f.LookupObjectID} AND S.Id = A.Id
-                                            UNION 
-                                            SELECT       O.Id as TargetAssetId
-											FROM         graph.AssetNode S, graph.AssetEdge E, graph.AssetNode O
-											WHERE        MATCH(S - (E) -> O)  AND E.IntersectTypeID = {f.LookupObjectID} and S.Id = A.Id)
-							and FormattedValue is not null
-							having string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
+                    else {
+                        fieldJoins.Add($@"outer apply (
+                            select  STRING_AGG(FormattedValue,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+                            from    Field 
+					        where   FieldTypeID = {f.LookupObjectFieldTypeID} and AssetID IN ({assetIdFinalQuery})
+					                and FormattedValue is not null
+					        having  string_agg(FormattedValue,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                 }
@@ -309,6 +317,10 @@ namespace d360.model.DataAccessLayer.repositories
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
+                }
+                else if (f.Type == "Path")
+                {
+                    // No join required, as this is handled by a function.
                 }
                 else if (f.Type == "Tag")
                 {
