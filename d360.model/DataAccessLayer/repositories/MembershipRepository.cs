@@ -327,6 +327,16 @@ namespace d360.model.DataAccessLayer
                             messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
                     }
+                    if (string.IsNullOrEmpty(user.FirstName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a First Name");
+                    }
+                    if (string.IsNullOrEmpty(user.LastName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a Last Name");
+                    }
                 }
                 else
                 {
@@ -349,6 +359,16 @@ namespace d360.model.DataAccessLayer
                             success = false;
                             messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
+                    }
+                    if(string.IsNullOrEmpty(user.FirstName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a First Name");
+                    }
+                    if (string.IsNullOrEmpty(user.LastName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a Last Name");
                     }
                 }
 
