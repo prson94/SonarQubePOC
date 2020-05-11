@@ -85,5 +85,52 @@ END
 		]]>
     </rollback>
   </changeSet>
+  <changeSet author="Puneet Gupta" id="Table.dbo.Lookup-v3">
+    <comment>GOV-9623</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup_backup')
+			BEGIN
+			   DROP TABLE dbo.Lookup_backup
+			END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+			IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Lookup_backup')
+			BEGIN
+				CREATE TABLE [dbo].[Lookup_backup](
+					[ID] [int] IDENTITY(1,1) NOT NULL,
+					[LookupTypeID] [int] NOT NULL,
+					[UpdatedOn] [datetime] NULL,
+					[UpdatedBy] [int] NULL,
+					CONSTRAINT [PK_Lookup] PRIMARY KEY CLUSTERED ( [ID] ASC )
+				)
+			END
 
+			IF NOT EXISTS (select * from sys.indexes where name = 'IX_Lookup_LookupTypeID')
+			BEGIN
+				CREATE NONCLUSTERED INDEX [IX_Lookup_LookupTypeID] ON [dbo].[Lookup_backup] ( [LookupTypeID] ASC )
+			END
+	  ]]>
+	 </rollback>
+	 
+	 <rollback>
+	  <![CDATA[
+CREATE OR ALTER TRIGGER [dbo].[Lookup_AfterDelete]
+   ON  [dbo].[Lookup_backup] 
+   AFTER DELETE
+AS 
+BEGIN
+	SET NOCOUNT ON
+	
+	INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID])
+		select 'Delete', [queue].WriteIndexXml('Removed', 'LookupType', LookupTypeID, coalesce(UpdatedBy, 0)), 'Lookup', ID from deleted
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>
