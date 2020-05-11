@@ -246,14 +246,12 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'ComplexRelationLookup' then FTL.LookupType else null end as 'Type.ComputedRelationshipLookup.LookupType',
 
 		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
-		        select	IST.Uid as IntersectTypeUid,
-				        AST.Uid as AssetTypeUid,
+		        select	DR.IntersectTypeUid,
+				        DR.AssetTypeUid,
 				        DR.RelationType,
 				        DR.Direction
 		        from	OPENJSON(FTL.Definition) with (Relations nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Relations) with (IntersectTypeID int, Object varchar(50), ObjectID int, RelationType int, Direction int) DR
-				        left join IntersectType IST on IST.ID = DR.IntersectTypeID
-				        left join AssetType AST on AST.Object = DR.Object and AST.ObjectID = DR.ObjectID
+				        outer apply OPENJSON(D.Relations) with (IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int) DR
 		        for json path
 		        ) else null end) as 'Type.ComputedRelationshipLookup.Definition.Relations',
 		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
@@ -266,8 +264,8 @@ select	@pageSize as 'pageSize',
 				        DF.Show,
 				        DF.Width
 		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Fields) with (Object varchar(50), ObjectID int, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
-				        left join AssetType AST on AST.Object = DF.Object and AST.ObjectID = DF.ObjectID
+				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        left join AssetType AST on AST.Uid = DF.AssetTypeUid
 				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
 		        order by DF.DisplayOrder
 		        for json path
