@@ -29,6 +29,7 @@ using d360.core.resources;
 using Resources;
 using System.IO;
 using d360.model.helpers.filters;
+using System.Data.Entity;
 
 namespace d360.web.Controllers.V2
 {
@@ -1015,7 +1016,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{assetUid:Guid}/fields/{fieldApiName}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypeCountModel>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetComplexLookupValue>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
@@ -1026,6 +1027,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                var result = new AssetComplexLookupValue();
                 var asset = AssetRepository.GetAssetByUID(assetUid);
 
 
@@ -1034,15 +1036,127 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.NotFound, $"Asset with UID '{assetUid}' not found!");
                 }
 
-                var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == asset.AssetTypeID && x.Name.ToLower().Trim() == fieldApiName.ToLower().Trim());
+                var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == asset.AssetTypeID && x.Name.ToLower().Trim() == fieldApiName.ToLower().Trim()).FirstOrDefault();
                 if (fieldType == null)
                 {
                     return ReturnApiError(HttpStatusCode.NotFound, $"Field Type '{fieldApiName}' not found for asset.");
                 }
 
-                
+                var dbArgs = new DynamicParameters();
+                List<string> whereStatements = new List<string>();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { message = "works" });
+                if (fieldType.Type == "OwnershipLookup")
+                {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var defintion = ftl.ParseOwnershipLookupDefinition();
+
+
+                    whereStatements.Add("A.Uid = @assetUid");
+                    dbArgs.Add("@assetUid", asset.uid);
+
+                    whereStatements.Add("((R.AssetID = A.ID) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))");
+
+                    var sql = $@" R.ResponsibilityTypeName as ResponsibilityName,
+						  RT.uid ResponsibilityUid, 
+							R.Context as Context,
+                          lower(R.ResourceUid) as 'Resource.uid',
+                          R.ResourceName as 'Resource.Name',
+                        case SecurityAsset when 'R' then null else SecurityAssetName end as 'Group.Name', 
+                        case SecurityAsset when 'R' then null else lower(SecurityAssetUid) end as 'Group.uid'
+						from Asset A
+	                        inner join ResponsibilityDetail R on R.IsVisible = 1
+							inner join ResponsibilityType RT on RT.Id = R.ResponsibilityTypeID
+                        where {string.Join(" and ", whereStatements)}
+                        for json path,INCLUDE_NULL_VALUES, Root('items')";
+
+                    var data = Company.Query<string>(sql, dbArgs).FirstOrDefault();
+                    result = JsonConvert.DeserializeObject<AssetComplexLookupValue>(data);
+                }
+
+
+                if (fieldType.Type == "ComplexRelationLookup")
+                {
+                    List<string> fieldJoins = new List<string>();
+                    List<string> fieldColumns = new List<string>();
+
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseComplexLookupDefinition();
+
+                    List<int> fieldIds = new List<int>();
+                    definition.Fields.ForEach(ft =>
+                    {
+                        if (ft.FieldTypeID > 0)
+                        {
+                            fieldIds.Add(ft.FieldTypeID);
+                        }
+                        else
+                        {
+                            
+                        }
+                    });
+
+
+                    var fieldTypes = Company.FieldTypes.Where(x => fieldIds.Contains(x.ID)).AsNoTracking().ToList();
+
+                    //override field type values
+                    foreach (var ft in fieldTypes)
+                    {
+                        var def = definition.Fields.FirstOrDefault(x => x.FieldTypeID == ft.ID);
+                        ft.SortOrder = def.SortOrder;
+                        ft.FriendlyName = def.OverrideDisplayName;
+                    }
+
+                    //override display order
+                    fieldTypes = fieldTypes.OrderBy(x => definition.Fields.OrderBy(f=> f.DisplayOrder).Select(f => f.FieldTypeID).ToList().IndexOf(x.ID)).ToList();
+
+
+
+                    getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                    string orderByStatement = "order by a.id";
+
+                    if (fieldTypes.Count > 0)
+                    {
+                        orderByStatement = "order by " + string.Join(",", fieldTypes.OrderBy(x => x.SortOrder).ThenBy(x=> x.ID).Select(x => $"F{x.ID}.FormattedValue"));
+                    }
+
+                    whereStatements.Add(@"H1.id NOT IN (SELECT assetid 
+                                             FROM   dbo.Userassetpermissions(@resourceId, H1.assettypeid)
+                                             WHERE((permissionsbitmask & 1)) = 0)
+                               AND NOT EXISTS(SELECT 1
+                       FROM   dbo.Assettypesusercantread(@resourceId) u
+                       WHERE  u.assettypeid = H1.assettypeid)");
+
+                    dbArgs.Add("@resourceId", Company.CurrentResourceID);
+                    dbArgs.Add("@intersectTypeUid", definition.Relations[0].IntersectTypeUid);
+                    dbArgs.Add("@assetUid", asset.uid);
+
+
+
+
+                    var sql = $@"SELECT 
+                        lower(a.uid) as AssetUid,
+                        {string.Join(",", fieldColumns)}
+                        FROM   graph.assetnode H1 
+                               INNER JOIN graph.assetedge R1 
+                                       ON R1.$to_id = H1.$node_id 
+                                          AND R1.intersecttypeuid = @intersectTypeUid 
+                               INNER JOIN graph.assetnode A1 
+                                       ON A1.$node_id = R1.$from_id 
+                                          AND A1.uid = @assetUid 
+                        inner join asset a on a.uid = h1.uid
+                        {string.Join(" ", fieldJoins)}
+                        WHERE {string.Join(" and ", whereStatements)}
+                        {orderByStatement}
+                        for json path,INCLUDE_NULL_VALUES, Root('items')";
+
+                    var data = Company.Query<string>(sql, dbArgs).FirstOrDefault();
+                    result = JsonConvert.DeserializeObject<AssetComplexLookupValue>(data);
+
+                }
+
+
+                return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {

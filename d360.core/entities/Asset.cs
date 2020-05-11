@@ -214,4 +214,12 @@ namespace d360.core.entities
         public bool HasAssetRestriction { get; set; }
         public bool HasAssetTypeRestriction { get; set; }
     }
+
+    public class AssetComplexLookupValue
+    {
+        public IEnumerable<dynamic> items { get; set; }
+        public int pageSize { get; set; }
+        public int pageNum { get; set; }
+        public int total { get; set; }
+    }
 }
