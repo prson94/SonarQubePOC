@@ -1821,6 +1821,75 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
 
         }
 
+
+        /// <summary>
+        /// Gets the score types available for the given asset type
+        /// </summary>
+        /// <returns>A list of score types if applicable.</returns>
+        [
+            HttpGet,
+            Route("GetAvailableScoreTypes"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetAvailableScoreTypes(Guid assetTypeUid)
+        {
+            var prefix = "Fields.GetAvailableScoreTypes => ";
+            var errorMessage = "";
+
+            try
+            {
+                Dictionary<int, string> list = new Dictionary<int, string>();
+
+                var assetType = Company.Filter<AssetType>(a => a.uid == assetTypeUid).FirstOrDefault();
+
+                if (assetType == null)
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, "Asset Type for this uid not found");
+                }
+
+
+                var types = Company.Query<int>(
+                    "select distinct ScoreType from metrics.Asset where AssetTypeUid = @assetTypeUid and [State] = 1"
+                    , new { assetTypeUid }).ToList();
+
+                foreach(var type in types)
+                {
+                    try
+                    {
+                        ScoreType scoreType = (ScoreType)type;
+
+                        list.Add(type, scoreType.GetDisplayName());
+
+                    }
+                    catch
+                    {
+                        return ReturnApiError(HttpStatusCode.InternalServerError, $"Could not cast score type value {type} to a valid score type");
+                    }
+                }
+
+              
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Value, value = i.Key }));
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
         #endregion
 
     }

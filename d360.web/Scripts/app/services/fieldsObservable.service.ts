@@ -525,6 +525,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
                 catchError(err => this.handleError(err))
             );
     }
+
+    getAvailableScoreTypes(assetTypeUid: string) {
+        return this
+            .http
+            .get(`api/v2/fields/GetAvailableFieldTypes?assetTypeUid=${assetTypeUid}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+
+    }
 }
 
 class FtItem {

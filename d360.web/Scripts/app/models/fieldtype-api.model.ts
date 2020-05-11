@@ -469,7 +469,7 @@ export class Score implements ICommonOptions {
     DefaultValue: number;
     Description: Description = new Description();
     Increment: number;
-    Validation: ScoreValidation = new ScoreValidation();
+    Validation: BooleanValidation = new BooleanValidation();
     ColumnOrder: number;
     ColumnWidth: number = 0;
     SortOrder: number = 0;
@@ -479,9 +479,6 @@ export class Score implements ICommonOptions {
     IsPartOfKey: boolean = false;
     IsPrimaryFilter: boolean = false;
     ShowIfEmpty: boolean = false;
-}
-
-export class ScoreValidation {
-    IsRequired: boolean = false;
+    ScoreType: number = null;
 }
 

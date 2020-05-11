@@ -81,6 +81,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private lookups: Lookups = new Lookups();
     private lookupDefaultValueOptions: SelectItem[];
     private booleanDefaultValueOptions: SelectItem[];
+    private scoreTypeOptions: SelectItem[];
     private model: FieldTypeEditorModel;
     private initialItem: FieldTypeEditorModel;
 
@@ -139,6 +140,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             { label: '-No Default-', value: null },
             { label: 'True', value: true },
             { label: 'False', value: false },
+        ]
+
+        this.scoreTypeOptions = [
+            { label: 'Choose Score...', value: null },
+            { label: 'Data Quality', value: 1 },
+            { label: 'Governance', value: 2 }
         ]
     }
 
@@ -452,6 +459,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'ownershiplookup':
                 this.showDescription = false;
                 break;
+            case 'score':
+                this.enableAllowMultipleValues = false;
+                this.showDescription = false;
+                break;
             default:
                 break;
         }
@@ -725,6 +736,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             }
         );
     }
+
 
     //#endregion
 
@@ -1343,17 +1355,17 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean'].indexOf(this.currentType) > -1);
+                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean', 'Score'].indexOf(this.currentType) > -1);
                 else
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
+                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON', 'Score'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship']
+                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship', 'Score']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
