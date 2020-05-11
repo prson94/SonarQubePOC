@@ -139,6 +139,9 @@ namespace d360.web.Controllers.V2
                 }
 
                 execution.State = core.enums.State.Deleted;
+                execution.CompletedOn = DateTime.UtcNow;
+                execution.ErrorMessage = "Execution job was canceled by user.";
+
                 bool isDone = Company.Update(execution);
 
                 response.message = $"Execution with UID {executionUid} has been cancelled successfully.";

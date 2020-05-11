@@ -1459,7 +1459,7 @@ namespace d360.extensions.search
             string tagSearch;
 
             int isGuid = IsPhraseGuid(phrase);
-            if(isGuid == 1)
+            if (isGuid == 1)
             {
                 mustClauses.Add(new PrefixQuery
                 {
@@ -1469,9 +1469,10 @@ namespace d360.extensions.search
                 fldTag = new Nest.Field(D3S_FIELD_PREFIX + "Tags.Uid");
                 tagSearch = phrase.ToLower();
             }
-            else if(isGuid == 2) 
+            else if (isGuid == 2)
             {
-                mustClauses.Add(new TermQuery {
+                mustClauses.Add(new TermQuery
+                {
                     Field = new Nest.Field(D3S_FIELD_PREFIX + "Uid"),
                     Value = phrase.ToLower()
                 });
@@ -1481,25 +1482,54 @@ namespace d360.extensions.search
             else
             {
                 /* For Typeahead, the search phrase is split into words, all words but the last will be
-                 * queried using 'match' and the last word will be 'prefix'
+                 * queried using 'match' and the last word will be 'prefix' or 'match'
                  * For searching tags, an asterisk is appended and a regular 'query_string' query is used 
                  */
                 Queue<string> parts = new Queue<string>(phrase.ToLower().Split(' '));
                 tagSearch = EscapeSpecialCharacters(phrase.ToLower()) + (!phrase.EndsWith("*") ? "*" : "");
 
-                while (parts.Count > 1)
+                while (parts.Count > 0)
                 {
-                    mustClauses.Add(new MatchQuery
+                    string part = parts.Dequeue();
+                    if (part.Contains("*"))
                     {
-                        Field = fldName,
-                        Query = EscapeSpecialCharacters(parts.Dequeue())
-                    });
+                        mustClauses.Add(new SimpleQueryStringQuery {
+                            Fields = fldName,
+                            Query = part
+                        });
+                    }
+                    else
+                    {
+                        if(parts.Count == 0) //Last word, search match or prefix
+                        {
+                            mustClauses.Add(new BoolQuery
+                            {
+                                MinimumShouldMatch = 1,
+                                Should = new QueryContainer[] {
+                                    new MatchQuery
+                                    {
+                                        Field = fldName,
+                                        Query = EscapeSpecialCharacters(part)
+                                    },
+                                    new PrefixQuery
+                                    {
+                                        Field = fldName,
+                                        Value = EscapeSpecialCharacters(part)
+                                    }
+                                }
+                            });
+
+                        }
+                        else
+                        {
+                            mustClauses.Add(new MatchQuery
+                            {
+                                Field = fldName,
+                                Query = EscapeSpecialCharacters(part)
+                            });
+                        }
+                    }
                 }
-                mustClauses.Add(new PrefixQuery
-                {
-                    Field = fldName,
-                    Value = EscapeSpecialCharacters(parts.Dequeue())
-                });
             }
 
             if (!string.IsNullOrEmpty(category))
