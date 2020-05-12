@@ -113,7 +113,6 @@ namespace d360.model.DataAccessLayer.repositories
                     else if (f.Type == "Path")
                     {
                         fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
-                        //dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                     }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
