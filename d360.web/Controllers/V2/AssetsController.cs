@@ -30,6 +30,8 @@ using Resources;
 using System.IO;
 using d360.model.helpers.filters;
 using System.Data.Entity;
+using System.Dynamic;
+using System.Configuration;
 
 namespace d360.web.Controllers.V2
 {
@@ -1027,6 +1029,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                var qparams = Request.GetQueryNameValuePairs();
                 var result = new AssetComplexLookupValue();
                 var asset = AssetRepository.GetAssetByUID(assetUid);
 
@@ -1042,120 +1045,67 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.NotFound, $"Field Type '{fieldApiName}' not found for asset.");
                 }
 
-                var dbArgs = new DynamicParameters();
-                List<string> whereStatements = new List<string>();
+                var reader = await Company.QueryMultipleAsync(
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
+                        new { @object = asset.Object, objectId = asset.ObjectID, fieldTypeId = fieldType.ID, resourceId = Company.CurrentResourceID }
+                    );
+
+                var Columns = reader.Read<GridColumn>().ToList();
+                var Fields = reader.Read<GridField>().ToList();
+                var Values = reader.Read<dynamic>().ToList();
+
+
+                bool useFriendlyNames = true;
+                bool useUnflattedStructure = true;
+
+                if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "usefriendlynames").Value.Trim().ToLower(), out useFriendlyNames))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'useFriendlyNames'");
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "useunflattedstructure"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useunflattedstructure").Value.Trim().ToLower(), out useUnflattedStructure))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'useUnflattedStructure'");
+                    }
+                }
 
                 if (fieldType.Type == "OwnershipLookup")
                 {
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var defintion = ftl.ParseOwnershipLookupDefinition();
-
-
-                    whereStatements.Add("A.Uid = @assetUid");
-                    dbArgs.Add("@assetUid", asset.uid);
-
-                    whereStatements.Add("((R.AssetID = A.ID) or (R.ApplyToType = 1 and R.AssetTypeID = A.AssetTypeID))");
-
-                    var sql = $@" R.ResponsibilityTypeName as ResponsibilityName,
-						  RT.uid ResponsibilityUid, 
-							R.Context as Context,
-                          lower(R.ResourceUid) as 'Resource.uid',
-                          R.ResourceName as 'Resource.Name',
-                        case SecurityAsset when 'R' then null else SecurityAssetName end as 'Group.Name', 
-                        case SecurityAsset when 'R' then null else lower(SecurityAssetUid) end as 'Group.uid'
-						from Asset A
-	                        inner join ResponsibilityDetail R on R.IsVisible = 1
-							inner join ResponsibilityType RT on RT.Id = R.ResponsibilityTypeID
-                        where {string.Join(" and ", whereStatements)}
-                        for json path,INCLUDE_NULL_VALUES, Root('items')";
-
-                    var data = Company.Query<string>(sql, dbArgs).FirstOrDefault();
-                    result = JsonConvert.DeserializeObject<AssetComplexLookupValue>(data);
                 }
-
 
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
-                    List<string> fieldJoins = new List<string>();
-                    List<string> fieldColumns = new List<string>();
-
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
                     var definition = ftl.ParseComplexLookupDefinition();
 
-                    List<int> fieldIds = new List<int>();
-                    definition.Fields.ForEach(ft =>
+                    if (useFriendlyNames)
                     {
-                        if (ft.FieldTypeID > 0)
+                        CustomJSONContractResolver customContract = definition.GetFriendlyNameJSONContract();
+                        var settings = new JsonSerializerSettings();
+                        settings.ContractResolver = customContract;
+                        Values = JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(Values, settings)).ToObject<List<dynamic>>();
+
+                        if (useUnflattedStructure)
                         {
-                            fieldIds.Add(ft.FieldTypeID);
+                            List<dynamic> unflattened = definition.UnflattenJson(Values);
+                            Values = unflattened;
                         }
-                        else
-                        {
-                            
-                        }
-                    });
 
-
-                    var fieldTypes = Company.FieldTypes.Where(x => fieldIds.Contains(x.ID)).AsNoTracking().ToList();
-
-                    //override field type values
-                    foreach (var ft in fieldTypes)
-                    {
-                        var def = definition.Fields.FirstOrDefault(x => x.FieldTypeID == ft.ID);
-                        ft.SortOrder = def.SortOrder;
-                        ft.FriendlyName = def.OverrideDisplayName;
                     }
-
-                    //override display order
-                    fieldTypes = fieldTypes.OrderBy(x => definition.Fields.OrderBy(f=> f.DisplayOrder).Select(f => f.FieldTypeID).ToList().IndexOf(x.ID)).ToList();
-
-
-
-                    getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-                    string orderByStatement = "order by a.id";
-
-                    if (fieldTypes.Count > 0)
-                    {
-                        orderByStatement = "order by " + string.Join(",", fieldTypes.OrderBy(x => x.SortOrder).ThenBy(x=> x.ID).Select(x => $"F{x.ID}.FormattedValue"));
-                    }
-
-                    whereStatements.Add(@"H1.id NOT IN (SELECT assetid 
-                                             FROM   dbo.Userassetpermissions(@resourceId, H1.assettypeid)
-                                             WHERE((permissionsbitmask & 1)) = 0)
-                               AND NOT EXISTS(SELECT 1
-                       FROM   dbo.Assettypesusercantread(@resourceId) u
-                       WHERE  u.assettypeid = H1.assettypeid)");
-
-                    dbArgs.Add("@resourceId", Company.CurrentResourceID);
-                    dbArgs.Add("@intersectTypeUid", definition.Relations[0].IntersectTypeUid);
-                    dbArgs.Add("@assetUid", asset.uid);
-
-
-
-
-                    var sql = $@"SELECT 
-                        lower(a.uid) as AssetUid,
-                        {string.Join(",", fieldColumns)}
-                        FROM   graph.assetnode H1 
-                               INNER JOIN graph.assetedge R1 
-                                       ON R1.$to_id = H1.$node_id 
-                                          AND R1.intersecttypeuid = @intersectTypeUid 
-                               INNER JOIN graph.assetnode A1 
-                                       ON A1.$node_id = R1.$from_id 
-                                          AND A1.uid = @assetUid 
-                        inner join asset a on a.uid = h1.uid
-                        {string.Join(" ", fieldJoins)}
-                        WHERE {string.Join(" and ", whereStatements)}
-                        {orderByStatement}
-                        for json path,INCLUDE_NULL_VALUES, Root('items')";
-
-                    var data = Company.Query<string>(sql, dbArgs).FirstOrDefault();
-                    result = JsonConvert.DeserializeObject<AssetComplexLookupValue>(data);
 
                 }
 
 
+
+
+                result.items = Values;
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
