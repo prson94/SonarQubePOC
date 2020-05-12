@@ -296,6 +296,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.ref.markForCheck();
                 }
             );
+            this.surveysService.getObjectSurvey(this.currentObject.Uid)
+                .subscribe(result => {
+                    this.survey = undefined;
+                    if (result) {
+                        this.survey = result;
+                        this.showSurvey = true;
+                        this.ref.markForCheck();
+                    }
+                });
         }
 
 
@@ -313,16 +322,6 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     this.actionsAssigned = true;
                 }
                 this.ref.markForCheck();
-            });
-
-        this.surveysService.getObjectSurvey(this.currentObject.Uid)
-            .subscribe(result => {
-                this.survey = undefined;
-                if (result) {
-                    this.survey = result;
-                    this.showSurvey = true;
-                    this.ref.markForCheck();
-                }
             });
 
     }

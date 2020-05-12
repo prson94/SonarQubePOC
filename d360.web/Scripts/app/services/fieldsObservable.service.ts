@@ -1,18 +1,15 @@
-import {Observable} from 'rxjs';
-import {catchError, distinctUntilChanged, map, switchMap} from 'rxjs/operators';
-import {Injectable} from '@angular/core';
-import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {SelectItem} from 'primeng/components/common/api';
-
-import {FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel} from '../models/fields.model';
-import {EditorDropDownItem} from '../models/editor-field.model'
-import {JsonResult} from '../models/jsonresult.model';
-
-import {MessagesObservableService} from './messages-observable.service';
-import {BaseObservableService} from "./baseObservable.service";
+import { Observable } from 'rxjs';
+import { catchError, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpHeaders } from "@angular/common/http";
+import { SelectItem } from 'primeng/components/common/api';
+import { FieldDefinition, Lookups, IFieldsService, FieldTypeEditorModel } from '../models/fields.model';
+import { EditorDropDownItem } from '../models/editor-field.model'
+import { JsonResult } from '../models/jsonresult.model';
+import { MessagesObservableService } from './messages-observable.service';
+import { BaseObservableService } from "./baseObservable.service";
 import { ApiResult, ErrorResponse } from '../models/apiresult.model';
 import { FieldTypeAPIModel, FieldTypeAPIModelField } from '../models/fieldtype-api.model';
-import { AssetTypeEditorUseAsTransformationComponent } from '../components/shared/assettypeeditor/asset-type-editor-use-as-transformation.component';
 
 @Injectable()
 export class FieldsObservableService extends BaseObservableService implements IFieldsService {
@@ -93,31 +90,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFusionLookupDisplayFields(id: number): Observable<SelectItem[]> {
-        return this
-            .http
-            .get<SelectItem[]>(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
-            .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    getFusionLookupTargetAttributeTypes(
-        sourceID: number,
-        referenceTypeID: number
-    ): Observable<SelectItem[]> {
-        return this
-            .http
-            .get<SelectItem[]>(`form/FieldType_FusionLookup_TargetAttributeTypes?s=${sourceID}&r=${referenceTypeID}`)
-            .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getRelationObjectFields(assetTypeUid: string, actionTypeUid: string, relationshipTypeUid: string, intersectTypeUid: string): Observable<SelectItem[]> {
         let url = "";
         if (assetTypeUid)
@@ -174,9 +146,7 @@ export class FieldsObservableService extends BaseObservableService implements IF
             url = `uid=${uid}&ActionTypeUid=${actionTypeUid}`;
         if (relationshipTypeUid)
             url = `uid=${uid}&RelationshipTypeUid=${relationshipTypeUid}`;
-        
-            //.get<any>(`form/FieldType_ListFilter?objectType=ReferenceItemType&objectId=100000017&type=ArtifactType&id=100000016`)
-        
+                
         return this
             .http
             .get<any>(`api/v2/fields/GetLookupListFilter?${url}`)
@@ -270,17 +240,6 @@ export class FieldsObservableService extends BaseObservableService implements IF
             );
     }
 
-    getFusionDisplayFields(id: number): Observable<SelectItem[]> {
-        return this
-            .http
-            .get<SelectItem[]>(`form/FieldType_FusionLookup_DisplayFields?id=${id}`)
-            .pipe(
-                map(response => <FtItem[]>response),
-                map(r => this.ftItemToSelectItem(r)),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getFusionReferenceTypes(): SelectItem[] {
         return [
             {label: 'Self Reference', value: '1'},
@@ -358,6 +317,17 @@ export class FieldsObservableService extends BaseObservableService implements IF
         return this
             .http
             .get(`api/v2/fields/GetStandardRelations?${url}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getTechnicalRelations(intersectTypeUid: string): Observable<any> {
+        let url = `intersectTypeUid=${intersectTypeUid}`;
+        return this
+            .http
+            .get(`api/v2/fields/technicalrelationships?${url}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

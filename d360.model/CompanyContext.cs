@@ -195,10 +195,6 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
-        public DbSet<RuleImplementation> RuleImplementations { get; set; }
-
-        public DbSet<RuleResult> RuleResults { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
@@ -877,15 +873,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         #endregion
 
-        class LookupFieldValueModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public int SortOrder { get; set; }
-            public int ObjectID { get; set; }
-            public string FormattedValue { get; set; }
-        }
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
@@ -1129,7 +1116,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
         {
-            //string type = "";
             var predicateType = PredicateType.InterTypeHierarchy;
 
 
@@ -1430,17 +1416,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return res;
         }
 
-        public class DetailDisplayableRelationship
-        {
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string TargetObject { get; set; }
-            public int TargetObjectID { get; set; }
-            public string TargetObjectName { get; set; }
-            public string TargetTypeName { get; set; }
-            public int Count { get; set; }
-            public string TargetUrl { get; set; }
-        }
 
         public List<IntersectTypeOption> GetIntersectTypeOptions(
             SystemObjects? subject = null, int? subjectID = null,

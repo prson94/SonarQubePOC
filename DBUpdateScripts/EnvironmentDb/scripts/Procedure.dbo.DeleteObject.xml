@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Bhoward" id="Procedure.dbo.DeleteObject-v4">
+  <changeSet author="TDuric" id="Procedure.dbo.DeleteObject-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -581,9 +581,7 @@ begin
    set @ClearNyms = 1      
    set @ClearResponsibilities = 1      
          
-      
-   delete RuleImplementation where RuleID = @ObjectID      
-      
+            
    delete [Rule] where ID = @ObjectID      
   end      
       
@@ -599,14 +597,7 @@ begin
    set @ClearNyms = 1      
    set @ClearResponsibilities = 1      
             
-      
-   delete S      
-   from RuleResult S      
-     inner join RuleImplementation I on I.ID = S.RuleImplementationID      
-     inner join [Rule] R on R.ID = I.RuleID and R.RuleTypeID = @ObjectID      
-      
-   delete [RuleImplementation] where RuleID in (select ID from [Rule] where RuleTypeID = @ObjectID)      
-      
+ 
    delete [Rule] where RuleTypeID = @ObjectID      
       
    delete RuleType where ID = @ObjectID      

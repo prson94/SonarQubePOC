@@ -42,13 +42,14 @@ export class RuleResultsGridComponent extends BaseComponent {
     searchValue: string = "";
     simpleSearchID: number = 0;
     searchDelayMilliSeconds: number = 300;
+    isLoading: boolean = false;
 
     constructor(private ruleService: RulesService) {
         super();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['ruleId'] && this.ruleId) {
+        if (changes['ruleId'] && this.ruleId) {            
             this.filters = [];
             this.getData();
         }
@@ -74,16 +75,20 @@ export class RuleResultsGridComponent extends BaseComponent {
                 }
             }
         }
-        
+
+        this.isLoading = true;
         this.ruleService.getResultsByRule(this.ruleUid, this.currentPageNumber, this.rowsPerPage, this.sortField, this.sortOrder)
             .subscribe(res => {
                 this.results = res;
                 if (this.results != null) {
                     this.totalRecords = this.results.total;
-                    this.items = this.results.items;
-                }
-
-            });
+                    this.items = this.results.items;  
+                    this.isLoading = false;
+                }                
+            },
+            err => {
+                this.isLoading = false;
+            });       
     }
 
     private loadRuleResultsLazy(event: LazyLoadEvent) {
@@ -91,12 +96,12 @@ export class RuleResultsGridComponent extends BaseComponent {
         //event.rows = Number of rows per page
         //event.sortField = Field name to sort with
         //event.sortOrder = Sort order as number, 1 for asc and -1 for dec
-        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value        
+        //filters: FilterMetadata object having field as key and filter value, filter matchMode as value            
         this.sortOrder = event.sortOrder;
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
-
+       
         this.getData();
     }
 
@@ -122,7 +127,7 @@ export class RuleResultsGridComponent extends BaseComponent {
     }
 
     private formatPath(s: string) {
-        return s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>');
+        return s ? s.replace(/ > /g, '<i class="fa fa-angle-right assetpathseparator"></i>') : s;
     }
 
     resetFilters() {

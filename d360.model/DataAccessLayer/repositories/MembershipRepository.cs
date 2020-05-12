@@ -327,6 +327,16 @@ namespace d360.model.DataAccessLayer
                             messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
                     }
+                    if (string.IsNullOrEmpty(user.FirstName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a First Name");
+                    }
+                    if (string.IsNullOrEmpty(user.LastName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a Last Name");
+                    }
                 }
                 else
                 {
@@ -350,12 +360,27 @@ namespace d360.model.DataAccessLayer
                             messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
                     }
+                    if(string.IsNullOrEmpty(user.FirstName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a First Name");
+                    }
+                    if (string.IsNullOrEmpty(user.LastName))
+                    {
+                        success = false;
+                        messages.Add("Must provide a Last Name");
+                    }
                 }
 
                 if (string.IsNullOrEmpty(user.Username) || !Regex.IsMatch(user.Username + "", @"^$|\b([A-Za-z0-9'_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})\b"))
                 {
                     success = false;
                     messages.Add("Username is not in a valid email format");
+                }
+                else if(users.Count(u=>u.Username.Trim().Equals(user.Username.Trim(), StringComparison.InvariantCultureIgnoreCase))>1)
+                {
+                    success = false;
+                    messages.Add("Username must be unique within the request");
                 }
 
 

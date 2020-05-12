@@ -46,10 +46,6 @@ namespace d360.core.entities
 
         [DataMember, ForeignKey("RuleTypeID")]
         public RuleType RuleType { get; set; }
-
-
-        [ForeignKey("RuleID")]
-        public virtual ICollection<RuleImplementation> RuleImplementations { get; set; }
                 
         public EventObjectInfo GetEventObjectInfo()
         {

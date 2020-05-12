@@ -44,7 +44,7 @@ namespace d360.core.validators
             if (string.IsNullOrEmpty(model.Name) || model.Name.Trim() == string.Empty)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidName} {AssetTypeErrors.CheckRequest}");
 
-            if (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)
+            if ((isInsert && (string.IsNullOrEmpty(model.DisplayFormat) || model.DisplayFormat.Trim() == string.Empty)) || (!isInsert && model.DisplayFormat != null && model.DisplayFormat.Trim() == string.Empty))
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidDisplayFormat} {AssetTypeErrors.CheckRequest}");
 
             #region Basic Model Validation
@@ -137,10 +137,7 @@ namespace d360.core.validators
                 if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.AssetsWithAssignedParents);
             }
-
-            if (!this.IsValidDisplayFormat(isInsert ? 0 : assetType.ID, model.DisplayFormat, model.Class))
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.BadDisplayFormat);
-
+            
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
 
@@ -156,41 +153,7 @@ namespace d360.core.validators
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }
-
-        private bool IsValidDisplayFormat(int assetTypeId, string displayFormat, AssetTypeClass assetClass)
-        {
-            // reference item types with {code} display format are valid
-            if ((assetClass == AssetTypeClass.Reference) && !string.IsNullOrEmpty(displayFormat) && string.Compare(displayFormat, "{CODE}", true) == 0)
-            {
-                return true;
-            }
-
-            var fieldsToIgnore = DataType.Text.GetNonDisplayFormatFields();
-
-            List<string> allowedFieldTokens;
-            if (assetTypeId == 0 || assetClass == AssetTypeClass.FusionAttribute)
-                allowedFieldTokens = new List<string> { "name" };
-            else
-                allowedFieldTokens = CompanyContext.Filter<FieldType>(x => x.AssetTypeID == assetTypeId && !fieldsToIgnore.Contains(x.Type)).Select(x => x.Name.ToLower()).ToList();
-
-            if (assetClass == AssetTypeClass.Reference)
-                allowedFieldTokens.Add("code");
-
-            var regex = new Regex(@"\{.*?\}");
-            var tokens = regex.Matches(displayFormat);
-            foreach (var token in tokens)
-            {
-                var tokenString = token.ToString().ToLower();
-                tokenString = tokenString.Substring(1, tokenString.Length - 2);
-                if (!allowedFieldTokens.Contains(tokenString))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        }        
 
         public bool IsValidOrderByFieldForGetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {

@@ -151,17 +151,17 @@ from	[Load] L
 			                    ) S
 		                    cross apply (
 			                    select sum(I) as C from (
-				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success = 0
+				                    select Error as I from api.Execution where ExecutionID = L.PostExecutionID
                                     union all
                                     select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
 			                    ) E
 		                    cross apply (
-				                    select count(*) as C from api.ExecutionRelationship where ExecutionID = L.PostExecutionID and Success is null
+				                select case when CompletedOn is null then (Total - Processed) else 0 end as C from api.Execution where ExecutionID = L.PostExecutionID
 			                    ) I
 		                    cross apply (
 			                    select sum(I) as C from (
-				                    select count(*) as I from api.ExecutionRelationship where ExecutionID = L.PostExecutionID
+				                    select Total as I from api.Execution where ExecutionID = L.PostExecutionID
                                     union all
                                     select count(*) as I from LoadItem where LoadID = L.ID and Status = 0
 				                    ) R
@@ -274,7 +274,8 @@ from	[Load] L
                     case "R":
                         sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
-                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID";
+                                      left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
+                                      left join api.Execution E on E.ExecutionID = @postExecutionID ";
                         columns.ForEach(c =>
                         {
                             var i = c.ColumnIndex;
@@ -283,7 +284,7 @@ from	[Load] L
                             sqlTables += $" left join api.ExecutionField EF{i} on EF{i}.ItemNumber = EA.ItemNumber and EF{i}.ExecutionID = EA.ExecutionID and EF{i}.FieldName = '{c.Name}'\n";
 
                         });
-                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else 'Queued' end as [Status]\n";
+                        sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
                         sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
 
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
@@ -676,6 +677,8 @@ from	[Load] L
                 var parentAssetType = GetParentType(assetType.ObjectID, SystemObjectHelper.GetSystemObjects(assetType.Class));
                 int? intersectTypeId = null;
                 PredicateType? predicateType = null;
+                bool calculateParentHashByUid = false;
+
                 switch (assetType.Class)
                 {
                     case AssetTypeClass.BusinessAsset:
@@ -683,10 +686,12 @@ from	[Load] L
                     case AssetTypeClass.FusionAttribute:
                     case AssetTypeClass.ReferenceItemType:
                         predicateType = PredicateType.InterTypeHierarchy;
+                        calculateParentHashByUid = true;
                         break;
                     case AssetTypeClass.Policy:
                     case AssetTypeClass.Model:
                         predicateType = PredicateType.IntraTypeHierarchy;
+                        calculateParentHashByUid = false;
                         break;
                 }
 
@@ -712,10 +717,10 @@ from	[Load] L
 
                         drop table if exists #BulkExecutionField;
                         create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
-                        ", transaction: trans);
+                        ", transaction: trans, commandTimeout: timeout);
 
                         //load temp tables and calculate key hashes
-                        await Connection.ExecuteAsync(@"
+                        await Connection.ExecuteAsync($@"
                         insert into #BulkExecutionAsset
                         select	@executionID as ExecutionID,
 		                        RowIndex as ItemNumber,
@@ -744,8 +749,36 @@ from	[Load] L
 		                        inner join #BulkExecutionAsset BA on BA.ItemNumber = I.RowIndex
                                 left join FieldType FT on FT.[Name] = LC.[Name] and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
                         where   L.ID = @ID;
+
+                        --handle ref lists
+                        if @class = 9
+                        begin
+                            delete from #BulkExecutionField where (FieldTypeID is null and FieldName <> 'Code');
+                        end
+
+                        --handle model levels
+                        if @class = 2
+                        begin
+                            declare @maxLevel int = 1;
+
+                            select @maxLevel = coalesce(max(L.[Level]), 1) from LoadColumn LC
+                            inner join LoadItemColumn LIC on LIC.LoadID = @ID and LIC.ColumnIndex = LC.ColumnIndex and LIC.[Value] is not null
+                            inner join AssetTypeLevel L on L.AssetTypeID = @atID and L.Name = substring(LC.[Name], 1, len(LC.[Name]) - charindex(' ', reverse(LC.[Name])))
+                            where LC.Loadid = @ID;
+
+                            update  F
+                            set     F.FieldName = FT.Name,
+                                    F.FieldTypeID = FT.ID
+                            from    #BulkExecutionField F
+                                    inner join AssetType T on T.ID = @atID
+                                    inner join AssetTypeLevel L on L.AssetTypeID = T.ID and L.[Level] = @maxLevel
+                                    inner join FieldType FT on FT.Name = replace(F.FieldName,L.[Name] + ' ', '')  and FT.[Object] = T.[Object] and FT.ObjectID = T.ObjectID
+                            where   F.FieldName = (coalesce(L.Name,'') + ' ' + coalesce(FT.Name,'')) and F.FieldTypeID is null;
+
+                            delete from #BulkExecutionField where FieldTypeID is null;
+                        end
                         "
-                            , new { executionID, load.ID }, transaction: trans);
+                            , new { executionID, load.ID, atID = assetType.ID, @class = assetType.Class }, transaction: trans, commandTimeout: timeout);
 
                         if (hasLookups)
                         {
@@ -756,10 +789,10 @@ from	[Load] L
                             from    LoadItemColumn I
                                     inner join #BulkExecutionField B on B.ItemNumber = I.RowIndex and B.ColumnIndex = I.ColumnIndex
                             where   B.LookupValue is not null and I.LoadID = @ID
-                            ", new { load.ID }, transaction: trans);
+                            ", new { load.ID }, transaction: trans, commandTimeout: timeout);
                         }
 
-                        if (intersectTypeId.HasValue)
+                        if (intersectTypeId.HasValue && calculateParentHashByUid)
                         {
                             //need to parse parent column here to be used in proposed key
                             await Connection.ExecuteAsync(@"
@@ -773,7 +806,7 @@ from	[Load] L
                                 inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
                                 inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
                                 where A.ExecutionID = @executionID
-                            ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans);
+                            ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans, commandTimeout: timeout);
                         }
 
                         CalculateProposedKeyHashes(assetType, executionID, timeout, intersectTypeId, trans, "#BulkExecutionAsset", "#BulkExecutionField");
@@ -799,12 +832,12 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
                         }
                         else
                         {
 
-                            if (intersectTypeId.HasValue)
+                            if (intersectTypeId.HasValue && calculateParentHashByUid)
                             {
                                 await Connection.ExecuteAsync(@"
                                 update T
@@ -828,7 +861,7 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID, intersectTypeId }, transaction: trans, commandTimeout: timeout);
 
                             }
                             else
@@ -853,17 +886,17 @@ from	[Load] L
                                 from LoadItem L
                                 inner join #BulkExecutionAsset T on T.ItemNumber = L.RowIndex
                                 where L.LoadID = @ID
-                            ", new { atID = assetType.ID, load.ID }, transaction: trans);
+                            ", new { atID = assetType.ID, load.ID }, transaction: trans, commandTimeout: timeout);
                             }
 
                         }
 
                         trans.Commit();
                     }
-                    catch
+                    catch (Exception ex)
                     {
                         trans.Rollback();
-                        throw;
+                        throw ex;
                     }
                 }
 
@@ -1054,7 +1087,7 @@ from    LoadItem T
 				        ) A
 	        group by	A.RowIndex
         ) K on K.RowIndex = T.RowIndex
-where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID })).FirstOrDefault();
+where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIndex = item.RowIndex, currLevel = level, @object = new DbString { IsAnsi = true, IsFixedLength = true, Length = 50, Value = assetType.Object }, objectID = assetType.ObjectID }, timeout: timeout)).FirstOrDefault();
         }
 
         #endregion
@@ -1111,7 +1144,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                 }
 
                 var fieldColumns = columns.ToList();
-                var loaddata = LoadItemColumns.Where(x => x.LoadID == load.ID);
 
                 var subjectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Subject, subjectAssetType.Name, intersectType.SubjectID, fieldColumns);
                 var objectAssetIDFieldIndex = getAssetIDFieldIndex(intersectType.Object, objectAssetType.Name, intersectType.ObjectID, fieldColumns);
@@ -1174,7 +1206,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                         StatusMessage = @msg 
                                 where   LoadID = @id 
                                         and RowIndex = @rowIndex", 
-                                        new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex});
+                                        new { load.ID, msg = item.StatusMessage, rowIndex = item.RowIndex }, commandTimeout: timeout);
                         }
                         else
                         {
@@ -1185,12 +1217,6 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
 
                     if (upserts.Any())
                     {
-                        var fields = new BulkLoadExecutionFields_Relationships
-                        {
-                            IntersectTypeUid = intersectType.uid,
-                            LoadID = load.ID
-                        };
-
                         var execution = getRelateApiExecution(load, upserts.Count);
                         ApiExecutionInfo executionInfo = await relationshipRepository.BulkPostRelationships(intersectType.uid, upserts, execution, false);
                         load.PostExecutionID = executionInfo.ExecutionID;
@@ -1224,7 +1250,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         where   L.LoadID = @id 
                                 and (L.IntersectUid = 0x0 or L.IntersectUid is null);
 
-                        ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid});
+                        ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid}, commandTimeout: timeout);
 
                     var results = (await QueryAsync<RelationshipDelete>(@"
                         select      L.ExecutionItemUid, 
@@ -1232,7 +1258,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                     L.IntersectUid as [Uid]
                         from    LoadItem L 
                         where   L.LoadID = @id and L.IntersectUid is not null and L.IntersectUid != 0x0
-                        ", new { id = load.ID, intersectTypeUid = intersectType.uid })).ToList();
+                        ", new { id = load.ID, intersectTypeUid = intersectType.uid }, timeout: timeout)).ToList();
 
                     deletes.AddRange(results);
 

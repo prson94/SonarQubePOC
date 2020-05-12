@@ -264,9 +264,20 @@ namespace d360.model.helpers
                     break;
                 case "boolean":
                     bool boolean = false;
-                    if (value.ToString() == "0") value = "false";
-                    if (value.ToString() == "1") value = "true";
-                    if (!bool.TryParse(value.ToString().ToLower(), out boolean))
+                    var stringValue = value.ToString().ToLower().Trim();
+                    if (stringValue == "0") stringValue = "false";
+                    if (stringValue == "1") stringValue = "true";
+
+                    if ("true".Contains(stringValue))
+                    {
+                        stringValue = "true";
+                    }
+                    if ("false".Contains(stringValue))
+                    {
+                        stringValue = "false";
+                    }
+
+                    if (!bool.TryParse(stringValue, out boolean))
                     {
                         throw new FormatException($"Invalid boolean value for field '{field}'");
                     }
@@ -312,35 +323,43 @@ namespace d360.model.helpers
         {
             if (fieldType.Type == "Lookup")
             {
-                int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
-                if (lookupValue <= 0)
-                    throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
-
-                value = lookupValue.ToString();
-
-                string condition = "in";
-                if (@operator == "ne")
+                if (@operator == "ct")
                 {
-                    condition = "not in";
-                }
-                var basicSqlExpression = string.Empty;
-
-                if (!string.IsNullOrEmpty(fieldType.DefaultValue))
-                {
-                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
-                    sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                    stringBuilder.Append($"F{fieldType.ID}.FormattedValue like @filter_{parameterIdx}");
                 }
                 else
                 {
-                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
-                }
 
-                if (fieldType.AllowAllValue)
-                {
-                    basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
-                }
+                    int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
+                    if (lookupValue <= 0)
+                        throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 
-                stringBuilder.Append(basicSqlExpression);
+                    value = lookupValue.ToString();
+
+                    string condition = "in";
+                    if (@operator == "ne")
+                    {
+                        condition = "not in";
+                    }
+                    var basicSqlExpression = string.Empty;
+
+                    if (!string.IsNullOrEmpty(fieldType.DefaultValue))
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                    }
+                    else
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
+                    }
+
+                    if (fieldType.AllowAllValue)
+                    {
+                        basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                    }
+                    stringBuilder.Append(basicSqlExpression);
+
+                }
             }
 
             if (fieldType.Type == "Relationship")

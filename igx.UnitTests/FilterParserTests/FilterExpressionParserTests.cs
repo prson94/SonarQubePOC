@@ -90,7 +90,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
-        [InlineData("lookup ct 'validlookupvalue'")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -154,6 +153,8 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("boolean ne False")]
         [InlineData("boolean ne 0")]
         [InlineData("boolean ne 1")]
+        [InlineData("boolean eq tr")]
+        [InlineData("boolean eq fal")]
         public void ValidBooleanTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();

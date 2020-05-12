@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="PuneetGupta" id="Function.utility.ObjectDetail-v3">
+  <changeSet author="TDuric" id="Function.utility.ObjectDetail-v4">
     <comment>GOV-10380</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -141,16 +141,6 @@ BEGIN
 	begin
 		insert into @tbl (ID, Name, Url, TypeID, [Type], TypeName, [Class])
 		values			(@id, 'Resource Type', '#/resources/administration', @id, @type, 'Resource Type',11)
-	end
-
-	if @type = 'RuleImplementation'
-	begin
-		insert into @tbl (	ID,		Name,	TextPath,	[Description],	ParentID,	ParentType, Url,	TypeID,				[Type],			TypeName, Status, [Class])
-			SELECT			O.ID,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)) ,	coalesce(O.Name,'Implementation ' + cast(o.id as nvarchar)),	null,	T.ID,		'Rule',		null,	T.RuleTypeID,	'RuleType',	D.DisplayValue, 'Active', 7
-			FROM	[RuleImplementation] O
-					inner join [Rule] T on T.ID = O.RuleID
-					inner join AssetDetail D on D.Object = 'Rule' and D.ObjectID = T.ID
-			WHERE	O.ID = @id
 	end
 
 	if @type = 'ShoppingCart'

@@ -1481,8 +1481,21 @@ from	IntersectType I
     update	api.ExecutionDeletedAsset
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-    where	ExecutionID = @ExecutionID and AssetID is null;",
-                        new { execution.ExecutionID }, commandTimeout: timeout);
+    where	ExecutionID = @ExecutionID and AssetID is null;
+
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
+    from    api.ExecutionDeletedAsset T
+            inner join graph.AssetNode AN on AN.ID = T.AssetID
+			inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+            cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
+            new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
 
@@ -1773,15 +1786,6 @@ from	IntersectType I
                     AssetID	bigint,
                     FromHierarchy	bit
                 );
-
-            insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root])
-                select distinct 
-                        S.ExecutionID, 
-                        S.ItemNumber, 
-                        S.[Uid]
-	            from	RuleImplementation T
-			            inner join api.ExecutionDeletedAsset S on S.Object = 'Rule' and S.ObjectID = T.RuleID 
-                where   {querySuffix} ;
             
 			update  S 
             set     S.Success = 0 ,
@@ -1949,15 +1953,6 @@ from	IntersectType I
 
                                             if (!string.IsNullOrEmpty(legacyTable))
                                             {
-                                                if (legacyTable == "[Rule]") //You need to also remove rule implementations, results, and other legacy dependent tables.
-                                                {
-                                                    Connection.Execute($@"
-delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
-delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
-                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
-                                                    );
-                                                }
-
                                                 Connection.Execute(
                                                     $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -2282,7 +2277,19 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     where	T.ExecutionID = @ExecutionID
             and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
-            and A.ChildCount > 0;",
+            and A.ChildCount > 0;
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
+    from    api.ExecutionDeletedAssetType T
+            inner join graph.AssetNode AN on AN.AssetTypeID = T.AssetTypeID
+            inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+			cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion

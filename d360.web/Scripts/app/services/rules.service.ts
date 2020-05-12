@@ -102,16 +102,6 @@ export class RulesService extends BaseObservableService {
 
     }
 
-    getResultsByRuleExcel(id: number) {
-        this.http.get(`internal/monitor/ExportResultsByRule?id=${id}`, { responseType: "blob" }).pipe(
-            map((response) => {
-                this.downloadFile(response);
-
-            }),
-            catchError(err => this.handleError(err))
-        ).subscribe();
-    }
-
     downloadFile(data: any, name: string = 'Rule Results') {
 
         var filename = `${name} ${new Date().toDateString()}.xlsx`;

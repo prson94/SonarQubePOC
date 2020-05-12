@@ -139,7 +139,7 @@
     <value>You have not provided a proper predicate based on its asset type class.</value>
   </data>
   <data name="InvalidDisplayFormat" xml:space="preserve">
-    <value>No valid DisplayFormat provided.</value>
+    <value>DisplayFormat provided is invalid.</value>
   </data>
   <data name="InvalidModelDepth" xml:space="preserve">
     <value>Invalid maximum depth. Model level specified must be a value between 1 and 10.</value>

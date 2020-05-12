@@ -52,7 +52,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that no such rule or implementation was found."),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),            
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.")
         ]
         public IQueryable<dynamic> GetRuleResults(Guid ruleUid)
         {
@@ -111,7 +111,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Indicates the request was invalid."),
             SwaggerResponse(HttpStatusCode.NotFound, "Indicates that no such rule Uid could be found."),
             SwaggerResponse(HttpStatusCode.Forbidden, "An error to indicate that you do not have access to this endpoint."),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured.")
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.")
         ]
         public async Task<DataQualityResultModel> Post(Guid ruleUid, DataQualityResultModel ruleResults)
         {

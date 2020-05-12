@@ -34,8 +34,7 @@ export class AdminAttributeTypeEditor {
     ngOnInit() {
         if (this.attribute != undefined) {
             this.editedAttribute = _.cloneDeep(this.attribute);
-            if (this.editedAttribute.DisplayFormat == null) this.editedAttribute.DisplayFormat = "";
-            this.loadAttributeFields();
+            if (this.editedAttribute.DisplayFormat == null) this.editedAttribute.DisplayFormat = "";            
         } else {
             this.editedAttribute = new AttributeType();
             this.editedAttribute.ParentID = this.parentID;
@@ -55,17 +54,7 @@ export class AdminAttributeTypeEditor {
     onSubmit() {
         this.saveClick.emit({attribute: this.editedAttribute, action: this.attribute ? "new" : "edit"});
     }
-
-    private loadAttributeFields() {
-        this.fieldsService.getFields(this.editedAttribute.ID, 'AttributeType').subscribe(
-            result => {
-                this.fieldTypes = [];
-                for (let field of result) {
-                    this.fieldTypes.push({title: field.FriendlyName, value: '{' + field.Name + '}'});
-                }
-            }
-        );
-    }
+        
 
     private loadCategoryTypes(parentID?: number) {
         this.isLoading = true;

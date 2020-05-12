@@ -81,7 +81,7 @@ namespace igx.jobs.databasetaskprocessor
                 var companies = CoreFunction.GetCompaniesByCurrentSlot();
 
 #if DEBUG
-                companies = companies.Where(i => i.CompanyID == 9).ToList();
+                companies = companies.Where(i => i.CompanyID == 3).ToList();
 #endif
 
                 companies.Shuffle(); //Randomize
@@ -364,8 +364,8 @@ from    [queue].[Task] T
                                                         break;
                                                 #endregion
                                                 case "Delete":
-                                                    #region
-                                                    if (q.Object == SystemObjects.Tag.ToString())
+                                                    #region                                     
+                                                    if(IsValidTypeForAuditAction(q.Action,q.Object))                                                    
                                                         {
                                                             addAuditEntry(companyConnection, q.Object, q.ObjectID, "Removed", q.Custom, q.AssetID);
                                                         }
@@ -573,6 +573,18 @@ from    [queue].[Task] T
             {
                 CoreFunction.AITrackException(functionName, ex);
             }
+        }
+
+        private static bool IsValidTypeForAuditAction(string action, string obj)
+        {            
+            if ((action ?? "").ToUpper() == "DELETE") {
+                if (obj == SystemObjects.Tag.ToString())
+                    return true;
+                else if ((obj ?? "").ToUpper() == "RESPONSIBILITYTYPERELATIONOVERRIDEITEM")
+                    return true;
+                return false;
+             }
+            return true;
         }
 
         private static bool ShouldItemBeIndexedForElasticSearch(string obj)

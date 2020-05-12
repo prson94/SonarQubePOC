@@ -216,6 +216,9 @@ namespace d360.web.Controllers
                     if (!Company.HasAssetPermission(r.AssetID, Permission.ModifyResponsibilities))
                         return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
 
+                    r.UpdatedBy = Company.CurrentResourceID;
+                    r.UpdatedOn = DateTime.UtcNow;
+
                     Company.Add(r);
                 }
                 catch (BaseException ex)

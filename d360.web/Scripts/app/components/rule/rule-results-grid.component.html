@@ -3,155 +3,154 @@
     <ng-template #noTitle>&nbsp;</ng-template>
     <d3s-tile-actions [hasAdd]="false" [hasExport]="true" (exportClick)="doExport()" [hasRefresh]="true" (refreshClick)="getData();"></d3s-tile-actions>
 </header>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<span *ngIf="!isLoading">
-    <div *ngIf="showSimpleFilter">
-        <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />
-    </div>
-    <d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
-    <p-table #dt
-             [value]="items"
-             selectionMode="single"
-             [metaKeySelection]="true"
-             [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']"
-             [pageLinks]="3"
-             [paginator]="true"
-             [rows]="rowsPerPage"
-             [rowsPerPageOptions]="defaultPagingOptions"
-             [lazy]="true"
-             (onLazyLoad)="loadRuleResultsLazy($event)"
-             [totalRecords]="totalRecords"
-             [scrollable]="true"
-             scrollWidth="100%">
-        <ng-template pTemplate="colgroup">
-            <colgroup>
-                <col style="width: 100px">
-                <col style="width: 150px">
-                <col style="width: 150px">
-                <col style="width: 120px">
-                <col style="width: 120px">
-                <col style="width: 100px">
-                <col style="width: 100px">
-                <col style="width: 100px">
-                <col style="width: 100px">
-                <col style="width: 50px">
-                <col style="width: 20px">
-                <col style="width: 20px">
-            </colgroup>
-        </ng-template>
-        <ng-template pTemplate="header">
-            <tr>
-                <th [pSortableColumn]="'EvaluatedAssetClass'">
-                    Asset Class
-                    <d3s-sortIcon [field]="'EvaluatedAssetClass'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'EvaluatedAssetTypePath'">
-                    Asset Type
-                    <d3s-sortIcon [field]="'EvaluatedAssetTypePath'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'EvaluatedAssetPath'">
-                    Asset
-                    <d3s-sortIcon [field]="'EvaluatedAssetPath'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'RunDate'">
-                    Run Date
-                    <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'EffectiveDate'">
-                    Effective Date
-                    <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'PassFraction'">
-                    Pass Fraction
-                    <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'TotalCount'" style="text-align:center;">
-                    Total Rows
-                    <d3s-sortIcon [field]="'TotalCount'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'PassCount'" style="text-align:center;">
-                    Rows Passed
-                    <d3s-sortIcon [field]="'PassCount'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'FailCount'" style="text-align:center;">
-                    Rows Failed
-                    <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="'Passed'" style="text-align:center;">
-                    Passed
-                    <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
-                </th>
-                <th [pSortableColumn]="''"></th>
-                <th [pSortableColumn]="''"></th>
-            </tr>
-            <tr [hidden]="showSimpleFilter">
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-item>
-            <tr [pSelectableRow]="item">
-                <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
-                </td>
-                <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span> 
-                </td>
-                <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
-                        <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">
-                            <span [innerHTML]="item.EvaluatedAssetPathElements|assetpathSeparator"></span></d3s-preview-tooltip>
-                    </span>
-                </td>
-                <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
-                </td>
-                <td>
-                    <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate'}}</span>
-                </td>
-                <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
-                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount}}</span></td>
-                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount}}</span></td>
-                <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount}}</span></td>
-                <td style="text-align:center;">
-                    <span *ngIf="item.Passed!=undefined && item.Passed!=null">
-                        <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
-                        <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
-                    </span>
-                </td>
-                <td style="text-align:center;">
-                    <div class="RowTools">
-                        <a style="cursor:pointer;" (click)="selected=item;">
-                            <i [copy-clipboard]="item.ResultUid"
-                               [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
-                               tooltipPosition="top" class="fa fa-info"></i>
-                        </a>
-                    </div>
-                </td>
-                <td style="text-align:center;">
-                    <div class="RowTools">
-                        <div class="duplicate-message" *ngIf="item.IsDuplicate">
-                            <i class="fa fa-exclamation-triangle"></i>
-                            <div class="message">
-                                <strong>Outdated Rule Result</strong> - This rule result will not be used in the calculation of the data quality score because another rule result for the same effective date has been posted.
-                            </div>
+<div *ngIf="showSimpleFilter">
+    <input type="text" style="width: 100%;" maxlength="200" (keyup)="checkSimpleSearchEnter($event,dt);" [(ngModel)]="simpleTextFilter" placeholder="Search..." autofocus autocomplete="off" />
+</div>
+<d3s-rule-column-filter [hidden]="showSimpleFilter" [(relationshipFilter)]="relationships" [(filters)]="filters" [fields]="filtercolumns" (filterChanged)="filterGridData($event)"></d3s-rule-column-filter>
+<p-table #dt
+            [value]="items"
+            selectionMode="single"
+            [metaKeySelection]="true"
+            [globalFilterFields]="['RunDate','EffectiveDate','PassFraction','RowsPassed','RowsFailed','Passed','FusionAttribute']"
+            [pageLinks]="3"
+            [paginator]="true"
+            [rows]="rowsPerPage"
+            [rowsPerPageOptions]="defaultPagingOptions"
+            [lazy]="true"
+            (onLazyLoad)="loadRuleResultsLazy($event)"
+            [totalRecords]="totalRecords"
+            [scrollable]="true"
+            [loading]="isLoading"
+            [loadingIcon]="'fa fa-spinner fa-spin'"
+            scrollWidth="100%">
+    <ng-template pTemplate="colgroup">
+        <colgroup>
+            <col style="width: 100px">
+            <col style="width: 150px">
+            <col style="width: 150px">
+            <col style="width: 120px">
+            <col style="width: 120px">
+            <col style="width: 100px">
+            <col style="width: 100px">
+            <col style="width: 100px">
+            <col style="width: 100px">
+            <col style="width: 50px">
+            <col style="width: 20px">
+            <col style="width: 20px">
+        </colgroup>
+    </ng-template>
+    <ng-template pTemplate="header">
+        <tr>
+            <th [pSortableColumn]="'EvaluatedAssetClass'">
+                Asset Class
+                <d3s-sortIcon [field]="'EvaluatedAssetClass'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'EvaluatedAssetTypePath'">
+                Asset Type
+                <d3s-sortIcon [field]="'EvaluatedAssetTypePath'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'EvaluatedAssetPath'">
+                Asset
+                <d3s-sortIcon [field]="'EvaluatedAssetPath'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'RunDate'">
+                Run Date
+                <d3s-sortIcon [field]="'RunDate'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'EffectiveDate'">
+                Effective Date
+                <d3s-sortIcon [field]="'EffectiveDate'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'PassFraction'">
+                Pass Fraction
+                <d3s-sortIcon [field]="'PassFraction'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'TotalCount'" style="text-align:center;">
+                Total Rows
+                <d3s-sortIcon [field]="'TotalCount'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'PassCount'" style="text-align:center;">
+                Rows Passed
+                <d3s-sortIcon [field]="'PassCount'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'FailCount'" style="text-align:center;">
+                Rows Failed
+                <d3s-sortIcon [field]="'FailCount'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="'Passed'" style="text-align:center;">
+                Passed
+                <d3s-sortIcon [field]="'Passed'"></d3s-sortIcon>
+            </th>
+            <th [pSortableColumn]="''"></th>
+            <th [pSortableColumn]="''"></th>
+        </tr>
+        <tr [hidden]="showSimpleFilter">
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+        <tr [pSelectableRow]="item">
+            <td>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EvaluatedAssetClass}}</span>
+            </td>
+            <td>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}" [innerHTML]="formatPath(item.EvaluatedAssetTypePath)"></span> 
+            </td>
+            <td>
+                <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
+                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">
+                        <span [innerHTML]="item.EvaluatedAssetPathElements|assetpathSeparator"></span></d3s-preview-tooltip>
+                </span>
+            </td>
+            <td>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
+            </td>
+            <td>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate'}}</span>
+            </td>
+            <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassCount}}</span></td>
+            <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.FailCount}}</span></td>
+            <td style="text-align:center;">
+                <span *ngIf="item.Passed!=undefined && item.Passed!=null">
+                    <i *ngIf="item.Passed" class="fa fa-check enabled" title="Passed"></i>
+                    <i *ngIf="!item.Passed" class="fa fa-times disabled" title="Failed"></i>
+                </span>
+            </td>
+            <td style="text-align:center;">
+                <div class="RowTools">
+                    <a style="cursor:pointer;" (click)="selected=item;">
+                        <i [copy-clipboard]="item.ResultUid"
+                            [pTooltip]="'Rule Result UID: \n' + item.ResultUid + '\n\n (click to copy)\n'"
+                            tooltipPosition="top" class="fa fa-info"></i>
+                    </a>
+                </div>
+            </td>
+            <td style="text-align:center;">
+                <div class="RowTools">
+                    <div class="duplicate-message" *ngIf="item.IsDuplicate">
+                        <i class="fa fa-exclamation-triangle"></i>
+                        <div class="message">
+                            <strong>Outdated Rule Result</strong> - This rule result will not be used in the calculation of the data quality score because another rule result for the same effective date has been posted.
                         </div>
                     </div>
-                </td>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="summary">
-            <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
-        </ng-template>
-    </p-table>
-</span>   
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+    <ng-template pTemplate="summary">
+        <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows" [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+    </ng-template>
+</p-table>   

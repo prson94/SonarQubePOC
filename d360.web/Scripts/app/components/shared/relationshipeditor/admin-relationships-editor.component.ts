@@ -16,7 +16,7 @@ import { ViewEncapsulation } from '@angular/core';
                         <div class="row">
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Subject</div>
-                                <p-dropdown filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" appendTo="body" name="subject" #subject="ngModel" [options]="subjectOptions" [(ngModel)]="editedRelationship.Subject" [disabled]="editedRelationship.LimitedChangesOnly" required (ngModelChange)="editedRelationship.Subject=$event;subjectChanged($event);" [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Predicate</div>
@@ -32,7 +32,7 @@ import { ViewEncapsulation } from '@angular/core';
                         <div class="row">
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Subject Cardinality</div>
-                                <p-dropdown filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                             <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br/>to</div>
                             <div class="col l4 m4 s12">

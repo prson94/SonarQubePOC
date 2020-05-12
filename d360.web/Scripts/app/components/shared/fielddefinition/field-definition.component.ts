@@ -121,7 +121,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     foundKeyField = true;
                 }
             });
-            this.sortFields();
             this.hasKeyFields = foundKeyField;
         }
         else {
@@ -133,11 +132,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         return Object.keys(item.Type).filter((key) => { return item.Type[key] !== null })[0];
     }
 
-    sortFields() {
-        this.fieldDisplayModel.sort((x, y) => {
-            return x.ColumnOrder - y.ColumnOrder;
-        });
-    }
     CheckObjectType() {
         if (this.objectType) {
            return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
@@ -204,6 +198,15 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
 
                     this.isDeleting = false;
+
+                    if (this.fieldDefinitions != null && this.fieldDefinitions.length > 0) {
+                        let ix = this.fieldDefinitions.findIndex(f => f.Name == this.selectedRow.Name);
+                        if (ix > -1) {
+                            this.fieldDefinitions.splice(ix, 1);
+                            this.fieldDefinitions = this.fieldDefinitions.slice();
+                        }
+                    }
+
                     this.checkKeyFields();
                     if (index >= 0 && index < this.fieldDisplayModel.length) {
                         this.fieldDisplayModel.splice(index, 1);
@@ -242,7 +245,6 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     cancel() {
         this.isEditing = false;
-        this.fieldDefinitions = [];
         this.onCancel.emit();
     }
 }

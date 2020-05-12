@@ -1,12 +1,9 @@
-
 import { catchError, map } from 'rxjs/operators';
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HelpResource, Resource, CountObject, ResponsibilityDetailForResource, FollowingDetailForResource, ResourceAPICredentials, MulitSelectResourceData } from '../models/resource.model';
 import { JsonResult } from '../models/jsonresult.model';
-import { SortOrder } from '../models/enums.model';
-import { GridFilterExpression } from '../models/grid-definition.model';
-import { Observable } from "rxjs";
+import { Observable, throwError } from "rxjs";
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
@@ -56,7 +53,12 @@ export class ResourcesService extends BaseObservableService {
             map(response => {
                 return response;
             }),
-            catchError(err => this.handleError(err)));
+            catchError(err => {
+                if (err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') != -1) {
+                    return throwError(err);
+                }
+                return this.handleError(err);
+            }));
     }
 
     exportResources(params: any) {

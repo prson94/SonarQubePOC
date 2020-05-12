@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities
 {
@@ -19,6 +20,23 @@ namespace d360.core.entities
 
         [DataMember]
         public string Context { get; set; }
+
+        public int? UpdatedBy { get; set; }
+
+        [DataMember]
+        public DateTime? UpdatedOn
+        {
+            get
+            {
+                return this.updatedon.HasValue
+                   ? this.updatedon.Value
+                   : DateTime.UtcNow;
+            }
+
+            set { this.updatedon = value; }
+        }
+
+        private DateTime? updatedon = null;
 
         [IgnoreDataMember]
         public virtual ResponsibilityType ResponsibilityType { get; set; }

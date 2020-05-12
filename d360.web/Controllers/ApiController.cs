@@ -1502,14 +1502,6 @@ order by 'Name'";
 
         }
 
-
-
-
-
-
-
-
-
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
         {
@@ -2935,73 +2927,6 @@ from    (
             return wherecondition.Remove(0, 2);
         }
 
-        [HttpGet, Route("resources/{typeID:int}/excel/excel.xls")]
-        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID, string filter)
-        {
-            string headerString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, typeID).Content.ReadAsStringAsync();
-            dynamic header = JsonConvert.DeserializeObject<dynamic>(headerString);
-
-            string resultString = await this.GetResourcesByType(typeID, filter).Content.ReadAsStringAsync();
-            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
-
-            var document = new SLDocument();
-            document.AddWorksheet("Users");
-
-            int colIndex = 1;
-            int rowIndex = 1;
-            for (int i = 0; i < header.Columns.Count; i++)
-            {
-                document.SetCellValue(rowIndex, colIndex, header.Columns[i].text.Value);
-                colIndex++;
-            }
-
-            for (int k = 0; k < result.Count; k++)
-            {
-                rowIndex++;
-                colIndex = 1;
-                for (int l = 0; l < header.Columns.Count; l++)
-                {
-                    var colField = header.Columns[l].datafield.Value;
-
-                    var value = result[k][colField].Value;
-
-                    var dataType = "string";
-
-                    for (int m = 0; m < header.Fields.Count; m++)
-                    {
-                        var field = header.Fields[m];
-                        if (field["name"].Value == colField)
-                        {
-                            dataType = field["type"].Value;
-                            break;
-                        }
-
-                    }
-
-                    SetCellValue(document, rowIndex, colIndex, dataType, value);
-                    colIndex++;
-                }
-
-            }
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage response = null;
-            // serve the file to the client      
-            response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(stream);
-            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            response.Content.Headers.ContentLength = stream.Length;
-            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Users {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            return response;
-
-        }
-
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
@@ -3027,35 +2952,6 @@ from    (
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
             return model;
-        }
-
-        [HttpGet, Route("resources/find")]
-        public IQueryable<PersonSearchResultModel> GetResourceSearchResults(string search)
-        {
-            if (!string.IsNullOrEmpty(search))
-            {
-                search = search.Trim().ToLower();
-                return GetCompanyResources()
-                        .Where(i => i.Email.Trim().ToLower().StartsWith(search) || i.FirstName.Trim().ToLower().StartsWith(search) || i.LastName.Trim().ToLower().StartsWith(search))
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .Select(i => new PersonSearchResultModel
-                        {
-                            ID = i.ID,
-                            FirstName = i.FirstName,
-                            LastName = i.LastName
-                        });
-            }
-            else
-            {
-                return GetCompanyResources()
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .Select(i => new PersonSearchResultModel
-                        {
-                            ID = i.ID,
-                            FirstName = i.FirstName,
-                            LastName = i.LastName
-                        });
-            }
         }
 
         #endregion
@@ -4781,9 +4677,6 @@ where v.id = {0}", id)).FirstOrDefault();
             return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem, new { days = (daysToLookBack * -1) }).FirstOrDefault();
         }
 
-
-
-
         [Route("{type}/{id:int}/fields")]
         public List<EditableFieldItem> GetFieldTypesByObject(SystemObjects type, int id)
         {
@@ -5845,7 +5738,7 @@ SELECT (
 
         #endregion
 
-        #region Reference - new replaces domain
+        #region Reference
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
@@ -5859,128 +5752,6 @@ where	Type = 'ReferenceItemType'
 		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
-        }
-
-        [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
-        public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
-        {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
-
-        [HttpGet, Route("referenceItems/field/{fieldId:int}/items.json")]
-        public Task<HttpResponseMessage> GetReferenceItemsByFieldId(int fieldId)
-        {
-            var field = Company.GetById<FieldType>(fieldId);
-            return GetReferenceItems((int)field.LookupObjectID);
-
-        }
-
-        [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
-        public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
-        {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
-
-
-            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.ColumnOrder);
-            var relations = new List<AssetType>();
-
-            var parent = Company.GetParentType(typeID, SystemObjects.ReferenceItemType);
-            var maxLoops = 20;
-
-            while (parent != null && maxLoops > 0)
-            {
-                relations.Insert(0, parent);
-
-                parent = Company.GetParentType(parent.ObjectID, SystemObjects.ReferenceItemType);
-
-                maxLoops--;
-            }
-
-
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            var colIndex = 0;
-
-
-            document.SetCellValue(1, ++colIndex, "Code");
-
-            //add parents for this ref list
-            foreach (var refList in relations)
-            {
-                document.SetCellValue(1, ++colIndex, refList.Name ?? "");
-            }
-
-            //add fields for this 
-            foreach (var field in fields)
-            {
-                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
-            }
-
-            document.SetCellValue(1, ++colIndex, "Asset UID");
-            document.SetCellValue(1, ++colIndex, "Asset ID");
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in models)
-            {
-                var dataColIndex = 0;
-                rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
-
-                var rowDict = ((IDictionary<string, object>)row);
-
-                foreach (var parentRefList in relations)
-                {
-                    var key = $"Rel{parentRefList.ObjectID}";
-
-                    if (rowDict.ContainsKey(key))
-                    {
-                        document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[key] ?? "").ToString());
-                    }
-                }
-
-                foreach (var field in fields)
-                {
-                    var fieldKey = $"Field{field.ID}";
-
-                    if (rowDict.ContainsKey(fieldKey))
-                    {
-                        var value = (rowDict[fieldKey] ?? "");
-
-                        SetCellValue(document, rowIndex, ++dataColIndex, field.Type, value);
-                    }
-                }
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.UID.ToString() ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.AssetID ?? "");
-            }
-
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-
-            result.Content = new StreamContent(stream);
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Reference Items.xlsx"
-            };
-            return result;
         }
 
         #endregion

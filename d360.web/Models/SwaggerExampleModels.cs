@@ -281,4 +281,21 @@ namespace d360.web.Models
     }
 
     #endregion
+
+    #region Responsibilities examples
+
+    public class ResponsibilityTypeAllocationExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return new ResponsibilityTypeAllocationInsertModel
+            {
+                AssetTypeUid = Guid.Empty,
+                Permissions = new List<int>{ 1, 2, 4, 8 }
+            };
+        }
+    }
+
+    #endregion
+
 }

@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-v3">
+    <comment>GOV-9766</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -29,6 +30,27 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_ResponsibilityTypeRela
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_ResponsibilityTypeRelationOverrideItem_SecurityAsset-SecurityAssetID-AssetID] ON [dbo].[ResponsibilityTypeRelationOverrideItem] ( [SecurityAsset] ASC, [SecurityAssetID] ASC, [AssetID] ASC ) INCLUDE([ResponsibilityTypeID])
 END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem]') 
+    AND name = 'UpdatedBy'
+  )
+BEGIN
+  alter table [dbo].[ResponsibilityTypeRelationOverrideItem] add [UpdatedBy] int not null default(0)
+END
+
+IF NOT EXISTS (
+  SELECT * 
+  FROM   sys.columns 
+  WHERE  object_id = OBJECT_ID(N'[dbo].[ResponsibilityTypeRelationOverrideItem]') 
+    AND name = 'UpdatedOn'
+  )
+BEGIN
+  alter table [dbo].[ResponsibilityTypeRelationOverrideItem] add [UpdatedOn] datetime not null default(getutcdate())
+END
+    
 		]]>
     </sql>
 	<rollback>
@@ -36,6 +58,63 @@ END
 
 		]]>
 	</rollback>
+  </changeSet>
+  
+  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-DeleteTrigger-v1.3">
+    <comment>GOV-9766</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+      CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterDelete]
+         ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
+         AFTER DELETE
+      AS 
+	      SET NOCOUNT ON
+	      INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID],[AssetID])
+		      select 'Delete', [queue].WriteIndexXml('Removed', a.[object], a.[objectid], coalesce(d.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', d.ID, d.AssetID from deleted d inner join Asset A on A.id = D.AssetID
+      
+      ]]>
+    </sql>  
+  </changeSet>
+
+  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-InsertTrigger-v1.3">
+    <comment>GOV-9766</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+      CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterInsert]
+         ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
+         AFTER INSERT
+      AS 
+	      SET NOCOUNT ON
+	      INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+		      select 'Add', [queue].WriteIndexXml('Add', a.[Object], a.[ObjectID], coalesce(i.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', i.ID, i.AssetID from inserted i  inner join Asset A on A.id = i.AssetID
+      
+      ]]>
+    </sql>
+  </changeSet>
+  
+  <changeSet author="kmcnamee" id="Table.dbo.ResponsibilityTypeRelationOverrideItem-UpdateTrigger-v1.3">
+    <comment>GOV-9766</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+          CREATE OR ALTER TRIGGER [dbo].[ResponsibilityTypeRelationOverrideItem_AfterUpdate]
+             ON  [dbo].[ResponsibilityTypeRelationOverrideItem] 
+             AFTER Update
+          AS 
+	          SET NOCOUNT ON
+	          INSERT INTO [queue].[Task] ([Action], [Custom], [Object], [ObjectID], [AssetID])
+		          select 'Update', [queue].WriteIndexXml('Update', a.[object], a.[objectid], coalesce(i.UpdatedBy, 0)), 'ResponsibilityTypeRelationOverrideItem', i.ID,i.AssetID from inserted i inner join Asset A on I.AssetID = A.ID
+          
+      ]]>
+    </sql>  
   </changeSet>
 
 </databaseChangeLog>

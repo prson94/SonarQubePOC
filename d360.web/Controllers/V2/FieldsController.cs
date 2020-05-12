@@ -75,7 +75,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(FieldTypesApiViewModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, 
             string Name = "", string FriendlyName = "", DataType? Type = null, int? _pageSize = null, int? _pageNum = null)
@@ -177,7 +177,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutFieldTypesAsync(FieldTypesApiEditModel model)
         {
@@ -328,7 +328,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> DeleteFieldTypesAsync(FieldTypesApiDeleteModel model)
         {
@@ -443,7 +443,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> GetLookups(string fieldtypename, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, bool isNg = false)
@@ -660,7 +660,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage GetFieldTypeFormData(string name, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
@@ -797,7 +797,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage GetFieldTypeLookupTokens(string identifier)
@@ -890,7 +890,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage GetFieldFromRelationshipFields(Guid intersectTypeUid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
@@ -971,7 +971,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)            
         ]
         public async Task<HttpResponseMessage> GetLookupDefaultValues(string Uid)
@@ -1048,7 +1048,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage GetReferenceHierarchy(string uid, Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null)
@@ -1132,7 +1132,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> GetLookupListFilter(string uid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
@@ -1295,7 +1295,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> GetStandardRelations(Guid assetTypeUid)
@@ -1320,7 +1320,49 @@ namespace d360.web.Controllers.V2
 
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
+        }
 
+        /// <summary>
+        /// Used for complex lookup
+        /// </summary>
+        /// <param name="intersectTypeUid">The uid of the relationship type></param>
+        /// <returns>A list of relationship types</returns>
+        [
+            HttpGet,
+            Route("technicalrelationships"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<HttpResponseMessage> GetTechnicalRelationships(Guid intersectTypeUid)
+        {
+            var prefix = "Fields.GetTechnicalRelationships => ";
+
+            try
+            {
+                var intersectTypes = await Company.QueryAsync<dynamic>($@"
+select	cast(C.uid as varchar(36)) + '|' +  cast(C.ObjectUid as varchar(36)) + '|1' as value,
+		C.ObjectName as title
+from	IntersectType I
+		inner join IntersectTypeDetail C on C.Subject = 'IntersectType' and C.SubjectID = I.ID
+where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
+                return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
+            }
+            catch (RestApiException ex)
+            {
+                return ReturnApiError(ex.Status, ex.GetFullExceptionData(false));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
         }
 
         /// <summary>
@@ -1334,10 +1376,10 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public HttpResponseMessage GetParentRelations(Guid assetTypeUid)
+        public async Task<HttpResponseMessage> GetParentRelations(Guid assetTypeUid)
         {
             var prefix = "Fields.GetParentRelations => ";
             var errorMessage = "";
@@ -1354,34 +1396,15 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
-                }
-                dynamic list = null;
-                BaseIntObject parent;
-
-                switch (type)
-                {
-                    case SystemObjects.ArtifactType:
-                        list = new List<AssetType>();
-                        parent = Company.GetParentType(id, SystemObjects.ArtifactType);
-                        if (parent != null)
-                            list.Add((AssetType)parent);
-
-                        return Request.CreateResponse(HttpStatusCode.OK, ((List<AssetType>)list).Select(i => new { value = $"0|{i.uid}", title = i.Name })
-                        .Where(i => i.title != null)
-                        .ToList());
-                    case SystemObjects.FusionAttributeType:
-                        list = new List<AssetType>();
-                        parent = Company.GetParentType(id, SystemObjects.FusionAttributeType);
-                        if (parent != null)
-                            list.Add((AssetType)parent);
-
-                        return Request.CreateResponse(HttpStatusCode.OK, ((List<AssetType>)list).Select(i => new { value = $"0{i.uid}", title = i.Name })
-                            .Where(i => i.title != null)
-                            .ToList());
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid}]");
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
+                var intersectTypes = await Company.QueryAsync<dynamic>(
+                    $@"select cast(uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|' + @direction as value, SubjectName as title from IntersectTypeDetail where PredicateType = @pt and ObjectUid = @assetTypeUid", 
+                    new { pt = (int)PredicateType.InterTypeHierarchy, assetTypeUid, direction = ((int)FieldTypeComplexLookupRelationDirection.Back).ToString() }
+                );
+                
+                return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
             {
@@ -1411,10 +1434,10 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public HttpResponseMessage GetChildRelations(Guid assetTypeUid)
+        public async Task<HttpResponseMessage> GetChildRelations(Guid assetTypeUid)
         {
             var prefix = "Fields.GetChildRelations => ";
             var errorMessage = "";
@@ -1431,24 +1454,14 @@ namespace d360.web.Controllers.V2
                 }
                 else
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
-                }
-                
-                switch (type)
-                {
-                    case SystemObjects.ArtifactType:
-                        return Request.CreateResponse(HttpStatusCode.OK, Company.GetChildTypes(id, SystemObjects.ArtifactType)
-                            .ToList()
-                            .Select(i => new { value = $"0|{i.uid}|0", title = i.Name })
-                            .ToList());
-                    case SystemObjects.FusionAttributeType:
-                        return Request.CreateResponse(HttpStatusCode.OK, Company.GetChildTypes(id, SystemObjects.FusionAttributeType)
-                            .ToList()
-                            .Select(i => new { value = $"0|{i.uid}|0", title = i.Name })
-                            .ToList());
+                    return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid}]");
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
+                var intersectTypes = await Company.QueryAsync<dynamic>(
+                    $@"select cast(uid as varchar(36)) + '|' + cast(ObjectUid as varchar(36)) + '|' + @direction as value, ObjectName as title from IntersectTypeDetail where PredicateType = @pt and SubjectUid = @assetTypeUid",
+                    new { pt = (int)PredicateType.InterTypeHierarchy, assetTypeUid, direction = ((int)FieldTypeComplexLookupRelationDirection.Forward).ToString() }
+                );
+                return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
             {
@@ -1479,7 +1492,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage GetRelationLookupDisplayFields(Guid assetTypeUid, Guid intersectTypeUid)
@@ -1616,7 +1629,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage IsListableRelationship(Guid intersectTypeUid, Guid? assetTypeUid = null, Guid? actionTypeUid = null, Guid? relationshipTypeUid = null)
@@ -1692,7 +1705,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public HttpResponseMessage PerformMove(MoveModel model)
