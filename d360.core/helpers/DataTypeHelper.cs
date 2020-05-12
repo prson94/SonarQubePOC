@@ -9,6 +9,23 @@ namespace d360.core.helpers
 {
     public static class DataTypeHelper
     {
+        public static List<string> GetNotAllowedToUpdateViaAssetApi(this DataType dt)
+        {
+            List<string> types = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.File.ToString(),
+                DataType.OwnershipLookup.ToString(),
+                DataType.Path.ToString(),
+                DataType.RefListRelationship.ToString(),
+                DataType.Score.ToString(),
+                DataType.Tag.ToString()
+
+            };
+
+            return types;
+        }
+
         public static List<string> GetNotAllowedInExport(this DataType dt)
         {
             List<string> types = new List<string>() {

@@ -61,7 +61,9 @@ namespace d360.core
         [Description("JSON Attribute")]
         JsonElement = 1 << 25,
         [Description("Tag")]
-        Tag = 1 << 26
+        Tag = 1 << 26,
+        [Description("Score")]
+        Score = 1 << 27
     } 
 
     public class DataTypeInfo

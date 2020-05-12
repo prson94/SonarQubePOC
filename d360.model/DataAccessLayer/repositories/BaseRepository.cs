@@ -1,4 +1,5 @@
-﻿using d360.core.entities;
+﻿using d360.core;
+using d360.core.entities;
 using d360.core.enums;
 using Dapper;
 using Newtonsoft.Json;
@@ -505,15 +506,20 @@ namespace d360.model.DataAccessLayer.repositories
 
                                 if (field != null)
                                 {
-                                    if (field.Type == "JsonElement")
+                                    switch (field.Type)
                                     {
-                                        whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
-                                        dbArgs.Add($"@field{field.ID}", q.Value);
-                                    }
-                                    else
-                                    {
-                                        whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
-                                        dbArgs.Add($"@field{field.ID}", q.Value);
+                                        case "JsonElement":
+                                            whereStatements.Add($"FJP{field.ID}.Value = @field{field.ID}");
+                                            dbArgs.Add($"@field{field.ID}", q.Value);
+                                            break;
+                                        case "Path":
+                                            whereStatements.Add($"Node.Path like '%' + replace(@field{field.ID}, ' > ', '%')");
+                                            dbArgs.Add($"@field{field.ID}", q.Value);
+                                            break;
+                                        default:
+                                            whereStatements.Add($"F{field.ID}.FormattedValue = @field{field.ID}");
+                                            dbArgs.Add($"@field{field.ID}", q.Value);
+                                            break;
                                     }
                                 }
                             }
