@@ -120,7 +120,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
 
                     var breadCrumbsSub = this.headerBreadcrumbService.getAssetFolderIcon('ArtifactType', this.artifactType.ID, this.currentAreaName ? this.currentAreaName : this.folderTitle).subscribe(res => {
                         this.setCommonSecondaryNavTabs(false, false, this.artifactType.HasDashboards);
-                        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true));
+                        this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('ArtifactType', this.artifactType.ID, this.artifactType.Name, null, true, null, this.artifactType.AssetTypeUID));
                         this.secondaryNavService.setCurrentArea(this.artifactType.Name, res, 'Assets');
                         if (this.artifactType.HasV2Workflows) {
                             this.secondaryNavService

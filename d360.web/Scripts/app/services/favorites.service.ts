@@ -3,7 +3,7 @@ import {catchError, map} from "rxjs/operators";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from '@angular/core';
 
-import {FavoriteApiModel} from '../models/favorite.model';
+import {FavoriteApiModel, Favorite} from '../models/favorite.model';
 import {JsonResult} from '../models/jsonresult.model';
 
 import {MessagesObservableService} from './messages-observable.service';
@@ -28,7 +28,7 @@ export class FavoritesService extends BaseObservableService {
             );
     }
 
-    deleteCurrentUsersFavorites(): Observable<JsonResult> {
+    deleteCurrentUsersFavoritesV2(): Observable<JsonResult> {
         return this
             .http
             .delete('api/v2/membership/users/me/favorites')
@@ -38,7 +38,7 @@ export class FavoritesService extends BaseObservableService {
             );
     }
 
-    toggleFavorite(favorite: FavoriteApiModel) {
+    toggleFavoriteV2(favorite: FavoriteApiModel) {
         return this
             .http
             .put(`api/v2/membership/users/me/favorites`, favorite)
@@ -48,6 +48,25 @@ export class FavoritesService extends BaseObservableService {
             );
     }
 
+    GetHomePage(): Observable<FavoriteApiModel> {
+        return this
+            .http
+            .get(`api/v2/membership/users/me/getHomePage`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    toggleHomePageV2(homepage: FavoriteApiModel) {
+        return this
+            .http
+            .put(`api/v2/membership/users/me/homepage`, homepage)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err))
+            );
+    }
 
     moveUp(
         route: string,

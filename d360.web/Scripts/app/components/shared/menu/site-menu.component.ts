@@ -105,22 +105,25 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
 
         this.favoritesService.getFavorites().subscribe(
             favorites => {
-            this.favorites = new SiteMenu();
-            this.favorites.MenuID = '*Favourites';
-            this.favorites.NavigationItems = [];
+                this.favoritesService.GetHomePage().subscribe(res => {
+                    this.favorites = new SiteMenu();
+                    this.favorites.MenuID = '*Favourites';
+                    this.favorites.NavigationItems = [];
 
-            for (let favorite of favorites) {
-                this.favorites.NavigationItems.push({
-                    Name: favorite.Name,
-                    Url: favorite.Route,
-                    IsLink: false,
-                    Items: null,
-                    IsHomePage: favorite.Route == 'home',
-                    count: null
+                    for (let favorite of favorites) {
+                        let isHomePage = _.isEqual(favorite, res);
+                        this.favorites.NavigationItems.push({
+                            Name: favorite.Name,
+                            Url: favorite.Route,
+                            IsLink: false,
+                            Items: null,
+                            IsHomePage: isHomePage,
+                            count: null
+                        });
+                    }
+
+                    this.ref.markForCheck();
                 });
-            }
-
-            this.ref.markForCheck();
         }
         );
     }
@@ -257,7 +260,7 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
     }
 
     protected clearFavorites() {
-        this.favoritesService.deleteCurrentUsersFavorites().subscribe(
+        this.favoritesService.deleteCurrentUsersFavoritesV2().subscribe(
             result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.loadFavorites(); // reload favorites because the user could still have global favorites.

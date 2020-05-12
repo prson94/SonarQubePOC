@@ -2,7 +2,7 @@
 import { Router, NavigationEnd } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { FavoriteApiModel } from '../../../models/favorite.model';
 import * as _ from 'lodash'; 
@@ -34,8 +34,8 @@ declare var CompanySettings;
                                         <div class="expand-gutter right"></div>            
                                     </div>
                                 </li>
-                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
-                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
+                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-favorites></li>
+                                <li class="header-item" *ngIf="headerActionsService.showFavorite && !isAdminUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                                 <li class="header-item" *ngIf="headerActionsService.showFollow  && !isAdminUrl" ><d3s-header-follow></d3s-header-follow></li>                    
                                 <li class="header-item" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i>Notifications</a></li>
                             </ul>                                                    
@@ -62,16 +62,18 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
     private subObjectChange: any;
     private subFavorites: any;
 
+    private homePageItem: FavoriteApiModel;
     private favItems: FavoriteApiModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;
 
     private controlWidth = 0;
+    Uid: any;
 
     constructor(
         public headerActionsService: HeaderActionsService,
-        private breadcrumbService: HeaderBreadcrumbService,
+        private secondaryNavService: SecondaryNavService,
         private favoritesService: FavoritesService,
         private router: Router,
         private ref: ChangeDetectorRef,) { }
@@ -107,20 +109,33 @@ export class HeaderMiniMenuComponent implements OnInit, OnDestroy {
             this.favoritesService.getFavorites().subscribe(
                 res => {
                     this.favItems = res;
+                    this.favoritesService.GetHomePage().subscribe((res) => {
+                        this.homePageItem = res;
+                    });
                 }
             );
         });
 
-        this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
-            this.currentObject = c.type;
-            this.currentObjectId = c.id;
-                this.favoritesService.getFavorites().subscribe(
-                    fav => {
-                        this.favItems = fav;
-                    }
-                );
+        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe(c => {
+            if (c) {
+                if (c.isType) {
+                    this.currentObject = c.objectType;
+                    this.currentObjectId = c.objectTypeID;
+                } else {
+                    this.currentObject = c.objectName;
+                    this.currentObjectId = c.objectID;
+                }
+                this.Uid = c.Uid;
+            }
+            this.favoritesService.getFavorites().subscribe(
+                fav => {
+                    this.favItems = fav;
+                    this.favoritesService.GetHomePage().subscribe((res) => {
+                        this.homePageItem = res;
+                    });
+                }
+            );
         });
-
 
         if (CompanySettings != null && CompanySettings.EnableShoppingCart.toString() === 'true') {
             this.showShoppingCart = true;

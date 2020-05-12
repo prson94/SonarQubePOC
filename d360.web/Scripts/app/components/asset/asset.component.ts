@@ -22,15 +22,26 @@ export class AssetComponent extends BaseComponent implements OnInit, OnDestroy {
     ngOnInit() {
         this.sub = this.route.params.subscribe(params => {
             let assetUid = params['assetUid'];
-
-            this.assetService.getAssetLegacyUri(assetUid).subscribe(uri => {
-                if (uri !== '') {
-                    this.router.navigate([uri]);
-                }
-                else {
-                    this.router.navigate(['/home']);
-                }
-            });
+            let currentUrl = this.router.url;
+            if (currentUrl.toLowerCase().indexOf("assettype") == -1) {
+                this.assetService.getAssetLegacyUri(assetUid).subscribe(uri => {
+                    if (uri !== '') {
+                        this.router.navigate([uri]);
+                    }
+                    else {
+                        this.router.navigate(['/home']);
+                    }
+                });
+            } else {
+                //check for asset types 
+                this.assetService.getAssetTypeLegacyUri(assetUid).subscribe(uri => {
+                    if (uri !== '') {
+                        this.router.navigate([uri]);
+                    } else {
+                        this.router.navigate(['/home']);
+                    }
+                });
+            }
         });
     }
 

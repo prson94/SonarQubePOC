@@ -1,10 +1,11 @@
 ﻿import { Component, Input, Output, EventEmitter, OnInit, OnDestroy, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { FavoritesService } from '../../../services/favorites.service';
-import { FavoriteApiModel } from '../../../models/favorite.model';
+import { FavoriteApiModel, Favorite } from '../../../models/favorite.model';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { HeaderActionsService } from '../../../services/header-actions.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -32,14 +33,15 @@ import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
     @Input() uri: string;
     @Input() isFavoriteItem: boolean = false;
-    @Input() isHomePageItem: boolean = false;
+    @Input() homePageItem: FavoriteApiModel = null;
     @Input() favItems: FavoriteApiModel[] = [];
     @Input() currentObject: string;
     @Input() currentObjectId: number;
+    @Input() Uid: string;
 
     private subBreadcrumb: any;
     public isLoading = false;
-
+    private isHomePageItem: boolean = false;
 
     private name: string;
     public visible: boolean = true;
@@ -90,8 +92,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         this.isLoading = true;
         let f = new FavoriteApiModel();
         //check these to determine fav type
-        //check these to determine fav type
-        if (!this.currentObject && !this.currentObjectId) {
+        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
             f.Type = "Page";
         } else if (this.currentObject.endsWith("Type")) {
             f.Type = "AssetType";
@@ -99,10 +100,9 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
             f.Type = "Asset";
         }
         f.Name = this.name;
-        f.Route = this.uri ? this.uri : 'home';//null route is home    
-        this.isHomePageItem = !this.isHomePageItem;    
-        this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f).subscribe(
+        f.Route = this.uri ? this.uri : 'home';//null route is home        
+        this.isHomePageItem = !this.homePageItem;
+        this.favoritesService.toggleHomePageV2(f).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
@@ -120,15 +120,20 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isFavoriteItem = index >= 0;
     }
-
+         
     checkIsHomePage() {
         if (this.favItems == null) return;
 
         this.isHomePageItem = false;
         if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => x.Route == this.uri && x.Route == 'home');
-
-        this.isHomePageItem = index >= 0;
+        let index = this.favItems.findIndex(x => _.isEqual(x, this.homePageItem));
+        if (index >= 0)
+            if (this.favItems[index].Type.toLowerCase() != "page")
+                this.isHomePageItem = (this.favItems[index].Uid == this.Uid);
+            else
+                this.isHomePageItem = this.favItems[index].Route == this.uri;
+        else 
+            this.isHomePageItem = false;
     }
 
     checkVisible() {

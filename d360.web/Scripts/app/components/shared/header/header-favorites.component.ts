@@ -14,6 +14,7 @@ import { FavoriteApiModel} from '../../../models/favorite.model';
 import {HeaderBreadcrumbService} from '../../../services/header-breadcrumb.service';
 import {HeaderActionsService} from '../../../services/header-actions.service';
 import {SiteUrlHelpers} from '../../../static/site-url-helpers';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -44,6 +45,8 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
     @Input() favItems: FavoriteApiModel[] = [];
     @Input() currentObject: string;
     @Input() currentObjectId: number;
+    @Input() Uid: string;
+    @Input() homePageItem: FavoriteApiModel = null;
 
     private isHomePageItem: boolean = false;
     private subBreadcrumb: any;
@@ -71,7 +74,6 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             this.visible = this.checkVisible();
         }
         this.checkIsFavorite();
-        this.checkIsHomePage();
     }
 
     ngOnDestroy() {
@@ -95,14 +97,15 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
             console.log('ERROR: CANNOT SAVE FAVORITE FOR RAISE ISSUE');
             return;
         }
-
-        if (this.isHomePageItem)
+        if (this.isHomePageItem) {
+            console.log('ERROR: CANNOT CHANGE THIS FAVORITE IS HOMEPAGE');
             return;
+        }
 
         this.isLoading = true;
         let f = new FavoriteApiModel();
-       //check these to determine fav type
-        if (!this.currentObject && !this.currentObjectId) {
+        //check these to determine fav type
+        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
             f.Type = "Page";
         } else if (this.currentObject.endsWith("Type")) {
             f.Type = "AssetType";
@@ -112,7 +115,7 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
         f.Name = this.name;
         f.Route = this.uri ? this.uri : 'home';//null route is home        
         this.isFavoriteItem = !this.isFavoriteItem;
-        this.favoritesService.toggleFavorite(f).subscribe(
+        this.favoritesService.toggleFavoriteV2(f).subscribe(
             fav => {
                 this.headerActionsService.emitFavoritesChange();
                 this.isLoading = false;
@@ -123,10 +126,14 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
     checkIsFavorite() {
         if (this.favItems == null) return;
-
+        
         this.isFavoriteItem = false;
         if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => x.Route == this.uri);
+        if (!this.Uid) this.Uid = "";
+        let index = this.favItems.filter(x => x.Uid != undefined).findIndex(x => x.Uid.toLowerCase() == this.Uid.toLowerCase());
+        if (index == -1)
+            index = this.favItems.findIndex(x => x.Route == this.uri);
+
         this.isFavoriteItem = index >= 0;
     }
 
@@ -135,9 +142,14 @@ export class HeaderFavoritesComponent implements OnInit, OnDestroy, OnChanges {
 
         this.isHomePageItem = false;
         if (!this.uri) this.uri = 'home';
-        let index = this.favItems.findIndex(x => x.Route == this.uri && x.Route == 'home');
-
-        this.isHomePageItem = index >= 0;
+        let index = this.favItems.findIndex(x => _.isEqual(x, this.homePageItem));
+        if (index >= 0)
+            if (this.favItems[index].Type.toLowerCase() != "page")
+                this.isHomePageItem = (this.favItems[index].Uid == this.Uid);
+            else
+                this.isHomePageItem = this.favItems[index].Route == this.uri;
+        else
+            this.isHomePageItem = false;
     }
 
     checkVisible() {

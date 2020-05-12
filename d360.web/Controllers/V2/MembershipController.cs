@@ -768,6 +768,38 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Retrieves the Home Page the current user
+        /// </summary>
+        /// <returns></returns>
+        [
+        HttpGet,
+        Route("users/me/getHomePage"),
+        SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
+        SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
+        ApiExplorerSettings(IgnoreApi =true )
+        ]
+        public async Task<IHttpActionResult> GetHomePage()
+        {
+            var prefix = "Membership.GetFavorites => ";
+
+            try
+            {
+                var results = await membershipRepository.GetHomePage(_company.CurrentResourceID);
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
         /// Clears the list of favorite items for the current user
         /// </summary>
         /// <returns></returns>
@@ -832,7 +864,14 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
-            return await ToggleFavoriteOrHomepage(favorite, true);
+            var currentHome = Company.Filter<Favorite>(x=>x.ResourceID == _company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
+            bool isNewHomePage = true;
+            if(currentHome != null)
+            {
+                if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
+                    isNewHomePage = false;
+            }
+            return await ToggleFavoriteOrHomepage(favorite, isNewHomePage);
         }
 
         private async Task<IHttpActionResult> ToggleFavoriteOrHomepage(FavoriteApiModel favorite, bool isHomepage = false)
