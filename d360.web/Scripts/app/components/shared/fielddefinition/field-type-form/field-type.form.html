@@ -447,7 +447,7 @@
                                 [ngModelOptions]="{standalone: true}"></p-dropdown>
                     <p-dropdown *ngIf="currentType == 'Score'"
                                 [options]="scoreTypeOptions"
-                                [(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
+                                [(ngModel)]="model.FieldType.Type[currentType].ScoreType"
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"></p-dropdown>

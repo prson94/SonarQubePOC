@@ -460,6 +460,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 break;
             case 'score':
+                observables.push(this.loadAvailableScoreTypes());
                 this.enableAllowMultipleValues = false;
                 this.showDescription = false;
                 break;
@@ -737,6 +738,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         );
     }
 
+    private loadAvailableScoreTypes(): Observable<any> {
+        return this.fieldsService.getAvailableScoreTypes(this.assetTypeUid)
+            .pipe(
+                map(r => {
+                    this.scoreTypeOptions = r;
+                })
+            );
+    }
 
     //#endregion
 

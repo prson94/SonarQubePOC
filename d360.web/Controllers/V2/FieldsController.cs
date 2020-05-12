@@ -1871,7 +1871,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 }
 
               
-                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.Value, value = i.Key }));
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { label = i.Value, value = i.Key }));
             }
             catch (RestApiException ex)
             {
