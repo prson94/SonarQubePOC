@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v5">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -486,7 +486,34 @@ begin
 			insert into @selects
 				select 'A.[Code]', 'Code'
 				union
-				select 'F'+cast(FieldTypeID as varchar)+'.FormattedValue', FieldTypeName from @fields
+				select case
+						when FieldDataType = 'number' then
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end'
+						when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end'
+						else
+							'F' + cast(FieldTypeID as varchar) + '.FormattedValue'
+						end, 
+						FieldTypeName 
+				from	@fields
+
+			insert into @orders
+				select		case  
+								when FieldDataType = 'number' then
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end asc'
+								when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end asc'
+								else
+									'F' + cast(FieldTypeID as varchar) + '.FormattedValue asc'
+							end
+				from		@fields
+				where		SortOrder is not null and SortOrder > 0
+				order by	SortOrder;
+
+			if not exists (select 1 from @orders where [Statement] is not null)
+			begin
+				insert into @orders values ('A.Code');
+			end
 		end
 	end
 
@@ -505,9 +532,6 @@ begin
 	begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
-
-	--select @sql -- testing only
-	print @sql
 
 	-- Output to caller.
 	if @countOnly = 0
@@ -529,6 +553,9 @@ begin
 		
 		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
 	end
+	
+	--select @sql -- testing only
+	print @sql
 end
 		]]>
     </sql>
@@ -776,7 +803,7 @@ begin
 			from	@relations
 			order by RowNumber;
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists (select 1 from @wheres)
 		begin
 			insert into @tables
 				select	case 
@@ -795,7 +822,10 @@ begin
 						end
 			from	@fields T 
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
+		end
 
+		if @countOnly = 0
+		begin
 			-- Resolve data types to send back to caller.
 			update	T
 			set		T.FieldDataType = case T.FieldDataType 
