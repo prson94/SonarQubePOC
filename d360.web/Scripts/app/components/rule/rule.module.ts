@@ -40,7 +40,6 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 
 import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-object-governance.module';
-import { RuleCustomExportComponent } from './rule-custom-export.component';
 import { CalendarModule } from 'primeng/calendar';
 import { AssetGridModule } from '../assets-grid/asset-grid.module';
 
@@ -88,9 +87,7 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
         RuleListComponent,
         RuleItemComponent,        
         RuleResultsGridComponent,
-        RuleColumnFilterComponent,           
-        RuleCustomExportComponent,
-
+        RuleColumnFilterComponent
     ],
     exports: [
         RuleResultsGridComponent

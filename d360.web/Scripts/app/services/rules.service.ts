@@ -125,22 +125,4 @@ export class RulesService extends BaseObservableService {
             catchError(err => this.handleError(err))
         );
     }
-
-    exportRules(uid: string, typeName: string) {
-        this.http.get(`api/v2/exporttemplates/exportRules/${uid}`, { responseType: "blob" }).pipe(
-            map((response) => {
-                this.downloadFile(response, typeName);
-            }),
-            catchError(err => this.handleError(err))
-        ).subscribe();
-    }
-
-    exportRulesCustomXls(exportTemplateID: number, uid: string, typeName: string) {
-        this.http.get(`api/v2/exporttemplates/customExportRules/${uid}/${exportTemplateID}`, { responseType: "blob" }).pipe(
-            map((response) => {
-                this.downloadFile(response, typeName);
-            }),
-            catchError(err => this.handleError(err))
-        ).subscribe();
-    }
 }
