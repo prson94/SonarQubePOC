@@ -3799,6 +3799,12 @@ select [uid] from #ParentChildRelationships",
                     table.Columns.Add("ObjectUid", typeof(Guid));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
 
+                    var errorTable = new DataTable();
+                    errorTable.Columns.Add("ExecutionID", typeof(Guid));
+                    errorTable.Columns.Add("ItemNumber", typeof(int));
+                    errorTable.Columns.Add("Message", typeof(string));
+                    errorTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+
                     var fieldTable = new DataTable();
                     fieldTable.Columns.Add("ExecutionID", typeof(Guid));
                     fieldTable.Columns.Add("ItemNumber", typeof(int));
@@ -3842,7 +3848,16 @@ select [uid] from #ParentChildRelationships",
                             }
                             else
                             {
+                                var row = errorTable.NewRow();
+                                row["ExecutionID"] = execution.ExecutionID;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                row["ItemNumber"] = i;
+                                row["Message"] = errorMessage;
+
+                                errorTable.Rows.Add(row);
+
                                 results.Add(new DatabaseBulkRelationshipResult { IntersectID = 0, ExecutionItemUid = model.ExecutionItemUid, IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
+
                             }
                         }
                     }
@@ -3875,6 +3890,21 @@ select [uid] from #ParentChildRelationships",
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 
                     bulkCopy.WriteToServer(table);
+
+
+                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionRelationshipError";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+
+
+                    bulkCopy.WriteToServer(errorTable);
 
                     bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 
