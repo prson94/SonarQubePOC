@@ -983,18 +983,41 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 #endregion
                 case SystemObjects.RuleType:
                     #region
-
-                    remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "RuleTypeID", type = "number" });
+
+                    filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                    //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                    foreach (var column in columns)
+                    {
+                        column.filteritems = new List<string>();
+                    }
+
+                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
+
+                    filterColumns = filterColumns.OrderBy(x => x.text).ToList();
+
+                    //Load any field types that are top level filter fields
+                    var topFiltersHiddenRuleType = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                    topFiltersHiddenRuleType.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+
+                        col.id = i.ID.ToString();
+                        col.hiddenfield = !i.IsListable;
+
+                        topLevelFilterFields.Add(col);
+
+                    });
+
                     break;
                 #endregion  
                 case SystemObjects.FusionAttributeType:
@@ -1368,8 +1391,10 @@ where   h.ID <> @t order by h.[Level] desc;
             return model;
         }
 
-        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
-        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+
+
+        [Route("{objectType}/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(string objectType, int artifactTypeId)
         {
             var sql = @"
 select  distinct 
@@ -1382,7 +1407,7 @@ select  distinct
         end as [Type]
 from    ResponsibilityDetail
 where   TypeID = @id 
-        and [Type] = 'ArtifactType' 
+        and [Type] = @objectType 
         and IsVisible = 1 
 order by 'Name'";
 
@@ -1390,7 +1415,7 @@ order by 'Name'";
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(
                     sql,
-                    new { id = artifactTypeId }
+                    new { id = artifactTypeId, objectType }
                 )
             );
         }
@@ -1978,7 +2003,7 @@ order by    rnk, [Name]";
                     var dataResponse = await GetComplexLookupGridField(type, id, fieldTypeID);
                     resultString = await dataResponse.Content.ReadAsStringAsync();
 
-                    if ((DataType)lookupType == DataType.RefListRelationship) 
+                    if ((DataType)lookupType == DataType.RefListRelationship)
                     {
                         var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
                         if (intersect != null)
@@ -2073,7 +2098,8 @@ order by    rnk, [Name]";
                         var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
                         var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
 
-                        referenceListRowModel = new DetailReadOnlyRowModel {
+                        referenceListRowModel = new DetailReadOnlyRowModel
+                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
@@ -2174,11 +2200,11 @@ order by    rnk, [Name]";
                 "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
                 new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
             );
-            
+
             var Columns = reader.Read<GridColumn>().ToList();
             var Fields = reader.Read<GridField>().ToList();
             var Values = reader.Read<dynamic>().ToList();
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
         }
 
@@ -2958,12 +2984,17 @@ order by    Name
         public HttpResponseMessage GetRuleType(int id)
         {
             var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
+
+            int objectId = int.Parse(row.ID.ToString());
+            var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "HasCustomExportTemplates", hasCustomExports },
                     { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
@@ -2971,72 +3002,6 @@ order by    Name
                 }
             );
         }
-
-        [Route("rules/{id:int}")]
-        public HttpResponseMessage GetRules(int id)
-        {
-            try
-            {
-                var dbArgs = new Dapper.DynamicParameters();
-
-                dbArgs.Add("id", id);
-                dbArgs.Add("r", Company.CurrentResourceID);
-
-                var joins = "";
-                var columns = "";
-
-                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false, coreTableIdJoinColumn: "A.ObjectID");
-
-                var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                ) 
-						                    then 1
-						                    else 0
-
-                                        end as P_CanEdit,
-		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                                   ) 
-						                                   then 1
-						                                   else 0
-
-                                        end as P_CanDelete";
-
-                if (Company.CurrentResourceIsAdmin)
-                {
-                    permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
-                }
-
-                string sortStatement = GetOrderStatement(SystemObjects.RuleType, id);
-
-                var querySql = string.Format(@"
-select	A.ID as AssetID,
-        A.[Uid],
-        A.ObjectId as ID,
-        R.Threshold,
-        A.DisplayValue,
-        dbo.GenerateAssetUrl(A.ID) as Url,
-        {0}
-        R.RuleTypeID,
-        {2}
-from	[Rule] R
-        inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID 
-        {1} 
-where   R.RuleTypeID = @id 
-        and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
-        "and A.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")" +
-        " {3} ", columns, joins, permissionSql, sortStatement);
-
-                var query = Company.Query<dynamic>(querySql, dbArgs);
-
-                return Request.CreateResponse(HttpStatusCode.OK, query);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
-            }
-        }
-
         #endregion
 
         #region Comment Tag Suggestions
@@ -3422,6 +3387,14 @@ where   R.RuleTypeID = @id
                                 }
                             });
                         }
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "UID", Value = template.uid.ToString() }
+                                }
+                        });
                     }
                     group = null;
                     break;
@@ -3621,7 +3594,7 @@ where   R.RuleTypeID = @id
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -3672,7 +3645,7 @@ where   R.RuleTypeID = @id
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
                     if (fusionQueryAttribute != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));                        
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     fusionQueryAttribute = null;
                     break;

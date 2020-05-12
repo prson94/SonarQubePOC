@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             return (await Company.QueryAsync<dynamic>("" +
-                "select t.ID, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
+                "select t.ID, t.uid, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
                 "from AssetTypeExportTemplate t " +
                 "left join AssetType a ON t.AssetTypeID = a.ID " +
                 "order by t.Name, t.ID"));
@@ -74,7 +74,7 @@ namespace d360.web.Controllers.V2
         public async Task<IEnumerable<dynamic>> Get(Guid assetTypeUID)
         {
             return (await Company.QueryAsync<dynamic>("" +
-                "select t.ID, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
+                "select t.ID, t.uid, t.AssetTypeID, a.uid as AssetTypeUID, t.Name, t.Description,t.IncludeFields,t.ExportViewType,t.IncludeUrl,t.IncludeParent,t.UsageNotes,CASE WHEN t.templatefile IS NULL THEN 0 ELSE 1 END as HasTemplateFile " +
                 "from AssetTypeExportTemplate t " +
                 "left join AssetType a ON t.AssetTypeID = a.ID " +
                 "where a.uid = @assetTypeUID " +
@@ -366,105 +366,6 @@ namespace d360.web.Controllers.V2
             if (res > 0) return model; // updated
 
             throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Export Template not found to update."));
-        }
-
-        /// <summary>
-        /// Exports the list of Rules.
-        /// </summary>
-        /// <param name="uid">The Uid of the Rule Type.</param>
-        /// <returns>An excel sheet of the rules of the given rule type uid.</returns>
-        [
-            HttpGet,
-            Route("exportRules/{uid}"),
-            ApiExplorerSettings(IgnoreApi = true),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Returns an excel sheet with all the rules.", typeof(List<Rule>)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> GetExportRules(string uid)
-        {
-            try
-            {
-                Guid guid = Guid.Empty;
-                if (!Guid.TryParse(uid, out guid) || guid == Guid.Empty)
-                {
-                    return errorMessageResponse(
-                        HttpStatusCode.BadRequest,
-                        "Invalid Guid", $"Please provide a valid Guid");
-                }
-                var stream = new MemoryStream();
-                SLDocument doc = await GetDefaultRuleDocument(guid);
-                doc.SaveAs(stream);
-                var result = new HttpResponseMessage(HttpStatusCode.OK)
-                {
-                    Content = new ByteArrayContent(stream.GetBuffer())
-                };
-                result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
-                var response = ResponseMessage(result);
-
-                return response;
-            }
-            catch (Exception ex)
-            {
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"{ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Custom exports.
-        /// </summary>
-        /// <param name="assetTypeUid">The assetTypeID of the Rule Type to custom export.</param>
-        /// <param name="templateID">The templateID of the custom export template.</param>
-        /// <returns>An custom excel sheet of the rules of the given rule type uid.</returns>
-        [
-            HttpGet,
-            Route("customExportRules/{assetTypeUid}/{templateID}"),
-            ApiExplorerSettings(IgnoreApi = true),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Export custom templates.", typeof(bool)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
-        ]
-        public async Task<IHttpActionResult> CustomExport(Guid assetTypeUid, int templateID)
-        {
-            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
-            var template = Company.AssetTypeExportTemplates.FirstOrDefault(x => x.ID == templateID);
-
-            if (assetType == null)
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No asset type with Uid of {assetTypeUid.ToString()}");
-
-            if (template == null)
-                return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"No template with id of {templateID}");
-
-            var templateType = template.ExportViewType;
-            SLDocument doc = new SLDocument();
-            switch (templateType)
-            {
-                case ExportView.None:
-                    doc = await GetDefaultRuleDocument(assetType.uid, template);
-                    break;
-                case ExportView.Pivot:
-                    doc = await GetPivotRuleDocument(assetType.uid, template);
-                    break;
-                case ExportView.Grouped:
-                    doc = await GetGroupedRuleDocument(assetType.uid, template);
-                    break;
-                default:
-                    return errorMessageResponse(HttpStatusCode.InternalServerError, "Error creating spreadsheet", $"Unrecognised export view type");
-            }
-
-            var stream = new MemoryStream();
-            doc.SaveAs(stream);
-            var result = new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new ByteArrayContent(stream.GetBuffer())
-            };
-            result.Content.Headers.ContentType = new MediaTypeHeaderValue("application/vnd.ms-excel");
-            var response = ResponseMessage(result);
-
-            return response;
-
         }
 
         /// <summary>

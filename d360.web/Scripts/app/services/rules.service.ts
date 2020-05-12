@@ -22,14 +22,6 @@ export class RulesService extends BaseObservableService {
             );
     }
 
-    getRules(id: number): Observable<any[]> {
-        return this.http.get(`api/rules/${id}`)
-            .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getRule(id: number): Observable<RuleDetail> {
         return this.http.get(`api/rule/${id}`)
             .pipe(
@@ -132,23 +124,5 @@ export class RulesService extends BaseObservableService {
             response => response,
             catchError(err => this.handleError(err))
         );
-    }
-
-    exportRules(uid: string, typeName: string) {
-        this.http.get(`api/v2/exporttemplates/exportRules/${uid}`, { responseType: "blob" }).pipe(
-            map((response) => {
-                this.downloadFile(response, typeName);
-            }),
-            catchError(err => this.handleError(err))
-        ).subscribe();
-    }
-
-    exportRulesCustomXls(exportTemplateID: number, uid: string, typeName: string) {
-        this.http.get(`api/v2/exporttemplates/customExportRules/${uid}/${exportTemplateID}`, { responseType: "blob" }).pipe(
-            map((response) => {
-                this.downloadFile(response, typeName);
-            }),
-            catchError(err => this.handleError(err))
-        ).subscribe();
     }
 }
