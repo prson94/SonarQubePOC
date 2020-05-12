@@ -826,6 +826,11 @@ namespace d360.model.DataAccessLayer
 
             orderBy = $"Order by {sortPhrase} {direction ?? ""}";
 
+            var countSql = $@"select 
+	                            Count(DQR.resultUid)
+                            from 
+	                            {owningAssetSQL}";
+
             if (evaluatedAssetUid != null)
             {
                 evaluatedAssetSQL = $@"inner Join 
@@ -843,45 +848,32 @@ namespace d360.model.DataAccessLayer
 				                        AssetType AT on AT.Uid = AN.AssetTypeUid
 				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				                            
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
-
+                
+                //only count records where owning and evaluated assets exist.
+                countSql = $@"{countSql} 
+                              {evaluatedAssetSQL}";
             }
             else
             {
                 evaluatedAssetSQL = $@"left Join
-	                            (		
-		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, AN.Segments EvaluatedAssetSegments,
-                                        AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
-		                            from 
-			                            AssetResult AR
-				                        inner join 
-				                        assetResultedge ARE on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}		
-				                        inner join 
-				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id				                        
-				                        inner join
-				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				
-		                            where 
-				                        AR.UID in ( 
-							                        select 
-								                        AR1.Uid
-							                        from 
-								                        AssetResult AR1, assetResultedge ARE1, graph.AssetNode AN1 
-							                        where 
-								                        Match (AN1 -(ARE1)-> AR1) 
-								                        and 
-								                        AN1.Uid = @owningAssetUid 
-								                        and 
-								                        ARE1.Class = {(int)ResultRelationClass.Owns}
-                                                        {effectiveSQL}
-                                                        )
+	                            (	select 
+	                                    AR.Uid resultUid, AN_eval.Uid evaluatedAssetUid, AN_eval.Path EvaluatedAssetPath, AN_eval.Segments EvaluatedAssetSegments, graph.GetPath(AN_eval.Segments, ' > ', ' / ') AssetPath,
+	                                    AP.Path EvaluatedAssetTypePath, case when AN_eval.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN_eval.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
+                                    from 
+	                                    AssetResult AR
+	                                    inner join 
+	                                    AssetResultEdge ARE_own on AR.$node_id = ARE_own.$to_id and ARE_own.Class= {(int)ResultRelationClass.Owns} -- join the edge table to the result table but only get the owning records.		
+	                                    inner join
+	                                    graph.AssetNode AN_own on AN_own.$node_id = ARE_own.$from_id and AN_own.Uid = @owningAssetUid {effectiveSQL} -- get the asset node records for the Owning Asset Uid
+	                                    inner join
+	                                    assetResultedge ARE_eval on ARE_eval.$to_id = ARE_own.$to_id and ARE_eval.Class = {(int)ResultRelationClass.EvaluatedBy} -- join the edge table to itself but only get the evaluated records.
+	                                    inner join 
+	                                    graph.AssetNode AN_eval on AN_eval.$node_id = ARE_eval.$from_id -- get the node records for the evaluated record.
+	                                    inner join 									
+	                                    AssetType AT on AT.Uid = AN_eval.AssetTypeUid
+	                                    cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP			                            
 	                            ) DQA on DQA.resultUid=DQR.resultUid";
-            }
-            var countSql = $@"select 
-	                            Count(DQR.resultUid)
-                            from 
-	                            {owningAssetSQL}
-	                            {evaluatedAssetSQL}";
+            }                            
 
             string includeDuplicateSQL = @",
 							case 
@@ -916,7 +908,11 @@ namespace d360.model.DataAccessLayer
 	                        cross apply 
 	                        CalculatePassedPropertyForAssetResult(DQR.resultUid) P
                                 )
-                            select ResultsTable.*
+                            select ResultsTable.*,
+                            case
+								when ResultsTable.EvaluatedAssetSegments is not null then graph.GetPath(ResultsTable.EvaluatedAssetSegments, ' > ', ' / ')
+								else null
+							end as EvaluatedAssetDisplayPath
                             {includeDuplicateSQL}
 							from ResultsTable
                             {includeDuplicateApply}
@@ -934,9 +930,10 @@ namespace d360.model.DataAccessLayer
             result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
             result.items = Company.Query<DataQualityGetResultItem>(dataQualityResultSql, parameters).ToList();
-            if (result.items == null) result.items = new List<DataQualityGetResultItem>();
-
-            result.items.FindAll(x => x.EvaluatedAssetSegments != null).ForEach(x => x.EvaluatedAssetPathElements = GetPathFromSegments(x.EvaluatedAssetSegments));
+            if (result.items == null)
+            {
+                result.items = new List<DataQualityGetResultItem>();
+            }
 
             return result;
         }
