@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v4">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -253,7 +253,7 @@ begin
 			from	@relations
 			order by RowNumber;
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists (select 1 from @wheres)
 		begin
 			insert into @tables
 				select	case 
@@ -272,7 +272,10 @@ begin
 						end
 			from	@fields T 
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
+		end
 
+		if @countOnly = 0
+		begin
 			-- Resolve data types to send back to caller.
 			update	T
 			set		T.FieldDataType = case T.FieldDataType 
@@ -562,7 +565,7 @@ begin
 		RowNumber int identity, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
 		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
 		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
-		IsRelationLink bit
+		IsRelationLink bit, IsRelationField bit
 	)
 	
 	-- The tables to hold the statements that are used to build the SQL below.
@@ -620,6 +623,15 @@ begin
 				F.Object = A.Object,
 				F.ObjectID = A.ObjectID,
 				F.IsRelationLink = IIF(F.FieldTypeName like 'Related Item.%', 1, 0)
+		from	@fields F
+				left join AssetType A on A.Uid = F.AssetTypeUid;
+
+
+		update	F
+		set		F.FT = cast(F.FieldTypeID as varchar(15)), 
+				F.Object = A.Object,
+				F.ObjectID = A.ObjectID,
+				F.IsRelationField = IIF(F.FieldTypeName like 'Relation.%', 1, 0)
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
@@ -777,7 +789,8 @@ begin
 								' outer apply OPENJSON(H'+T.RRN+'_FT_F'+T.FT+'.[Definition], N''lax $'') with (FieldTypeID int, Path varchar(250), DataType varchar(250)) H'+T.RRN+'_FT_FD'+T.FT +
 								' left join Field H'+T.RRN+'_JF_F'+T.FT+' on H'+T.RRN+'_JF_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_FT_FD'+T.FT+'.FieldTypeID and H'+T.RRN+'_JF_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
 								' left join FieldJsonProperty H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldID = H'+T.RRN+'_JF_F'+T.FT+'.ID and H'+T.RRN+'_F'+T.FT+'.[Path] = H'+T.RRN+'_FT_FD'+T.FT+'.[Path]'
-							when T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
+							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID'
+							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
 						end
 			from	@fields T 
