@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v6">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v7">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -441,12 +441,14 @@ begin
 			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
 				select	ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
 				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				where	AssetTypeID = @referenceItemTypeID 
+						and IsListable = 1;
 
 			insert into @tables
 				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar)
 				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				where	AssetTypeID = @referenceItemTypeID 
+						and IsListable = 1;
 
 			-- Resolve data types to send back to caller.
 			update	@fields 
