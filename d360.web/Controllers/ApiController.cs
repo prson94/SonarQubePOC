@@ -1004,18 +1004,41 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                 #endregion
                 case SystemObjects.RuleType:
                     #region
-
-                    remainingWidth = 45;
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
-
-                    columns.Add(new GridColumn { text = d360.core.resources.Fields.Name_Name, datafield = "Name" });
 
                     parseDynamicColumnsAndFields(items, columns, fields, groups, dynamicFieldWidth, true);
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    fields.Add(new GridField { name = "Name", type = "string" });
                     fields.Add(new GridField { name = "RuleTypeID", type = "number" });
+
+                    filterColumns.AddRange(columns.Select(p => new GridFilterColumn(p)));
+
+                    //clear the filtercolumns of the columns since they are not used and copied to the filtercolumns
+                    foreach (var column in columns)
+                    {
+                        column.filteritems = new List<string>();
+                    }
+
+                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
+
+                    filterColumns = filterColumns.OrderBy(x => x.text).ToList();
+
+                    //Load any field types that are top level filter fields
+                    var topFiltersHiddenRuleType = totalItems.Where(i => i.IsPrimaryFilter).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
+
+                    topFiltersHiddenRuleType.ForEach(i =>
+                    {
+                        GridFilterColumn col = new GridFilterColumn(getGridColumnForColumn(i, 0, true));
+
+                        col.id = i.ID.ToString();
+                        col.hiddenfield = !i.IsListable;
+
+                        topLevelFilterFields.Add(col);
+
+                    });
+
                     break;
                 #endregion  
                 case SystemObjects.FusionAttributeType:
@@ -1391,8 +1414,8 @@ where   h.ID <> @t order by h.[Level] desc;
 
 
 
-        [Route("artifacttype/possibleowners/{artifactTypeId:int}")]
-        public HttpResponseMessage GetArtifactTypePossibleOwners(int artifactTypeId)
+        [Route("{objectType}/possibleowners/{artifactTypeId:int}")]
+        public HttpResponseMessage GetArtifactTypePossibleOwners(string objectType, int artifactTypeId)
         {
             var sql = @"
 select  distinct 
@@ -1405,7 +1428,7 @@ select  distinct
         end as [Type]
 from    ResponsibilityDetail
 where   TypeID = @id 
-        and [Type] = 'ArtifactType' 
+        and [Type] = @objectType 
         and IsVisible = 1 
 order by 'Name'";
 
@@ -1413,7 +1436,7 @@ order by 'Name'";
                 HttpStatusCode.OK,
                 Company.Query<dynamic>(
                     sql,
-                    new { id = artifactTypeId }
+                    new { id = artifactTypeId, objectType }
                 )
             );
         }
@@ -1499,14 +1522,6 @@ order by 'Name'";
             return Request.CreateResponse(HttpStatusCode.OK, results);
 
         }
-
-
-
-
-
-
-
-
 
         [Route("fusion/technicalmapping")]
         public IQueryable<MapRuleItemDetail> GetFusionTechnicalMappings()
@@ -1980,7 +1995,7 @@ order by    rnk, [Name]";
                     var dataResponse = await GetComplexLookupGridField(type, id, fieldTypeID);
                     resultString = await dataResponse.Content.ReadAsStringAsync();
 
-                    if ((DataType)lookupType == DataType.RefListRelationship) 
+                    if ((DataType)lookupType == DataType.RefListRelationship)
                     {
                         var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == ft.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
                         if (intersect != null)
@@ -2075,7 +2090,8 @@ order by    rnk, [Name]";
                         var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
                         var referenceItemType = Company.AssetTypes.FirstOrDefault(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID);
 
-                        referenceListRowModel = new DetailReadOnlyRowModel {
+                        referenceListRowModel = new DetailReadOnlyRowModel
+                        {
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField {
@@ -2176,11 +2192,11 @@ order by    rnk, [Name]";
                 "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
                 new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
             );
-            
+
             var Columns = reader.Read<GridColumn>().ToList();
             var Fields = reader.Read<GridField>().ToList();
             var Values = reader.Read<dynamic>().ToList();
-            
+
             return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
         }
 
@@ -2903,73 +2919,6 @@ from    (
             return wherecondition.Remove(0, 2);
         }
 
-        [HttpGet, Route("resources/{typeID:int}/excel/excel.xls")]
-        public async Task<HttpResponseMessage> GetResourcesExcel(int typeID, string filter)
-        {
-            string headerString = await this.GetGridDefinitionByType(SystemObjects.ResourceType, typeID).Content.ReadAsStringAsync();
-            dynamic header = JsonConvert.DeserializeObject<dynamic>(headerString);
-
-            string resultString = await this.GetResourcesByType(typeID, filter).Content.ReadAsStringAsync();
-            dynamic result = JsonConvert.DeserializeObject<dynamic>(resultString);
-
-            var document = new SLDocument();
-            document.AddWorksheet("Users");
-
-            int colIndex = 1;
-            int rowIndex = 1;
-            for (int i = 0; i < header.Columns.Count; i++)
-            {
-                document.SetCellValue(rowIndex, colIndex, header.Columns[i].text.Value);
-                colIndex++;
-            }
-
-            for (int k = 0; k < result.Count; k++)
-            {
-                rowIndex++;
-                colIndex = 1;
-                for (int l = 0; l < header.Columns.Count; l++)
-                {
-                    var colField = header.Columns[l].datafield.Value;
-
-                    var value = result[k][colField].Value;
-
-                    var dataType = "string";
-
-                    for (int m = 0; m < header.Fields.Count; m++)
-                    {
-                        var field = header.Fields[m];
-                        if (field["name"].Value == colField)
-                        {
-                            dataType = field["type"].Value;
-                            break;
-                        }
-
-                    }
-
-                    SetCellValue(document, rowIndex, colIndex, dataType, value);
-                    colIndex++;
-                }
-
-            }
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage response = null;
-            // serve the file to the client      
-            response = Request.CreateResponse(HttpStatusCode.OK);
-            response.Content = new StreamContent(stream);
-            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            response.Content.Headers.ContentLength = stream.Length;
-            response.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Users {DateTime.Now.ToShortDateString()}.xlsx"
-            };
-            return response;
-
-        }
-
         [Route("resources/{typeID:int}/{id:int}")]
         public Resource GetResource(int typeID, int id)
         {
@@ -2995,35 +2944,6 @@ from    (
                 throw new HttpResponseException(new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.NotFound));
 
             return model;
-        }
-
-        [HttpGet, Route("resources/find")]
-        public IQueryable<PersonSearchResultModel> GetResourceSearchResults(string search)
-        {
-            if (!string.IsNullOrEmpty(search))
-            {
-                search = search.Trim().ToLower();
-                return GetCompanyResources()
-                        .Where(i => i.Email.Trim().ToLower().StartsWith(search) || i.FirstName.Trim().ToLower().StartsWith(search) || i.LastName.Trim().ToLower().StartsWith(search))
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .Select(i => new PersonSearchResultModel
-                        {
-                            ID = i.ID,
-                            FirstName = i.FirstName,
-                            LastName = i.LastName
-                        });
-            }
-            else
-            {
-                return GetCompanyResources()
-                        .OrderBy(i => i.LastName).ThenBy(i => i.FirstName)
-                        .Select(i => new PersonSearchResultModel
-                        {
-                            ID = i.ID,
-                            FirstName = i.FirstName,
-                            LastName = i.LastName
-                        });
-            }
         }
 
         #endregion
@@ -3056,12 +2976,17 @@ order by    Name
         public HttpResponseMessage GetRuleType(int id)
         {
             var row = Company.Query<dynamic>(QueryConstants.RuleSettingsItem, new { id }).Single();
+
+            int objectId = int.Parse(row.ID.ToString());
+            var hasCustomExports = Company.AssetTypeExportTemplates.Any(x => x.AssetTypeID == objectId);
+
             return Request.CreateResponse<dynamic>(
                 new Dictionary<string, object>() {
                     { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
                     { "AllowAttributes", (bool)row.AllowAttributes },
+                    { "HasCustomExportTemplates", hasCustomExports },
                     { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards",Company.Reports.Any(x=>x.ObjectID == id && x.ObjectType == SystemObjects.RuleType.ToString() && x.ReportType != "legacy") },
@@ -3069,72 +2994,6 @@ order by    Name
                 }
             );
         }
-
-        [Route("rules/{id:int}")]
-        public HttpResponseMessage GetRules(int id)
-        {
-            try
-            {
-                var dbArgs = new Dapper.DynamicParameters();
-
-                dbArgs.Add("id", id);
-                dbArgs.Add("r", Company.CurrentResourceID);
-
-                var joins = "";
-                var columns = "";
-
-                getDynamicFieldJoinStatements(id, "Rule", out joins, out columns, false, false, coreTableIdJoinColumn: "A.ObjectID");
-
-                var permissionSql = @"case when exists (
-                                        select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 2 = 2 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                ) 
-						                    then 1
-						                    else 0
-
-                                        end as P_CanEdit,
-		                                case when exists(
-                                                             select 1 from UserAssetPermissions(@r, A.AssetTypeID) u where u.PermissionsBitMask & 4 = 4 and (u.AssetID = A.ID  or (u.AssetID = 0 and u.AssetTypeID = A.AssetTypeID))
-						                                   ) 
-						                                   then 1
-						                                   else 0
-
-                                        end as P_CanDelete";
-
-                if (Company.CurrentResourceIsAdmin)
-                {
-                    permissionSql = "1 as P_CanEdit, 1 as P_CanDelete";
-                }
-
-                string sortStatement = GetOrderStatement(SystemObjects.RuleType, id);
-
-                var querySql = string.Format(@"
-select	A.ID as AssetID,
-        A.[Uid],
-        A.ObjectId as ID,
-        R.Threshold,
-        A.DisplayValue,
-        dbo.GenerateAssetUrl(A.ID) as Url,
-        {0}
-        R.RuleTypeID,
-        {2}
-from	[Rule] R
-        inner join AssetDetail A on A.Object = 'Rule' and A.ObjectID = R.ID 
-        {1} 
-where   R.RuleTypeID = @id 
-        and A.ID not in (" + Company.GetNoReadSqlStatement("@r") + ")" +
-        "and A.AssetTypeID not in (" + Company.GetAssetTypeNoReadSqlStatement("@r") + ")" +
-        " {3} ", columns, joins, permissionSql, sortStatement);
-
-                var query = Company.Query<dynamic>(querySql, dbArgs);
-
-                return Request.CreateResponse(HttpStatusCode.OK, query);
-            }
-            catch (Exception ex)
-            {
-                return Request.CreateErrorResponse(HttpStatusCode.InternalServerError, ex.GetFullExceptionData());
-            }
-        }
-
         #endregion
 
         #region Comment Tag Suggestions
@@ -3520,6 +3379,14 @@ where   R.RuleTypeID = @id
                                 }
                             });
                         }
+                        model.rows.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField>
+                                {
+                                    new ReadOnlyField { Name = "UID", Value = template.uid.ToString() }
+                                }
+                        });
                     }
                     group = null;
                     break;
@@ -3719,7 +3586,7 @@ where   R.RuleTypeID = @id
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                        
+
                         model.rows.Add(new DetailReadOnlyRowModel
                         {
                             columns = 1,
@@ -3770,7 +3637,7 @@ where   R.RuleTypeID = @id
                     var fusionQueryAttribute = Company.GetById<FusionQueryAttribute>(id);
                     if (fusionQueryAttribute != null)
                     {
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));                        
+                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
                     }
                     fusionQueryAttribute = null;
                     break;
@@ -4801,9 +4668,6 @@ where v.id = {0}", id)).FirstOrDefault();
             if (daysToLookBack <= 0) daysToLookBack = 5000;
             return Company.Query<FusionStatisticTileModel>(QueryConstants.FusionStatisticsItem, new { days = (daysToLookBack * -1) }).FirstOrDefault();
         }
-
-
-
 
         [Route("{type}/{id:int}/fields")]
         public List<EditableFieldItem> GetFieldTypesByObject(SystemObjects type, int id)
@@ -5866,7 +5730,7 @@ SELECT (
 
         #endregion
 
-        #region Reference - new replaces domain
+        #region Reference
 
         [HttpGet, Route("canReadReferenceItemType/{id:int}")]
         public async Task<HttpResponseMessage> CanReadReferenceItemType(int id)
@@ -5880,128 +5744,6 @@ where	Type = 'ReferenceItemType'
 		and ResourceID = @resource", new { id, resource = Company.CurrentResourceID });
 
             return Request.CreateResponse(HttpStatusCode.OK, !records.Any());
-        }
-
-        [HttpGet, Route("referenceItems/{typeID:int}/items.json")]
-        public async Task<HttpResponseMessage> GetReferenceItems(int typeID)
-        {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
-            return Request.CreateResponse(HttpStatusCode.OK, models);
-        }
-
-        [HttpGet, Route("referenceItems/field/{fieldId:int}/items.json")]
-        public Task<HttpResponseMessage> GetReferenceItemsByFieldId(int fieldId)
-        {
-            var field = Company.GetById<FieldType>(fieldId);
-            return GetReferenceItems((int)field.LookupObjectID);
-
-        }
-
-        [HttpGet, Route("referenceItems/{typeID:int}/items.xls")]
-        public async Task<HttpResponseMessage> GetReferenceItemsExcel(int typeID)
-        {
-            var models = await Company.QueryAsync<dynamic>($"exec [dbo].[GetReferenceItemValues] {typeID}, {Company.CurrentResourceID}");
-
-
-            var fields = Company.Filter<FieldType>(i => i.Object == "ReferenceItemType" && i.ObjectID == typeID).ToList().OrderBy(x => x.ColumnOrder);
-            var relations = new List<AssetType>();
-
-            var parent = Company.GetParentType(typeID, SystemObjects.ReferenceItemType);
-            var maxLoops = 20;
-
-            while (parent != null && maxLoops > 0)
-            {
-                relations.Insert(0, parent);
-
-                parent = Company.GetParentType(parent.ObjectID, SystemObjects.ReferenceItemType);
-
-                maxLoops--;
-            }
-
-
-            var document = new SLDocument();
-            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
-
-            #region Create the list sheet
-
-            #region Header
-
-            var colIndex = 0;
-
-
-            document.SetCellValue(1, ++colIndex, "Code");
-
-            //add parents for this ref list
-            foreach (var refList in relations)
-            {
-                document.SetCellValue(1, ++colIndex, refList.Name ?? "");
-            }
-
-            //add fields for this 
-            foreach (var field in fields)
-            {
-                document.SetCellValue(1, ++colIndex, field.FriendlyName ?? "");
-            }
-
-            document.SetCellValue(1, ++colIndex, "Asset UID");
-            document.SetCellValue(1, ++colIndex, "Asset ID");
-
-            #endregion
-
-            int rowIndex = 1;
-            foreach (var row in models)
-            {
-                var dataColIndex = 0;
-                rowIndex++;
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.Code ?? "");
-
-                var rowDict = ((IDictionary<string, object>)row);
-
-                foreach (var parentRefList in relations)
-                {
-                    var key = $"Rel{parentRefList.ObjectID}";
-
-                    if (rowDict.ContainsKey(key))
-                    {
-                        document.SetCellValue(rowIndex, ++dataColIndex, (rowDict[key] ?? "").ToString());
-                    }
-                }
-
-                foreach (var field in fields)
-                {
-                    var fieldKey = $"Field{field.ID}";
-
-                    if (rowDict.ContainsKey(fieldKey))
-                    {
-                        var value = (rowDict[fieldKey] ?? "");
-
-                        SetCellValue(document, rowIndex, ++dataColIndex, field.Type, value);
-                    }
-                }
-
-                document.SetCellValue(rowIndex, ++dataColIndex, row.UID.ToString() ?? "");
-                document.SetCellValue(rowIndex, ++dataColIndex, row.AssetID ?? "");
-            }
-
-            #endregion
-
-            var stream = new MemoryStream();
-            document.SaveAs(stream);
-            var len = stream.Length;
-            stream.Position = 0;
-            HttpResponseMessage result = null;
-            // serve the file to the client      
-            result = Request.CreateResponse(HttpStatusCode.OK);
-
-            result.Content = new StreamContent(stream);
-            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
-            result.Content.Headers.ContentLength = stream.Length;
-            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
-            {
-                FileName = $"Reference Items.xlsx"
-            };
-            return result;
         }
 
         #endregion

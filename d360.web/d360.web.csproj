@@ -404,9 +404,6 @@
     </Compile>
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
-    <Compile Include="Controllers\FieldsController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\FusionController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -723,8 +720,9 @@
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-hierarchies.component.html" />
     <Content Include="Scripts\app\components\admin\hierarchies\admin-level-editor.component.html" />
-    <Content Include="Scripts\app\components\artifact\artifact-column-filter.component.html" />
-    <Content Include="Scripts\app\components\artifact\artifact-grid.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
@@ -745,7 +743,6 @@
     <Content Include="Scripts\app\components\rule\rule-column-filter.component.html" />
     <Content Include="Scripts\app\components\rule\rule-list.component.html" />
     <Content Include="Scripts\app\components\artifact\artifact-list.component.html" />
-    <Content Include="Scripts\app\components\artifact\artifact-top-level-list.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-promotion-history.component.html" />
     <Content Include="Scripts\app\components\home\activity-details-tile.component.html" />
     <Content Include="Scripts\app\components\home\activity-tile.component.html" />
@@ -817,7 +814,7 @@
     <Content Include="images\x.png" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-editor.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-editor.component.html" />
-    <Content Include="Scripts\app\components\artifact\artifact-top-level-filter.component.html" />
+    <Content Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-editor.component.html" />
     <Content Include="Scripts\app\components\shared\dynamicgrideditor\dynamic-field.component.html" />
     <Content Include="Scripts\app\components\shared\relationship\object-relationships.component.html" />
@@ -851,6 +848,9 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
@@ -1220,7 +1220,6 @@
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\rule\rule-custom-export.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\hero-search-input.ts" />
@@ -1357,8 +1356,8 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\workflow\admin-workflow.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-custom-export.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-filter.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-custom-export.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-history.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-filter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-list.component.ts" />
@@ -1612,13 +1611,11 @@
     <TypeScriptCompile Include="Scripts\app\guards\admin-user.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-column-filter.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-definition.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-grid.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-base.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-column-filter.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-list.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\artifact\artifact-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\artifact\artifact.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\community\community.component.ts" />

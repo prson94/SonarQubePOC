@@ -29,24 +29,4 @@ export class ReferenceService extends BaseObservableService {
     deleteReferenceItemType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'referenceItemType', id);
     }
-
-    exportReferenceItems(id: number, name: string) {
-        this.http.get(`api/referenceItems/${id}/items.xls`, { responseType : 'blob' }).subscribe(data => this.downloadFile(data, name));
-    }
-
-    downloadFile(data: Blob, name: string) {
-        var filename = `${name} List ${new Date().toDateString()}.xlsx`;
-        if (window.navigator.msSaveOrOpenBlob) {
-            window.navigator.msSaveOrOpenBlob(data, filename);
-        }
-        else {
-            var url = window.URL.createObjectURL(data);
-            var anchor = document.createElement("a");
-            anchor.setAttribute("style", "display:none;");
-            document.body.appendChild(anchor);
-            anchor.setAttribute("download", filename);
-            anchor.href = url;
-            anchor.click();
-        }
-    }
 }

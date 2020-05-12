@@ -7,7 +7,6 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { SecondaryNavService } from '../../services/right-sidebar.service';
 import { WebAnalyticsService } from '../../services/web-analytics.service';
 import { ArtifactType } from '../../models/artifact-type.model';
-import { ArtifactBaseComponent } from './artifact-base.component';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { Artifact } from '../../models/artifacts.model';
@@ -15,6 +14,8 @@ import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { debounce, debounceTime } from 'rxjs/operators';
 import { AssetTypeClass } from '../../models/asset.model';
 import { Subscription } from 'rxjs';
+import { AssetGridBaseComponent } from '../assets-grid/asset-grid-base.component';
+import { AssetGridObject } from '../assets-grid/asset-grid.model';
 
 @Component({
     selector: 'd3s-artifact-list',
@@ -22,7 +23,9 @@ import { Subscription } from 'rxjs';
     providers: [ArtifactTypeService],
 })
 
-export class ArtifactListComponent extends ArtifactBaseComponent implements OnInit, OnDestroy {
+export class ArtifactListComponent extends AssetGridBaseComponent implements OnInit, OnDestroy {
+
+    private gridObject: AssetGridObject;
     private artifactType: ArtifactType;
     private artifactTypeHierarchy: ArtifactType[];
     private sub: any;
@@ -69,6 +72,7 @@ export class ArtifactListComponent extends ArtifactBaseComponent implements OnIn
                         this.area = res;
 
                         this.artifactType = artifactType;
+                        this.gridObject = ArtifactType.AsGridObject(this.artifactType);
                         this.setObjectInfo('ArtifactType', this.artifactType.ID);
 
                         this.artifactTypeHierarchy.push(this.artifactType);

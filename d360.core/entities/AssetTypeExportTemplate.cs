@@ -40,6 +40,9 @@ namespace d360.core.entities
         [DataMember]
         public byte[] TemplateFile { get; set; }
 
+        [DataMember]
+        public Guid uid { get; set; }
+
         #endregion
         [NotMapped, DataMember]
         public Guid AssetTypeUID { get; set; }
