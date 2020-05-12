@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetDisplayValueById-v1">
+  <changeSet author="TKlok" id="Function.dbo.GetAssetDisplayValueById-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -24,15 +24,18 @@ RETURN
 		from	dbo.Asset A
 				inner join dbo.AssetType T on T.ID = A.AssetTypeID 					
 				outer apply (
-							select	TF.value,
-									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, A.Code, FA.Name, GRP.Name) as FormattedValue
-							from	string_split(replace(replace(T.DisplayFormat, '{', '|'),'}','|'), '|') TF									
-									left join dbo.FieldType FT on FT.AssetTypeID = T.ID and FT.Name = TF.Value
-									left join dbo.Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
-									left join dbo.FusionAttribute FA on TF.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+							select	TL.value,
+									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name) as FormattedValue
+							from	string_split(replace(T.DisplayFormat, '{', '|'), '|') TF
+									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
+									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
+									left join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
+									left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
+									left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
+									left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
 									left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
-									left join dbo.[Group] GRP on A.Object = 'Group' and GRP.ID = A.ObjectID
-							where	RTRIM(TF.value) <> ''									
+							where	RTRIM(TF.value) <> ''
+									and RTRIM(TL.value) <> ''
 							) D
 		where 	A.ID = @Id 
 					
