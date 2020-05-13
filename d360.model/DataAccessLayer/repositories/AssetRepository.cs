@@ -1333,7 +1333,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
-                    org.DisplayFormat = model.DisplayFormat;
+                    org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     CompanyContext.Update(org);
 
                     #endregion
@@ -1344,12 +1344,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
                     if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
-                    r.DisplayFormat = model.DisplayFormat;
+                    r.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
 
                     assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
 
                     #endregion
