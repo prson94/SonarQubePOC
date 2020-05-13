@@ -398,7 +398,7 @@ namespace d360.web.Controllers.V2
                         case "_scoretype":
                             Enum.TryParse(qp.Value, true, out filterScoreTypes);
 
-                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                             if (!scoreTypes.Contains(filterScoreTypes) || string.IsNullOrEmpty(qp.Value))
                             {
