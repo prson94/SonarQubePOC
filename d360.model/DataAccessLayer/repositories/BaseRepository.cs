@@ -446,6 +446,10 @@ namespace d360.model.DataAccessLayer.repositories
 
                                             orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"try_cast(FJP{field.ID}.Value as {fieldDataType}) {orderDirection}";
                                         }
+                                        else if (field.Type == "Path")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.Path {orderDirection}";
+                                        }
                                         else
                                         {
                                             orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.{valueColumn} {orderDirection}";
