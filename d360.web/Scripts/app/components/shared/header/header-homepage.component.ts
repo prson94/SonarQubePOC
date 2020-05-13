@@ -92,7 +92,7 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
         this.isLoading = true;
         let f = new FavoriteApiModel();
         //check these to determine fav type
-        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
+        if (this.IsPageType()) {
             f.Type = "Page";
         } else if (this.currentObject.endsWith("Type")) {
             f.Type = "AssetType";
@@ -109,6 +109,17 @@ export class HeaderHomePageComponent implements OnInit, OnDestroy, OnChanges {
                 this.ref.markForCheck();
             }
         );
+    }
+
+    IsPageType(): any {
+        let res = false;
+        if ((!this.currentObject && !this.currentObjectId) || (this.currentObject == 'ReferenceItemType')) {
+            res = true;
+        }
+        if (this.uri.toLowerCase().indexOf("sidebar") !== -1) {
+            res = true;
+        }
+        return res;
     }
 
     checkIsFavorite() {
