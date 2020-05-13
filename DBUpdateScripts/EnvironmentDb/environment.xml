@@ -248,6 +248,7 @@
 	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
+	<include file="scripts/Table.api.ExecutionRelationshipError.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	

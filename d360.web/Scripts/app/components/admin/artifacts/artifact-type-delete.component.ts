@@ -19,17 +19,17 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     @Input() callback: Function;
     @Input() artifactTypeId: number;
     @Input() assetTypeId: number;
+    @Input() count: number = 0;
     @Output() onCancel = new EventEmitter();
 
     public artifactType: ArtifactType;
     assetTypeClass: AssetTypeClass;
-    private count: number = 0;
     private signoff: boolean = false;
     private className: string;
     private sub: any;
 
     constructor(
-        private artifactTypeService:ArtifactTypeService,
+        private artifactTypeService: ArtifactTypeService,
         private artifactService: ArtifactService,
         private messagesService: MessagesObservableService,
         private route: ActivatedRoute,
@@ -56,25 +56,18 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
     }
 
     private load() {
-        forkJoin(
-            this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId),
-            this.artifactService.getArtifacts(this.assetTypeId, 10, 1, '', SortOrder.Ascending)
-        )
-        .subscribe(
-            (
-                [
-                    getArtifactTypeDetailsResponse,
-                    getArtifactsResponse
-                ]
-            ) => {
-                this.artifactType = getArtifactTypeDetailsResponse;
-                this.count = getArtifactsResponse.total;
-            },
-            err => {
-                this.isLoading = false;
-                this.messagesService.showError("Error", err.message);
-            }
-        );
+        this.artifactTypeService.getArtifactTypeDetails(this.artifactTypeId)
+            .subscribe(
+                (
+                    getArtifactTypeDetailsResponse
+                ) => {
+                    this.artifactType = getArtifactTypeDetailsResponse;
+                },
+                err => {
+                    this.isLoading = false;
+                    this.messagesService.showError("Error", err.message);
+                }
+            );
     }
 
     private delete(): void {
@@ -83,7 +76,7 @@ export class ArtifactTypeDeleteComponent extends BaseComponent implements OnInit
         }
 
         this.isLoading = true;
-        
+
         if (this.callback) {
             this.callback(this.artifactTypeId);
         }

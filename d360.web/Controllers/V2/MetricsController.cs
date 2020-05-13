@@ -398,7 +398,7 @@ namespace d360.web.Controllers.V2
                         case "_scoretype":
                             Enum.TryParse(qp.Value, true, out filterScoreTypes);
 
-                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                             if (!scoreTypes.Contains(filterScoreTypes) || string.IsNullOrEmpty(qp.Value))
                             {
@@ -1378,7 +1378,7 @@ namespace d360.web.Controllers.V2
                 rowNumber++;
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetClass);
                 doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetTypePath);
-                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetPathElements != null ? string.Join(" > ", row.EvaluatedAssetPathElements.Select(e => string.Join("/", e))) : null);
+                doc.SetCellValue(rowNumber, index++, row.EvaluatedAssetDisplayPath);
                 doc.SetCellValue(rowNumber, index++, row.RunDate.ToString("yyyy-MM-dd HH:mm:ss"));
                 doc.SetCellValue(rowNumber, index++, row.EffectiveDate.ToString("yyyy-MM-dd"));
                 doc.SetCellValue(rowNumber, index++, row.PassFraction.ToString());

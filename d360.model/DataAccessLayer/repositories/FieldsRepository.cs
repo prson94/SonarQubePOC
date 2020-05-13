@@ -747,6 +747,7 @@ from	IntersectType I
                         bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
+                        var isFieldFromRelationship = i.FieldTypeName.StartsWith("Relation.");
 
                         var fieldInfo = Company.Query<FieldInfo>(@"
                             select coalesce(F.ID, 0) as FieldTypeID, T.Class
@@ -754,6 +755,19 @@ from	IntersectType I
                                    left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
                             where  T.uid = @AssetTypeUid", 
                             new { i.FieldTypeName, i.AssetTypeUid }).SingleOrDefault();
+
+                        if (isFieldFromRelationship)
+                        {
+                            var relation = f.Type.ComputedRelationshipLookup.Definition.Relations.FirstOrDefault(x => x.AssetTypeUid == i.AssetTypeUid);
+                            var intersectTypeUid = relation.IntersectTypeUid;
+                            var fieldName = i.FieldTypeName.Replace("Relation.", "").Trim();
+                            fieldInfo = Company.Query<FieldInfo>(@"
+                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class
+                            from   IntersectType IT 
+                                   left join FieldType F on F.Object = 'IntersectType' and F.ObjectID = IT.Id and F.Name = @fieldName 
+                            where  IT.uid = @intersectTypeUid",
+                            new { fieldName, intersectTypeUid }).SingleOrDefault();
+                        }
 
                         // Invalid uid
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)

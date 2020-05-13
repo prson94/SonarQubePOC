@@ -10,6 +10,7 @@ using System.Configuration;
 using System.IO;
 using d360.core;
 using Microsoft.Azure;
+using Newtonsoft.Json;
 
 namespace d360.extensions.storage
 {
@@ -51,6 +52,35 @@ namespace d360.extensions.storage
             if (!cache) blockBlob.Properties.CacheControl = "private, max-age=0, no-cache, no-store";
             if (!string.IsNullOrEmpty(contentType)) blockBlob.Properties.ContentType = contentType;
             blockBlob.UploadText(content);
+        }
+
+        
+        public async Task SerializeJsonObjectToBlobAsync(string folderName, string fileName, object obj)
+        {
+            var c = getContainer(folderName);
+            CloudBlockBlob blob = c.GetBlockBlobReference(fileName);
+
+            using (Stream stream = await blob.OpenWriteAsync())
+            using (StreamWriter sw = new StreamWriter(stream))
+            using (JsonTextWriter jtw = new JsonTextWriter(sw))
+            {
+                JsonSerializer ser = new JsonSerializer();
+                ser.Serialize(jtw, obj);
+            }
+        }
+
+        public async Task<T> DeserializeJsonObjectFromBlobAsync<T>(string folderName, string fileName)
+        {
+            var c = getContainer(folderName);
+            CloudBlockBlob blob = c.GetBlockBlobReference(fileName);
+
+            using (Stream stream = await blob.OpenReadAsync())
+            using (StreamReader sr = new StreamReader(stream))
+            using (JsonTextReader jtr = new JsonTextReader(sr))
+            {
+                JsonSerializer ser = new JsonSerializer();
+                return ser.Deserialize<T>(jtr);
+            }
         }
 
         public void DeleteFile(string folderName, string fileName)
