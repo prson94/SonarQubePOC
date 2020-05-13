@@ -378,7 +378,7 @@ namespace d360.web.Controllers
         internal ICommunityContext Community;
 
         internal List<string> limitedFieldTypes = new List<string> {
-            DataType.Attribute.ToString(),
+            DataType.Path.ToString(),
             DataType.ComplexRelationLookup.ToString(),
             DataType.FieldFromRelationship.ToString(),
             DataType.DataTableSelect.ToString(),
@@ -1416,6 +1416,11 @@ outer apply (select top 1 AssetID from ResponsibilityDetail where AssetID = A.ID
                         sb.Append($"(Field{field.ID}_OTD.{columnName} like @simpleFilter + '%')");
                 }
                 else if (field.Type == DataType.FieldFromRelationship.ToString())
+                {
+                    var columnName = "FormattedValue";
+                    sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
+                }
+                else if (field.Type == DataType.Path.ToString())
                 {
                     var columnName = "FormattedValue";
                     sb.Append($"(Field{field.ID}_OT.{columnName} like @simpleFilter + '%')");
