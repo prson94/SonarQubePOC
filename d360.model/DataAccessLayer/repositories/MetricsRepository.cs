@@ -788,9 +788,14 @@ namespace d360.model.DataAccessLayer
             var parameters = new DynamicParameters();
             string orderBy;
             string effectiveSQL = "";
-            string evaluatedAssetSQL;
 
             string pathSeparator = " > ";
+            var evaluatedAssetSQLCondition = "";
+
+            var countSql = $@"select 
+	                            Count(OwningAssetRecords.ResultUid)";
+
+            string sortPhrase = "EffectiveDate";
 
             if (effectiveDateStart.HasValue)
             {
@@ -803,77 +808,12 @@ namespace d360.model.DataAccessLayer
                 parameters.Add("@effectiveEndDate", effectiveDateEnd.Value);
             }
 
-            string owningAssetSQL = $@"(
-	                                select 
-		                                AR.Uid resultUid, AR.Passcount, AR.FailCount, AR.EffectiveDate, AR.RunDate, AR.PassFraction, AN.Uid owningAssetUid
-                                    from 
-		                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
-	                                where 
-		                                Match (AN -(ARE)-> AR)
-		                                and 
-                                        AN.Uid = @owningAssetUid
-		                                and 
-		                                ARE.Class = {(int)ResultRelationClass.Owns}
-                                        {effectiveSQL}
-	                                ) DQR";
-
-            string sortPhrase = "EffectiveDate";
-
             if (!string.IsNullOrWhiteSpace(sort))
             {
                 sortPhrase = sort;
             }
 
-            orderBy = $"Order by {sortPhrase} {direction ?? ""}";
-
-            var countSql = $@"select 
-	                            Count(DQR.resultUid)
-                            from 
-	                            {owningAssetSQL}";
-
-            if (evaluatedAssetUid != null)
-            {
-                evaluatedAssetSQL = $@"inner Join 
-	                            (		
-		                            select 
-			                            AR.Uid resultUid, AN.Uid evaluatedAssetUid, AN.Path EvaluatedAssetPath, AN.Segments EvaluatedAssetSegments,
-                                        AP.Path EvaluatedAssetTypePath, case when AN.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
-		                            from 			                            
-                                        AssetResult AR
-				                        inner join 
-				                        assetResultedge ARE on AR.$node_id = ARE.$to_id and ARE.Class = {(int)ResultRelationClass.EvaluatedBy}		
-				                        inner join 
-				                        graph.AssetNode AN on AN.$node_id = ARE.$from_id and AN.Uid = @evaluatedAssetUid				                        
-				                        inner join
-				                        AssetType AT on AT.Uid = AN.AssetTypeUid
-				                        cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP				                            
-	                            ) DQA on DQA.resultUid=DQR.resultUid";
-                
-                //only count records where owning and evaluated assets exist.
-                countSql = $@"{countSql} 
-                              {evaluatedAssetSQL}";
-            }
-            else
-            {
-                evaluatedAssetSQL = $@"left Join
-	                            (	select 
-	                                    AR.Uid resultUid, AN_eval.Uid evaluatedAssetUid, AN_eval.Path EvaluatedAssetPath, AN_eval.Segments EvaluatedAssetSegments, graph.GetPath(AN_eval.Segments, ' > ', ' / ') AssetPath,
-	                                    AP.Path EvaluatedAssetTypePath, case when AN_eval.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN_eval.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass
-                                    from 
-	                                    AssetResult AR
-	                                    inner join 
-	                                    AssetResultEdge ARE_own on AR.$node_id = ARE_own.$to_id and ARE_own.Class= {(int)ResultRelationClass.Owns} -- join the edge table to the result table but only get the owning records.		
-	                                    inner join
-	                                    graph.AssetNode AN_own on AN_own.$node_id = ARE_own.$from_id and AN_own.Uid = @owningAssetUid {effectiveSQL} -- get the asset node records for the Owning Asset Uid
-	                                    inner join
-	                                    assetResultedge ARE_eval on ARE_eval.$to_id = ARE_own.$to_id and ARE_eval.Class = {(int)ResultRelationClass.EvaluatedBy} -- join the edge table to itself but only get the evaluated records.
-	                                    inner join 
-	                                    graph.AssetNode AN_eval on AN_eval.$node_id = ARE_eval.$from_id -- get the node records for the evaluated record.
-	                                    inner join 									
-	                                    AssetType AT on AT.Uid = AN_eval.AssetTypeUid
-	                                    cross apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP			                            
-	                            ) DQA on DQA.resultUid=DQR.resultUid";
-            }                            
+            orderBy = $"Order by {sortPhrase} {direction ?? ""}";           
 
             string includeDuplicateSQL = @",
 							case 
@@ -900,24 +840,84 @@ namespace d360.model.DataAccessLayer
                 includeDuplicateSQL = includeDuplicateApply = "";
             }
 
-            var dataQualityResultSql = $@";with ResultsTable as (select 
-	                        DQR.resultUid as ResultUid, DQR.OwningAssetUid as OwningAssetUid, DQA.evaluatedAssetUid as EvaluatedAssetUid, DQA.EvaluatedAssetPath as EvaluatedAssetPath, DQA.EvaluatedAssetSegments as EvaluatedAssetSegments, DQA.EvaluatedAssetTypePath as EvaluatedAssetTypePath, DQA.EvaluatedAssetClass as EvaluatedAssetClass, DQR.EffectiveDate as EffectiveDate, DQR.RunDate as RunDate, DQR.Passcount as Passcount, DQR.FailCount as FailCount,(DQR.FailCount + DQR.PassCount) TotalCount, DQR.PassFraction as PassFraction, CASE WHEN PassCount = 0 and FailCount = 0 THEN null else P.Passed END as Passed
-                        from 
-	                        {owningAssetSQL}
-	                        {evaluatedAssetSQL}
-	                        cross apply 
-	                        CalculatePassedPropertyForAssetResult(DQR.resultUid) P
-                                )
+            string OwningSql = $@";with OwningAssetRecords as (select AR.Uid ResultUid, 
+									                AN.Uid as OwningAssetUid,
+									                AR.Passcount, 
+									                AR.FailCount, 
+									                AR.EffectiveDate, 
+									                AR.RunDate, 
+									                AR.PassFraction,
+									                AN.$node_id as node_id
+                                                    from 
+		                                                AssetResult AR, assetResultedge ARE, graph.AssetNode AN					
+	                                                where 
+		                                                Match (AN -(ARE)-> AR)
+		                                                and 
+                                                        AN.Uid = @owningAssetUid
+		                                                and 
+		                                                ARE.Class = {(int)ResultRelationClass.Owns}
+                                                        {effectiveSQL})";
+
+            string resultJoins = $@"from OwningAssetRecords
+                                    inner join assetresult ar on OwningAssetRecords.resultUID = ar.uid
+                                    inner join AssetResultEdge ARE_own on OwningAssetRecords.node_id = ARE_own.$from_id and ar.$node_id=ARE_own.$to_id and ARE_own.Class= {(int)ResultRelationClass.Owns} 		
+                                    left join assetResultedge ARE_eval on ARE_eval.$to_id = ARE_own.$to_id and ARE_eval.Class = {(int)ResultRelationClass.EvaluatedBy}
+                                    left join graph.AssetNode AN_eval on AN_eval.$node_id = ARE_eval.$from_id 
+                                    left join AssetType AT on AT.Uid = AN_eval.AssetTypeUid";
+
+            countSql = $@"{OwningSql}
+                          {countSql}";
+
+            if (evaluatedAssetUid != null)
+            {
+                evaluatedAssetSQLCondition = "Where AN_eval.uid = @evaluatedAssetUid";
+
+                //only count records where owning and evaluated assets exist.
+                countSql = $@"{countSql} 
+                              {resultJoins}
+                              {evaluatedAssetSQLCondition}";
+            }
+            else
+            {
+                countSql = $@"{countSql} 
+                              from OwningAssetRecords";
+            }
+
+            string ResultSql = $@"
+                select 
+	                OwningAssetRecords.resultUID as ResultUid, 
+	                OwningAssetRecords.OwningAssetUid as OwningAssetUid, 
+	                AN_eval.uid as EvaluatedAssetUid, 
+	                AN_eval.Path EvaluatedAssetPath, 
+	                AN_eval.Segments EvaluatedAssetSegments,
+	                AP.Path EvaluatedAssetTypePath, 
+	                case when AN_eval.class = {(int)AssetTypeClass.BusinessAsset} then '{AssetTypeClass.BusinessAsset.GetDisplayName()}' when AN_eval.class = {(int)AssetTypeClass.TechnicalAsset} then '{AssetTypeClass.TechnicalAsset.GetDisplayName()}' else '' end EvaluatedAssetClass,
+	                OwningAssetRecords.EffectiveDate as EffectiveDate, 
+	                OwningAssetRecords.RunDate as RunDate, 
+	                OwningAssetRecords.Passcount as Passcount, 
+	                OwningAssetRecords.FailCount as FailCount,
+	                (OwningAssetRecords.FailCount + OwningAssetRecords.PassCount) TotalCount, 
+	                OwningAssetRecords.PassFraction as PassFraction, 
+	                CASE WHEN OwningAssetRecords.PassCount = 0 and OwningAssetRecords.FailCount = 0 THEN null else P.Passed END as Passed
+                {resultJoins}
+                outer apply dbo.GetAssetTypeTextPathById(AT.id,'{pathSeparator}') AP
+                cross apply 
+                CalculatePassedPropertyForAssetResult(OwningAssetRecords.resultUid) P
+                {evaluatedAssetSQLCondition}";
+
+            var dataQualityResultSql = $@"    
+                            {OwningSql}
+                            ,ResultsTable as ({ResultSql})
                             select ResultsTable.*,
                             case
-								when ResultsTable.EvaluatedAssetSegments is not null then graph.GetPath(ResultsTable.EvaluatedAssetSegments, ' > ', ' / ')
+								when ResultsTable.EvaluatedAssetSegments is not null then graph.GetPath(ResultsTable.EvaluatedAssetSegments, '{pathSeparator}', ' / ')
 								else null
 							end as EvaluatedAssetDisplayPath
                             {includeDuplicateSQL}
 							from ResultsTable
                             {includeDuplicateApply}
 	                        {orderBy}
-	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
+	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";            
 
             result.pageNum = pageNum;
             result.pageSize = pageSize;
