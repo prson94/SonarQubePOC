@@ -34,6 +34,17 @@ export class AssetService extends BaseObservableService {
             );
     }
 
+    public getAssetTypeLegacyUri(uid: string)
+        : Observable<string & ErrorResponse> {
+        return this
+            .http
+            .get(`api/legacyuri/AssetType/${uid}`)
+            .pipe(
+                map(response => <string & ErrorResponse>response),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public deleteAsset(
         assetTypeUid: string,
         uid: string
