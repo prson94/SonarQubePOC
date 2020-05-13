@@ -743,6 +743,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Link":
                         fieldType = "html";
                         break;
+                    case "Path":
+                        fieldType = "path";
+                        break;
                     case "Tag":
                         fieldType = "tag";
                         break;
