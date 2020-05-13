@@ -1,4 +1,11 @@
-﻿export class Favorite {
+﻿export class FavoriteApiModel{
+    Route: string;
+    Name: string;
+    Type: string;
+    Uid: string;
+}
+
+export class Favorite {
     ID: number;
     ResourceID: number;
     Route: string;
@@ -7,6 +14,6 @@
     isOverride: boolean = false;
     Category: string;
     Object: string;
-    ObjectID: number;  
+    ObjectID: number;
     IsHomePage: boolean = false;
 }

@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import * as _ from 'lodash';
 import { Paginator } from 'primeng/paginator'
+import { totalmem } from 'os';
 
 @Component({
     selector: 'd3s-paginator',
@@ -135,32 +136,20 @@ export class PaginatorComponent implements OnChanges, OnInit {
 
     CheckVisableNumbers() {
         this.pageOptions = [];
-        let currentPage = this.page + 1, range = 5,  totalPages = this.getPageCount(), start = 1;  
+        let currentPage = this.page + 1, totalPages = this.getPageCount();
+        let step = 2; // Current page +- step
         let paging = [];      
-        if (currentPage < (range / 2) + 1) {
-            start = 1;
 
-        } else if (currentPage >= (totalPages - (range / 2))) {
-            start = Math.floor(totalPages - range + 1);
+        //end pagination at CurrentPage+2 or total pages, whichever is smallest
+        let end = Math.min(currentPage + step, totalPages);
+        //start pagination at CurrentPage-2 or end-4, whichever is smallest, but no lower than 1
+        let start = Math.max(Math.min(currentPage - step, end - 2 * step), 1);
 
-        } else {
-            start = (currentPage - Math.floor(range / 2));
-        }
-
-        for (let i = start; i <= ((start + range) - 1); i++) {
-            if (i <= totalPages)
-                paging.push(i); 
+        for (let i = start; i <= end; i++) {
+            paging.push(i); 
         }
 
-        if (this.page < 2 && totalPages <= 3) {
-            this.pageOptions = paging.splice(0, (totalPages));
-        }
-        else if (this.page < 2 && totalPages > 3) {
-            this.pageOptions = paging.splice(0, 3);
-        }
-        else {
-            this.pageOptions = paging;
-        }
+        this.pageOptions = paging;
     }
 
     GetToDisplayValue() {

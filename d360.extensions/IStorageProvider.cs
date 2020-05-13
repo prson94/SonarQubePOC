@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace d360.extensions
 {
@@ -23,6 +24,9 @@ namespace d360.extensions
         void CreateFile(string folderName, string fileName, Stream file, string contentType = null, bool cache = true);
 
         void CreateFile(string folderName, string fileName, string content, string contentType = null, bool cache = true);
+
+        Task SerializeJsonObjectToBlobAsync(string folderName, string fileName, object obj);
+        Task<T> DeserializeJsonObjectFromBlobAsync<T>(string folderName, string fileName);
 
         void DeleteFile(string folderName, string fileName);
 

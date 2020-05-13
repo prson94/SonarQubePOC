@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.AssetTypeExportTemplate-v1">
+  <changeSet author="TDuric" id="Table.dbo.AssetTypeExportTemplate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -37,11 +37,20 @@ BEGIN
 	ALTER TABLE [dbo].[AssetTypeExportTemplate] WITH CHECK ADD  CONSTRAINT [FK_AssetTypeExportTemplate_AssetType] FOREIGN KEY([AssetTypeID]) REFERENCES [dbo].[AssetType] ([ID])
 	ALTER TABLE [dbo].[AssetTypeExportTemplate] CHECK CONSTRAINT [FK_AssetTypeExportTemplate_AssetType]
 END
+
+IF COL_LENGTH('dbo.AssetTypeExportTemplate', 'uid') IS NULL
+BEGIN
+    ALTER TABLE dbo.AssetTypeExportTemplate ADD uid uniqueidentifier not null constraint DF_AssetTypeExportTemplate_Uid default newid()
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF COL_LENGTH('dbo.AssetTypeExportTemplate', 'uid') IS NOT NULL
+BEGIN
+	ALTER TABLE dbo.AssetTypeExportTemplate DROP CONSTRAINT DF_AssetTypeExportTemplate_Uid
+    ALTER TABLE dbo.AssetTypeExportTemplate DROP COLUMN uid
+END
 		]]>
 	</rollback>
   </changeSet>

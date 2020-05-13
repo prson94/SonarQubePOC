@@ -2,14 +2,6 @@
 import { Router, ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
-import {
-    GridDefinition,
-    GridColumn,
-    GridField,
-    GridFilterColumn,
-    GridFilterExpression,
-    GridRelationshipFilterExpression
-} from '../../models/grid-definition.model';
 import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.service';
 import { RulesService } from '../../services/rules.service';
 import { GridDefinitionService } from '../../services/grid-definition.service';
@@ -23,6 +15,7 @@ import { SecondaryNavService } from '../../services/right-sidebar.service';
 import * as _ from 'lodash';
 import { MessagesObservableService } from '../../services/messages-observable.service';
 import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { AssetGridObject } from '../assets-grid/asset-grid.model';
 
 @Component({
     selector: 'd3s-rule-list',
@@ -35,17 +28,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
     private currentAreaNameSubscription: any;
     private currentAreaName: string;
     ruleTypeId: number;
-    private rules: any[] = [];
-    private selected: Rule;
+    gridObject: AssetGridObject;
     private ruleType: RuleType;
-    private showEditor: boolean = false;
-    private showDelete: boolean = false;
-    private showCustomExport: boolean = false;
-    private hasCustomExport: boolean = false;
 
-    columns: GridColumn[] = [];
-    fields: GridField[] = [];
-    filtercolumns: GridFilterColumn[] = [];
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -62,21 +47,9 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         this.secondaryNavService = secondaryNavService;
     }
 
-    get globalFilterFields(): string[] {
-        let f = this.columns.map(c => c.datafield);
-        f.push('ID');
-        f.push('Dimension');
-        return f;
-    }
-
-    private exportCustomRules() {
-        this.showCustomExport = true;
-    }
-
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
-            
-            this.showCustomExport = false;
+
             this.ruleTypeId = +params['ruleTypeId'];
             this.currentAreaNameSubscription =
                 this.headerBreadcrumbService
@@ -86,17 +59,15 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
             this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
 
-            this.getFieldsDefinition();
-            
             this.isLoading = true;
             this.rulesService.getRuleType(this.ruleTypeId)
                 .subscribe(result => {
                     this.isLoading = false;
                     this.ruleType = result;
+                    this.gridObject = RuleType.AsGridObject(this.ruleType);
+
                     this.setObjectInfo('RuleType', this.ruleType.ID);
-                    this.rulesService.hasCustomExport(this.ruleType.AssetTypeUID).subscribe(res => {
-                        this.hasCustomExport = res;
-                    });
+
                     this.headerBreadcrumbService.getFolderTitle('#Data Quality').then((res) => {
                         this.headerBreadcrumbService.clearBreadcrumbs();
                         this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.currentAreaName ? this.currentAreaName : res));
@@ -110,13 +81,12 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
 
                         this.headerBreadcrumbService.getAssetFolderIcon('RuleType', this.ruleType.ID, this.currentAreaName ? this.currentAreaName : res).subscribe(icon => {
                             this.secondaryNavService.setCurrentArea(this.ruleType.Name, icon, 'Rules');
-                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true));
+                            this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject('RuleType', this.ruleType.ID, this.ruleType.Name, null, true, null, this.ruleType.AssetTypeUID));
                             this.setCommonSecondaryNavTabs(false, false, this.ruleType.HasDashboards);
                         });
                         this.secondaryNavService.showHeader(true);
                     });
                     this.loadPermissions(this.permissionsService, StringConstants.ObjectRuleType, this.ruleTypeId);
-                    this.loadRules();
                     this.setBrowserTitle(this.titleService, this.ruleType.Name);
                 });
         });
@@ -130,79 +100,5 @@ export class RuleListComponent extends BaseComponent implements OnInit, OnDestro
         if (this.routeParamsSubscription) {
             this.routeParamsSubscription.unsubscribe();
         }
-    }
-
-    getFieldsDefinition() {
-        this.gridDefinitionService.getGridDefinition(this.ruleTypeId, StringConstants.ObjectRuleType).subscribe(
-            result => {
-                this.columns = result.Columns.filter(x => x.datafield != 'Name');
-                this.filtercolumns = result.FilterColumns;
-                this.fields = result.Fields;
-            }
-        );
-    }
-
-    customSort($event: { data: any[], field: any, order: number }) {
-        $event.data.sort((data1, data2) => {
-            const value1 = data1[$event.field];
-            const value2 = data2[$event.field];
-            let result = 0;
-
-            if (!value1 && value2)
-                result = -1;
-            else if (value1 && !value2)
-                result = 1;
-            else if (!value1 && !value2)
-                result = 0;
-            else if (typeof value1 === 'string' && typeof value2 === 'string') {
-                if (!isNaN(Date.parse(value1)) && !isNaN(Date.parse(value2))) {
-                    const date1 = new Date(value1).getTime();
-                    const date2 = new Date(value2).getTime();
-                    result = (date1 < date2) ? -1 : (date1 > date2) ? 1 : 0;
-                } else {
-                    result = value1.localeCompare(value2);
-                }
-            } else
-                result = (value1 < value2) ? -1 : (value1 > value2) ? 1 : 0;
-
-            return ($event.order * result);
-        });
-    }
-
-    private exportRules() {
-        this.rulesService.exportRules(this.ruleType.AssetTypeUID, this.ruleType.Name);
-    }
-
-    private loadRules() {
-        this.isLoading = true;
-        this.rulesService.getRules(this.ruleTypeId)
-            .subscribe(result => {
-                this.isLoading = false;
-                this.rules = result;
-
-                if (this.rules.length && this.rules.length > 0) this.selected = this.rules[0];
-            });
-    }
-
-    private showAddRule() {
-        this.selected = null;
-        this.showEditor = true;
-    }
-
-    private saveRule(event) {
-        this.loadRules();
-        this.headerActionsService.emitFavoritesChange();
-        this.showEditor = false;
-    }
-
-    private showRule(rule) {
-        this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl('rule', rule.ID, this.ruleTypeId));
-    }
-
-    public onDeleted() {
-        this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
-        this.rules = this.rules.filter(x => x.ID != this.selected.ID);
-        this.selected = this.rules.length > 0 ? this.rules[0] : null;
-        this.showDelete = false;
     }
 };

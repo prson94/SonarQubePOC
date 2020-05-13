@@ -102,62 +102,6 @@ export class ArtifactService extends BaseObservableService {
             );
     }
 
-    getArtifactsXls(
-        listableOnly: boolean,
-        artifactType: ArtifactType,
-        sortfield: string,
-        sortorder: SortOrder,
-        filters?: GridFilterExpression[],
-        relationships?: GridRelationshipFilterExpression[],
-        simpleFilter?: string,
-        owner?: GridOwnerFilter
-    ) {
-        const sortOrderText = sortorder == SortOrder.None ? "" : (sortorder == SortOrder.Descending ? "desc" : "asc");
-        let uri = `internal/artifacts/download/excel/${artifactType.ID}.xls?&sortDataField=${sortfield}&sortOrder=${sortOrderText}&listableOnly=${listableOnly}`;
-
-        if (filters != undefined) {
-            //regular fields
-            let normalFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Normal);
-            let count = 0;
-            uri += '&filterscount=' + normalFilters.length;
-
-            for (let filter of normalFilters) {
-                uri += `&filterdatafield${count}=${filter.field}&filtercondition${count}=${filter.condition}&filtervalue${count}=${filter.value}`;
-                count++;
-            }
-
-            //hiden filter fields
-            let hidFilters = filters.filter(f => f.fieldtype == GridFilterFieldType.Hidden);
-            count = 0;
-
-            uri += '&hidfilterscount=' + hidFilters.length;
-
-            for (let filter of hidFilters) {
-                uri += `&hidfilterdatafield${count}=${filter.field.replace("Field", "")}&hidfiltercondition${count}=${filter.condition}&hidfiltervalue${count}=${encodeURIComponent(filter.value)}`;
-                count++;
-            }
-        }
-
-        if (relationships != undefined) {
-            uri += '&relcount=' + relationships.length;
-            let count = 0;
-            for (let rel of relationships) {
-                uri += `&rel_typeid_${count}=${rel.relationshipType.IntersectTypeID}&rel_includetype_${count}=${rel.includeType}&rel_object_${count}=${rel.relationshipType.TargetType.replace("Type", "")}&rel_objectids_${count}=${rel.objectIds.join(",")}`;
-                count++;
-            }
-        }
-
-        if (simpleFilter != undefined) {
-            uri += `&filter=${encodeURIComponent(simpleFilter)}`;
-        }
-
-        if (owner != undefined) {
-            uri += `&ownerUsers=${owner.ownerUsers.join(',')}&ownerGroups=${owner.ownerGroups.join(',')}`;
-        }
-
-        this.getExcelFile(uri, artifactType.Name);
-    }
-
     private getExcelFile(uri: string, fileName: string) {
         this
             .http

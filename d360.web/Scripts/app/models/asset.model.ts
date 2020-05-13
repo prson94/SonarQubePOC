@@ -158,4 +158,3 @@ export class AssetCount {
         return tree;
     }
 }
-

@@ -20,13 +20,13 @@ import {FieldsObservableService} from '../../services/fieldsObservable.service';
 import {setTimeout} from 'core-js';
 
 @Component({
-    selector: 'd3s-artifact-top-level-filter',
-    templateUrl: 'artifact-top-level-filter.component.html',
+    selector: 'd3s-asset-grid-top-level-filter',
+    templateUrl: 'asset-grid-top-level-filter.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService]
 })
 
-export class ArtifactTopLevelFilterComponent extends BaseComponent implements OnInit {
+export class AssetGridTopLevelFilterComponent extends BaseComponent implements OnInit {
     @Input() fields: GridFilterColumn[];
     @Input() filters: GridFilterExpression[] = [];
 
