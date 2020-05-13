@@ -109,8 +109,8 @@
             </td>
             <td>
                 <span class="{{item.IsDuplicate ? 'duplicate-preview' : ''}}">
-                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetPathElements" [uid]="item.EvaluatedAssetUid">
-                        <span [innerHTML]="item.EvaluatedAssetPathElements|assetpathSeparator"></span></d3s-preview-tooltip>
+                    <d3s-preview-tooltip *ngIf="item.EvaluatedAssetDisplayPath" [uid]="item.EvaluatedAssetUid">
+                        <span [innerHTML]="formatPath(item.EvaluatedAssetDisplayPath)"></span></d3s-preview-tooltip>
                 </span>
             </td>
             <td>

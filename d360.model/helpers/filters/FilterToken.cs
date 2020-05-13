@@ -2,6 +2,7 @@
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -248,7 +249,7 @@ namespace d360.model.helpers
             {
                 case "number":
                     int number = 0;
-                    if (!int.TryParse(value.ToString(), out number))
+                    if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
                     {
                         throw new FormatException($"Invalid numeric value for field '{field}'");
                     }

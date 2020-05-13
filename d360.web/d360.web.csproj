@@ -396,9 +396,6 @@
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />
-    <Compile Include="Controllers\ArtifactsController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\AttributesController.cs">
       <SubType>Code</SubType>
     </Compile>
