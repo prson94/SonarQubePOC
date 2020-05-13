@@ -100,4 +100,28 @@ AS
 	</rollback>
   </changeSet>
 
+  <changeSet author="Bhoward" id="Table.dbo.AssetType-v2">
+    <comment>GOV-9840 - Adding AutoDisplayParentv col to be used by Technical or Business asset</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayParent') IS NULL
+BEGIN
+ALTER TABLE [dbo].[AssetType]
+ADD [AutoDisplayParent] 
+END
+		]]>
+    </sql>
+    <rollback>
+      <![CDATA[	
+IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayParent') IS NOT NULL
+BEGIN
+ALTER TABLE [dbo].[AssetType]
+DROP COLUMN [AutoDisplayParent]
+END
+		]]>
+    </rollback>
+  </changeSet>
 </databaseChangeLog>

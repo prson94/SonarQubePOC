@@ -284,8 +284,8 @@ namespace d360.web.Controllers
                             {
                                 MaximumDepth = 1,
                                 PredicateUid = null
-                            }
-
+                            },
+                            AutoDisplayParent = assetType.AutoDisplayParent
                         },
                         Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };

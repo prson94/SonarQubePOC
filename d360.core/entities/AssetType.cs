@@ -67,6 +67,8 @@ namespace d360.core.entities
 
         [NotMapped]
         public AssetType Parent { get; set; }
+        [DataMember]
+        public bool? AutoDisplayParent { get; set; }
     }
 
     public class AssetTypeBrowserApiViewModel

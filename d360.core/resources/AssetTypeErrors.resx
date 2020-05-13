@@ -192,4 +192,7 @@
   <data name="MaxLengthExceeded" xml:space="preserve">
     <value>{0} cannot exceed {1} characters.</value>
   </data>
+  <data name="AutoDisplayParentRestriction" xml:space="preserve">
+    <value>Auto Display Parent can be set only asset types that are a Business or Technical class.</value>
+  </data>
 </root>

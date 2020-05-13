@@ -181,6 +181,19 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         }
     }
 
+
+    ShowAutoDisplayOption() {
+        if (this.showParentPredicates) {
+            let selectedPredicate = this.model.Predicates.filter(x => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
+            if (selectedPredicate.length == 1) {
+                let onlyAllow = "child type of";
+                let name = selectedPredicate[0].label;
+                if (onlyAllow.toLowerCase() == name.toLowerCase())
+                    return true;
+            }
+        }
+        return false;
+    }
     private selectToken(e: any) {
         if (e == null)
             return;
