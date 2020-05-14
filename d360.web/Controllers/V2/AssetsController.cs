@@ -1109,6 +1109,7 @@ namespace d360.web.Controllers.V2
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
                 bool returnForUI = false;
+                string orderBy = string.Empty;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1155,6 +1156,11 @@ namespace d360.web.Controllers.V2
                     simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
                 }
 
+                if (qparams.Any(x => x.Key.ToLower() == "_order"))
+                {
+                    orderBy = qparams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
+                }
+
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter",
                         new
@@ -1176,9 +1182,6 @@ namespace d360.web.Controllers.V2
                 if (returnForUI)
                 {
                     useFriendlyNames = useUnflattedStructure = false;
-                    result.Add("Columns", Columns);
-                    result.Add("Fields", Fields);
-
                 }
 
                 if (fieldType.Type == "OwnershipLookup")
@@ -1221,6 +1224,14 @@ namespace d360.web.Controllers.V2
                          simpleFilter
                      }
                      ).First();
+
+
+
+                if (returnForUI)
+                {
+                    result.Add("Columns", Columns);
+                    result.Add("Fields", Fields);
+                }
 
                 result.Add("pageSize", pageSize);
                 result.Add("pageNum", pageNum);

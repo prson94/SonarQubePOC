@@ -51,7 +51,7 @@ begin
 	-- The tables to hold the statements that are used to build the SQL below.
 	declare @selects table (ColumnName varchar(500), Alias varchar(250))
 	declare @tables table ([Statement] varchar(500))
-	declare @wheres table ([Statement] varchar(500))
+	declare @wheres table ([Statement] varchar(MAX))
 	declare @orders table ([Statement] varchar(500))
 	
 	declare @count int = 0
@@ -197,6 +197,12 @@ begin
 			from	@fields F 
 			where	F.BaseField is not null;
 
+		insert into @selects
+			select CONCAT('H',RRN,'_R', FT ,'.IntersectTypeUid') as ColumnName,
+			CONCAT('H',RRN,'_',FT,'_IntersectTypeUid') as Alias 
+			 from @fields
+			where FieldTypeName like 'Related Item.%'
+
 		insert into @wheres
 			select	'H' + F.RRN + 
 					case 
@@ -224,16 +230,21 @@ begin
 
 		if @simpleFilter <> ''
 		begin
-			insert into @wheres
-				select '(' + string_agg(CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter'), ' or ') + ')' 
-				 from @fields f 
-				 cross apply(select case 
-						when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
-						when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
-						when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
-						else null
-					end as FieldCol)FSQL(col)
-				where F.FieldTypeName <> 'TextPath'
+				;with simpleFilterQueries as (select CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter') as Filter
+						 from @fields f 
+						 cross apply(select case 
+								when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+								when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
+								when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+								else null
+							end as FieldCol)FSQL(col)
+						where F.FieldTypeName <> 'TextPath'
+						union 
+						select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
+						 from @fields f 
+						where F.FieldTypeName = 'TextPath')
+				insert into @wheres
+				select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
 		end
 
 		insert into @orders
@@ -539,7 +550,7 @@ begin
 	declare @pagingQuery nvarchar(100) = 'offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
 
 	declare @sql nvarchar(max) = 'select '
-
+	print @assetId
 	if @countOnly = 1
 	begin
 		set  @sql = @sql + '@count = count(*) '

@@ -47,6 +47,7 @@ namespace d360.web.Models
                         customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeID}_Uid", $"Asset.[{assetIdx - 1}].RelatedItems.[{relatedItemIdx}].Uid");
                         customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeID}_DisplayValue", $"Asset.[{assetIdx - 1}].RelatedItems.[{relatedItemIdx}].DisplayValue");
                         customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeID}_Url", $"Asset.[{assetIdx - 1}].RelatedItems.[{relatedItemIdx}].Url");
+                        customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeID}_IntersectTypeUid", $"Asset.[{assetIdx - 1}].RelatedItems.[{relatedItemIdx}].IntersectTypeUid");
                         relatedItemIdx++;
                     }
                     else
@@ -75,8 +76,7 @@ namespace d360.web.Models
                 for (int i = 0; i < definition.Relations.Count; i++)
                 {
                     var relFields = definition.Fields
-                        .Where(x => x.AssetTypeUid == definition.Relations[i].AssetTypeUid
-                                && x.FieldTypeName.StartsWith("Related Item."))
+                        .Where(x => x.FieldTypeName.StartsWith("Related Item."))
                         .Count();
 
                     var dict = new Dictionary<string, object>();
@@ -108,6 +108,7 @@ namespace d360.web.Models
                                     if (relatedItemFields == null)
                                     {
                                         relatedItemFields = new Dictionary<string, object>();
+
                                     }
                                     relatedItemFields.Add(propName, prop.Value);
                                     relatedItems[rf] = relatedItemFields;
@@ -130,7 +131,7 @@ namespace d360.web.Models
                     }
 
                     if (relFields > 0)
-                        dict.Add("RelatedItems", relatedItems);
+                        dict.Add("RelatedItems", relatedItems.Where(x => x != null));
 
                     if (hasRelation)
                     {
@@ -148,5 +149,12 @@ namespace d360.web.Models
             return unflattened;
         }
 
+        public static Dictionary<string, string> GetSelects(this FieldTypeComplexLookupDefinition definition)
+        {
+            var ret = new Dictionary<string, string>();
+            List<Guid> assetTypes = definition.Relations.Select(x => x.AssetTypeUid.HasValue ? x.AssetTypeUid.Value : Guid.Empty).ToList();
+
+            return ret;
+        }
     }
 }
