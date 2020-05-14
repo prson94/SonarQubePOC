@@ -5,7 +5,8 @@
     ObjectID: number;
     ObjectTypeName: string;
     TextPath: string;
-    Url: string;
+    Url: string
+    Displayobject: string;
 }
 
 export class TagType {
