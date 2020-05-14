@@ -26,7 +26,13 @@ namespace igx.jobs.indexer
         static void Main()
         {
             var config = CoreFunction.GetJobHostConfiguration();
-            config.UseTimers();
+
+            /*
+             * Timer execution disabled (GOV-10646 - Lower / Stop rebuild of search indexes every weekend)
+             * To enable, uncomment the following line
+             */
+            //config.UseTimers();
+
             //We should only process one reindex queue item at a time
             config.Queues.BatchSize = 1;
 

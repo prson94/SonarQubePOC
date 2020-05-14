@@ -7,14 +7,12 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { PermissionsService } from '../../services/permissions.service';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { ReferenceItemType } from '../../models/reference.model';
-import { SecondaryNavItem, SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
+import { SecondaryNavCurrentObject } from '../../models/secondaryNav.model';
 import { ReferenceService } from '../../services/reference.service';
 import { UriBasedService } from '../../services/uri-based.service';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { AuthenticationService } from '../../services/authentication.service';
 import { FormMode } from '../../models/form.model';
-import { StringConstants } from '../../static/string-constants';
-import { ResponsibilityTypeRelationPermission, Permission } from '../../models/responsibility-type.model';
 import { AssetTypeService } from '../../services/asset-type.service';
 import { Subscription } from 'rxjs';
 
@@ -125,14 +123,16 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                         this.canAddReferenceItem = this.hasModifyAssetPermissions();
                         this.canEditReferenceItem = this.hasModifyAssetPermissions();
                         this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-
+                    });
+                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType', () => {
                         this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
                             this.headerBreadcrumbService.clearBreadcrumbs();
                             this.headerBreadcrumbService.clearCurrentObjectInfo();
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                            if (this.selectedReferenceItemType)
+                                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
                         });
                     });
-                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
                 }
             });
     }
@@ -145,22 +145,6 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
         if (this.loadObjectDataSub)
             this.loadObjectDataSub.unsubscribe();
 
-    }
-
-    referenceItemUri() {
-        if (this.selectedReferenceItemType == null) return "";
-
-        return `api/referenceItems/${this.selectedReferenceItemType.ID}/items.json`;
-    }
-
-    exportDataToExcel(): void {
-        if (!this.selectedReferenceItemType) return;
-
-        this.referenceService.exportReferenceItems(this.selectedReferenceItemType.ID, this.selectedReferenceItemType.Name);
-    }
-
-    private refreshItems(itemsGrid) {
-        itemsGrid.load();
     }
 
     private changeFormMode(formMode: FormMode) {

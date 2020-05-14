@@ -1,18 +1,18 @@
-﻿import {Injectable} from '@angular/core';
-import {TreeNode} from 'primeng/components/common/api';
+﻿import { Injectable } from '@angular/core';
+import { TreeNode } from 'primeng/components/common/api';
 import {
     AssetTypeClass
 } from '../models/asset.model';
 import {
     ArtifactTypeEditorModel,
-    ArtifactType    
+    ArtifactType
 } from '../models/artifact-type.model';
-import {BaseObservableService} from './baseObservable.service';
-import {MessagesObservableService} from './messages-observable.service';
-import {JsonResult} from '../models/jsonresult.model';
-import {HttpClient} from '@angular/common/http';
-import {Observable} from 'rxjs';
-import {catchError, map} from 'rxjs/operators';
+import { BaseObservableService } from './baseObservable.service';
+import { MessagesObservableService } from './messages-observable.service';
+import { JsonResult } from '../models/jsonresult.model';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 @Injectable()
 export class ArtifactTypeService extends BaseObservableService {
@@ -68,7 +68,7 @@ export class ArtifactTypeService extends BaseObservableService {
         var tree = new Array<TreeNode>();
 
         data.filter(d => d.ParentID == null).forEach(d => {
-            tree.push({data: d, children: [], expanded: false});
+            tree.push({ data: d, children: [], expanded: false });
         });
 
         tree.forEach(t => {
@@ -83,16 +83,16 @@ export class ArtifactTypeService extends BaseObservableService {
         data
     ) {
         data.filter(d => d.ParentID == node.data.ID).forEach(d => {
-            let child: TreeNode = {data: d, children: []};
+            let child: TreeNode = { data: d, children: [] };
             node.children.push(child);
             this.formTreeR(child, data);
         });
     }
 
-    public getPossibleArtifactOwners(artifactTypeId: number): Observable<any[]> {
+    public getPossibleArtifactOwners(objectType: string, artifactTypeId: number): Observable<any[]> {
         return this
             .http
-            .get(`/api/artifacttype/possibleowners/${artifactTypeId}`)
+            .get(`/api/${objectType}/possibleowners/${artifactTypeId}`)
             .pipe(
                 map(response => <any[]>response),
                 catchError(err => this.handleError(err))

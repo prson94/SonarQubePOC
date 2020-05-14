@@ -30,6 +30,7 @@
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
+	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
 	<include file="scripts/Function.graph.GetPathSegment.xml"/>
 	<include file="scripts/Function.graph.GetXmlSegment.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
@@ -247,6 +248,7 @@
 	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
+	<include file="scripts/Table.api.ExecutionRelationshipError.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	

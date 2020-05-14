@@ -504,6 +504,22 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_ValidationMinMaxValue Validation { get; set; }
     }
 
+    public class FieldTypeDataTypePathApiViewModel
+    {
+        [DataMember]
+        public int? ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+    }
+
     public class FieldTypeDataTypeRelationshipApiViewModel
     {
         [DataMember]
@@ -583,6 +599,8 @@ namespace d360.core.entities
         [DataMember]
         public FieldTypeDataTypeNumberApiViewModel Number { get; set; }
         [DataMember]
+        public FieldTypeDataTypePathApiViewModel Path { get; set; }
+        [DataMember]
         public FieldTypeDataTypeRelationshipApiViewModel Relationship { get; set; }
         [DataMember]
         public FieldTypeDataTypeTextApiViewModel Text { get; set; }
@@ -610,6 +628,7 @@ namespace d360.core.entities
             childPopulatedCount += (Link != null) ? 1 : 0;
             childPopulatedCount += (Lookup != null) ? 1 : 0;
             childPopulatedCount += (Number != null) ? 1 : 0;
+            childPopulatedCount += (Path != null) ? 1 : 0;
             childPopulatedCount += (Relationship != null) ? 1 : 0;
             childPopulatedCount += (Text != null) ? 1 : 0;
             childPopulatedCount += (Tag != null) ? 1 : 0;

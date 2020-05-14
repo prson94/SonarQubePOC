@@ -5,7 +5,6 @@ import { SelectItem } from 'primeng/api';
 import {
     FieldTypeEditorModel,
     Lookups,
-    FieldTypeFusionItemEditorModel,
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
@@ -22,7 +21,6 @@ import { Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { MessagesObservableService } from '../../../../services/messages-observable.service';
 import { FieldTypeAPIModelField, FieldType, FieldTypeAPIModel, DefinitionField, Relation } from '../../../../models/fieldtype-api.model';
-import { clearLine } from 'readline';
 
 
 @Component({
@@ -207,17 +205,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private getFormDataHandler = (responseGetFormData) => {
         if (responseGetFormData) {
             this.model.RelationItems = responseGetFormData.RelationItems;
-            this.model.FusionItems = responseGetFormData.FusionItems;
-
-            if (this.model.FusionItems != null) {
-                this.model.FusionItems.forEach(
-                    i => {
-                        if (i.SourceFusionAttributeType.toString().indexOf('|') == -1)
-                            i.SourceFusionAttributeType = 'FusionAttributeType|' + i.SourceFusionAttributeType.toString();
-                    }
-                );
-            }
-
+            
             if (this.model.RelationItems && this.currentType ==  'ComplexRelationLookup') {
                 this.loadComplexRelationLookup();
             }
@@ -406,28 +394,12 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.model.cardinalRelationship));
                     } else if (this.lookups.Field_CardinalReferenceRelationships.length > 0) {
                         observables.push(this.cardinalFieldFromRelationshipSelected(this.lookups.Field_CardinalReferenceRelationships[0].value));
-                    } else {
-                        //this.model.FieldType.LookupObjectID = null;
-                        //this.model.FieldType.LookupObjectType = null;
                     }
                     this.showDescription = false;
                 } catch (e) {
                     console.log(e);
                 }
-                break;
-            case 'fusionlookup':
-                this.lookups.ReferenceTypes = this.fieldsService.getFusionReferenceTypes();
-                if (this.model.FusionItems && this.model.FusionItems.length)
-                    this.model.FusionItems.forEach(
-                        i => {
-                            observables.push(
-                                this.loadTargetFusionAttributes(i).pipe(map(
-                                    () => this.loadFusionDisplayFields(i)
-                                )
-                                ));
-                        }
-                    );
-                break;
+                break;            
             case 'complexrelationlookup':             
                 this.showDescription = false;
                 if (this.model.RelationItems == null || this.model.RelationItems.length == 0) {
@@ -449,14 +421,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 break;
-            case 'json':
-                this.showDescription = false;
-                break;
-            case 'jsonelement':
-                this.showDescription = false;
-                break;
             case 'computedownershiplookup':
+            case 'json':
+            case 'jsonelement':
             case 'ownershiplookup':
+            case 'path':
                 this.showDescription = false;
                 break;
             case 'score':
@@ -710,33 +679,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         ));
     }
 
-    private loadTargetFusionAttributes(item: FieldTypeFusionItemEditorModel): Observable<any> {
-        let id;
 
-        if (item.SourceFusionAttributeType == null) {
-            return;
-        }
-
-        if (item.SourceFusionAttributeType.toString().indexOf('|') != -1) {
-            id = item.SourceFusionAttributeType.split('|')[1];
-        } else {
-            id = item.SourceFusionAttributeType;
-        }
-
-        return this.fieldsService.getFusionLookupTargetAttributeTypes(+id, item.ReferenceType).pipe(map(
-            d => {
-                item.TargetFusionAttributeTypes = d;
-            })
-        );
-    }
-
-    private loadFusionDisplayFields(item: FieldTypeFusionItemEditorModel): Subscription {
-        return this.fieldsService.getFusionDisplayFields(+item.TargetFusionAttributeType || +item.SourceFusionAttributeType).subscribe(
-            d => {
-                item.FusionDisplayFields = d;
-            }
-        );
-    }
 
     private loadAvailableScoreTypes(): Observable<any> {
         return this.fieldsService.getAvailableScoreTypes(this.assetTypeUid)
@@ -760,16 +703,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private onSubmit(): any {
         //convert DisplayFields to objects
         this.isLoading = true;
-        if (this.model.FusionItems) {
-            this.model.FusionItems.forEach(
-                i => {
-
-                    if (i.SourceFusionAttributeType.toString().indexOf('|') != -1)
-                        i.SourceFusionAttributeType = i.SourceFusionAttributeType.toString().split('|')[1];
-                }
-            );
-        }
-
+        
         if (this.currentType == 'Link') {
             {
                 if (!this.defaultLinkName && !this.defaultLinkAdress)
@@ -782,8 +716,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         } else if (this.currentType == 'Date') {
             this.model.FieldType.Type[this.currentType].DefaultValue = this.defaultDate;
         } 
-
-        
+                
 
         let apiModel = new FieldTypeAPIModel();
         apiModel.Action = "Merge";
@@ -873,7 +806,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private changeRefType(index: number, selected: string = null): Observable<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
@@ -1284,22 +1216,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         this.validate('NameTaken');
     }
 
-    private addFusion() {
-        let i = new FieldTypeFusionItemEditorModel();
-
-        i.ReferenceType = this.lookups.ReferenceTypes[0].value;
-
-        if (this.model.FusionItems == null) {
-            this.model.FusionItems = [];
-        }
-
-        this.model.FusionItems.push(i);
-    }
-
-    private removeFusion(i: number) {
-        this.model.FusionItems.splice(i, 1);
-    }
-
     private addRelation(item: FieldTypeRelationItemEditorModel) {
         let i = new FieldTypeRelationItemEditorModel();
         let params = item.selectedRelationItemID.split('|');
@@ -1368,18 +1284,22 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private isSettingDisabled(val: string) {
         switch (val) {
             case 'IsDisplayable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
                 return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship', 'Score'].indexOf(this.currentType) > -1);
             case 'IsListable':
-                return (['FusionLookup', 'ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
+                return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
+                    return (['Boolean', 'Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
                     return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean', 'Score'].indexOf(this.currentType) > -1);
                 else
+                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag'].indexOf(this.currentType) > -1);
                     return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON', 'Score'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag']
                 return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship', 'Score']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
@@ -1387,11 +1307,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Tag'].indexOf(this.currentType) > -1);
+                return (['Path', 'Tag'].indexOf(this.currentType) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }

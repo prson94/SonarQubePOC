@@ -431,6 +431,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                         this.form.controls[this.field.FieldName].setErrors({ integer: true });
                     }
                 }
+                else if (elem.name == "ValidForDays") {
+                    if (+elem.value < 1 || +elem.value > 365)
+                        this.form.controls[this.field.FieldName].setErrors({ validDay: true });
+                }
             } else if (this.field.FieldType == 'Decimal') {
                 if (elem.value.split('.').length > 2
                     || elem.value.split('+').length > 1
@@ -491,6 +495,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (errors["minlength"]) {
             message += `${this.currentFieldName} minimum length of ${errors["minlength"].requiredLength} characters not met.  Current length is [${errors["minlength"].actualLength}] `;
+        }
+
+        if (errors["validDay"]) {
+            message += "Value cannot be less than 1 or greater than 365. ";
         }
 
         if (errors["required"]) {

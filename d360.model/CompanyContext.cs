@@ -873,15 +873,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         #endregion
 
-        class LookupFieldValueModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public int SortOrder { get; set; }
-            public int ObjectID { get; set; }
-            public string FormattedValue { get; set; }
-        }
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
@@ -1125,7 +1116,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
         {
-            //string type = "";
             var predicateType = PredicateType.InterTypeHierarchy;
 
 
@@ -1426,17 +1416,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return res;
         }
 
-        public class DetailDisplayableRelationship
-        {
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string TargetObject { get; set; }
-            public int TargetObjectID { get; set; }
-            public string TargetObjectName { get; set; }
-            public string TargetTypeName { get; set; }
-            public int Count { get; set; }
-            public string TargetUrl { get; set; }
-        }
 
         public List<IntersectTypeOption> GetIntersectTypeOptions(
             SystemObjects? subject = null, int? subjectID = null,
@@ -3094,6 +3073,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     joins += $@" 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
+                }
+                else if (f.Type == DataType.Path.ToString()) 
+                {
+                    columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {

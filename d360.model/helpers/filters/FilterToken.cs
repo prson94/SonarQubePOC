@@ -2,6 +2,7 @@
 using d360.core.enums;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -234,7 +235,14 @@ namespace d360.model.helpers
 
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
+                if (fieldType.Type == "Path")
+                {
+                    stringBuilder.Append($"replace(@filter_{parameterIdx}, ' > ', '%')");
+                }
+                else 
+                {
+                    stringBuilder.Append($"@filter_{parameterIdx}");
+                }
             }
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -248,7 +256,7 @@ namespace d360.model.helpers
             {
                 case "number":
                     int number = 0;
-                    if (!int.TryParse(value.ToString(), out number))
+                    if (!int.TryParse(value.ToString(), NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out number))
                     {
                         throw new FormatException($"Invalid numeric value for field '{field}'");
                     }
@@ -323,35 +331,43 @@ namespace d360.model.helpers
         {
             if (fieldType.Type == "Lookup")
             {
-                int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
-                if (lookupValue <= 0)
-                    throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
-
-                value = lookupValue.ToString();
-
-                string condition = "in";
-                if (@operator == "ne")
+                if (@operator == "ct")
                 {
-                    condition = "not in";
-                }
-                var basicSqlExpression = string.Empty;
-
-                if (!string.IsNullOrEmpty(fieldType.DefaultValue))
-                {
-                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
-                    sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                    stringBuilder.Append($"F{fieldType.ID}.FormattedValue like @filter_{parameterIdx}");
                 }
                 else
                 {
-                    basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
-                }
 
-                if (fieldType.AllowAllValue)
-                {
-                    basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
-                }
+                    int lookupValue = CompanyContext.GetFieldLookupValue(fieldType.LookupObjectType, fieldType.LookupObjectID.Value, fieldType.ID, value.ToString());
+                    if (lookupValue <= 0)
+                        throw new Exception($"Invalid lookup value '{value}' for field '{field}'");
 
-                stringBuilder.Append(basicSqlExpression);
+                    value = lookupValue.ToString();
+
+                    string condition = "in";
+                    if (@operator == "ne")
+                    {
+                        condition = "not in";
+                    }
+                    var basicSqlExpression = string.Empty;
+
+                    if (!string.IsNullOrEmpty(fieldType.DefaultValue))
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(coalesce(F{fieldType.ID}.Value,@defLookupValue{parameterIdx}),','))";
+                        sqlParamsRef.Add($"@defLookupValue{parameterIdx}", fieldType.DefaultValue);
+                    }
+                    else
+                    {
+                        basicSqlExpression = $"@filter_{parameterIdx} {condition} (select * from string_split(F{fieldType.ID}.Value,','))";
+                    }
+
+                    if (fieldType.AllowAllValue)
+                    {
+                        basicSqlExpression = $"(F{fieldType.ID}.Value = '0' or {basicSqlExpression})";
+                    }
+                    stringBuilder.Append(basicSqlExpression);
+
+                }
             }
 
             if (fieldType.Type == "Relationship")
@@ -408,12 +424,18 @@ namespace d360.model.helpers
 
         private string GetColumnValueSyntax(int fieldTypeId)
         {
-            if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
+            if (fieldType.Type == "Path")
             {
-                return $"F{fieldTypeId}.FormattedValue";
+                return $"Node.Path";
             }
-            return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
-
+            else 
+            {
+                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
+                {
+                    return $"F{fieldTypeId}.FormattedValue";
+                }
+                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
+            }
         }
 
         private string GetSQLOperator(string value)

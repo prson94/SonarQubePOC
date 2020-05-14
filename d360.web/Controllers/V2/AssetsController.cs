@@ -29,6 +29,7 @@ using d360.core.resources;
 using Resources;
 using System.IO;
 using d360.model.helpers.filters;
+using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
 {
@@ -206,7 +207,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_loadPermissionDetails", "If the value is set to True, the results will include permission details for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeParent", "If the value is True, the results will include parent UID and parent display name for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false)
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -226,8 +227,9 @@ namespace d360.web.Controllers.V2
                 var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
                 var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
+                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
 
-                if (AssetRepository.GetAssetTypeByUID(assetTypeUid) == null)
+                if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
@@ -242,17 +244,68 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidRelationFilter(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
+                if (queryParams.Any(x => x.Key.ToLower() == "exporttemplateuid") && !isStreamResponse)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Export Template UID parameter must be used with 'Accept' header set to 'application/octet-stream'."));
+                }
+
                 HttpResponseMessage response;
 
                 if (isStreamResponse)
                 {
-                    var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+                    if (queryParams.Any(x => x.Key.ToLower() == "exporttemplateuid"))
+                    {
+                        Guid exportTemplateUID;
+                        if (!Guid.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "exporttemplateuid").Value, out exportTemplateUID))
+                        {
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid exportTemplateUID value."));
+                        }
+                        var template = Company.AssetTypeExportTemplates.Where(x => x.uid == exportTemplateUID).FirstOrDefault();
 
-                    var stream = new MemoryStream();
-                    results.SaveAs(stream);
-                    byte[] bytes = stream.ToArray();
+                        if (template == null)
+                        {
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Export Template with UID '{exportTemplateUID}' does not exist."));
+                        }
 
-                    response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                        if (template.AssetTypeID != assetType.ID)
+                        {
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid Export Template for current Asset Type."));
+                        }
+                        List<FieldType> fieldsForCustomExport = new List<FieldType>();
+                        var paramList = queryParams.ToList();
+
+                        if (template.IncludeParent)
+                        {
+                            paramList.RemoveAll(x => x.Key.ToLower() == "_includeparent");
+                            paramList.Add(new KeyValuePair<string, string>("_includeparent", "true"));
+                            queryParams = paramList;
+                        }
+
+                        var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
+
+                        SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
+
+                        // Select the first worksheet as the active one.
+                        var firstSheet = document.GetWorksheetNames()[0];
+                        document.SelectWorksheet(firstSheet);
+
+                        var stream = new MemoryStream();
+                        document.SaveAs(stream);
+
+                        byte[] bytes = stream.ToArray();
+
+                        response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                    }
+                    else
+                    {
+                        var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
+
+                        var stream = new MemoryStream();
+                        results.SaveAs(stream);
+                        byte[] bytes = stream.ToArray();
+
+                        response = createFileResponseMessage(HttpStatusCode.OK, $"{assetTypeUid}.xlsx", bytes);
+                    }
                 }
                 else
                 {
@@ -280,7 +333,6 @@ namespace d360.web.Controllers.V2
             }
 
         }
-
 
         /// <summary>
         /// Retrieves assets based on a search of its full path. You also have the option of pre-filtering the types of assets you wish 
@@ -1589,5 +1641,68 @@ namespace d360.web.Controllers.V2
 
         }
         #endregion
+
+        private SLDocument GetCustomExportSheet(AssetType assetType, AssetTypeExportTemplate template, List<FieldType> fieldsForCustomExport, AssetsApiViewModel results)
+        {
+            var data = results.items;
+            if (!string.IsNullOrEmpty(template.IncludeFields))
+            {
+                var allFieldTypes = Company.FieldTypes.Where(x => x.AssetTypeID == assetType.ID);
+                var fieldIdList = template.IncludeFields.Split(',').Select(int.Parse);
+
+                fieldsForCustomExport.Clear();
+
+                //done this way to set order of fields in spreadsheet to the order specified in include fields.
+                foreach (var fieldId in fieldIdList)
+                {
+                    var field = allFieldTypes.FirstOrDefault(x => x.ID == fieldId);
+                    if (field != null) fieldsForCustomExport.Add(field);
+                }
+            }
+            SLDocument document = null;
+            if (template.IncludeParent)
+            {
+                fieldsForCustomExport.Insert(0, new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+            }
+
+            if (assetType.Class == AssetTypeClass.Rule)
+            {
+                fieldsForCustomExport.Add(new FieldType { Type = "string", Name = "RuleUID", FriendlyName = "Rule UID" });
+
+                foreach (var item in data)
+                {
+                    item.RuleUID = item.AssetUid;
+                }
+            }
+
+            if (template.IncludeUrl)
+            {
+                fieldsForCustomExport.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "Url" });
+
+                foreach (var item in data)
+                {
+                    item.Url = "asset/" + item.AssetUid;
+                }
+
+            }
+
+            switch (template.ExportViewType)
+            {
+                case core.enums.ExportView.None:
+                    document = GenerateDefaultSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                    break;
+                case core.enums.ExportView.Pivot:
+                    document = GeneratePivotedSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                    break;
+                case core.enums.ExportView.Grouped:
+                    document = GenerateGroupedSpreadsheet(fieldsForCustomExport, data, template, "Items");
+                    break;
+                default:
+                    throw new Exception("INVALID EXPORT VIEW TYPE SPECIFIED");
+            }
+
+            return document;
+        }
+
     }
 }

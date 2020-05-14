@@ -1,14 +1,14 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { ArtifactType, AssetTypeExportTemplate } from '../../models/artifact-type.model';
+import { ArtifactService } from '../../services/artifacts.service';
 import { ExportTemplateService } from '../../services/export-template.service';
 import { BaseComponent } from '../shared/base.component';
 import { SortOrder } from '../../models/enums.model';
-import { GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
+import { GridDefinition, GridColumn, GridField, GridFilterColumn, GridFilterExpression, GridRelationshipFilterExpression, GridOwnerFilter } from '../../models/grid-definition.model';
 import { RulesService } from '../../services/rules.service';
-import { AssetTypeExportTemplate } from '../../models/artifact-type.model';
-import { RuleType } from '../../models/rule.model';
 
 @Component({
-    selector: 'd3s-rule-custom-export',
+    selector: 'd3s-asset-grid-custom-export',
     template: `
                 <div class="row">    
                     <div class="col s12">&nbsp;</div>
@@ -23,18 +23,27 @@ import { RuleType } from '../../models/rule.model';
                 </div>        
                 `,
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [RulesService, ExportTemplateService]
+    providers: [ArtifactService, ExportTemplateService, RulesService]
 })
 
-export class RuleCustomExportComponent extends BaseComponent implements OnInit {
-    @Input() ruleType: RuleType;
+export class AssetGridCustomExportComponent extends BaseComponent implements OnInit {
+    @Input() gridObject: ArtifactType;
+    @Input() objectType: string = 'ArtifactType';
+    @Input() sortField: string;
+    @Input() sortOrder: SortOrder;
+    @Input() filters: GridFilterExpression[]
+    @Input() relationships: GridRelationshipFilterExpression[];
+    @Input() simpleFilter: string;
+    @Input() owner: GridOwnerFilter;
 
     @Output() closeClick = new EventEmitter();
+    @Output() customExportClick = new EventEmitter();
 
     private exportOptions: AssetTypeExportTemplate[];
 
     constructor(
-        protected RuleService: RulesService,
+        protected artifactService: ArtifactService,
+        protected rulesService: RulesService,
         protected exportTempalteService: ExportTemplateService,
         private changeDetectorRef: ChangeDetectorRef
     ) { super(); }
@@ -45,18 +54,14 @@ export class RuleCustomExportComponent extends BaseComponent implements OnInit {
 
     private load() {
         this.isLoading = true;
-        this.exportTempalteService.getExportTemplatesForAssetType(this.ruleType.AssetTypeUID).subscribe(res => {
+        this.exportTempalteService.getExportTemplatesForAssetType(this.gridObject.AssetTypeUID).subscribe(res => {
             this.isLoading = false;
             this.exportOptions = res;
             this.changeDetectorRef.markForCheck();
         });
     }
 
-    private doDefaultExport() {
-        this.RuleService.exportRules(this.ruleType.AssetTypeUID, this.ruleType.Name)
-    }
-     
     private doExport(option: AssetTypeExportTemplate) {
-        this.RuleService.exportRulesCustomXls(option.ID, this.ruleType.AssetTypeUID, this.ruleType.Name);
+        this.customExportClick.emit(option);
     }
 };

@@ -275,6 +275,7 @@ from	[Load] L
                         sqlColumns = $"select @id as LoadID, I.RowIndex as RowIndex\n";
                         sqlTables = @"from LoadItem I
                                       left join api.ExecutionRelationship EA on I.ExecutionItemUid = EA.ExecutionItemUid and EA.ExecutionID = @postExecutionID
+                                      left join api.ExecutionRelationshipError ER on ER.ExecutionItemUid = I.ExecutionItemUid and ER.ExecutionID = @postExecutionID
                                       left join api.Execution E on E.ExecutionID = @postExecutionID ";
                         columns.ForEach(c =>
                         {
@@ -285,7 +286,7 @@ from	[Load] L
 
                         });
                         sqlColumns += $", case coalesce(EA.Success,I.Status) when 1 then 'Complete' when 0 then 'Failed' else case when E.CompletedOn is null then 'Queued' else 'Failed' end end as [Status]\n";
-                        sqlColumns += ", case when coalesce(EA.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, I.StatusMessage) end as StatusMessage\n";
+                        sqlColumns += ", case when coalesce(EA.Message, ER.Message, I.StatusMessage) is null and EA.Success = 1 then case when EA.IsNew = 1 then 'Item successfully added.' else 'Item successfully updated.' end else coalesce(EA.Message, ER.Message, I.StatusMessage) end as StatusMessage\n";
 
                         sql = $"{sqlColumns} {sqlTables} where I.LoadID = @id order by RowIndex\n";
 

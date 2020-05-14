@@ -77,7 +77,7 @@ namespace d360.web.Controllers
 
                 var otVal = form["Object"].Split('|').ToList();
                 var ot = (SystemObjects)Enum.Parse(typeof(SystemObjects), otVal[0]);
-                var oid = int.Parse(otVal[1]);
+                var oid = int.Parse(otVal[1]);                
 
                 var model = new SurveyType
                 {

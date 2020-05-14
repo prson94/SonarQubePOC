@@ -17,7 +17,8 @@
             {{fieldValue | utcDate | date:'shortDate'}}
         </span>
     </span>
-    <span *ngSwitchCase="'datetime'"><span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span>
+    <span *ngSwitchCase="'datetime'">
+        <span *ngIf="fieldValue">{{fieldValue | utcDate | date:'medium'}}</span>
     </span>
     <span *ngSwitchCase="'number'">{{formatAsNumber()}}</span>
     <span *ngSwitchCase="'bool'">
@@ -42,6 +43,7 @@
                [innerText]="fieldValue"></a>
         </d3s-preview-tooltip>
     </span>
+    <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}"></span> 
     <span *ngSwitchCase="'string'">{{fieldValue}}</span>
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>

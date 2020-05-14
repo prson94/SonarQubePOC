@@ -71,6 +71,10 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
         return this.fieldValue !== '' && this.fieldValue != null ? Number(this.fieldValue).toLocaleString() : "";
     }
 
+    private formatAsPath(): string {
+        return this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.replace(" > ", " <i class='fa fa-angle-right'></i> ")  : "";
+    }
+
     private columnDataType(column: GridColumn): string {
         var fields = this.fields.filter(x => x.name == column.datafield);
 

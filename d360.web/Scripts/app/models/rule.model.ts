@@ -1,20 +1,37 @@
-﻿export class RuleType {
+﻿import { AssetGridObject } from "../components/assets-grid/asset-grid.model";
+
+export class RuleType {
     ID: number;
     Name: string;
     Description: string;
     HasDashboards: boolean;
-    AllowAttributes: boolean; 
+    AllowAttributes: boolean;
+    AutoDisplayDescription: boolean;
+    HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
     HasWorkflow: boolean;
+
+    public static AsGridObject(ruleType: RuleType): AssetGridObject {
+        var ago = new AssetGridObject();
+        ago.AssetTypeUID = ruleType.AssetTypeUID;
+        ago.AutoDisplayDescription = ruleType.AutoDisplayDescription;
+        ago.Description = ruleType.Description;
+        ago.HasCustomExportTemplates = ruleType.HasCustomExportTemplates;
+        ago.ID = ruleType.ID;
+        ago.Name = ruleType.Name;
+        ago.Object = 'Rule';
+        ago.ObjectType = 'RuleType';
+        return ago;
+    }
 }
 
-export class Rule {    
+export class Rule {
     Name: string;
     ID: number;
     Description: string;
     Measurement: string;
     Purpose: string;
-    Resolution: string;                 
+    Resolution: string;
     SourceID: number;
 }
 
@@ -34,7 +51,7 @@ export class RuleDetail {
     ID: number;
     UID: string;
     AssetID: number;
-    Description: string;            
+    Description: string;
     IconBackColor: string;
     IconForeColor: string;
     IconText: string;
@@ -61,7 +78,7 @@ export class RuleResultItems {
     EvaluatedAssetUid: string;
     EvaluatedAssetPath: string;
     EvaluatedAssetTypePath: string;
-    EvaluatedAssetPathElements: string[];
+    EvaluatedAssetDisplayPath: string;
     EvaluatedAssetClass: string;
     EffectiveDate: Date;
     RunDate: Date;

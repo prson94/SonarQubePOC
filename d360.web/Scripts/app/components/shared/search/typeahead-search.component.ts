@@ -1,10 +1,9 @@
-import { debounceTime } from 'rxjs/operators';
 import { Component, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, Input, OnInit, SimpleChange } from '@angular/core';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
 import { Router } from '@angular/router';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { SubscriptionLike as ISubscription } from 'rxjs';
+import { SubscriptionLike as ISubscription, Subject } from 'rxjs';
 
 declare var CompanySettings;
 
@@ -32,6 +31,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     private endSearchAllOption: SearchResult;
     private endSearchAllTypeToken: string = '__SHOWALL__';
 
+    private typeAheadQuery$ = new Subject<string>();
+
     private isSearchInProgress: boolean = false;
 
     constructor(
@@ -49,6 +50,17 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
             this.result = new SearchResult();
             this.result.Name = this.defaultValue;
         }
+
+        let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
+        this.searchSub = this.typeaheadSearchService.getResults(this.typeAheadQuery$, 20, options)
+            .subscribe(data => {
+                this.results = data;
+                if (this.results.length > 0) {
+                    this.results.push(this.endSearchAllOption);
+                }
+                this.isSearchInProgress = false;
+                this.ref.markForCheck();
+            });
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -75,18 +87,8 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
 
     search(event) {
         this.searchText = event.query;
-        let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
         this.isSearchInProgress = true;
-        this.searchSub = this.typeaheadSearchService.getResults(20, event.query, options).pipe(
-            debounceTime(400))
-            .subscribe(data => {
-                this.results = data;
-                if (this.results.length > 0) {
-                    this.results.push(this.endSearchAllOption);
-                }
-                this.isSearchInProgress = false;
-                this.ref.markForCheck();
-            });
+        this.typeAheadQuery$.next(event.query);
     }
 
     openSearch() {
@@ -98,8 +100,6 @@ export class TypeaheadSearchComponent implements OnDestroy, OnInit {
     private navigateQuery(q: string) {
         let options = !this.searchOptions ? this.defaultSearchOptions : this.searchOptions;
         let url = `${SiteUrlHelpers.SITE_URL_SEARCH_ROOT}?query=${q ? encodeURIComponent(q) : ''}${(this.keepFilter) ? '&f=1' : ''}&types=${options ? options.join(',') : ''}`
-        if (this.isExactMatch !== undefined)
-            url += '&exactMatch=' + (this.isExactMatch ? 1 : 0);
         this.router.navigateByUrl(url);
     }
 
