@@ -330,8 +330,6 @@ namespace d360.core.entities
     public class FieldTypeDataTypeComputedScoreApiViewModel
     {
         [DataMember]
-        public int? ColumnOrder { get; set; }
-        [DataMember]
         public ScoreType ScoreType { get; set; }
         [DataMember]
         public bool IsDisplayable { get; set; }
@@ -341,6 +339,14 @@ namespace d360.core.entities
         public bool ShowIfEmpty { get; set; }
         [DataMember]
         public bool IsPrimaryFilter { get; set; }
+        [DataMember]
+        public int? ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
     }
 
     public class FieldTypeDataTypeDateApiViewModel : FieldTypeEditableApiViewModel

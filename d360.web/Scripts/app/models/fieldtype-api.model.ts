@@ -485,9 +485,9 @@ export class TextValidation {
 
 export class Score implements ICommonOptions {
     DefaultValue: number;
-    Description: Description = new Description();
     Increment: number;
     Validation: BooleanValidation = new BooleanValidation();
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
     ColumnOrder: number;
     ColumnWidth: number = 0;
     SortOrder: number = 0;

@@ -139,12 +139,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             { label: 'True', value: true },
             { label: 'False', value: false },
         ]
-
-        this.scoreTypeOptions = [
-            { label: 'Choose Score...', value: null },
-            { label: 'Data Quality', value: 1 },
-            { label: 'Governance', value: 2 }
-        ]
     }
 
     ngOnInit() {
@@ -1307,7 +1301,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Path', 'Tag'].indexOf(this.currentType) > -1);
+                return (['Path', 'Tag'].indexOf(this.currentType) > -1 || (this.currentType == 'Score' && !this.model.FieldType.Type['Score'].IsDisplayable));
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }
@@ -1358,5 +1352,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         if (this.currentType == "Json")
             return "JSON";
         return name;
+    }
+
+    onShowDetailChange(event: boolean) {
+        if (event == false && this.currentType == 'Score') {
+            this.model.FieldType.Type[this.currentType].ShowIfEmpty = false;
+        }
     }
 }

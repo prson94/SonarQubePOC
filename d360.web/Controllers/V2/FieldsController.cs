@@ -462,11 +462,13 @@ namespace d360.web.Controllers.V2
                 int fieldtypeid = 0;
                 FieldType fieldType;
                 SystemObjects type = SystemObjects.ArtifactType;
+                AssetTypeClass @class = AssetTypeClass.Generic;
                 if (AssetTypeUid != null)
                 {
                     var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
                     id = assetType.ObjectID;
                     Enum.TryParse(assetType.Object, out type);
+                    @class = assetType.Class;
                     fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else if (ActionTypeUid != null)
@@ -597,6 +599,29 @@ namespace d360.web.Controllers.V2
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
                 }
+
+                if (ActionTypeUid != null || RelationshipTypeUid != null)
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                }
+
+                var disallowedScoreClasses = 
+                    new List<AssetTypeClass>() {
+                        AssetTypeClass.Organization,
+                        AssetTypeClass.Fusion,
+                        AssetTypeClass.FusionAttribute,
+                        AssetTypeClass.FusionQuery,
+                        AssetTypeClass.User,
+                        AssetTypeClass.ReferenceItemType,
+                        AssetTypeClass.AttributeGroup,
+                    };
+
+                if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                }
+
+
 
                 var jsonFieldType = new Dictionary<string, string>()
             {
@@ -1837,7 +1862,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
 
             try
             {
-                Dictionary<int, string> list = new Dictionary<int, string>();
+                Dictionary<string, string> list = new Dictionary<string, string>();
 
                 var assetType = Company.Filter<AssetType>(a => a.uid == assetTypeUid).FirstOrDefault();
 
@@ -1857,7 +1882,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     {
                         ScoreType scoreType = (ScoreType)type;
 
-                        list.Add(type, scoreType.GetDisplayName());
+                        list.Add(scoreType.ToString(), scoreType.GetDisplayName());
 
                     }
                     catch
