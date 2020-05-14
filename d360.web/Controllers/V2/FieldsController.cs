@@ -169,6 +169,8 @@ namespace d360.web.Controllers.V2
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Text` *(Simple Text)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Score` *(Score)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [

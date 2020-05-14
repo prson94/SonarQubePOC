@@ -743,6 +743,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             .pipe(
                 map(r => {
                     this.scoreTypeOptions = r;
+                    this.scoreTypeOptions.unshift({ label: 'Choose..', value: null });
+
                 })
             );
     }
@@ -847,6 +849,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType == 'Lookup' && !this.model.FieldType.Type[this.currentType].List.Uid) {
+            valid = false;
+        }
+
+        if (this.currentType == 'Score' && !this.model.FieldType.Type[this.currentType].ScoreType) {
             valid = false;
         }
 

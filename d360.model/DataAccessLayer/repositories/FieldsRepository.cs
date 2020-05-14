@@ -557,6 +557,10 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.ShowIfEmpty = f.Type.Boolean.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Boolean.SortOrder;
                 }
+                else if (f.Type.Score != null)
+                {
+
+                }
                 else if (f.Type.ComputedFusionLookup != null)
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
