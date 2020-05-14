@@ -20,6 +20,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_RESOURCE_ROOT, loadChildren: () => import('./components/resource/resource.module').then(m => m.ResourceModule) },
     { path: SiteUrlHelpers.SITE_URL_REFERENCE_ROOT, loadChildren: () => import('./components/reference/reference.module').then(m => m.ReferenceModule) },
     { path: SiteUrlHelpers.SITE_URL_ASSET_ROOT, loadChildren: () => import('./components/asset/asset.module').then(m => m.AssetModule), data: { preload: false } },
+    { path: SiteUrlHelpers.SITE_URL_ASSETTYPE_ROOT, loadChildren: () => import('./components/asset/asset.module').then(m => m.AssetModule), data: { preload: false } },
     { path: SiteUrlHelpers.SITE_URL_ASSETS_ROOT, loadChildren: () => import('./components/assets/assets.module').then(m => m.AssetsModule), data: { preload: false } },
     { path: SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT, loadChildren: () => import('./components/artifact/artifact.module').then(m => m.ArtifactModule), data: { preload: false } },
     { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, loadChildren: () => import('./components/home/home.module').then(m => m.HomeModule) },

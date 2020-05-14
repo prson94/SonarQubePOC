@@ -117,7 +117,7 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"You have not provided valid assetTypeUid.");
 
-                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                 if (!scoreTypes.Contains(model.scoreType))
                 {
@@ -204,7 +204,7 @@ namespace d360.web.Controllers.V2
                 if (model.assetTypeUid == null || model.assetTypeUid == Guid.Empty)
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating allocation", $"You have not provided valid assetTypeUid.");
 
-                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance, ScoreType.Perceptional };
+                List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
 
                 if (!scoreTypes.Contains(model.scoreType))
                 {

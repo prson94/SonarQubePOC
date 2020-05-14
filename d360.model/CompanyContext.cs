@@ -3074,6 +3074,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
+                else if (f.Type == DataType.Path.ToString()) 
+                {
+                    columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
+                }
                 else if (f.Type == DataType.Tag.ToString())
                 {
                     string assetIdPath = "A.Id";

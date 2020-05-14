@@ -267,7 +267,7 @@ from	Resource R
                     {
                         u = null;
                         System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
-                        context.Response.Write("Not authorized");
+                        context.Response.Write("\"Not authorized\"");
                         context.Response.StatusCode = 401;
                         return;
                     }
@@ -283,7 +283,7 @@ from	Resource R
                         {                            
                             System.Web.HttpContext.Current.Response.SuppressFormsAuthenticationRedirect = true;
 
-                            context.Response.Write("Not authorized");
+                            context.Response.Write("\"Not authorized\"");
                             context.Response.StatusCode = 401;                            
                             return;
                         }
@@ -442,7 +442,6 @@ where S.ID = 54", new { cId = companyId })).FirstOrDefault();
                     cache.SetItem<string>(key, cnName);
                 }
             }
-
 
             return cnName;
         }
