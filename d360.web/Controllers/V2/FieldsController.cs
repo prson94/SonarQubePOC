@@ -1559,7 +1559,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     list.Add("DisplayValue", 0);
                 }
 
-                list.Add("TextPath", 0);
+                list.Add("AssetPath", 0);
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                     .Where(i => i.Type != DataType.Path.ToString())

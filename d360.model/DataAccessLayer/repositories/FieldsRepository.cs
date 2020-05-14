@@ -681,7 +681,7 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "TextPath", 0 } };
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "AssetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
