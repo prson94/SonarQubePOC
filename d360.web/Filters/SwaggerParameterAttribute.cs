@@ -20,6 +20,7 @@ namespace d360.web.Filters
         public string ParameterType { get; set; }
         public string Description { get; private set; }
         public bool Required { get; set; } = false;
+        public Type Enum { get; set; }
     }
 
     public class SwaggerParameterAttributeFilter : IOperationFilter
@@ -40,7 +41,8 @@ namespace d360.web.Filters
                     description = attribute.Description,
                     @in = attribute.ParameterType,
                     required = attribute.Required,
-                    @type = attribute.DataType
+                    @type = attribute.DataType,
+                    @enum = (attribute.Enum == null) ? null : Enum.GetNames(attribute.Enum).Cast<object>().ToList()
                 });
             }
         }
