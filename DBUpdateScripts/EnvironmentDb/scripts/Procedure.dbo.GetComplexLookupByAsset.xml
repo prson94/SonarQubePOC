@@ -16,7 +16,10 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@objectId int,
 	@fieldTypeId int,
 	@resourceId int,
-	@countOnly bit = 0
+	@countOnly bit = 0,
+	@pageSize int = 10,
+	@pageNum int = 1,
+	@simpleFilter nvarchar(max) = ''
 as
 begin
 	set nocount on;
@@ -218,6 +221,20 @@ begin
 		-- Add permissions check
 		insert into @wheres values ('H1.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', H1.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)')
 		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = H1.AssetTypeID)')
+
+		if @simpleFilter <> ''
+		begin
+			insert into @wheres
+				select '(' + string_agg(CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter'), ' or ') + ')' 
+				 from @fields f 
+				 cross apply(select case 
+						when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+						when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
+						when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+						else null
+					end as FieldCol)FSQL(col)
+				where F.FieldTypeName <> 'TextPath'
+		end
 
 		insert into @orders
 			select		'H' + F.RRN + 
@@ -519,11 +536,13 @@ begin
 		end
 	end
 
+	declare @pagingQuery nvarchar(100) = 'offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
+
 	declare @sql nvarchar(max) = 'select '
 
 	if @countOnly = 1
 	begin
-		set  @sql = @sql + '@count = count(1) '
+		set  @sql = @sql + '@count = count(*) '
 	end
 	else
 	begin
@@ -535,25 +554,30 @@ begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
 
-	-- Output to caller.
+-- Output to caller.
 	if @countOnly = 0
 	begin
 		-- Finally, add the order by, if there is any.
 		if exists(select 1 from @orders where [Statement] is not null)
-		begin
-			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
-		end
+			begin
+				select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
+			end
+		else
+			begin
+				set @sql = @sql + ' order by 1'
+			end
 
+		set @sql = @sql + @pagingQuery
 		select * from @columns
 		select * from @datafields
-		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
+		exec sp_executesql @sql, N'@assetId bigint, @pageSize int, @pageNum int, @simpleFilter nvarchar(400)', @assetId = @assetId , @pageSize = @pageSize, @pageNum = @pageNum, @simpleFilter = @simpleFilter
 	end
 	else
 	begin
 		if @sql is not null
-			exec sp_executesql @sql, N'@assetId bigint, @count int output', @assetId = @assetId, @count = @count OUTPUT;
+			exec sp_executesql @sql, N'@assetId bigint, @simpleFilter nvarchar(400), @count int output', @assetId = @assetId,@simpleFilter = @simpleFilter, @count = @count OUTPUT;
 		
-		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
+		select @count as [AnyValues]
 	end
 	
 	--select @sql -- testing only

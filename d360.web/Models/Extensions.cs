@@ -86,6 +86,10 @@ namespace d360.web.Models
 
                     dynamic[] relatedItems = new dynamic[relFields];
 
+                    bool hasRelation = false;
+                    var relationFields = new Dictionary<string, object>();
+
+
                     foreach (JProperty prop in item)
                     {
                         var match = $"Asset.[{i}].";
@@ -111,11 +115,28 @@ namespace d360.web.Models
                                 }
                             }
 
+                            var relItemMatch = "Relation.";
+                            if (propName.StartsWith(relItemMatch))
+                            {
+                                propName = propName.Replace(relItemMatch, "");
+                                relationFields.Add(propName, prop.Value);
+                                isAdded = true;
+                                hasRelation = true;
+                            }
+
                             if (!isAdded)
                                 dict.Add(propName, prop.Value);
                         }
                     }
-                    dict.Add("RelatedItems", relatedItems);
+
+                    if (relFields > 0)
+                        dict.Add("RelatedItems", relatedItems);
+
+                    if (hasRelation)
+                    {
+                        dict.Add("Relation", relationFields);
+                    }
+
                     Assets.Add(dict);
                 }
 

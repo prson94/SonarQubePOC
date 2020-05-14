@@ -1070,9 +1070,15 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("{assetUid:Guid}/fields/{fieldApiName}"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetComplexLookupValue>)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<dynamic>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+
         ]
         public async Task<HttpResponseMessage> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
         {
@@ -1082,9 +1088,11 @@ namespace d360.web.Controllers.V2
             try
             {
                 var qparams = Request.GetQueryNameValuePairs();
-                var result = new AssetComplexLookupValue();
+                var result = new Dictionary<string, object>();
                 var asset = AssetRepository.GetAssetByUID(assetUid);
-
+                int pageSize = 10;
+                int pageNum = 1;
+                string simpleFilter = string.Empty;
 
                 if (asset == null)
                 {
@@ -1097,18 +1105,10 @@ namespace d360.web.Controllers.V2
                     return ReturnApiError(HttpStatusCode.NotFound, $"Field Type '{fieldApiName}' not found for asset.");
                 }
 
-                var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
-                        new { @object = asset.Object, objectId = asset.ObjectID, fieldTypeId = fieldType.ID, resourceId = Company.CurrentResourceID }
-                    );
-
-                var Columns = reader.Read<GridColumn>().ToList();
-                var Fields = reader.Read<GridField>().ToList();
-                var Values = reader.Read<dynamic>().ToList();
-
 
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
+                bool returnForUI = false;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1124,6 +1124,61 @@ namespace d360.web.Controllers.V2
                     {
                         return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'useUnflattedStructure'");
                     }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "forui"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'forUI'");
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_pagenum"))
+                {
+                    if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value.Trim().ToLower(), out pageNum))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid integer value for parameter '_pageNum'");
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_pagesize"))
+                {
+                    if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value.Trim().ToLower(), out pageSize))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid integer value for parameter '_pageSize'");
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
+                {
+                    simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
+                }
+
+                var reader = await Company.QueryMultipleAsync(
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter",
+                        new
+                        {
+                            @object = asset.Object,
+                            objectId = asset.ObjectID,
+                            fieldTypeId = fieldType.ID,
+                            resourceId = Company.CurrentResourceID,
+                            pageSize,
+                            pageNum,
+                            simpleFilter
+                        }
+                    );
+
+                var Columns = reader.Read<GridColumn>().ToList();
+                var Fields = reader.Read<GridField>().ToList();
+                var Values = reader.Read<dynamic>().ToList();
+
+                if (returnForUI)
+                {
+                    useFriendlyNames = useUnflattedStructure = false;
+                    result.Add("Columns", Columns);
+                    result.Add("Fields", Fields);
+
                 }
 
                 if (fieldType.Type == "OwnershipLookup")
@@ -1153,11 +1208,27 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
+                var count = Company.Query<int>(
+                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter",
+                     new
+                     {
+                         @object = asset.Object,
+                         objectId = asset.ObjectID,
+                         fieldTypeId = fieldType.ID,
+                         resourceId = Company.CurrentResourceID,
+                         pageSize,
+                         pageNum,
+                         simpleFilter
+                     }
+                     ).First();
+
+                result.Add("pageSize", pageSize);
+                result.Add("pageNum", pageNum);
+                result.Add("total", count);
 
 
+                result.Add("items", Values);
 
-
-                result.items = Values;
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
