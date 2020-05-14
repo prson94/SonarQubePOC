@@ -49,7 +49,7 @@ namespace igx.jobs.reportlayer
             joins = "";
 
             var typesToIgnore = new List<string> {
-                DataType.Attribute.ToString(), DataType.Color.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(),
+                DataType.Path.ToString(), DataType.Color.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(),
                 DataType.File.ToString(), DataType.Hidden.ToString(), DataType.OwnershipLookup.ToString(),
                 DataType.Password.ToString(), DataType.RefListRelationship.ToString(), DataType.UncLink.ToString(), DataType.JsonElement.ToString()
             };
@@ -186,9 +186,11 @@ namespace igx.jobs.reportlayer
 
                                 objectName = $"{SCHEMA}.[{o.Class.ToString()}_{assetTypePluralizedName}]";
 
+                                var skippedFieldTypes = DataType.Text.GetNotAllowedInReportingViews();
+
                                 // Get fields for asset
                                 getDynamicFieldJoinStatements(
-                                    fieldTypes.Where(f => f.AssetTypeID == o.ID).ToList(),
+                                    fieldTypes.Where(f => f.AssetTypeID == o.ID && !skippedFieldTypes.Contains(f.Type)).ToList(),
                                     o.Object.Replace("Type", ""),
                                     out joins,
                                     out columns,

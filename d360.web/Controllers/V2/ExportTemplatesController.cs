@@ -447,7 +447,6 @@ namespace d360.web.Controllers.V2
         {
             var assetType = assetRepository.GetAssetTypeByUID(guid);
             var typesToAvoid = new List<string>() {
-                    DataType.Attribute.ToString(),
                     DataType.ComplexRelationLookup.ToString(),
                     DataType.DataTableSelect.ToString(),
                     DataType.OwnershipLookup.ToString()

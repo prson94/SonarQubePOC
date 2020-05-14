@@ -24,6 +24,7 @@ using d360.model.validators;
 using d360.model.DataAccessLayer;
 using Resources;
 using System.Web.Http.Description;
+using d360.core.helpers;
 
 namespace d360.web.Controllers.V2
 {
@@ -821,7 +822,7 @@ namespace d360.web.Controllers.V2
                     Enum.TryParse(item.Object, out type);
                     id = item.ObjectID;
                     list = Company.GetFieldTypesByObject(type, id)
-                        .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                        .Where(i => i.Type != DataType.Path.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                         .Select(i => new { i.ID, i.Name })
                         .ToDictionary(i => i.Name, i => i.Name);
 
@@ -934,12 +935,10 @@ namespace d360.web.Controllers.V2
                 var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
                 var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
 
-                var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
-                    .Where(i => i.Type != DataType.Attribute.ToString() &&
-                            i.Type != DataType.ComplexRelationLookup.ToString() &&
-                            i.Type != DataType.Relationship.ToString() &&
-                            i.Type != DataType.JSON.ToString()
-                            && i.Type != DataType.Tag.ToString())
+                var restrictedFields = DataType.Text.GetNotAllowedInFieldFromRelationship();
+                var list = Company
+                    .Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
+                    .Where(i => !restrictedFields.Contains(i.Type))
                     .Select(i => new { i.Name, i.FriendlyName});
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
@@ -1519,16 +1518,11 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
                 }
 
+                var restrictedTypes = DataType.Text.GetNotAllowedInRelationshipLookup();
                 var list = Company.GetFieldTypesByObject(type, id)
-                 .Where(i => i.Type != DataType.Attribute.ToString()
-                         && i.Type != DataType.Relationship.ToString()
-                         && i.Type != DataType.OwnershipLookup.ToString()
-                         && i.Type != DataType.RefListRelationship.ToString()
-                         && i.Type != DataType.ComplexRelationLookup.ToString()
-                         && i.Type != DataType.JSON.ToString()
-                         && i.Type != DataType.Tag.ToString())
-                 .Select(i => new { i.ID, i.Name })
-                 .ToDictionary(i => i.Name, i => i.ID);
+                    .Where(i => !restrictedTypes.Contains(i.Type))
+                    .Select(i => new { i.ID, i.Name })
+                    .ToDictionary(i => i.Name, i => i.ID);
 
                 if (type == SystemObjects.ReferenceItemType)
                 {
@@ -1568,7 +1562,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 list.Add("TextPath", 0);
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-                    .Where(i => i.Type != DataType.Attribute.ToString())
+                    .Where(i => i.Type != DataType.Path.ToString())
                     .Select(i => new { i.ID, i.Name }).ToList();
                 relList.ForEach(r =>
                 {

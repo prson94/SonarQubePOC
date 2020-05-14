@@ -235,7 +235,14 @@ namespace d360.model.helpers
 
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
-                stringBuilder.Append($"@filter_{parameterIdx}");
+                if (fieldType.Type == "Path")
+                {
+                    stringBuilder.Append($"replace(@filter_{parameterIdx}, ' > ', '%')");
+                }
+                else 
+                {
+                    stringBuilder.Append($"@filter_{parameterIdx}");
+                }
             }
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -417,12 +424,18 @@ namespace d360.model.helpers
 
         private string GetColumnValueSyntax(int fieldTypeId)
         {
-            if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
+            if (fieldType.Type == "Path")
             {
-                return $"F{fieldTypeId}.FormattedValue";
+                return $"Node.Path";
             }
-            return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
-
+            else 
+            {
+                if (fieldColumn == null || fieldColumn.LastIndexOf(" as ") <= 0)
+                {
+                    return $"F{fieldTypeId}.FormattedValue";
+                }
+                return fieldColumn.Substring(0, fieldColumn.LastIndexOf(" as "));
+            }
         }
 
         private string GetSQLOperator(string value)

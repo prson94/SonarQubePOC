@@ -571,7 +571,7 @@ namespace d360.model.DataAccessLayer
                     List<string> simpleFilters = new List<string>();
                     foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
                     {
-                        if (ft.Type == "Tag")
+                        if (ft.Type == DataType.Tag.ToString())
                         {
                             string simpleFilterTagSql = @"exists (select top 1 AT.TagId from AssetTag AT
 						                                inner join Tag T on AT.TagId = T.Id
@@ -579,7 +579,11 @@ namespace d360.model.DataAccessLayer
 
                             simpleFilters.Add(simpleFilterTagSql);
                         }
-                        else if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        else if (ft.Type == DataType.Path.ToString())
+                        {
+                            simpleFilters.Add($"Node.Path like '%' + replace(@simpleFilter, ' > ', '%')");
+                        }
+                        else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {
                             simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
                         }
@@ -637,6 +641,7 @@ namespace d360.model.DataAccessLayer
                 select
                     count(*)
                 from Asset A
+                     left join graph.AssetNode Node on Node.Uid = a.uid 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -760,7 +765,6 @@ namespace d360.model.DataAccessLayer
                 includeParent = false;
             }
             var typesToAvoid = new List<string>() {
-                DataType.Attribute.ToString(),
                 DataType.ComplexRelationLookup.ToString(),
                 DataType.DataTableSelect.ToString(),
                 DataType.OwnershipLookup.ToString()
@@ -1333,7 +1337,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (org == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Organization.ToString()}", $"Invalid {AssetTypeClass.Organization.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     org.Name = model.Name;
                     org.Description = model.Description;
-                    org.DisplayFormat = model.DisplayFormat;
+                    org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     CompanyContext.Update(org);
 
                     #endregion
@@ -1344,12 +1348,12 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     var r = CompanyContext.GetById<RuleType>(model.ObjectID);
                     if (r == null) return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, $"Wrong {AssetTypeClass.Rule.ToString()}", $"Not valid {AssetTypeClass.Rule.ToString()} provided. {AssetTypeErrors.CheckRequest}");
                     r.Name = model.Name;
-                    r.DisplayFormat = model.DisplayFormat;
+                    r.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     r.Description = model.Description;
                     CompanyContext.Update(r);
 
                     assetType.Name = model.Name;
-                    assetType.DisplayFormat = model.DisplayFormat;
+                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     assetType.Description = model.Description;
 
                     #endregion
