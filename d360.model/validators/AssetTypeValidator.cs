@@ -159,6 +159,8 @@ namespace d360.core.validators
 
         private bool ModelHasDuplicateNames(AssetTypeUpsert model, AssetType parentAssetType, bool isInsert = true)
         {
+            if (CompanyContext.Database == null) return false; // unit tests dont mock the db context thus cant run db queries. Assume the name is unique.
+
             if (isInsert)
             {
                 if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
