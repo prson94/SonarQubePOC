@@ -516,7 +516,7 @@ namespace d360.model.DataAccessLayer.repositories
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         case "Path":
-                                            whereStatements.Add($"Node.Path like '%' + replace(@field{field.ID}, ' > ', '%')");
+                                            whereStatements.Add($"Node.Path like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         default:

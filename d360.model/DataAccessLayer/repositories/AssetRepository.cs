@@ -581,7 +581,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (ft.Type == DataType.Path.ToString())
                         {
-                            simpleFilters.Add($"Node.Path like '%' + replace(@simpleFilter, ' > ', '%')");
+                            simpleFilters.Add($"Node.Path like '%' + ltrim(rtrim(replace(replace(@simpleFilter, '>', ''), '%', ''))) + '%'");
                         }
                         else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {

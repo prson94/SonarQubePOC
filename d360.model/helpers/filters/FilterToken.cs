@@ -237,7 +237,8 @@ namespace d360.model.helpers
                 stringBuilder.Append(GetSQLOperator(@operator));
                 if (fieldType.Type == "Path")
                 {
-                    stringBuilder.Append($"replace(@filter_{parameterIdx}, ' > ', '%')");
+                    value = "%" + ((string)value).Replace("%", "").Replace('>', '%').Trim() + "%";
+                    stringBuilder.Append($"@filter_{parameterIdx}");
                 }
                 else 
                 {
