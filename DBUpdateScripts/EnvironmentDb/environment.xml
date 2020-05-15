@@ -295,6 +295,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
+	<include file="scripts/View.graph.AssetNodeDetail.xml"/>
 	<include file="scripts/View.utility.ArtifactAssetParent.xml"/>
 	<include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>

@@ -581,7 +581,7 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (ft.Type == DataType.Path.ToString())
                         {
-                            simpleFilters.Add($"Node.Path like '%' + ltrim(rtrim(replace(replace(@simpleFilter, '>', ''), '%', ''))) + '%'");
+                            simpleFilters.Add($"Node.DisplayPath like @simpleFilter");
                         }
                         else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {
@@ -638,10 +638,9 @@ namespace d360.model.DataAccessLayer
 
             var countSql = $@"
                 {populateRestrictedAssetTableSQL}
-                select
-                    count(*)
-                from Asset A
-                     left join graph.AssetNode Node on Node.Uid = a.uid 
+                select  count(*)
+                from    Asset A 
+                        left join graph.AssetNodeDetail Node on Node.Uid = a.uid 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -663,8 +662,7 @@ namespace d360.model.DataAccessLayer
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
-                    Node.Path --,
-                    --Node.Segments --GOV-8967 - temporarily remove segments property due to analyze issue
+                    Node.KeyPath as Path
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -674,7 +672,7 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
-                left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
+                left join graph.AssetNodeDetail Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
