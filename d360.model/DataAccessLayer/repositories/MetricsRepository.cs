@@ -620,6 +620,8 @@ namespace d360.model.DataAccessLayer
             var result = new MetricScoreApiModel();
             var parameters = new DynamicParameters();
 
+            ScoreType scoretype = ScoreType.Governance;
+
             List<string> whereClauses = new List<string>();
             List<string> scoreFilters = new List<string>();
             List<string> fieldFilters = new List<string>();
@@ -674,6 +676,10 @@ namespace d360.model.DataAccessLayer
 
                         whereClauses.Add("A.Uid = @assetUid");
                         break;
+                    case "_scoretype":
+                        if (!Enum.TryParse(param.Value, out scoretype))
+                            return (null, "Invalid '_scoreType' parameter value");
+                        break;
                     default:
                         customFieldsCounter++;
                         var fieldName = param.Key;
@@ -693,6 +699,8 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            parameters.Add("@scoreType", (int)scoretype);
+            scoreFilters.Add("MS.ScoreType = @scoreType");
 
             bool takeOnlyLastScore = false;
 
@@ -726,7 +734,7 @@ namespace d360.model.DataAccessLayer
             result.total = Company.Query<int>(countSql, parameters).FirstOrDefault();
 
             var sql = $@"select LOWER(A.uid) as AssetUid,
-	                    (select {(takeOnlyLastScore ? "top 1" : "")} MS.EffectiveDate, MS.Value as Score 
+	                    (select {(takeOnlyLastScore ? "top 1" : "")} MS.EffectiveDate, MS.Value as Score, MS.ScoreType
 		                     from metrics.Score MS
 								where AssetUid = a.uid 
                                 {scoreWhereSQl}
