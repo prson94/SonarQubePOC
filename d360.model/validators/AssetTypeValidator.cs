@@ -188,7 +188,7 @@ namespace d360.core.validators
 
                     return (count > 0);                        
                 }
-                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.Object == model.Object))
+                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.Class == model.Class))
                     return true;
             }
             else
@@ -219,7 +219,7 @@ namespace d360.core.validators
 
                     return (count > 0);
                 }
-                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.uid != model.Uid && i.Object == model.Object))
+                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.uid != model.Uid && i.Class == model.Class))
                     return true;
             }
             return false;
