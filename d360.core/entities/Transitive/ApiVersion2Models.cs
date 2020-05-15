@@ -611,4 +611,21 @@ namespace d360.core.entities
     }
     #endregion
 
+    [DataContract]
+    public class ResponsibilityOverridePostModel
+    {
+        [DataMember]
+        public List<Guid> ResourceUID { get; set; }
+        [DataMember]
+        public string Description { get; set; }
+    }
+
+    public class SecurityAssetModel
+    {
+        public Guid uid { get; set; }
+        public int SecurityAssetId { get; set; }
+        public string SecurityAsset { get; set; }
+        public bool Exists { get; set; }
+    }
+
 }
