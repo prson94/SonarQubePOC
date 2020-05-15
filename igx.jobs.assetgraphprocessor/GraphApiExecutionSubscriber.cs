@@ -21,7 +21,7 @@ namespace igx.jobs.assetgraphprocessor
     public class GraphApiExecutionSubscriber
     {
         const string functionName = "AssetGraphProcessor_GraphApiExecutionSubscriber";
-        const int timeout = 60 * 180;
+        const int timeout = 60 * 180; //3 hours
 
         public static async Task Run([ServiceBusTrigger("%AssetBusTopicName%", "GraphApiExecution", AccessRights.Manage)]BrokeredMessage brokeredMessage, TextWriter log)
         {
@@ -30,8 +30,10 @@ namespace igx.jobs.assetgraphprocessor
                 return;
 
             CoreFunction.AITrackJobStart(functionName);
-            log.WriteLine($"GraphApiExecutionSubscriber triggered for execution uid: {(info?.execution?.ExecutionID.ToString() ?? "")}");
-            CoreFunction.AITrackEvent(functionName, "GraphApiExecutionSubscriber triggered", new Dictionary<string, string> { { "executionUid", (info?.execution?.ExecutionID.ToString() ?? "") } });
+
+            string triggerMessage = $"GraphApiExecutionSubscriber triggered for ExecutionID [{(info?.execution?.ExecutionID.ToString() ?? "")}] on CompanyID [{info.CompanyID}]";
+            log.WriteLine(triggerMessage);
+            CoreFunction.AITrackEvent(functionName, triggerMessage, new Dictionary<string, string> { { "ExecutionID", (info?.execution?.ExecutionID.ToString() ?? "") } }, info.CompanyID);
 
             AzureStorageProvider storage = new AzureStorageProvider();
 
@@ -131,7 +133,7 @@ namespace igx.jobs.assetgraphprocessor
                             {
                                 BatchSize = table.Rows.Count,
                                 DestinationTableName = "#GraphAssets",
-                                BulkCopyTimeout = 3600
+                                BulkCopyTimeout = timeout
                             };
 
                             bulkCopy.ColumnMappings.Add("Uid", "Uid");
@@ -157,7 +159,9 @@ namespace igx.jobs.assetgraphprocessor
                             where   exists (select 1 from graph.AssetNode where [uid] = G.[uid]);
 
                             update  #GraphAssets set GraphExists = 0 where GraphExists is null;
-                            update  #GraphAssets set AssetExists = 0 where AssetExists is null;", transaction: trans);
+                            update  #GraphAssets set AssetExists = 0 where AssetExists is null;"
+                            , transaction: trans
+                            , commandTimeout: timeout);
 
                             // Update graph records
                             await company.ExecuteAsync(@"
@@ -197,20 +201,27 @@ namespace igx.jobs.assetgraphprocessor
                             update  T
                             set     T.UpdateGraph = S.UpdatePath
                             from    api.ExecutionAsset T
-                                    inner join #GraphAssets S on S.Uid = T.Uid;", transaction: trans);
+                                    inner join #GraphAssets S on S.Uid = T.Uid;"
+                            , transaction: trans
+                            , commandTimeout: timeout);
 
 
                             // Update paths/segments for applicable assets
-                            await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null", new { executionId = info.execution.ExecutionID }, transaction: trans);
+                            await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
+                            , new { executionId = info.execution.ExecutionID }
+                            , transaction: trans
+                            , commandTimeout: timeout);
 
                             // Cleanup 
-                            await company.ExecuteAsync(@"drop table if exists #GraphAssets;", transaction: trans);
+                            await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
+                            , transaction: trans
+                            , commandTimeout: timeout);
 
                             #endregion
 
                             trans.Commit();
                         }
-                        catch( Exception ex)
+                        catch(Exception ex)
                         {
                             trans.Rollback();
                             throw ex;
@@ -220,10 +231,7 @@ namespace igx.jobs.assetgraphprocessor
                 }
                 catch (Exception ex)
                 {
-                    var values = new Dictionary<string, string>
-                    {
-                        { "uid", info.Uid.ToString() }
-                    };
+                    var values = new Dictionary<string, string>();
 
                     if (info.execution != null)
                     {
