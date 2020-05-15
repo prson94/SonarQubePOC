@@ -615,9 +615,16 @@ namespace d360.core.entities
     public class ResponsibilityOverridePostModel
     {
         [DataMember]
-        public List<Guid> ResourceUID { get; set; }
+        public List<Guid> ResourceUid { get; set; }
         [DataMember]
         public string Description { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityOverrideDeleteModel
+    {
+        [DataMember]
+        public Guid ResourceUid { get; set; }
     }
 
     public class SecurityAssetModel

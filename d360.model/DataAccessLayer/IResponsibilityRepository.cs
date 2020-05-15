@@ -25,6 +25,7 @@ namespace d360.model.DataAccessLayer
         ResponsibilityType GetResponsibilityTypeByUID(Guid uid);
         bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid);
         IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);
-        void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources);
+        void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context);
+        void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources);
     }
 }

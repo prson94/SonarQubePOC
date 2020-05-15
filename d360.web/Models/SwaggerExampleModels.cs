@@ -102,7 +102,7 @@ namespace d360.web.Models
         {
             return new FavoriteApiModel
             {
-                Route = "asset/"+Guid.Empty.ToString(),
+                Route = "asset/" + Guid.Empty.ToString(),
                 Type = FavoriteType.Asset
             };
         }
@@ -218,7 +218,7 @@ namespace d360.web.Models
     public class DataQualityInsertExample : IExamplesProvider
     {
         public object GetExamples()
-        {              
+        {
             return new DataQualityInsertModel
             {
                 ExecutionItemUid = Guid.Empty,
@@ -236,11 +236,11 @@ namespace d360.web.Models
 
     #region Membership Examples
 
-    public class UserPostExample: IExamplesProvider
+    public class UserPostExample : IExamplesProvider
     {
         public object GetExamples()
         {
-            return new 
+            return new
             {
                 Username = "user@example.com",
                 FirstName = "John",
@@ -248,7 +248,7 @@ namespace d360.web.Models
                 Password = "xxxxxx",
                 IsAdministrator = false,
                 ExecutionItemUid = Guid.Empty,
-                Fields = new Dictionary<string,string>()
+                Fields = new Dictionary<string, string>()
                 {
                     { "MyApiFieldName1", "My Field value" },
                     { "MyApiFieldName2", "My Field value" }
@@ -291,11 +291,18 @@ namespace d360.web.Models
             return new ResponsibilityTypeAllocationInsertModel
             {
                 AssetTypeUid = Guid.Empty,
-                Permissions = new List<int>{ 1, 2, 4, 8 }
+                Permissions = new List<int> { 1, 2, 4, 8 }
             };
         }
     }
-
+    public class ResponsibilitiesDeleteExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new ResponsibilityOverrideDeleteModel() { ResourceUid = Guid.Empty };
+        }
+    }
     #endregion
 
 }

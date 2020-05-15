@@ -663,7 +663,7 @@ where 1=1
                     where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }).ToList();
         }
 
-        public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
+        public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
         {
             if (responsibilityType == null)
                 throw new ArgumentNullException("Responsibility Type cannot be null.");
@@ -674,7 +674,46 @@ where 1=1
             if (resources.Count == 0)
                 throw new ArgumentNullException("Resources cannot be empty.");
 
+            List<ResponsibilityTypeRelationOverrideItem> items = new List<ResponsibilityTypeRelationOverrideItem>();
 
+            resources.Where(x => x.SecurityAsset == "R" || x.SecurityAsset == "G").ToList()
+                .ForEach(x =>
+            {
+                items.Add(new ResponsibilityTypeRelationOverrideItem()
+                {
+                    AssetID = asset.ID,
+                    Context = context,
+                    ResponsibilityTypeID = responsibilityType.ID,
+                    SecurityAsset = x.SecurityAsset,
+                    SecurityAssetID = x.SecurityAssetId,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                });
+            });
+
+            Company.ResponsibilityTypeRelationOverrideItems.AddRange(items);
+            Company.SaveChanges();
+        }
+        public void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
+        {
+            if (responsibilityType == null)
+                throw new ArgumentNullException("Responsibility Type cannot be null.");
+
+            if (asset == null)
+                throw new ArgumentNullException("Asset cannot be null.");
+
+            if (resources.Count == 0)
+                throw new ArgumentNullException("Resources cannot be empty.");
+
+            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
+
+            var overrides = Company.ResponsibilityTypeRelationOverrideItems
+                .Where(x => x.ResponsibilityTypeID == responsibilityType.ID
+                && x.AssetID == asset.ID
+                && securityAssetHash.Contains(x.SecurityAsset + x.SecurityAssetID));
+
+            Company.ResponsibilityTypeRelationOverrideItems.RemoveRange(overrides);
+            Company.SaveChanges();
         }
 
 
