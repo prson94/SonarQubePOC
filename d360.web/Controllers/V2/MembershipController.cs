@@ -265,7 +265,7 @@ namespace d360.web.Controllers.V2
    HttpPost,
    MapToApiVersion("2.0"),
    Route("groups/{groupUid:Guid}/members"),
-   SwaggerRequestExample(typeof(ResponsibilityOverrideDeleteModel), typeof(InsertUserToGroupExample)),
+   SwaggerRequestExample(typeof(InsertUserToGroup), typeof(InsertUserToGroupExample)),
    SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
    SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request made, users not added to group", typeof(ErrorResponse)),
    SwaggerResponse(HttpStatusCode.NotFound, "Group or user(s) provided not found", typeof(ErrorResponse)),
