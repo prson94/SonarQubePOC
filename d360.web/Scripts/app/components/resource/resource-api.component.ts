@@ -2,6 +2,7 @@
 import { BaseComponent } from '../shared/base.component';
 import { ResourceAPICredentials } from '../../models/resource.model';
 import { ResourcesService } from '../../services/resources.service';
+import { SecondaryNavService } from '../../services/right-sidebar.service';
 
 declare var CurrentResourceID;
 
@@ -47,12 +48,14 @@ export class ResourceApiComponent extends BaseComponent {
 
     private resource: ResourceAPICredentials;
 
-    constructor(private resourcesService: ResourcesService) {
+    constructor(private resourcesService: ResourcesService, secondaryNavService: SecondaryNavService) {
         super();
+        this.secondaryNavService = secondaryNavService;
     }
 
     ngOnInit() {
         this.isLoading = true;
+        this.secondaryNavService.showHeader(false);
         this.resourcesService.getMyCredentials()
             .subscribe(r => {
                 this.resource = r;
