@@ -316,10 +316,11 @@ namespace igx.jobs.apiexecutionprocessor
                             case ApiExecutionAction.PostDataQualityResults:
                                 #region Process DataQualityResults
 
-                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<IDataQualityUpsert>>(Info.StorageFolder, Info.RequestFileName);
-                                
+                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(Info.StorageFolder, Info.RequestFileName);
+                                                                
+
                                 log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest, dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
                                 dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
                                 dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
