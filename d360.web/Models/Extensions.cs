@@ -25,6 +25,13 @@ namespace d360.web.Models
 
         public static CustomJSONContractResolver GetFriendlyNameJSONContract(this FieldTypeComplexLookupDefinition definition)
         {
+            Dictionary<string, string> customContractProperties = definition.GetFriendlyNamesMapping();
+            var customContract = new CustomJSONContractResolver(customContractProperties);
+            return customContract;
+        }
+
+        public static Dictionary<string, string> GetFriendlyNamesMapping(this FieldTypeComplexLookupDefinition definition)
+        {
             List<Guid> assetTypes = definition.Relations.Select(x => x.AssetTypeUid.HasValue ? x.AssetTypeUid.Value : Guid.Empty).ToList();
 
             Dictionary<string, string> customContractProperties = new Dictionary<string, string>();
@@ -60,10 +67,8 @@ namespace d360.web.Models
                     customContractProperties.Add($"H{assetIdx}_{ft.FieldTypeName}", $"Asset.[{assetIdx - 1}].{fname}");
                 }
             });
-            var customContract = new CustomJSONContractResolver(customContractProperties);
-            return customContract;
+            return customContractProperties;
         }
-
 
         public static List<dynamic> UnflattenJson(this FieldTypeComplexLookupDefinition definition, List<dynamic> Values)
         {

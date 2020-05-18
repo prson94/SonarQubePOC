@@ -1172,6 +1172,42 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+
+                if (!string.IsNullOrEmpty(orderBy))
+                {
+                    if (fieldType.Type == "OwnershipLookup")
+                    {
+                        List<string> allowedOrderFields = new List<string>()
+                        {
+
+
+                        };
+                    }
+
+
+                    if (fieldType.Type == "ComplexRelationLookup")
+                    {
+                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                        var definition = ftl.ParseComplexLookupDefinition();
+
+                        var mappings = definition.GetFriendlyNamesMapping();
+
+                        if (!mappings.ContainsKey(orderBy))
+                        {
+                            foreach (var item in mappings)
+                            {
+                                if (item.Value.ToLower() == orderBy.ToLower())
+                                {
+                                    orderBy = item.Key;
+                                }
+                            }
+
+                            if (!mappings.ContainsKey(orderBy))
+                                return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid field value for parameter '_order'.");
+                        }
+                    }
+                }
+
                 var reader = await Company.QueryMultipleAsync(
                         "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection",
                         new
@@ -1197,12 +1233,6 @@ namespace d360.web.Controllers.V2
                     useFriendlyNames = useUnflattedStructure = false;
                 }
 
-                if (fieldType.Type == "OwnershipLookup")
-                {
-                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
-                    var defintion = ftl.ParseOwnershipLookupDefinition();
-                }
-
                 if (fieldType.Type == "ComplexRelationLookup")
                 {
                     var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
@@ -1224,6 +1254,8 @@ namespace d360.web.Controllers.V2
                     }
 
                 }
+
+
                 var count = Company.Query<int>(
                      "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter",
                      new
