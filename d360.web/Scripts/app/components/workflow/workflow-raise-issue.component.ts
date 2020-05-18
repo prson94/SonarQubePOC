@@ -62,7 +62,7 @@ declare var CompanySettings;
                                                     (onSelect)="selectItem()">
                                         <ng-template let-item
                                                      pTemplate="item">
-                                            <span style="color:#999999;">{{userFriendlyObjectName(item.Object)}}
+                                            <span style="color:#999999;">{{userFriendlyObjectName(item.Displayobject)}}
                                                 - <span *ngIf="item.ObjectTypeName">{{item.ObjectTypeName}}
                                                     -</span></span> {{item.TextPath}}
                                             <span *ngIf="item.GoverningDomain">({{item.GoverningDomain}})</span>

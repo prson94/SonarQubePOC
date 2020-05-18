@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 
 namespace d360.core.entities.Membership
 {
@@ -22,4 +23,22 @@ namespace d360.core.entities.Membership
         [DataMember]
         public FavoriteType Type { get; set; }
     }
+
+    public class FavoriteApiViewModel : IFavoriteUpsert
+    {
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Route { get; set; }
+
+        [DataMember]
+        public FavoriteType Type { get; set; }
+
+        [DataMember]
+        public Guid? Uid { get; set; }
+    }
+
+
 }

@@ -2512,11 +2512,14 @@ order by wi.StartedOn desc";
 
         }
 
-        [Route("lastexecution/{id:int}"), HttpDelete]
-        public HttpResponseMessage DeleteLastExecution(int id)
+        [Route("lastexecution/{id:int}/{uid:Guid}"), HttpDelete]
+        public HttpResponseMessage DeleteLastExecution(int id, Guid? uid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return Request.CreateErrorResponse(HttpStatusCode.Forbidden, new Exception("Access Denied"));
+
+            if (id == 0 && uid.HasValue && uid.Value != Guid.Empty)
+                id = Company.Filter<core.entities.Workflow.Type>(i => i.UID == uid.Value).SingleOrDefault().ID;
 
             if (!Company.WorkflowEventRegistrations.Any(x => x.TypeID == id))
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, new Exception("Workflow not found"));

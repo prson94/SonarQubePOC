@@ -339,7 +339,7 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
         }
 
         //if we don't have at least an id at this point, there's nothing we can do
-        if (this.id == null && this.uid == "00000000-0000-0000-0000-000000000000") {
+        if (this.id == 0 && this.uid == "00000000-0000-0000-0000-000000000000") {
             this.isLoading = false;
             return of();
         }
@@ -2022,8 +2022,11 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
     //#endregion
 
     private clearExecuted() {
-        this.workflowService.clearLastExecutionDate(this.id).subscribe();
-        this.model.Event.LastExecuted = null;
+        this.workflowService.clearLastExecutionDate(this.id, this.uid).subscribe(r => {
+            //Only clear if we get a positive response
+            if (r != undefined)
+                this.model.Event.LastExecuted = null;
+        });
     }
 
 }

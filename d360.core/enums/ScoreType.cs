@@ -12,8 +12,8 @@ namespace d360.core.enums
         Governance = 1,
         [Name("Data Quality Score"), ReadOnly(false), Description("")]
         DataQuality = 2,
-        [Name("Perceptional Score"), ReadOnly(true), Description("")]
-        Perceptional = 3
+        //[Name("Perceptional Score"), ReadOnly(true), Description("")]
+        //Perceptional = 3
     }
     public class ScoreTypeInfo
     {

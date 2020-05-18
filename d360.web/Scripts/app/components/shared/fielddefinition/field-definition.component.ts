@@ -155,6 +155,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 return "Simple Text";
             case "Lookup":
                 return "List";
+            case "Boolean":
+                return "True/False";
             default:
                 return name;
         }

@@ -1,5 +1,4 @@
-﻿using d360.extensions;
-using d360.model;
+﻿using d360.model;
 using Microsoft.Web.Http;
 using System;
 using System.Collections.Generic;
@@ -11,10 +10,8 @@ using System.Web.Http;
 using Dapper;
 using System.Data.SqlClient;
 using System.Data;
-using System.Data.Entity;
 using Swashbuckle.Swagger.Annotations;
 using System.Web.Http.Description;
-using d360.web.Filters;
 using d360.core.enums;
 
 namespace d360.web.Controllers.V2
@@ -22,21 +19,17 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/dataquality"), 
-        Authorize        
+        Authorize,
+        ApiExplorerSettings(IgnoreApi = true)
     ]
 
     public class DataQualityController : BaseV2ApiController
-    {
-        #region DI
-                
-        public DataQualityController
-(ICommunityContext community, ICompanyContext company)
+    {                
+        public DataQualityController(ICommunityContext community, ICompanyContext company)
             : base(community, company)
         {
         
         }
-
-        #endregion
 
         /// <summary>
         /// Returns all rule results for the specified rule Uid the default implementation.

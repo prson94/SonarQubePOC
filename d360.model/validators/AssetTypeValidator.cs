@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using d360.core.resources;
 using System.ComponentModel.DataAnnotations;
+using Dapper;
 
 namespace d360.core.validators
 {
@@ -58,12 +59,13 @@ namespace d360.core.validators
 
             #endregion
 
+            if (ModelHasDuplicateNames(model, parentAssetType, isInsert))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ErrorNameTaken);
+            }
+
             if (!isInsert)
             {
-                var anyDupeNames = CompanyContext.Any<AssetType>(x => x.Name == model.Name && x.Class == model.Class && x.uid != model.Uid);
-                if (anyDupeNames)
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.ErrorNameTaken);
-
                 if (assetType == null)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid);
                 else if (assetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
@@ -153,7 +155,75 @@ namespace d360.core.validators
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
-        }        
+        }
+
+        private bool ModelHasDuplicateNames(AssetTypeUpsert model, AssetType parentAssetType, bool isInsert = true)
+        {
+            if (CompanyContext.Database == null) return false; // unit tests dont mock the db context thus cant run db queries. Assume the name is unique.
+
+            if (isInsert)
+            {
+                if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
+                {
+                    int count = 0;
+                    if (parentAssetType != null)
+                    {
+                        count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
+                            select 
+	                            count(1)
+                            from
+	                            intersecttype I
+	                            inner join [Predicate] P on P.ID = I.PredicateID
+	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
+                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name", new { parentObjectId = parentAssetType.ObjectID, name = model.Name, cls = model.Class });
+                    }
+                    else
+                    {
+                        // only root level artifact types with the same class type IE tech asset vs business asset
+                        count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
+	                            select count(1) from assettype a
+                                where a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
+		                                and a.Name = @name", new { name = model.Name, cls = model.Class });
+                    }
+
+                    return (count > 0);                        
+                }
+                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.Class == model.Class))
+                    return true;
+            }
+            else
+            {
+                if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
+                {
+                    int count = 0;
+                    if (parentAssetType != null)
+                    {
+                        count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
+                            select 
+	                            count(1)
+                            from
+	                            intersecttype I
+	                            inner join [Predicate] P on P.ID = I.PredicateID
+	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
+                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name and a.uid <> @uid", new { parentObjectId = parentAssetType.ObjectID, name = model.Name, cls = model.Class, uid = model.Uid });
+                    }
+                    else
+                    {
+                        // only root level artifact types with the same class type IE tech asset vs business asset
+                        count = CompanyContext.Database.Connection.QuerySingleOrDefault<int>($@"
+	                            select count(1) from assettype a
+                                where
+	                                a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
+		                                and a.Name = @name and a.UID <> @uid", new { name = model.Name, cls = model.Class, uid = model.Uid });
+                    }
+
+                    return (count > 0);
+                }
+                else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name && i.uid != model.Uid && i.Class == model.Class))
+                    return true;
+            }
+            return false;
+        }
 
         public bool IsValidOrderByFieldForGetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {

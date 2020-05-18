@@ -1119,6 +1119,11 @@ export class BaseComponent {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
 
                     });
+
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,null,
+                        true,
+                        'Rule',
+                        data.ObjectId));
                     this.checkIfWorkflowActionIsSelected();
 
                 });
