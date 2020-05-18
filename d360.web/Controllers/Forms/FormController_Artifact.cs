@@ -157,22 +157,11 @@ namespace d360.web.Controllers
                 if (!Company.HasAssetTypePermission(SystemObjects.ArtifactType, id, Permission.DeleteAsset))
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                var intersectType = Company.Filter<IntersectType>(i =>
-                    i.Object == "ArtifactType" &&
-                    i.ObjectID == assetType.ObjectID &&
-                    i.Predicate.Type == PredicateType.InterTypeHierarchy
-                ).SingleOrDefault();
-
-                if (intersectType != null)
-                {
-                    Company.Delete(SystemObjects.IntersectType, intersectType.ID);
-                }
-
                 Company.Delete(SystemObjects.ArtifactType, id);
 
                 dynamic custom = new
                 {                    
-                    Name = assetType.Name,
+                    assetType.Name,
                     action = "delete"              
                 };
 
