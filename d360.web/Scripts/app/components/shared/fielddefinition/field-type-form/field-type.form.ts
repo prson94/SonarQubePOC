@@ -559,9 +559,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             });
                         }
 
-                        if (d.FieldTypeID != null && d.Name != this.name) {
+                        if (d.FieldTypeName != null && d.Name != this.name) {
                             this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
-                                value: d.FieldTypeID,
+                                value: d.FieldTypeName,
                                 label: d.FriendlyName,
                                 info: d.Info
                             });
@@ -600,8 +600,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private selectPredicate(value: string) {
         if (this.listFilterOptions.has(value)) {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
-
-            if (this.model.FieldType[this.currentType].FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
+            if (this.model.FieldType.Type["Lookup"].Filter.FieldTypeName == null && this.listFilterRelatedFields.length > 0) {
                 this.model.FieldType.Type["Lookup"].Filter.FieldTypeName = this.listFilterRelatedFields[0].value;
             }
         } else {
