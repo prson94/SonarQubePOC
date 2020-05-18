@@ -3014,13 +3014,16 @@ order by    Name
             if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
 
             var sql = @"select 
-										c.[Object],
+										c.[Object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
 										cU.Url, 
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
-										c.BackColor as IconBackColor
+										c.BackColor as IconBackColor,
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
+										else	c.[Object] end [Displayobject]
 										from [dbo].AssetWithType c   
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID

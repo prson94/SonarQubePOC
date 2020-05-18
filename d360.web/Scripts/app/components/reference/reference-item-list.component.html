@@ -47,7 +47,7 @@
             <tr (dblclick)="selected=item;editItemClick.emit(selected)" [pSelectableRow]="item">
                 <td *ngFor="let column of columns">
                     <d3s-dynamic-field-value [column]="column" [fields]="fields"
-                                             [item]="item" [useApiName]="true"></d3s-dynamic-field-value>
+                                             [item]="item" [useApiName]="true" [isDateUTC]="true"></d3s-dynamic-field-value>
                 </td>
                 <td>
                     <div class="RowTools" *ngIf="item.AssetUid">
