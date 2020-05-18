@@ -24,7 +24,7 @@ export class WorkflowTemplateToolComponent implements OnInit, AfterViewChecked {
         { value: '[OBJECT_NAME]', label: 'Object Name' },
         { value: '[OBJECT_TYPE]', label: 'Object Type' },
         { value: '[ASSET_PATH]', label: 'Object Asset Path' },
-        { value: '[SCORE]', label: 'Object Governance Score' },
+        { value: '[GOV_SCORE]', label: 'Object Governance Score' },
         { value: '[DQ_SCORE]', label: 'Object Data Quality Score' },
         { value: '[WORKFLOW_INITIATOR]', label: 'Workflow Initiator Name' },
         { value: '[ACTION_DETAILS]', label: 'Action Details' },
