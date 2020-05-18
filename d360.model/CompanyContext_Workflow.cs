@@ -2066,8 +2066,8 @@ namespace d360.model
 
                 result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
             }
-
-            if (result.Contains("[SCORE]"))
+            //need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
+            if (result.Contains("[GOV_SCORE]") || result.Contains("[SCORE]"))
             {
                 ObjectDetail item = null;
                 if (obj == SystemObjects.Issue)
@@ -2087,9 +2087,35 @@ namespace d360.model
                 int? score = null;
 
                 if(item != null && item.AssetID.HasValue)
-                    score = GetAssetScore(item.AssetID.Value);
+                    score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
 
-                result = result.Replace("[SCORE]", score.HasValue ? score.Value.ToString() : "(unknown score)");
+                result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
+                result = result.Replace("[SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
+            }
+
+            if (result.Contains("[DQ_SCORE]"))
+            {
+                ObjectDetail item = null;
+                if (obj == SystemObjects.Issue)
+                {
+                    var issue = Issues.Where(i => i.ID == objectID).Include(x => x.IssueType).FirstOrDefault();
+
+                    if (issue != null)
+                    {
+                        item = GetObjectDetail(issue.Object, issue.ObjectID);
+                    }
+                }
+                else
+                {
+                    //get the objects name
+                    item = GetObjectDetail(obj.ToString(), objectID);
+                }
+                int? score = null;
+
+                if (item != null && item.AssetID.HasValue)
+                    score = GetAssetScore(item.AssetID.Value, ScoreType.DataQuality);
+
+                result = result.Replace("[DQ_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
             }
 
             if (Regex.IsMatch(result, "\\[FIELD([0-9.]+)\\]"))

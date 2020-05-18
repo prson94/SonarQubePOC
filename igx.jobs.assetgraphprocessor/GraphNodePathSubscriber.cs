@@ -22,11 +22,11 @@ namespace igx.jobs.assetgraphprocessor
             if (info.Type != AssetEventType.Node)
                 return;
 
-#if DEBUG
             CoreFunction.AITrackJobStart(functionName);
-            log.WriteLine($"GraphNodePathSubscriber triggered for uid: {info.Uid}");
-            CoreFunction.AITrackEvent(functionName, "GraphNodePathSubscriber triggered", new Dictionary<string, string> { { "uid", info.Uid.ToString() } });
-#endif
+
+            string triggerMessage = $"GraphNodePathSubscriber triggered for uid [{info.Uid}] on CompanyID [{info.CompanyID}]";
+            log.WriteLine(triggerMessage);
+            CoreFunction.AITrackEvent(functionName, triggerMessage, new Dictionary<string, string> { { "uid", info.Uid.ToString() } }, info.CompanyID);
 
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(info.CompanyID))
             {
@@ -34,14 +34,14 @@ namespace igx.jobs.assetgraphprocessor
                 {
                     companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
                     await companyConnection.ExecuteAsync(@"begin
-    declare @assetId bigint;
+                        declare @assetId bigint;
 
-    select  @assetId = id
-    from    Asset
-    where   [uid] = @uid;
+                        select  @assetId = id
+                        from    Asset
+                        where   [uid] = @uid;
 
-    exec graph.UpdateGraphTableHierarchyBy null, null, @assetId 
-end", new { uid = info.Uid }, commandTimeout: timeout);
+                        exec graph.UpdateGraphTableHierarchyBy null, null, @assetId 
+                    end", new { uid = info.Uid }, commandTimeout: timeout);
                 }
                 catch (Exception ex)
                 {
@@ -49,10 +49,8 @@ end", new { uid = info.Uid }, commandTimeout: timeout);
                 }
             }
 
-#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-#endif
         }
     }
 }

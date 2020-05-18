@@ -138,7 +138,8 @@ namespace d360.core
                 new AllowedConversionOption { FromType = "Decimal", ToType = "Percentage" },
                 new AllowedConversionOption { FromType = "Number", ToType = "Decimal" },
                 new AllowedConversionOption { FromType = "Number", ToType = "Percentage" },
-                new AllowedConversionOption { FromType = "Text", ToType = "Html" }
+                new AllowedConversionOption { FromType = "Text", ToType = "Html" },
+                new AllowedConversionOption { FromType = "ComplexRelationLookup", ToType = "Relationship" }
             };
         }
     }

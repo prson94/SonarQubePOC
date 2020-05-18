@@ -1165,6 +1165,7 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Fields.GetLookupListFilter => ";
             var errorMessage = "";
+            bool validListAssetType = true;
 
             try
             {
@@ -1172,6 +1173,23 @@ namespace d360.web.Controllers.V2
                 int id = 0;
                 string objectType = "";
                 int objectId = 0;
+                if (Guid.TryParse(uid, out Guid assetUid))
+                {
+                    AssetType listAssetType = Company.Filter<AssetType>(x => x.uid == assetUid).SingleOrDefault();
+                    if (listAssetType != null)
+                    {
+                        objectType = listAssetType.Object;
+                        objectId = listAssetType.ObjectID;
+                    } else
+                    {
+                        validListAssetType = false;
+                    }
+                } else {
+                    validListAssetType = false;
+                }
+                if(!validListAssetType)
+                    throw new Exception("No valid UID for the List asset type provided");
+
                 if (assetTypeUid != null)
                 {
                     var assetType = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
@@ -1215,13 +1233,16 @@ namespace d360.web.Controllers.V2
                     .ToArray());
 
                 string sql = $@"SELECT 
-                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
+                        Concat(lower(A.PredicateUID), '|',A.Direction) as PredicateValue,
+                        A.PredicateUID,
+                        A.Direction,
                         A.PredicateName, 
                         A.ObjectName, 
                         A.[Object], 
                         A.[ObjectID], 
                         B.FieldTypeID, 
                         B.[FriendlyName],
+                        B.FieldTypeName,
 						B.Type,
                         B.Class,
                         B.Name
@@ -1229,7 +1250,7 @@ namespace d360.web.Controllers.V2
                         SELECT 
                             it.[ID] as IntersectTypeID, 
                             0 AS Direction, 
-                            p.[ID] as PredicateID, 
+                            p.[UID] as PredicateUID, 
                             p.[Name] as PredicateName, 
                             ot.[Name] as ObjectName, 
                             it.[Object] as [Object], 
@@ -1246,7 +1267,7 @@ namespace d360.web.Controllers.V2
                         SELECT 
                             it.[ID], 
                             1 AS Direction, 
-                            p.[ID] as PredicateID, 
+                            p.[UID] as PredicateUID, 
                             p.[Inverse] as PredicateName,
                             st.[Name] as ObjectName, 
                             it.[Subject] as [Object], 
@@ -1262,6 +1283,7 @@ namespace d360.web.Controllers.V2
                         ) A LEFT OUTER JOIN
                     (SELECT 
                         ft.[ID] as FieldTypeID,
+                        ft.Name as FieldTypeName,
                         ft.[FriendlyName], 
                         ft.[Object], 
                         ft.[ObjectID], 
@@ -1287,7 +1309,7 @@ namespace d360.web.Controllers.V2
                     {
                         PredicateValue = i.PredicateValue,
                         PredicateName = i.PredicateName,
-                        FieldTypeID = i.FieldTypeID,
+                        FieldTypeName = i.FieldTypeName,
                         FriendlyName = i.FriendlyName,
                         Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
                     })

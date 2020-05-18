@@ -530,7 +530,8 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateStart", "Effective start date", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_effectiveDateEnd", "Effective end date", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false)
+            SwaggerParameter("_assetUid", "The specific Uid of the asset you want the score for.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_scoreType", "The type of scores. The default is Governance.", DataType = "string", ParameterType = "query", Required = false, Enum = typeof(ScoreType))
         ]
         public async Task<IHttpActionResult> GetMetricScores(Guid assetTypeUid)
         {

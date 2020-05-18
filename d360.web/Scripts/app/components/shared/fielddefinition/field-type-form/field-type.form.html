@@ -277,7 +277,7 @@
                     <div class="FieldName">Filter by Related Assets in Field</div>
                     <p-dropdown name="filterassetfield"
                                 [options]="listFilterRelatedFields"
-                                [(ngModel)]="model.FieldType.Type[currentType].FilterFieldTypeID"
+                                [(ngModel)]="model.FieldType.Type[currentType].Filter.FieldTypeName"
                                 [style]="{ 'width': '98%' }"
                                 [disabled]="listFilterPredicate == null"
                                 ngDefaultControl>

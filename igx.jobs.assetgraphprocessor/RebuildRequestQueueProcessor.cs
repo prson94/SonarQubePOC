@@ -52,6 +52,8 @@ namespace igx.jobs.assetgraphprocessor
 
             #endregion
 
+            CoreFunction.AITrackEvent(functionName, $"RebuildQueueRequest triggered for CompanyID {queueInfo.CompanyID}", null, queueInfo.CompanyID);
+
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(queueInfo.CompanyID))
             {
                 const int timeout = 60 * 180;
@@ -72,11 +74,8 @@ namespace igx.jobs.assetgraphprocessor
                 }
             }
 
-#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-#endif
-
         }
     }
 }
