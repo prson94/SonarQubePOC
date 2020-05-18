@@ -578,15 +578,133 @@ from	FieldTypeLookup T
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-			  Update FTL
-			  Set FTL.[Definition] = REPLACE(FTL.[Definition], ':"TextPath"', ':"AssetPath"')
-			  FROM [dbo].[FieldTypeLookup] FTL
-			  inner join 
-			  FieldType FT on FT.ID = FTL.[FieldTypeID]
-			  where 
-			  FT.[Type] = 'ComplexRelationLookup'
-			  and
-			  FTL.Definition like '%:"TextPath"%' 
+			  declare @fieldTypes table (RowNumber int identity, FieldTypeID int, Definition nvarchar(max))
+			insert into @fieldTypes
+				select	F.ID,
+						L.Definition
+				from	FieldType F
+						inner join FieldTypeLookup L on L.FieldTypeID = F.ID and F.Type = 'ComplexRelationLookup';
+
+			declare @current int = 1,
+					@max int
+
+			select @max = max(RowNumber) from @fieldTypes
+
+			declare @relations table (
+				MasterFieldTypeID int, RowOrder int, 
+				IntersectTypeUid uniqueidentifier, IntersectTypeID int, 
+				AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, 
+				RelationType int, Direction int
+			)
+
+			declare @fields table (
+				MasterFieldTypeID int, 
+				AssetTypeUid uniqueidentifier, 
+				Object varchar(50), ObjectID int, FieldTypeID int, 
+				FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), 
+				DisplayOrder int, SortOrder int, Show bit, Width int
+			)
+
+			while @current <= @max
+			begin
+				declare @json nvarchar(2500),
+						@id int
+				select	@id = FieldTypeID,
+						@json = Definition
+				from	@fieldTypes 
+				where	RowNumber = @current;
+
+				declare @temp_relations table (
+					RowOrder int identity, 
+					IntersectTypeUid uniqueidentifier, IntersectTypeID int, 
+					AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, 
+					RelationType int, Direction int);
+
+				begin try
+					insert into @temp_relations
+						select	* 
+						from	OPENJSON(@json, N'lax $.Relations') with (
+									IntersectTypeUid uniqueidentifier, IntersectTypeID int, 
+									AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, 
+									RelationType int, Direction int
+								);
+
+					
+					insert into @relations
+						select	@id,
+								*
+						from	@temp_relations
+
+					delete @temp_relations
+
+					insert into @fields
+						select		@id,
+									*
+						from		OPENJSON(@json, N'lax $.Fields') with (
+										AssetTypeUid uniqueidentifier, 
+										Object varchar(50), 
+										ObjectID int, 
+										FieldTypeID int, 
+										FieldTypeName nvarchar(250), 
+										[Filter] nvarchar(max), 
+										OverrideDisplayName nvarchar(250), 
+										DisplayOrder int, 
+										SortOrder int, 
+										Show bit, 
+										Width int
+									)
+
+
+					delete @fieldTypes where RowNumber = @current
+				end try
+				begin catch
+
+				end catch
+
+				set @current = @current+1
+			end
+
+
+			update	R
+			set		R.FieldTypeName = 'AssetPath'
+			from	@fields R
+			where   FieldTypeID=0 and FieldTypeName = 'TextPath'
+
+			update	T
+			set		T.[Definition] = S.[Definition]
+			from	FieldTypeLookup T
+					inner join ( 
+						select		MasterFieldTypeID as FieldTypeID,
+									(
+										select	(
+												select		IntersectTypeUid,
+															AssetTypeUid,
+															RelationType,
+															Direction
+												from		@relations
+												where		MasterFieldTypeID = R.MasterFieldTypeID
+												order by	RowOrder
+												for json path, INCLUDE_NULL_VALUES
+												) as Relations,
+												(
+												select	AssetTypeUid,
+														FieldTypeID,
+														FieldTypeName,
+														[Filter],
+														OverrideDisplayName,
+														DisplayOrder,
+														SortOrder,
+														Show,
+														Width
+												from	@fields
+												where	MasterFieldTypeID = R.MasterFieldTypeID
+												for json path, INCLUDE_NULL_VALUES
+												) as Fields
+										for json path, INCLUDE_NULL_VALUES, WITHOUT_ARRAY_WRAPPER 
+									) as [Definition]
+						from		@relations R
+						group by	R.MasterFieldTypeID		
+					) S on S.FieldTypeID = T.FieldTypeID and S.Definition is not null
 		]]>
     </sql>
 	<rollback>
