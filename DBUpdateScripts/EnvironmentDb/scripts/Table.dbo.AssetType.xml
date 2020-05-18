@@ -110,7 +110,7 @@ AS
 IF COL_LENGTH('[dbo].[AssetType]','AutoDisplayParent') IS NULL
 BEGIN
 ALTER TABLE [dbo].[AssetType]
-ADD [AutoDisplayParent] 
+ADD [AutoDisplayParent] bit 
 END
 		]]>
     </sql>
