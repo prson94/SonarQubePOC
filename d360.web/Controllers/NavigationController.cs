@@ -952,25 +952,27 @@ namespace d360.web.Controllers
                 var response = Company.Query<string>("exec [dbo].[SecondaryNavSettings] @uid, @assetTypeUid , @resourceId, @isAdmin", new { assetTypeUid = model.AssetTypeUid, uid = model.AssetUid, resourceId = Company.CurrentResourceID, isAdmin = Company.CurrentResourceIsAdmin }).ToList();
                 responseModel = Newtonsoft.Json.JsonConvert.DeserializeObject<SecondaryNavigationResponseModel>(string.Join("", response));
 
-                if (responseModel.Object == "Artifact")
+                if (responseModel != null)
                 {
-                    responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+                    if (responseModel.Object == "Artifact")
+                    {
+                        responseModel.Artifact = Company.GetPageInformation(SystemObjects.Artifact, responseModel.ObjectID);
+                    }
+
+                    if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
+                    {
+                        var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null);
+                        apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
+                        responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
+                    }
+
+
+                    if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
+                    {
+                        var apiCtrlr = new TaxonomyController(this.Community, this.Company);
+                        responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
+                    }
                 }
-
-                if (responseModel.Object == SystemObjects.Policy.ToString() && model.PreloadData)
-                {
-                    var apiCtrlr = new D3SApiController(this.Community, this.Company, null, null);
-                    apiCtrlr.Request = new System.Net.Http.HttpRequestMessage();
-                    responseModel.PreloadData = apiCtrlr.GetPoliciesByType(responseModel.ObjectTypeId, true);
-                }
-
-
-                if (responseModel.Object == SystemObjects.Taxonomy.ToString() && model.PreloadData)
-                {
-                    var apiCtrlr = new TaxonomyController(this.Community, this.Company);
-                    responseModel.PreloadData = apiCtrlr.ModelHierarchy(responseModel.ObjectTypeId);
-                }
-
             }
             if (!Company.CurrentResourceIsAdmin)
             {
