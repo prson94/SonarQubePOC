@@ -96,6 +96,16 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
+                if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
+                {
+                    DateTime date = DateTime.MinValue;
+                    var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
+                    if (!DateTime.TryParse(paramDate, out date))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!"));
+                    }
+                }
+
 
                 var response = SurveyRepository.GetSurveysResult(surveyUid, queryParams);
 
@@ -274,6 +284,16 @@ namespace d360.web.Controllers.V2
                     if(asset.AssetType.Object != survey.Object || asset.AssetType.ObjectID != survey.ObjectID)
                     {
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset type does not match with any survey."));
+                    }
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "asofdate"))
+                {
+                    DateTime date = DateTime.MinValue;
+                    var paramDate = queryParams.FirstOrDefault(x => x.Key.ToLower() == "asofdate").Value;
+                    if (!DateTime.TryParse(paramDate, out date))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Invalid date value for AsOfDate parameter!"));
                     }
                 }
 
