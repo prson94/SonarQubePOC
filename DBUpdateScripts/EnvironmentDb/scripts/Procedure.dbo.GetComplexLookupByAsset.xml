@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v8">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v9">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -19,7 +19,9 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@countOnly bit = 0,
 	@pageSize int = 10,
 	@pageNum int = 1,
-	@simpleFilter nvarchar(max) = ''
+	@simpleFilter nvarchar(max) = '',
+	@orderBy nvarchar(100) = '',
+	@orderDirection nvarchar(100) = 'asc'
 as
 begin
 	set nocount on;
@@ -233,8 +235,8 @@ begin
 								when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
 								when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
 								else null
-							end as FieldCol)FSQL(col)
-						where F.FieldTypeName <> 'TextPath'
+							end as FieldCol)FSQL(col) 
+						where F.FieldTypeName <> 'TextPath' and FSQL.col is not null
 						union 
 						select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
 						 from @fields f 
@@ -524,6 +526,9 @@ begin
 						FieldTypeName 
 				from	@fields
 
+			insert into @selects 
+				select 'A.[uid]','Uid'
+
 			insert into @orders
 				select		case  
 								when FieldDataType = 'number' then
@@ -544,10 +549,17 @@ begin
 		end
 	end
 
+	if @orderBy <> ''
+	begin
+		delete from @orders
+		insert into @orders
+		select ColumnName + ' ' + @orderDirection from @selects where Alias = @orderBy
+	end
+
 	declare @pagingQuery nvarchar(100) = 'offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
 
 	declare @sql nvarchar(max) = 'select '
-	print @assetId
+
 	if @countOnly = 1
 	begin
 		set  @sql = @sql + '@count = count(*) '
@@ -577,7 +589,9 @@ begin
 
 		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
 		select [name], [type] from @datafields order by sort
-		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
+
+
+		exec sp_executesql @sql, N'@assetId bigint, @simpleFilter nvarchar(400), @pageSize int, @pageNum int', @assetId = @assetId, @simpleFilter = @simpleFilter, @pageNum = @pageNum, @pageSize = @pageSize
 	end
 	else
 	begin

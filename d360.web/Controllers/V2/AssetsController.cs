@@ -1110,6 +1110,7 @@ namespace d360.web.Controllers.V2
                 bool useUnflattedStructure = true;
                 bool returnForUI = false;
                 string orderBy = string.Empty;
+                string direction = string.Empty;
 
                 if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
                 {
@@ -1161,8 +1162,18 @@ namespace d360.web.Controllers.V2
                     orderBy = qparams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
                 }
 
+                if (qparams.Any(x => x.Key.ToLower() == "_direction"))
+                {
+                    direction = qparams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower();
+
+                    if (!new string[] { "desc", "asc" }.Contains(direction))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.");
+                    }
+                }
+
                 var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter",
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection",
                         new
                         {
                             @object = asset.Object,
@@ -1171,7 +1182,9 @@ namespace d360.web.Controllers.V2
                             resourceId = Company.CurrentResourceID,
                             pageSize,
                             pageNum,
-                            simpleFilter
+                            simpleFilter,
+                            orderBy,
+                            orderDirection = direction
                         }
                     );
 
@@ -1227,11 +1240,6 @@ namespace d360.web.Controllers.V2
 
 
 
-                if (returnForUI)
-                {
-                    result.Add("Columns", Columns);
-                    result.Add("Fields", Fields);
-                }
 
                 result.Add("pageSize", pageSize);
                 result.Add("pageNum", pageNum);
@@ -1239,6 +1247,12 @@ namespace d360.web.Controllers.V2
 
 
                 result.Add("items", Values);
+
+                if (returnForUI)
+                {
+                    result.Add("Columns", Columns);
+                    result.Add("Fields", Fields);
+                }
 
                 return Request.CreateResponse(HttpStatusCode.OK, result);
             }
