@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -14,6 +15,7 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -680,6 +682,88 @@ from	IntersectType I
             }
 
             return results;
+        }
+        public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var results = await GetRelationships(queryParams);
+
+            var apiInfo = results.Children().ToList();
+            var rowData = apiInfo[3].ToList().Children().ToList();
+
+            var document = new SLDocument();
+            const string relationshipSheetName = "Relationships";
+            const string apiSheetName = "Api Info";
+
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, relationshipSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, (int)apiInfo[0].First);
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, (int)apiInfo[1].First);
+            document.SetCellValue(3, 1, "total");
+            document.SetCellValue(3, 2, (int)apiInfo[2].First);
+
+
+            document.SelectWorksheet(relationshipSheetName);
+
+            int index = 1;
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                foreach (var r in row)
+                {
+                    rowNumber++;
+                    document.SetCellValue(rowNumber, index, (string)r.First);
+                }
+                index++;
+            }
+
+            #endregion
+
+            return document;
+        }
+
+        private void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse(valueString, out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                default:
+                    if (valueString.StartsWith("="))
+                        valueString = "'" + valueString;
+                    document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+            }
         }
     }
 }

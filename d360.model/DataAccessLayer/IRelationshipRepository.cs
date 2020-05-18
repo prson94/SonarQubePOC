@@ -8,6 +8,7 @@ using d360.core.entities;
 using d360.core.enums;
 using d360.core.queue;
 using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -38,5 +39,6 @@ namespace d360.model.DataAccessLayer
         List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution);
         List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution);
+        Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams);
     }
 }
