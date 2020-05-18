@@ -1,0 +1,56 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="View.graph.AssetNodeDisplayPath-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+create or alter view graph.AssetNodeDisplayPath WITH SCHEMABINDING
+as
+	select	ID,
+			Uid,
+			Class,
+			AssetTypeID,
+			AssetTypeUid,
+			Segments,
+			graph.GetPath(Segments, ' > ', ' / ') as DisplayPath,
+			State,
+			UpdatedOn
+	from	graph.AssetNode
+GO
+
+IF NOT EXISTS (select * from sys.indexes where name = 'CIX_GraphAssetNodeDisplayPath')
+BEGIN
+	create unique clustered index CIX_GraphAssetNodeDisplayPath on graph.AssetNodeDisplayPath (ID)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNodeDisplayPath_DisplayPath')
+BEGIN
+	create nonclustered index IX_GraphAssetNodeDisplayPath_DisplayPath on graph.AssetNodeDisplayPath (DisplayPath)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNodeDisplayPath_Uid')
+BEGIN
+	create nonclustered index IX_GraphAssetNodeDisplayPath_Uid on graph.AssetNodeDisplayPath (Uid)
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNodeDisplayPath_AssetType')
+BEGIN
+	create nonclustered index IX_GraphAssetNodeDisplayPath_AssetType on graph.AssetNodeDisplayPath (AssetTypeID asc)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop view if exists graph.AssetNodeDisplayPath
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

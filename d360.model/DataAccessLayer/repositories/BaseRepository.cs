@@ -201,7 +201,7 @@ namespace d360.model.DataAccessLayer.repositories
                     {
                         fieldJoins.Add($@"outer apply (
                             select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-                            from    graph.AssetNodeDetail 
+                            from    graph.AssetNodeDisplayPath 
 					        where   ID IN ({assetIdFinalQuery})
                             having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
@@ -443,7 +443,7 @@ namespace d360.model.DataAccessLayer.repositories
                                         }
                                         else if (field.Type == "Path")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.Path {orderDirection}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
                                         }
                                         else
                                         {
@@ -511,7 +511,7 @@ namespace d360.model.DataAccessLayer.repositories
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         case "Path":
-                                            whereStatements.Add($"Node.Path like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
+                                            whereStatements.Add($"Node.DisplayPath like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         default:

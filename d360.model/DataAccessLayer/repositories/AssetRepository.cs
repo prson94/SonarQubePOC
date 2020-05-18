@@ -640,7 +640,7 @@ namespace d360.model.DataAccessLayer
                 {populateRestrictedAssetTableSQL}
                 select  count(*)
                 from    Asset A 
-                        left join graph.AssetNodeDetail Node on Node.Uid = a.uid 
+                        left join graph.AssetNodeDisplayPath Node on Node.Uid = a.uid 
                 {(assetType.Object == "FusionAttributeType" ? " inner join FusionAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
@@ -662,7 +662,7 @@ namespace d360.model.DataAccessLayer
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
-                    Node.KeyPath as Path
+                    KP.KeyPath as Path
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -672,7 +672,8 @@ namespace d360.model.DataAccessLayer
                 {(fusionAttributeWithParent ? " inner join Asset ATP on ATP.ObjectID = FA.ParentID and ATP.[Object] = 'FusionAttribute'" : "")}
                 {(assetType.Object == "FusionQueryAttributeType" ? " inner join FusionQueryAttribute FA on FA.ID = A.ObjectID and FA.Deleted = 0" : "")} 
                 {string.Join("\n", fieldJoins)}
-                left join graph.AssetNodeDetail Node on Node.Uid = a.uid and Node.AssetTypeUid = T.[UID]
+                left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
+                left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
@@ -859,9 +860,7 @@ namespace d360.model.DataAccessLayer
             var returnModel = new AssetsByPathApiViewModel();
 
             var prefilterSql = "";
-            var countSql = "";
-            var sql = "";
-
+            
             int i = 1;
             foreach (var filter in model.filters)
             {
@@ -910,7 +909,6 @@ namespace d360.model.DataAccessLayer
                         $" T.[UseAsTransformation] = @uat{i}";
                     dbArgs.Add($"@uat{i}", filter.UseAsTransformation.Value);
                 }
-
                 if (!string.IsNullOrEmpty(prefilterStatement))
                 {
                     prefilterSql += (string.IsNullOrEmpty(prefilterSql)) ? "" : " union ";
@@ -920,30 +918,33 @@ namespace d360.model.DataAccessLayer
                 i++;
             }
 
-            dbArgs.Add("@phrase", model.searchPhrase.ToSqlFullTextSearchPhrase());
+            //dbArgs.Add("@phrase", model.searchPhrase.ToSqlFullTextSearchPhrase());
+            dbArgs.Add("@phrase", "%" + model.searchPhrase.CleanForSql() + "%");
 
             if (!string.IsNullOrEmpty(prefilterSql))
             {
                 prefilterSql = $"and N.AssetTypeID in ({prefilterSql})";
             }
 
-            countSql = $@"
+            var countSql = $@"
 select	count(1)
 from	graph.AssetNode N
-where	CONTAINS(N.[Path], @phrase) {prefilterSql}
+        inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
+where	P.DisplayPath like @phrase {prefilterSql}
 ";
 
-            sql = $@"
+            var sql = $@"
 select	N.Uid,
 		N.AssetTypeUid,
         T.Name as AssetTypeName,
         coalesce(S.Icon, 'fa-book') as AssetTypeIcon, 
 		N.Segments as SegmentsXml
 from	graph.AssetNode N
+        inner join graph.AssetNodeDisplayPath P on P.ID = N.ID
         inner join AssetType T on T.ID = N.AssetTypeID
         left join AssetTypeStyle S on S.ID = T.ID
-where	CONTAINS(N.[Path], @phrase) {prefilterSql}
-order by N.[Path] asc
+where	P.DisplayPath like @phrase {prefilterSql}
+order by P.DisplayPath asc
 OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 ";
             if (model.pageNum <= 1)
@@ -1841,12 +1842,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 select
 	                A.[UID] as [uid],
                     COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
-	                Node.Path 
+	                KP.KeyPath as Path
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
                 left join FieldType ft on AT.Object = ft.Object and AT.ObjectID = ft.ObjectID and ft.FriendlyName like 'status'
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
+                left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
                 WHERE A.ID = @id
             ";
             var res = new
