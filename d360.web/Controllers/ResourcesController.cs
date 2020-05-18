@@ -245,6 +245,7 @@ from	FollowDetail F
         }
 
         #endregion
+        
         #region Partials
 
         [HttpGet, Route("complexvalue/{id:int}/{attribute:int}/templates/tooltip/preview")]
@@ -614,7 +615,7 @@ select  ISNULL(FormattedValue,' ') as Value,
 	    FriendlyName as Name,
         [Type]
 from    FieldDetail 
-where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] <> 'JsonElement'
+where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] not in ('JsonElement', 'Score')
 union
 select	p.[Value],
 		RT.FriendlyName as [Name],
@@ -623,7 +624,17 @@ from	FieldType RT
 		cross apply openjson(RT.Definition) with (FieldTypeID int '$.FieldTypeID', [Path] nvarchar(250) '$.Path', DataType varchar(50) '$.DataType') D
 		inner join Field F on  F.ObjectType = @o and F.ObjectID = @oid and F.FieldTypeID = D.FieldTypeID and RT.[Type] = 'JsonElement'
 		inner join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path] 
-where   RT.Object = @type and RT.ObjectID = @typeID";
+where   RT.Object = @type and RT.ObjectID = @typeID
+union
+select	S.FormattedValue as [Value],
+		RT.FriendlyName as [Name],
+        RT.[Type] 
+from	FieldType RT
+		inner join Asset A on A.[Object] = @o and A.ObjectID = @oid
+		outer apply dbo.GetAssetScoreById(A.ID, RT.ScoreType) S
+where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
+		and (S.[Value] is not null or RT.ShowIfEmpty = 1)
+";
 
                         res = Company.Query<FieldTooltipValueModel>(sql, new { oid = objectID, o = objectType, type = det.Type, typeID = det.TypeID }).ToList();
 

@@ -386,7 +386,8 @@ namespace d360.web.Controllers
             DataType.RefListRelationship.ToString(),
             DataType.JsonElement.ToString(),
             DataType.Tag.ToString(),
-            DataType.JSON.ToString()
+            DataType.JSON.ToString(),
+            DataType.Score.ToString(),
         };
 
         public BaseController(ICommunityContext community, ICompanyContext company)

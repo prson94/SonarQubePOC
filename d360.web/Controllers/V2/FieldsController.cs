@@ -1873,7 +1873,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
 
 
                 var types = Company.Query<int>(
-                    "select distinct ScoreType from metrics.Asset where AssetTypeUid = @assetTypeUid and [State] = 1"
+                    "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @assetTypeUid and [State] = 1"
                     , new { assetTypeUid }).ToList();
 
                 foreach(var type in types)

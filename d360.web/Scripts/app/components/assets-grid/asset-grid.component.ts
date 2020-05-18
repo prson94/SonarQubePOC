@@ -23,7 +23,8 @@ import {
     GridField,
     GridFilterColumn,
     GridFilterExpression,
-    GridRelationshipFilterExpression
+    GridRelationshipFilterExpression,
+    GridScoreAllocation
 } from '../../models/grid-definition.model';
 import { GridDefinitionService } from '../../services/grid-definition.service';
 import { ArtifactService } from '../../services/artifacts.service';
@@ -82,6 +83,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     fields: GridField[] = [];
     filtercolumns: GridFilterColumn[] = [];
     topLevelFilters: GridFilterColumn[] = [];
+    scoreAllocations: GridScoreAllocation[] = [];
 
     showDelete: boolean = false;
     showEditor: boolean = false;
@@ -199,6 +201,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 this.filtercolumns = result.FilterColumns;
                 this.fields = result.Fields;
                 this.topLevelFilters = result.TopLevelFilterColumns;
+                this.scoreAllocations = result.ScoreAllocations;
+
                 statusField = this.fields.find(x => x.apiName != null && x.apiName.toLowerCase() == "status");
 
                 if (statusField != null) {
@@ -212,6 +216,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 else {
                     this.hasNoListableColumns = false;
                 }
+                
                 this.isDefinitionLoaded = true;
                 this.changeDetectorRef.markForCheck();
             }
@@ -311,6 +316,15 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             .subscribe(res => {
                 this.items = res.items;
 
+
+                if (this.scoreAllocations && this.scoreAllocations.length > 0) {
+                    this.items.forEach(i => {
+                        this.scoreAllocations.forEach(s => {
+                            i[s.Name + '_threshold'] = this.getThreshold(i[s.Name], s.LowerThreshold, s.UpperThreshold);
+                        });
+                    });
+                }
+
                 this.totalRecords = res.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
@@ -322,6 +336,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.messagesService.showError("Error", err.message);
                 });
     }
+
+
 
     getCertificationStatusColor(status: string) {
         status = status.toLowerCase().trim();
@@ -342,6 +358,26 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                 }
                 return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
         }
+    }
+
+    getThreshold(value: string, lower: number, upper: number): string {
+        if (value == null || value.length < 1)
+            return '';
+        if (value.indexOf('%') > -1) {
+            value = value.replace('%', '');
+        }
+        if (isNaN(+value))
+            return '';
+
+        let v = +value;
+
+        if (v <= lower)
+            return 'poor';
+        else if (v > lower && v <= upper)
+            return 'average';
+        else
+            return 'good';
+
     }
 
     closeEditor() {
