@@ -262,6 +262,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
+	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
 	<include file="scripts/View.cache.ObjectDetails.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
 	<include file="scripts/View.dbo.AssetApiModel.xml"/>
