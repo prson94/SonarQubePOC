@@ -20,14 +20,18 @@ declare var CompanySettings;
                         <div class="title">
                             <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
                             <h1>Search Results</h1>
-                            <d3s-search-input
-                                (search)="inputSearch($event)"
-                                [(isExactMatch)]="isExactMatch"
-                                (isExactMatchChange)="exactMatchChance(isExactMatch)"
-                                [(searchTypes)]="searchTypes"
-                                [(searchText)]="searchText"
-                                [style.width]="'100%'"
-                                [style.height.px]="32"></d3s-search-input>
+                            <div class="titlebar-search">           
+                                <div class="field grow mr10">
+                                    <d3s-header-typeahead-search 
+                                                [additionalCssClasses]="'gov-search'" 
+                                                [autocompletePlaceholder]="'What are you looking for?'"
+                                                [searchOptions]="searchTypes"
+                                                [defaultValue]="searchText"
+                                                [isExactMatch]="isExactMatch"
+                                                [keepFilter]="true">
+                                    </d3s-header-typeahead-search>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 <d3s-search-results [from]="fromNumber" 

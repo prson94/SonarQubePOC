@@ -22,11 +22,11 @@ namespace igx.jobs.assetgraphprocessor
             if (info.Type != AssetEventType.Edge)
                 return;
 
-#if DEBUG
             CoreFunction.AITrackJobStart(functionName);
-            log.WriteLine($"GraphEdgeSubscriber triggered for uid: {info.Uid}");
-            CoreFunction.AITrackEvent(functionName, "GraphEdgeSubscriber triggered", new Dictionary<string, string> { { "uid", info.Uid.ToString() } });
-#endif
+
+            string triggerMessage = $"GraphEdgeSubscriber triggered for uid [{info.Uid}] on CompanyID [{info.CompanyID}]";
+            log.WriteLine(triggerMessage);
+            CoreFunction.AITrackEvent(functionName, triggerMessage, new Dictionary<string, string> { { "uid", info.Uid.ToString() } }, info.CompanyID);
 
             using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(info.CompanyID))
             {
@@ -41,10 +41,8 @@ namespace igx.jobs.assetgraphprocessor
                 }
             }
 
-#if DEBUG
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-#endif
         }
     }
 }

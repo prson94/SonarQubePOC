@@ -195,10 +195,6 @@ namespace d360.model
 
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
 
-        public DbSet<RuleImplementation> RuleImplementations { get; set; }
-
-        public DbSet<RuleResult> RuleResults { get; set; }
-
         public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
@@ -877,15 +873,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 
         #endregion
 
-        class LookupFieldValueModel
-        {
-            public int ID { get; set; }
-            public string Name { get; set; }
-            public int SortOrder { get; set; }
-            public int ObjectID { get; set; }
-            public string FormattedValue { get; set; }
-        }
-
         public AssetDetail GetAssetDetail(long id)
         {
             var model = Query<AssetDetail>(@"
@@ -1129,7 +1116,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
         public AssetDetail GetParentObject(int id, SystemObjects obj)
         {
-            //string type = "";
             var predicateType = PredicateType.InterTypeHierarchy;
 
 
@@ -1430,17 +1416,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
             return res;
         }
 
-        public class DetailDisplayableRelationship
-        {
-            public string SourceObject { get; set; }
-            public int SourceObjectID { get; set; }
-            public string TargetObject { get; set; }
-            public int TargetObjectID { get; set; }
-            public string TargetObjectName { get; set; }
-            public string TargetTypeName { get; set; }
-            public int Count { get; set; }
-            public string TargetUrl { get; set; }
-        }
 
         public List<IntersectTypeOption> GetIntersectTypeOptions(
             SystemObjects? subject = null, int? subjectID = null,
@@ -2576,10 +2551,7 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrEmpty(o.Name.Trim())) throw new ArgumentException(Messages.Error_Name_Required);
-
-
-                    PerformAssetTypeNameCheck(o,entry.State);                    
+                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);                         
                 }
                 #endregion
 
@@ -2601,8 +2573,6 @@ select @err";
                     }
                 }
                 #endregion
-
-
 
                 #region Business logic : Report
                 if (entry.Entity is Report)
@@ -2780,73 +2750,7 @@ select @err";
             return returnValue;
         }
 
-        private void PerformAssetTypeNameCheck(AssetType o,EntityState state)
-        {
-            switch (state)
-            {
-                case EntityState.Added:
-                    if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
-                    {
-                        int count = 0;
-                        if (o.Parent != null) {
-                            count = Database.Connection.QuerySingleOrDefault<int>($@"
-                            select 
-	                            count(1)
-                            from
-	                            intersecttype I
-	                            inner join [Predicate] P on P.ID = I.PredicateID
-	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
-                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name", new { parentObjectId = o.Parent.ObjectID,  name = o.Name, cls = o.Class });
-                        }
-                        else
-                        {
-                            // only root level artifact types with the same class type IE tech asset vs business asset
-                            count = Database.Connection.QuerySingleOrDefault<int>($@"
-	                            select count(1) from assettype a
-                                where a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
-		                                and a.Name = @name", new { name = o.Name, cls = o.Class });
-                        }
-
-                        if(count > 0)
-                            throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
-                    }
-                    else if (Any<AssetType>(i => i.Name == o.Name && i.Object == o.Object))
-                        throw new ConflictException("AssetType name conflict", Messages.Error_NameTaken);
-                    break;
-                case EntityState.Modified:
-                    if (o.Class == AssetTypeClass.BusinessAsset || o.Class == AssetTypeClass.TechnicalAsset)
-                    {
-                        int count = 0;
-                        if (o.Parent != null)
-                        {
-                            count = Database.Connection.QuerySingleOrDefault<int>($@"
-                            select 
-	                            count(1)
-                            from
-	                            intersecttype I
-	                            inner join [Predicate] P on P.ID = I.PredicateID
-	                            inner join AssetType a on a.object = i.object and a.objectid = i.objectid
-                            where  a.[class] = @cls and P.[Type] = 3 and i.[subject] = 'ArtifactType' and i.[subjectID] = @parentObjectId and a.name = @name and a.id <> @id", new { parentObjectId = o.Parent.ObjectID, name = o.Name, cls = o.Class, id = o.ID });
-                        }
-                        else
-                        {
-                            // only root level artifact types with the same class type IE tech asset vs business asset
-                            count = Database.Connection.QuerySingleOrDefault<int>($@"
-	                            select count(1) from assettype a
-                                where
-	                                a.[class] = @cls and not exists (select 1 from intersecttype I inner join [predicate] p on P.id = I.PredicateID where p.[Type] = 3 and i.Subject = 'ArtifactType' and i.ObjectID = a.ObjectID)
-		                                and a.Name = @name and a.ID <> @id", new { name = o.Name, cls = o.Class, id = o.ID });
-                        }
-
-                        if (count > 0)
-                            throw new ArgumentException(Messages.Error_NameTaken);
-                    }
-                    else if (Any<AssetType>(i => i.Name == o.Name && i.ID != o.ID && i.Object == o.Object))
-                        throw new ArgumentException(Messages.Error_NameTaken);
-                    break;
-            }
-        }
-
+        
         private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {
             //get any objects that implement EventTrackedEntity so we can add messages for them
@@ -3099,6 +3003,11 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
+                else if (f.Type == DataType.Path.ToString()) 
+                {
+                    columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
+                }
                 else if (f.Type == DataType.Tag.ToString())
                 {
                     string assetIdPath = "A.Id";
@@ -3204,14 +3113,14 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
             }
         }
 
-        public int? GetAssetScore(long assetId)
+        public int? GetAssetScore(long assetId, ScoreType type)
         {
             string sql = $@"SELECT top 1
                             cast(S.Value * 100 as int) as 'Score'                            
                             from Asset A                            
                             inner join metrics.Score S on S.AssetUid = A.[uid] and S.EffectiveDate <= getutcdate()
-                            WHERE S.ScoreType = 1 and A.ID = @assetId order by S.EffectiveDate desc";
-            return Query<int?>(sql, new { assetId }).FirstOrDefault();
+                            WHERE S.ScoreType = @type and A.ID = @assetId order by S.EffectiveDate desc";
+            return Query<int?>(sql, new { assetId, type = (int)type }).FirstOrDefault();
         }
 
         /// <summary>

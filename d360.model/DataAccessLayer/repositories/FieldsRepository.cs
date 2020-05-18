@@ -246,14 +246,12 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'ComplexRelationLookup' then FTL.LookupType else null end as 'Type.ComputedRelationshipLookup.LookupType',
 
 		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
-		        select	IST.Uid as IntersectTypeUid,
-				        AST.Uid as AssetTypeUid,
+		        select	DR.IntersectTypeUid,
+				        DR.AssetTypeUid,
 				        DR.RelationType,
 				        DR.Direction
 		        from	OPENJSON(FTL.Definition) with (Relations nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Relations) with (IntersectTypeID int, Object varchar(50), ObjectID int, RelationType int, Direction int) DR
-				        left join IntersectType IST on IST.ID = DR.IntersectTypeID
-				        left join AssetType AST on AST.Object = DR.Object and AST.ObjectID = DR.ObjectID
+				        outer apply OPENJSON(D.Relations) with (IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int) DR
 		        for json path
 		        ) else null end) as 'Type.ComputedRelationshipLookup.Definition.Relations',
 		        JSON_QUERY(case when FT.Type = 'ComplexRelationLookup' then (
@@ -266,8 +264,8 @@ select	@pageSize as 'pageSize',
 				        DF.Show,
 				        DF.Width
 		        from	OPENJSON(FTL.Definition) with (Fields nvarchar(max) as json) D
-				        outer apply OPENJSON(D.Fields) with (Object varchar(50), ObjectID int, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
-				        left join AssetType AST on AST.Object = DF.Object and AST.ObjectID = DF.ObjectID
+				        outer apply OPENJSON(D.Fields) with (AssetTypeUid uniqueidentifier, FieldTypeID int, FieldTypeName nvarchar(250), [Filter] nvarchar(500), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int) DF
+				        left join AssetType AST on AST.Uid = DF.AssetTypeUid
 				        left join FieldType AFT on AFT.ID = DF.FieldTypeID
 		        order by DF.DisplayOrder
 		        for json path
@@ -421,6 +419,13 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.IsPartOfKey else null end as 'Type.Number.IsPartOfKey',
 		        case when FT.Type = 'Number' then FT.IsPrimaryFilter else null end as 'Type.Number.IsPrimaryFilter',
 		        case when FT.Type = 'Number' then FT.ShowIfEmpty else null end as 'Type.Number.ShowIfEmpty',
+
+		        case when FT.Type = 'Path' then FT.ColumnOrder else null end as 'Type.Path.ColumnOrder',
+		        case when FT.Type = 'Path' then FT.ColumnWidth else null end as 'Type.Path.ColumnWidth',
+		        case when FT.Type = 'Path' then FT.SortOrder else null end as 'Type.Path.SortOrder',
+		        case when FT.Type = 'Path' then FT.DisplayDescription else null end as 'Type.Path.Description.Display',
+		        case when FT.Type = 'Path' then FT.IsDisplayable else null end as 'Type.Path.IsDisplayable',
+		        case when FT.Type = 'Path' then FT.IsListable else null end as 'Type.Path.IsListable',
 
 		        case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 		        case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
@@ -742,6 +747,7 @@ from	IntersectType I
                         bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
+                        var isFieldFromRelationship = i.FieldTypeName.StartsWith("Relation.");
 
                         var fieldInfo = Company.Query<FieldInfo>(@"
                             select coalesce(F.ID, 0) as FieldTypeID, T.Class
@@ -749,6 +755,19 @@ from	IntersectType I
                                    left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
                             where  T.uid = @AssetTypeUid", 
                             new { i.FieldTypeName, i.AssetTypeUid }).SingleOrDefault();
+
+                        if (isFieldFromRelationship)
+                        {
+                            var relation = f.Type.ComputedRelationshipLookup.Definition.Relations.FirstOrDefault(x => x.AssetTypeUid == i.AssetTypeUid);
+                            var intersectTypeUid = relation.IntersectTypeUid;
+                            var fieldName = i.FieldTypeName.Replace("Relation.", "").Trim();
+                            fieldInfo = Company.Query<FieldInfo>(@"
+                            select coalesce(F.ID, 0) as FieldTypeID, 0 as Class
+                            from   IntersectType IT 
+                                   left join FieldType F on F.Object = 'IntersectType' and F.ObjectID = IT.Id and F.Name = @fieldName 
+                            where  IT.uid = @intersectTypeUid",
+                            new { fieldName, intersectTypeUid }).SingleOrDefault();
+                        }
 
                         // Invalid uid
                         if ((isRelatedItem && !relatedItemUids.Contains(i.AssetTypeUid)) || fieldInfo == null)
@@ -1154,6 +1173,22 @@ from	IntersectType I
                         newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
                         newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
                     }
+                }
+                else if (f.Type.Path != null)
+                {
+                    newFieldType.Type = DataType.Path.ToString();
+                    newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : ++maxColumnIndex;
+                    newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
+                    if (f.Type.Path.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Path.Description.Display;
+                    }
+                    newFieldType.IsDisplayable = f.Type.Path.IsDisplayable;
+                    newFieldType.IsEditable = false;
+                    newFieldType.IsListable = f.Type.Path.IsListable;
+                    newFieldType.IsPartOfKey = false;
+                    newFieldType.ShowIfEmpty = true;
+                    newFieldType.IsPrimaryFilter = false;
                 }
                 else if (f.Type.Relationship != null)
                 {

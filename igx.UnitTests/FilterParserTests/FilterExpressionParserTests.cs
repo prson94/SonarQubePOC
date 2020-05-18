@@ -52,6 +52,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("number ct 1")]
         [InlineData("number eq 2.4")]
         [InlineData("number eq text")]
+        [InlineData("number eq 1.000")]
         [InlineData("decimal eq text")]
         [InlineData("decimal ct '2.4'")]
         [InlineData("boolean eq text")]
@@ -90,7 +91,6 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("relationship ge 'relationshipassetvalue'")]
         [InlineData("nonexistingfield ge 'relationshipassetvalue'")]
         [InlineData("text eq Chetna's ^&*()_+-={}[]|\\;:\",./<>? Check~` All")]
-        [InlineData("lookup ct 'validlookupvalue'")]
         public void InvalidFormatExpressions(string expression)
         {
             bool didThrow = false;
@@ -115,6 +115,7 @@ namespace igx.UnitTests.FilterExpressionTests
         [InlineData("number gt 1")]
         [InlineData("number ge 1")]
         [InlineData("number ne 1")]
+        [InlineData("number eq 1,000")]
         public void ValidNumberTests(string expression)
         {
             Dictionary<string, object> sqlParams = new Dictionary<string, object>();

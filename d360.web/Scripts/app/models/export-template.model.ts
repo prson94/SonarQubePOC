@@ -7,6 +7,7 @@
     IncludeFields: string;
     HasTemplateFile: boolean;
     ExportViewType: ExportViewType;
+    uid: string;
 }
 
 export class ExportTemplateStyle {

@@ -488,7 +488,7 @@ where 1=1
 
         public Task<IEnumerable<ClaimsViewModel>> GetClaims()
         {
-            var permissions =  Permission.ReadResponsibilities.GetList();
+            var permissions = Permission.ReadResponsibilities.GetList();
             var claims = permissions.Select(x => new ClaimsViewModel()
             {
                 ID = (int)x.ID,
@@ -524,7 +524,8 @@ where 1=1
                     Message = $"Allocation added.",
                     Success = true
                 };
-            }catch(Exception e)
+            }
+            catch (Exception e)
             {
                 return new ResponsibilityTypeAllocationResponseModel()
                 {
@@ -573,7 +574,7 @@ where 1=1
 
                 //check is there responsibility rules for this responsibility type
                 var rules = await GetResponsibilityRules(responsibility.UID);
-                if(rules.Any(x=>x.AssetTypeUid == assetType.uid))
+                if (rules.Any(x => x.AssetTypeUid == assetType.uid))
                 {
                     //if it has rules and cascade id false the error this response
                     if (cascade)
@@ -622,5 +623,99 @@ where 1=1
                 };
             }
         }
+
+        public ResponsibilityType GetResponsibilityTypeByUID(Guid uid)
+        {
+            return Company.ResponsibilityTypes.FirstOrDefault(x => x.UID == uid);
+        }
+        public bool IsValidResponsibilityForAsset(Guid responsibilityUid, Guid assetUid)
+        {
+            return Company.Query<bool>(@"select 
+                            case when count(*) > 0
+                             then 1
+                             else 0
+                            end as isValid
+                              from ResponsibilityType rt
+                              inner join asset a on a.uid = @assetUid
+                              inner join assettype at on a.assettypeid = at.id
+                              inner join responsibilitytyperelation rtr on rtr.responsibilitytypeid = rt.id
+                              where rt.uid = @responsibilityUID and at.object = rtr.ObjectType and at.ObjectID = rtr.ObjectID", new { assetUid, responsibilityUid }).FirstOrDefault();
+        }
+
+        public IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid)
+        {
+            return Company.Query<SecurityAssetModel>(@"select 
+                    A.uid,
+                    A.ObjectId as SecurityAssetId, 
+                    case A.Object 
+	                    when 'Group' then 'G'
+                        when 'Resource' then 'R'
+	                    else NULL
+                    end as SecurityAsset,
+                    case 
+                       when RTO.Id is not null then 1
+                       else 0
+                    end as 'Exists'
+                    from asset A
+                    inner join ResponsibilityType RT on rt.uid = @responsibilityUid
+                    inner join Asset MainAsset on MainAsset.uid = @assetUid
+                    left join ResponsibilityTypeRelationOverrideItem RTO ON RTO.ResponsibilityTypeId = RT.Id and RTO.AssetId = mainasset.id and RTO.securityassetid = a.objectid
+                    where A.uid in @resourceUids", new { resourceUids, assetUid, responsibilityUid }).ToList();
+        }
+
+        public void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context)
+        {
+            if (responsibilityType == null)
+                throw new ArgumentNullException("Responsibility Type cannot be null.");
+
+            if (asset == null)
+                throw new ArgumentNullException("Asset cannot be null.");
+
+            if (resources.Count == 0)
+                throw new ArgumentNullException("Resources cannot be empty.");
+
+            List<ResponsibilityTypeRelationOverrideItem> items = new List<ResponsibilityTypeRelationOverrideItem>();
+
+            resources.Where(x => x.SecurityAsset == "R" || x.SecurityAsset == "G").ToList()
+                .ForEach(x =>
+            {
+                items.Add(new ResponsibilityTypeRelationOverrideItem()
+                {
+                    AssetID = asset.ID,
+                    Context = context,
+                    ResponsibilityTypeID = responsibilityType.ID,
+                    SecurityAsset = x.SecurityAsset,
+                    SecurityAssetID = x.SecurityAssetId,
+                    UpdatedBy = Company.CurrentResourceID,
+                    UpdatedOn = DateTime.UtcNow
+                });
+            });
+
+            Company.ResponsibilityTypeRelationOverrideItems.AddRange(items);
+            Company.SaveChanges();
+        }
+        public void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources)
+        {
+            if (responsibilityType == null)
+                throw new ArgumentNullException("Responsibility Type cannot be null.");
+
+            if (asset == null)
+                throw new ArgumentNullException("Asset cannot be null.");
+
+            if (resources.Count == 0)
+                throw new ArgumentNullException("Resources cannot be empty.");
+
+            List<string> securityAssetHash = resources.Where(x => x.SecurityAsset == "G" || x.SecurityAsset == "R").Select(x => x.SecurityAsset + x.SecurityAssetId).ToList();
+
+            var overrides = Company.ResponsibilityTypeRelationOverrideItems
+                .Where(x => x.ResponsibilityTypeID == responsibilityType.ID
+                && x.AssetID == asset.ID
+                && securityAssetHash.Contains(x.SecurityAsset + x.SecurityAssetID));
+
+            Company.ResponsibilityTypeRelationOverrideItems.RemoveRange(overrides);
+            Company.SaveChanges();
+        }
+
+
     }
 }

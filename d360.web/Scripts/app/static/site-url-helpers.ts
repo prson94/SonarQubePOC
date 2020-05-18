@@ -10,6 +10,7 @@ export class SiteUrlHelpers {
     static SITE_URL_REFERENCE_ROOT = 'reference';
     static SITE_URL_ARTIFACT_ROOT = 'artifact';
     static SITE_URL_ASSET_ROOT = 'asset';
+    static SITE_URL_ASSETTYPE_ROOT = 'assettype';
     static SITE_URL_ASSETS_ROOT = 'assets';
     static SITE_URL_COMMUNITY_ROOT = 'community';
     static SITE_URL_HELP_ROOT = 'help';
@@ -175,22 +176,10 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_POLICY_ROOT}/${parentId};hierarchyId=${objectId}`;
             case 'RULE':
                 return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
-            case 'RULEIMPLEMENTATION':
-                return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${parentId}/${objectId}`;
             case 'DASHBOARD':
                 return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}`;
             case 'TAG':
                 return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${objectId}`;
-            default:
-                console.log('Unable to generate object link', objectType, objectId);
-        }
-    }
-
-    // getObjectUrl - Generates the url for an object based on its type
-    static getDeepObjectUrl(objectType: string, typeId: number, parentId?: number, objectId?: number, objectName?: string): string {
-        switch (objectType.toUpperCase()) {
-            case 'RULEIMPLEMENTATION':
-                return `${SiteUrlHelpers.SITE_URL_RULE_ROOT}/${typeId}/${parentId}/${objectId}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

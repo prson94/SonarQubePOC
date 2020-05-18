@@ -16,6 +16,7 @@ using d360.extensions.storage;
 using System.Text;
 using d360.core;
 using d360.core.entities.Metric;
+using System.Net.Http;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -185,9 +186,7 @@ namespace igx.jobs.apiexecutionprocessor
                     if (dbExecutionItem.State == d360.core.enums.State.Deleted)
                     {
                         executeJob = false;
-                        dbExecutionItem.ErrorMessage = "Execution job was canceled by user.";
                         log.WriteLine($"Execution job with UID {dbExecutionItem.ExecutionID} was canceled by user.");
-
                     }
 
                     if (executeJob)
@@ -198,8 +197,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 #region
                                 var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
                                 assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
-                                string postAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var postAssets = JsonConvert.DeserializeObject<List<AssetInsert>>(postAssetsJson);
+                                
+                                List<AssetInsert> postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
                                 var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
@@ -207,9 +206,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
                                 log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
 
-                                log.WriteLine($"POST Assets (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postAssetsResults));
-                                log.WriteLine($"POST Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                await SaveResultsJsonToAzure(postAssetsResults, log, "Assets", HttpMethod.Post);
 
                                 company.SendApiGraphEvent(Info);
 
@@ -219,8 +216,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 #region
                                 var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
                                 assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
-                                string putAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var putAssets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
+
+                                var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
                                 var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
@@ -228,9 +225,7 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
                                 log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
 
-                                log.WriteLine($"PUT Assets (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(putAssetsResults));
-                                log.WriteLine($"PUT Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                await SaveResultsJsonToAzure(putAssetsResults, log, "Assets", HttpMethod.Put);
 
                                 company.SendApiGraphEvent(Info);
 
@@ -241,44 +236,41 @@ namespace igx.jobs.apiexecutionprocessor
                                 var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
                                 assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).Single();
 
-                                string deleteAssetsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var deleteAssets = JsonConvert.DeserializeObject<AssetDeletes>(deleteAssetsJson);
-
+                                var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
+                                
                                 log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
                                 var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                                 dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
+                                
+                                await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
 
-                                log.WriteLine($"DELETE Assets (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetsResults));
-                                log.WriteLine($"DELETE Assets (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                                 break;
                             #endregion
                             case ApiExecutionAction.PostRelationships:
                                 #region
                                 var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
                                 intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).Single();
-                                string postRelationshipsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var postRelationships = JsonConvert.DeserializeObject<RelationshipInserts>(postRelationshipsJson);
+                                
+                                var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
                                 var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
                                 dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
                                 log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
+                                                                
+                                await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
 
-                                log.WriteLine($"POST Relationships (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postRelationshipsResults));
-                                log.WriteLine($"POST Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
                                 break;
                             #endregion
                             case ApiExecutionAction.DeleteRelationships:
                                 #region
                                 var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
                                 intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).Single();
-                                string deleteRelationshipsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var deleteRelationships = JsonConvert.DeserializeObject<RelationshipDeletes>(deleteRelationshipsJson);
+                                
+                                var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
                                 var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
@@ -286,17 +278,15 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
 
-                                log.WriteLine($"DELETE Relationships (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteRelationshipsResults));
-                                log.WriteLine($"DELETE Relationships (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
+
                                 break;
                             #endregion
                             case ApiExecutionAction.DeleteAssetTypes:
                                 #region
                                 var deleteAssetTypesFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssetTypes>(dbExecutionItem.Fields);
 
-                                string deleteAssetTypesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var deleteAssetTypes = JsonConvert.DeserializeObject<AssetTypeDeletes>(deleteAssetTypesJson);
+                                var deleteAssetTypes = await storage.DeserializeJsonObjectFromBlobAsync<AssetTypeDeletes>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"DELETE Asset Types (DB Start): Total raw assets: {deleteAssetTypes.Count}.");
                                 var deleteAssetTypesResults = company.RemoveAssetTypes(dbExecutionItem, deleteAssetTypes, 28800); //dbExecutionTimeout = 8 hours
@@ -304,14 +294,14 @@ namespace igx.jobs.apiexecutionprocessor
                                 dbExecutionItem.Error = deleteAssetTypesResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Asset Types (DB Complete): Total results: {deleteAssetTypesResults.Count}.");
 
-                                log.WriteLine($"DELETE Asset Types (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(deleteAssetTypesResults));
-                                log.WriteLine($"DELETE Asset Types (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                await SaveResultsJsonToAzure(deleteAssetTypesResults, log, "Asset Types", HttpMethod.Delete);
+
                                 break;
                             #endregion
                             case ApiExecutionAction.PostCrossReferences:
                                 string postCrossReferencesJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                var postCrossReferences = JsonConvert.DeserializeObject<List<AssetCrossReference>>(postCrossReferencesJson);
+                                
+                                var postCrossReferences = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetCrossReference>>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"POST Cross References (DB Start): Total raw Cross References: {postCrossReferences.Count}");
                                 var postCrossReferenceResult = company.ImportCrossReferences(dbExecutionItem, postCrossReferences, dbExecutionTimeout);
@@ -320,28 +310,23 @@ namespace igx.jobs.apiexecutionprocessor
                                 log.WriteLine($"POST Cross References (DB Complete): Total Processed: {dbExecutionItem.Processed}.");
                                 log.WriteLine($"POST Cross References (DB Complete): Total Error: {dbExecutionItem.Error}.");
 
-                                log.WriteLine($"Post Cross References (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postCrossReferenceResult));
-                                log.WriteLine($"Post Cross References (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-
+                                await SaveResultsJsonToAzure(postCrossReferenceResult, log, "Cross References", HttpMethod.Post);
+                                                                
                                 break;
                             case ApiExecutionAction.PostDataQualityResults:
                                 #region Process DataQualityResults
-                                string postDataQualityResultsJson = storage.GetFileContentsAsString(Info.StorageFolder, Info.RequestFileName, Encoding.UTF8);
-                                List<IDataQualityUpsert> postDataQualityResultsRequest = new List<IDataQualityUpsert>();
-                                
-                                postDataQualityResultsRequest.AddRange(JsonConvert.DeserializeObject<List<DataQualityInsertModel>>(postDataQualityResultsJson));
+
+                                var postDataQualityResultsRequest = await storage.DeserializeJsonObjectFromBlobAsync<List<DataQualityInsertModel>>(Info.StorageFolder, Info.RequestFileName);
+                                                                
 
                                 log.WriteLine($"POST DataQualityResults (DB Start): Total raw Data Quality Results: {postDataQualityResultsRequest.Count}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest, dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                var postDataQualityResultsResponse = company.UpsertAssetResults(postDataQualityResultsRequest.ToList<IDataQualityUpsert>(), dbExecutionItem, dbExecutionTimeout, Info.SendWorkflowEvents);
                                 postDataQualityResultsResponse.FindAll(x => x.Uid == null).ForEach(y => y.Uid = Guid.Empty);
                                 dbExecutionItem.Processed = postDataQualityResultsResponse.Count(i => i.Success);
                                 dbExecutionItem.Error = postDataQualityResultsResponse.Count(i => !i.Success);
                                 log.WriteLine($"POST DataQualityResults (DB Complete): Total results: {postDataQualityResultsResponse.Count}.");
-
-                                log.WriteLine($"POST DataQualityResults (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
-                                storage.CreateFile(Info.StorageFolder, Info.ResponseFileName, JsonConvert.SerializeObject(postDataQualityResultsResponse));
-                                log.WriteLine($"POST DataQualityResults (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+                                
+                                await SaveResultsJsonToAzure(postDataQualityResultsResponse, log, "DataQualityResults", HttpMethod.Post);
 
                                 company.SendApiGraphEvent(Info);
                                 #endregion
@@ -374,6 +359,18 @@ namespace igx.jobs.apiexecutionprocessor
                     log.WriteLine($"{cex.GetFullExceptionData()}");
                 }
             }
+        }
+
+        /// <summary>
+        /// Saves results to azure storage streams json object to storage as a stream.  Logs name to provided textwritter
+        /// </summary>        
+        private async Task SaveResultsJsonToAzure(object resultsJson, TextWriter log, string operationName, HttpMethod method)
+        {
+            log.WriteLine($"{method} {operationName} (Response Storage Start): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
+
+            await storage.SerializeJsonObjectToBlobAsync(Info.StorageFolder, Info.ResponseFileName, resultsJson);
+
+            log.WriteLine($"{method} {operationName} (Response Storage Complete): Storage folder: {Info.StorageFolder}. Response File: {Info.ResponseFileName}.");
         }
 
 

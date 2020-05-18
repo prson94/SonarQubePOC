@@ -1,5 +1,6 @@
 ﻿import { BaseEditorModel } from '../models/form.model';
 import { AssetTypeClass } from './asset.model';
+import { AssetGridObject } from '../components/assets-grid/asset-grid.model';
 
 
 export class ArtifactTypeEditorModel extends BaseEditorModel {
@@ -23,15 +24,30 @@ export class ArtifactType {
     AllowRelatedArtifacts: boolean;
     AutoDisplayDescription: boolean;
     CanOwnFusion: boolean;
-    HasDashboards: boolean;    
+    HasDashboards: boolean;
     HasV2Workflows: boolean;
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
     Class: AssetTypeClass;
+
+    public static AsGridObject(artifact: ArtifactType): AssetGridObject {
+        var ago = new AssetGridObject();
+        ago.AssetTypeUID = artifact.AssetTypeUID;
+        ago.AutoDisplayDescription = artifact.AutoDisplayDescription;
+        ago.Description = artifact.Description;
+        ago.HasCustomExportTemplates = artifact.HasCustomExportTemplates;
+        ago.ID = artifact.ID;
+        ago.Name = artifact.Name;
+        ago.Object = 'Artifact';
+        ago.ObjectType = 'ArtifactType';
+        return ago;
+    }
+
 }
 
 export class AssetTypeExportTemplate {
     ID: number;
     Name: string;
     Description: string;
+    uid: string;
 }

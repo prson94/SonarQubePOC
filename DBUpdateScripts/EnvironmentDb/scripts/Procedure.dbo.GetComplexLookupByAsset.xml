@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v3">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v9">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -30,9 +30,9 @@ begin
 	declare @columns table (
 		[text] nvarchar(250), datafield varchar(50), columntype varchar(25), 
 		uidfield varchar(50), urlfield varchar(50), objectfield varchar(50), objectidfield varchar(50), 
-		description nvarchar(2500), columnwidth int
+		description nvarchar(2500), columnwidth int, sort int
 	)
-	declare @datafields table ([name] varchar(50), [type] varchar(25))
+	declare @datafields table ([name] varchar(50), [type] varchar(25), sort int)
 
 	declare @relations table (
 		RowNumber int identity, RN varchar(3), 
@@ -42,7 +42,7 @@ begin
 		RowNumber int identity, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
 		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
 		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
-		IsRelationLink bit
+		IsRelationLink bit, IsRelationField bit
 	)
 	
 	-- The tables to hold the statements that are used to build the SQL below.
@@ -103,10 +103,15 @@ begin
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update	F
+		set		F.FT = cast(F.FieldTypeID as varchar(15)), 
+				F.Object = A.Object,
+				F.ObjectID = A.ObjectID,
+				F.IsRelationField = IIF(F.FieldTypeName like 'Relation.%', 1, 0)
+		from	@fields F
+				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		--select * from @relations	-- testing only
-		--select * from @fields		-- testing only
+		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
 
 		update	F
 		set		F.DataField = 'H' + F.RRN + '_' + 
@@ -244,7 +249,7 @@ begin
 			from	@relations
 			order by RowNumber;
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists (select 1 from @wheres)
 		begin
 			insert into @tables
 				select	case 
@@ -257,12 +262,16 @@ begin
 								' outer apply OPENJSON(H'+T.RRN+'_FT_F'+T.FT+'.[Definition], N''lax $'') with (FieldTypeID int, Path varchar(250), DataType varchar(250)) H'+T.RRN+'_FT_FD'+T.FT +
 								' left join Field H'+T.RRN+'_JF_F'+T.FT+' on H'+T.RRN+'_JF_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_FT_FD'+T.FT+'.FieldTypeID and H'+T.RRN+'_JF_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
 								' left join FieldJsonProperty H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldID = H'+T.RRN+'_JF_F'+T.FT+'.ID and H'+T.RRN+'_F'+T.FT+'.[Path] = H'+T.RRN+'_FT_FD'+T.FT+'.[Path]'
-							when T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
+							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
+							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
 						end
 			from	@fields T 
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
+		end
 
+		if @countOnly = 0
+		begin
 			-- Resolve data types to send back to caller.
 			update	T
 			set		T.FieldDataType = case T.FieldDataType 
@@ -326,15 +335,15 @@ begin
 					inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'JsonElement' 
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
-			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth)
-				select coalesce(OverrideDisplayName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width from @fields;
+			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
+				select coalesce(OverrideDisplayName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields order by RowNumber;
 
 			insert into @datafields
-				select distinct DataField, FieldDataType from @fields where DataField is not null
+				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null
 				union
-				select distinct BaseField+'Uid', 'text' from @fields where BaseField is not null
+				select distinct BaseField+'Uid', 'text', RowNumber from @fields where BaseField is not null
 				union
-				select distinct BaseField+'Url', 'text' from @fields where BaseField is not null
+				select distinct BaseField+'Url', 'text', RowNumber from @fields where BaseField is not null
 		end
 	end
 	else if @type = 'OwnershipLookup'
@@ -351,22 +360,22 @@ begin
 
 		if @countOnly = 0
 		begin
-			insert into @columns ([text], datafield, columntype) values ('Responsibility', 'ResponsibilityTypeName', 'textbox')
-			insert into @columns ([text], datafield, columntype, urlfield, uidfield) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid')
+			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1)
+			insert into @columns ([text], datafield, columntype, urlfield, uidfield, sort) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid', 2)
 			if @displayAssignmentSource = 1
 			begin
-				insert into @columns ([text], datafield, columntype, uidfield) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid')
+				insert into @columns ([text], datafield, columntype, uidfield, sort) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid', 3)
 			end
-			insert into @columns ([text], datafield, columntype) values ('Context', 'Context', 'textbox')
+			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
 
 			insert into @datafields values 
-				('ResponsibilityTypeName', 'string'), 
-				('ResourceName', 'preview'), 
-				('ResourceUid', 'string'), 
-				('ResourceItemUrl', 'string'), 
-				('SecurityAssetUid', 'string'), 
-				('SecurityAssetName', 'preview'), 
-				('Context', 'html');
+				('ResponsibilityTypeName', 'string', 1), 
+				('ResourceName', 'preview', 2), 
+				('ResourceUid', 'string', 3), 
+				('ResourceItemUrl', 'string', 4), 
+				('SecurityAssetUid', 'string', 5), 
+				('SecurityAssetName', 'preview', 6), 
+				('Context', 'html', 7);
 
 			insert into @selects values 
 				('R.ResponsibilityTypeName', 'ResponsibilityTypeName'),
@@ -426,14 +435,17 @@ begin
 		if @countOnly = 0
 		begin
 			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
-				select	ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
-				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				select		ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
+				from		FieldType
+				where		AssetTypeID = @referenceItemTypeID 
+							and IsListable = 1
+				order by	ColumnOrder asc, FriendlyName asc;
 
 			insert into @tables
-				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar)
+				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar) + ' and F'+cast(ID as varchar)+'.FormattedValue <> '''''
 				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				where	AssetTypeID = @referenceItemTypeID 
+						and IsListable = 1;
 
 			-- Resolve data types to send back to caller.
 			update	@fields 
@@ -460,20 +472,47 @@ begin
 										when 'Number' then 'n'
 									end;
 
-			insert into @columns ([text], datafield, columntype, description, columnwidth)
-				select 'Code', 'Code', 'text', null, null
+			insert into @columns ([text], datafield, columntype, description, columnwidth, sort)
+				select 'Code', 'Code', 'text', null, null, 0
 				union
-				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width from @fields;
+				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width, RowNumber from @fields;
 
 			insert into @datafields
-				select 'Code', 'text'
+				select 'Code', 'text', 0
 				union
-				select distinct FieldTypeName, FieldDataType from @fields
+				select distinct FieldTypeName, FieldDataType, RowNumber from @fields
 
 			insert into @selects
 				select 'A.[Code]', 'Code'
 				union
-				select 'F'+cast(FieldTypeID as varchar)+'.FormattedValue', FieldTypeName from @fields
+				select case
+						when FieldDataType = 'number' then
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end'
+						when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end'
+						else
+							'F' + cast(FieldTypeID as varchar) + '.FormattedValue'
+						end, 
+						FieldTypeName 
+				from	@fields
+				
+			insert into @orders
+				select		case  
+								when FieldDataType = 'number' then
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end asc'
+								when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end asc'
+								else
+									'F' + cast(FieldTypeID as varchar) + '.FormattedValue asc'
+							end
+				from		@fields
+				where		SortOrder is not null and SortOrder > 0
+				order by	SortOrder;
+
+			if not exists (select 1 from @orders where [Statement] is not null)
+			begin
+				insert into @orders values ('A.Code');
+			end
 		end
 	end
 
@@ -493,9 +532,6 @@ begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
 
-	--select @sql -- testing only
-	print @sql
-
 	-- Output to caller.
 	if @countOnly = 0
 	begin
@@ -505,8 +541,8 @@ begin
 			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
 		end
 
-		select * from @columns
-		select * from @datafields
+		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
+		select [name], [type] from @datafields order by sort
 		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
 	end
 	else
@@ -516,6 +552,9 @@ begin
 		
 		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
 	end
+	
+	--select @sql -- testing only
+	print @sql
 end
 		]]>
     </sql>
@@ -540,9 +579,9 @@ begin
 	declare @columns table (
 		[text] nvarchar(250), datafield varchar(50), columntype varchar(25), 
 		uidfield varchar(50), urlfield varchar(50), objectfield varchar(50), objectidfield varchar(50), 
-		description nvarchar(2500), columnwidth int
+		description nvarchar(2500), columnwidth int, sort int
 	)
-	declare @datafields table ([name] varchar(50), [type] varchar(25))
+	declare @datafields table ([name] varchar(50), [type] varchar(25), sort int)
 
 	declare @relations table (
 		RowNumber int identity, RN varchar(3), 
@@ -552,7 +591,7 @@ begin
 		RowNumber int identity, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
 		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
 		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
-		IsRelationLink bit
+		IsRelationLink bit, IsRelationField bit
 	)
 	
 	-- The tables to hold the statements that are used to build the SQL below.
@@ -613,10 +652,15 @@ begin
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update	F
+		set		F.FT = cast(F.FieldTypeID as varchar(15)), 
+				F.Object = A.Object,
+				F.ObjectID = A.ObjectID,
+				F.IsRelationField = IIF(F.FieldTypeName like 'Relation.%', 1, 0)
+		from	@fields F
+				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		--select * from @relations	-- testing only
-		--select * from @fields		-- testing only
+		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
 
 		update	F
 		set		F.DataField = 'H' + F.RRN + '_' + 
@@ -754,7 +798,7 @@ begin
 			from	@relations
 			order by RowNumber;
 
-		if @countOnly = 0
+		if @countOnly = 0 or exists (select 1 from @wheres)
 		begin
 			insert into @tables
 				select	case 
@@ -767,12 +811,16 @@ begin
 								' outer apply OPENJSON(H'+T.RRN+'_FT_F'+T.FT+'.[Definition], N''lax $'') with (FieldTypeID int, Path varchar(250), DataType varchar(250)) H'+T.RRN+'_FT_FD'+T.FT +
 								' left join Field H'+T.RRN+'_JF_F'+T.FT+' on H'+T.RRN+'_JF_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_FT_FD'+T.FT+'.FieldTypeID and H'+T.RRN+'_JF_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
 								' left join FieldJsonProperty H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldID = H'+T.RRN+'_JF_F'+T.FT+'.ID and H'+T.RRN+'_F'+T.FT+'.[Path] = H'+T.RRN+'_FT_FD'+T.FT+'.[Path]'
-							when T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
+							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID'
+							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
 						end
 			from	@fields T 
 					left join IntersectType I on T.FieldTypeName like 'Related Item.%' and I.ID = T.FieldTypeID;
+		end
 
+		if @countOnly = 0
+		begin
 			-- Resolve data types to send back to caller.
 			update	T
 			set		T.FieldDataType = case T.FieldDataType 
@@ -836,15 +884,15 @@ begin
 					inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'JsonElement' 
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
-			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth)
-				select coalesce(OverrideDisplayName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width from @fields;
+			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
+				select coalesce(OverrideDisplayName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields order by RowNumber;
 
 			insert into @datafields
-				select distinct DataField, FieldDataType from @fields where DataField is not null
+				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null
 				union
-				select distinct BaseField+'Uid', 'text' from @fields where BaseField is not null
+				select distinct BaseField+'Uid', 'text', RowNumber from @fields where BaseField is not null
 				union
-				select distinct BaseField+'Url', 'text' from @fields where BaseField is not null
+				select distinct BaseField+'Url', 'text', RowNumber from @fields where BaseField is not null
 		end
 	end
 	else if @type = 'OwnershipLookup'
@@ -861,22 +909,22 @@ begin
 
 		if @countOnly = 0
 		begin
-			insert into @columns ([text], datafield, columntype) values ('Responsibility', 'ResponsibilityTypeName', 'textbox')
-			insert into @columns ([text], datafield, columntype, urlfield, uidfield) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid')
+			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1)
+			insert into @columns ([text], datafield, columntype, urlfield, uidfield, sort) values ('Assigned User', 'ResourceName', 'preview', 'ResourceItemUrl', 'ResourceUid', 2)
 			if @displayAssignmentSource = 1
 			begin
-				insert into @columns ([text], datafield, columntype, uidfield) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid')
+				insert into @columns ([text], datafield, columntype, uidfield, sort) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid', 3)
 			end
-			insert into @columns ([text], datafield, columntype) values ('Context', 'Context', 'textbox')
+			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
 
 			insert into @datafields values 
-				('ResponsibilityTypeName', 'string'), 
-				('ResourceName', 'preview'), 
-				('ResourceUid', 'string'), 
-				('ResourceItemUrl', 'string'), 
-				('SecurityAssetUid', 'string'), 
-				('SecurityAssetName', 'preview'), 
-				('Context', 'html');
+				('ResponsibilityTypeName', 'string', 1), 
+				('ResourceName', 'preview', 2), 
+				('ResourceUid', 'string', 3), 
+				('ResourceItemUrl', 'string', 4), 
+				('SecurityAssetUid', 'string', 5), 
+				('SecurityAssetName', 'preview', 6), 
+				('Context', 'html', 7);
 
 			insert into @selects values 
 				('R.ResponsibilityTypeName', 'ResponsibilityTypeName'),
@@ -936,14 +984,17 @@ begin
 		if @countOnly = 0
 		begin
 			insert into @fields (FieldTypeID, FieldTypeName, OverrideDisplayName, DisplayOrder, SortOrder, Width, FieldDataType, Description)
-				select	ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
-				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				select		ID, Name, FriendlyName, ColumnOrder, SortOrder, ColumnWidth, [Type], DisplayDescription
+				from		FieldType
+				where		AssetTypeID = @referenceItemTypeID 
+							and IsListable = 1
+				order by	ColumnOrder asc, FriendlyName asc;
 
 			insert into @tables
 				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar)
 				from	FieldType
-				where	AssetTypeID = @referenceItemTypeID;
+				where	AssetTypeID = @referenceItemTypeID 
+						and IsListable = 1;
 
 			-- Resolve data types to send back to caller.
 			update	@fields 
@@ -970,20 +1021,47 @@ begin
 										when 'Number' then 'n'
 									end;
 
-			insert into @columns ([text], datafield, columntype, description, columnwidth)
-				select 'Code', 'Code', 'text', null, null
+			insert into @columns ([text], datafield, columntype, description, columnwidth, sort)
+				select 'Code', 'Code', 'text', null, null, 0
 				union
-				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width from @fields;
+				select OverrideDisplayName, FieldTypeName, ColumnDataType, Description, Width, RowNumber from @fields;
 
 			insert into @datafields
-				select 'Code', 'text'
+				select 'Code', 'text', 0
 				union
-				select distinct FieldTypeName, FieldDataType from @fields
+				select distinct FieldTypeName, FieldDataType, RowNumber from @fields
 
 			insert into @selects
 				select 'A.[Code]', 'Code'
 				union
-				select 'F'+cast(FieldTypeID as varchar)+'.FormattedValue', FieldTypeName from @fields
+				select case
+						when FieldDataType = 'number' then
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end'
+						when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+							'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end'
+						else
+							'F' + cast(FieldTypeID as varchar) + '.FormattedValue'
+						end, 
+						FieldTypeName 
+				from	@fields
+
+			insert into @orders
+				select		case  
+								when FieldDataType = 'number' then
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as float) end asc'
+								when FieldDataType = 'date' or FieldDataType = 'datetime' then 
+									'case when try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) is null then F' + cast(FieldTypeID as varchar) + '.FormattedValue else try_cast(F' + cast(FieldTypeID as varchar) + '.FormattedValue as datetime) end asc'
+								else
+									'F' + cast(FieldTypeID as varchar) + '.FormattedValue asc'
+							end
+				from		@fields
+				where		SortOrder is not null and SortOrder > 0
+				order by	SortOrder;
+
+			if not exists (select 1 from @orders where [Statement] is not null)
+			begin
+				insert into @orders values ('A.Code');
+			end
 		end
 	end
 
@@ -1003,20 +1081,17 @@ begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
 
---select @sql -- testing only
-print @sql
-
 	-- Output to caller.
 	if @countOnly = 0
 	begin
-		--finally, add the order by, if there is any.
-		if exists(select 1 from @orders)
+		-- Finally, add the order by, if there is any.
+		if exists(select 1 from @orders where [Statement] is not null)
 		begin
-			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders group by [Statement]) O
+			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
 		end
 
-		select * from @columns
-		select * from @datafields
+		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
+		select [name], [type] from @datafields order by sort
 		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
 	end
 	else
@@ -1026,6 +1101,8 @@ print @sql
 		
 		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
 	end
+
+	print @sql
 end
 		]]>
 	</rollback>

@@ -8,7 +8,7 @@ export class AdvancedFiltersHelper {
         props.forEach(prop => {
             if (prop != 'global') {
                 let fieldName = prop;
-                var value = data[prop].value;
+                var value = this.escapeString(data[prop].value);
                 var field = fields.filter(x => x.name.toLowerCase() == prop.toLowerCase())[0];
                 if (field) {
                     if (field.apiName)
@@ -25,7 +25,7 @@ export class AdvancedFiltersHelper {
                         ret += `${fieldName} eq ${value}`;
                         break;
                     case 'date':
-                        ret += `${fieldName} eq '${value}'`;
+                        ret += `${fieldName} ct '${value}'`;
                         break;
                     default:
                         ret += `${fieldName} ct '${value}'`;
@@ -37,5 +37,11 @@ export class AdvancedFiltersHelper {
             }
         });
         return ret;
+    }
+
+    static escapeString(value): string {
+        if (!value) return '';
+        value = (value as string).replace(/'/g, "&apos;");
+        return `${encodeURIComponent(value)}`;
     }
 }

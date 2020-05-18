@@ -138,9 +138,7 @@ namespace d360.model
         DbSet<ResponsibilityTypeRelationRule> ResponsibilityTypeRelationRules { get; set; }
         DbSet<ResponsibilityTypeRelation> ResponsibilityTypeRelations { get; set; }
         DbSet<ResponsibilityType> ResponsibilityTypes { get; set; }
-        DbSet<RuleImplementation> RuleImplementations { get; set; }     
-        DbSet<RuleResult> RuleResults { get; set; }
-        DbSet<core.entities.Rule> Rules { get; set; }
+        DbSet<d360.core.entities.Rule> Rules { get; set; }
         DbSet<Score> Scores { get; set; }
         DbSet<ShoppingCartItem> ShoppingCartItems { get; set; }
         DbSet<ShoppingCart> ShoppingCarts { get; set; }
@@ -243,7 +241,6 @@ namespace d360.model
         AssetDetail GetParentObject(int id, SystemObjects obj);
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
-        Task<AssetResults> GetDynamicAssets(int assetTypeId, List<UiRequestFilterValue> filters, int pageNumber = 0, int pageSize = 25, string sortField = "", string sortOrder = "", string simpleFilter = null, bool apiNamesInOutput = false, bool listableFieldsOnly = true, bool pagingEnabled = true, bool useAssetUrl = false);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
         Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
         List<PermissionInfo> GetTypePermissions(string type, int typeID);        
@@ -255,7 +252,7 @@ namespace d360.model
         bool HasAssetPermission(SystemObjects type, int id, Permission permission);
         bool HasAssetTypePermission(string type, int id, Permission permission);
         bool HasAssetTypePermission(SystemObjects type, int id, Permission permission);
-        int? GetAssetScore(long assetId);
+        int? GetAssetScore(long assetId, ScoreType type);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeInsert> import, int timeout = 3600);
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);

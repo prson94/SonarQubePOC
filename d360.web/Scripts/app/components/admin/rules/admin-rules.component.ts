@@ -84,6 +84,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
                 <div class="tile tile-detail">
                     <d3s-field-definition-tile [objectType]="'RuleType'"
                                                [objectName]="selected?.Name" 
+                                            [supportsPrimaryFilterOption]="true"
                                             [objectID]="selected?.ID" [assetTypeUid]="selected?.uid"></d3s-field-definition-tile>
                 </div>
             </div>

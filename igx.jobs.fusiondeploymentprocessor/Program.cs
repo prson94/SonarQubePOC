@@ -5,11 +5,9 @@ using Dapper;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace igx.jobs.fusiondeploymentprocessor
 {
@@ -31,53 +29,6 @@ namespace igx.jobs.fusiondeploymentprocessor
 
     public static class FusionDeploymentProcessor
     {
-        #region Utility
-
-        static string cleanObjectName(string name)
-        {
-            name = name.Replace("'", "").Replace(" ", "").Replace("-", "").Replace("&", "And").Replace(":", "").Replace(";", "").Trim();
-            Regex rgx = new Regex("[^a-zA-Z0-9-]");
-            name = rgx.Replace(name, "");
-            return name;
-        }
-
-        static void getDynamicFieldJoinStatements(List<FieldType> fields, string type, out string joins, out string columns, string idColumn = "A.ID")
-        {
-            columns = "";
-            joins = "";
-
-            var typesToIgnore = new List<string> {
-                DataType.Attribute.ToString(), DataType.Color.ToString(), DataType.ComplexRelationLookup.ToString(), DataType.DataTableSelect.ToString(),
-                DataType.File.ToString(), DataType.Hidden.ToString(), DataType.OwnershipLookup.ToString(),
-                DataType.Password.ToString(), DataType.RefListRelationship.ToString(), DataType.UncLink.ToString()
-            };
-
-            fields.RemoveAll(i => typesToIgnore.Contains(i.Type));
-
-            foreach (var f in fields)
-            {
-                var name = cleanObjectName(f.Name);
-                columns += (f.Type == "Lookup") ? $"[{name}].Value as [{name}ID], [{name}].FormattedValue as [{name}], " : $"[{name}].FormattedValue as [{name}], ";
-                joins += $" left join FieldDetail [{name}] on [{name}].Object = '{type}' and [{name}].ObjectID = {idColumn} and [{name}].FieldTypeID = {f.ID}";
-            }
-
-            fields = null;
-        }
-
-        static void executeSqlWithTry(SqlConnection companyConnection, string viewSql)
-        {
-            try
-            {
-                companyConnection.Execute(viewSql.ToString());
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, null, new Dictionary<string, string>() { { "Attempted SQL: ", viewSql } });
-            }
-        }
-
-        #endregion
-
         const string functionName = "FusionDeployment_Process";
 #if DEBUG
         const string timerSettings = "*/1 * * * * *";

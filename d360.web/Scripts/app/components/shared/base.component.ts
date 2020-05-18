@@ -1114,16 +1114,16 @@ export class BaseComponent {
                         undefined,
                         undefined,
                         true));
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,
-                        SiteUrlHelpers.getObjectUrl('RULEIMPLEMENTATION', data.ObjectId, data.ObjectTypeId),
-                        true,
-                        'Rule',
-                        data.ObjectId));
 
                     this.breadcrumbsService.getAssetFolderIcon('RuleType', data.ObjectTypeId, currentAreaName ? currentAreaName : res).subscribe(icon => {
                         this.secondaryNavService.setCurrentArea(data.DisplayValue, icon, 'Definition');
 
                     });
+
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,null,
+                        true,
+                        'Rule',
+                        data.ObjectId));
                     this.checkIfWorkflowActionIsSelected();
 
                 });

@@ -3,6 +3,7 @@ using d360.core.entities;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
+using d360.core.helpers;
 using d360.core.queue;
 using d360.core.resources;
 using Dapper;
@@ -1008,6 +1009,8 @@ where T.ExecutionId = @executionid;
                 errorMessages.Add($"{string.Join(",", missingFields)} {(isSinglar ? "is a" : "are")} required field{(isSinglar ? "" : "s")}");
             }
 
+            var restrictedFieldTypes = DataType.Text.GetNotAllowedToUpdateViaAssetApi();
+
             foreach (var k in fields)
             {
                 string fieldName = k.Key.Trim();
@@ -1064,153 +1067,157 @@ where T.ExecutionId = @executionid;
                 {
                     fieldTypeId = fieldType.ID;
 
-                    if (fieldType.IsRequired)
+                    if (restrictedFieldTypes.Contains(fieldType.Type))
                     {
-                        if (string.IsNullOrEmpty(fieldValue))
-                        {
-                            success = false;
-                            errorMessages.Add($"{fieldName} is a required field");
-                        }
+                        success = false;
+                        errorMessages.Add($"{fieldName} is a {fieldType.Type} field and cannot be updated on this request");
                     }
-
-                    if (!string.IsNullOrEmpty(fieldValue))
+                    else 
                     {
-                        switch (fieldType.Type)
+                        if (string.IsNullOrEmpty(fieldValue)) 
                         {
-                            case "Boolean":
-                                if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
-                                }
-                                break;
-                            case "Date":
-                                DateTime dTest;
-                                if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid date");
-                                }
-                                if (success)
-                                {
-                                    fieldValue = dTest.Date.ToString();
-                                }
-                                break;
-                            case "DateTime":
-                                DateTime dtTest;
-                                if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid datetime value");
-                                }
-                                if (success)
-                                {
-                                    fieldValue = dtTest.ToString();
-                                }
-                                break;
-                            case "Decimal":
-                                decimal decTest;
-                                if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid decimal");
-                                }
-                                break;
-                            case "Link":
-                                if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
-                                }
-                                break;
-                            case "Lookup":
-                                break;
-                            case "Number":
-                                if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
-                                }
-                                break;
-                            case "Percentage":
-                                decimal pctTest;
-                                if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must be a valid percentage");
-                                }
-                                break;
-                            case "JSON":
-                                if (fieldValue.Length > 2500)
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
-                                }
-                                break;
-                            case "Tag":
+                            if (fieldType.IsRequired)
+                            {
                                 success = false;
-                                errorMessages.Add($"{fieldName} is a Tag field and cannot be updated on this request");
-                                break;
-                            default: // Html, Text
-                                if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
-                                {
-                                    if (!System.Text.RegularExpressions.Regex.IsMatch(fieldValue, fieldType.Pattern))
+                                errorMessages.Add($"{fieldName} is a required field");
+                            }
+                        }
+                        else
+                        {
+                            switch (fieldType.Type)
+                            {
+                                case "Boolean":
+                                    if ((fieldValue.ToLower() != "true" && fieldValue.ToLower() != "false") && !string.IsNullOrEmpty(fieldValue))
                                     {
                                         success = false;
-                                        errorMessages.Add($"{fieldName} must match regular expression pattern defined for this field");
+                                        errorMessages.Add($"{fieldName} is a boolean field and may only be 'false' or 'true'");
+                                    }
+                                    break;
+                                case "Date":
+                                    DateTime dTest;
+                                    if (!DateTime.TryParse(fieldValue, out dTest) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid date");
+                                    }
+                                    if (success)
+                                    {
+                                        fieldValue = dTest.Date.ToString();
+                                    }
+                                    break;
+                                case "DateTime":
+                                    DateTime dtTest;
+                                    if (!DateTime.TryParse(fieldValue, out dtTest) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid datetime value");
+                                    }
+                                    if (success)
+                                    {
+                                        fieldValue = dtTest.ToString();
+                                    }
+                                    break;
+                                case "Decimal":
+                                    decimal decTest;
+                                    if (!decimal.TryParse(fieldValue, out decTest) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid decimal");
+                                    }
+                                    break;
+                                case "Link":
+                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
+                                    }
+                                    break;
+                                case "Lookup":
+                                    break;
+                                case "Number":
+                                    if (!long.TryParse(fieldValue, out _) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid whole number, greater than -9223372036854775808 and less than 9223372036854775807");
+                                    }
+                                    break;
+                                case "Percentage":
+                                    decimal pctTest;
+                                    if (!decimal.TryParse(fieldValue, out pctTest) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must be a valid percentage");
+                                    }
+                                    break;
+                                case "JSON":
+                                    if (fieldValue.Length > 2500)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} exceeds the maximum length of 2500 characters");
+                                    }
+                                    break;
+                                default: // Html, Text
+                                    if (!string.IsNullOrEmpty(fieldType.Pattern) && !string.IsNullOrEmpty(fieldValue))
+                                    {
+                                        if (!System.Text.RegularExpressions.Regex.IsMatch(fieldValue, fieldType.Pattern))
+                                        {
+                                            success = false;
+                                            errorMessages.Add($"{fieldName} must match regular expression pattern defined for this field");
+                                        }
+                                    }
+                                    break;
+                            }
+
+                            if (fieldType.Length.HasValue)
+                            {
+                                if (fieldValue.Length < fieldType.Length.Value)
+                                {
+                                    success = false;
+                                    errorMessages.Add($"{fieldName} must have an exact length of {fieldType.Length.Value}");
+                                }
+                            }
+                            if (fieldType.MinimumLength.HasValue)
+                            {
+                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
+                                {
+                                    if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
                                     }
                                 }
-                                break;
+                                else
+                                {
+                                    if (fieldValue.Length < fieldType.MinimumLength.Value)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
+                                    }
+                                }
+
+                            }
+                            if (fieldType.MaximumLength.HasValue)
+                            {
+                                if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
+                                {
+                                    if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
+                                    }
+                                }
+                                else
+                                {
+                                    if (fieldValue.Length > fieldType.MaximumLength.Value)
+                                    {
+                                        success = false;
+                                        errorMessages.Add($"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
+                                    }
+                                }
+
+                            }
                         }
 
-                        if (fieldType.Length.HasValue)
-                        {
-                            if (fieldValue.Length < fieldType.Length.Value)
-                            {
-                                success = false;
-                                errorMessages.Add($"{fieldName} must have an exact length of {fieldType.Length.Value}");
-                            }
-                        }
-                        if (fieldType.MinimumLength.HasValue)
-                        {
-                            if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                            {
-                                if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue < fieldType.MinimumLength.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must have a minimum value of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
-                                }
-                            }
-                            else
-                            {
-                                if (fieldValue.Length < fieldType.MinimumLength.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must have a minimum length of {fieldType.MinimumLength.Value.ToString(decimalFormatString)}");
-                                }
-                            }
-
-                        }
-                        if (fieldType.MaximumLength.HasValue)
-                        {
-                            if (fieldType.Type == "Decimal" || fieldType.Type == "Number")
-                            {
-                                if (decimal.TryParse(fieldValue, out var fieldDecimalValue) && fieldDecimalValue > fieldType.MaximumLength.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} must have a maximum value of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
-                                }
-                            }
-                            else
-                            {
-                                if (fieldValue.Length > fieldType.MaximumLength.Value)
-                                {
-                                    success = false;
-                                    errorMessages.Add($"{fieldName} may only have a maximum length of {fieldType.MaximumLength.Value.ToString(decimalFormatString)}");
-                                }
-                            }
-
-                        }
                     }
                 }
 
@@ -1481,8 +1488,21 @@ from	IntersectType I
     update	api.ExecutionDeletedAsset
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Not found based on Uid provided'
-    where	ExecutionID = @ExecutionID and AssetID is null;",
-                        new { execution.ExecutionID }, commandTimeout: timeout);
+    where	ExecutionID = @ExecutionID and AssetID is null;
+
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule.'
+    from    api.ExecutionDeletedAsset T
+            inner join graph.AssetNode AN on AN.ID = T.AssetID
+			inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+            cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
+            new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
 
@@ -1773,15 +1793,6 @@ from	IntersectType I
                     AssetID	bigint,
                     FromHierarchy	bit
                 );
-
-            insert into #ExecutionDeletedAsset ([ExecutionID],[ItemNumber],[Root])
-                select distinct 
-                        S.ExecutionID, 
-                        S.ItemNumber, 
-                        S.[Uid]
-	            from	RuleImplementation T
-			            inner join api.ExecutionDeletedAsset S on S.Object = 'Rule' and S.ObjectID = T.RuleID 
-                where   {querySuffix} ;
             
 			update  S 
             set     S.Success = 0 ,
@@ -1949,15 +1960,6 @@ from	IntersectType I
 
                                             if (!string.IsNullOrEmpty(legacyTable))
                                             {
-                                                if (legacyTable == "[Rule]") //You need to also remove rule implementations, results, and other legacy dependent tables.
-                                                {
-                                                    Connection.Execute($@"
-delete T from RuleResult T inner join RuleImplementation S on S.ID = T.RuleImplementationID and S.RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});
-delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix});",
-                                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout
-                                                    );
-                                                }
-
                                                 Connection.Execute(
                                                     $"delete {legacyTable} where ID in (select S.ObjectID from api.ExecutionDeletedAsset S where {querySuffix})",
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
@@ -2282,7 +2284,19 @@ delete RuleImplementation where RuleID in (select S.ObjectID from api.ExecutionD
     where	T.ExecutionID = @ExecutionID
             and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
-            and A.ChildCount > 0;",
+            and A.ChildCount > 0;
+
+    --Check if asset Results exist 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'You have not enabled Cascade, yet there are ' + cast(ARE.ResultCount as nvarchar) + ' results(s) present for this rule type.'
+    from    api.ExecutionDeletedAssetType T
+            inner join graph.AssetNode AN on AN.AssetTypeID = T.AssetTypeID
+            inner join AssetType AT on AT.ID = AN.AssetTypeID and AT.Class = {(int)AssetTypeClass.Rule}
+			cross apply (select count(1) as ResultCount from AssetResultEdge where $from_id = AN.$node_id) ARE
+    where	T.ExecutionID = @ExecutionID
+            and T.[Cascade] = 0
+            and ARE.ResultCount > 0;",
                         new { execution.ExecutionID }, commandTimeout: timeout);
 
                         #endregion
@@ -2843,6 +2857,7 @@ where   ExecutionID = @ExecutionID
 
                         this.AITrackTrace(client, execution, METHOD_NAME, "BuildDatatable and initialization", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
+                        
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
@@ -2851,6 +2866,7 @@ where   ExecutionID = @ExecutionID
                         hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
+                        
                         #region Generate data sets
 
                         if (predicateType.HasValue)
@@ -2882,6 +2898,7 @@ where   ExecutionID = @ExecutionID
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get predicateType.HasValue", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         int i = 1;
+                        
                         foreach (var model in import)
                         {
                             if (i > currentLocation.HighestItemNumber)
@@ -3002,6 +3019,7 @@ where   ExecutionID = @ExecutionID
                         }
                         this.AITrackTrace(client, execution, METHOD_NAME, "ValidateFields", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
+                        
                         #endregion
 
                         if (results.Count > 0) // There are errors already processed.
@@ -3213,7 +3231,6 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                     {
                                         switch (at.Class)
                                         {
-
                                             case AssetTypeClass.Model:
                                                 #region
                                                 sw.Restart();
@@ -3719,8 +3736,6 @@ select [uid] from #ParentChildRelationships",
                             }
                         }
 
-
-
                         if (sendWorkflowEvents)
                         {
                             sw.Restart();
@@ -3792,6 +3807,12 @@ select [uid] from #ParentChildRelationships",
                     table.Columns.Add("ObjectUid", typeof(Guid));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
 
+                    var errorTable = new DataTable();
+                    errorTable.Columns.Add("ExecutionID", typeof(Guid));
+                    errorTable.Columns.Add("ItemNumber", typeof(int));
+                    errorTable.Columns.Add("Message", typeof(string));
+                    errorTable.Columns.Add("ExecutionItemUid", typeof(Guid));
+
                     var fieldTable = new DataTable();
                     fieldTable.Columns.Add("ExecutionID", typeof(Guid));
                     fieldTable.Columns.Add("ItemNumber", typeof(int));
@@ -3835,7 +3856,16 @@ select [uid] from #ParentChildRelationships",
                             }
                             else
                             {
+                                var row = errorTable.NewRow();
+                                row["ExecutionID"] = execution.ExecutionID;
+                                if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                                row["ItemNumber"] = i;
+                                row["Message"] = errorMessage;
+
+                                errorTable.Rows.Add(row);
+
                                 results.Add(new DatabaseBulkRelationshipResult { IntersectID = 0, ExecutionItemUid = model.ExecutionItemUid, IsNew = false, ItemNumber = i, Message = errorMessage, Success = false });
+
                             }
                         }
                     }
@@ -3868,6 +3898,21 @@ select [uid] from #ParentChildRelationships",
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
 
                     bulkCopy.WriteToServer(table);
+
+
+                    bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionRelationshipError";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+
+
+                    bulkCopy.WriteToServer(errorTable);
 
                     bulkCopy = new SqlBulkCopy((SqlConnection)Database.Connection);
 

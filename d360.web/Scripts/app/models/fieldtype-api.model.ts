@@ -69,6 +69,9 @@ export class FieldType {
             case 'Number':
                 this.Number = new Decimal();
                 break;
+            case 'Path':
+                this.Path = new Path();
+                break;
             case 'Relationship':
                 this.Relationship = new Boolean();
                 break;
@@ -114,6 +117,7 @@ export class FieldType {
     Link: Link;
     Lookup: Lookup;
     Number: Decimal;
+    Path: Path;
     Relationship: Boolean;
     Text: Text;
     Tag: Tag;
@@ -421,6 +425,20 @@ export class List {
     Uid: string = undefined;
     Class: string = undefined;
     AllowMultipleValues: boolean = undefined;
+}
+
+export class Path implements ICommonOptions {
+    Validation: BooleanValidation = new BooleanValidation();
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsPartOfKey: boolean = false;
+    ShowIfEmpty: boolean = true;
+    ColumnOrder: number;
+    ColumnWidth: number = 0;
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    IsListable: boolean = true;
+    IsPrimaryFilter: boolean = false;
 }
 
 export class Tag implements ICommonOptions{

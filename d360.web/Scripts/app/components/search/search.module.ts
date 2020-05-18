@@ -13,7 +13,6 @@ import { HeroSearchInputComponent } from './hero-search-input';
 import { SearchResultsComponent } from './search-results.component'
 import { SearchResultItemComponent } from './search-result-item.component'
 import { SearchComponent } from './search.component'
-import { SearchInputComponent } from './search-input.component';
 import { DynamicPercentageModule } from '../shared/small-widgets/dynamic-percentage/dynamic-percentage-module';
 import { StatusBadgeModule } from '../shared/small-widgets/status-badge/status-badge.module';
 import { ScoreBadgeModule } from '../shared/small-widgets/score-badge/score-badge.module';
@@ -79,12 +78,10 @@ import { AssetpathSeparatorPipe } from '../../pipes/assetpath-separator.pipe';
         SearchResultsComponent,
         SearchResultItemComponent,
         SearchComponent,
-        SearchInputComponent,
         HeroSearchInputComponent
     ],
     exports: [
-        HomeSearchComponent,    
-        SearchInputComponent,
+        HomeSearchComponent,
         HeroSearchInputComponent,
     ],
     providers: [        
