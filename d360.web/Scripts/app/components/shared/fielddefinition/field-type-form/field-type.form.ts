@@ -414,14 +414,11 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 this.showDescription = false;
                 this.enableAllowMultipleValues = false;
                 break;
-            case 'json':
-                this.showDescription = false;
-                break;
-            case 'jsonelement':
-                this.showDescription = false;
-                break;
             case 'computedownershiplookup':
+            case 'json':
+            case 'jsonelement':
             case 'ownershiplookup':
+            case 'path':
                 this.showDescription = false;
                 break;
             default:
@@ -562,9 +559,9 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                             });
                         }
 
-                        if (d.FieldTypeID != null && d.Name != this.name) {
+                        if (d.FieldTypeName != null && d.Name != this.name) {
                             this.listFilterOptions.get(d.PredicateValue).fieldtypeOptions.push({
-                                value: d.FieldTypeID,
+                                value: d.FieldTypeName,
                                 label: d.FriendlyName,
                                 info: d.Info
                             });
@@ -603,8 +600,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private selectPredicate(value: string) {
         if (this.listFilterOptions.has(value)) {
             this.listFilterRelatedFields = this.listFilterOptions.get(value).fieldtypeOptions;
-
-            if (this.model.FieldType[this.currentType].FilterFieldTypeID == null && this.listFilterRelatedFields.length > 0) {
+            if (this.model.FieldType.Type["Lookup"].Filter.FieldTypeName == null && this.listFilterRelatedFields.length > 0) {
                 this.model.FieldType.Type["Lookup"].Filter.FieldTypeName = this.listFilterRelatedFields[0].value;
             }
         } else {
@@ -782,7 +778,6 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
     private changeRefType(index: number, selected: string = null): Observable<any> {
         let item = this.model.RelationItems[index];
         let last = (index == 0) ? null : this.model.RelationItems[index - 1];
-
         item.relationsLoading = true;
         item.DisplayFields = [];
         item.selectedRelationItemID = selected;
@@ -1263,28 +1258,28 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             case 'IsDisplayable':
                 return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'IsEditable':
-                return (['ComplexRelationLookup', 'FieldFromRelationship', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsListable':
                 return (['ComplexRelationLookup', 'OwnershipLookup', 'RefListRelationship', 'Json','JSON'].indexOf(this.currentType) > -1
                     || (this.currentType ==  'Relationship' && !this.isListableRelationship));
             case 'IsRequired':
                 if (this.objectType && this.objectType.toLowerCase() == 'fusionattributetype')
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship', 'Boolean'].indexOf(this.currentType) > -1);
+                    return (['Boolean', 'Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Path', 'RefListRelationship', 'Tag'].indexOf(this.currentType) > -1);
                 else
-                    return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'JsonElement', 'Tag', 'RefListRelationship','JSON'].indexOf(this.currentType) > -1);
+                    return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag'].indexOf(this.currentType) > -1);
             case 'IsPartOfKey':
-                return (['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Tag', 'RefListRelationship']
+                return (['ComplexRelationLookup', 'FieldFromRelationship', 'Json', 'JSON', 'JsonElement', 'OwnershipLookup', 'Path', 'RefListRelationship', 'Relationship', 'Tag']
                     .indexOf(this.currentType) > -1
                     || (this.model.FieldType.Type
                         && this.model.FieldType.Type[this.currentType].List
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':
-                return (['Tag'].indexOf(this.currentType) > -1);
+                return (['Path', 'Tag'].indexOf(this.currentType) > -1);
             default:
                 console.warn(`invalid setting [${val}] passed to isSettingDisabled`);
         }

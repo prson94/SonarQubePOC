@@ -1,10 +1,10 @@
 ﻿import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, Output, EventEmitter, ViewChild, AfterViewInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { HeaderActionsService } from '../../../services/header-actions.service';
-import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
+import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { FavoritesService } from '../../../services/favorites.service';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
-import { Favorite } from '../../../models/favorite.model';
+import { FavoriteApiModel } from '../../../models/favorite.model';
 import * as _ from 'lodash';
 
 declare var CurrentResourceID;
@@ -18,8 +18,8 @@ declare var CompanySettings;
                         <li class="header-action-li spacer" *ngIf="headerActionsService.showSearch"><d3s-header-typeahead-search></d3s-header-typeahead-search></li>
                         <li class="header-action-li spacer" *ngIf="hasRaiseIssueButton"><d3s-raise-issue-button></d3s-raise-issue-button></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="showShoppingCart" ><d3s-header-shopping-cart ></d3s-header-shopping-cart></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-favorites></li>
-                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId"></d3s-header-homepage></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-favorites [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-favorites></li>
+                        <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFavorite && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-homepage [uri]="uri" [favItems]="favItems" [currentObject]="currentObject" [currentObjectId]="currentObjectId" [Uid]="Uid" [homePageItem]="homePageItem"></d3s-header-homepage></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showFollow  && !isAdminUrl && !isAdminSidebarUrl" ><d3s-header-follow></d3s-header-follow></li>                    
                         <li class="header-action-li" *ngIf="headerActionsService.showHelp"><d3s-header-help></d3s-header-help></li>
                         <li class="header-action-li hide-on-med-and-down" *ngIf="headerActionsService.showNotifications"><a href="#" title="Go to notification settings"><i class="fa fa-bell-o"></i></a></li>
@@ -52,18 +52,20 @@ export class HeaderActionsComponent {
     private subObjectChange: any;
     private subFavorites: any;
 
-    private favItems: Favorite[] = [];
+    private favItems: FavoriteApiModel[] = [];
     private currentObject: string;
     private currentObjectId: number;
     private headerActionsSub;
+    private homePageItem: FavoriteApiModel;
 
     private resizeTimer: any;
 
     private controlWidth = 0;
+    Uid: any;
 
     constructor(
         public headerActionsService: HeaderActionsService,
-        private breadcrumbService: HeaderBreadcrumbService,
+        private secondaryNavService: SecondaryNavService,
         private favoritesService: FavoritesService,
         private router: Router) { }
 
@@ -110,16 +112,33 @@ export class HeaderActionsComponent {
             this.favoritesService.getFavorites().subscribe(
                 res => {
                     this.favItems = res;
+                    this.favoritesService.GetHomePage().subscribe((res) => {
+                        this.homePageItem = res;
+                    });
                 }
             );
         });
-
-        this.subObjectChange = this.breadcrumbService.currentObjectInfo$.subscribe(c => {
-            this.currentObject = c.type;
-            this.currentObjectId = c.id;
+        
+        this.subObjectChange = this.secondaryNavService.currentObject$.subscribe(c => {
+            this.currentObject = null;
+            this.currentObjectId = null;
+            this.Uid = null;
+            if (c) {
+                if (c.isType) {
+                    this.currentObject = c.objectType;
+                    this.currentObjectId = c.objectTypeID;
+                } else {
+                    this.currentObject = c.objectName;
+                    this.currentObjectId = c.objectID;
+                }
+                this.Uid = c.Uid;
+            }
             this.favoritesService.getFavorites().subscribe(
                 fav => {
                     this.favItems = fav;
+                    this.favoritesService.GetHomePage().subscribe((res) => {
+                        this.homePageItem = res;
+                    });
                 }
             );
         });

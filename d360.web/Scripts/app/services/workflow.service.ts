@@ -576,8 +576,8 @@ export class WorkflowService extends BaseObservableService {
             );
     }
 
-    clearLastExecutionDate(id: number):Observable<any> {
-        return this.http.delete(`services/workflow/lastexecution/${id}`)
+    clearLastExecutionDate(id: number, uid: string):Observable<any> {
+        return this.http.delete(`services/workflow/lastexecution/${id}/${uid}`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err))

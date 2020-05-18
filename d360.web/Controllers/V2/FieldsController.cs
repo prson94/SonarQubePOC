@@ -24,6 +24,7 @@ using d360.model.validators;
 using d360.model.DataAccessLayer;
 using Resources;
 using System.Web.Http.Description;
+using d360.core.helpers;
 
 namespace d360.web.Controllers.V2
 {
@@ -821,7 +822,7 @@ namespace d360.web.Controllers.V2
                     Enum.TryParse(item.Object, out type);
                     id = item.ObjectID;
                     list = Company.GetFieldTypesByObject(type, id)
-                        .Where(i => i.Type != DataType.Attribute.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                        .Where(i => i.Type != DataType.Path.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
                         .Select(i => new { i.ID, i.Name })
                         .ToDictionary(i => i.Name, i => i.Name);
 
@@ -934,12 +935,10 @@ namespace d360.web.Controllers.V2
                 var targetObjectType = isSubject ? intersectType.Object : intersectType.Subject;
                 var targetObjectTypeID = isSubject ? intersectType.ObjectID : intersectType.SubjectID;
 
-                var list = Company.Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
-                    .Where(i => i.Type != DataType.Attribute.ToString() &&
-                            i.Type != DataType.ComplexRelationLookup.ToString() &&
-                            i.Type != DataType.Relationship.ToString() &&
-                            i.Type != DataType.JSON.ToString()
-                            && i.Type != DataType.Tag.ToString())
+                var restrictedFields = DataType.Text.GetNotAllowedInFieldFromRelationship();
+                var list = Company
+                    .Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
+                    .Where(i => !restrictedFields.Contains(i.Type))
                     .Select(i => new { i.Name, i.FriendlyName});
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
@@ -1139,6 +1138,7 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Fields.GetLookupListFilter => ";
             var errorMessage = "";
+            bool validListAssetType = true;
 
             try
             {
@@ -1146,6 +1146,23 @@ namespace d360.web.Controllers.V2
                 int id = 0;
                 string objectType = "";
                 int objectId = 0;
+                if (Guid.TryParse(uid, out Guid assetUid))
+                {
+                    AssetType listAssetType = Company.Filter<AssetType>(x => x.uid == assetUid).SingleOrDefault();
+                    if (listAssetType != null)
+                    {
+                        objectType = listAssetType.Object;
+                        objectId = listAssetType.ObjectID;
+                    } else
+                    {
+                        validListAssetType = false;
+                    }
+                } else {
+                    validListAssetType = false;
+                }
+                if(!validListAssetType)
+                    throw new Exception("No valid UID for the List asset type provided");
+
                 if (assetTypeUid != null)
                 {
                     var assetType = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
@@ -1189,13 +1206,16 @@ namespace d360.web.Controllers.V2
                     .ToArray());
 
                 string sql = $@"SELECT 
-                        Concat(A.PredicateID, '|',A.Direction) as PredicateValue, 
+                        Concat(lower(A.PredicateUID), '|',A.Direction) as PredicateValue,
+                        A.PredicateUID,
+                        A.Direction,
                         A.PredicateName, 
                         A.ObjectName, 
                         A.[Object], 
                         A.[ObjectID], 
                         B.FieldTypeID, 
                         B.[FriendlyName],
+                        B.FieldTypeName,
 						B.Type,
                         B.Class,
                         B.Name
@@ -1203,7 +1223,7 @@ namespace d360.web.Controllers.V2
                         SELECT 
                             it.[ID] as IntersectTypeID, 
                             0 AS Direction, 
-                            p.[ID] as PredicateID, 
+                            p.[UID] as PredicateUID, 
                             p.[Name] as PredicateName, 
                             ot.[Name] as ObjectName, 
                             it.[Object] as [Object], 
@@ -1220,7 +1240,7 @@ namespace d360.web.Controllers.V2
                         SELECT 
                             it.[ID], 
                             1 AS Direction, 
-                            p.[ID] as PredicateID, 
+                            p.[UID] as PredicateUID, 
                             p.[Inverse] as PredicateName,
                             st.[Name] as ObjectName, 
                             it.[Subject] as [Object], 
@@ -1236,6 +1256,7 @@ namespace d360.web.Controllers.V2
                         ) A LEFT OUTER JOIN
                     (SELECT 
                         ft.[ID] as FieldTypeID,
+                        ft.Name as FieldTypeName,
                         ft.[FriendlyName], 
                         ft.[Object], 
                         ft.[ObjectID], 
@@ -1261,7 +1282,7 @@ namespace d360.web.Controllers.V2
                     {
                         PredicateValue = i.PredicateValue,
                         PredicateName = i.PredicateName,
-                        FieldTypeID = i.FieldTypeID,
+                        FieldTypeName = i.FieldTypeName,
                         FriendlyName = i.FriendlyName,
                         Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
                     })
@@ -1519,16 +1540,11 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     return ReturnApiError(HttpStatusCode.NotFound, $"No asset found for Uid [${assetTypeUid.ToString()}]");
                 }
 
+                var restrictedTypes = DataType.Text.GetNotAllowedInRelationshipLookup();
                 var list = Company.GetFieldTypesByObject(type, id)
-                 .Where(i => i.Type != DataType.Attribute.ToString()
-                         && i.Type != DataType.Relationship.ToString()
-                         && i.Type != DataType.OwnershipLookup.ToString()
-                         && i.Type != DataType.RefListRelationship.ToString()
-                         && i.Type != DataType.ComplexRelationLookup.ToString()
-                         && i.Type != DataType.JSON.ToString()
-                         && i.Type != DataType.Tag.ToString())
-                 .Select(i => new { i.ID, i.Name })
-                 .ToDictionary(i => i.Name, i => i.ID);
+                    .Where(i => !restrictedTypes.Contains(i.Type))
+                    .Select(i => new { i.ID, i.Name })
+                    .ToDictionary(i => i.Name, i => i.ID);
 
                 if (type == SystemObjects.ReferenceItemType)
                 {
@@ -1568,7 +1584,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 list.Add("TextPath", 0);
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
-                    .Where(i => i.Type != DataType.Attribute.ToString())
+                    .Where(i => i.Type != DataType.Path.ToString())
                     .Select(i => new { i.ID, i.Name }).ToList();
                 relList.ForEach(r =>
                 {

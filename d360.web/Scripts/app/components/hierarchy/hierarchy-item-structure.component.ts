@@ -172,7 +172,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
             this.headerBreadcrumbService.getAssetFolderIcon(this.objectType, this.objectTypeId, this.currentAreaName ? this.currentAreaName : res)
                 .subscribe(icon => {
                     this.secondaryNavService.setCurrentArea(this.assetType.Name, icon, this.objectName);
-                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true));
+                    this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(this.objectType, this.assetType.ID, this.assetType.Name, null, true, null, this.assetType.AssetTypeUID));
                     this.setCommonSecondaryNavTabs(true, false, this.assetType.HasDashboards);
 
                     if (this.showDiagram) {

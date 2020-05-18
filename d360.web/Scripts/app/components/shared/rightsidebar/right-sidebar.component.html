@@ -95,7 +95,7 @@
 </d3s-modal>
 <d3s-take-survey *ngIf="survey && !currentObject?.isType"
                  [isModalVisible]="showSurveyPopup"
-                 [assetUid]="currentObject.Uid"
+                 [assetUid]="currentObject?.Uid"
                  [surveyType]="survey"
                  [ShowCloseButton]="true"
                  (surveyBack)="closeSurveyPopup()"

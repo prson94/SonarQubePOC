@@ -13,11 +13,6 @@ namespace d360.core.entities
         public string RawValue { get; set; }
     }
 
-    public class UiRequestAttributeFilterValue : UiRequestFilterValue
-    {
-        public int AttributeTypeID { get; set; }
-    }
-
     public class UiRequestFieldFilterValue: UiRequestFilterValue
     {
         public string FieldName { get; set; }
@@ -78,10 +73,4 @@ namespace d360.core.entities
         public List<int> TargetObjectIDs { get; set; }
     }
 
-    public class UiRequestRelationshipFieldFilterValue : UiRequestFilterValue
-    {
-        public int FieldTypeID { get; set; }
-        public string Condition { get; set; }
-        public string Value { get; set; }
-    }
 }

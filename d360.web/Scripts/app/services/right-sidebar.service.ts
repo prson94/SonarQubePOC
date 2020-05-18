@@ -146,6 +146,8 @@ export class SecondaryNavService {
         localStorage.removeItem('SecondaryNav_CurrentTab');
     }
     showHeader(val: boolean) {
+        if (!val)
+            this.currentObjectSource.next(null);
         this.hideHeaderSource.next(val);
     }
 

@@ -234,14 +234,29 @@ namespace d360.web.Controllers
                             Category = ft.Category
                         });
                     }
+                    else if (ft.Type == DataType.Path.ToString())
+                    {
+                        var assetPath = Company.Query<string>("select graph.GetPathByAssetId(@id, ' <i class=\"fa fa-angle-right\"></i> ', ' / ')", new { id = details.AssetID }).SingleOrDefault() + "";
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value = assetPath,
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            ShowIfEmpty = ft.ShowIfEmpty,
+                            DataType = ft.Type
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
+                    }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
                         list.AddRange(RenderTagField(ft, type, id));
-                    }
-                    else if (ft.Type == DataType.Attribute.ToString())
-                    {
-                        //look at attribute field and figure out what to show
-                        list.AddRange(RenderAttributeField(type.ToString(), id, ft.ID));
                     }
                     else if (ft.Type == DataType.ComplexRelationLookup.ToString())
                     {
@@ -393,7 +408,8 @@ namespace d360.web.Controllers
                             var rfld = Company.Query<string>(@"
 declare @fieldValue nvarchar(max) = null,
 		@type varchar(50) = '',
-		@definition nvarchar(2500) = '[]'
+		@definition nvarchar(2500) = '[]',
+        @assetId bigint
 select @type = [Type], @definition = [Definition] from FieldType where ID = @fieldTypeID
 
 if @type = 'JsonElement'
@@ -402,6 +418,11 @@ begin
 	from	openjson(@definition) with (FieldTypeID int '$.FieldTypeID', DataType varchar(50) '$.DataType', [Path] varchar(250) '$.Path') D
 			left join Field F on F.FieldTypeID = D.FieldTypeID and [ObjectType] = @obj and ObjectID = @objID
 			left join FieldJsonProperty P on P.FieldID = F.ID and P.[Path] = D.[Path]
+end
+else if @type = 'Path'
+begin
+    select  @assetId = ID from Asset where Object = @obj and ObjectID = @objId
+    select	@fieldValue = graph.GetPathByAssetId(@assetId, ' <i class=""fa fa-angle-right""></i> ', ' / ')
 end
 else
 begin
@@ -721,6 +742,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         break;
                     case "Link":
                         fieldType = "html";
+                        break;
+                    case "Path":
+                        fieldType = "path";
                         break;
                     case "Tag":
                         fieldType = "tag";
@@ -1645,35 +1669,6 @@ order by 'Name'";
                         ShowIfEmpty = true,
                         DataType = "tag",
                         Values = GetTagsValues(type, id)
-
-                    }
-                },
-                Category = ft.Category
-            });
-
-            return list;
-        }
-
-        #endregion
-
-        #region Attribute Lookup Fields
-
-        private List<DetailReadOnlyRowModel> RenderAttributeField(string type, int id, int fieldTypeID)
-        {
-            var list = new List<DetailReadOnlyRowModel>();
-
-            var ft = Company.GetById<FieldType>(fieldTypeID);
-
-            list.Add(new DetailReadOnlyRowModel
-            {
-                columns = 1,
-                FirstColumnFields = new List<ReadOnlyField> {
-                    new ReadOnlyField {
-                        Column = 1,
-                        Name = ft.FriendlyName,
-                        FieldDescription = ft.DisplayDescription,
-                        FieldName = ft.Name,
-                        ShowIfEmpty = ft.ShowIfEmpty
 
                     }
                 },
@@ -3025,13 +3020,16 @@ order by    Name
             if (!string.IsNullOrEmpty(excludeObjects)) objectsToExclude.AddRange(excludeObjects.Split(','));
 
             var sql = @"select 
-										c.[Object],
+										c.[Object], 
 										c.ObjectID, 
 										AD.DisplayValue as TextPath, 
 										cU.Url, 
 										c.TypeName as ObjectTypeName, 
 										c.ForeColor as IconForeColor, 
-										c.BackColor as IconBackColor
+										c.BackColor as IconBackColor,
+										case  when c.[Object] = 'Artifact' and c.AssetTypeClass = 1 then 'Business Asset'
+										when c.[Object] = 'Artifact' and c.AssetTypeClass = 8 then 'Technical Asset'
+										else	c.[Object] end [Displayobject]
 										from [dbo].AssetWithType c   
 										inner join  AssetDisplayValue as AD   on
 										AD.AssetID = C.ID

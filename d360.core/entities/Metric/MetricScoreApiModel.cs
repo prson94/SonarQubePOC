@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using d360.core.enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -23,6 +26,8 @@ namespace d360.core.entities.Metric
     {
         public DateTime EffectiveDate { get; set; }
         public float Score { get; set; }
+        [JsonConverter(typeof(StringEnumConverter))]
+        public ScoreType ScoreType { get; set; }
     }
 
 }

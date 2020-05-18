@@ -34,7 +34,7 @@ namespace d360.core.entities.Metric
         public string EvaluatedAssetTypePath { get; set; }               
         public string EvaluatedAssetSegments { get; set; }
         [DataMember]
-        public string[][] EvaluatedAssetPathElements { get; set; }
+        public string EvaluatedAssetDisplayPath { get; set; }
         [DataMember]
         public string EvaluatedAssetClass { get; set; }
         [DataMember]

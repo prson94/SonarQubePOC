@@ -123,14 +123,16 @@ export class ReferenceListComponent extends BaseComponent implements OnInit, OnD
                         this.canAddReferenceItem = this.hasModifyAssetPermissions();
                         this.canEditReferenceItem = this.hasModifyAssetPermissions();
                         this.canRemoveReferenceItem = this.hasDeleteAssetPermissions();
-
+                    });
+                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType', () => {
                         this.headerBreadcrumbService.getFolderTitle('#Reference').then((res) => {
                             this.headerBreadcrumbService.clearBreadcrumbs();
                             this.headerBreadcrumbService.clearCurrentObjectInfo();
                             this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(res));
+                            if (this.selectedReferenceItemType)
+                                this.headerBreadcrumbService.showBreadcrumb(new Breadcrumb(this.selectedReferenceItemType.Name));
                         });
                     });
-                    this.buildSecondaryNavigationForObject(this.selectedReferenceListId, 'ReferenceItemType');
                 }
             });
     }

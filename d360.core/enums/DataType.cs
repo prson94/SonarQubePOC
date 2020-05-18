@@ -40,8 +40,8 @@ namespace d360.core
         UncLink= 1 << 12,
         [Description("Color Picker"), ReadOnly(true)]
         Color= 1 << 13,
-        [Description("Attribute Hierarchy"), ReadOnly(true)]
-        Attribute= 1 << 15,
+        [Description("Asset Path")]
+        Path = 1 << 15,
         [Description("Relation Lookup")]
         ComplexRelationLookup = 1 << 17,
         [Description("Percentage"), ReadOnly(true)]
@@ -61,7 +61,9 @@ namespace d360.core
         [Description("JSON Attribute")]
         JsonElement = 1 << 25,
         [Description("Tag")]
-        Tag = 1 << 26
+        Tag = 1 << 26,
+        [Description("Score")]
+        Score = 1 << 27
     } 
 
     public class DataTypeInfo
@@ -136,7 +138,8 @@ namespace d360.core
                 new AllowedConversionOption { FromType = "Decimal", ToType = "Percentage" },
                 new AllowedConversionOption { FromType = "Number", ToType = "Decimal" },
                 new AllowedConversionOption { FromType = "Number", ToType = "Percentage" },
-                new AllowedConversionOption { FromType = "Text", ToType = "Html" }
+                new AllowedConversionOption { FromType = "Text", ToType = "Html" },
+                new AllowedConversionOption { FromType = "ComplexRelationLookup", ToType = "Relationship" }
             };
         }
     }

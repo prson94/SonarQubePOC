@@ -420,6 +420,13 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Number' then FT.IsPrimaryFilter else null end as 'Type.Number.IsPrimaryFilter',
 		        case when FT.Type = 'Number' then FT.ShowIfEmpty else null end as 'Type.Number.ShowIfEmpty',
 
+		        case when FT.Type = 'Path' then FT.ColumnOrder else null end as 'Type.Path.ColumnOrder',
+		        case when FT.Type = 'Path' then FT.ColumnWidth else null end as 'Type.Path.ColumnWidth',
+		        case when FT.Type = 'Path' then FT.SortOrder else null end as 'Type.Path.SortOrder',
+		        case when FT.Type = 'Path' then FT.DisplayDescription else null end as 'Type.Path.Description.Display',
+		        case when FT.Type = 'Path' then FT.IsDisplayable else null end as 'Type.Path.IsDisplayable',
+		        case when FT.Type = 'Path' then FT.IsListable else null end as 'Type.Path.IsListable',
+
 		        case when FT.Type = 'Relationship' then FT.ColumnOrder else null end as 'Type.Relationship.ColumnOrder',
 		        case when FT.Type = 'Relationship' then FT.ColumnWidth else null end as 'Type.Relationship.ColumnWidth',
 		        case when FT.Type = 'Relationship' then FT.SortOrder else null end as 'Type.Relationship.SortOrder',
@@ -1166,6 +1173,22 @@ from	IntersectType I
                         newFieldType.MaximumLength = f.Type.Number.Validation.MaximumValue;
                         newFieldType.MinimumLength = f.Type.Number.Validation.MinimumValue;
                     }
+                }
+                else if (f.Type.Path != null)
+                {
+                    newFieldType.Type = DataType.Path.ToString();
+                    newFieldType.ColumnOrder = f.Type.Path.ColumnOrder.HasValue ? f.Type.Path.ColumnOrder.Value : ++maxColumnIndex;
+                    newFieldType.ColumnWidth = f.Type.Path.ColumnWidth;
+                    if (f.Type.Path.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Path.Description.Display;
+                    }
+                    newFieldType.IsDisplayable = f.Type.Path.IsDisplayable;
+                    newFieldType.IsEditable = false;
+                    newFieldType.IsListable = f.Type.Path.IsListable;
+                    newFieldType.IsPartOfKey = false;
+                    newFieldType.ShowIfEmpty = true;
+                    newFieldType.IsPrimaryFilter = false;
                 }
                 else if (f.Type.Relationship != null)
                 {
