@@ -891,11 +891,11 @@ namespace d360.web.Controllers.V2
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
                 if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with UID '{assetUid}' does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist."));
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Responsibility with UID '{responsibilityUid}' does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
 
                 if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
@@ -904,7 +904,7 @@ namespace d360.web.Controllers.V2
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
                 if (!isValidResponsibilityForAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", "Responsibility Type not valid for current Asset."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "Responsibility Type not valid for current Asset."));
 
                 if (model.ResourceUid.Count == 0)
                 {
@@ -979,11 +979,11 @@ namespace d360.web.Controllers.V2
 
                 var asset = AssetRepository.GetAssetByUID(assetUid);
                 if (asset == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Asset with UID '{assetUid}' does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist."));
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
                 if (responsibility == null)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Responsibility with UID '{responsibilityUid}' does not exist."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
 
                 if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
@@ -992,7 +992,7 @@ namespace d360.web.Controllers.V2
                 bool isValidResponsibilityForAsset = ResponsibilityRepository.IsValidResponsibilityForAsset(responsibilityUid, assetUid);
 
                 if (!isValidResponsibilityForAsset)
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Not found", "Responsibility Type not valid for current Asset."));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", "Responsibility Type not valid for current Asset."));
 
                 if (resourceUids.Count == 0)
                 {
