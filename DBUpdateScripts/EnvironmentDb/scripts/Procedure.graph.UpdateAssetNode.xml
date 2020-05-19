@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.UpdateAssetNode-v3">
+  <changeSet author="bquinlivan" id="Procedure.graph.UpdateAssetNode-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -44,10 +44,11 @@ begin
 					and E.Class = 1
 					and A.Uid = @uid;
 
+		--Delete all edge records including those linking the result to the evaluated asset.
 		delete	E
 		from    dbo.AssetResultEdge E
-				inner join graph.AssetNode N on E.$from_id = N.$node_id
-		where   N.[uid] = @uid;
+				inner join AssetResult AR on E.$to_id = AR.$node_id
+				inner join #Uids S on S.Uid = AR.Uid
 
 		delete	T
 		from	dbo.AssetResult T
@@ -153,7 +154,7 @@ begin
 
 		if @updatePath = 1
 		begin
-			exec graph.PopulatePathsForAssetType @typeId, @id
+			exec graph.UpdateGraphTableHierarchyBy null, null, @id
 		end
 	end
 	else
@@ -170,7 +171,7 @@ begin
 				inner join AssetType T on T.ID = A.AssetTypeID
 		where   A.[uid] = @uid;
 
-		exec graph.PopulatePathsForAssetType @typeId, @id
+		exec graph.UpdateGraphTableHierarchyBy null, null, @id
 	end
 end
 		]]>

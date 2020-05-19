@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.graph.SynchronizeTables-v3">
+  <changeSet author="bquinlivan" id="Procedure.graph.SynchronizeTables-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -48,10 +48,11 @@ begin
 				and E.Class = 1
 				and A.ID = D.ID;
 
+	--Delete all edge records including those linking the result to the evaluated asset.
 	delete	E
 	from    dbo.AssetResultEdge E
-			inner join graph.AssetNode N on E.$from_id = N.$node_id
-			inner join #DeleteNodes D on D.ID = N.ID;
+			inner join AssetResult AR on E.$to_id = AR.$node_id
+			inner join #Uids S on S.Uid = AR.Uid
 
 	delete	T
 	from	dbo.AssetResult T
@@ -348,7 +349,7 @@ begin
 			
 			print @id
 			
-			exec graph.PopulatePathsForAssetType @id;
+			exec [graph].[UpdateGraphTableHierarchyBy] null, @id, null
 		
 			delete from #assetTypes where id = @id;
 		end
@@ -373,7 +374,7 @@ begin
                     @assetId bigint;
 			select top 1 @assetTypeId = AssetTypeID, @assetId = ID from #assets;
 
-			exec graph.PopulatePathsForAssetType @assetTypeId, @assetId;
+			exec [graph].[UpdateGraphTableHierarchyBy] null, null, @assetId
 
 			delete from #assets where ID = @assetId;
 		end 
