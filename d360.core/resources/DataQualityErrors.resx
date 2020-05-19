@@ -136,7 +136,7 @@
     <value>{0} must not be greater than {1}.</value>
   </data>
   <data name="GreaterThanTodayError" xml:space="preserve">
-    <value>{0} must not be greater than today’s date.</value>
+    <value>{0} must not be greater than today's date.</value>
   </data>
   <data name="InvalidFormatError" xml:space="preserve">
     <value>{0} format invalid. The correct format is: {1}</value>
