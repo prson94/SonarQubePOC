@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer.repositories
     {
         ICompanyContext CompanyContext;
         const string RELATIONSHIP_DELIMITER = "|";
-    public BaseRepository(ICompanyContext ctx)
+        public BaseRepository(ICompanyContext ctx)
         {
             this.CompanyContext = ctx;
         }
@@ -124,7 +124,9 @@ namespace d360.model.DataAccessLayer.repositories
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            {
+                                fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            }
                             else
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                         }
