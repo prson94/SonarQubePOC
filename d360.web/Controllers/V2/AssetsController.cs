@@ -1077,7 +1077,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
-
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
         {
@@ -1178,11 +1178,14 @@ namespace d360.web.Controllers.V2
                     {
                         List<string> allowedOrderFields = new List<string>()
                         {
-
-
+                            "ResourceItemUrl","SecurityAssetName","Context","ResourceUid","ResponsibilityTypeName","ResourceName","SecurityAssetUid"
                         };
-                    }
 
+                        if(!allowedOrderFields.Select(x=> x.ToLower()).Contains(orderBy.ToLower().Trim()))
+                        {
+                            return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid field value for parameter '_order'.");
+                        }
+                    }
 
                     if (fieldType.Type == "ComplexRelationLookup")
                     {
@@ -1208,7 +1211,7 @@ namespace d360.web.Controllers.V2
                 }
 
                 var reader = await Company.QueryMultipleAsync(
-                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection",
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls",
                         new
                         {
                             @object = asset.Object,
@@ -1219,7 +1222,8 @@ namespace d360.web.Controllers.V2
                             pageNum,
                             simpleFilter,
                             orderBy,
-                            orderDirection = direction
+                            orderDirection = direction,
+                            useUidUrls = true
                         }
                     );
 
@@ -1268,9 +1272,6 @@ namespace d360.web.Controllers.V2
                          simpleFilter
                      }
                      ).First();
-
-
-
 
                 result.Add("pageSize", pageSize);
                 result.Add("pageNum", pageNum);
