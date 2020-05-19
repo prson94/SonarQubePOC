@@ -116,15 +116,17 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
         //p table options and eventing doesnt handle multiple selection well, this is custom implementation of ctrl/shift holding while selecting
         if (event && element) {
-            if (event.ctrlKey && !event.shiftKey) {
+            if ((event.ctrlKey || event.metaKey)&& !event.shiftKey) {
                 if (this.selected.filter(x => x.uid == item.uid).length > 0) {
                     this.selected = this.selected.filter(x => x.uid != item.uid);
                     var el = (<any>(event.target)).parentNode;
+                    el = (el.nodeName === "TD") ? el.parentNode : el;
                     this.deselectElement(el);
                 }
                 else {
                     this.selected.push(item);
                     var el = (<any>(event.target)).parentNode;
+                    el = (el.nodeName === "TD") ? el.parentNode : el;
                     this.selectElement(el);
                 }
 
@@ -157,14 +159,27 @@ export class AdminTagsComponent extends AdminBaseComponent {
             }
 
         }
-
-        if (element)
+        let target = (<any>(event.target));
+        if (element && target.nodeName !== "P-TABLECHECKBOX") {
             this.clearAllSelectedItems(element);
-
-        this.selected = [];
-        this.selected.push(item);
-
-        this.lastSelectedElement = item;
+            this.selected = [];
+            this.selected.push(item);
+            this.lastSelectedElement = item;
+        } else {
+            if (this.selected.filter(x => x.uid == item.uid).length > 0) {
+                this.selected = this.selected.filter(x => x.uid != item.uid);
+                var el = (<any>(event.target)).parentNode;
+                el = (el.nodeName === "TD") ? el.parentNode : el;
+                this.deselectElement(el);
+            }
+            else {
+                this.selected.push(item);
+                var el = (<any>(event.target)).parentNode;
+                el = (el.nodeName === "TD") ? el.parentNode : el;
+                this.selectElement(el);
+            }
+            this.lastSelectedElement = item;
+        }
     }
 
 

@@ -32,9 +32,13 @@
         <tr [pSelectableRow]="item">
             <td *ngFor="let column of visibleColumns">
                 <div [ngSwitch]="column.type">
-                    <span *ngSwitchCase="'date'">{{item[column.datafield] | date:'shortDate'}}</span>
-                    <span *ngSwitchCase="'datetime'">{{item[column.datafield] | date:'short'}}</span>
-                    <span *ngSwitchCase="'bool'">                        
+                    <span *ngSwitchCase="'date'">
+                        <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'shortDate'}}</span>
+                    </span>
+                    <span *ngSwitchCase="'datetime'">
+                        <span *ngIf="item[column.datafield] && item[column.datafield] !== ''">{{item[column.datafield] | utcDate | date:'short'}}</span>
+                    </span>
+                    <span *ngSwitchCase="'bool'">
                         <i *ngIf="(item[column.datafield] || '').toUpperCase() == 'TRUE'" class="fa fa-check enabled" title="True"></i>
                         <i *ngIf="(item[column.datafield] || '').toUpperCase() == 'FALSE'" class="fa fa-times disabled" title="False"></i>
                     </span>
