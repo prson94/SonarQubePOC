@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetComplexLookupByAsset-v11">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetComplexLookupByAsset-v12">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -167,7 +167,7 @@ begin
 			from		@fields F
 			where		Object = 'FusionAttributeType' 
 						and FieldTypeID = 0 
-						and FieldTypeName = 'TextPath'
+						and FieldTypeName = 'AssetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
@@ -687,7 +687,7 @@ begin
 					end,
 				F.FieldDataType = case 
 									when F.FieldTypeName = 'Name' then 'preview'
-									when F.FieldTypeName = 'TextPath' then 'preview'
+									when F.FieldTypeName = 'AssetPath' then 'preview'
 									when F.FieldTypeName = 'DisplayValue' then 'preview'
 									when F.IsRelationLink = 1 then 'preview'
 									else coalesce(FT.[Type], 'text')
@@ -716,7 +716,7 @@ begin
 			from		@fields F
 			where		FieldTypeID = 0 
 						and Object <> 'FusionAttributeType'
-						and FieldTypeName = 'TextPath'
+						and FieldTypeName = 'AssetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
