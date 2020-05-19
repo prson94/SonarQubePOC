@@ -1265,11 +1265,11 @@ order by wi.StartedOn desc";
                 case "Issue":
                     var issue = Company.Issues.Where(x => x.ID == item.ObjectID).Include(x => x.IssueType).FirstOrDefault();
 
-                    var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
-                    actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
-
                     if (issue != null)
                     {
+                        var comment = Company.Comments.Where(x => x.ID == issue.CommentID).FirstOrDefault();
+                        actionAsset = Company.Assets.FirstOrDefault(x => x.Object == issue.Object && x.ObjectID == issue.ObjectID);
+
                         objectDetails = new ObjectDetail
                         {
                             Type = "Action",

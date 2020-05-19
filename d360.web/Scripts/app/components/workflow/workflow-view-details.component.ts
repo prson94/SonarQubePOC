@@ -155,7 +155,9 @@ export class WorkflowViewDetailsComponent extends BaseComponent implements OnIni
                 this.isLoading = false;
 
                 if (res.ActionAsset) {
-                    this.buildSecondaryNavigationForObject(res.ActionAsset.ObjectID, res.ActionAsset.Object);
+                    if (res.ActionAsset.Object) {
+                        this.buildSecondaryNavigationForObject(res.ActionAsset.ObjectID, res.ActionAsset.Object);
+                    }
                 }
             });
     }

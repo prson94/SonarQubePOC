@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetComplexLookupByAsset-v10">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -129,7 +129,7 @@ begin
 					end,
 				F.FieldDataType = case 
 									when F.FieldTypeName = 'Name' then 'preview'
-									when F.FieldTypeName = 'AssetPath' then 'preview'
+									when F.FieldTypeName = 'TextPath' then 'preview'
 									when F.FieldTypeName = 'DisplayValue' then 'preview'
 									when F.IsRelationLink = 1 then 'preview'
 									else coalesce(FT.[Type], 'text')
@@ -157,7 +157,17 @@ begin
 						DataField as Alias
 			from		@fields F
 			where		FieldTypeID = 0 
-						and FieldTypeName = 'AssetPath'
+						and Object <> 'FusionAttributeType'
+						and FieldTypeName = 'TextPath'
+			order by	F.RowNumber;
+
+		insert into @selects
+			select		'F' + F.RRN + '.TextPath', --Must stay as this field as it is a hard-coded value on the FusionAttribute table
+						DataField as Alias
+			from		@fields F
+			where		Object = 'FusionAttributeType' 
+						and FieldTypeID = 0 
+						and FieldTypeName = 'TextPath'
 			order by	F.RowNumber;
 
 		insert into @selects
@@ -262,8 +272,8 @@ begin
 								' outer apply OPENJSON(H'+T.RRN+'_FT_F'+T.FT+'.[Definition], N''lax $'') with (FieldTypeID int, Path varchar(250), DataType varchar(250)) H'+T.RRN+'_FT_FD'+T.FT +
 								' left join Field H'+T.RRN+'_JF_F'+T.FT+' on H'+T.RRN+'_JF_F'+T.FT+'.FieldTypeID = H'+T.RRN+'_FT_FD'+T.FT+'.FieldTypeID and H'+T.RRN+'_JF_F'+T.FT+'.AssetID = H'+T.RRN+'.ID' + 
 								' left join FieldJsonProperty H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldID = H'+T.RRN+'_JF_F'+T.FT+'.ID and H'+T.RRN+'_F'+T.FT+'.[Path] = H'+T.RRN+'_FT_FD'+T.FT+'.[Path]'
-							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
-							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID and H'+T.RRN+'_F'+T.FT+'.FormattedValue <> '''''
+							when T.IsRelationField = 1 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join Field H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.ObjectType = ''Intersect'' and H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.ObjectID = R'+T.RRN+'.ID'
+							when T.IsRelationField = 0 and T.FieldTypeID > 0 and T.FieldDataType <> 'JsonElement' then ' left join FieldDetail H'+T.RRN+'_F'+T.FT+' on H'+T.RRN+'_F'+T.FT+'.FieldTypeID = '+T.FT+' and H'+T.RRN+'_F'+T.FT+'.AssetID = H'+T.RRN+'.ID'
 							when T.FieldTypeID = 0 and T.FieldTypeName = 'DisplayValue' then ' left join AssetDisplayValue H'+T.RRN+'_DV on H'+T.RRN+'_DV.AssetID = H'+T.RRN+'.ID'
 						end
 			from	@fields T 
@@ -442,7 +452,7 @@ begin
 				order by	ColumnOrder asc, FriendlyName asc;
 
 			insert into @tables
-				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar) + ' and F'+cast(ID as varchar)+'.FormattedValue <> '''''
+				select	' left join FieldDetail F'+cast(ID as varchar)+' on F'+cast(ID as varchar)+'.AssetID = A.ID and F'+cast(ID as varchar)+'.FieldTypeID = ' + cast(ID as varchar)
 				from	FieldType
 				where	AssetTypeID = @referenceItemTypeID 
 						and IsListable = 1;
@@ -495,7 +505,7 @@ begin
 						end, 
 						FieldTypeName 
 				from	@fields
-				
+
 			insert into @orders
 				select		case  
 								when FieldDataType = 'number' then
@@ -553,7 +563,6 @@ begin
 		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
 	end
 	
-	--select @sql -- testing only
 	print @sql
 end
 		]]>
