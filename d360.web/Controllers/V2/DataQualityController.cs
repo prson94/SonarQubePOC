@@ -58,7 +58,7 @@ namespace d360.web.Controllers.V2
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"No such rule with id {ruleUid}"));
 
             return  Company.Query<dynamic>(@"
-                        select  null as ID,
+                        select  A.ObjectID as ID,
                                 null as RuleImplementationID,
                                 I.EffectiveDate,
                                 I.RunDate,
@@ -68,7 +68,8 @@ namespace d360.web.Controllers.V2
                                 I.FailFraction,
                                 cast(P.Passed as bit) as Passed
                         from    (
-                            select	R.[uid],
+                            select	A.[uid] as AssetUid,
+                                    R.[uid],
                                     R.EffectiveDate,
 		                            R.RunDate,
 		                            R.PassCount as RowsPassed,
@@ -80,6 +81,7 @@ namespace d360.web.Controllers.V2
 		                            dbo.AssetResult R
                             where	MATCH(A-(E)->R)
 		                            and A.[uid] = @uid) I
+                            inner join Asset A on A.[uid] = I.AssetUid
                             cross apply dbo.CalculatePassedPropertyForAssetResult(I.[uid]) P
                         ", new { rule.uid }).AsQueryable();
 
