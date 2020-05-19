@@ -2066,8 +2066,8 @@ namespace d360.model
 
                 result = result.Replace("[WORKFLOW_INITIATOR]", initiator);
             }
-
-            if (result.Contains("[SCORE]"))
+            //need to keep both options for existing workflows, remove [SCORE] once no workflow use it in any ENV
+            if (result.Contains("[GOV_SCORE]") || result.Contains("[SCORE]"))
             {
                 ObjectDetail item = null;
                 if (obj == SystemObjects.Issue)
@@ -2089,6 +2089,7 @@ namespace d360.model
                 if(item != null && item.AssetID.HasValue)
                     score = GetAssetScore(item.AssetID.Value, ScoreType.Governance);
 
+                result = result.Replace("[GOV_SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
                 result = result.Replace("[SCORE]", score.HasValue ? $"{score.Value.ToString()}%" : "(unknown score)");
             }
 

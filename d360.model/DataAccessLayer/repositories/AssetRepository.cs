@@ -780,7 +780,7 @@ namespace d360.model.DataAccessLayer
             if (assetType.Class == AssetTypeClass.ReferenceItemType)
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
 
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).ToList());
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x=>x.ColumnOrder).ThenBy(x=>x.FriendlyName).ToList());
 
             fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });

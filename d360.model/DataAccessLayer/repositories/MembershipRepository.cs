@@ -19,11 +19,12 @@ namespace d360.model.DataAccessLayer
     {
         internal ICompanyContext CompanyContext;
         internal ICommunityContext CommunityContext;
-
-        public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext)
+        internal IAssetRepository AssetRepository;
+        public MembershipRepository(ICompanyContext companyContext, ICommunityContext communityContext, IAssetRepository assetRepository)
         {
             this.CompanyContext = companyContext;
             this.CommunityContext = communityContext;
+            this.AssetRepository = assetRepository;
         }
         public async Task<GroupApiModels> GetGroups(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
@@ -359,6 +360,15 @@ namespace d360.model.DataAccessLayer
                             success = false;
                             messages.Add("Password must be between 7 and 25 characters in length; at least 1 uppercase character; at least 1 lowercase character; at least 1 number");
                         }
+                    }
+
+                    Guid currentUser = (Guid)user.uid;
+                    var isUser = this.AssetRepository.GetAssetByUID(currentUser);
+
+                    if (isUser == null || isUser.Object != "Resource")
+                    {
+                        success = false;
+                        messages.Add($"User for uid [{user.uid}] not found");
                     }
                     if(string.IsNullOrEmpty(user.FirstName))
                     {

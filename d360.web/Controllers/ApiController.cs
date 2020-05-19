@@ -2182,24 +2182,50 @@ order by    rnk, [Name]";
 
         private bool AnyComplexLookupGridValues(string type, int id, int fieldTypeId)
         {
-            return Company.Query<bool>(
-                "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly",
-                new { @object = type, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true }
+            bool any = false;
+            
+            try
+            {
+                any = Company.Query<bool>("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, @countOnly",
+                    new { @object = type, objectId = id, fieldTypeId, resourceId = Company.CurrentResourceID, countOnly = true }
                 ).First();
+            }
+            catch (Exception ex)
+            {
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
+                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeId}, {Company.CurrentResourceID}, 1" }
+                });
+            }
+
+            return any;
         }
 
         [Route("ComplexLookupField/{type}/{id:int}/{fieldTypeID:int}/values")]
         public async Task<HttpResponseMessage> GetComplexLookupGridField(string type, int id, int fieldTypeID)
         {
-            var reader = await Company.QueryMultipleAsync(
-                "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
-                new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
-            );
+            List<GridColumn> Columns = null;
+            List<GridField> Fields = null;
+            List<dynamic> Values = null;
+            try
+            {
+                var reader = await Company.QueryMultipleAsync("exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId",
+                    new { @object = type, objectId = id, fieldTypeId = fieldTypeID, resourceId = Company.CurrentResourceID }
+                );
 
-            var Columns = reader.Read<GridColumn>().ToList();
-            var Fields = reader.Read<GridField>().ToList();
-            var Values = reader.Read<dynamic>().ToList();
+                Columns = reader.Read<GridColumn>().ToList();
+                Fields = reader.Read<GridField>().ToList();
+                Values = reader.Read<dynamic>().ToList();
 
+                return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
+            }
+            catch (Exception ex)
+            {
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", "ApiController.AnyComplexLookupGridValues" },
+                    { "SQL Satetment", $"exec GetComplexLookupByAsset '{type}', {id}, {fieldTypeID}, {Company.CurrentResourceID}, 1" }
+                });
+            }
             return Request.CreateResponse(HttpStatusCode.OK, new { Values, Columns, Fields });
         }
 

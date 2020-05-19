@@ -652,6 +652,14 @@ namespace d360.model.DataAccessLayer.repositories
                         document.SetCellStyle(rowIndex, colIndex, style);
                     }
                     break;
+                case "HTML":
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
                 default:
                     if (valueString.StartsWith("="))
                         valueString = "'" + valueString;
