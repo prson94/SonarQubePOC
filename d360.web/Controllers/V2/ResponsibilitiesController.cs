@@ -869,7 +869,7 @@ namespace d360.web.Controllers.V2
         /// Adds responsibility override to asset for a given Resource Uid list.
         /// </summary>
         /// <param name="assetUid">Uid of an Asset.</param>
-        /// <param name="responsibilityUid">UID of Responisibility type.</param>
+        /// <param name="responsibilityUid">Uid of Responsibility type.</param>
         /// <param name="model">An object containing list of Resource/Group Uids and description (context).</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -956,8 +956,8 @@ namespace d360.web.Controllers.V2
         /// Deletes responsibility overrides from asset for a given Resource Uid list.
         /// </summary>
         /// <param name="assetUid">Uid of an Asset.</param>
-        /// <param name="responsibilityUid">Uid of Responisibility type.</param>
-        /// <param name="resourceUids">A object which contains list of Resources or Groupd.</param>
+        /// <param name="responsibilityUid">Uid of Responsibility type.</param>
+        /// <param name="resourceUids">An object which contains list of Resource/Group Uids.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
