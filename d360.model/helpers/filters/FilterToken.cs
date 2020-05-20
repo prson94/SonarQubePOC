@@ -235,14 +235,7 @@ namespace d360.model.helpers
 
                 stringBuilder.Append(fieldSql);
                 stringBuilder.Append(GetSQLOperator(@operator));
-                if (fieldType.Type == "Path")
-                {
-                    stringBuilder.Append($"replace(@filter_{parameterIdx}, ' > ', '%')");
-                }
-                else 
-                {
-                    stringBuilder.Append($"@filter_{parameterIdx}");
-                }
+                stringBuilder.Append($"@filter_{parameterIdx}");
             }
 
             sqlParamsRef.Add($"@filter_{parameterIdx}", value);
@@ -426,7 +419,7 @@ namespace d360.model.helpers
         {
             if (fieldType.Type == "Path")
             {
-                return $"Node.Path";
+                return $"Node.DisplayPath";
             }
             else 
             {

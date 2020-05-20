@@ -360,7 +360,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetsByPathAsync(AssetsByPathApiRequestModel model)
         {
-            var prefix = "Assets.GetAssetsByPathAsync => ";
+            var prefix = "Assets.GetAssetsByPathAsync => "; 
 
             try
             {
