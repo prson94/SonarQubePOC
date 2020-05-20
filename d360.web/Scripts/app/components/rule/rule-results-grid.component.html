@@ -117,7 +117,7 @@
                 <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.RunDate | date : 'short'}}</span>
             </td>
             <td>
-                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate'}}</span>
+                <span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.EffectiveDate | date : 'shortDate' : 'UTC'}}</span>
             </td>
             <td><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.PassFraction}}</span></td>
             <td style="text-align:center;"><span class="{{item.IsDuplicate ? 'duplicate' : ''}}">{{item.TotalCount}}</span></td>
