@@ -2551,7 +2551,7 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);                         
+                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);
                 }
                 #endregion
 
@@ -2750,7 +2750,7 @@ select @err";
             return returnValue;
         }
 
-        
+
         private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {
             //get any objects that implement EventTrackedEntity so we can add messages for them
@@ -3003,7 +3003,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
-                else if (f.Type == DataType.Path.ToString()) 
+                else if (f.Type == DataType.Path.ToString())
                 {
                     columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
                     joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
@@ -3189,6 +3189,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
   where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
 
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
+        }
+
+        public bool SaveChangesWithoutEventing()
+        {
+            this.IsEventingEnabled = false;
+            var res = SaveChanges();
+            this.IsEventingEnabled = true;
+
+            return res > 1;
         }
     }
 }
