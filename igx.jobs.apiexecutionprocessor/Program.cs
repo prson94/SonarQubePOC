@@ -17,6 +17,7 @@ using System.Text;
 using d360.core;
 using d360.core.entities.Metric;
 using System.Net.Http;
+using System.Threading;
 
 namespace igx.jobs.apiexecutionprocessor
 {
@@ -115,6 +116,10 @@ namespace igx.jobs.apiexecutionprocessor
 
             var dbExecutionItem = company.Filter<ApiExecution>(i => i.ExecutionID == Info.ExecutionID).SingleOrDefault();
 
+
+            //wait a moment in case there are multiple queue messages
+            Thread.Sleep(new Random().Next(2000));
+
             try
             {
                 bool jobAlreadyRunning = false;
@@ -124,12 +129,28 @@ namespace igx.jobs.apiexecutionprocessor
                 if ( ( dbExecutionItem != null) && dbExecutionItem.ProcessingStartedOn.HasValue && string.IsNullOrEmpty(dbExecutionItem.ErrorMessage))
                     jobAlreadyRunning = true;
 
+
+                //mark this execution for processing
+                if (dbExecutionItem != null)
+                {
+                    dbExecutionItem.MarkedForProcessing = true;
+                    company.Update(dbExecutionItem);
+                }
+
+
                 //check if this client should / can run an api load if the job already started and we are resuming it let it through without applying the should run api check
-                if (!jobAlreadyRunning && !(await ShouldRunApiJob(company)))
+                if (!jobAlreadyRunning && !(await ShouldRunApiJob(company, dbExecutionItem?.ExecutionID)))
                 {
                     int delaySeconds = int.Parse(CoreFunction.GetConfigValueByKey("RunningJobDelay") ?? "30");
-
                     TimeSpan delay = new TimeSpan(0, 0, delaySeconds);
+
+
+                    if (dbExecutionItem != null)
+                    {
+                        dbExecutionItem.MarkedForProcessing = false;
+                        company.Update(dbExecutionItem);
+                    }
+
 
                     await queue.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), info, delay);
 
@@ -139,6 +160,7 @@ namespace igx.jobs.apiexecutionprocessor
 
                 if (dbExecutionItem != null)
                 {
+
                     AssetType assetType = null;
                     IntersectType intersectType = null;
                     int mergeBlockSize = DEFAULT_MERGE_BLOCK_SIZE;
@@ -183,11 +205,15 @@ namespace igx.jobs.apiexecutionprocessor
 
                     bool executeJob = true;
 
+
                     if (dbExecutionItem.State == d360.core.enums.State.Deleted)
                     {
                         executeJob = false;
                         log.WriteLine($"Execution job with UID {dbExecutionItem.ExecutionID} was canceled by user.");
                     }
+
+                    dbExecutionItem.MarkedForProcessing = executeJob;
+                    company.Update(dbExecutionItem);
 
                     if (executeJob)
                     {
@@ -349,6 +375,7 @@ namespace igx.jobs.apiexecutionprocessor
 
                 dbExecutionItem.ErrorMessage = ex.GetFullExceptionData(false);
                 dbExecutionItem.CompletedOn = DateTime.UtcNow;
+                dbExecutionItem.MarkedForProcessing = false;
 
                 try
                 {
@@ -378,11 +405,12 @@ namespace igx.jobs.apiexecutionprocessor
         /// Checks if the current company should permit a new api job to start
         /// </summary>
         /// <param name="company"></param>
+        /// <param name="executionID"></param>
         /// <returns></returns>
-        private async Task<bool> ShouldRunApiJob(CompanyContext company)
+        private async Task<bool> ShouldRunApiJob(CompanyContext company, Guid? executionID)
         {
             // call function in db to see if the api job should run
-            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall()");
+            return await company.Database.Connection.QueryFirstOrDefaultAsync<bool>("select api.ShouldAllowNewBatchCall( @executionID)", new { executionID });
         }
 
         private void Company_AssetsPartiallyProcessed(object sender, AssetsPartiallyProcessedEventArgs e)
