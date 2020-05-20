@@ -131,6 +131,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 if (this.assetTypeClass == AssetTypeClass.Reference || this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy) {
                     this.showParentPredicates = true;
                 }
+                if (this.model.AssetType.AutoDisplayParent === null) {
+                    this.model.AssetType.AutoDisplayParent = true;
+                }
                 this.isLoading = false;
             });
     }
