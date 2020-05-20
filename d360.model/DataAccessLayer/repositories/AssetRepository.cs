@@ -177,6 +177,7 @@ namespace d360.model.DataAccessLayer
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
                                     ,AT.IconForeColor as ForeColor
+                                    ,A.AutoDisplayParent
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
@@ -1052,7 +1053,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Class = model.Class,
                         AutoDisplayDescription = model.AutoDisplayDescription,
                         UseAsTransformation = model.UseAsTransformation,
-                        CanOwnFusion = model.CanOwnFusion ?? false                        
+                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        Parent = parentAssetType,
+                        AutoDisplayParent = model.AutoDisplayParent
                     };
                     CompanyContext.Add(a);
                     parentType = SystemObjects.ArtifactType;
@@ -1297,6 +1300,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.Description = model.Description;
                     assetType.HierarchyMaximumDepth = (model.Hierarchy != null) ? model.Hierarchy.MaximumDepth : 1;
                     assetType.AutoDisplayDescription = model.AutoDisplayDescription;
+                    assetType.AutoDisplayParent = model.AutoDisplayParent;
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
