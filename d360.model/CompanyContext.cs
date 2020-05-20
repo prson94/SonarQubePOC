@@ -3008,6 +3008,11 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                     columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
                     joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
                 }
+                else if (f.Type == DataType.Score.ToString())
+                {
+                    columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
+                }
                 else if (f.Type == DataType.Tag.ToString())
                 {
                     string assetIdPath = "A.Id";

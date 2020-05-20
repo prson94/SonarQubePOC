@@ -833,6 +833,15 @@ namespace d360.web.Controllers.V2
             var prefix = "Fields.GetFieldTypeLookupTokens => ";
             var errorMessage = "";
 
+
+            var excludedFieldTypes = new List<string>()
+            {
+                DataType.Path.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.Score.ToString(),
+            };
+
+
             try
             {
                 SystemObjects type;
@@ -849,7 +858,7 @@ namespace d360.web.Controllers.V2
                     Enum.TryParse(item.Object, out type);
                     id = item.ObjectID;
                     list = Company.GetFieldTypesByObject(type, id)
-                        .Where(i => i.Type != DataType.Path.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                        .Where(i => !excludedFieldTypes.Contains(i.Type))
                         .Select(i => new { i.ID, i.Name })
                         .ToDictionary(i => i.Name, i => i.Name);
 
