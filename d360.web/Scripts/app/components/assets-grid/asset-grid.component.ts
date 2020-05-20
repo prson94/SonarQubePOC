@@ -224,7 +224,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getParams() {
         var params = new V2ApiFilters();
-        params._includeParent = this.gridObject.ObjectType == StringConstants.ObjectArtifactType ? this.gridObject.AutoDisplayParent : true;
+        params._includeParent = this.gridObject.ObjectType == StringConstants.ObjectArtifactType ? this.gridObject.AutoDisplayParent || true : true;
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
