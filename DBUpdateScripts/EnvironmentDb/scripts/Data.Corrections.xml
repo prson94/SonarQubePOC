@@ -622,4 +622,24 @@ and DefaultValue is not null and DefaultFormattedValue is null
 		]]>
 	</rollback>
   </changeSet>
+   <changeSet author="TDuric" id="Data.Corrections.GOV-10789">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update metrics.AssetVersion
+set State = 3
+where Uid in (
+select uid from metrics.assetversion where state = 3
+)
+and State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
  </databaseChangeLog>

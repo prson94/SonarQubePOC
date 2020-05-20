@@ -51,6 +51,14 @@ namespace d360.model.DataAccessLayer
                 children.ForEach(c => c.State = State.Deleted);
             }
 
+            var olderVersions = Company.MetricAssetVersions.Where(x => x.Uid == currentAssetVersion.Uid).ToList();
+            if (olderVersions.Count > 0)
+            {
+                olderVersions.ForEach(x => x.State = State.Deleted);
+            }
+
+
+
             Company.SaveChanges();
         }
 
@@ -821,7 +829,7 @@ namespace d360.model.DataAccessLayer
                 sortPhrase = sort;
             }
 
-            orderBy = $"Order by {sortPhrase} {direction ?? ""}";           
+            orderBy = $"Order by {sortPhrase} {direction ?? ""}";
 
             string includeDuplicateSQL = @",
 							case 
@@ -925,7 +933,7 @@ namespace d360.model.DataAccessLayer
 							from ResultsTable
                             {includeDuplicateApply}
 	                        {orderBy}
-	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";            
+	                        offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only";
 
             result.pageNum = pageNum;
             result.pageSize = pageSize;
