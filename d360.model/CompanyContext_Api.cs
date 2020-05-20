@@ -5484,7 +5484,7 @@ where   ER.ExecutionID = @ExecutionID
             [Message] = coalesce([Message] + '; ', '') + 'You may not change the type for this predicate as it is already in use.' 
     from api.ExecutionPredicate EP 
     inner join [Predicate] P on P.[Uid] = Ep.[Uid] 
-    where ExecutionID = @ExecutionID and P.Type <> EP.Type and exists (select 1 from IntersectType T inner join [Intersect] I on I.IntersectTypeID = T.ID and T.PredicateID = P.ID)
+    where ExecutionID = @ExecutionID and P.Type <> EP.Type and exists (select 1 from IntersectType T where T.PredicateID = P.ID)
 
     update	api.ExecutionPredicate
     set		Success = 0,
