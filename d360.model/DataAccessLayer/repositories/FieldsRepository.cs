@@ -20,7 +20,7 @@ namespace d360.model.DataAccessLayer
         internal IStorageProvider StorageProvider;
         public FieldsRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
         {
-            this.Company= companyContext;
+            this.Company = companyContext;
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
         }
@@ -44,7 +44,7 @@ namespace d360.model.DataAccessLayer
             string obj = null;
             int? objID = null;
 
-            WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK,"","");
+            WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK, "", "");
             if (parameters.Any(q => q.Key.ToLower() == "actiontypeuid"))
             {
                 var actionTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
@@ -1008,7 +1008,7 @@ from	IntersectType I
                     newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.JsonElement.ShowIfEmpty;
                     newFieldType.IsListable = f.Type.JsonElement.IsListable;
-                    if(f.Type.JsonElement.JsonAttribute != null)
+                    if (f.Type.JsonElement.JsonAttribute != null)
                     {
                         int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
                         var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
@@ -1370,10 +1370,32 @@ from	IntersectType I
 
             };
 
-            if(model.RelationshipTypeUid != null)
+            if (model.RelationshipTypeUid != null)
             {
                 newFieldTypes.ForEach(x => x.IsPartOfKey = false);
             }
+
+            if (model.ActionTypeUid.HasValue)
+            {
+                var action = Company.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
+                action.UpdatedBy = Company.CurrentResourceID;
+                action.UpdatedOn = DateTime.UtcNow;
+
+            }
+            if (model.RelationshipTypeUid.HasValue)
+            {
+                var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
+                intersectType.UpdatedBy = Company.CurrentResourceID;
+                intersectType.UpdatedOn = DateTime.UtcNow;
+
+            }
+            if (model.AssetTypeUid.HasValue)
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
+                assetType.UpdatedBy = Company.CurrentResourceID;
+                assetType.UpdatedOn = DateTime.UtcNow;
+            }
+            Company.SaveChangesWithoutEventing();
 
             if (model.Action == FieldTypesApiEditAction.Merge)
             {
@@ -1388,6 +1410,7 @@ from	IntersectType I
                 Company.Query<int>("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID }).FirstOrDefault();
                 Company.FieldTypes.AddRange(newFieldTypes);
             }
+
             Company.SaveChanges();
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -1434,12 +1457,12 @@ from	IntersectType I
             return Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
         }
 
-        public IEnumerable<string> GetCustomFields(SystemObjects objectType,int objectId)
+        public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
         {
             return Company.Query<string>(
                 @"select distinct  f.FriendlyName   as Name from fieldtype f  
 				inner join field f2 on f2.fieldtypeid = f.id 
-				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId});
+				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId });
         }
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
         {
