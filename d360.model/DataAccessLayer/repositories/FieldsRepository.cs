@@ -215,6 +215,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Boolean' then FT.IsPartOfKey else null end as 'Type.Boolean.IsPartOfKey',
 		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter', 
                 case when FT.Type = 'Boolean' then FT.ShowIfEmpty else null end as 'Type.Boolean.ShowIfEmpty', 
+                case when FT.Type = 'Boolean' then FT.IsRequired else null end as 'Type.Boolean.Validation.IsRequired', 
 
 		        case when FT.Type = 'FusionLookup' then FT.ColumnOrder else null end as 'Type.ComputedFusionLookup.ColumnOrder',
 
@@ -558,6 +559,11 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         newFieldType.DisplayDescription = f.Type.Boolean.Description.Display;
                         newFieldType.FormDescription = f.Type.Boolean.Description.Form;
                     }
+                    if (f.Type.Boolean.Validation != null)
+                    {
+                        newFieldType.IsRequired = f.Type.Boolean.Validation.IsRequired;
+                    }
+                    
                     newFieldType.IsDisplayable = f.Type.Boolean.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Boolean.IsEditable;
                     newFieldType.IsListable = f.Type.Boolean.IsListable;
