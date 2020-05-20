@@ -38,6 +38,7 @@ begin
 	create table #Uids (Uid uniqueidentifier)
 	create clustered index CIX_TempUids on #Uids (Uid)
 
+	-- Get all Result Uids where the asset is the result owner. 
 	insert into #Uids
 		select	R.Uid
 		from	graph.AssetNode A,
@@ -53,6 +54,12 @@ begin
 	from    dbo.AssetResultEdge E
 			inner join AssetResult AR on E.$to_id = AR.$node_id
 			inner join #Uids S on S.Uid = AR.Uid
+	
+	--Delete all remaining edge records linked to the Asset, e.g. Where asset is not owner. 
+	delete	E
+	from    dbo.AssetResultEdge E
+			inner join graph.AssetNode N on E.$from_id = N.$node_id
+			inner join #DeleteNodes D on D.ID = N.ID;
 
 	delete	T
 	from	dbo.AssetResult T
