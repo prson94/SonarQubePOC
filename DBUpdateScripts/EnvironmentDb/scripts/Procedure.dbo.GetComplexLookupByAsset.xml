@@ -785,7 +785,7 @@ begin
 			from		@fields F
 			where		Object = 'FusionAttributeType' 
 						and FieldTypeID = 0 
-						and FieldTypeName = 'TextPath'
+						and FieldTypeName = 'AssetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
