@@ -16,7 +16,7 @@
 				IF COL_LENGTH('[dbo].[Setting]','Locked') IS NULL
 				BEGIN
 				ALTER TABLE [dbo].[Setting]
-				ADD [Locked] bit constraint DF_Locked_NotNull default(0) not null 
+				ADD [Locked] bit constraint DF_Setting_Locked default(0) not null 
 				END
 			]]>
 		</sql>
@@ -25,7 +25,7 @@
 				IF COL_LENGTH('[dbo].[Setting]','Locked') IS NOT NULL
 				BEGIN
 				ALTER TABLE [dbo].[Setting]
-				DROP DF_Locked_NotNull
+				DROP DF_Setting_Locked
 				ALTER TABLE [dbo].[Setting]
 				DROP COLUMN [Locked]
 				END
