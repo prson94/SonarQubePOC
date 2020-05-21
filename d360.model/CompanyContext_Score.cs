@@ -14,6 +14,7 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
+using System.Diagnostics;
 using System.Linq;
 
 namespace d360.model
@@ -595,6 +596,33 @@ where T.ExecutionID = @executionID and T.[Value] is null or T.[Value] < 0 or T.[
                             transaction: trans);
 
 
+                            Connection.Execute($@"
+		        update  M
+		        set     M.EndDate = R.EffectiveDate
+		        from    [metrics].[Score] M
+                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and M.AssetUid = E.AssetUid and E.Success = 1 and  E.ItemNumber between {beginItemNumber} and {endItemNumber}
+		                cross apply (
+			                select top 1 EffectiveDate from metrics.Score R
+			                where R.AssetUid = M.AssetUid
+			                and R.EffectiveDate > M.EffectiveDate and R.ScoreType = @scoreType
+                            order by EffectiveDate asc
+		                ) R
+                where   M.EndDate is null and M.ScoreType = @scoreType
+
+		        update  M
+		        set     M.EndDate = R.EffectiveDate
+		        from    [metrics].[ScoreItem] M
+                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and E.AssetUid = M.AssetUid and E.Success = 1 and  E.ItemNumber between {beginItemNumber} and {endItemNumber}
+                        inner join api.ExecutionMetricMeasure S on S.ExecutionId = @executionID and S.MeasureUid = M.MetricAssetUid
+		                cross apply (
+			                select top 1 EffectiveDate from metrics.ScoreItem R
+			                where R.AssetUid = M.AssetUid and R.MetricAssetUid = M.MetricAssetUid
+			                and R.EffectiveDate > M.EffectiveDate
+                            order by EffectiveDate asc
+		                ) R
+                where   M.EndDate is null", new { execution.ExecutionID, scoreType = (int)scoreType }, transaction: trans);
+
+
                             var batchResults = Connection.Query<ExternalScoreResultsApiResultsModel>( 
                                 $@"select E.AssetUid, E.EffectiveDate, E.Success as IsSuccess, 
 E.RunDate, E.[Value] as Score, E.[Message] as ErrorMessage, M.[Value] as measuresJson
@@ -646,33 +674,6 @@ outer apply(
             #endregion
             try
             {
-                //update EndDate of previous scores
-                Connection.Execute(@"
-		        update  M
-		        set     M.EndDate = R.EffectiveDate
-		        from    [metrics].[Score] M
-                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and M.AssetUid = E.AssetUid and E.Success = 1
-		                cross apply (
-			                select top 1 EffectiveDate from metrics.Score R
-			                where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid
-			                and R.EffectiveDate > M.EffectiveDate and R.ScoreType = @scoreType
-			                order by EffectiveDate asc
-		                ) R
-                where   M.EndDate is null and M.ScoreType = @scoreType
-
-		        update  M
-		        set     M.EndDate = R.EffectiveDate
-		        from    [metrics].[ScoreItem] M
-                        inner join api.ExecutionMetric E on E.ExecutionId = @executionID and E.AssetUid = M.AssetUid and E.Success = 1
-                        inner join api.ExecutionMetricMeasure S on S.ExecutionId = @executionID and S.MeasureUid = M.MetricAssetUid
-		                cross apply (
-			                select top 1 EffectiveDate from metrics.ScoreItem R
-			                where R.EffectiveDate <> M.EffectiveDate and R.AssetUid = M.AssetUid and R.MetricAssetUid = M.MetricAssetUid
-			                and R.EffectiveDate > M.EffectiveDate
-			                order by EffectiveDate asc
-		                ) R
-                where   M.EndDate is null", new { execution.ExecutionID, scoreType = (int)scoreType });
-
 
                 execution.Error = results.Count(i => !i.IsSuccess);
                 execution.Processed = results.Count(i => i.IsSuccess);
