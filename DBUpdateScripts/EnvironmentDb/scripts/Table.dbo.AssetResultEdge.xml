@@ -32,4 +32,26 @@ END
 ]]>
 	</rollback>
   </changeSet>
-  </databaseChangeLog>
+
+  <changeSet author="Pappas" id="Table.dbo.AssetResultEdge-v2">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (select * from sys.edge_constraints where name = 'EC_AssetResultEdge')
+BEGIN
+	ALTER TABLE [dbo].[AssetResultEdge] DROP CONSTRAINT [EC_AssetResultEdge]
+END
+ALTER TABLE [dbo].[AssetResultEdge] ADD CONSTRAINT [EC_AssetResultEdge] CONNECTION (graph.[AssetNode] To [AssetResult]) ON DELETE CASCADE
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.edge_constraints where name = 'EC_AssetResultEdge')
+BEGIN
+	ALTER TABLE [dbo].[AssetResultEdge] DROP CONSTRAINT [EC_AssetResultEdge]
+END
+ALTER TABLE [dbo].[AssetResultEdge] ADD CONSTRAINT [EC_AssetResultEdge] CONNECTION (graph.[AssetNode] To [AssetResult])
+]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -838,12 +838,17 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             {
                 case SystemObjects.ArtifactType:
                     #region
+                    bool showParent = true;
+                    var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
+                    if(assetType != null)
+                    {
+                        showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
+                    }
 
                     var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
-
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
-                    if (hasParentType)
+                    if (hasParentType && showParent)
                     {
                         columns.Insert(1, new GridColumn
                         {
@@ -860,7 +865,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    if (hasParentType)
+                    if (hasParentType && showParent)
                     {
                         fields.Add(new GridField { name = "ParentID", type = "number" });
                         fields.Add(new GridField { name = "Parent", type = "string", apiName = "ParentDisplayName" });
@@ -1401,6 +1406,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
             model.Add("Class", assetType.Class);
+            model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);

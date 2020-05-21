@@ -131,6 +131,10 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                 if (this.assetTypeClass == AssetTypeClass.Reference || this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy) {
                     this.showParentPredicates = true;
                 }
+                if ((this.assetTypeClass == AssetTypeClass.BusinessAsset || this.assetTypeClass == AssetTypeClass.TechnicalAsset)
+                    && this.model.AssetType.AutoDisplayParent === null && this.model.AssetType.ParentUid != null) {
+                    this.model.AssetType.AutoDisplayParent = true;
+                }
                 this.isLoading = false;
             });
     }
@@ -181,6 +185,19 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         }
     }
 
+
+    ShowAutoDisplayOption() {
+        if (this.showParentPredicates) {
+            let selectedPredicate = this.model.Predicates.filter(x => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
+            if (selectedPredicate.length == 1) {
+                let onlyAllow = "child type of";
+                let name = selectedPredicate[0].label;
+                if (onlyAllow.toLowerCase() == name.toLowerCase())
+                    return true;
+            }
+        }
+        return false;
+    }
     private selectToken(e: any) {
         if (e == null)
             return;

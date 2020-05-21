@@ -112,7 +112,7 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else if (f.Type == "Path")
                     {
-                        fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                        fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                     }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -137,7 +137,7 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -168,8 +168,7 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
-                            //dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                         }
                         else
                         {
@@ -203,10 +202,10 @@ namespace d360.model.DataAccessLayer.repositories
                     if (relatedField.Type == "Path")
                     {
                         fieldJoins.Add($@"outer apply (
-                            select  STRING_AGG(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-                            from    graph.AssetNode 
+                            select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+                            from    graph.AssetNodeDisplayPath 
 					        where   ID IN ({assetIdFinalQuery})
-                            having  string_agg(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') is not null
+                            having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                     else {
@@ -319,10 +318,6 @@ namespace d360.model.DataAccessLayer.repositories
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
-                }
-                else if (f.Type == "Path")
-                {
-                    // No join required, as this is handled by a function.
                 }
                 else if (f.Type == "Tag")
                 {
@@ -450,7 +445,7 @@ namespace d360.model.DataAccessLayer.repositories
                                         }
                                         else if (field.Type == "Path")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.Path {orderDirection}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
                                         }
                                         else
                                         {
@@ -518,7 +513,7 @@ namespace d360.model.DataAccessLayer.repositories
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         case "Path":
-                                            whereStatements.Add($"Node.Path like '%' + replace(@field{field.ID}, ' > ', '%')");
+                                            whereStatements.Add($"Node.DisplayPath like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         default:
