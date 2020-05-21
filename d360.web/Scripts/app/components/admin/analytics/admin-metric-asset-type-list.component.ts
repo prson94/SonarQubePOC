@@ -70,6 +70,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         formatted.state = x.state;
         formatted.uid = x.uid;
         formatted.hasMeasure = x.hasMeasure;
+        formatted.hasField = x.hasField;
         formatted.isExternallyCalculated = x.isExternallyCalculated ? 'External' : 'Internal';
         formatted.lowerThreshold = x.lowerThreshold;
         formatted.upperThreshold = x.upperThreshold;
@@ -156,5 +157,9 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
         var alloc = this.getAllocationByUid(event.uid);
         var url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.scoreType}`;
         this.router.navigateByUrl(url);
+    }
+
+    get deletePopupTitle(): string {
+        return (this.selection.hasField || this.selection.hasMeasure) ? 'Cannot Delete Scoring Definition' : null;
     }
 };

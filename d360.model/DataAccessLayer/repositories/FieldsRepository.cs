@@ -470,7 +470,19 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Tag' then FT.IsListable else null end as 'Type.Tag.IsListable',
 		        case when FT.Type = 'Tag' then FT.IsPartOfKey else null end as 'Type.Tag.IsPartOfKey',
 		        case when FT.Type = 'Tag' then FT.IsPrimaryFilter else null end as 'Type.Tag.IsPrimaryFilter',
-		        case when FT.Type = 'Tag' then FT.ShowIfEmpty else null end as 'Type.Tag.ShowIfEmpty'
+		        case when FT.Type = 'Tag' then FT.ShowIfEmpty else null end as 'Type.Tag.ShowIfEmpty',
+
+                case when FT.Type = 'Score' then FT.ScoreType else null end as 'Type.Score.ScoreType',
+                case when FT.Type = 'Score' then FT.ColumnOrder else null end as 'Type.Score.ColumnOrder',
+                case when FT.Type = 'Score' then FT.ColumnWidth else null end as 'Type.Score.ColumnWidth',
+                case when FT.Type = 'Score' then FT.SortOrder else null end as 'Type.Score.SortOrder',
+                case when FT.Type = 'Score' then FT.DisplayDescription else null end as 'Type.Score.Description.Display',
+                case when FT.Type = 'Score' then FT.IsDisplayable else null end as 'Type.Score.IsDisplayable',
+                case when FT.Type = 'Score' then FT.IsListable else null end as 'Type.Score.IsListable',
+                case when FT.Type = 'Score' then FT.IsPrimaryFilter else null end as 'Type.Score.IsPrimaryFilter',
+                case when FT.Type = 'Score' then FT.ShowIfEmpty else null end as 'Type.Score.ShowIfEmpty'
+
+
         from	FieldType FT
 				left join AssetType O_A on O_A.ID = FT.AssetTypeID 
 				left join IssueType O_I on FT.Object = 'IssueType' and O_I.ID = FT.ObjectID 
@@ -571,6 +583,48 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.IsPrimaryFilter = f.Type.Boolean.IsPrimaryFilter;
                     newFieldType.ShowIfEmpty = f.Type.Boolean.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Boolean.SortOrder;
+                }
+                else if (f.Type.Score != null)
+                {
+                    if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an action type or relationship type for field {f.Name}.");
+                    }
+
+                    var assetType = Company.Filter<AssetType>(a => a.uid == model.AssetTypeUid).FirstOrDefault();
+
+                    var disallowedClasses = new List<AssetTypeClass>() {
+                        AssetTypeClass.Organization, 
+                        AssetTypeClass.Fusion, 
+                        AssetTypeClass.FusionAttribute, 
+                        AssetTypeClass.FusionQuery, 
+                        AssetTypeClass.User, 
+                        AssetTypeClass.ReferenceItemType, 
+                        AssetTypeClass.AttributeGroup,
+                    };
+
+                    if (disallowedClasses.Contains(assetType.Class))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                    }
+
+                    newFieldType.Type = DataType.Score.ToString();
+                    newFieldType.ScoreType = (int)f.Type.Score.ScoreType;
+                    newFieldType.IsDisplayable = f.Type.Score.IsDisplayable;
+                    newFieldType.IsEditable = false;
+                    newFieldType.IsListable = f.Type.Score.IsListable;
+                    newFieldType.IsPartOfKey = false;
+                    newFieldType.IsPrimaryFilter = f.Type.Score.IsPrimaryFilter;
+                    newFieldType.ShowIfEmpty = f.Type.Score.ShowIfEmpty;
+                    newFieldType.SortOrder = f.Type.Score.SortOrder;
+                    newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
+                    newFieldType.ColumnOrder = f.Type.Score.ColumnOrder.HasValue ? f.Type.Score.ColumnOrder.Value : ++maxColumnIndex;
+                    newFieldType.ColumnWidth = f.Type.Score.ColumnWidth;
+                    if (f.Type.Score.Description != null)
+                    {
+                        newFieldType.DisplayDescription = f.Type.Score.Description.Display;
+                    }
+
                 }
                 else if (f.Type.ComputedFusionLookup != null)
                 {

@@ -47,7 +47,8 @@ namespace d360.core.helpers
                 DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
-                DataType.Path.ToString()
+                DataType.Path.ToString(),
+                DataType.Score.ToString(),
             };
 
             return types;
@@ -63,7 +64,8 @@ namespace d360.core.helpers
                 DataType.OwnershipLookup.ToString(),
                 DataType.Relationship.ToString(),
                 DataType.RefListRelationship.ToString(),
-                DataType.Tag.ToString()
+                DataType.Tag.ToString(),
+                DataType.Score.ToString()
             };
 
             return types;
@@ -80,7 +82,8 @@ namespace d360.core.helpers
                 DataType.Path.ToString(),
                 DataType.Relationship.ToString(),
                 DataType.RefListRelationship.ToString(),
-                DataType.Tag.ToString()
+                DataType.Tag.ToString(),
+                DataType.Score.ToString(),
             };
 
             return types;
@@ -95,7 +98,8 @@ namespace d360.core.helpers
                 DataType.File.ToString(),
                 DataType.OwnershipLookup.ToString(),
                 DataType.RefListRelationship.ToString(),
-                DataType.JsonElement.ToString()
+                DataType.JsonElement.ToString(),
+                DataType.Score.ToString(),
             };
 
             return types;
@@ -123,6 +127,7 @@ namespace d360.core.helpers
             types.Add(DataType.Password.ToString());
             types.Add(DataType.Relationship.ToString());
             types.Add(DataType.Tag.ToString());
+            types.Add(DataType.Score.ToString());
             return types;
         }
 

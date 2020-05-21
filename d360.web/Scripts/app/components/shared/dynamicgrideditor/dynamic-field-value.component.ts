@@ -28,22 +28,32 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
+
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
+
+
+        let colKey: string = null;
         if (this.useApiName && this.item && this.column && this.column.datafield) {
             var field = this.fields.filter(x => x.name.toLowerCase() == this.column.datafield.toLowerCase())[0];
             if (field && field.apiName) {
-                this.fieldValue = this.item[field.apiName];
+                colKey = field.apiName;
             }
             else {
-                this.fieldValue = this.item[this.column.datafield];
+                colKey = this.column.datafield;
             }
 
         }
         else if (this.item && this.column && this.column.datafield) {
-            this.fieldValue = this.item[this.column.datafield];
+            colKey = this.column.datafield;
         }
+
+        if (colKey) {
+            this.fieldValue = this.item[colKey];
+        }
+
+
 
         if ((this.fieldType == 'bool') && (typeof this.fieldValue === 'boolean')) {
             this.fieldValue = this.fieldValue ? "True" : "False"; // fix for bools as bools.        
@@ -63,6 +73,11 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
                 var href = (this.fieldValue as string).substring(delimiterIdx + 1);
                 this.fieldValue = `<a href="${href}" target="_blank">${name}</a>`;
             }
+        }
+
+        if (this.column['fieldType'] == 'Score' && this.fieldValue) {
+            let thresholdKey = colKey + '_threshold';
+            this.fieldValue = `<div class="score-pill-small score-${this.item[thresholdKey]}"></div><span>${this.fieldValue}</span>`;
         }
 
     }

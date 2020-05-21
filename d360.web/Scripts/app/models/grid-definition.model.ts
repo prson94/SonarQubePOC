@@ -136,6 +136,14 @@ export class GridDefinition {
     Type: string;
     TopLevelFilterColumns: GridFilterColumn[];
     IsReadOnly: boolean;
+    ScoreAllocations: GridScoreAllocation[];
+}
+
+export class GridScoreAllocation {
+    Name: string;
+    LowerThreshold: number;
+    UpperThreshold: number;
+    ScoreType: number;
 }
 
 
