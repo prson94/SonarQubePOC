@@ -363,7 +363,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetsByPathAsync(AssetsByPathApiRequestModel model)
         {
-            var prefix = "Assets.GetAssetsByPathAsync => "; 
+            var prefix = "Assets.GetAssetsByPathAsync => ";
 
             try
             {
@@ -470,7 +470,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
@@ -1074,7 +1074,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{assetUid:Guid}/fields/{fieldApiName}"),
-            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<dynamic>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
@@ -1085,7 +1086,7 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<HttpResponseMessage> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
+        public async Task<IHttpActionResult> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
         {
             var prefix = "Assets.GetComplexFieldValueForAsset => ";
             var errorMessage = "";
@@ -1101,13 +1102,13 @@ namespace d360.web.Controllers.V2
 
                 if (asset == null)
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"Asset with UID '{assetUid}' not found!");
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with UID '{assetUid}' not found!"));
                 }
 
                 var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == asset.AssetTypeID && x.Name.ToLower().Trim() == fieldApiName.ToLower().Trim()).FirstOrDefault();
                 if (fieldType == null)
                 {
-                    return ReturnApiError(HttpStatusCode.NotFound, $"Field Type '{fieldApiName}' not found for asset.");
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Field Type '{fieldApiName}' not found for asset."));
                 }
 
 
@@ -1121,7 +1122,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "usefriendlynames").Value.Trim().ToLower(), out useFriendlyNames))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'useFriendlyNames'");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useFriendlyNames'"));
                     }
                 }
 
@@ -1129,7 +1130,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useunflattedstructure").Value.Trim().ToLower(), out useUnflattedStructure))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'useUnflattedStructure'");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useUnflattedStructure'"));
                     }
                 }
 
@@ -1137,7 +1138,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid boolean value for parameter 'forUI'");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'forUI'"));
                     }
                 }
 
@@ -1145,7 +1146,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value.Trim().ToLower(), out pageNum))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid integer value for parameter '_pageNum'");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid integer value for parameter '_pageNum'"));
                     }
                 }
 
@@ -1153,7 +1154,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value.Trim().ToLower(), out pageSize))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid integer value for parameter '_pageSize'");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid integer value for parameter '_pageSize'"));
                     }
                 }
 
@@ -1173,10 +1174,16 @@ namespace d360.web.Controllers.V2
 
                     if (!new string[] { "desc", "asc" }.Contains(direction))
                     {
-                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'.");
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'."));
                     }
                 }
 
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                if (isStreamResponse)
+                {
+                    pageNum = 1;
+                    pageSize = 10000;
+                }
 
                 if (!string.IsNullOrEmpty(orderBy))
                 {
@@ -1187,9 +1194,9 @@ namespace d360.web.Controllers.V2
                             "ResourceItemUrl","SecurityAssetName","Context","ResourceUid","ResponsibilityTypeName","ResourceName","SecurityAssetUid"
                         };
 
-                        if(!allowedOrderFields.Select(x=> x.ToLower()).Contains(orderBy.ToLower().Trim()))
+                        if (!allowedOrderFields.Select(x => x.ToLower()).Contains(orderBy.ToLower().Trim()))
                         {
-                            return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid field value for parameter '_order'.");
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid field value for parameter '_order'."));
                         }
                     }
 
@@ -1211,7 +1218,7 @@ namespace d360.web.Controllers.V2
                             }
 
                             if (!mappings.ContainsKey(orderBy))
-                                return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid field value for parameter '_order'.");
+                                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid field value for parameter '_order'."));
                         }
                     }
                 }
@@ -1237,7 +1244,7 @@ namespace d360.web.Controllers.V2
                 var Fields = reader.Read<GridField>().ToList();
                 var Values = reader.Read<dynamic>().ToList();
 
-                if (returnForUI)
+                if (returnForUI || isStreamResponse)
                 {
                     useFriendlyNames = useUnflattedStructure = false;
                 }
@@ -1279,20 +1286,95 @@ namespace d360.web.Controllers.V2
                      }
                      ).First();
 
-                result.Add("pageSize", pageSize);
-                result.Add("pageNum", pageNum);
-                result.Add("total", count);
-
-
-                result.Add("items", Values);
-
-                if (returnForUI)
+                if (isStreamResponse)
                 {
-                    result.Add("Columns", Columns);
-                    result.Add("Fields", Fields);
+                    string fileName = "Items";
+
+                    if (fieldType != null)
+                    {
+                        fileName = fieldType.FriendlyName.GetSafeFilename();
+                        fileName += " List";
+                    }
+
+                    if (fieldType.Type == "RefListRelationship")
+                    {
+                        var type = asset.Object;
+                        var id = asset.ObjectID;
+                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+                        if (intersect != null)
+                        {
+                            var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
+                            var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+                            if (assetType != null)
+                            {
+                                fileName = assetType.Name.GetSafeFilename();
+                                fileName += " List";
+                            }
+                        }
+                    }
+
+                    var document = new SLDocument();
+                    document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
+
+                    int colIndex = 1;
+                    for (int i = 0; i < Columns.Count; i++)
+                    {
+                        var colField = Columns[i].datafield;
+                        var dataType = "string";
+
+                        for (int k = 0; k < Fields.Count; k++)
+                        {
+                            var field = Fields[k];
+                            if (field.name == colField)
+                            {
+                                dataType = field.type;
+                                break;
+                            }
+
+                        }
+
+                        document.SetCellValue(1, colIndex, Columns[i].text);
+
+                        int rowIndex = 2;
+
+                        for (int j = 0; j < Values.Count; j++)
+                        {
+                            var data = Values[j] as IDictionary<string,object>;
+                            var value = data[colField];
+    
+                            SetCellValue(document, rowIndex, colIndex, dataType, value);
+
+                            rowIndex++;
+                        }
+                        colIndex++;
+                    }
+
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+
+                    var response = createFileResponseMessage(HttpStatusCode.OK, $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                }
+                else
+                {
+
+                    result.Add("pageSize", pageSize);
+                    result.Add("pageNum", pageNum);
+                    result.Add("total", count);
+
+
+                    result.Add("items", Values);
+
+                    if (returnForUI)
+                    {
+                        result.Add("Columns", Columns);
+                        result.Add("Fields", Fields);
+                    }
+                    var response = Request.CreateResponse(HttpStatusCode.OK, result);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, result);
             }
             catch (Exception ex)
             {
@@ -1300,8 +1382,7 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix }
                 });
-
-                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknow error."));
             }
         }
 
