@@ -893,6 +893,7 @@ namespace d360.web.Controllers.V2
                 if (asset == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist."));
 
+
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
                 if (responsibility == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
@@ -934,7 +935,7 @@ namespace d360.web.Controllers.V2
                 {
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with uid '{uid}' does not exist."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist."));
                 }
 
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
@@ -985,7 +986,7 @@ namespace d360.web.Controllers.V2
                 if (responsibility == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
+                if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
 
@@ -1022,7 +1023,7 @@ namespace d360.web.Controllers.V2
                 {
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with uid '{uid}' does not exist."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist."));
                 }
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
