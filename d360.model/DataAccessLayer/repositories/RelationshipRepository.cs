@@ -108,6 +108,7 @@ namespace d360.model.DataAccessLayer
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
+            bool returnDisplayNames = false;
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
 
@@ -205,6 +206,15 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
                 }
 
+                if (queryParamsList.Any(q => q.Key.ToLower() == "usedisplaynames"))
+                {
+                    var useDisplayNames = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "usedisplaynames").Value;
+                    if (bool.TryParse(useDisplayNames, out returnDisplayNames))
+                    {
+                        returnDisplayNames = true;
+                    }
+                }
+
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
                 {                    
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
@@ -276,8 +286,10 @@ end = @f{fieldType.ID}Value";
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
-
-            var sql = $@"
+            string sql = "";
+            if (!returnDisplayNames)
+            {
+                sql = $@"
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
@@ -305,6 +317,33 @@ select	@pageSize as 'pageSize',
 		for json path,INCLUDE_NULL_VALUES
 		) as 'items'
 for json path, WITHOUT_ARRAY_WRAPPER";
+            }
+            else
+            {
+                sql = $@"
+declare @total int
+{(includeTotal ? countFullSql : "")}
+
+select	@pageSize as 'pageSize',
+		@pageNum as 'pageNum',
+		@total as 'total',
+		(
+		select
+                lower(ST1.Name) as 'Subject',
+                ST1.Class as 'SubjectClass',
+                P.Name as 'Predicate',
+				lower(OT1.Name) as 'Object',
+                OT1.Class as 'ObjectClass',
+				lower(T.Uid) as RelationshipTypeUid				
+		{baseTableSql}
+        {string.Join("\n", fieldJoins)}
+        {whereClause} 
+        order by I.IntersectTypeID
+		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
+		for json path,INCLUDE_NULL_VALUES
+		) as 'items'
+for json path, WITHOUT_ARRAY_WRAPPER";
+            }
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
 
@@ -685,15 +724,29 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            var results = await GetRelationships(queryParams);
+            var dict = new Dictionary<string, string>();
+            foreach (KeyValuePair<string, string> kvp in queryParams)
+            {
+                dict.Add(kvp.Key, kvp.Value);
+            }
+            dict.Add("useDisplayNames", "true");
+            var results = await GetRelationships(dict);
 
             var apiInfo = results.Children().ToList();
-            var rowData = apiInfo[3].ToList().Children().ToList();
 
             var document = new SLDocument();
             const string relationshipSheetName = "Relationships";
             const string apiSheetName = "Api Info";
 
+            var fields = new List<FieldType>();
+
+            //add default fields
+            fields.Add(new FieldType { Type = "string", Name = "Subject", FriendlyName = "Subject" });
+            fields.Add(new FieldType { Type = "string", Name = "SubjectClass", FriendlyName = "Subject Class" });
+            fields.Add(new FieldType { Type = "date", Name = "Predicate", FriendlyName = "Predicate" });
+            fields.Add(new FieldType { Type = "date", Name = "Object", FriendlyName = "Object" });
+            fields.Add(new FieldType { Type = "string", Name = "ObjectClass", FriendlyName = "Object Class" });
+            fields.Add(new FieldType { Type = "number", Name = "RelationshipTypeUid", FriendlyName = "Relationship Type UID" });
 
             #region Populate Excel Document
 
@@ -713,15 +766,36 @@ from	IntersectType I
             document.SelectWorksheet(relationshipSheetName);
 
             int index = 1;
+
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            var count = apiInfo.ToList().Children().Count();
+            if (count < 4)
+            {
+                return document;
+            }
+
+            var rowData = apiInfo[3].ToList().Children().ToList();
+            
             int rowNumber = 1;
             foreach (var row in rowData)
             {
-                foreach (var r in row)
+                index = 1;
+                rowNumber++;
+                var r = row.ToList();
+
+                foreach (var field in fields)
                 {
-                    rowNumber++;
-                    document.SetCellValue(rowNumber, index, (string)r.First);
+                    var token = row[field.Name];
+                    string value = "";
+                    if (token != null)
+                        value = token.Value<string>();
+                    document.SetCellValue(rowNumber, index, value);
+                    index++;
                 }
-                index++;
             }
 
             #endregion
