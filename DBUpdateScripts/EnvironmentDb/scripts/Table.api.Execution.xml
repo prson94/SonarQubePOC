@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Table.api.Execution-v3">
+  <changeSet author="MDonato" id="Table.api.Execution-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -45,10 +45,10 @@ IF NOT EXISTS (
   SELECT * 
   FROM   sys.columns 
   WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'QueuedForProcessing'
+         AND name = 'MarkedForProcessing'
 )
 BEGIN
-    ALTER TABLE [api].[Execution] ADD [QueuedForProcessing] bit NOT NULL CONSTRAINT [DF_Execution_QueuedForProcessing]  DEFAULT ((0))
+    ALTER TABLE [api].[Execution] ADD [MarkedForProcessing] bit NOT NULL CONSTRAINT [DF_Execution_MarkedForProcessing]  DEFAULT ((0))
 END
 
 		]]>
@@ -70,11 +70,11 @@ IF EXISTS (
   SELECT * 
   FROM   sys.columns 
   WHERE  object_id = OBJECT_ID(N'[api].[Execution]') 
-         AND name = 'QueuedForProcessing'
+         AND name = 'MarkedForProcessing'
 )
 BEGIN
-	ALTER TABLE [api].[Execution] DROP CONSTRAINT [DF_Execution_QueuedForProcessing]
-	ALTER TABLE [api].[Execution] DROP COLUMN [QueuedForProcessing]
+	ALTER TABLE [api].[Execution] DROP CONSTRAINT [DF_Execution_MarkedForProcessing]
+	ALTER TABLE [api].[Execution] DROP COLUMN [MarkedForProcessing]
 END
 		]]>
 	</rollback>
