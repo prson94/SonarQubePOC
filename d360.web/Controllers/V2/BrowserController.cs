@@ -389,12 +389,7 @@ select	A.TypeName,
 		A.Uid,
         A.AssetTypeClass,
 		A.DisplayValue,
-		(
-			select	string_agg(doc.c.value('.', 'nvarchar(250)'), ' > ')
-			from	graph.AssetNode AN
-					cross apply AN.Segments.nodes('/path/segment') doc(c)
-			where	AN.ID = A.ID
-		) as [Path],
+		P.DisplayPath as [Path],
 		dbo.GenerateAssetUrl(A.ID) as Url,
 		(
 			select  *
@@ -466,6 +461,7 @@ select	A.TypeName,
 			for json path
 		) as Owners
 from	AssetDetail A
+        inner join graph.AssetNodeDisplayPath P on P.ID = A.ID
 where	A.Uid = @uid
 for json path, WITHOUT_ARRAY_WRAPPER";
 

@@ -5,12 +5,29 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.GetPathByAssetId-v1">
+  <changeSet author="Pappas" id="Function.graph.GetPathByAssetId-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter function [graph].[GetPathByAssetId]
+(
+	@id bigint,
+	@levelDelimiter nvarchar(50),
+	@keyDelimiter nvarchar(50)
+)
+returns nvarchar(850)
+as
+begin
+	declare @segments xml
+	select @segments = Segments from graph.AssetNode where ID = @id;
+	return graph.GetPath(@segments, @levelDelimiter, @keyDelimiter)
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter function [graph].[GetPathByAssetId]
 (
 	@id bigint,
@@ -40,11 +57,6 @@ begin
 
 	return @path
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop function if exists graph.GetPathByAssetId
 		]]>
 	</rollback>
   </changeSet>

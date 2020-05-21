@@ -87,6 +87,17 @@
                         </div>
                     </ng-container>
                     <d3s-asset-type-editor-use-as-transformation [assetTypeId]="id" *ngIf="lineageVersion == 3" [(UseAsTransformation)]="model.AssetType.UseAsTransformation"></d3s-asset-type-editor-use-as-transformation>
+                    <ng-container *ngIf="ShowAutoDisplayOption()">
+                        <div class="FieldName">Auto Display Owner/Parent?</div>
+                        <div class="row">
+                            <div class="col l1 m2 s12">
+                                <input pCheckbox type="checkbox" name="AutoDisplayParent" [(ngModel)]="model.AssetType.AutoDisplayParent" />
+                            </div>
+                            <div class="col l11 m10 s12">
+                                <div class="FieldInstructions">If enabled, the Owner/Parent asset type display format will be included on the list page for this asset type if the asset type has a Predicate to Parent of "child type of".</div>
+                            </div>
+                        </div>
+                    </ng-container>
                 </simple-accordion>
                 <simple-accordion header="Settings" active="true" *ngIf="showAssetDepthSettings">
                     <div class="FieldName">Maximum Depth</div>

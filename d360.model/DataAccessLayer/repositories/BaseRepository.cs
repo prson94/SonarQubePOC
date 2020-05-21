@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer.repositories
     {
         ICompanyContext CompanyContext;
         const string RELATIONSHIP_DELIMITER = "|";
-    public BaseRepository(ICompanyContext ctx)
+        public BaseRepository(ICompanyContext ctx)
         {
             this.CompanyContext = ctx;
         }
@@ -115,7 +115,7 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else if (f.Type == "Path")
                     {
-                        fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                        fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                     }
                     else if (f.Type == "Score")
                     {
@@ -131,7 +131,9 @@ namespace d360.model.DataAccessLayer.repositories
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            {
+                                fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            }
                             else
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                         }
@@ -142,7 +144,7 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                         }
                         else if (f.Type == "Score")
                         {
@@ -177,7 +179,7 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                         }
                         else if (f.Type == "Score")
                         {
@@ -215,10 +217,10 @@ namespace d360.model.DataAccessLayer.repositories
                     if (relatedField.Type == "Path")
                     {
                         fieldJoins.Add($@"outer apply (
-                            select  STRING_AGG(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-                            from    graph.AssetNode 
+                            select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+                            from    graph.AssetNodeDisplayPath 
 					        where   ID IN ({assetIdFinalQuery})
-                            having  string_agg(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') is not null
+                            having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                     else {
@@ -331,10 +333,6 @@ namespace d360.model.DataAccessLayer.repositories
                         {joinPrefix} join FieldJsonProperty FJP{f.ID} on FJP{f.ID}.FieldID = {tableAlias}.ID and FJP{f.ID}.[Path] = @jsonPath{f.ID}
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
-                }
-                else if (f.Type == "Path")
-                {
-                    // No join required, as this is handled by a function.
                 }
                 else if (f.Type == "Score")
                 {
@@ -466,7 +464,7 @@ namespace d360.model.DataAccessLayer.repositories
                                         }
                                         else if (field.Type == "Path")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.Path {orderDirection}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
                                         }
                                         else if (field.Type == "Score")
                                         {
@@ -538,7 +536,7 @@ namespace d360.model.DataAccessLayer.repositories
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         case "Path":
-                                            whereStatements.Add($"Node.Path like '%' + replace(@field{field.ID}, ' > ', '%')");
+                                            whereStatements.Add($"Node.DisplayPath like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         default:
@@ -673,6 +671,14 @@ namespace d360.model.DataAccessLayer.repositories
                         style.FormatCode = "m/d/yyyy";
                         document.SetCellStyle(rowIndex, colIndex, style);
                     }
+                    break;
+                case "HTML":
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
                     break;
                 default:
                     if (valueString.StartsWith("="))

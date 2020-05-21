@@ -20,7 +20,7 @@ namespace d360.model.DataAccessLayer
         internal IStorageProvider StorageProvider;
         public FieldsRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
         {
-            this.Company= companyContext;
+            this.Company = companyContext;
             this.QueueSource = queueSource;
             this.StorageProvider = storageProvider;
         }
@@ -44,7 +44,7 @@ namespace d360.model.DataAccessLayer
             string obj = null;
             int? objID = null;
 
-            WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK,"","");
+            WorkHttpStatus workHttpStatus = new WorkHttpStatus(HttpStatusCode.OK, "", "");
             if (parameters.Any(q => q.Key.ToLower() == "actiontypeuid"))
             {
                 var actionTypeUidString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "actiontypeuid").Value;
@@ -215,6 +215,7 @@ select	@pageSize as 'pageSize',
 		        case when FT.Type = 'Boolean' then FT.IsPartOfKey else null end as 'Type.Boolean.IsPartOfKey',
 		        case when FT.Type = 'Boolean' then FT.IsPrimaryFilter else null end as 'Type.Boolean.IsPrimaryFilter', 
                 case when FT.Type = 'Boolean' then FT.ShowIfEmpty else null end as 'Type.Boolean.ShowIfEmpty', 
+                case when FT.Type = 'Boolean' then FT.IsRequired else null end as 'Type.Boolean.Validation.IsRequired', 
 
 		        case when FT.Type = 'FusionLookup' then FT.ColumnOrder else null end as 'Type.ComputedFusionLookup.ColumnOrder',
 
@@ -526,7 +527,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
             var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
-            
+
             var newFieldTypes = new List<FieldType>();
 
             var fieldTypeNamesToDelete = new List<string>();
@@ -539,7 +540,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             foreach (var f in model.Fields)
             {
-                if (reservedWords.Contains(f.Name.ToLower())) 
+                if (reservedWords.Contains(f.Name.ToLower()))
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use {f.Name} as the Name of your field because it is a reserved word.");
                 }
@@ -560,12 +561,21 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                     newFieldType.Type = DataType.Boolean.ToString();
                     newFieldType.ColumnOrder = f.Type.Boolean.ColumnOrder.HasValue ? f.Type.Boolean.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Boolean.ColumnWidth;
-                    if (f.Type.Boolean.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Boolean.DefaultValue.Value.ToString().ToLower();
+                    if (f.Type.Boolean.DefaultValue.HasValue)
+                    {
+                        newFieldType.DefaultValue = f.Type.Boolean.DefaultValue.Value.ToString().ToLower();
+                        newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+                    }
                     if (f.Type.Boolean.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Boolean.Description.Display;
                         newFieldType.FormDescription = f.Type.Boolean.Description.Form;
                     }
+                    if (f.Type.Boolean.Validation != null)
+                    {
+                        newFieldType.IsRequired = f.Type.Boolean.Validation.IsRequired;
+                    }
+                    
                     newFieldType.IsDisplayable = f.Type.Boolean.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Boolean.IsEditable;
                     newFieldType.IsListable = f.Type.Boolean.IsListable;
@@ -714,8 +724,8 @@ from	IntersectType I
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Relationship Lookup type on an action type or relationship type for field {f.Name}.");
                     }
 
-                    if (f.Type.ComputedRelationshipLookup.Definition == null 
-                        || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any() 
+                    if (f.Type.ComputedRelationshipLookup.Definition == null
+                        || !f.Type.ComputedRelationshipLookup.Definition.Fields.Any()
                         || !f.Type.ComputedRelationshipLookup.Definition.Relations.Any())
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You must provide a definition for the computed relationship lookup field {f.Name}.");
@@ -735,14 +745,14 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "TextPath", 0 } };
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "AssetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
                     {
                         var relation = new FieldTypeComplexLookupDefinitionRelation();
                         var relationInfo = Company.Query<dynamic>(
-                            "select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid", 
+                            "select T.ID as IntersectTypeID, A.Object, A.ObjectID from IntersectType T left join AssetType A on A.uid = @uid where T.uid = @intersectUid",
                             new { uid = i.AssetTypeUid, intersectUid = i.IntersectTypeUid }
                         ).SingleOrDefault();
 
@@ -770,12 +780,12 @@ from	IntersectType I
                            )
                         .ToList()
                         .Select(r => new
-                           {
-                               r.ID,
-                               Name = (r.Subject == relationObject && r.SubjectID == relationObjectId)
+                        {
+                            r.ID,
+                            Name = (r.Subject == relationObject && r.SubjectID == relationObjectId)
                                ? $"{r.ObjectName} ({r.PredicateName})"
                                : $"{r.SubjectName} ({r.PredicateName})"
-                           })
+                        })
                         .Distinct()
                         .ToList();
 
@@ -797,7 +807,7 @@ from	IntersectType I
 
                     f.Type.ComputedRelationshipLookup.Definition.Fields.ForEach(i =>
                     {
-                        
+
                         bool bypassFieldValidation = false;
                         var field = new FieldTypeComplexLookupDefinitionField();
                         var isRelatedItem = i.FieldTypeName.StartsWith("Related Item.");
@@ -807,7 +817,7 @@ from	IntersectType I
                             select coalesce(F.ID, 0) as FieldTypeID, T.Class
                             from   AssetType T 
                                    left join FieldType F on F.AssetTypeID = T.ID and F.Name = @FieldTypeName 
-                            where  T.uid = @AssetTypeUid", 
+                            where  T.uid = @AssetTypeUid",
                             new { i.FieldTypeName, i.AssetTypeUid }).SingleOrDefault();
 
                         if (isFieldFromRelationship)
@@ -913,7 +923,12 @@ from	IntersectType I
                     newFieldType.Type = DataType.Date.ToString();
                     newFieldType.ColumnOrder = f.Type.Date.ColumnOrder.HasValue ? f.Type.Date.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Date.ColumnWidth;
-                    if (f.Type.Date.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Date.DefaultValue.Value.ToString();
+                    if (f.Type.Date.DefaultValue.HasValue)
+                    {
+                        newFieldType.DefaultValue = f.Type.Date.DefaultValue.Value.ToString("M/d/yyyy");
+                        newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+
+                    }
                     if (f.Type.Date.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Date.Description.Display;
@@ -959,7 +974,11 @@ from	IntersectType I
                     newFieldType.Type = DataType.Decimal.ToString();
                     newFieldType.ColumnOrder = f.Type.Decimal.ColumnOrder.HasValue ? f.Type.Decimal.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Decimal.ColumnWidth;
-                    if (f.Type.Decimal.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
+                    if (f.Type.Decimal.DefaultValue.HasValue)
+                    {
+                        newFieldType.DefaultValue = f.Type.Decimal.DefaultValue.Value.ToString();
+                        newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+                    }
                     if (f.Type.Decimal.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Decimal.Description.Display;
@@ -986,7 +1005,10 @@ from	IntersectType I
                     newFieldType.Type = DataType.Html.ToString();
                     newFieldType.ColumnOrder = f.Type.Html.ColumnOrder.HasValue ? f.Type.Html.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Html.ColumnWidth;
+
                     newFieldType.DefaultValue = f.Type.Html.DefaultValue;
+                    newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+
                     if (f.Type.Html.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Html.Description.Display;
@@ -1040,7 +1062,7 @@ from	IntersectType I
                     newFieldType.IsDisplayable = f.Type.JsonElement.IsDisplayable;
                     newFieldType.ShowIfEmpty = f.Type.JsonElement.ShowIfEmpty;
                     newFieldType.IsListable = f.Type.JsonElement.IsListable;
-                    if(f.Type.JsonElement.JsonAttribute != null)
+                    if (f.Type.JsonElement.JsonAttribute != null)
                     {
                         int FieldTypeID = Company.FieldTypes.FirstOrDefault(ft => ft.Object == newFieldType.Object && ft.ObjectID == newFieldType.ObjectID && ft.Name == f.Type.JsonElement.JsonAttribute.FieldName).ID;
                         var obj = new { FieldTypeID, f.Type.JsonElement.JsonAttribute.Path, f.Type.JsonElement.JsonAttribute.DataType };
@@ -1207,7 +1229,11 @@ from	IntersectType I
                     newFieldType.Type = DataType.Number.ToString();
                     newFieldType.ColumnOrder = f.Type.Number.ColumnOrder.HasValue ? f.Type.Number.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Number.ColumnWidth;
-                    if (f.Type.Number.DefaultValue.HasValue) newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
+                    if (f.Type.Number.DefaultValue.HasValue)
+                    {
+                        newFieldType.DefaultValue = f.Type.Number.DefaultValue.Value.ToString();
+                        newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
+                    }
                     if (f.Type.Number.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Number.Description.Display;
@@ -1273,6 +1299,7 @@ from	IntersectType I
                     newFieldType.ColumnOrder = f.Type.Text.ColumnOrder.HasValue ? f.Type.Text.ColumnOrder.Value : ++maxColumnIndex;
                     newFieldType.ColumnWidth = f.Type.Text.ColumnWidth;
                     newFieldType.DefaultValue = f.Type.Text.DefaultValue;
+                    newFieldType.DefaultFormattedValue = newFieldType.DefaultValue;
                     if (f.Type.Text.Description != null)
                     {
                         newFieldType.DisplayDescription = f.Type.Text.Description.Display;
@@ -1397,10 +1424,32 @@ from	IntersectType I
 
             };
 
-            if(model.RelationshipTypeUid != null)
+            if (model.RelationshipTypeUid != null)
             {
                 newFieldTypes.ForEach(x => x.IsPartOfKey = false);
             }
+
+            if (model.ActionTypeUid.HasValue)
+            {
+                var action = Company.IssueTypes.FirstOrDefault(x => x.uid == model.ActionTypeUid.Value);
+                action.UpdatedBy = Company.CurrentResourceID;
+                action.UpdatedOn = DateTime.UtcNow;
+
+            }
+            if (model.RelationshipTypeUid.HasValue)
+            {
+                var intersectType = Company.IntersectTypes.FirstOrDefault(x => x.uid == model.RelationshipTypeUid.Value);
+                intersectType.UpdatedBy = Company.CurrentResourceID;
+                intersectType.UpdatedOn = DateTime.UtcNow;
+
+            }
+            if (model.AssetTypeUid.HasValue)
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid.Value);
+                assetType.UpdatedBy = Company.CurrentResourceID;
+                assetType.UpdatedOn = DateTime.UtcNow;
+            }
+            Company.SaveChangesWithoutEventing();
 
             if (model.Action == FieldTypesApiEditAction.Merge)
             {
@@ -1415,6 +1464,7 @@ from	IntersectType I
                 Company.Query<int>("delete FieldType where Object = @t and ObjectID = @tid", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID }).FirstOrDefault();
                 Company.FieldTypes.AddRange(newFieldTypes);
             }
+
             Company.SaveChanges();
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -1461,12 +1511,12 @@ from	IntersectType I
             return Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
         }
 
-        public IEnumerable<string> GetCustomFields(SystemObjects objectType,  int objectId)
+        public IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId)
         {
             return Company.Query<string>(
                 @"select distinct  f.FriendlyName   as Name from fieldtype f  
 				inner join field f2 on f2.fieldtypeid = f.id 
-				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId});
+				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId });
         }
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
         {

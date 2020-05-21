@@ -237,6 +237,8 @@ namespace d360.core.entities
         public bool? DefaultValue { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_DisplayForm Description { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
     }
 
     public class FieldTypeDataTypeComputedFusionLookupApiViewModel

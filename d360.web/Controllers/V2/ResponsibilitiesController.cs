@@ -869,7 +869,7 @@ namespace d360.web.Controllers.V2
         /// Adds responsibility override to asset for a given Resource Uid list.
         /// </summary>
         /// <param name="assetUid">Uid of an Asset.</param>
-        /// <param name="responsibilityUid">UID of Responisibility type.</param>
+        /// <param name="responsibilityUid">Uid of Responsibility type.</param>
         /// <param name="model">An object containing list of Resource/Group Uids and description (context).</param>
         /// <returns>An HTTP status code and message.</returns>
         [
@@ -892,6 +892,7 @@ namespace d360.web.Controllers.V2
                 var asset = AssetRepository.GetAssetByUID(assetUid);
                 if (asset == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with UID '{assetUid}' does not exist."));
+
 
                 var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityUid);
                 if (responsibility == null)
@@ -934,7 +935,7 @@ namespace d360.web.Controllers.V2
                 {
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with uid '{uid}' does not exist."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist."));
                 }
 
                 ResponsibilityRepository.InsertResponsibilityOverrides(responsibility, asset, securityAssets, model.Description);
@@ -956,8 +957,8 @@ namespace d360.web.Controllers.V2
         /// Deletes responsibility overrides from asset for a given Resource Uid list.
         /// </summary>
         /// <param name="assetUid">Uid of an Asset.</param>
-        /// <param name="responsibilityUid">Uid of Responisibility type.</param>
-        /// <param name="resourceUids">A object which contains list of Resources or Groupd.</param>
+        /// <param name="responsibilityUid">Uid of Responsibility type.</param>
+        /// <param name="resourceUids">An object which contains list of Resource/Group Uids.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpDelete,
@@ -985,7 +986,7 @@ namespace d360.web.Controllers.V2
                 if (responsibility == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility with UID '{responsibilityUid}' does not exist."));
 
-                if (!Company.HasAssetPermission(asset.ID, Permission.ModifyResponsibilities))
+                if (!Company.HasAssetPermission(asset.ID, Permission.DeleteResponsibilities))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
 
@@ -1022,7 +1023,7 @@ namespace d360.web.Controllers.V2
                 {
                     var sas = securityAssets.FirstOrDefault(x => x.uid == uid);
                     if (sas == null)
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Asset with uid '{uid}' does not exist."));
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Resource/Group with uid '{uid}' does not exist."));
                 }
 
                 ResponsibilityRepository.DeleteResponsibilityOverrides(responsibility, asset, securityAssets);
