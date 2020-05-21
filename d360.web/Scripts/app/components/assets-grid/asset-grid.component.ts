@@ -154,8 +154,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     load() {
         this
             .loadPermissions(this.permissionsService, this.gridObject.ObjectType, this.gridObject.ID)
-            .then(() => this.changeDetectorRef.markForCheck())
-            ;
+            .then(() => this.changeDetectorRef.markForCheck());
 
         this.getFieldsDefinition();
 
@@ -213,6 +212,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     this.hasNoListableColumns = false;
                 }
                 this.isDefinitionLoaded = true;
+                this.getData();
                 this.changeDetectorRef.markForCheck();
             }
         );
