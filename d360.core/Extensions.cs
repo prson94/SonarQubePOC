@@ -117,7 +117,7 @@ namespace d360.core
         {
             return b ? Values.BooleanTrue : Values.BooleanFalse;
         }
-        
+
         /// <summary>
         /// Parses a string made up of one or more field tokens.
         /// </summary>
@@ -181,6 +181,15 @@ namespace d360.core
                 sb.Append(b.ToString("X2"));
 
             return sb.ToString();
+        }
+
+        public static string CleanForFileName(this string str)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                str = str.Replace(c.ToString(), "");
+            }
+            return str;
         }
     }
 
