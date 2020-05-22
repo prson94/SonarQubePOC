@@ -1335,6 +1335,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Tag.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.ShowIfEmpty = true;
+                    newFieldType.SortOrder = f.Type.Tag.SortOrder;
                     newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
                 }
                 else
