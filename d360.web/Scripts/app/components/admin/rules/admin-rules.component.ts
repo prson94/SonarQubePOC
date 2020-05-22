@@ -163,8 +163,8 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
                 this.showMessageForResult(this.messagesService, result);
                 this.showDelete = false;
                 if (result.type != 'error') {
-                    this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
                     this.ruleTypes = this.ruleTypes.filter(x => x.ID != id);
+                    this.selected = this.ruleTypes.length > 0 ? this.ruleTypes[0] : null;
                 }
                 this.stateService.reloadLeftNavMenu();
             });
