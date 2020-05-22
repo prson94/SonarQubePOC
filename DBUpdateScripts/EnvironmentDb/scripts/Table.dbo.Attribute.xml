@@ -56,12 +56,17 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Attribute-Attribute_AfterDelete-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.Attribute-Attribute_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+	DROP TRIGGER IF EXISTS [dbo].[Attribute_AfterDelete]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Attribute_AfterDelete]
    ON  [dbo].[Attribute] 
    AFTER DELETE
@@ -69,20 +74,20 @@ AS
 	SET NOCOUNT ON
 	delete Asset where Object = 'Attribute' and ObjectID in (select ID from deleted);
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Attribute-Attribute_AfterInsert-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.Attribute-Attribute_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[Attribute_AfterInsert]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Attribute_AfterInsert]
    ON  [dbo].[Attribute] 
    AFTER INSERT
@@ -92,20 +97,20 @@ AS
 		SELECT	T.ID, 1, 'Attribute', O.ID, O.[UpdatedOn], O.[UpdatedBy], O.[UpdatedOn], O.[UpdatedBy]
 		FROM	inserted O inner join  AssetType T on T.Object = 'AttributeType' and T.ObjectID = O.AttributeTypeID;
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
   
-  <changeSet author="Core" id="Table.dbo.Attribute-Attribute_AfterUpdate-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.Attribute-Attribute_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[Attribute_AfterUpdate]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[Attribute_AfterUpdate]
    ON  [dbo].[Attribute] 
    AFTER UPDATE
@@ -116,11 +121,6 @@ AS
 			T.UpdatedOn = S.UpdatedOn
 	from	Asset T
 			inner join inserted S on T.Object = 'Attribute' and T.ObjectID = S.ID;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

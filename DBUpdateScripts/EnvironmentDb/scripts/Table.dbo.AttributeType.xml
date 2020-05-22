@@ -55,12 +55,17 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterDelete-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterDelete-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterDelete]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterDelete]
    ON  [dbo].[AttributeType] 
    AFTER DELETE
@@ -70,20 +75,20 @@ BEGIN
 	delete AssetType where Object = 'AttributeType' and ObjectID in (select ID from deleted);
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterInsert-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterInsert]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterInsert]
    ON  [dbo].[AttributeType] 
    AFTER INSERT
@@ -94,20 +99,20 @@ BEGIN
 		select Name, Description, 5, DisplayFormat, 1, 0, 1, 'AttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted;
 END
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.AttributeType-AttributeType_AfterUpdate-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterUpdate]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterUpdate]
    ON  [dbo].[AttributeType] 
    AFTER UPDATE
@@ -123,11 +128,6 @@ BEGIN
 	from	AssetType T
 			inner join inserted S on T.Object = 'AttributeType' and T.ObjectID = S.ID;
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
