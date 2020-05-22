@@ -78,8 +78,7 @@ begin
 													1 as Direction
 											from	graph.AssetNode S,
 													graph.AssetEdge E,
-													graph.AssetNode T,
-													[Predicate] P
+													graph.AssetNode T
 											where	MATCH(S-(E)->T)
 													and S.ID = R.AssetID
 													and T.ID not in (select ID from #hopAssets)
@@ -92,8 +91,7 @@ begin
 													2 as Direction
 											from	graph.AssetNode S,
 													graph.AssetEdge E,
-													graph.AssetNode T,
-													[Predicate] P
+													graph.AssetNode T
 											where	MATCH(S-(E)->T)
 													and T.ID = R.AssetID
 													and S.ID not in (select ID from #hopAssets)
