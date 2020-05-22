@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-ALTER   procedure [graph].[UpdateGraphTableHierarchyBy]
+create or alter procedure [graph].[UpdateGraphTableHierarchyBy]
 	@executionId uniqueidentifier = null,
 	@assetTypeId int = null,
 	@assetId bigint = null
