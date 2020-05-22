@@ -108,7 +108,6 @@ namespace d360.model.DataAccessLayer
 
         public async Task<JObject> GetRelationships(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "")
         {
-            bool returnDisplayNames = false;
             var dbArgs = new DynamicParameters();
             bool includeTotal = true;
 
@@ -206,15 +205,6 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     }
                 }
 
-                if (queryParamsList.Any(q => q.Key.ToLower() == "usedisplaynames"))
-                {
-                    var useDisplayNames = queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "usedisplaynames").Value;
-                    if (bool.TryParse(useDisplayNames, out returnDisplayNames))
-                    {
-                        returnDisplayNames = true;
-                    }
-                }
-
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
                 {
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
@@ -286,10 +276,8 @@ end = @f{fieldType.ID}Value";
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
-            string sql = "";
-            if (!returnDisplayNames)
-            {
-                sql = $@"
+            
+               var sql = $@"
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
@@ -317,33 +305,6 @@ select	@pageSize as 'pageSize',
 		for json path,INCLUDE_NULL_VALUES
 		) as 'items'
 for json path, WITHOUT_ARRAY_WRAPPER";
-            }
-            else
-            {
-                sql = $@"
-declare @total int
-{(includeTotal ? countFullSql : "")}
-
-select	@pageSize as 'pageSize',
-		@pageNum as 'pageNum',
-		@total as 'total',
-		(
-		select
-                lower(ST1.Name) as 'Subject',
-                ST1.Class as 'SubjectClass',
-                P.Name as 'Predicate',
-				lower(OT1.Name) as 'Object',
-                OT1.Class as 'ObjectClass',
-				lower(T.Uid) as RelationshipTypeUid				
-		{baseTableSql}
-        {string.Join("\n", fieldJoins)}
-        {whereClause} 
-        order by I.IntersectTypeID
-		offset ((@pageNum-1) * @pageSize) rows fetch next @pageSize rows only
-		for json path,INCLUDE_NULL_VALUES
-		) as 'items'
-for json path, WITHOUT_ARRAY_WRAPPER";
-            }
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
 
@@ -784,20 +745,29 @@ from	IntersectType I
             {
                 index = 1;
                 rowNumber++;
-                var r = row.ToList();
 
                 foreach (var field in fields)
                 {
                     var token = row[field.Object];
                     if (field.Name == "")
+                    {
                         token = row[field.Object];
+                        row[field.Object].Remove();
+                    }
                     else
+                    {
                         token = row[field.Object][field.Name];
+                        row[field.Object][field.Name].Remove();
+                    }
                     string value = "";
                     if (token != null)
                         value = token.Value<string>();
                     document.SetCellValue(rowNumber, index, value);
                     index++;
+                }
+                foreach(var customCol in row)
+                {
+                    document.SetCellValue(rowNumber, index, customCol.First.ToString());
                 }
             }
 
