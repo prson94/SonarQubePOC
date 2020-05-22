@@ -34,6 +34,7 @@
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
 	<include file="scripts/Function.graph.GetPathSegment.xml"/>
 	<include file="scripts/Function.graph.GetXmlSegment.xml"/>
+	<include file="scripts/Function.graph.ReformatSegments.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
 	<include file="scripts/Function.reporting.StripHTML.xml"/>
 	<include file="scripts/Function.utility.GetAssetDisplayValue.xml"/>
