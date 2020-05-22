@@ -182,15 +182,6 @@ namespace d360.core
 
             return sb.ToString();
         }
-
-        public static string CleanForFileName(this string str)
-        {
-            foreach (char c in Path.GetInvalidFileNameChars())
-            {
-                str = str.Replace(c.ToString(), "");
-            }
-            return str;
-        }
     }
 
     public static class XMLExtensions
