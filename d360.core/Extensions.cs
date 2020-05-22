@@ -117,7 +117,7 @@ namespace d360.core
         {
             return b ? Values.BooleanTrue : Values.BooleanFalse;
         }
-        
+
         /// <summary>
         /// Parses a string made up of one or more field tokens.
         /// </summary>
