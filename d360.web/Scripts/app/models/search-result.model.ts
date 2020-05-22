@@ -77,15 +77,25 @@ export class SearchQuery {
         Object.assign(this, init);
     }
     Explain: boolean;
+    Force: boolean;
+}
+
+export class SearchCheckTreeVal {
+    key: string;
+    type: string;
+    public constructor(k: string, t: string) {
+        this.key = k;
+        this.type = t;
+    }
 }
 
 export class SearchState {
     Term: string;
-    Query: SearchQuery;
-    AggFilters: SearchAggregationFilter[];
+    Size: number;
+    From: number;
     SearchTypes: string[];
-    CheckTreeKeys: string[];
-    AdvancedFilters: AdvancedSearchFilter[]; 
+    CheckTreeKeys: SearchCheckTreeVal[];
+    AdvancedFilters: AdvancedSearchFilter[];
     Querytime: Date;
     public constructor(init?: Partial<SearchState>) {
         Object.assign(this, init);
