@@ -164,6 +164,8 @@ namespace d360.web.Controllers.V2
         ///     1. Supports adding values through the Govern Application UI and REST API.
         /// - `Number` *(Number)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Path` *(Asset Path)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// - `Relationship` *(Relationship)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Tag` *(Tag)*
