@@ -26,7 +26,7 @@ namespace d360.model.DataAccessLayer
         IStorageProvider Storage;
         ICommunityContext communityContext;
         public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
-            :base(companyContext)
+            : base(companyContext)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
@@ -145,7 +145,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";                        
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
                     }
                 }
@@ -166,7 +166,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(predicateUidString, out predicateUid))
                     {
                         dbArgs.Add("@predicateuid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";                        
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -216,7 +216,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
-                {                    
+                {
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
                     {
                         includeTotal = true;
@@ -646,10 +646,10 @@ from	IntersectType I
 	                        P.Id = I.PredicateID
                             where P.[Type] = @type and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID )
                         )     ";
-            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type=(int) PredicateType.Transformation });
-            return  string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
+            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type = (int)PredicateType.Transformation });
+            return string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
         }
-        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes,  ApiExecution execution)
+        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution)
         {
             companyContext.Add(execution);
 
@@ -673,7 +673,7 @@ from	IntersectType I
 
             return results;
         }
-        
+
         public List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution)
         {
             companyContext.Add(execution);
@@ -699,7 +699,8 @@ from	IntersectType I
             return results;
         }
 
-        public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution) {
+        public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution)
+        {
             companyContext.Add(execution);
 
             List<RelationshipTypeResult> results = null;
@@ -724,13 +725,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            var dict = new Dictionary<string, string>();
-            foreach (KeyValuePair<string, string> kvp in queryParams)
-            {
-                dict.Add(kvp.Key, kvp.Value);
-            }
-            dict.Add("useDisplayNames", "true");
-            var results = await GetRelationships(dict);
+            var results = await GetRelationships(queryParams);
 
             var apiInfo = results.Children().ToList();
 
@@ -741,12 +736,16 @@ from	IntersectType I
             var fields = new List<FieldType>();
 
             //add default fields
-            fields.Add(new FieldType { Type = "string", Name = "Subject", FriendlyName = "Subject" });
-            fields.Add(new FieldType { Type = "string", Name = "SubjectClass", FriendlyName = "Subject Class" });
-            fields.Add(new FieldType { Type = "date", Name = "Predicate", FriendlyName = "Predicate" });
-            fields.Add(new FieldType { Type = "date", Name = "Object", FriendlyName = "Object" });
-            fields.Add(new FieldType { Type = "string", Name = "ObjectClass", FriendlyName = "Object Class" });
-            fields.Add(new FieldType { Type = "number", Name = "RelationshipTypeUid", FriendlyName = "Relationship Type UID" });
+            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "RelationshipTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object AssetTypeUid" });
 
             #region Populate Excel Document
 
@@ -779,7 +778,7 @@ from	IntersectType I
             }
 
             var rowData = apiInfo[3].ToList().Children().ToList();
-            
+
             int rowNumber = 1;
             foreach (var row in rowData)
             {
@@ -789,7 +788,11 @@ from	IntersectType I
 
                 foreach (var field in fields)
                 {
-                    var token = row[field.Name];
+                    var token = row[field.Object];
+                    if (field.Name == "")
+                        token = row[field.Object];
+                    else
+                        token = row[field.Object][field.Name];
                     string value = "";
                     if (token != null)
                         value = token.Value<string>();
@@ -801,43 +804,6 @@ from	IntersectType I
             #endregion
 
             return document;
-        }
-
-        private void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
-        {
-            var valueString = value?.ToString() ?? "";
-            switch ((field.Type ?? "").ToUpper())
-            {
-                case "DECIMAL":
-                    double dVal = 0;
-                    if (double.TryParse(valueString, out dVal))
-                        document.SetCellValue(rowIndex, colIndex, dVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "NUMBER":
-                    int intVal = 0;
-                    if (int.TryParse(valueString, out intVal))
-                        document.SetCellValue(rowIndex, colIndex, intVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "DATE":
-                    if (DateTime.TryParse(valueString, out DateTime dateVal))
-                    {
-                        document.SetCellValue(rowIndex, colIndex, dateVal);
-
-                        SLStyle style = document.CreateStyle();
-                        style.FormatCode = "m/d/yyyy";
-                        document.SetCellStyle(rowIndex, colIndex, style);
-                    }
-                    break;
-                default:
-                    if (valueString.StartsWith("="))
-                        valueString = "'" + valueString;
-                    document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-            }
         }
     }
 }
