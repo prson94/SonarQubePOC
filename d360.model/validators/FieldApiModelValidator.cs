@@ -353,7 +353,7 @@ namespace d360.model.validators
         private static bool IsFieldNameAllowed(string fieldApiName)
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
-            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon","parentdisplayname","parentassetuid" };
+            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon","parentdisplayname","parentassetuid", "keypath" };
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
 

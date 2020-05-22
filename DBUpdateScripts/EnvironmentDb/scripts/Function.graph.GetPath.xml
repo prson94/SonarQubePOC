@@ -5,11 +5,31 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.GetPath-v3">
+  <changeSet author="Pappas" id="Function.graph.GetPath-DependencyDrop-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
+		<comment>
+			Have to drop this first as it is schema-bound and depends on function below. 
+		</comment>
+		<![CDATA[
+drop view if exists graph.AssetNodeDisplayPath;
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Function.graph.GetPath-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<comment>Any time you update this function, you must also increment version of dependent item(s) listed in changeset above, and update the version of the above changeset.</comment>
 		<![CDATA[
 create or alter function [graph].[GetPath] 
 (
@@ -21,24 +41,31 @@ returns nvarchar(850) WITH SCHEMABINDING
 as
 begin
 	declare @path nvarchar(850)
-
-	select	@path = string_agg(V, @levelDelimiter)
-	from	(
-			select	string_agg(Val, @keyDelimiter) within group(order by P) as  V
-			from	(
-					select	X.p.value('./@level', 'int') as L,
-							X.p.value('./@position', 'int') as P,
-							X.p.value('.', 'nvarchar(250)') as Val
-					from	@segments.nodes('/path/segment') X(p)
-					) O
-			group by L
-			) O
 	
-	if @path is null
+	if @segments is null
 	begin
-		set @path = '[ERROR:KEY_FIELDS_NULL]'
+		set @path = ''
 	end
-
+	else
+	begin
+		select	@path = string_agg(V, @levelDelimiter)
+		from	(
+				select	string_agg(Val, @keyDelimiter) within group(order by P) as  V
+				from	(
+						select	X.p.value('./@level', 'int') as L,
+								X.p.value('./@position', 'int') as P,
+								X.p.value('.', 'nvarchar(250)') as Val
+						from	@segments.nodes('/path/segment') X(p)
+						) O
+				group by L
+				) O
+		
+		if @path is null
+		begin
+			set @path = '[ERROR:KEY_FIELDS_NULL]'
+		end
+	end
+	
 	return @path
 end
 		]]>
