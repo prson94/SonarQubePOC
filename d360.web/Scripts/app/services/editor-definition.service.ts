@@ -47,12 +47,12 @@ export class EditorDefinitionService extends BaseObservableService {
             }
         }
 
-        if (createParams && createParams.length > 0) {
+        if (createParams && createParams.length > 0) {//delete here --  returns error for anything but attribute
             return this.http.post(`form/dynamiceditor/new/${objectType}`, createParams).pipe(
                 map(response => <EditorField[]>response),
                 catchError(err => this.handleError(err))
             );
-        } else if (editParams && editParams.length > 0) {
+        } else if (editParams && editParams.length > 0) {//delete here -- returns error for anything but attribute
             return this.http.post(`form/dynamiceditor/edit/${objectType}`, editParams).pipe(
                 map(response => <EditorField[]>response),
                 catchError(err => this.handleError(err))

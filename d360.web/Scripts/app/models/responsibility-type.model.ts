@@ -17,10 +17,6 @@ export enum Permission {
     ModifyAsset = 2,
     DeleteAsset = 4,
 
-    ReadAttributes = 8,
-    ModifyAttributes = 16,
-    DeleteAttributes = 32,
-
     ReadResponsibilities = 64,
     ModifyResponsibilities = 128,
     DeleteResponsibilities = 256,

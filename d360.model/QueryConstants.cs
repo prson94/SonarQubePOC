@@ -695,36 +695,19 @@ order by case when (Subject = @type and SubjectID = @id) then ObjectName else Su
         public static string PolicySettingsItem = @"
 select	T.Name, 
 		T.Description, 
-		R.AllowAttributes,
 		T.HierarchyMaximumDepth,
 		T.Uid,
 		T.ObjectID
 from	AssetType T 
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as AllowAttributes
-					from	AttributeTypeRelation
-					where	ObjectType = 'PolicyType' and ObjectID = T.ObjectID  
-					) R
 where T.[object]='PolicyType' and	T.ObjectID = @id";
 
         public static string RuleSettingsItem = @"
-select	T.*, R.*,
+select	T.*,
 			case 
 				when Work.[Count] > 0 then cast(1 as bit)
 				else cast(0 as bit)
 			end as HasWorkflow
-from	AssetType T 
-		cross apply ( 
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as AllowAttributes
-					from	AttributeTypeRelation
-					where	ObjectType = 'RuleType' and ObjectID = T.ObjectID 
-					) R
+from	AssetType T 		
 		cross apply (
 						select	count(1) as [Count]
 						from	workflow.EventRegistration WER
@@ -947,20 +930,11 @@ select
 	T.Description,
 	T.HierarchyMaximumDepth as MaximumDepth,
 	T.UpdatedOn,
-	T.UpdatedBy,
-	A.AllowAttributes,
+	T.UpdatedBy,	
 	S.AllowSynonyms,
     T.Uid,
     (select cast(count(1) as bit) from report r where r.ObjectType = 'TaxonomyType' and r.ObjectID = @id and r.ReportType != 'legacy') as HasDashboards	
-from	AssetType T
-		cross apply (
-					select	case 
-								when count(1) > 0 then cast(1 as bit)
-								else cast(0 as bit)
-							end as AllowAttributes
-					from	AttributeTypeRelation
-					where	ObjectType = 'TaxonomyType' and ObjectID = T.ObjectID
-					) A
+from	AssetType T		
 		cross apply (
 					select	case 
 								when count(1) > 0 then cast(1 as bit)

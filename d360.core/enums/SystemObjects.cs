@@ -19,12 +19,6 @@ namespace d360.core
         SynonymType,
         [Description("Artifact Type"), AllowSurvey(true), EnableAudit(true), IsType(true)]
         ArtifactType,
-        [Description("Attribute"), AllowOwnership(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag)]
-        Attribute,
-        [Description("Attribute Group"), EnableAudit(false), IsType(true), 
-         ExcludeDataType(DataType.FieldFromRelationship | 
-            DataType.OwnershipLookup | DataType.RefListRelationship | DataType.ComplexRelationLookup |DataType.Relationship | DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag)]
-        AttributeType,
         [Description("Email Template"), AllowOwnership(false), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Tag)]
         EmailTemplate,
         [Description("Fusion"), EnableAudit(true), IsType(false), ExcludeDataType(DataType.JSON | DataType.JsonElement | DataType.Path | DataType.Tag)]

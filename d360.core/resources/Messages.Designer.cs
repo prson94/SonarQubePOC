@@ -115,15 +115,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to One or more attributes reference this item..
-        /// </summary>
-        public static string Error_Item_AttributesReferences {
-            get {
-                return ResourceManager.GetString("Error_Item_AttributesReferences", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to One or more JSON Attribute fields reference the field you are attempting to remove..
         /// </summary>
         public static string Error_Item_FieldJsonAttributeReferences {
@@ -201,15 +192,6 @@ namespace d360.core.resources {
         public static string Error_ResponsibilityType_ExistingResponsibilities {
             get {
                 return ResourceManager.GetString("Error_ResponsibilityType_ExistingResponsibilities", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to One or more attributes reference this model..
-        /// </summary>
-        public static string Error_Taxonomy_AttributeReference {
-            get {
-                return ResourceManager.GetString("Error_Taxonomy_AttributeReference", resourceCulture);
             }
         }
         

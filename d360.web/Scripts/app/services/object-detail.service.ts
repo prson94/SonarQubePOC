@@ -99,53 +99,6 @@ export class ObjectDetailService extends BaseObservableService {
             );
     }
 
-    getAttributeHierarchyItems(
-        objectID: number,
-        objectType: string
-    ): Observable<AttributeHeirarchyItem[]> {
-        return this.http.get(`attributes/hierarchy/${objectType}/${objectID}`)
-            .pipe(
-                map(response => <AttributeHeirarchyItem[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
-    // @ts-ignore
-    getAttributeHierarchyTree(
-        objectID: number,
-        objectType: string
-    ): Observable<TreeNode[]> {
-        return this.getAttributeHierarchyItems(objectID, objectType).pipe(
-            map(
-                (result) => {
-                    let data = FormHelper.flattenTree(result, 'Items', 'ID', 'ParentUID');
-
-                    return <TreeNode[]>FormHelper.formTree(data, 'ID', 'ParentUID');
-                }
-            )
-        );
-    }
-
-    getAttributeActions(
-        objectID: number,
-        objectType: string,
-        ownerID: number,
-        ownerType: string,
-        attributeID: number = null
-    ): Observable<ToolbarItemNg[]> {
-        let url = `attributes/actions/${objectType}/${objectID}/${ownerType}/${ownerID}/`;
-
-        if (attributeID != null) {
-            url += `${attributeID}`;
-        }
-
-        return this.http.get(url)
-            .pipe(
-                map(response => <ToolbarItemNg[]>response),
-                catchError(err => this.handleError(err))
-            );
-    }
-
     getLookupGrid(uri: string): Observable<LookupGrid> {
         return this.http.get(uri)
             .pipe(

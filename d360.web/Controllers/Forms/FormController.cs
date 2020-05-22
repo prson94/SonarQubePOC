@@ -232,30 +232,19 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
-
+        
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/new/{objectType}")]
         public JsonResult DynamicEditorAddFields(string objectType, object[] param)
         {
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "ATTRIBUTE":
-                    return Attribute_AddFields((int)param[0], param[1].ToString(), (int)param[2], (int)param[3]);
-
-            }
             throw new Exception("Invalid or non implemented editor type");
         }
-
+        
         [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/edit/{objectType}")]
         public JsonResult DynamicEditorEditFields(string objectType, object[] param)
         {
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_EditFields((int)param[0], param[1].ToString(), (int)param[2]);                
-                default: break;
-            }
             throw new Exception("Invalid or non implemented editor type");
         }
+
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
@@ -295,8 +284,6 @@ namespace d360.web.Controllers
                     return CustomAPIVersionField_EditFields(oid);
                 case "ARTIFACT":
                     return Artifact_EditFields(oid);
-                case "ATTRIBUTE":
-                    return Attribute_EditFields(oid);
                 case "CONTRACT":
                     return Contract_EditFields(oid);
                 case "ENDPOINT":
@@ -379,8 +366,6 @@ namespace d360.web.Controllers
                     return CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
-                case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
                 case "CONTRACT":
                     return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                 case "ENDPOINT":
@@ -470,10 +455,6 @@ namespace d360.web.Controllers
             {
                 case "APIFIELD":
                     return EditApiField(form);
-                case "ATTRIBUTE":
-                    return EditAttribute(form);
-                case "ATTRIBUTETYPE":
-                    return EditAttributeType(form);
                 case "ENDPOINT":
                     return EditServiceEndpoint(form);
                 case "FUSION":
@@ -540,8 +521,6 @@ namespace d360.web.Controllers
                     return DeleteApiField(form);
                 case "ARTIFACTTYPE":
                     return DeleteArtifactType(objectID);
-                case "ATTRIBUTETYPE":
-                    return DeleteAttributeType(form);
                 case "CONTRACT":
                     return DeleteContract(objectID);
                 case "CUSTOMSYNONYM":
@@ -608,10 +587,6 @@ namespace d360.web.Controllers
             {
                 case "APIFIELD":
                     return AddServiceEndpointVersionField(form);                
-                case "ATTRIBUTE":
-                    return AddAttribute(form);
-                case "ATTRIBUTETYPE":
-                    return AddAttributeType(form);
                 case "CUSTOMSYNONYM":
                     return AddCustomSynonym(form);
                 case "ENDPOINT":

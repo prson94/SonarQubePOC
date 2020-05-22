@@ -5,12 +5,20 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.AttributeType-v1">
+  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType')
+BEGIN
+	EXEC sp_rename 'AttributeType', 'AttributeType_Retired';
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType')
 BEGIN
 	CREATE TABLE [dbo].[AttributeType](
@@ -43,11 +51,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Attribute_ParentID')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID] ON [dbo].[AttributeType] ( [ParentID] ASC )
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

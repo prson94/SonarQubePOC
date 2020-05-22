@@ -193,7 +193,6 @@
     <Compile Include="entities\Community\Setting.cs" />
     <Compile Include="entities\Fusion\FusionExecution.cs" />
     <Compile Include="entities\Quality\Rule.cs" />
-    <Compile Include="entities\Glossary\AttributeTypeCategory.cs" />
     <Compile Include="entities\SiteNav.cs" />
     <Compile Include="entities\Nym.cs" />
     <Compile Include="entities\NymRelation.cs" />
@@ -244,13 +243,8 @@
     <Compile Include="entities\Views\IntersectTypeDetail.cs" />
     <Compile Include="entities\Report.cs" />
     <Compile Include="entities\Security\ResponsibilityType.cs" />
-    <Compile Include="entities\Glossary\AttributeTypeRelation.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="entities\Social\Comment.cs" />
     <Compile Include="entities\Community\Company.cs" />
-    <Compile Include="entities\Glossary\AttributeType.cs" />
-    <Compile Include="entities\Glossary\Attribute.cs" />
     <Compile Include="entities\Social\CommentRelation.cs" />
     <Compile Include="entities\Contracts\IIntObject.cs" />
     <Compile Include="entities\Contracts\IFieldsObject.cs" />
@@ -273,7 +267,6 @@
     <Compile Include="entities\Relation\IntersectType.cs" />
     <Compile Include="entities\Community\Resource.cs" />
     <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
-    <Compile Include="entities\Transitive\AttributeHierarchyItem.cs" />
     <Compile Include="entities\Transitive\FusionOwnerOption.cs" />
     <Compile Include="entities\Transitive\FusionAttributeItem.cs" />
     <Compile Include="entities\Transitive\BulkFusionImport.cs" />
@@ -283,7 +276,6 @@
     <Compile Include="entities\Transitive\MicroModels.cs" />
     <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
     <Compile Include="entities\Views\ResponsibilityDetail.cs" />
-    <Compile Include="entities\Views\AttributeDetail.cs" />
     <Compile Include="entities\Views\FieldLookupValue.cs" />
     <Compile Include="entities\Views\FieldWithRelation.cs" />
     <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
@@ -343,7 +335,6 @@
     <Compile Include="enums\ClaimObject.cs" />
     <Compile Include="enums\CommentType.cs" />
     <Compile Include="enums\DataType.cs" />
-    <Compile Include="entities\Views\AttributeTypeRelationDetail.cs" />
     <Compile Include="entities\Views\FollowDetail.cs" />
     <Compile Include="enums\JobIntervalType.cs" />
     <Compile Include="enums\RuleStatus.cs" />
@@ -450,6 +441,7 @@
     <EmbeddedResource Include="resources\Messages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="resources\Permissions.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
