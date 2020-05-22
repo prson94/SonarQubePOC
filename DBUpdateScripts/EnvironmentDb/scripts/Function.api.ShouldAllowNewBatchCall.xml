@@ -5,18 +5,12 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="MDonato" id="Function.api.ShouldAllowNewBatchCall-v2">
+  <changeSet author="MDonato" id="Function.api.ShouldAllowNewBatchCall-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-/****** Object:  UserDefinedFunction [api].[ShouldAllowNewBatchCall]    Script Date: 2020-05-20 17:49:20 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-
 CREATE OR ALTER FUNCTION [api].[ShouldAllowNewBatchCall]
 (
 	@executionID uniqueidentifier = null
