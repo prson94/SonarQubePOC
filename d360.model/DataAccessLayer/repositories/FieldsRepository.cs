@@ -527,6 +527,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
             var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
+            var existingKeyFields = string.Join("|", currentFieldTypes.Where(f => f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f));
 
             var newFieldTypes = new List<FieldType>();
 
@@ -1466,6 +1467,20 @@ from	IntersectType I
             }
 
             Company.SaveChanges();
+
+            var newKeyFields = string.Join("|", 
+                Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID && f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f)
+            );
+
+            if (!newKeyFields.Equals(existingKeyFields))
+            {
+                // Key fields have changed. You need to update the graph for this asset type.
+                if (model.AssetTypeUid.HasValue)
+                {
+                    Company.SendGraphAssetTypeEvent(model.AssetTypeUid.Value);
+                }
+            }
+
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
@@ -1491,10 +1506,17 @@ from	IntersectType I
         public void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
         {
             var fieldsRemoved = false;
+            bool shouldRefreshPath = false;
+            int? assetTypeID = null;
             currentFieldTypes.ForEach(c =>
             {
+                assetTypeID = c.AssetTypeID;
                 if (fieldNamesToDelete.Contains(c.Name))
                 {
+                    if (c.IsPartOfKey)
+                    {
+                        shouldRefreshPath = true;
+                    }
                     Company.FieldTypes.Remove(c);
                     fieldsRemoved = true;
                 }
@@ -1503,6 +1525,18 @@ from	IntersectType I
             if (fieldsRemoved)
             {
                 Company.SaveChanges();
+            }
+            if (shouldRefreshPath)
+            {
+                // Key fields have changed. You need to update the graph IF this is asset type.
+                if (assetTypeID.HasValue)
+                {
+                    var assetType = Company.GetById<AssetType>(assetTypeID.Value);
+                    if (assetType != null)
+                    {
+                        Company.SendGraphAssetTypeEvent(assetType.uid);
+                    }
+                }
             }
         }
 
