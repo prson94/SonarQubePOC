@@ -1268,6 +1268,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Path.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.ShowIfEmpty = true;
+                    newFieldType.SortOrder = f.Type.Path.SortOrder;
                     newFieldType.IsPrimaryFilter = false;
                 }
                 else if (f.Type.Relationship != null)
