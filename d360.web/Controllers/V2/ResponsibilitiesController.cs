@@ -1039,5 +1039,44 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
+
+        /// <summary>
+        /// Creates ownership rules.
+        /// </summary>
+        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+        /// <param name="responsibilityRules">A list of responsibility rules you want to add.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
+        ]
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRulePostModel> responsibilityRules)
+        {
+            var prefix = "Relationships.PostResponsibilityRules => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+
+                //var execution = getApiExecution(relationshiptypes.Count);
+
+                //var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { })));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
     }
 }

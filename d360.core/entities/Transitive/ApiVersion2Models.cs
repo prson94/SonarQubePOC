@@ -637,4 +637,34 @@ namespace d360.core.entities
         public bool Exists { get; set; }
     }
 
+    [DataContract]
+    public class ResponsibilityRulePostModel
+    {
+        public Guid ExecutionItemUid { get; set; }
+        public Guid AssetTypeUid { get; set; }
+        public bool IsVisible { get; set; }
+        public bool ApplyToType { get; set; }
+        public string Context { get; set; }
+        public RuleDefinition Definition { get; set; }
+    }
+
+    public class RuleDefinition
+    {
+        public List<RuleThen> Then { get; set; }
+        public List<RuleCondition> When { get; set; }
+    }
+
+    public class RuleThen
+    {
+        public Guid AssigneeTypeUid { get; set; }
+        public List<RuleCondition> Conditions { get; set; }
+    }
+
+    public class RuleCondition
+    {
+        public Guid IntersectTypeUid { get; set; }
+        public string FieldApiName { get; set; }
+        public string Value { get; set; }
+    }
+
 }
