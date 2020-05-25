@@ -43,12 +43,6 @@ namespace d360.model
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
         DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
         DbSet<AssetType> AssetTypes { get; set; }
-        //DbSet<AttributeDetail> AttributeDetails { get; set; }
-        //DbSet<core.entities.Attribute> Attributes { get; set; }
-        //DbSet<AttributeTypeCategory> AttributeTypeCategories { get; set; }
-        //DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }
-        //DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
-        //DbSet<AttributeType> AttributeTypes { get; set; }
         DbSet<AuditField> AuditFields { get; set; }
         DbSet<Audit> Audits { get; set; }
         string BulkLoadStatusMsg { get; set; }
