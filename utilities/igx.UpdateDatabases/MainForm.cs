@@ -120,7 +120,8 @@ namespace igx.UpdateDatabases
                                 document.SelectWorksheet(queryName);
 
                                 document.SetCellValue(1, 1, "Server");
-                                document.SetCellValue(1, 2, "Database");
+                                document.SetCellValue(1, 2, "Url Prefix");
+                                document.SetCellValue(1, 3, "Database");
 
                                 var databaseResult = new DatabaseResult { QueryText = s };
                                 cnn.Open();
@@ -130,7 +131,7 @@ namespace igx.UpdateDatabases
                                     var items = cnn.Query<dynamic>(s).ToList();
                                     databaseResult.Results = JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(items));
 
-                                    int columnNumber = 3;
+                                    int columnNumber = 4;
                                     foreach (JObject dbResult in databaseResult.Results)
                                     {
                                         if (writeColumnHeaders)
@@ -144,8 +145,9 @@ namespace igx.UpdateDatabases
                                         }
 
                                         document.SetCellValue(rowNumbers[queryName], 1, result.Server);
-                                        document.SetCellValue(rowNumbers[queryName], 2, result.DatabaseName);
-                                        columnNumber = 3;
+                                        document.SetCellValue(rowNumbers[queryName], 2, result.UrlPrefix);
+                                        document.SetCellValue(rowNumbers[queryName], 3, result.DatabaseName);
+                                        columnNumber = 4;
                                         foreach (JProperty prop in dbResult.Properties())
                                         {
                                             document.SetCellValue(rowNumbers[queryName], columnNumber, prop.Value.ToString());

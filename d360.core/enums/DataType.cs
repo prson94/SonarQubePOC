@@ -7,37 +7,37 @@ using d360.core.entities;
 
 namespace d360.core
 {
-   
+
     public enum DataType
     {
-        [Description("None")] 
-        None =0, // Not used as a type ;used for logical computing
+        [Description("None")]
+        None = 0, // Not used as a type ;used for logical computing
         [Description("True/False")]
-        Boolean= 1 << 0,
+        Boolean = 1 << 0,
         [Description("Date")]
-        Date= 1 << 1,
+        Date = 1 << 1,
         [Description("Date With Time")]
-        DateTime=1 << 2,
+        DateTime = 1 << 2,
         [Description("File"), ReadOnly(true)]
-        File= 1 << 3,
+        File = 1 << 3,
         [Description("Hidden"), ReadOnly(true)]
-        Hidden= 1 << 4,
+        Hidden = 1 << 4,
         [Description("Html/Richtext")]
-        Html= 1 << 5,
+        Html = 1 << 5,
         [Description("Number")]
-        Number= 1 << 6,
+        Number = 1 << 6,
         [Description("Decimal Number")]
-        Decimal= 1 << 7,
+        Decimal = 1 << 7,
         [Description("List")]
-        Lookup= 1 << 8,
+        Lookup = 1 << 8,
         [Description("Simple Text")]
-        Text= 1 << 9,
+        Text = 1 << 9,
         [Description("Password"), ReadOnly(true)]
-        Password= 1 << 10,
+        Password = 1 << 10,
         [Description("Link")]
-        Link= 1 << 11,
+        Link = 1 << 11,
         [Description("UNC/File Link"), ReadOnly(true)]
-        UncLink= 1 << 12,
+        UncLink = 1 << 12,
         [Description("Color Picker"), ReadOnly(true)]
         Color= 1 << 13,
         [Description("Asset Path")]
@@ -49,13 +49,13 @@ namespace d360.core
         [Description("DataTableSelect"), ReadOnly(true)]
         DataTableSelect = 1 << 19,
         [Description("Ownership Lookup")]
-        OwnershipLookup= 1 << 20,
+        OwnershipLookup = 1 << 20,
         [Description("Relationship")]
         Relationship = 1 << 21,
         [Description("Field from Relationship")]
-        FieldFromRelationship= 1 << 22,
+        FieldFromRelationship = 1 << 22,
         [Description("Reference Item List from Relationship")]
-        RefListRelationship= 1 << 23,
+        RefListRelationship = 1 << 23,
         [Description("JSON")]
         JSON = 1 << 24,
         [Description("JSON Attribute")]
@@ -64,7 +64,7 @@ namespace d360.core
         Tag = 1 << 26,
         [Description("Score")]
         Score = 1 << 27
-    } 
+    }
 
     public class DataTypeInfo
     {
@@ -110,7 +110,7 @@ namespace d360.core
             var list = new List<DataTypeInfo>();
 
             var excludes = sysObj.ExcludeDataType();
-           
+
             foreach (MemberInfo tm in type.GetType().GetMembers(BindingFlags.Public | BindingFlags.Static))
             {
                 var aReadOnly = ((ReadOnlyAttribute)tm.GetCustomAttribute(typeof(ReadOnlyAttribute)));

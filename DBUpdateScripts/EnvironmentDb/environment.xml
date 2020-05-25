@@ -34,6 +34,7 @@
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
 	<include file="scripts/Function.graph.GetPathSegment.xml"/>
 	<include file="scripts/Function.graph.GetXmlSegment.xml"/>
+	<include file="scripts/Function.graph.ReformatSegments.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
 	<include file="scripts/Function.reporting.StripHTML.xml"/>
 	<include file="scripts/Function.utility.GetAssetDisplayValue.xml"/>
@@ -263,6 +264,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
+	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
 	<include file="scripts/View.cache.ObjectDetails.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
 	<include file="scripts/View.dbo.AssetApiModel.xml"/>

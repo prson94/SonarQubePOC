@@ -152,6 +152,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 return "Ownership Lookup";
             case "ComputedRelationshipLookup":
                 return "Relation Lookup";
+            case "Path":
+                return "Asset Path";
             case "Text":
                 return "Simple Text";
             case "Lookup":

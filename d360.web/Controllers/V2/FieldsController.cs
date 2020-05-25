@@ -164,12 +164,16 @@ namespace d360.web.Controllers.V2
         ///     1. Supports adding values through the Govern Application UI and REST API.
         /// - `Number` *(Number)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Path` *(Asset Path)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// - `Relationship` *(Relationship)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Tag` *(Tag)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Text` *(Simple Text)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
+        /// - `Score` *(Score)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
@@ -460,11 +464,13 @@ namespace d360.web.Controllers.V2
                 int fieldtypeid = 0;
                 FieldType fieldType;
                 SystemObjects type = SystemObjects.ArtifactType;
+                AssetTypeClass @class = AssetTypeClass.Generic;
                 if (AssetTypeUid != null)
                 {
                     var assetType = Company.Filter<AssetType>(x => x.uid == AssetTypeUid).SingleOrDefault();
                     id = assetType.ObjectID;
                     Enum.TryParse(assetType.Object, out type);
+                    @class = assetType.Class;
                     fieldType = Company.Filter<FieldType>(x => x.AssetTypeID == id && x.Name == fieldtypename).SingleOrDefault();
                 }
                 else if (ActionTypeUid != null)
@@ -595,6 +601,29 @@ namespace d360.web.Controllers.V2
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
                 }
+
+                if (ActionTypeUid != null || RelationshipTypeUid != null)
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                }
+
+                var disallowedScoreClasses = 
+                    new List<AssetTypeClass>() {
+                        AssetTypeClass.Organization,
+                        AssetTypeClass.Fusion,
+                        AssetTypeClass.FusionAttribute,
+                        AssetTypeClass.FusionQuery,
+                        AssetTypeClass.User,
+                        AssetTypeClass.ReferenceItemType,
+                        AssetTypeClass.AttributeGroup,
+                    };
+
+                if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                }
+
+
 
                 var jsonFieldType = new Dictionary<string, string>()
             {
@@ -806,6 +835,15 @@ namespace d360.web.Controllers.V2
             var prefix = "Fields.GetFieldTypeLookupTokens => ";
             var errorMessage = "";
 
+
+            var excludedFieldTypes = new List<string>()
+            {
+                DataType.Path.ToString(),
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.Score.ToString(),
+            };
+
+
             try
             {
                 SystemObjects type;
@@ -822,7 +860,7 @@ namespace d360.web.Controllers.V2
                     Enum.TryParse(item.Object, out type);
                     id = item.ObjectID;
                     list = Company.GetFieldTypesByObject(type, id)
-                        .Where(i => i.Type != DataType.Path.ToString() && i.Type != DataType.ComplexRelationLookup.ToString())
+                        .Where(i => !excludedFieldTypes.Contains(i.Type))
                         .Select(i => new { i.ID, i.Name })
                         .ToDictionary(i => i.Name, i => i.Name);
 
@@ -1819,6 +1857,75 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 {
                     return Request.CreateResponse(HttpStatusCode.NotFound, message);
                 }
+            }
+            catch (RestApiException ex)
+            {
+                errorMessage = ex.GetFullExceptionData(false);
+                return ReturnApiError(ex.Status, errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+
+        }
+
+
+        /// <summary>
+        /// Gets the score types available for the given asset type
+        /// </summary>
+        /// <returns>A list of score types if applicable.</returns>
+        [
+            HttpGet,
+            Route("GetAvailableScoreTypes"),
+            SwaggerResponse(HttpStatusCode.OK, "", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type does not correspond to a known type.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public HttpResponseMessage GetAvailableScoreTypes(Guid assetTypeUid)
+        {
+            var prefix = "Fields.GetAvailableScoreTypes => ";
+            var errorMessage = "";
+
+            try
+            {
+                Dictionary<string, string> list = new Dictionary<string, string>();
+
+                var assetType = Company.Filter<AssetType>(a => a.uid == assetTypeUid).FirstOrDefault();
+
+                if (assetType == null)
+                {
+                    return ReturnApiError(HttpStatusCode.NotFound, "Asset Type for this uid not found");
+                }
+
+
+                var types = Company.Query<int>(
+                    "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @assetTypeUid and [State] = 1"
+                    , new { assetTypeUid }).ToList();
+
+                foreach(var type in types)
+                {
+                    try
+                    {
+                        ScoreType scoreType = (ScoreType)type;
+
+                        list.Add(scoreType.ToString(), scoreType.GetDisplayName());
+
+                    }
+                    catch
+                    {
+                        return ReturnApiError(HttpStatusCode.InternalServerError, $"Could not cast score type value {type} to a valid score type");
+                    }
+                }
+
+              
+                return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { label = i.Value, value = i.Key }));
             }
             catch (RestApiException ex)
             {

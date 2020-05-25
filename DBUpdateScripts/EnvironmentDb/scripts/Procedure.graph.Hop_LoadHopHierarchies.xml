@@ -5,12 +5,57 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadHopHierarchies-v1">
+  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadHopHierarchies-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [graph].[Hop_LoadHopHierarchies]
+	@hopSalt varchar(25),
+	@direction char(1),
+	@hopNumber int
+as
+begin
+	insert into #nodes ([Level], [Position], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
+		select	doc.c.value('level', 'int') as [Level]
+				,doc.c.value('position', 'int') as [Position]
+				,A.Uid as AssetUid
+				,doc.c.value('assetId', 'bigint') as AssetID
+				,case 
+					when L.[Key] is not null and A.Uid = L.AssetUid and doc.c.value('leaf', 'bit') = 1 then L.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) + '|' + cast( doc.c.value('level', 'int') * doc.c.value('position', 'int') as varchar ) )
+				 end as [Key]
+				,doc.c.value('parentAssetId', 'bigint') as ParentID
+				,iif(
+					doc.c.value('parentAssetId', 'bigint') = 0, 
+					null, 
+					utility.GetHash(@hopSalt + '|' + doc.c.value('parentAssetId', 'varchar(50)') + '|' + cast( doc.c.value('parentLevel', 'int') * doc.c.value('parentPosition', 'int') as varchar ) )
+					) as [ParentKey]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,coalesce(A.AssetTypeID, doc.c.value('assetTypeId', 'int')) as AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,doc.c.value('value', 'nvarchar(250)') as DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,case when doc.c.value('leaf', 'bit') = 1 then cast(1 as bit) else cast(0 as bit) end as IsLeaf
+				,0 as Parsed
+				,L.IsFocal
+		from	#links L
+				inner join graph.AssetNode N on N.Uid = L.AssetUid
+				cross apply N.ReformattedSegments.nodes('/path/segment') doc(c)
+				inner join AssetWithType A on A.ID = doc.c.value('assetId', 'bigint')
+		where	L.Direction = @direction and L.HopNumber = @hopNumber;
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[Hop_LoadHopHierarchies]
 	@hopSalt varchar(25),
 	@direction char(1),
@@ -78,11 +123,6 @@ begin
 				cross apply T.Segment.nodes('/path/segment') doc(c)
 				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint');
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-drop procedure if exists [graph].[Hop_LoadHopHierarchies]
 		]]>
 	</rollback>
   </changeSet>

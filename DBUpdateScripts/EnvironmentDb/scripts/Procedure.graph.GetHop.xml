@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.GetHop-v9">
+  <changeSet author="Pappas" id="Procedure.graph.GetHop-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -60,14 +60,12 @@ begin
 		Direction char(1),
 		HopNumber int,
 		ProvidedKey varchar(50), 
-		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, [Segment] xml, 
+		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, 
 		PredicateId int, PredicateUid uniqueidentifier, [Predicate] nvarchar(250), PredicateType int, 
 		IsFocal bit default(0)
 		PRIMARY KEY CLUSTERED ( [RowID] ASC )
 	);
 	CREATE NONCLUSTERED INDEX IX_TempLinks_Uid on #links (Uid);
-	CREATE PRIMARY XML INDEX [IX_XML_TempLinks_Segment_Primary] ON #links ( [Segment] )
-	CREATE XML INDEX [IX_XML_TempLinks_Segment_Path] ON #links ( [Segment] ) USING XML INDEX IX_XML_TempLinks_Segment_Primary FOR PATH
 
 	drop table if exists #nodes
 	create table #nodes (

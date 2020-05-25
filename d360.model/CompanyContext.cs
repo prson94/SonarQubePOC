@@ -2829,7 +2829,7 @@ select @err";
 
         #region Dynamic Field Methods
 
-        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true)
+        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
         {
             columns = "";
             joins = "";
@@ -2854,6 +2854,9 @@ select @err";
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
                 else
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
+
+                if (includeKeyColumnOnly)
+                    fields = fields.Where(x => x.IsPartOfKey == true).ToList();
             }
 
             var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
@@ -3007,6 +3010,11 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 {
                     columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
                     joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
+                }
+                else if (f.Type == DataType.Score.ToString())
+                {
+                    columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {

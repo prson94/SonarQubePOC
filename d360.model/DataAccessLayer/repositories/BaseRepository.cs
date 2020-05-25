@@ -83,6 +83,9 @@ namespace d360.model.DataAccessLayer.repositories
                 if (f.Type == "Link")
                     valueColumn = "Value";
 
+                if (f.Type == "Score")
+                    joinPrefix = "outer";
+
                 FieldType relatedField = null;
                 if (f.Type == "FieldFromRelationship")
                 {
@@ -114,6 +117,10 @@ namespace d360.model.DataAccessLayer.repositories
                     {
                         fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
                     }
+                    else if (f.Type == "Score")
+                    {
+                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                    }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                 }
@@ -138,6 +145,10 @@ namespace d360.model.DataAccessLayer.repositories
                         else if (f.Type == "Path")
                         {
                             fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                        }
+                        else if (f.Type == "Score")
+                        {
+                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -169,6 +180,10 @@ namespace d360.model.DataAccessLayer.repositories
                         else if (f.Type == "Path")
                         {
                             fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                        }
+                        else if (f.Type == "Score")
+                        {
+                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                         }
                         else
                         {
@@ -319,6 +334,10 @@ namespace d360.model.DataAccessLayer.repositories
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
+                else if (f.Type == "Score")
+                {
+                    fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}");
+                }
                 else if (f.Type == "Tag")
                 {
                     fieldJoins.Add($@"outer apply(
@@ -446,6 +465,10 @@ namespace d360.model.DataAccessLayer.repositories
                                         else if (field.Type == "Path")
                                         {
                                             orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
+                                        }
+                                        else if (field.Type == "Score")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
                                         }
                                         else
                                         {

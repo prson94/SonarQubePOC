@@ -716,8 +716,11 @@ from	[Load] L
                         drop table if exists #BulkExecutionAsset;
                         create table #BulkExecutionAsset (ExecutionID uniqueidentifier, ItemNumber int, ParentUid uniqueidentifier, ProposedKey varchar(32), AssetUid uniqueidentifier, AssetID bigint, Success bit, Message nvarchar(max))
 
+                        create nonclustered index IX_TempBulkExecutionField on #BulkExecutionAsset (ItemNumber asc );
+
                         drop table if exists #BulkExecutionField;
                         create table #BulkExecutionField (ExecutionID uniqueidentifier, ItemNumber int, FieldName nvarchar(250), FieldValue nvarchar(max), FieldTypeID int, LookupValue nvarchar(max), Ignore bit, ColumnIndex int);
+                        create nonclustered index IX_TempBulkExecutionAsset on #BulkExecutionField (ColumnIndex asc,ItemNumber asc);                        
                         ", transaction: trans, commandTimeout: timeout);
 
                         //load temp tables and calculate key hashes
@@ -815,18 +818,20 @@ from	[Load] L
                         if (assetType.Class == AssetTypeClass.Reference)
                         {
                             await Connection.ExecuteAsync(@"
-                                update T
-                                set T.AssetUid = K.Uid
-                                from #BulkExecutionAsset T 
-                                cross apply (
-                                select		A.Uid,
-			                                utility.GetHash(cast(@atID as nvarchar) + '|' + A.Code)  as ActiveKey 
-                                from		Asset A 
-                                where	    A.AssetTypeID = @atID
-                                group by    A.Uid, Code
-                                ) K 
-                                where K.ActiveKey = T.ProposedKey
+                                drop table if exists #AssetActiveKey;
+                                
+                               select  A.Uid,                                                
+                                    utility.GetHash(cast(@atID as nvarchar) + '|' + A.Code)  as ActiveKey
+                                    into #AssetActiveKey
+                                        from  Asset A                                   
+                                        where A.AssetTypeID = @atID
+                                    group by A.Uid, Code
 
+                                Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
+
+                                update T set T.AssetUid = K.Uid                                  
+                                from #BulkExecutionAsset T                                   
+                                inner join  #AssetActiveKey K on K.ActiveKey = T.ProposedKey; 
 
                                 update L
                                 set L.AssetUid = T.AssetUid
@@ -841,12 +846,11 @@ from	[Load] L
                             if (intersectTypeId.HasValue && calculateParentHashByUid)
                             {
                                 await Connection.ExecuteAsync(@"
-                                update T
-                                set T.AssetUid = K.Uid
-                                from #BulkExecutionAsset T 
-                                cross apply (
+                                drop table if exists #AssetActiveKey;
+
                                 select		A.Uid,
                                             utility.GetHash(cast(@atID as nvarchar) + '|' + COALESCE(cast(P.Uid as nvarchar(50))+'|', '') + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey
+                                into		#AssetActiveKey
                                 from		Asset A 
                                             left join [Intersect] I on I.IntersectTypeID = @intersectTypeId and I.Object = A.Object and I.ObjectID = A.ObjectID
 			                                left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
@@ -854,8 +858,14 @@ from	[Load] L
 			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
                                 where	    A.AssetTypeID = @atID
                                 group by    A.Uid, P.Uid
-                                ) K 
-                                where K.ActiveKey = T.ProposedKey
+
+                                Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
+
+                                update T                                  
+                                set T.AssetUid = K.Uid                                  
+                                from #BulkExecutionAsset T                                   
+                                inner join  #AssetActiveKey K
+                                on K.ActiveKey = T.ProposedKey;
 
                                 update L
                                 set L.AssetUid = T.AssetUid
@@ -868,19 +878,25 @@ from	[Load] L
                             else
                             {
                                 await Connection.ExecuteAsync(@"
-                                update T
-                                set T.AssetUid = K.Uid
-                                from #BulkExecutionAsset T 
-                                cross apply (
+                                drop table if exists #AssetActiveKey;
+
                                 select		A.Uid,
 			                                utility.GetHash(cast(@atID as nvarchar) + '|' + STRING_AGG(coalesce(F.Value, FT.DefaultValue), '|') within group (order by FT.ColumnOrder asc, FT.Name asc)) as ActiveKey 
+                                Into		#AssetActiveKey
                                 from		Asset A 
 			                                inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 			                                left join Field F on FT.ID = F.FieldTypeID and F.AssetID = A.ID
                                 where	    A.AssetTypeID = @atID
                                 group by    A.Uid
-                                ) K 
-                                where K.ActiveKey = T.ProposedKey
+
+                                Create index idx_AssetActiveKey on #AssetActiveKey(ActiveKey);
+
+                                update T                                  
+                                set T.AssetUid = K.Uid                                  
+                                from #BulkExecutionAsset T                                   
+                                inner join  #AssetActiveKey K
+                                on K.ActiveKey = T.ProposedKey;
+
 
                                 update L
                                 set L.AssetUid = T.AssetUid

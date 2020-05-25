@@ -78,7 +78,7 @@
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
@@ -107,7 +107,7 @@
     <None Include="Resources\CompanyIcon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\favicon.ico" />
+    <Content Include="Resources\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\d360.core\d360.core.csproj">

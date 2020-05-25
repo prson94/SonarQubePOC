@@ -89,7 +89,32 @@ END
 		]]>
 	</rollback>
   </changeSet>
-
+  <changeSet author="MDonato" id="Table.dbo.FieldType-v2">
+    <comment>GOV-7576</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+      <![CDATA[
+		IF COL_LENGTH('[dbo].[FieldType]', 'ScoreType') IS NULL
+		BEGIN
+			ALTER TABLE dbo.FieldType
+			ADD ScoreType int NULL
+		END
+		]]>
+    </sql>
+    
+    <rollback>
+      <![CDATA[	
+		IF COL_LENGTH('[dbo].[FieldType]', 'ScoreType') IS NOT NULL
+		BEGIN
+			ALTER TABLE dbo.FieldType
+			DROP COLUMN ScoreType
+		END
+	  ]]>
+    </rollback>
+  </changeSet>
+  
   <changeSet author="Core" id="Table.dbo.Field-FieldType_AfterInsert-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

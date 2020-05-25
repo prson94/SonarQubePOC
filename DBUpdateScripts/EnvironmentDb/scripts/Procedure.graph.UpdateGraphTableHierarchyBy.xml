@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v3">
+  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,6 +25,7 @@ begin
 	drop table if exists #ids
 
 	create table #hierarchy (
+		GroupID bigint,
 		AssetTypeID int,
 		ID bigint,
 		[Level] int,
@@ -34,6 +35,7 @@ begin
 	create clustered index CIX_TempHierarchy on #hierarchy (AssetTypeID, ID)
 
 	create table #tbl (
+		GroupID bigint,
 		AssetTypeID int,
 
 		ID bigint,
@@ -54,8 +56,8 @@ begin
 	create table #incoming (ID bigint)
 	create clustered index CIX_TempIncoming on #incoming (ID)
 
-	create table #ids (ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
-	create clustered index CIX_TempIds on #ids (ID)
+	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
+	create clustered index CIX_TempIds on #ids (GroupID, ID)
 
 	if @executionId is not null
 	begin
@@ -95,20 +97,22 @@ begin
 		from	Asset A 
 				inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @assetId;
 
-		with ascendants as (
-			select	A.AssetTypeID,
+		with hierarchy as (
+			select	A.ID as GroupID,
+					A.AssetTypeID,
 					A.ID,
 					I.Object,
 					I.ObjectID,
 					I.Subject as ParentObject,
 					I.SubjectID as ParentObjectID,
 					A.Code,
-					1 as [Level]
+					0 as [Level]
 			from	Asset A
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					inner join #incoming O on O.ID = A.ID
 			union all
-			select	A.AssetTypeID,
+			select	c.GroupID,
+					A.AssetTypeID,
 					A.ID,
 					A.Object,
 					A.ObjectID,
@@ -116,7 +120,7 @@ begin
 					I.SubjectID as ParentObjectID,
 					A.Code,
 					c.[Level]-1 as [Level]
-			from	ascendants c
+			from	hierarchy c
 					inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
 					outer apply (
 						select	I.Subject,
@@ -124,54 +128,23 @@ begin
 						from	PredicateIntersect I 
 						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					) I
-		),
-		descendants as (
-			select	A.AssetTypeID,
-					A.ID,
-					A.Object,
-					A.ObjectID,
-					cast(null as varchar(50)) as ParentObject,
-					cast(null as int) as ParentObjectID,
-					A.Code,
-					1 as [Level]
-			from	Asset A
-					inner join #incoming O on O.ID = A.ID
-			union all
-			select	A.AssetTypeID,
-					A.ID,
-					A.Object,
-					A.ObjectID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					A.Code,
-					c.[Level]+1 as [Level]
-			from	descendants c
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = c.Object and I.SubjectID = c.ObjectID
-					inner join Asset A on I.Object = A.Object and I.ObjectID = A.ObjectID
-			where	c.[Level] <= 25
 		)
 
-		insert into #hierarchy (AssetTypeID, ID, [Level], ParentID, Code)
-			select	A.AssetTypeID,
+		insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+			select	A.GroupID,
+					A.AssetTypeID,
 					A.ID,
 					A.[Level],
 					P.ID,
 					A.Code
-			from	ascendants A
-					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
-			union
-			select	A.AssetTypeID,
-					A.ID,
-					A.[Level],
-					P.ID,
-					A.Code
-			from	descendants A
+			from	hierarchy A
 					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
 
 		if @class = 9
 		begin
-			insert into #tbl (AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	AssetTypeID,
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						AssetTypeID,
 						ID,
 						[Level],
 						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
@@ -183,8 +156,9 @@ begin
 		end
 		else
 		begin
-			insert into #tbl (AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	distinct
+						A.GroupID, 
 						A.AssetTypeID,
 						A.ID,
 						A.[Level],
@@ -197,10 +171,6 @@ begin
 						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
 		end
-		
-		delete	T 
-		from	#tbl T
-				inner join #tbl S on S.ParentID is not null and T.[Level] = S.[Level] and T.ParentID is null and S.ID = T.ID;
 
 		if exists (select 1 from #tbl where [Level] < 1)
 		begin
@@ -209,58 +179,40 @@ begin
 					[ParentLevel] = [ParentLevel] + S.[LevelUp]
 			from	#tbl T
 					cross apply (
-						select abs(min([Level]))+1 as [LevelUp] from #tbl
+						select abs(min([Level]))+1 as [LevelUp] from #tbl where GroupID = T.GroupID
 					) S 
 		end
 
-		insert into #ids (ID, ParentID)
-			select ID, ParentID from #tbl group by ID, ParentID;
-
-		with p as (
-			select	ID,
-					ParentID,
-					(
-						select	[Level] as '@level',
-								ColumnOrder as '@position',
-								AssetTypeID as '@assetTypeId',
-								ID as '@assetId',
-								FormattedValue as 'data()'
-						from	#tbl
-						where	ID = I.ID
-						order by Position
-						for xml path('segment')
-					) as Segments
-			from	#ids I
-			where	ParentID is null
-			union all
-			select	I.ID,
-					I.ParentID,
-					p.Segments + (
-						select	[Level] as '@level',
-								ColumnOrder as '@position',
-								AssetTypeID as '@assetTypeId',
-								ID as '@assetId',
-								FormattedValue as 'data()'
-						from	#tbl
-						where	ID = I.ID
-						order by Position
-						for xml path('segment')
-					) as Segments
-			from	#ids I
-					inner join p on p.ID = I.ParentID
-		)
-
-		---- Now save the data you will update.
-		update	T
-		set		T.Segments = '<path>' + p.Segments + '</path>'
-		from	#ids T
-				inner join p on p.ID = T.ID
+		insert into #ids (GroupID, ID, ParentID)
+			select GroupID, ID, ParentID from #tbl group by GroupID, ID, ParentID;
 
 		--Update the graph table.
 		update	T
-		set		T.Segments = S.Segments
+		set		T.[Path] =	(
+								select	top 100 percent
+										string_agg('[' + coalesce(FormattedValue, '') + ']', '.')
+								from	#tbl
+								where	GroupID = S.GroupID
+							),	
+				T.Segments =	
+				(
+								select	[Level] as '@level',
+										ColumnOrder as '@position',
+										AssetTypeID as '@assetTypeId',
+										ID as '@assetId',
+										FormattedValue as 'data()'
+								from	#tbl
+								where	GroupID = S.GroupID
+								order by Position
+								for xml path('segment'), root('path')
+								)
 		from	graph.AssetNode T
-				inner join #ids S on S.ID = T.ID;
+				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
+
+		update	T
+		set		T.ReformattedSegments = graph.ReformatSegments(T.Segments)	
+		from	graph.AssetNode T
+				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 	end
 end
 		]]>
@@ -281,6 +233,7 @@ begin
 	drop table if exists #ids
 
 	create table #hierarchy (
+		GroupID bigint,
 		AssetTypeID int,
 		ID bigint,
 		[Level] int,
@@ -290,6 +243,7 @@ begin
 	create clustered index CIX_TempHierarchy on #hierarchy (AssetTypeID, ID)
 
 	create table #tbl (
+		GroupID bigint,
 		AssetTypeID int,
 
 		ID bigint,
@@ -310,8 +264,8 @@ begin
 	create table #incoming (ID bigint)
 	create clustered index CIX_TempIncoming on #incoming (ID)
 
-	create table #ids (ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
-	create clustered index CIX_TempIds on #ids (ID)
+	create table #ids (GroupID bigint, ID bigint, ParentID bigint, [Path] nvarchar(2500), Segments xml)
+	create clustered index CIX_TempIds on #ids (GroupID, ID)
 
 	if @executionId is not null
 	begin
@@ -351,20 +305,22 @@ begin
 		from	Asset A 
 				inner join AssetType T on T.ID = A.AssetTypeID and A.ID = @assetId;
 
-		with ascendants as (
-			select	A.AssetTypeID,
+		with hierarchy as (
+			select	A.ID as GroupID,
+					A.AssetTypeID,
 					A.ID,
 					I.Object,
 					I.ObjectID,
 					I.Subject as ParentObject,
 					I.SubjectID as ParentObjectID,
 					A.Code,
-					1 as [Level]
+					0 as [Level]
 			from	Asset A
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+					left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					inner join #incoming O on O.ID = A.ID
 			union all
-			select	A.AssetTypeID,
+			select	c.GroupID,
+					A.AssetTypeID,
 					A.ID,
 					A.Object,
 					A.ObjectID,
@@ -372,7 +328,7 @@ begin
 					I.SubjectID as ParentObjectID,
 					A.Code,
 					c.[Level]-1 as [Level]
-			from	ascendants c
+			from	hierarchy c
 					inner join Asset A on c.ParentObject = A.Object and c.ParentObjectID = A.ObjectID
 					outer apply (
 						select	I.Subject,
@@ -380,54 +336,23 @@ begin
 						from	PredicateIntersect I 
 						where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
 					) I
-		),
-		descendants as (
-			select	A.AssetTypeID,
-					A.ID,
-					A.Object,
-					A.ObjectID,
-					cast(null as varchar(50)) as ParentObject,
-					cast(null as int) as ParentObjectID,
-					A.Code,
-					1 as [Level]
-			from	Asset A
-					inner join #incoming O on O.ID = A.ID
-			union all
-			select	A.AssetTypeID,
-					A.ID,
-					A.Object,
-					A.ObjectID,
-					I.Subject as ParentObject,
-					I.SubjectID as ParentObjectID,
-					A.Code,
-					c.[Level]+1 as [Level]
-			from	descendants c
-					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = c.Object and I.SubjectID = c.ObjectID
-					inner join Asset A on I.Object = A.Object and I.ObjectID = A.ObjectID
-			where	c.[Level] <= 25
 		)
 
-		insert into #hierarchy (AssetTypeID, ID, [Level], ParentID, Code)
-			select	A.AssetTypeID,
+		insert into #hierarchy (GroupID, AssetTypeID, ID, [Level], ParentID, Code)
+			select	A.GroupID,
+					A.AssetTypeID,
 					A.ID,
 					A.[Level],
 					P.ID,
 					A.Code
-			from	ascendants A
-					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
-			union
-			select	A.AssetTypeID,
-					A.ID,
-					A.[Level],
-					P.ID,
-					A.Code
-			from	descendants A
+			from	hierarchy A
 					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
 
 		if @class = 9
 		begin
-			insert into #tbl (AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
-				select	AssetTypeID,
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						AssetTypeID,
 						ID,
 						[Level],
 						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
@@ -439,8 +364,9 @@ begin
 		end
 		else
 		begin
-			insert into #tbl (AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	distinct
+						A.GroupID, 
 						A.AssetTypeID,
 						A.ID,
 						A.[Level],
@@ -453,10 +379,6 @@ begin
 						inner join FieldType FT on FT.AssetTypeID = A.AssetTypeID and FT.IsPartOfKey = 1
 						inner join Field F on F.FieldTypeID = FT.ID and F.AssetID = A.ID
 		end
-		
-		delete	T 
-		from	#tbl T
-				inner join #tbl S on S.ParentID is not null and T.[Level] = S.[Level] and T.ParentID is null and S.ID = T.ID;
 
 		if exists (select 1 from #tbl where [Level] < 1)
 		begin
@@ -465,76 +387,35 @@ begin
 					[ParentLevel] = [ParentLevel] + S.[LevelUp]
 			from	#tbl T
 					cross apply (
-						select abs(min([Level]))+1 as [LevelUp] from #tbl
+						select abs(min([Level]))+1 as [LevelUp] from #tbl where GroupID = T.GroupID
 					) S 
 		end
 
-		insert into #ids (ID, ParentID)
-			select ID, ParentID from #tbl group by ID, ParentID;
-
-		with p as (
-			select	ID,
-					ParentID,
-					(
-						select	[Level] as '@level',
-								ColumnOrder as '@position',
-								AssetTypeID as '@assetTypeId',
-								ID as '@assetId',
-								FormattedValue as 'data()'
-						from	#tbl
-						where	ID = I.ID
-						order by Position
-						for xml path('segment')
-					) as Segments,
-					(
-						select	top 100 percent
-								string_agg('[' + coalesce(FormattedValue, '') + ']', '.')
-						from	#tbl
-						where	ID = I.ID
-						--group by Position
-						--order by Position
-					) as TextPath
-			from	#ids I
-			where	ParentID is null
-			union all
-			select	I.ID,
-					I.ParentID,
-					p.Segments + (
-						select	[Level] as '@level',
-								ColumnOrder as '@position',
-								AssetTypeID as '@assetTypeId',
-								ID as '@assetId',
-								FormattedValue as 'data()'
-						from	#tbl
-						where	ID = I.ID
-						order by Position
-						for xml path('segment')
-					) as Segments,
-					p.TextPath + STUFF(
-						(
-						select	'.[' + coalesce(FormattedValue, '') + ']'
-						from	#tbl
-						where	ID = I.ID
-						order by Position
-						for xml path(''), TYPE
-						).value('.', 'nvarchar(2500)'), 1,0,'')
-			from	#ids I
-					inner join p on p.ID = I.ParentID
-		)
-
-		---- Now save the data you will update.
-		update	T
-		set		T.Segments = '<path>' + p.Segments + '</path>',
-				T.[Path] = p.TextPath
-		from	#ids T
-				inner join p on p.ID = T.ID
+		insert into #ids (GroupID, ID, ParentID)
+			select GroupID, ID, ParentID from #tbl group by GroupID, ID, ParentID;
 
 		--Update the graph table.
 		update	T
-		set		T.[Path] = S.[Path],	
-				T.Segments = S.Segments
+		set		T.[Path] =	(
+								select	top 100 percent
+										string_agg('[' + coalesce(FormattedValue, '') + ']', '.')
+								from	#tbl
+								where	GroupID = S.GroupID
+							),	
+				T.Segments =	
+				(
+								select	[Level] as '@level',
+										ColumnOrder as '@position',
+										AssetTypeID as '@assetTypeId',
+										ID as '@assetId',
+										FormattedValue as 'data()'
+								from	#tbl
+								where	GroupID = S.GroupID
+								order by Position
+								for xml path('segment'), root('path')
+								)
 		from	graph.AssetNode T
-				inner join #ids S on S.ID = T.ID;
+				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 	end
 end
 		]]>

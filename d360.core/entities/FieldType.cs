@@ -138,6 +138,9 @@ namespace d360.core.entities
         [DataMember]
         public string Definition { get; set; } = "{}";
 
+        [DataMember]
+        public int? ScoreType { get; set; }
+
         [IgnoreDataMember, ForeignKey("FieldTypeID")]
         public virtual ICollection<Field> Fields { get; set; }
 
@@ -324,6 +327,28 @@ namespace d360.core.entities
         public bool IsDisplayable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+    }
+
+    public class FieldTypeDataTypeComputedScoreApiViewModel
+    {
+        [DataMember]
+        public ScoreType ScoreType { get; set; }
+        [DataMember]
+        public bool IsDisplayable { get; set; }
+        [DataMember]
+        public bool IsListable { get; set; }
+        [DataMember]
+        public bool ShowIfEmpty { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
+        [DataMember]
+        public int? ColumnOrder { get; set; }
+        [DataMember]
+        public int? ColumnWidth { get; set; }
+        [DataMember]
+        public int SortOrder { get; set; }
+        [DataMember]
+        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
     }
 
     public class FieldTypeDataTypeDateApiViewModel : FieldTypeEditableApiViewModel
@@ -542,7 +567,8 @@ namespace d360.core.entities
         public int? ColumnWidth { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
-
+        [DataMember]
+        public int SortOrder { get; set; }
         [DataMember]
         public bool IsListable { get; set; }
         [DataMember]
@@ -589,6 +615,8 @@ namespace d360.core.entities
         public FieldTypeDataTypeTextApiViewModel Text { get; set; }
         [DataMember]
         public FieldTypeDataTypeTagApiViewModel Tag { get; set; }
+        [DataMember]
+        public FieldTypeDataTypeComputedScoreApiViewModel Score { get; set; }
 
         public bool IsOnlyOneTypeModelDefined()
         {
@@ -613,6 +641,7 @@ namespace d360.core.entities
             childPopulatedCount += (Relationship != null) ? 1 : 0;
             childPopulatedCount += (Text != null) ? 1 : 0;
             childPopulatedCount += (Tag != null) ? 1 : 0;
+            childPopulatedCount += (Score != null) ? 1 : 0;
 
             return (childPopulatedCount == 1);
         }

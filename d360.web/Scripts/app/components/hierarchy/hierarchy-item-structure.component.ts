@@ -13,7 +13,7 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavCurrentObject, SecondaryNavItem } from '../../models/secondaryNav.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
 import { TreeNode } from 'primeng/api';
-import { GridColumn, GridField } from '../../models/grid-definition.model';
+import { GridColumn, GridField, GridScoreAllocation } from '../../models/grid-definition.model';
 import { ModelsService } from '../../services/models.service';
 import { PoliciesService } from '../../services/policies.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
@@ -44,6 +44,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     levels: any[] = [];
     hierarchy: any[] = [];
+    
 
     routeSub: any;
     currentAreaNameSub: any;
@@ -56,6 +57,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     columns: GridColumn[] = [];
     fields: GridField[] = [];
+    scoreAllocations: GridScoreAllocation[] = [];
 
     searchValue: string = "";
     showEditor: boolean;
@@ -206,6 +208,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     private getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
             result => {
+                this.scoreAllocations = result.ScoreAllocations;
                 this.columns = result.Columns;
                 this.fields = result.Fields;
             }
@@ -218,6 +221,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.modelsService.getModelHierarchy(this.objectTypeId, true, true).subscribe(
                     result => {
                         this.hierarchy = result;
+
+                        this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
                         this.filter(null);
@@ -229,6 +234,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                 this.policiesService.getPolicies(this.objectTypeId, true).subscribe(
                     result => {
                         this.hierarchy = result;
+
+                        this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
                         this.filter(null);
@@ -259,6 +266,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         return res;
     }
 
+    private buildScoreAllocationThresholds() {
+        if (this.scoreAllocations && this.scoreAllocations.length > 0) {
+            this.hierarchy.forEach(i => {
+                this.scoreAllocations.forEach(s => {
+                    var field = this.fields.find(f => f.apiName == s.Name);
+                    if (field) {
+                        i[field.name + '_threshold'] = this.getThreshold(i[field.name], s.LowerThreshold, s.UpperThreshold);
+                    }
+                });
+            });
+        }
+    }
 
     public onDeleted() {
         this.headerActionsService.emitFavoritesChange(); // favorites need to be reloaded if an object was removed        
@@ -359,6 +378,25 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         if (thisLevel && thisLevel.length > 0) return thisLevel[0].Name;
         return `(Level ${this.selected.data.Level}) Item`;
+    }
+
+    getThreshold(value: string, lower: number, upper: number): string {
+        if (value == null || value.length < 1)
+            return '';
+        if (value.indexOf('%') > -1) {
+            value = value.replace('%', '');
+        }
+        if (isNaN(+value))
+            return '';
+
+        let v = +value;
+
+        if (v <= lower)
+            return 'poor';
+        else if (v > lower && v <= upper)
+            return 'average';
+        else
+            return 'good';
     }
 
     private showHierarchy(id: number) {

@@ -166,11 +166,16 @@ namespace d360.model.DataAccessLayer
                             case 
                                 when Measures.F > 0 then 1
 								else 0
-							end as hasMeasure
+							end as hasMeasure,
+                            case 
+                                when Fields.F > 0 then 1
+								else 0
+							end as hasField
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
                             cross apply (select count(*) from metrics.Asset where State = 1 and AssetTypeUid = AL.AssetTypeUid and ScoreType = AL.ScoreType)Measures(F)
+                            cross apply (select count(*) from FieldType where AssetTypeID = AT.ID and [Type] = 'Score' and ScoreType = AL.ScoreType) Fields(F)
                         {sqlWhere}
                         order by P.[Path]
                         ";

@@ -56,6 +56,6 @@
   <include file="scripts/GOV-10013.xml"/> <!-- Remove ArtifactType_TaxonomyTypeID, ArtifactType_TaxonomyTypeIDNodes settings-->
   <include file="scripts/GOV-10314.xml"/> <!-- Add settings to support Process Composer (Governance Role)-->
   <include file="scripts/GOV-8884.xml"/> <!-- Add column for locking settings so they cannot be changed by customers -->
-  
+  <include file="scripts/GOV-8885.xml"/>  <!-- Add column for Setting Type so they can be validated-->
   <include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
 </databaseChangeLog>
