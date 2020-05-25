@@ -9,6 +9,7 @@ using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -470,7 +471,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
-            if(sendWorkflowEvents)
+            if (sendWorkflowEvents)
             {
                 res = Connection.Query<AssetFieldTypeUpdate>($@"
                     select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
@@ -480,7 +481,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                                             and EF.FieldTypeID is not null
 	                    inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
-                    ,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+                    , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
 
             Connection.Execute($@"
@@ -1029,7 +1030,8 @@ where T.ExecutionId = @executionid;
                     }
                     else if (ot == "ReferenceItemType")
                     {
-                        switch (fieldName.ToLower()) {
+                        switch (fieldName.ToLower())
+                        {
                             case "code":
                                 if ((fieldValue ?? "").Length > 250)
                                 {
@@ -1072,9 +1074,9 @@ where T.ExecutionId = @executionid;
                         success = false;
                         errorMessages.Add($"{fieldName} is a {fieldType.Type} field and cannot be updated on this request");
                     }
-                    else 
+                    else
                     {
-                        if (string.IsNullOrEmpty(fieldValue)) 
+                        if (string.IsNullOrEmpty(fieldValue))
                         {
                             if (fieldType.IsRequired)
                             {
@@ -2857,7 +2859,7 @@ where   ExecutionID = @ExecutionID
 
                         this.AITrackTrace(client, execution, METHOD_NAME, "BuildDatatable and initialization", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
@@ -2866,7 +2868,7 @@ where   ExecutionID = @ExecutionID
                         hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         #region Generate data sets
 
                         if (predicateType.HasValue)
@@ -2898,7 +2900,7 @@ where   ExecutionID = @ExecutionID
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get predicateType.HasValue", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         int i = 1;
-                        
+
                         foreach (var model in import)
                         {
                             if (i > currentLocation.HighestItemNumber)
@@ -3019,7 +3021,7 @@ where   ExecutionID = @ExecutionID
                         }
                         this.AITrackTrace(client, execution, METHOD_NAME, "ValidateFields", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         #endregion
 
                         if (results.Count > 0) // There are errors already processed.
@@ -3717,7 +3719,7 @@ select [uid] from #ParentChildRelationships",
                             {
 
                                 var changedFields = new Dictionary<Guid, List<string>>();
-                                foreach(var key in importFields.Keys)
+                                foreach (var key in importFields.Keys)
                                 {
                                     var r = results.SingleOrDefault(i => i.ItemNumber == key);
                                     if (r != null && !changedFields.ContainsKey(r.uid))
@@ -3762,10 +3764,10 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             bool checkSemanticRelation = false;
 
-            if ( (rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation )
+            if ((rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
 
-            if ( (rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType )
+            if ((rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
                 checkSemanticRelation = true;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -4163,7 +4165,7 @@ end",
 		                            where T.ExecutionId = @ExecutionID
                                     and T.IsNew = 1 
 		                            and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
-                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type}, commandTimeout: timeout);
+                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type }, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
 
                     }
@@ -4182,7 +4184,7 @@ end",
                                     inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
 		                            where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
                                     and T.IsNew = 1 
-                            ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID}, commandTimeout: timeout);
+                            ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID }, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Semantic Relationships Validation", sw.ElapsedMilliseconds, isLog);
                     }
 
@@ -6113,12 +6115,14 @@ insert into #Keys
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
                                 }
-                                else {
+                                else
+                                {
                                     if (rundate > DateTime.Now)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
                                         row["Success"] = 0;
-                                    }else if(rundate == DateTime.MinValue)
+                                    }
+                                    else if (rundate == DateTime.MinValue)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
                                         row["Success"] = 0;
@@ -6143,7 +6147,8 @@ insert into #Keys
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
                                         row["Success"] = 0;
-                                    }else if (effectiveDate == DateTime.MinValue)
+                                    }
+                                    else if (effectiveDate == DateTime.MinValue)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
                                         row["Success"] = 0;
@@ -6168,7 +6173,7 @@ insert into #Keys
                                     row["Success"] = 0;
                                 }
 
-                                if(!model.PassCount.HasValue)
+                                if (!model.PassCount.HasValue)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "PassCount");
                                     row["Success"] = 0;
@@ -6181,7 +6186,7 @@ insert into #Keys
                                 }
                             }
 
-                            if(model is DataQualityUpdateModel dataQualityUpdateModel)
+                            if (model is DataQualityUpdateModel dataQualityUpdateModel)
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
 
@@ -6200,7 +6205,7 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-                            if(model.PassCount.HasValue)
+                            if (model.PassCount.HasValue)
                             {
                                 row["PassCount"] = model.PassCount.Value;
                             }
@@ -6209,7 +6214,7 @@ insert into #Keys
                                 row["PassCount"] = DBNull.Value;
                             }
 
-                            if(model.FailCount.HasValue)
+                            if (model.FailCount.HasValue)
                             {
                                 row["FailCount"] = model.FailCount.Value;
                             }
@@ -6234,7 +6239,7 @@ insert into #Keys
                             {
                                 ulong total = (ulong)model.PassCount.Value + (ulong)model.FailCount.Value;
 
-                                if(total > 9223372036854775807)
+                                if (total > 9223372036854775807)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
                                     row["Success"] = 0;
@@ -6750,7 +6755,8 @@ insert into #Keys
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
-                                }else if (model.RunDateStart != null && runDateStart > runDateEnd)
+                                }
+                                else if (model.RunDateStart != null && runDateStart > runDateEnd)
                                 {
                                     messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
                                     row["Success"] = 0;
@@ -6886,7 +6892,7 @@ insert into #Keys
 
                                    ";
 
-                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset}, commandTimeout: timeout);
+                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
 
                     #endregion
 
@@ -7024,7 +7030,7 @@ insert into #Keys
 
                                 try
                                 {
-                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber}, transaction: trans, commandTimeout: timeout);
+                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber }, transaction: trans, commandTimeout: timeout);
                                     trans.Commit();
                                     runCompleted = true;
 
@@ -7060,6 +7066,259 @@ insert into #Keys
 
             return results;
         }
+
+        public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
+        {
+            var executionTable = "api.ExecutionResponsibilityRule";
+            var results = new List<ResponsibilityRuleUpsertResponseModel>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+
+            if (executionItemDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionResponsibilityRule");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<ResponsibilityRuleUpsertResponseModel>(
+                                $"select * from api.ExecutionResponsibilityRule where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ResponsibilityTypeUid", typeof(Guid));
+                    table.Columns.Add("AssetTypeUid", typeof(Guid));
+                    table.Columns.Add("Name", typeof(string));
+                    table.Columns.Add("IsVisible", typeof(bool));
+                    table.Columns.Add("ApplyToType", typeof(bool));
+                    table.Columns.Add("Context", typeof(string));
+                    table.Columns.Add("When", typeof(string));
+                    table.Columns.Add("Then", typeof(string));
+                    table.Columns.Add("uid", typeof(Guid));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ItemNumber"] = i;
+                            if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                            else row["ExecutionItemUid"] = Guid.NewGuid();
+
+                            row["ResponsibilityTypeUid"] = responsibilityTypeUid;
+                            row["AssetTypeUid"] = model.AssetTypeUid;
+                            row["Name"] = model.Name;
+                            row["IsVisible"] = model.IsVisible;
+                            row["ApplyToType"] = model.ApplyToType;
+                            row["Context"] = model.Context;
+                            if (model.Definition.When != null)
+                            {
+                                row["When"] = JsonConvert.SerializeObject(model.Definition.When);
+                            }
+                            if (model.Definition.Then != null)
+                            {
+                                row["Then"] = JsonConvert.SerializeObject(model.Definition.Then);
+                            }
+                            if (model.uid.HasValue)
+                            {
+                                row["uid"] = model.uid.Value;
+                            }
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionResponsibilityRule";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
+                    bulkCopy.ColumnMappings.Add("AssetTypeUid", "AssetTypeUid");
+                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                    bulkCopy.ColumnMappings.Add("IsVisible", "IsVisible");
+                    bulkCopy.ColumnMappings.Add("ApplyToType", "ApplyToType");
+                    bulkCopy.ColumnMappings.Add("Context", "Context");
+                    bulkCopy.ColumnMappings.Add("When", "When");
+                    bulkCopy.ColumnMappings.Add("Then", "Then");
+
+
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+                    #region Log data errors
+
+
+                    var checkSQL = $@"
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Script not ready for production'
+    from api.ExecutionResponsibilityRule EP
+    where	ExecutionID = @ExecutionID; 
+";
+
+                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<ResponsibilityRuleUpsertResponseModel>();
+                    results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var predicateTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().ToList();
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"P.Success is null and P.ExecutionID = @ExecutionID and P.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                try
+                                {
+
+                                    var insertSQL = $@"
+                                            drop table if exists #mergeResultTable
+                                            create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
+                                            
+                                            update  api.ExecutionResponsibilityRule 
+                                            set     [Uid] = newid() 
+                                            where   [Uid] is null or [Uid] = @emptyUid 
+                                                    and ItemNumber between @beginItemNumber and @endItemNumber; 
+
+                                            merge into [Predicate] P
+                                            using ( select * 
+	                                                from api.ExecutionResponsibilityRule
+		                                            where ExecutionID = @ExecutionID
+                                                          and ItemNumber between @beginItemNumber and @endItemNumber
+                                                          and PredicateID is null
+                                                          and Success is null
+	                                              ) S
+                                            on (P.uid = S.uid)
+											when matched then
+											update  
+												set P.Name = S.Name,
+												P.Inverse = S.Inverse,
+												P.Type = S.Type
+                                            when not matched then
+	                                            insert (Uid, Name, Inverse, Type, IsSystem)
+	                                            values (S.Uid, S.Name,S.Inverse, S.Type, 0)
+	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
+
+                                            update EP
+                                            set EP.PredicateID = Res.PredicateId,
+	                                            EP.uid = Res.PredicateUid
+                                            from api.ExecutionResponsibilityRule EP
+                                                 inner join #mergeResultTable Res on Res.ExecutionItemUid = EP.ExecutionItemUid
+                                            where EP.ExecutionID = @ExecutionID";
+
+                                    Connection.Execute(insertSQL,
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
+
+                                    Connection.Execute(
+                                        $"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix} and P.PredicateID is not null;",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityRule", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                            Query<ResponsibilityRuleUpsertResponseModel>(
+                                $"select * from api.ExecutionResponsibilityRule where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    Connection.Close();
+
+                }
+            }
+
+            return results;
+        }
+
 
     }
 

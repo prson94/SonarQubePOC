@@ -638,33 +638,64 @@ namespace d360.core.entities
     }
 
     [DataContract]
-    public class ResponsibilityRulePostModel
+    public class ResponsibilityRuleUpsertModel
     {
-        public Guid ExecutionItemUid { get; set; }
-        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+        [DataMember]
+        public Guid? uid { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
         public bool IsVisible { get; set; }
+        [DataMember]
         public bool ApplyToType { get; set; }
+        [DataMember]
         public string Context { get; set; }
+        [DataMember]
         public RuleDefinition Definition { get; set; }
     }
-
+    [DataContract]
     public class RuleDefinition
     {
+        [DataMember]
         public List<RuleThen> Then { get; set; }
+        [DataMember]
         public List<RuleCondition> When { get; set; }
     }
-
+    [DataContract]
     public class RuleThen
     {
+        [DataMember]
         public Guid AssigneeTypeUid { get; set; }
+        [DataMember]
+
         public List<RuleCondition> Conditions { get; set; }
     }
-
+    [DataContract]
     public class RuleCondition
     {
+        [DataMember]
+
         public Guid IntersectTypeUid { get; set; }
+        [DataMember]
+
         public string FieldApiName { get; set; }
+        [DataMember]
+
         public string Value { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleUpsertResponseModel
+    {
+        public int ItemNumber { get; set; }
+        public Guid Uid { get; set; }
+        public Guid? ExecutionItemUid { get; set; }
+        public string Message { get; set; }
+        public bool Success { get; set; }
     }
 
 }

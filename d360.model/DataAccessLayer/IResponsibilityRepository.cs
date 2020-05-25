@@ -27,5 +27,7 @@ namespace d360.model.DataAccessLayer
         IEnumerable<SecurityAssetModel> GetSecurityAssetModelsForResources(List<Guid> resourceUids, Guid assetUid, Guid responsibilityUid);
         void InsertResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources, string context);
         void DeleteResponsibilityOverrides(ResponsibilityType responsibilityType, Asset asset, List<SecurityAssetModel> resources);
+
+        List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution);
     }
 }

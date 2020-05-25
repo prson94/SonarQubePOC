@@ -716,6 +716,30 @@ where 1=1
             Company.SaveChanges();
         }
 
+        public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<ResponsibilityRuleUpsertResponseModel> results = null;
+            try
+            {
+                results = Company.UpsertResponsibilityRules(execution, responsibilityTypeUid, responsibilityRules);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
+        }
 
     }
 }

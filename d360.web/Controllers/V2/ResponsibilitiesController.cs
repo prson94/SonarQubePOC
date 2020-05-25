@@ -1054,7 +1054,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationship types  uid, including any error / success messages.", typeof(List<RelationshipTypeResult>))
         ]
-        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRulePostModel> responsibilityRules)
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
             var prefix = "Relationships.PostResponsibilityRules => ";
             var errorMessage = "";
@@ -1065,9 +1065,9 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
 
 
-                //var execution = getApiExecution(relationshiptypes.Count);
+                var execution = getApiExecution(responsibilityRules.Count);
 
-                //var results = RelationshipRepository.PostRelationshipTypes(relationshiptypes, execution);
+                var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { })));
             }
             catch (Exception ex)
