@@ -173,11 +173,11 @@ namespace d360.model.DataAccessLayer
 									,A.AutoDisplayDescription
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
+                                    ,A.AutoDisplayParent
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
                                     ,AT.IconForeColor as ForeColor
-                                    ,A.AutoDisplayParent
                         FROM        AssetType A
                                     {optionalJoin}
                                     cross apply dbo.GetAssetTypeTextPathById(A.ID, ' / ') P
