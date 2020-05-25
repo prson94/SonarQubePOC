@@ -25,7 +25,6 @@
 	<include file="scripts/Udt.utility.FieldValue.xml"/>
   
 	<!-- Functions (object-based naming) -->
-	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
@@ -342,6 +341,7 @@
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
 	<!-- Functions (object-based naming) -->
+	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>
