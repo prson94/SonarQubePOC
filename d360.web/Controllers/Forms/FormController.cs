@@ -232,19 +232,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
-        
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/new/{objectType}")]
-        public JsonResult DynamicEditorAddFields(string objectType, object[] param)
-        {
-            throw new Exception("Invalid or non implemented editor type");
-        }
-        
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/edit/{objectType}")]
-        public JsonResult DynamicEditorEditFields(string objectType, object[] param)
-        {
-            throw new Exception("Invalid or non implemented editor type");
-        }
-
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
