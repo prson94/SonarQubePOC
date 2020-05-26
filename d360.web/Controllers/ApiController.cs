@@ -5205,7 +5205,7 @@ where   (
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = $"{detail.Name} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
+                FileName = $"{detail.Name.GetSafeFilename()} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
             };
             return result;
         }

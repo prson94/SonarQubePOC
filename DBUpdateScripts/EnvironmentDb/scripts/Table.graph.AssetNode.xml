@@ -105,5 +105,99 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Pappas" id="Table.graph.AssetNode-XSD-v1" runInTransaction="false">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [sys].[xml_schema_collections] where name = 'GraphSegmentXsdSchema')
+BEGIN
+	CREATE XML SCHEMA COLLECTION GraphSegmentXsdSchema AS  
+	N'<?xml version="1.0" encoding="UTF-16"?>  
+	<xsd:schema  
+		elementFormDefault="qualified"   
+		attributeFormDefault="unqualified"  
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+		<xsd:simpleType name="NullableInt">
+			<xsd:union memberTypes="IntegerType empty"/>
+		</xsd:simpleType>
+		<xsd:simpleType name="NullableLong">
+			<xsd:union memberTypes="LongType empty"/>
+		</xsd:simpleType>
+		<xsd:simpleType name="IntegerType">
+			<xsd:restriction base="xsd:integer"/>
+		</xsd:simpleType>
+		<xsd:simpleType name="LongType">
+			<xsd:restriction base="xsd:long"/>
+		</xsd:simpleType>
+		<xsd:simpleType name="empty">
+			<xsd:restriction base="xsd:string">
+				<xsd:maxLength value="0"/>
+			</xsd:restriction>
+		</xsd:simpleType>
+		
+		<xsd:element name="path">  
+			<xsd:complexType>
+				<xsd:sequence>
+					<xsd:element name="segment" minOccurs="0" maxOccurs="unbounded">
+						<xsd:complexType>
+							<xsd:sequence>
+								<xsd:element name="level" type="xsd:integer" />  
+								<xsd:element name="position" type="xsd:integer" />  
+								<xsd:element name="assetTypeId" type="xsd:integer" />  
+								<xsd:element name="assetId" type="xsd:long" />  
+								<xsd:element name="parentLevel" type="NullableInt" />  
+								<xsd:element name="parentPosition" type="NullableInt"/>  
+								<xsd:element name="parentAssetId" type="NullableLong" /> 
+								<xsd:element name="value" type="xsd:string" />
+								<xsd:element name="leaf" type="xsd:boolean" />
+							</xsd:sequence>
+						</xsd:complexType>
+					</xsd:element>
+				</xsd:sequence>  
+			</xsd:complexType>  
+		</xsd:element>  
+	</xsd:schema>'; 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Core" id="Table.graph.AssetNode-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
+BEGIN
+	alter table graph.AssetNode add ReformattedSegments xml(GraphSegmentXsdSchema) null
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Primary')
+BEGIN
+	CREATE PRIMARY XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] ON [graph].[AssetNode] ( ReformattedSegments )
+END
+
+IF NOT EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Path')
+BEGIN
+	CREATE XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Path] ON [graph].[AssetNode] ( ReformattedSegments ) USING XML INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] FOR PATH
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>

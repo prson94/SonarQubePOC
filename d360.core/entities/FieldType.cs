@@ -567,7 +567,8 @@ namespace d360.core.entities
         public int? ColumnWidth { get; set; }
         [DataMember]
         public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
-
+        [DataMember]
+        public int SortOrder { get; set; }
         [DataMember]
         public bool IsListable { get; set; }
         [DataMember]

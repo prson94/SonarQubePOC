@@ -1207,10 +1207,14 @@ from	IntersectType I
                         newFieldType.FilterPredicateID = filterPredicate;
                         newFieldType.FilterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
                     }
-                    if (f.Type.Lookup.Format != null)
+                    if (f.Type.Lookup.Format != null && !string.IsNullOrEmpty(f.Type.Lookup.Format.Display))
                     {
                         newFieldType.LookupDisplayFormat = f.Type.Lookup.Format.Display;
-                        newFieldType.LookupEditFormat = f.Type.Lookup.Format.Edit;
+                        newFieldType.LookupEditFormat = string.IsNullOrEmpty(f.Type.Lookup.Format.Edit) ? f.Type.Lookup.Format.Display : f.Type.Lookup.Format.Edit;
+                    }
+                    else
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Invalid Lookup display Format", $"List Display Format is required for Lookup Field Type.");
                     }
                     newFieldType.IsDisplayable = f.Type.Lookup.IsDisplayable;
                     newFieldType.IsEditable = f.Type.Lookup.IsEditable;
@@ -1268,6 +1272,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Path.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.ShowIfEmpty = true;
+                    newFieldType.SortOrder = f.Type.Path.SortOrder;
                     newFieldType.IsPrimaryFilter = false;
                 }
                 else if (f.Type.Relationship != null)
@@ -1335,6 +1340,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Tag.IsListable;
                     newFieldType.IsPartOfKey = false;
                     newFieldType.ShowIfEmpty = true;
+                    newFieldType.SortOrder = f.Type.Tag.SortOrder;
                     newFieldType.IsPrimaryFilter = f.Type.Tag.IsPrimaryFilter;
                 }
                 else
