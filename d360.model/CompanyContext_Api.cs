@@ -7069,7 +7069,6 @@ insert into #Keys
 
         public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
         {
-            var executionTable = "api.ExecutionResponsibilityRule";
             var results = new List<ResponsibilityRuleUpsertResponseModel>();
             bool generalChecksCompleted = false;
             CurrentExecutionLocationModel currentLocation = null;
@@ -7136,22 +7135,33 @@ insert into #Keys
                             else row["ExecutionItemUid"] = Guid.NewGuid();
 
                             row["ResponsibilityTypeUid"] = responsibilityTypeUid;
-                            row["AssetTypeUid"] = model.AssetTypeUid;
+
+                            if (model.AssetTypeUid.HasValue)
+                                row["AssetTypeUid"] = model.AssetTypeUid;
                             row["Name"] = model.Name;
                             row["IsVisible"] = model.IsVisible;
                             row["ApplyToType"] = model.ApplyToType;
                             row["Context"] = model.Context;
-                            if (model.Definition.When != null)
+                            if (model.Definition != null )
                             {
-                                row["When"] = JsonConvert.SerializeObject(model.Definition.When);
+                                row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                             }
-                            if (model.Definition.Then != null)
-                            {
-                                row["Then"] = JsonConvert.SerializeObject(model.Definition.Then);
-                            }
+
                             if (model.uid.HasValue)
                             {
                                 row["uid"] = model.uid.Value;
+                            }
+
+                            if (!model.AssetTypeUid.HasValue || model.AssetTypeUid.Value == Guid.Empty)
+                            {
+                                row["Message"] = "AssetTypeUid is not valid!";
+                                row["Success"] = false;
+                            }
+
+                            if (string.IsNullOrEmpty(model.Name.Trim()))
+                            {
+                                row["Message"] = "Name cannot be empty.";
+                                row["Success"] = false;
                             }
 
                             table.Rows.Add(row);
@@ -7181,8 +7191,9 @@ insert into #Keys
                     bulkCopy.ColumnMappings.Add("IsVisible", "IsVisible");
                     bulkCopy.ColumnMappings.Add("ApplyToType", "ApplyToType");
                     bulkCopy.ColumnMappings.Add("Context", "Context");
-                    bulkCopy.ColumnMappings.Add("When", "When");
-                    bulkCopy.ColumnMappings.Add("Then", "Then");
+                    bulkCopy.ColumnMappings.Add("Definition", "Definition");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
 
 
                     bulkCopy.WriteToServer(table);
@@ -7195,9 +7206,10 @@ insert into #Keys
                     var checkSQL = $@"
     update	api.ExecutionResponsibilityRule 
     set		Success = 0,
-		    [Message] = coalesce([Message] + '; ', '') + 'Script not ready for production'
+		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid'
     from api.ExecutionResponsibilityRule EP
-    where	ExecutionID = @ExecutionID; 
+    left join AssetType AT on AT.uid = EP.AssetTypeUid
+    where	ExecutionID = @ExecutionID and AT.Id is null
 ";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
@@ -7240,45 +7252,14 @@ insert into #Keys
                                 {
 
                                     var insertSQL = $@"
-                                            drop table if exists #mergeResultTable
-                                            create table #mergeResultTable (PredicateId int, PredicateUid uniqueidentifier, ExecutionItemUid uniqueidentifier) 
-                                            
-                                            update  api.ExecutionResponsibilityRule 
-                                            set     [Uid] = newid() 
-                                            where   [Uid] is null or [Uid] = @emptyUid 
-                                                    and ItemNumber between @beginItemNumber and @endItemNumber; 
-
-                                            merge into [Predicate] P
-                                            using ( select * 
-	                                                from api.ExecutionResponsibilityRule
-		                                            where ExecutionID = @ExecutionID
-                                                          and ItemNumber between @beginItemNumber and @endItemNumber
-                                                          and PredicateID is null
-                                                          and Success is null
-	                                              ) S
-                                            on (P.uid = S.uid)
-											when matched then
-											update  
-												set P.Name = S.Name,
-												P.Inverse = S.Inverse,
-												P.Type = S.Type
-                                            when not matched then
-	                                            insert (Uid, Name, Inverse, Type, IsSystem)
-	                                            values (S.Uid, S.Name,S.Inverse, S.Type, 0)
-	                                        output inserted.ID, inserted.Uid, S.ExecutionItemUid into #mergeResultTable;
-
-                                            update EP
-                                            set EP.PredicateID = Res.PredicateId,
-	                                            EP.uid = Res.PredicateUid
-                                            from api.ExecutionResponsibilityRule EP
-                                                 inner join #mergeResultTable Res on Res.ExecutionItemUid = EP.ExecutionItemUid
-                                            where EP.ExecutionID = @ExecutionID";
+select * from api.Execution
+";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
-                                        $"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix} and P.PredicateID is not null;",
+                                        $"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix};",
                                         new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                     trans.Commit();
