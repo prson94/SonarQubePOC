@@ -97,18 +97,6 @@ namespace d360.model
 
         public DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
 
-        public DbSet<d360.core.entities.Attribute> Attributes { get; set; }
-
-        public DbSet<AttributeDetail> AttributeDetails { get; set; }                            /* VIEW */
-
-        public DbSet<AttributeType> AttributeTypes { get; set; }
-
-        public DbSet<AttributeTypeCategory> AttributeTypeCategories { get; set; }
-
-        public DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
-
-        public DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }    /* VIEW */
-
         public DbSet<Comment> Comments { get; set; }
 
         public DbSet<CommentRelation> CommentRelations { get; set; }
@@ -414,38 +402,6 @@ where	T.[Class] in ({classList})").ToList();
             return list;
         }
 
-        public List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID)
-        {
-            string ignoreFusionItems = string.Empty;
-            if (!Community.IsFusionEnabled())
-            {
-                ignoreFusionItems = $" and A.ObjectType not in ('{SystemObjects.FusionQueryAttributeType.ToString()}', '{SystemObjects.FusionType.ToString()}','{SystemObjects.FusionAttributeType.ToString()}')";
-            }
-            var list = Database.Connection.Query<AllocationPossibility>($@"
-            select A.* from (
-            select	Object as ObjectType, 
-		            ObjectID as ObjectTypeID, 
-		            case
-                        when Object = 'ArtifactType' AND (Class = 1) then 'Business Asset :: '
-                        when Object = 'ArtifactType' and (Class = 8 ) then 'Technical Asset :: '
-			            when Object = 'TaxonomyType' then 'Model :: '
-			            when Object = 'PolicyType' then 'Policy :: '
-			            when Object = 'RuleType' then 'Rule :: '
-			            when Object = 'FusionType' then 'Fusion Type :: '
-			            when Object = 'ReferenceItemType' then 'Reference Item Type :: '
-		            end + Name as Name
-            from	AssetType
-            where	Class in (1,2,3,6,7,8,9)
-            union
-            select	'FusionAttributeType' as ObjectType, ID as ObjectTypeID, 'Fusion Attributes :: ' + TextPath as Name from FusionAttributeType
-            ) A left join AttributeTypeRelationDetail R on R.ObjectType = A.ObjectType and R.ObjectID = A.ObjectTypeID and R.AttributeTypeID = @id
-            where R.ObjectID is null {ignoreFusionItems}", new { id = attributeTypeID }).ToList();
-
-            list = list.OrderBy(i => i.ClassName).ThenBy(i => i.Name).ToList();
-
-            return list;
-        }
-
         public async Task<IEnumerable<AllowedIntersectionType>> GetAllowedIntersectionTypes(string type, int id)
         {
             return await Database.Connection
@@ -455,11 +411,6 @@ where	T.[Class] in ({classList})").ToList();
                     SourceType = new Dapper.DbString { Value = type.ToString(), IsAnsi = true, IsFixedLength = true, Length = 50 },
                     SourceTypeID = id
                 });
-        }
-
-        public IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id)
-        {
-            return Query<AttributeHierarchyItem>("EXEC GetAttributeAndIntersectHierarchyByObject @type, @id", new { type = new Dapper.DbString { Value = type.ToString(), IsAnsi = true }, id = id }).AsQueryable();
         }
 
         public string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue)
@@ -538,16 +489,6 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 	when	not matched then
 	insert	(SortOrder, [Group], [Object], ObjectID, Label, [Type])
 	values	(S.SortOrder, S.[Group], S.[Object], S.ObjectID, S.Label, S.[Type]);
-
-	insert into @tbl
-		select	4 as SortOrder,
-				'Attribute' as [Group],
-				'AttributeType' as Object,
-				ID as ObjectID,
-				Name as Label,
-				'Lookup' as Type
-		from	AttributeType T
-				inner join AttributeTypeRelation R on R.AttributeTypeid = T.ID and R.ObjectType = @SourceType and R.ObjectID = @SourceTypeID
 
 	insert into @tbl
 		select	distinct
@@ -1430,7 +1371,6 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
 
             List<string> excludedClasses = new List<string>()
             {
-                SystemObjects.AttributeType.ToString(),
                 SystemObjects.FusionType.ToString(),
                 SystemObjects.OrganizationType.ToString()
             };
@@ -2303,31 +2243,6 @@ where	I.ID is null";
                 }
                 #endregion
 
-                #region Business logic : AttributeType
-                if (entry.Entity is AttributeType)
-                {
-                    var o = entry.Entity as AttributeType;
-
-                    switch (entry.State)
-                    {
-                        case EntityState.Added:
-                            if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
-                        case EntityState.Deleted:
-                            if (Any<AttributeTypeRelation>(i => i.AttributeTypeID == o.ID))
-                                throw new ConflictException(string.Format(Messages.Error_NotRemoved_Tokenized, o.Name), Messages.Error_AttributeType_Allocations);
-
-                            break;
-                        case EntityState.Modified:
-                            if (Any<AttributeType>(i => i.ParentID == o.ParentID && i.Name == o.Name && i.ID != o.ID))
-                                throw new ArgumentException(Messages.Error_NameTaken);
-
-                            break;
-                    }
-                }
-                #endregion
 
                 #region Business logic : Field
                 if (entry.Entity is Field)
@@ -2481,8 +2396,6 @@ where	I.ID is null";
                         case EntityState.Deleted:
                             var any = Any<Field>(f => f.FieldType.LookupObjectType == "Intersect" && f.FieldType.LookupObjectID == intersectTypeID && f.Value == id);
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more fields reference this relationship.");
-                            any = Any<core.entities.Attribute>(i => i.ObjectType == "Intersect" && i.ObjectID == o.ID);
-                            if (any) throw new ConflictException("Relationship Could not be Removed", "One or more attributes reference this relationship.");
                             any = Any<Intersect>(i => (i.Subject == "Intersect" && i.SubjectID == o.ID) || (i.Object == "Intersect" && i.ObjectID == o.ID));
                             if (any) throw new ConflictException("Relationship Could not be Removed", "One or more relationships reference this relationship.");
                             break;

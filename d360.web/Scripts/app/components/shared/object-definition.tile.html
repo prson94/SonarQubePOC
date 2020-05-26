@@ -29,21 +29,6 @@
       [hasDelete]="hasDeleteRelationshipsPermissions()"
     ></d3s-synonyms-tile>
   </simple-accordion>
-  <simple-accordion
-    header="Attributes ({{ attributes.itemCount }})"
-    [active]="false"
-    *ngIf="hasAttributes"
-  >
-    <d3s-attributes-tile
-      #attributes
-      [objectID]="objectID"
-      [objectType]="objectType"
-      [readonly]="false"
-      [hasAdd]="hasModifyAttributesPermissions()"
-      [hasEdit]="hasModifyAttributesPermissions()"
-      [hasDelete]="hasDeleteAttributesPermissions"
-    ></d3s-attributes-tile>
-  </simple-accordion>
 </div>
 <d3s-dynamic-editor
   *ngIf="formMode == FormMode.Editing && !useV2Api"

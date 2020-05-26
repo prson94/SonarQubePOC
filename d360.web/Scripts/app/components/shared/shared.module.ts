@@ -29,7 +29,6 @@ import { SharedDeleteFormModule } from './delete.form';
 import { SimpleAccordionModule } from './simple-accordion.part';
 import { SharedObjectDetailsModule } from './objectdetails/shared-object-details.module';
 
-import { AttributesTile } from './attributes.tile';
 import { GroupMembersComponent } from './group-members.component';
 import { MessagesBarComponent } from './messages-bar.component';
 import { ObjectDefinitionTile } from './object-definition.tile';
@@ -43,8 +42,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
 
 
 @NgModule({
-    declarations: [     
-        AttributesTile,                
+    declarations: [                           
         GroupMembersComponent,                            
         MessagesBarComponent,                                        
         ObjectDefinitionTile,

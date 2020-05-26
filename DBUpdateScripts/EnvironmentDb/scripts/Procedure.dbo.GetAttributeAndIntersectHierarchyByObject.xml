@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Procedure.dbo.GetAttributeAndIntersectHierarchyByObject-v1">
+  <changeSet author="bquinlivan" id="Procedure.dbo.GetAttributeAndIntersectHierarchyByObject-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+		DROP PROCEDURE IF EXISTS [dbo].[GetAttributeAndIntersectHierarchyByObject]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [dbo].[GetAttributeAndIntersectHierarchyByObject]
 	@type varchar(25),
 	@id int
@@ -40,11 +45,6 @@ begin
 								cast(0 as bit) as IsTechnical
 						) T	ON	A.ObjectType + '|' + cast(A.ObjectID as varchar(25)) = T.ID
 end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

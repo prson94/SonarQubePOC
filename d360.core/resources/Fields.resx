@@ -180,12 +180,6 @@
   <data name="Assignable_Name" xml:space="preserve">
     <value>Assignable?</value>
   </data>
-  <data name="AttributeType_Description" xml:space="preserve">
-    <value>The selected attribute type.</value>
-  </data>
-  <data name="AttributeType_Name" xml:space="preserve">
-    <value>Attribute Type</value>
-  </data>
   <data name="Body_Description" xml:space="preserve">
     <value>The content/body for this item.</value>
   </data>
@@ -915,12 +909,6 @@
   <data name="ReportDescription_Description" xml:space="preserve">
     <value>A description of the meaning for this report; what this report trying to explain.</value>
   </data>
-  <data name="AttributeTypeCategory_Description" xml:space="preserve">
-    <value>An attribute category that groups similar attributes together.</value>
-  </data>
-  <data name="AttributeTypeCategory_Name" xml:space="preserve">
-    <value>Category</value>
-  </data>
   <data name="RuleType_Description" xml:space="preserve">
     <value>The type of rule defined.  This impacts whether the events under a rule can be assigned.</value>
   </data>
@@ -1062,12 +1050,6 @@
   <data name="UpdatedOn_Name" xml:space="preserve">
     <value>Date Last Modified</value>
   </data>
-  <data name="Permissions_DeleteAttributes_Description" xml:space="preserve">
-    <value>Allow permission to remove attributes.</value>
-  </data>
-  <data name="Permissions_DeleteAttributes_Name" xml:space="preserve">
-    <value>Remove Attributes</value>
-  </data>
   <data name="Permissions_DeleteObject_Description" xml:space="preserve">
     <value>Allow permission to remove item.</value>
   </data>
@@ -1086,12 +1068,6 @@
   <data name="Permissions_DeleteSocial_Name" xml:space="preserve">
     <value>Remove Comments</value>
   </data>
-  <data name="Permissions_ModifyAttributes_Description" xml:space="preserve">
-    <value>Allow permission to create or update attributes.</value>
-  </data>
-  <data name="Permissions_ModifyAttributes_Name" xml:space="preserve">
-    <value>Modify Attributes</value>
-  </data>
   <data name="Permissions_ModifyObject_Description" xml:space="preserve">
     <value>Allow permission to create or update item.</value>
   </data>
@@ -1109,12 +1085,6 @@
   </data>
   <data name="Permissions_ModifySocial_Name" xml:space="preserve">
     <value>Participate in Collaboration</value>
-  </data>
-  <data name="Permissions_ReadAttributes_Description" xml:space="preserve">
-    <value>Allow permission to read attributes.</value>
-  </data>
-  <data name="Permissions_ReadAttributes_Name" xml:space="preserve">
-    <value>Read Attributes</value>
   </data>
   <data name="Permissions_ReadAudit_Description" xml:space="preserve">
     <value>Allow permission to read audit data and item history.</value>

@@ -49,6 +49,9 @@ namespace d360.core.entities
         public DateTime? ProcessingStartedOn { get; set; }
 
         [DataMember]
+        public bool MarkedForProcessing { get; set; } = false;
+
+        [DataMember]
         public State State { get; set; } = State.Active;
     }
 

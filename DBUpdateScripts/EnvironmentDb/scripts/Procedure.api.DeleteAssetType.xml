@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v2">
+  <changeSet author="bquinlivan" id="Procedure.api.DeleteAssetType-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -96,20 +96,7 @@ begin
 			delete	T
 			from	api.Entity T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete	T
-			from	Field T 
-					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
-					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			delete	T
-			from	[Attribute] T
-					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete  E
-			from    AttributeTypeRelation E 
-					inner join api.ExecutionDeletedAssetType S on S.Object = E.ObjectType and S.ObjectID = E.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
 			
 			drop table if exists #w;
 			create table #w (ID int);
@@ -655,20 +642,25 @@ begin
 					inner join Asset A on A.ID = T.AssetID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
+			-- Delete parent/child relationships.
 			delete	T
 			from	[Intersect] T 
 					inner join api.ExecutionDeletedAssetType S on S.IntersectTypeID = T.IntersectTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			-- Delete where assets are on the subject side of relationship.
 			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Subject and A.ObjectID = T.SubjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			delete	T
+			from	[IntersectType] T
+					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			-- Delete where assets are on the object side of relationship.
+			delete	T
 			from	[Intersect] T
 					inner join Asset A on A.Object = T.Object and A.ObjectID = T.ObjectID
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			delete	T
-			from	[IntersectType] T
-					inner join api.ExecutionDeletedAssetType S on S.Object = T.Subject and S.ObjectID = T.SubjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			delete	T
 			from	[IntersectType] T
 					inner join api.ExecutionDeletedAssetType S on S.Object = T.Object and S.ObjectID = T.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -768,6 +760,42 @@ begin
 			from	Asset A
 					inner join AssetType ATT on A.AssetTypeID = ATT.ID and ATT.[Object] = 'ArtifactType' and A.[Object] = 'Artifact'
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'ArtifactType' and S.AssetTypeID = ATT.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
+			-- Delete from graph tables.
+			delete E
+			from    graph.AssetEdge E
+					inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = N.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			-- Delete rule results where the asset we are deleting is the owner of the results (i.e. a Rule).
+			drop table if exists #Uids
+			create table #Uids (Uid uniqueidentifier)
+			create clustered index CIX_TempUids on #Uids (Uid)
+
+			insert into #Uids
+				select	R.Uid
+				from	graph.AssetNode A,
+						dbo.AssetResultEdge E,
+						dbo.AssetResult R,
+						api.ExecutionDeletedAssetType S
+				where	MATCH(A-(E)->R)
+						and E.Class = 1
+						and S.AssetTypeID = A.AssetTypeID 
+						and S.ExecutionID = @executionUid 
+						and S.ItemNumber = @itemNumber;
+
+			delete	E
+			from    dbo.AssetResultEdge E
+					inner join graph.AssetNode N on E.$from_id = N.$node_id
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = N.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
+			delete	T
+			from	dbo.AssetResult T
+					inner join #Uids S on S.Uid = T.Uid;
+
+			delete	A
+			from	graph.AssetNode A
+					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 					
 			delete T
 			from	AssetType T

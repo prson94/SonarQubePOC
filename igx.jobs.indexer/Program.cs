@@ -169,18 +169,6 @@ namespace igx.jobs.indexer
                 CoreFunction.AITrackException(functionName, ex, c.CompanyID);
             }
 
-            LogReindexStart("Attributes", c.CompanyID);
-
-            try
-            {
-                models = LoadAttributes(company, c.CompanyID, source);
-                source.AddToIndex(models);
-            }
-            catch (Exception ex)
-            {
-                CoreFunction.AITrackException(functionName, ex, c.CompanyID);
-            }
-
             LogReindexStart("Models", c.CompanyID);
 
             try
@@ -675,31 +663,6 @@ ORDER BY A.ID";
                         { "Description", "" },
                         { "Status", "Active" },
                         { "Taxonomy", "" }
-                    }
-                };
-            });
-        }
-
-        private static IEnumerable<IndexObjectModel> LoadAttributes(SqlConnection context, int companyID, ElasticSearchSource source)
-        {
-            var sql = @"
-select	AD.ID, AD.Name, AD.FormattedValue, OD.Url 
-from	AttributeDetail AD 
-        inner join cache.ObjectDetails OD on OD.[Object] = AD.ObjectType and  OD.ObjectID = AD.ObjectID and OD.[Object] in ('Artifact', 'Taxonomy')";
-
-            var sType = SystemObjects.Attribute.ToString();
-
-            return getData(context, sql, companyID, source, sType, false, (dynamic o) =>
-            {
-                return new IndexObjectModel
-                {
-                    Category = sType,
-                    CompanyID = companyID,
-                    ID = o.ID,
-                    AssetType = o.Name,
-                    RelativeUrl = o.Url,
-                    Fields = new Dictionary<string, string>() {
-                        { "Name", o.FormattedValue }
                     }
                 };
             });
