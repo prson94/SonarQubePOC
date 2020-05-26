@@ -46,7 +46,7 @@ namespace d360.extensions
             }
             set
             {
-                if (value.Length > SEARCH_TERM_MAX_LENGTH)
+                if (value != null && value.Length > SEARCH_TERM_MAX_LENGTH)
                 {
                     _term = value.Substring(0, SEARCH_TERM_MAX_LENGTH);
                 }

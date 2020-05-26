@@ -1,0 +1,41 @@
+﻿<div class="search-page-full">
+    <div #title class="title-bar search">
+        <div class="title">
+            <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
+            <h1>Search Results</h1>
+            <div class="titlebar-search">
+                <div class="field grow mr10">
+                    <d3s-header-typeahead-search [additionalCssClasses]="'gov-search'"
+                                                 [autocompletePlaceholder]="'What are you looking for?'"
+                                                 [searchOptions]="searchTypes"
+                                                 [defaultValue]="searchText"
+                                                 [isExactMatch]="isExactMatch"
+                                                 [keepFilter]="true">
+                    </d3s-header-typeahead-search>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div #searchContainer class="search-container">
+        <div class="search-content">
+            <div class="categories">
+                <div class="scrollpane">
+                    <d3s-check-tree [loading]="(searchStateService.treeLoading | async)"
+                                    [title]="'Filter by Category'"
+                                    [value]="searchStateService.categories | async"
+                                    [(selection)]="searchStateService.selectedFilters"
+                                    (selectionChange)="filterCheckTree($event)"
+                                    [emptyMessage]="'No categories found'">
+                    </d3s-check-tree>
+                </div>
+            </div>
+            <div class="cardlist">
+                <d3s-chips-filter [filterOption]="newFilterOptions" [selectedFilters]="searchStateService.advancedFilters" (applyFlter)="filterChanged($event)"></d3s-chips-filter>
+                <d3s-search-results [from]="fromNumber"
+                                    [loading]="isLoading" [itemsPerPage]="resultsPerPage"
+                                    [results]="searchResults">
+                </d3s-search-results>
+            </div>
+    </div>
+</div>
+<d3s-loading [isLoading]="isLoading"></d3s-loading>

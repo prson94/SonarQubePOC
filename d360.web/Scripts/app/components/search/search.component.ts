@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { BaseComponent } from '../shared/base.component';
 import { Title } from '@angular/platform-browser';
@@ -15,39 +15,14 @@ declare var CompanySettings;
 
 @Component({
     selector: 'd3s-search',
-    template: ` <div class="search-page-full">
-                    <div #title class="title-bar search">
-                        <div class="title">
-                            <span class="d3s-icon asset-icon"><i class="fa fa-search"></i></span>
-                            <h1>Search Results</h1>
-                            <div class="titlebar-search">           
-                                <div class="field grow mr10">
-                                    <d3s-header-typeahead-search 
-                                                [additionalCssClasses]="'gov-search'" 
-                                                [autocompletePlaceholder]="'What are you looking for?'"
-                                                [searchOptions]="searchTypes"
-                                                [defaultValue]="searchText"
-                                                [isExactMatch]="isExactMatch"
-                                                [keepFilter]="true">
-                                    </d3s-header-typeahead-search>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                <d3s-search-results [from]="fromNumber" 
-                    [loading]="isLoading" [itemsPerPage]="resultsPerPage"
-                    [results]="searchResults"
-                    [selectedFilters] = "searchStateService.advancedFilters"
-                    (selectedCategoryChange)="filterCheckTree($event);"
-                    (advFilterChanged)="advancedFilterChanged($event);">
-                </d3s-search-results>
-                </div>
-                <d3s-loading [isLoading]="isLoading"></d3s-loading>
-                `,
+    templateUrl: './search.component.html',
     providers: [TypeaheadSearchService],
+    host: {
+        '(window:resize)': 'setResultsHeight()'
+    },
 })
 
-export class SearchComponent extends BaseComponent implements OnInit {
+export class SearchComponent extends BaseComponent implements OnInit, AfterViewInit {
     public searchResults: SearchResultsObject;
     public categories: SearchCategories[] = [];
     public searchText: string;
@@ -59,6 +34,13 @@ export class SearchComponent extends BaseComponent implements OnInit {
     public fromNumber: number = 0;
     public sub: any;
 
+    newFilterOptions: any[] = [
+        { field: "Name", value: 'any' },
+        { field: "Description", value: 'any' },
+        { field: "Tags", value: 'any' }
+    ];
+
+    @ViewChild('searchContainer', { static: false }) searchContainer: ElementRef;
     @ViewChild('title', { static: false }) title: ElementRef;
 
     constructor(private route: ActivatedRoute,
@@ -101,39 +83,29 @@ export class SearchComponent extends BaseComponent implements OnInit {
         });
     }
 
-    private advancedFilterChanged(options) {
-        this.searchStateService.setFieldFilters(options);
-        this.doSearch();
+    ngAfterViewInit() {
+        this.setResultsHeight();
     }
 
-    private inputSearch($event) {
-        this.searchText = $event.text;
-        this.isExactMatch = $event.exactMatch;
-        this.searchTypes = $event.types;
-        this.searchStateService.setSearchCategories(this.searchTypes);
-        if (this.searchText.length > 0) {
-            this.doSearch();
-        }
+    setResultsHeight() {
+        window.setTimeout(() => {
+            if (this.searchContainer && this.searchContainer.nativeElement) {
+                this.searchContainer.nativeElement.style.height = (window.innerHeight - 125) + 'px';
+            }
+        }, 50);
     }
 
-    private exactMatchChance(isExactMatch) {
-        this.isExactMatch = isExactMatch;
-        this.doSearch();
+    //Advanced filters changed
+    private filterChanged(options) {
+        this.doSearch(true);
     }
 
-    public doSearch() {
-        this.searchStateService.search(this.searchText);
-    }
-
+    //Class/assettype selection changed
     public filterCheckTree(selectedNodes: CheckTreeNode[]) {
-        var types = selectedNodes.filter((x) => x.type == "subCategory").map((x) => x.data);
-        var categories = selectedNodes.filter((x) => x.type == "category").map((x) => x.data);
-        if (types.length > 0) {
-            categories = categories.concat(this.searchStateService.currentCategories.filter((x) => x.type == "category" && x.partialSelected == true).map((x) => x.data));
-        }
-        this.searchStateService.setAggregationFilter("d3sCategory", categories);
-        this.searchStateService.setAggregationFilter("d3sAssetType", types);
-
-        this.doSearch();
+        this.doSearch(true);
     }
+    public doSearch(resetPage: boolean = false) {
+        this.searchStateService.search(this.searchText, resetPage);
+    }
+
 };
