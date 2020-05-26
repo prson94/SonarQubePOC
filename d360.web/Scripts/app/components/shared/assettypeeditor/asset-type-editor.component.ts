@@ -187,7 +187,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
 
     ShowAutoDisplayOption() {
-        if (this.showParentPredicates) {
+        if (this.showParentPredicates && this.model.AssetType.Hierarchy.PredicateUid) {
             let selectedPredicate = this.model.Predicates.filter(x => x.value.toLowerCase() == this.model.AssetType.Hierarchy.PredicateUid.toLowerCase());
             if (selectedPredicate.length == 1) {
                 let onlyAllow = "child type of";
