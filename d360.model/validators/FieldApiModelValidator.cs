@@ -77,6 +77,7 @@ namespace d360.model.validators
                         actionIsReplaceAndKeySelected = true;
                     }
                 }
+
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.ReferenceItemType.ToString())
                 {
                     if (field.Type.IsPartOfKey())
@@ -97,13 +98,91 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Field type JsonElement not support for reference item type!");
                     }
                 }
+
                 if (relationshipTypeIdentifierInfoModel != null)
                 {
                     if (field.Type.IsPartOfKey())
                     {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Asset type error", $"Relationship Types cannot have field property 'IsPartOfKey' set to true.");
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationship Types cannot have field property 'IsPartOfKey' set to true.");
                     }
                 }
+                
+                if (field.Type.Path != null)
+                {
+                    if (actionTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Actions cannot have Path field type!");
+                    }
+                    if (relationshipTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationships cannot have Path field type!");
+                    }
+                    if (assetTypeIdentifierInfoModel != null)
+                    {
+                        var restrictedTypes = new List<string>() { 
+                            SystemObjects.FusionAttributeType.ToString(), 
+                            SystemObjects.FusionQueryAttributeType.ToString(),
+                            SystemObjects.FusionType.ToString(),
+                            SystemObjects.OrganizationType.ToString(), 
+                            SystemObjects.ResourceType.ToString() 
+                        };
+                        if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Path field type!");
+                        }
+                    }
+                }
+
+                if (field.Type.JsonElement != null)
+                {
+                    if (existingFieldTypes != null)
+                    {
+                        var jsonAttribute = field.Type.JsonElement.JsonAttribute;
+                        if (jsonAttribute == null)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Missing Json attribute definition!");
+                        }
+                        if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
+                        }
+                        var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
+                        if (!allowedTypes.Contains(jsonAttribute.DataType))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
+                        }
+
+
+                    }
+                }
+
+                if (field.Type.Score != null)
+                {
+                    if (actionTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Actions cannot have Score field type!");
+                    }
+                    if (relationshipTypeIdentifierInfoModel != null)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationships cannot have Score field type!");
+                    }
+                    if (assetTypeIdentifierInfoModel != null)
+                    {
+                        var restrictedTypes = new List<string>() {
+                            SystemObjects.FusionAttributeType.ToString(),
+                            SystemObjects.FusionQueryAttributeType.ToString(),
+                            SystemObjects.FusionType.ToString(),
+                            SystemObjects.OrganizationType.ToString(),
+                            SystemObjects.ReferenceItemType.ToString(),
+                            SystemObjects.ResourceType.ToString()
+                        };
+                        if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"This asset type may not have a Score field type!");
+                        }
+                    }
+                }
+
                 if (field.Type.Tag != null)
                 {
                     if (actionTypeIdentifierInfoModel != null)
@@ -131,28 +210,6 @@ namespace d360.model.validators
                         }
                     }
 
-                }
-                if (field.Type.JsonElement != null)
-                {
-                    if (existingFieldTypes != null)
-                    {
-                        var jsonAttribute = field.Type.JsonElement.JsonAttribute;
-                        if (jsonAttribute == null)
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Missing Json attribute definition!");
-                        }
-                        if (!existingFieldTypes.Any(x => x.Name == jsonAttribute.FieldName && x.Type == "JSON"))
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"JSON field {jsonAttribute.FieldName} does not exist or is not part of this asset type!");
-                        }
-                        var allowedTypes = new List<string>() { "bit", "date", "datetime", "float", "nvarchar", "int", "bigint" };
-                        if (!allowedTypes.Contains(jsonAttribute.DataType))
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"Invalid Json attribute field type. Allowed values are {string.Join(", ", allowedTypes)}!");
-                        }
-
-
-                    }
                 }
 
                 if (model.AssetTypeUid.HasValue && field.Type.Relationship != null)
