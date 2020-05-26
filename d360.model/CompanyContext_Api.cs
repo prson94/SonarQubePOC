@@ -7265,6 +7265,9 @@ insert into #Keys
     where	ExecutionID = @ExecutionID and AT.Id is null;
 
 
+declare @executionId uniqueidentifier = '356E6654-9F7D-4696-8841-430F66E036A7'
+
+
 drop table if exists #tempData
 create table #tempData
 (
@@ -7296,7 +7299,7 @@ outer apply OPENJSON(ThenData.Conditions)
 	FieldApiName nvarchar(250) N'$.FieldApiName',
 	Value nvarchar(250) N'$.Value'
    ) as ThenCond
-where executionid = '2B3D9C35-F7CF-466F-B3C3-7A1204D91A02'
+where executionid = @executionId
 
 insert into #tempData
 select
@@ -7313,13 +7316,16 @@ outer apply OPENJSON (Definition, N'$.When')
 	Value nvarchar(250) N'$.Value'
   ) AS WhenData
 
-where executionid = '2B3D9C35-F7CF-466F-B3C3-7A1204D91A02'
+where executionid = @executionId
 
 select d.itemnumber, 
 d.executionid ,
 at.object,
 at.objectid,
-null as CheckType,
+case 
+when it.id is null then 'F'
+else 'R'
+end as CheckType,
 isnull(ft.id,ft2.id) as FieldTypeId,
 isnull(ft.FriendlyName,ft2.friendlyname) as FieldTypeName,
 d.value as Value,
