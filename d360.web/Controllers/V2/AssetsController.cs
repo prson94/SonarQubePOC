@@ -1111,6 +1111,11 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Field Type '{fieldApiName}' not found for asset."));
                 }
 
+                if (!new string[] { "ComplexRelationLookup", "RefListRelationship", "OwnershipLookup" }.Contains(fieldType.Type))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Field Type '{fieldType.Type}' is not supported. Allowed field types are ComplexRelationLookup, RefListRelationship and OwnershipLookup "));
+                }
+
 
                 bool useFriendlyNames = true;
                 bool useUnflattedStructure = true;
@@ -1339,9 +1344,9 @@ namespace d360.web.Controllers.V2
 
                         for (int j = 0; j < Values.Count; j++)
                         {
-                            var data = Values[j] as IDictionary<string,object>;
+                            var data = Values[j] as IDictionary<string, object>;
                             var value = data[colField];
-    
+
                             SetCellValue(document, rowIndex, colIndex, dataType, value);
 
                             rowIndex++;

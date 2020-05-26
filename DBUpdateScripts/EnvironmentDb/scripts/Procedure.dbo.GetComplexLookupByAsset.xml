@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v15">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v16">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -17,7 +17,7 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@fieldTypeId int,
 	@resourceId int,
 	@countOnly bit = 0,
-	@pageSize int = 10,
+	@pageSize int = 2147483647,
 	@pageNum int = 1,
 	@simpleFilter nvarchar(max) = '',
 	@orderBy nvarchar(100) = '',
@@ -582,7 +582,7 @@ begin
 		select ColumnName + ' ' + @orderDirection from @selects where Alias = @orderBy
 	end
 
-	declare @pagingQuery nvarchar(100) = 'offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
+	declare @pagingQuery nvarchar(100) = ' offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
 
 	declare @sql nvarchar(max) = 'select '
 
@@ -612,6 +612,11 @@ begin
 			begin
 				set @sql = @sql + ' order by 1'
 			end
+
+		if @pageSize <> 2147483647
+		begin
+			set @sql = @sql + @pagingQuery
+		end
 
 		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
 		select [name], [type] from @datafields order by sort
