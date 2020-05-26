@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v14">
+  <changeSet author="TDuric" id="Procedure.dbo.GetComplexLookupByAsset-v16">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,7 +16,13 @@ create or alter procedure [dbo].[GetComplexLookupByAsset]
 	@objectId int,
 	@fieldTypeId int,
 	@resourceId int,
-	@countOnly bit = 0
+	@countOnly bit = 0,
+	@pageSize int = 2147483647,
+	@pageNum int = 1,
+	@simpleFilter nvarchar(max) = '',
+	@orderBy nvarchar(100) = '',
+	@orderDirection nvarchar(100) = 'asc',
+	@useUidUrls bit = 0
 as
 begin
 	set nocount on;
@@ -49,7 +55,7 @@ begin
 	-- The tables to hold the statements that are used to build the SQL below.
 	declare @selects table (ColumnName varchar(500), Alias varchar(250))
 	declare @tables table ([Statement] varchar(500))
-	declare @wheres table ([Statement] varchar(500))
+	declare @wheres table ([Statement] varchar(MAX))
 	declare @orders table ([Statement] varchar(500))
 	
 	declare @count int = 0
@@ -191,17 +197,34 @@ begin
 						and FieldTypeName in ('FirstName', 'LastName', 'Email', 'LastLoggedInOn')
 			order by	F.RowNumber;
 
-		insert into @selects
-			select	'dbo.GenerateAssetUrl(H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.ID', '.ID') + ')' as ColumnName,
-					F.BaseField + 'Url' as Alias 
-			from	@fields F 
-			where	F.BaseField is not null;
+		if @useUidUrls = 0
+		begin
+			insert into @selects
+				select	'dbo.GenerateAssetUrl(H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.ID', '.ID') + ')' as ColumnName,
+						F.BaseField + 'Url' as Alias 
+				from	@fields F 
+				where	F.BaseField is not null;
+		end
+		else
+		begin
+		    insert into @selects
+				select	'(select ''asset/'' + cast(uid as char(36)) from asset where id =  H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.ID', '.ID') + ')' as ColumnName,
+						F.BaseField + 'Url' as Alias 
+				from	@fields F 
+				where	F.BaseField is not null;
+		end
 
 		insert into @selects
 			select	'H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.Uid', '.Uid') as ColumnName,
 					F.BaseField + 'Uid' as Alias 
 			from	@fields F 
 			where	F.BaseField is not null;
+
+		insert into @selects
+			select CONCAT('H',RRN,'_R', FT ,'.IntersectTypeUid') as ColumnName,
+			CONCAT('H',RRN,'_',FT,'_IntersectTypeUid') as Alias 
+			 from @fields
+			where FieldTypeName like 'Related Item.%'
 
 		insert into @wheres
 			select	'H' + F.RRN + 
@@ -227,6 +250,25 @@ begin
 		-- Add permissions check
 		insert into @wheres values ('H1.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', H1.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)')
 		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = H1.AssetTypeID)')
+
+		if @simpleFilter <> ''
+		begin
+				;with simpleFilterQueries as (select CONCAT('H',F.RRN, FSQL.col,' like ', '@simpleFilter') as Filter
+						 from @fields f 
+						 cross apply(select case 
+								when F.IsRelationLink = 1 then '_A' + F.FT + '_DV.DisplayValue'
+								when F.IsRelationLink = 0 and F.FieldTypeID > 0 then '_F' + F.FT + '.FormattedValue'
+								when F.FieldTypeID = 0 and F.FieldTypeName = 'DisplayValue' then '_DV.DisplayValue'
+								else null
+							end as FieldCol)FSQL(col) 
+						where F.FieldTypeName <> 'TextPath' and FSQL.col is not null
+						union 
+						select CONCAT('graph.Getpath(h',F.RRN,'.segments, '' > '', '' / '')',' like ', '@simpleFilter') as Filter
+						 from @fields f 
+						where F.FieldTypeName = 'TextPath')
+				insert into @wheres
+				select '(' + string_agg(Filter,' or ')+ ')' from simpleFilterQueries 
+		end
 
 		insert into @orders
 			select		'H' + F.RRN + 
@@ -510,6 +552,9 @@ begin
 						FieldTypeName 
 				from	@fields
 
+			insert into @selects 
+				select 'A.[uid]','Uid'
+
 			insert into @orders
 				select		case  
 								when FieldDataType = 'number' then
@@ -530,11 +575,20 @@ begin
 		end
 	end
 
+	if @orderBy <> ''
+	begin
+		delete from @orders
+		insert into @orders
+		select ColumnName + ' ' + @orderDirection from @selects where Alias = @orderBy
+	end
+
+	declare @pagingQuery nvarchar(100) = ' offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
+
 	declare @sql nvarchar(max) = 'select '
 
 	if @countOnly = 1
 	begin
-		set  @sql = @sql + '@count = count(1) '
+		set  @sql = @sql + '@count = count(*) '
 	end
 	else
 	begin
@@ -546,25 +600,36 @@ begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
 
-	-- Output to caller.
+-- Output to caller.
 	if @countOnly = 0
 	begin
 		-- Finally, add the order by, if there is any.
 		if exists(select 1 from @orders where [Statement] is not null)
+			begin
+				select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
+			end
+		else
+			begin
+				set @sql = @sql + ' order by 1'
+			end
+
+		if @pageSize <> 2147483647
 		begin
-			select  @sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') from (select [Statement] from @orders where [Statement] is not null group by [Statement]) O
+			set @sql = @sql + @pagingQuery
 		end
 
 		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
 		select [name], [type] from @datafields order by sort
-		exec sp_executesql @sql, N'@assetId bigint', @assetId = @assetId
+
+
+		exec sp_executesql @sql, N'@assetId bigint, @simpleFilter nvarchar(400), @pageSize int, @pageNum int', @assetId = @assetId, @simpleFilter = @simpleFilter, @pageNum = @pageNum, @pageSize = @pageSize
 	end
 	else
 	begin
 		if @sql is not null
-			exec sp_executesql @sql, N'@assetId bigint, @count int output', @assetId = @assetId, @count = @count OUTPUT;
+			exec sp_executesql @sql, N'@assetId bigint, @simpleFilter nvarchar(400), @count int output', @assetId = @assetId,@simpleFilter = @simpleFilter, @count = @count OUTPUT;
 		
-		select iif(@count > 0, cast(1 as bit), cast(0 as bit)) as [AnyValues]
+		select @count as [AnyValues]
 	end
 	
 	print @sql
@@ -599,9 +664,10 @@ begin
 	declare @relations table (
 		RowNumber int identity, RN varchar(3), 
 		IntersectTypeUid uniqueidentifier, AssetTypeUid uniqueidentifier, RelationType int, Direction int, 
-		IntersectTypeID int, Object varchar(50), ObjectID int)
+		IntersectTypeID int, Object varchar(50), ObjectID int,
+		FieldCount int null)
 	declare @fields table (
-		RowNumber int identity, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
+		RowNumber int identity, RelationRowNumber int, RRN varchar(3), --RRN is the Relation record varchar-based RowNumber value from above table
 		AssetTypeUid uniqueidentifier, Object varchar(50), ObjectID int, FieldTypeID int, FT varchar(15), FieldTypeName nvarchar(250), [Filter] nvarchar(max), OverrideDisplayName nvarchar(250), DisplayOrder int, SortOrder int, Show bit, Width int, 
 		DataField varchar(50), BaseField varchar(250), FieldDataType varchar(25), ColumnDataType varchar(25), DataFormat varchar(25), [Description] nvarchar(max),
 		IsRelationLink bit, IsRelationField bit
@@ -618,8 +684,9 @@ begin
 	if @type = 'ComplexRelationLookup'
 	begin
 		--Parse the stored json for this field type. Get field type definition as rows.
-		insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction)
-			select	R.* 
+		insert into @relations (IntersectTypeUid, AssetTypeUid, RelationType, Direction, FieldCount)
+			select	R.*,
+					0
 			from	FieldTypeLookup O
 					cross apply OPENJSON(O.[Definition], N'lax $.Relations') with (
 						IntersectTypeUid uniqueidentifier, 
@@ -673,7 +740,8 @@ begin
 		from	@fields F
 				left join AssetType A on A.Uid = F.AssetTypeUid;
 
-		update F set F.RRN = R.RN from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update F set F.RRN = R.RN, F.RelationRowNumber = R.RowNumber from @fields F inner join @relations R on R.Object = F.Object and R.ObjectID = F.ObjectID;
+		update R set R.FieldCount = F.[Count] from @relations R cross apply (select count(1) as [Count] from @fields where Object = R.Object and ObjectID = R.ObjectID) F;
 
 		update	F
 		set		F.DataField = 'H' + F.RRN + '_' + 
@@ -801,25 +869,26 @@ begin
 
 		-- Build joins required.
 		insert into @tables
-			select	case RowNumber 
-						when 1 then ' from graph.AssetNode H'+RN+
-									' inner join graph.AssetEdge R'+RN+' on R'+RN + IIF(Direction = 1,'.$from_id', '.$to_id') + ' = H'+RN+'.$node_id and R'+RN+'.IntersectTypeID = ' + cast(IntersectTypeID as varchar) + 
-									' inner join graph.AssetNode A'+RN+' on A'+RN+'.$node_id = R'+RN + IIF(Direction = 1,'.$to_id', '.$from_id') + ' and A'+RN+'.ID = @assetId' +
-									case [Object]
-										when 'FusionAttributeType' then ' inner join Asset FA'+RN+' on FA'+RN+'.ID = H'+RN+'.ID inner join FusionAttribute F'+RN+' on FA'+RN+'.Object = ''FusionAttribute'' and F'+RN+'.ID = FA'+RN+'.ObjectID'
-										when 'ResourceType' then ' inner join reporting.Global_Resource U'+RN+' on U'+RN+'.uid = H'+RN+'.Uid'
+			select	case R.RowNumber 
+						when 1 then ' from graph.AssetNode H'+R.RN+
+									' inner join graph.AssetEdge R'+R.RN+' on R'+R.RN + IIF(R.Direction = 1,'.$from_id', '.$to_id') + ' = H'+R.RN+'.$node_id and R'+R.RN+'.IntersectTypeID = ' + cast(R.IntersectTypeID as varchar) + 
+									' inner join graph.AssetNode A'+R.RN+' on A'+R.RN+'.$node_id = R'+R.RN + IIF(R.Direction = 1,'.$to_id', '.$from_id') + ' and A'+R.RN+'.ID = @assetId' +
+									case R.[Object]
+										when 'FusionAttributeType' then ' inner join Asset FA'+R.RN+' on FA'+R.RN+'.ID = H'+R.RN+'.ID inner join FusionAttribute F'+R.RN+' on FA'+R.RN+'.Object = ''FusionAttribute'' and F'+R.RN+'.ID = FA'+R.RN+'.ObjectID'
+										when 'ResourceType' then ' inner join reporting.Global_Resource U'+R.RN+' on U'+R.RN+'.uid = H'+R.RN+'.Uid'
 										else ''
 									end
-						else ' left join graph.AssetEdge R'+RN+' on R'+RN + IIF(Direction = 1,'.$to_id', '.$from_id') + ' = H'+cast(RowNumber-1 as varchar)+'.$node_id and R'+RN+'.IntersectTypeID = ' + cast(IntersectTypeID as varchar) + 
-							 ' left join graph.AssetNode H'+RN+' on H'+RN+'.$node_id = R'+RN + IIF(Direction = 1,'.$from_id', '.$to_id') +
-							 case [Object]
-								when 'FusionAttributeType' then ' inner join Asset FA'+RN+' on FA'+RN+'.ID = H'+RN+'.ID inner join FusionAttribute F'+RN+' on FA'+RN+'.Object = ''FusionAttribute'' and F'+RN+'.ID = FA'+RN+'.ObjectID'
-								when 'ResourceType' then ' inner join reporting.Global_Resource U'+RN+' on U'+RN+'.uid = H'+RN+'.Uid'
+						else iif(P.FieldCount = 0, ' inner', ' left') + ' join graph.AssetEdge R'+R.RN+' on R'+R.RN + IIF(R.Direction = 1,'.$to_id', '.$from_id') + ' = H'+cast(P.RowNumber as varchar)+'.$node_id and R'+R.RN+'.IntersectTypeID = ' + cast(R.IntersectTypeID as varchar) + 
+							 iif(P.FieldCount = 0, ' inner', ' left') + ' join graph.AssetNode H'+R.RN+' on H'+R.RN+'.$node_id = R'+R.RN + IIF(R.Direction = 1,'.$from_id', '.$to_id') +
+							 case R.[Object]
+								when 'FusionAttributeType' then iif(P.FieldCount = 0, ' inner', ' left') + ' join Asset FA'+R.RN+' on FA'+R.RN+'.ID = H'+R.RN+'.ID inner join FusionAttribute F'+R.RN+' on FA'+R.RN+'.Object = ''FusionAttribute'' and F'+R.RN+'.ID = FA'+R.RN+'.ObjectID'
+								when 'ResourceType' then iif(P.FieldCount = 0, ' inner', ' left') + ' join reporting.Global_Resource U'+R.RN+' on U'+R.RN+'.uid = H'+R.RN+'.Uid'
 								else ''
 							 end
 					end			
-			from	@relations
-			order by RowNumber;
+			from	@relations R
+					left join @relations P on P.RowNumber = R.RowNumber - 1
+			order by R.RowNumber;
 
 		if @countOnly = 0 or exists (select 1 from @wheres)
 		begin

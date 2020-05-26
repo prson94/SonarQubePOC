@@ -425,6 +425,7 @@
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
+    <Compile Include="Filters\CustomJSONContract.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
