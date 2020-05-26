@@ -15,6 +15,5 @@ namespace d360.model.DataAccessLayer
         bool HasExistingItems(TypeIdentifierInfoModel typeIdentifierInfoModel);
         WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel);
         IEnumerable<string> GetCustomFields(SystemObjects objectType, int objectId);
-        IEnumerable<string> GetCustomFieldsForExcel(string intersectUid);
     }
 }

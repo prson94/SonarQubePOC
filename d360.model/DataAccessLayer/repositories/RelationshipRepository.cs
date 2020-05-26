@@ -25,15 +25,13 @@ namespace d360.model.DataAccessLayer
         IQueueSource QueueSource;
         IStorageProvider Storage;
         ICommunityContext communityContext;
-        IFieldsRepository fieldsRepository;
-        public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, IFieldsRepository fieldsRepository)
+        public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
             : base(companyContext)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
             this.Storage = storageProvider;
             this.communityContext = communityContext;
-            this.fieldsRepository = fieldsRepository;
         }
 
         public Intersect GetRelationshipByUID(Guid relationshipUid)
@@ -745,7 +743,7 @@ from	IntersectType I
             foreach (var row in rowData)
             {
                 var relationshipTypeUid = row["RelationshipTypeUid"];
-                var customColumns = fieldsRepository.GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+                var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
 
                 if (customColumns.Count() > 0)
                 {
@@ -785,6 +783,14 @@ from	IntersectType I
             #endregion
 
             return document;
+        }
+
+        public IEnumerable<string> GetCustomFieldsForExcel(string intersectUid)
+        {
+            return companyContext.Query<string>(
+                @"select distinct  f.FriendlyName   as Name from fieldtype f  
+				inner join IntersectType i on i.uid = @uid
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
         }
     }
 }
