@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Function.graph.ReformatSegments-v1">
+  <changeSet author="Pappas" id="Function.graph.ReformatSegments-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,8 +27,8 @@ begin
 				for $x in $segments
 				return 
 					<segment>
-					<level>{data($x/@level)}</level>
-					<position>{data($x/@position)}</position>
+					<level>{if (count($x/@level) gt 0) then data($x/@level) else 1 }</level>
+					<position>{if (count($x/@position) gt 0) then data($x/@position) else 1 }</position>
 					<assetTypeId>{data($x/@assetTypeId)}</assetTypeId>
 					<assetId>{data($x/@assetId)}</assetId>
 					<parentLevel>{data(/path/segment[. << $x][last()]/@level)}</parentLevel>
