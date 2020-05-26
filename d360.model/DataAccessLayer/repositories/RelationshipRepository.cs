@@ -725,13 +725,6 @@ from	IntersectType I
 
             document.SelectWorksheet(relationshipSheetName);
 
-            int index = 1;
-
-            foreach (var field in fields)
-            {
-                document.SetCellValue(1, index++, (string)field.FriendlyName);
-            }
-
             var count = apiInfo.ToList().Children().Count();
             if (count < 4)
             {
@@ -740,6 +733,7 @@ from	IntersectType I
 
             var rowData = apiInfo[3].ToList().Children().ToList();
             int rowNumber = 1;
+            int index = 1;
             foreach (var row in rowData)
             {
                 var relationshipTypeUid = row["RelationshipTypeUid"];
@@ -750,13 +744,21 @@ from	IntersectType I
                     index = fields.Count()+1;
                     foreach (var cus in customColumns)
                     {
-                        var exists = fields.Where(x => x.Object.ToLower() == cus.ToLower()).FirstOrDefault();
+                        var name = cus.Name;
+                        var friendlyName =  cus.FriendlyName;
+                        var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
                         if(exists == null)
                         {
-                            fields.Add(new FieldType { Type = "string", Object = cus, Name = "", FriendlyName = cus });
-                            document.SetCellValue(1, index++, cus);
+                            var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
+                            fields.Insert(2,cusField);
                         }
                     }
+                }
+                index = 1;
+
+                foreach (var field in fields)
+                {
+                    document.SetCellValue(1, index++, (string)field.FriendlyName);
                 }
 
                 index = 1;
@@ -785,10 +787,10 @@ from	IntersectType I
             return document;
         }
 
-        public IEnumerable<string> GetCustomFieldsForExcel(string intersectUid)
+        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
         {
-            return companyContext.Query<string>(
-                @"select distinct  f.FriendlyName   as Name from fieldtype f  
+            return companyContext.Query<dynamic>(
+                @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
 				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
         }
