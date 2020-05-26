@@ -669,7 +669,7 @@ namespace d360.core.entities
     public class RuleThen
     {
         [DataMember]
-        public Guid AssigneeTypeUid { get; set; }
+        public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
 
         public List<RuleCondition> Conditions { get; set; }
@@ -679,7 +679,7 @@ namespace d360.core.entities
     {
         [DataMember]
 
-        public Guid IntersectTypeUid { get; set; }
+        public Guid? IntersectTypeUid { get; set; }
         [DataMember]
 
         public string FieldApiName { get; set; }
@@ -694,7 +694,7 @@ namespace d360.core.entities
         [DataMember]
         public int ItemNumber { get; set; }
         [DataMember]
-        public Guid Uid { get; set; }
+        public Guid? Uid { get; set; }
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
         [DataMember]

@@ -7110,8 +7110,7 @@ insert into #Keys
                     table.Columns.Add("IsVisible", typeof(bool));
                     table.Columns.Add("ApplyToType", typeof(bool));
                     table.Columns.Add("Context", typeof(string));
-                    table.Columns.Add("When", typeof(string));
-                    table.Columns.Add("Then", typeof(string));
+                    table.Columns.Add("Definition", typeof(string));
                     table.Columns.Add("uid", typeof(Guid));
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
@@ -7126,6 +7125,7 @@ insert into #Keys
                         if (i > currentLocation.HighestItemNumber)
                         {
                             var model = import[i - 1];
+                            var rowError = string.Empty;
 
                             var row = table.NewRow();
 
@@ -7142,8 +7142,12 @@ insert into #Keys
                             row["IsVisible"] = model.IsVisible;
                             row["ApplyToType"] = model.ApplyToType;
                             row["Context"] = model.Context;
-                            if (model.Definition != null )
+                            if (model.Definition != null)
                             {
+                                if (model.Definition.When == null)
+                                {
+                                    model.Definition.When = new List<RuleCondition>() { };
+                                }
                                 row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                             }
 
@@ -7152,15 +7156,64 @@ insert into #Keys
                                 row["uid"] = model.uid.Value;
                             }
 
+                            //initial validation
                             if (!model.AssetTypeUid.HasValue || model.AssetTypeUid.Value == Guid.Empty)
                             {
-                                row["Message"] = "AssetTypeUid is not valid!";
-                                row["Success"] = false;
+                                rowError += ";AssetTypeUid is not valid!";
                             }
 
                             if (string.IsNullOrEmpty(model.Name.Trim()))
                             {
-                                row["Message"] = "Name cannot be empty.";
+                                rowError += ";Name cannot be empty.";
+                            }
+
+                            if (model.Definition == null)
+                            {
+                                rowError += ";Definition cannot be empty/null.";
+                            }
+                            if (model.Definition.Then == null || model.Definition.Then.Count == 0)
+                            {
+                                rowError += ";Then conditions in definition cannot be empty.";
+                            }
+
+                            model.Definition.Then.ForEach(th =>
+                            {
+                                if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty)
+                                {
+                                    rowError += ";AssigneeTypeUid cannot be null or empty.";
+                                }
+                                th.Conditions.ForEach(cond =>
+                                {
+                                    if (!string.IsNullOrEmpty(cond.FieldApiName) && cond.IntersectTypeUid.HasValue)
+                                    {
+                                        rowError += ";Condition cannot have both FieldApiName and IntersectTypeUid.";
+                                    }
+                                    if (string.IsNullOrEmpty(cond.Value))
+                                    {
+                                        rowError += ";Condition field value is required.";
+                                    }
+                                });
+
+                            });
+
+                            if(model.Definition.When != null && model.Definition.When.Count > 0)
+                            {
+                                model.Definition.When.ForEach(cond =>
+                                {
+                                    if (!string.IsNullOrEmpty(cond.FieldApiName) && cond.IntersectTypeUid.HasValue)
+                                    {
+                                        rowError += ";Condition cannot have both FieldApiName and IntersectTypeUid.";
+                                    }
+                                    if (string.IsNullOrEmpty(cond.Value))
+                                    {
+                                        rowError += ";Condition field value is required.";
+                                    }
+                                });
+                            }
+
+                            if (!string.IsNullOrEmpty(rowError))
+                            {
+                                row["Message"] = rowError.Trim(';');
                                 row["Success"] = false;
                             }
 
@@ -7209,7 +7262,77 @@ insert into #Keys
 		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid'
     from api.ExecutionResponsibilityRule EP
     left join AssetType AT on AT.uid = EP.AssetTypeUid
-    where	ExecutionID = @ExecutionID and AT.Id is null
+    where	ExecutionID = @ExecutionID and AT.Id is null;
+
+
+drop table if exists #tempData
+create table #tempData
+(
+    ItemNumber int, 
+    ExecutionId uniqueidentifier, 
+	AssetTypeUid uniqueidentifier,
+    AssigneeTypeUid uniqueidentifier, 
+    IntersectTypeUid uniqueidentifier, 
+    FieldApiName nvarchar(250),
+    Value nvarchar(250)
+)
+
+insert into #tempData
+select
+ItemNumber,
+ExecutionId,
+AssetTypeUid,
+ThenData.AssigneeTypeUid,
+ThenCond.*
+from api.executionresponsibilityrule
+outer apply OPENJSON (Definition, N'$.Then')
+  WITH (
+    AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+    Conditions nvarchar(max) N'$.Conditions' as Json
+  ) AS ThenData
+outer apply OPENJSON(ThenData.Conditions)
+   with(
+    IntersectTypeUid uniqueidentifier N'$.IntersectTypeUid',
+	FieldApiName nvarchar(250) N'$.FieldApiName',
+	Value nvarchar(250) N'$.Value'
+   ) as ThenCond
+where executionid = '2B3D9C35-F7CF-466F-B3C3-7A1204D91A02'
+
+insert into #tempData
+select
+ItemNumber,
+ExecutionId,
+AssetTypeUid,
+null,
+WhenData.*
+from api.executionresponsibilityrule
+outer apply OPENJSON (Definition, N'$.When')
+  WITH (
+    IntersectTypeUid uniqueidentifier N'$.IntersectTypeUid',
+	FieldApiName nvarchar(250) N'$.FieldApiName',
+	Value nvarchar(250) N'$.Value'
+  ) AS WhenData
+
+where executionid = '2B3D9C35-F7CF-466F-B3C3-7A1204D91A02'
+
+select d.itemnumber, 
+d.executionid ,
+at.object,
+at.objectid,
+null as CheckType,
+isnull(ft.id,ft2.id) as FieldTypeId,
+isnull(ft.FriendlyName,ft2.friendlyname) as FieldTypeName,
+d.value as Value,
+it.id as IntersectTypeId,
+null as TargetObject,
+0 as TargetObjectId
+from #tempData d
+left join assettype at on d.assigneetypeuid = at.uid
+left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
+left join IntersectType it on it.uid = d.IntersectTypeUid
+left join assettype at2 on d.AssetTypeUid = at2.uid
+left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+
 ";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
@@ -7252,11 +7375,34 @@ insert into #Keys
                                 {
 
                                     var insertSQL = $@"
-select * from api.Execution
+MERGE dbo.ResponsibilityTypeRelationRule RTRR
+
+USING (
+select 
+xrr.uid,
+rt.id as ResponsibilityTypeId,
+at.object as Object,
+at.objectid as ObjectId,
+xrr.Name,
+xrr.Context,
+xrr.IsVisible,
+xrr.ApplyToType, 
+xrr.Definition
+ from api.executionresponsibilityrule xrr
+inner join assettype at on at.uid = xrr.AssetTypeUid
+inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
+where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber 
+)Data
+ON RTRR.uid = Data.uid
+WHEN MATCHED
+    THEN update set name = data.name
+WHEN NOT MATCHED
+    THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.Definition);
 ";
 
                                     Connection.Execute(insertSQL,
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, emptyUid = Guid.Empty }, transaction: trans, commandTimeout: timeout);
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
                                     Connection.Execute(
                                         $"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix};",
