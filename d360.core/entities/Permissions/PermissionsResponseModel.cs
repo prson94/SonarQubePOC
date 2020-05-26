@@ -22,15 +22,6 @@ namespace d360.core.entities.Permissions
         public bool DeleteAsset { get; set; }
 
         [DataMember]
-        public bool ReadAttributes { get; set; }
-
-        [DataMember]
-        public bool ModifyAttributes { get; set; }
-
-        [DataMember]
-        public bool DeleteAttributes { get; set; }
-
-        [DataMember]
         public bool ReadResponsibilities { get; set; }
 
         [DataMember]

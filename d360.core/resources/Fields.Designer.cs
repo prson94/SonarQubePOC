@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class Fields {
@@ -318,42 +318,6 @@ namespace d360.core.resources {
         public static string Assignable_Name {
             get {
                 return ResourceManager.GetString("Assignable_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The selected attribute type..
-        /// </summary>
-        public static string AttributeType_Description {
-            get {
-                return ResourceManager.GetString("AttributeType_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attribute Type.
-        /// </summary>
-        public static string AttributeType_Name {
-            get {
-                return ResourceManager.GetString("AttributeType_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to An attribute category that groups similar attributes together..
-        /// </summary>
-        public static string AttributeTypeCategory_Description {
-            get {
-                return ResourceManager.GetString("AttributeTypeCategory_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Category.
-        /// </summary>
-        public static string AttributeTypeCategory_Name {
-            get {
-                return ResourceManager.GetString("AttributeTypeCategory_Name", resourceCulture);
             }
         }
         
@@ -2275,24 +2239,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow permission to remove attributes..
-        /// </summary>
-        public static string Permissions_DeleteAttributes_Description {
-            get {
-                return ResourceManager.GetString("Permissions_DeleteAttributes_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Remove Attributes.
-        /// </summary>
-        public static string Permissions_DeleteAttributes_Name {
-            get {
-                return ResourceManager.GetString("Permissions_DeleteAttributes_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Allow permission to remove item..
         /// </summary>
         public static string Permissions_DeleteObject_Description {
@@ -2347,24 +2293,6 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Allow permission to create or update attributes..
-        /// </summary>
-        public static string Permissions_ModifyAttributes_Description {
-            get {
-                return ResourceManager.GetString("Permissions_ModifyAttributes_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Modify Attributes.
-        /// </summary>
-        public static string Permissions_ModifyAttributes_Name {
-            get {
-                return ResourceManager.GetString("Permissions_ModifyAttributes_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Allow permission to create or update item..
         /// </summary>
         public static string Permissions_ModifyObject_Description {
@@ -2415,24 +2343,6 @@ namespace d360.core.resources {
         public static string Permissions_ModifySocial_Name {
             get {
                 return ResourceManager.GetString("Permissions_ModifySocial_Name", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Allow permission to read attributes..
-        /// </summary>
-        public static string Permissions_ReadAttributes_Description {
-            get {
-                return ResourceManager.GetString("Permissions_ReadAttributes_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Read Attributes.
-        /// </summary>
-        public static string Permissions_ReadAttributes_Name {
-            get {
-                return ResourceManager.GetString("Permissions_ReadAttributes_Name", resourceCulture);
             }
         }
         
