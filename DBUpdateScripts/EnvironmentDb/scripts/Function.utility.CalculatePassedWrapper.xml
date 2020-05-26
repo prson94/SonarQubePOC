@@ -5,15 +5,18 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Function.utility.CalculatePassedWrapper-v2">
+  <changeSet author="kmcnamee" id="Function.utility.CalculatePassedWrapper-v3">
+    <comment>GOV-1862</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-		ALTER TABLE dbo.RuleResult DROP Column Passed
-		DROP FUNCTION IF EXISTS [utility].[CalculatePassedWrapper]
-
+			if exists (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = N'RuleResult' and TABLE_SCHEMA = 'dbo')
+			BEGIN
+				ALTER TABLE dbo.RuleResult DROP Column Passed
+					DROP FUNCTION IF EXISTS [utility].[CalculatePassedWrapper]
+			END
 		]]>
     </sql>
 	<rollback>
