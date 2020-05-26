@@ -1377,6 +1377,14 @@ from	IntersectType I
 				inner join field f2 on f2.fieldtypeid = f.id 
 				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId});
         }
+
+        public IEnumerable<string> GetCustomFieldsForExcel(string intersectUid)
+        {
+            return Company.Query<string>(
+                @"select distinct  f.FriendlyName   as Name from fieldtype f  
+				inner join IntersectType i on i.uid = @uid
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new {  uid = intersectUid });
+        }
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
         {
             var RetValueList = new List<Tuple<string, Guid>>();

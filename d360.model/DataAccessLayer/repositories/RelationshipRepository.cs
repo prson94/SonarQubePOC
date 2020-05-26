@@ -25,13 +25,15 @@ namespace d360.model.DataAccessLayer
         IQueueSource QueueSource;
         IStorageProvider Storage;
         ICommunityContext communityContext;
-        public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
+        IFieldsRepository fieldsRepository;
+        public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, IFieldsRepository fieldsRepository)
             : base(companyContext)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
             this.Storage = storageProvider;
             this.communityContext = communityContext;
+            this.fieldsRepository = fieldsRepository;
         }
 
         public Intersect GetRelationshipByUID(Guid relationshipUid)
@@ -308,7 +310,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
 
-            return models;
+          return models;
         }
 
         public IQueryable<IntersectType> GetIntersectTypeById(int id)
@@ -686,7 +688,7 @@ from	IntersectType I
         }
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            var results = await GetRelationships(queryParams);
+            JObject results = await GetRelationships(queryParams);
 
             var apiInfo = results.Children().ToList();
 
@@ -739,35 +741,44 @@ from	IntersectType I
             }
 
             var rowData = apiInfo[3].ToList().Children().ToList();
-
             int rowNumber = 1;
             foreach (var row in rowData)
             {
+                var relationshipTypeUid = row["RelationshipTypeUid"];
+                var customColumns = fieldsRepository.GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+
+                if (customColumns.Count() > 0)
+                {
+                    index = fields.Count()+1;
+                    foreach (var cus in customColumns)
+                    {
+                        var exists = fields.Where(x => x.Object.ToLower() == cus.ToLower()).FirstOrDefault();
+                        if(exists == null)
+                        {
+                            fields.Add(new FieldType { Type = "string", Object = cus, Name = "", FriendlyName = cus });
+                            document.SetCellValue(1, index++, cus);
+                        }
+                    }
+                }
+
                 index = 1;
                 rowNumber++;
-
                 foreach (var field in fields)
                 {
                     var token = row[field.Object];
                     if (field.Name == "")
                     {
                         token = row[field.Object];
-                        row[field.Object].Remove();
                     }
                     else
                     {
                         token = row[field.Object][field.Name];
-                        row[field.Object][field.Name].Remove();
                     }
                     string value = "";
                     if (token != null)
                         value = token.Value<string>();
                     document.SetCellValue(rowNumber, index, value);
                     index++;
-                }
-                foreach(var customCol in row)
-                {
-                    document.SetCellValue(rowNumber, index, customCol.First.ToString());
                 }
             }
 
