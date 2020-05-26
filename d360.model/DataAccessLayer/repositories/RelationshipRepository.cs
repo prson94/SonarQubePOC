@@ -687,7 +687,21 @@ from	IntersectType I
         public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             JObject results = await GetRelationships(queryParams);
+            var includeTotal = true;
 
+            if (queryParams != null)
+            {
+                var queryParamsList = queryParams.ToList();
+
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
+                {
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
+                    {
+                        includeTotal = true;
+                    }
+                }
+            }
+            
             var apiInfo = results.Children().ToList();
 
             var document = new SLDocument();
@@ -719,19 +733,19 @@ from	IntersectType I
             document.SetCellValue(1, 2, (int)apiInfo[0].First);
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, (int)apiInfo[1].First);
-            document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, (int)apiInfo[2].First);
+            if (includeTotal)
+            {
+                document.SetCellValue(3, 1, "total");
+                document.SetCellValue(3, 2, (int)apiInfo[2].First);
+            }
 
 
             document.SelectWorksheet(relationshipSheetName);
 
-            var count = apiInfo.ToList().Children().Count();
-            if (count < 4)
-            {
-                return document;
-            }
+            var rowData = apiInfo[2].ToList().Children().ToList();
+            if (includeTotal)
+                rowData = apiInfo[3].ToList().Children().ToList();
 
-            var rowData = apiInfo[3].ToList().Children().ToList();
             int rowNumber = 1;
             int index = 1;
             foreach (var row in rowData)
