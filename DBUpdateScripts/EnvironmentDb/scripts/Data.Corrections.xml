@@ -658,19 +658,4 @@ and State = 1
 	</rollback>
   </changeSet>
 
-  <changeSet author="Pappas" id="Data.Corrections.GOV-10586-3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-update graph.AssetNode set ReformattedSegments = graph.ReformatSegments(Segments)
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
-		]]>
-	</rollback>
-  </changeSet>
  </databaseChangeLog>
