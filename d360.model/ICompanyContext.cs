@@ -298,7 +298,7 @@ namespace d360.model
         DbEntityEntry<TEntity> Entry<TEntity>(TEntity entity) where TEntity : class;
         Task<int> SaveChangesAsync();
 
-        void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true);
+        void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false);
         List<RelationshipDirectionFieldInfo> getRelationFieldData(string fieldTypeRelationType, int typeID, List<FieldType> fields);
 
         Task<IEnumerable<TypeIdentifierInfoModel>> GetTypeIdentifierInfoModel(TypeIdentifierInfoModelType type, Guid guid);
@@ -325,5 +325,6 @@ namespace d360.model
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
+        bool SaveChangesWithoutEventing();
     }
 }

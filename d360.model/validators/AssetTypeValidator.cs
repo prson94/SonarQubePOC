@@ -83,7 +83,7 @@ namespace d360.core.validators
             {
                 if (parentAssetType == null)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
-                else if (parentAssetType.Object != SystemObjectHelper.GetSystemObjects(model.Class).ToString())
+                else if (parentAssetType.Class != model.Class)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");
                 else if (!ParentAssetTypeClass.Contains(model.Class) && !ForceParentToItself)
                     return new WorkHttpStatus(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidParentUid} {AssetTypeErrors.CheckRequest}");

@@ -28,6 +28,7 @@ namespace d360.core.entities.Scoring
         [JsonConverter(typeof(StringEnumConverter))]
         public State state { get; set; } = State.Active;
         public bool hasMeasure { get; set; }
+        public bool hasField { get; set; }
         public bool isExternallyCalculated { get; set; }
         public int lowerThreshold { get; set; }
         public int upperThreshold { get; set; }

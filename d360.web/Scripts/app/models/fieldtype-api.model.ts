@@ -81,6 +81,9 @@ export class FieldType {
             case 'Tag':
                 this.Tag = new Tag();
                 break;
+            case 'Score':
+                this.Score = new Score();
+                break;
             default:
                 this.Empty = new Empty();
         }
@@ -121,6 +124,7 @@ export class FieldType {
     Relationship: Boolean;
     Text: Text;
     Tag: Tag;
+    Score: Score;
     Empty: Empty;
 }
 
@@ -476,5 +480,23 @@ export class TextValidation {
     MinimumLength: number;
     MaximumLength: number;
     IsRequired: boolean = false;
+}
+
+
+export class Score implements ICommonOptions {
+    DefaultValue: number;
+    Increment: number;
+    Validation: BooleanValidation = new BooleanValidation();
+    Description: DisplayOnlyDescription = new DisplayOnlyDescription();
+    ColumnOrder: number;
+    ColumnWidth: number = 0;
+    SortOrder: number = 0;
+    IsDisplayable: boolean = true;
+    IsEditable: boolean = false;
+    IsListable: boolean = false;
+    IsPartOfKey: boolean = false;
+    IsPrimaryFilter: boolean = false;
+    ShowIfEmpty: boolean = false;
+    ScoreType: number = null;
 }
 

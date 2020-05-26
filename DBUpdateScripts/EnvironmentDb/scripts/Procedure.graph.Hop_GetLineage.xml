@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.Hop_GetLineage-v3">
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetLineage-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -26,7 +26,7 @@ begin
 	-- Backward-facing hop
 	if @direction = 'B'
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -34,9 +34,7 @@ begin
 						
 					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 					S.ID as ToID,
-					S.Uid as ToUid, 
-					S.[Path] as ToPath,
-					S.Segments as ToSegment,
+					S.Uid as ToUid,
 					
 					E.PredicateID,
 					E.PredicateUid,
@@ -57,7 +55,7 @@ begin
 	end
 	else if @direction = 'F' -- Forward-facing hop
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -65,9 +63,7 @@ begin
 					
 					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 					T.ID as ToID,
-					T.Uid as ToUid, 
-					T.[Path] as ToPath,
-					T.Segments as ToSegment,
+					T.Uid as ToUid,
 					
 					E.PredicateID,
 					E.PredicateUid,
@@ -165,7 +161,7 @@ begin
 	-- Backward-facing hop
 	if @direction = 'B'
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -174,7 +170,6 @@ begin
 					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 					S.ID as ToID,
 					S.Uid as ToUid, 
-					S.[Path] as ToPath,
 					S.Segments as ToSegment,
 					
 					E.PredicateID,
@@ -196,7 +191,7 @@ begin
 	end
 	else if @direction = 'F' -- Forward-facing hop
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -204,8 +199,7 @@ begin
 					
 					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 					T.ID as ToID,
-					T.Uid as ToUid, 
-					T.[Path] as ToPath,
+					T.Uid as ToUid,
 					T.Segments as ToSegment,
 					
 					E.PredicateID,
@@ -247,7 +241,7 @@ begin
 			update	R
 			set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
 			from	#nodes R
-					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber and H.Direction = @direction
 					cross apply (
 								select	count(1) as [Count]
 								from	graph.AssetNode S,
@@ -266,7 +260,7 @@ begin
 			update	R
 			set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
 			from	#nodes R
-					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber and H.Direction = @direction
 					cross apply (
 								select	count(1) as [Count]
 								from	graph.AssetNode S,

@@ -254,6 +254,28 @@ namespace d360.web.Controllers
                             Category = ft.Category
                         });
                     }
+                    else if (ft.Type == DataType.Score.ToString())
+                    {
+                        var assetScore = Company.Query<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
+                            , new { id = details.AssetID, ft.ScoreType }).SingleOrDefault() + "";
+
+                        var ro = new ReadOnlyField
+                        {
+                            Name = ft.FriendlyName,
+                            Value = assetScore,
+                            FieldDescription = ft.DisplayDescription,
+                            FieldName = ft.Name,
+                            ShowIfEmpty = ft.ShowIfEmpty,
+                            DataType = ft.Type
+                        };
+
+                        list.Add(new DetailReadOnlyRowModel
+                        {
+                            columns = 1,
+                            FirstColumnFields = new List<ReadOnlyField> { ro },
+                            Category = ft.Category
+                        });
+                    }
                     else if (ft.Type == DataType.Tag.ToString())
                     {
                         list.AddRange(RenderTagField(ft, type, id));
@@ -749,6 +771,9 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Tag":
                         fieldType = "tag";
                         break;
+                    case "Score":
+                        fieldType = "score";
+                        break;
                 }
             }
 
@@ -834,16 +859,28 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
             ObjectDetail detail = null;
             bool isReadOnly = false;
 
+
+            var scoreAllocations = Company.Query<dynamic>(@"
+                select FT.[Name], FT.ScoreType, A.LowerThreshold, A.UpperThreshold  from FieldType FT
+                inner join AssetType T on T.Id = FT.AssetTypeID
+                inner join metrics.Allocation A on A.AssetTypeUid = T.[uid] and A.[State] = 1 and A.ScoreType = FT.ScoreType
+                where FT.[Object] = @type and FT.ObjectID = @id and FT.[Type] = 'Score'", new { type = type.ToString(), id}).ToList();
+
             switch (type)
             {
                 case SystemObjects.ArtifactType:
                     #region
+                    bool showParent = true;
+                    var assetType = Company.Filter<AssetType>(x => x.Object == type.ToString() && x.ObjectID == id).FirstOrDefault();
+                    if(assetType != null)
+                    {
+                        showParent = assetType.AutoDisplayParent.HasValue ? (bool)assetType.AutoDisplayParent : true;
+                    }
 
                     var hasParentType = Company.TypeHasParent(SystemObjects.ArtifactType, id);
-
                     parseDynamicColumnsAndFields(items, columns, fields, groups, 0, true);
 
-                    if (hasParentType)
+                    if (hasParentType && showParent)
                     {
                         columns.Insert(1, new GridColumn
                         {
@@ -860,7 +897,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
 
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
-                    if (hasParentType)
+                    if (hasParentType && showParent)
                     {
                         fields.Add(new GridField { name = "ParentID", type = "number" });
                         fields.Add(new GridField { name = "Parent", type = "string", apiName = "ParentDisplayName" });
@@ -1279,7 +1316,8 @@ where   h.ID <> @t order by h.[Level] desc;
                 FilterColumns = filterColumns,
                 ColumnGroups = groups,
                 TopLevelFilterColumns = topLevelFilterFields,
-                IsReadOnly = isReadOnly
+                IsReadOnly = isReadOnly,
+                ScoreAllocations = scoreAllocations
             });
         }
 
@@ -1401,6 +1439,7 @@ where   h.ID <> @t order by h.[Level] desc;
             model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
             model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
             model.Add("Class", assetType.Class);
+            model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
             bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
             model.Add("HasDashboards", hasDashboards);
@@ -5226,7 +5265,7 @@ where   (
             result.Content.Headers.ContentLength = stream.Length;
             result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
             {
-                FileName = $"{detail.Name} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
+                FileName = $"{detail.Name.GetSafeFilename()} relations as of {DateTime.Now.ToShortDateString()}.xlsx"
             };
             return result;
         }

@@ -25,14 +25,15 @@
 	<include file="scripts/Udt.utility.FieldValue.xml"/>
   
 	<!-- Functions (object-based naming) -->
-	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.GenerateAssetUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateObjectUrl.xml"/>
 	<include file="scripts/Function.dbo.GenerateUrlByTypeName.xml"/>
+	<include file="scripts/Function.graph.GetKeyPath.xml"/>
 	<include file="scripts/Function.graph.GetPath.xml"/>
 	<include file="scripts/Function.graph.GetPathByAssetId.xml"/>
 	<include file="scripts/Function.graph.GetPathSegment.xml"/>
 	<include file="scripts/Function.graph.GetXmlSegment.xml"/>
+	<include file="scripts/Function.graph.ReformatSegments.xml"/>
 	<include file="scripts/Function.queue.WriteIndexXml.xml"/>
 	<include file="scripts/Function.reporting.StripHTML.xml"/>
 	<include file="scripts/Function.utility.GetAssetDisplayValue.xml"/>
@@ -262,6 +263,7 @@
 	<include file="scripts/Function.dbo.GetAssetTypeUrlById.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectNames.xml"/>				<!--Function used for computed column-->
 	<include file="scripts/Function.dbo.GetIntersectTypeNames.xml"/>			<!--Function used for computed column-->
+	<include file="scripts/Function.dbo.GetAssetScoreById.xml"/>
 	<include file="scripts/View.cache.ObjectDetails.xml"/>
 	<include file="scripts/View.dbo.ArtifactTypeDisplayFormatFieldTypes.xml"/>
 	<include file="scripts/View.dbo.AssetApiModel.xml"/>
@@ -295,6 +297,8 @@
 	<include file="scripts/Function.dbo.GetAssetTypeTextPathById.xml"/>			<!--Function used for computed column-->
 	<include file="scripts/View.dbo.SiteNavAvailable.xml"/>
 	<include file="scripts/View.dbo.SiteNavFlat.xml"/>
+	<include file="scripts/View.graph.AssetNodeDisplayPath.xml"/>
+	<include file="scripts/View.graph.AssetNodeKeyPath.xml"/>
 	<include file="scripts/View.utility.ArtifactAssetParent.xml"/>
 	<include file="scripts/View.utility.FieldValue.xml"/>
 	<include file="scripts/View.utility.IntersectAsset.xml"/>
@@ -337,6 +341,7 @@
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
 	<!-- Functions (object-based naming) -->
+	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
 	<include file="scripts/Function.dbo.AssetsByTypeUserCantRead.xml"/>
 	<include file="scripts/Function.dbo.AssetTypesUserCantRead.xml"/>

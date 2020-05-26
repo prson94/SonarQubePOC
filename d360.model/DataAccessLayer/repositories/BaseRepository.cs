@@ -17,7 +17,7 @@ namespace d360.model.DataAccessLayer.repositories
     {
         ICompanyContext CompanyContext;
         const string RELATIONSHIP_DELIMITER = "|";
-    public BaseRepository(ICompanyContext ctx)
+        public BaseRepository(ICompanyContext ctx)
         {
             this.CompanyContext = ctx;
         }
@@ -83,6 +83,9 @@ namespace d360.model.DataAccessLayer.repositories
                 if (f.Type == "Link")
                     valueColumn = "Value";
 
+                if (f.Type == "Score")
+                    joinPrefix = "outer";
+
                 FieldType relatedField = null;
                 if (f.Type == "FieldFromRelationship")
                 {
@@ -112,7 +115,11 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else if (f.Type == "Path")
                     {
-                        fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                        fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                    }
+                    else if (f.Type == "Score")
+                    {
+                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                     }
                     else
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
@@ -124,7 +131,9 @@ namespace d360.model.DataAccessLayer.repositories
                         if (!string.IsNullOrEmpty(fieldDataType))
                         {
                             if (fieldDataType == "bit")
-                                fieldColumns.Add($"coalesce(try_cast(case when {tableAlias}.{valueColumn} = 'true' then 1 else 0 end as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
+                            {
+                                fieldColumns.Add($"try_cast(case when coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) = 'true' then 1 else 0 end as {fieldDataType}) as [{columnName}]");
+                            }
                             else
                                 fieldColumns.Add($"coalesce(try_cast({tableAlias}.{valueColumn} as {fieldDataType}), @defaultValue{tableAlias}) as [{columnName}]");
                         }
@@ -135,7 +144,11 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                        }
+                        else if (f.Type == "Score")
+                        {
+                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                         }
                         else
                             fieldColumns.Add($"coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) as [{columnName}]");
@@ -166,8 +179,11 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Path")
                         {
-                            fieldColumns.Add($"graph.GetPath(Node.Segments, ' > ', ' / ') as [{columnName}]");
-                            //dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            fieldColumns.Add($"Node.DisplayPath as [{columnName}]");
+                        }
+                        else if (f.Type == "Score")
+                        {
+                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                         }
                         else
                         {
@@ -201,10 +217,10 @@ namespace d360.model.DataAccessLayer.repositories
                     if (relatedField.Type == "Path")
                     {
                         fieldJoins.Add($@"outer apply (
-                            select  STRING_AGG(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') as FormattedValue 
-                            from    graph.AssetNode 
+                            select  STRING_AGG(DisplayPath,'{RELATIONSHIP_DELIMITER}') as FormattedValue 
+                            from    graph.AssetNodeDisplayPath 
 					        where   ID IN ({assetIdFinalQuery})
-                            having  string_agg(graph.GetPath(Segments, ' > ', ' / '),'{RELATIONSHIP_DELIMITER}') is not null
+                            having  string_agg(DisplayPath,'{RELATIONSHIP_DELIMITER}') is not null
                         ) {tableAlias}");
                     }
                     else {
@@ -318,9 +334,9 @@ namespace d360.model.DataAccessLayer.repositories
                     ");
                     dbArgs.Add($"@jsonPath{f.ID}", jsonElementDefinition.Path);
                 }
-                else if (f.Type == "Path")
+                else if (f.Type == "Score")
                 {
-                    // No join required, as this is handled by a function.
+                    fieldJoins.Add($"{joinPrefix} apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {tableAlias}");
                 }
                 else if (f.Type == "Tag")
                 {
@@ -448,7 +464,11 @@ namespace d360.model.DataAccessLayer.repositories
                                         }
                                         else if (field.Type == "Path")
                                         {
-                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.Path {orderDirection}";
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"Node.DisplayPath {orderDirection}";
+                                        }
+                                        else if (field.Type == "Score")
+                                        {
+                                            orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"F{field.ID}.[Value] {orderDirection}";
                                         }
                                         else
                                         {
@@ -516,7 +536,7 @@ namespace d360.model.DataAccessLayer.repositories
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         case "Path":
-                                            whereStatements.Add($"Node.Path like '%' + replace(@field{field.ID}, ' > ', '%')");
+                                            whereStatements.Add($"Node.DisplayPath like '%' + ltrim(rtrim(replace(replace(@field{field.ID}, '>', ''), '%', ''))) + '%'");
                                             dbArgs.Add($"@field{field.ID}", q.Value);
                                             break;
                                         default:

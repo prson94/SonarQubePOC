@@ -29,6 +29,7 @@ export class ArtifactType {
     HasCustomExportTemplates: boolean;
     AssetTypeUID: string;
     Class: AssetTypeClass;
+    AutoDisplayParent: boolean;
 
     public static AsGridObject(artifact: ArtifactType): AssetGridObject {
         var ago = new AssetGridObject();
@@ -40,6 +41,7 @@ export class ArtifactType {
         ago.Name = artifact.Name;
         ago.Object = 'Artifact';
         ago.ObjectType = 'ArtifactType';
+        ago.AutoDisplayParent = artifact.AutoDisplayParent
         return ago;
     }
 

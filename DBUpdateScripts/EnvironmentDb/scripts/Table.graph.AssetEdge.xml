@@ -73,4 +73,44 @@ DROP INDEX IF EXISTS IX_GraphAssetEdge_ToFromPredicate ON [graph].[AssetEdge];
 	</rollback>
   </changeSet>
 
+  <changeSet author="Pappas" id="Table.graph.AssetEdge-v3">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF EXISTS (select * from sys.edge_constraints where name = 'EC_GraphAssetEdge')
+BEGIN
+	ALTER TABLE [graph].[AssetEdge] DROP CONSTRAINT [EC_GraphAssetEdge]
+END
+ALTER TABLE [graph].[AssetEdge] ADD CONSTRAINT [EC_GraphAssetEdge] CONNECTION (graph.[AssetNode] To graph.[AssetNode]) ON DELETE CASCADE
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.edge_constraints where name = 'EC_GraphAssetEdge')
+BEGIN
+	ALTER TABLE [graph].[AssetEdge] DROP CONSTRAINT [EC_GraphAssetEdge]
+END
+ALTER TABLE [graph].[AssetEdge] ADD CONSTRAINT [EC_GraphAssetEdge] CONNECTION (graph.[AssetNode] To graph.[AssetNode])
+]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Table.graph.AssetEdge-v4">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+<![CDATA[
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_PredicateType')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_GraphAssetEdge_PredicateType] ON [graph].[AssetEdge] ( PredicateType ASC )
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF EXISTS (select * from sys.indexes where name = 'IX_GraphAssetEdge_PredicateType')
+BEGIN
+	DROP INDEX [IX_GraphAssetEdge_PredicateType] ON [graph].[AssetEdge]
+END
+]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

@@ -202,6 +202,11 @@ namespace d360.web.Controllers.V2
                 queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
             }
 
+            if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers"))
+            {
+                queries.Add("email not like '%@infogix.com'");
+            }
+
             if (queries.Count() > 0)
             {
                 whereSql += "where ";

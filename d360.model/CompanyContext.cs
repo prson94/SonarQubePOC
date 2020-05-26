@@ -2551,7 +2551,7 @@ select @err";
                 if (entry.Entity is AssetType)
                 {
                     var o = entry.Entity as AssetType;
-                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);                         
+                    if (string.IsNullOrWhiteSpace(o.Name)) throw new ArgumentException(Messages.Error_Name_Required);
                 }
                 #endregion
 
@@ -2750,7 +2750,7 @@ select @err";
             return returnValue;
         }
 
-        
+
         private void CreateEventsForObjectsRequiringTracking(IEnumerable<IEventTrackedEntity> modifiedEntities, IEnumerable<IEventTrackedEntity> addedEntities, IEnumerable<IEventTrackedEntity> deletedEntities, List<Field> changedFields)
         {
             //get any objects that implement EventTrackedEntity so we can add messages for them
@@ -2829,7 +2829,7 @@ select @err";
 
         #region Dynamic Field Methods
 
-        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true)
+        public void getDynamicFieldJoinStatements(int typeID, string type, out string joins, out string columns, bool includeIdColumn = true, bool useFriendlyName = false, bool listableOnly = true, List<FieldType> fields = null, string idColumn = "A.ID", bool ruleMeansEvent = true, bool enableRelationshipFields = true, bool includeKeyColumnOnly = false)
         {
             columns = "";
             joins = "";
@@ -2854,6 +2854,9 @@ select @err";
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID && i.IsListable).OrderBy(i => i.ColumnOrder).ToList();
                 else
                     fields = Filter<FieldType>(i => i.Object == fieldTypeRelationType && i.ObjectID == typeID).OrderBy(i => i.ColumnOrder).ToList();
+
+                if (includeKeyColumnOnly)
+                    fields = fields.Where(x => x.IsPartOfKey == true).ToList();
             }
 
             var relationFieldInfos = getRelationFieldData(fieldTypeRelationType, typeID, fields);
@@ -3003,10 +3006,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {jsonElementDefinition.FieldTypeID} 
 left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name}_P.[Path] = '{jsonElementDefinition.Path.CleanForSql()}' ";
                 }
-                else if (f.Type == DataType.Path.ToString()) 
+                else if (f.Type == DataType.Path.ToString())
                 {
                     columns += $@"graph.GetPath({name}_GAN.Segments, ' > ', ' / ') as [{(useFriendlyName ? friendlyName : name)}], ";
                     joins += $@" inner join graph.AssetNode {name}_GAN on {name}_GAN.ID = A.ID ";
+                }
+                else if (f.Type == DataType.Score.ToString())
+                {
+                    columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
+                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {
@@ -3189,6 +3197,15 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
   where LookupObjectType = @obj and LookupObjectID = @objId and FieldTypeID = @f and Text = @value",
 
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
+        }
+
+        public bool SaveChangesWithoutEventing()
+        {
+            this.IsEventingEnabled = false;
+            var res = SaveChanges();
+            this.IsEventingEnabled = true;
+
+            return res > 1;
         }
     }
 }

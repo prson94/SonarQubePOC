@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.Hop_GetImpact-v2">
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetImpact-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -27,7 +27,7 @@ begin
 
 	if @direction = 'B'
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -35,9 +35,7 @@ begin
 					
 					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 					S.ID,
-					S.Uid, 
-					S.[Path],
-					S.Segments,
+					S.Uid,
 					
 					E.PredicateID,
 					E.PredicateUid,
@@ -59,7 +57,7 @@ begin
 		
 	if @direction = 'F'
 	begin 
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -67,9 +65,7 @@ begin
 					
 					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 					T.ID,
-					T.Uid, 
-					T.[Path],
-					T.Segments,
+					T.Uid,
 					
 					E.PredicateID,
 					E.PredicateUid,
@@ -151,7 +147,7 @@ begin
 
 	if @direction = 'B'
 	begin
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -160,7 +156,6 @@ begin
 					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
 					S.ID,
 					S.Uid, 
-					S.[Path],
 					S.Segments,
 					
 					E.PredicateID,
@@ -178,13 +173,12 @@ begin
 					and T.ID = A.ID
 					and A.HopNumber = @hopNumber-1
 					and ( (@checkDirection = 1 and A.Direction = 'B') or (@checkDirection = 0) )
-					--and A.Direction = 'B'
-					and S.Uid not in (select Uid from #assetsToIgnore);
+					and E.Uid not in (select Uid from #relationsToIgnore);
 	end
 		
 	if @direction = 'F'
 	begin 
-		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
 			select	E.[Uid],
 					@direction,
 					@hopNumber,
@@ -192,8 +186,7 @@ begin
 					
 					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
 					T.ID,
-					T.Uid, 
-					T.[Path],
+					T.Uid,
 					T.Segments,
 					
 					E.PredicateID,
@@ -211,11 +204,15 @@ begin
 					and S.ID = A.ID
 					and A.HopNumber = @hopNumber-1
 					and ( (@checkDirection = 1 and A.Direction = 'F') or (@checkDirection = 0) )
-					--and A.Direction = 'F'
-					and T.Uid not in (select Uid from #assetsToIgnore);
+					and E.Uid not in (select Uid from #relationsToIgnore);
 	end
 
 	select @maxRowId = max(RowID) from #nodes;
+
+	if @maxRowId is null 
+	begin 
+		set @maxRowId = -1 
+	end
 
 	if @diagramType = 2
 	begin

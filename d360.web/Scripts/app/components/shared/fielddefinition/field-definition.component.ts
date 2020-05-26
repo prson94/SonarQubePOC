@@ -83,6 +83,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         this.fieldsService.getFieldsV2(this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
             data => {
                 this.fieldDefinitions = data;
+                this.fieldDisplayModel = [];
                 if (data) {
                     this.fieldDisplayModel = data.map((field) => {
                         let displayField = new FieldDisplayModel();
@@ -151,6 +152,8 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                 return "Ownership Lookup";
             case "ComputedRelationshipLookup":
                 return "Relation Lookup";
+            case "Path":
+                return "Asset Path";
             case "Text":
                 return "Simple Text";
             case "Lookup":

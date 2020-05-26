@@ -572,5 +572,129 @@ from	FieldTypeLookup T
 		]]>
 	</rollback>
   </changeSet>
- 
+
+  <changeSet author="Pappas" id="Data.Corrections.GOV-10740">
+    <sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+    update graph.AssetNode set [Path] = null
+		]]>
+    </sql>
+	  <rollback>
+		<![CDATA[	
+
+		]]>
+    </rollback>
+  </changeSet>  
+
+  <changeSet author="bquinlivan" id="Data.Corrections.GOV-10512">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			Update FTL
+				Set FTL.[Definition] = REPLACE(FTL.[Definition], '"FieldTypeID":0,"FieldTypeName":"TextPath"', '"FieldTypeID":0,"FieldTypeName":"AssetPath"')
+			FROM 
+				[dbo].[FieldTypeLookup] FTL
+				inner join 
+				FieldType FT on FT.ID = FTL.[FieldTypeID]
+			where 
+				FT.[Type] = 'ComplexRelationLookup'
+				and
+				FTL.Definition like '%"FieldTypeID":0,"FieldTypeName":"TextPath"%' 
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+   <changeSet author="TDuric" id="Data.Corrections.GOV-10778">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update FieldType
+set DefaultFormattedValue = DefaultValue
+where Type in ('Decimal','Html','Text','Number','Boolean')
+and DefaultValue is not null and DefaultFormattedValue is null
+
+update FieldType
+set DefaultValue = FORMAT(try_cast(DefaultValue as date),'M/d/yyyy'),
+DefaultFormattedValue = FORMAT(try_cast(DefaultValue as date),'M/d/yyyy')
+ from FieldType
+where Type in ('Date')
+and DefaultValue is not null and DefaultFormattedValue is null
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-10789">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+update metrics.AssetVersion
+set State = 3
+where Uid in (
+select uid from metrics.assetversion where state = 3
+)
+and State = 1
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="TDuric" id="Data.Corrections.GOV-10586-2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		DECLARE @currentUid uniqueidentifier
+
+DECLARE MY_CURSOR CURSOR 
+  LOCAL STATIC READ_ONLY FORWARD_ONLY
+FOR 
+
+SELECT DISTINCT uid 
+FROM graph.AssetNode
+
+OPEN MY_CURSOR
+FETCH NEXT FROM MY_CURSOR INTO @currentUid
+WHILE @@FETCH_STATUS = 0
+BEGIN 
+    
+	begin try
+		update graph.AssetNode set ReformattedSegments = graph.ReformatSegments(Segments)
+			where uid = @currentUid
+	end try
+	begin catch
+	end catch
+
+    FETCH NEXT FROM MY_CURSOR INTO @currentUid
+END
+CLOSE MY_CURSOR
+DEALLOCATE MY_CURSOR
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+update graph.AssetNode set ReformattedSegments = graph.ReformatSegments(Segments)
+		]]>
+	</rollback>
+  </changeSet>
  </databaseChangeLog>
