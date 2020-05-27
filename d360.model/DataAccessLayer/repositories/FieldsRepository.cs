@@ -1191,21 +1191,35 @@ from	IntersectType I
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
                     }
-                    if (f.Type.Lookup.Filter != null && !string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
+                    if (f.Type.Lookup.Filter != null)
                     {
-                        var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
-                        if (filterFieldType <= 0)
+                        int? filterFieldType = null;
+                        int? filterPredicate = null;
+                        bool? filterPredicateDirection = null;
+                        if (!string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
+                            if (filterFieldType <= 0)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                        } else if (string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName) && typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
+                        {
+                            //IssueTypes can have a Filter just based on Preidcate/Predicate direction. That will be Action/Subject and the filterFieldType is null
+                            filterFieldType = null;
                         }
-                        var filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
-                        if (filterPredicate <= 0)
+                        if (f.Type.Lookup.Filter.PredicateUid.HasValue && f.Type.Lookup.Filter.PredicateUid != Guid.Empty)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
+                            if (filterPredicate <= 0)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                            filterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
                         }
                         newFieldType.FilterFieldTypeID = filterFieldType;
                         newFieldType.FilterPredicateID = filterPredicate;
-                        newFieldType.FilterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
+                        newFieldType.FilterPredicateDirection = filterPredicateDirection;
                     }
                     if (f.Type.Lookup.Format != null && !string.IsNullOrEmpty(f.Type.Lookup.Format.Display))
                     {
