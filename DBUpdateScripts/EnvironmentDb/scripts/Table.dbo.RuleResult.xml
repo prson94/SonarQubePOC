@@ -5,41 +5,13 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="TDuric" id="Table.dbo.RuleResult-v4">
+  <changeSet author="kmcnamee" id="Table.dbo.RuleResult-v6">
+    <comment>GOV-10862</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResult')
-BEGIN
-	CREATE TABLE [dbo].[RuleResult](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[EffectiveDate] [datetime] NOT NULL,
-		[RowsPassed] [int] NOT NULL,
-		[RowsFailed] [int] NOT NULL,
-		[CreatedOn] [datetime] CONSTRAINT [DF_RuleResult_CreatedOn] DEFAULT (getutcdate()) NULL,
-		[CreatedBy] [int] CONSTRAINT [DF_RuleResult_CreatedBy] DEFAULT (0) NULL,
-		[RunDate] [datetime] CONSTRAINT [DF_RuleResult_RunDate] DEFAULT (getutcdate()) NOT NULL,
-		[RuleImplementationID] [int] CONSTRAINT [DF_RuleResult_RuleImplementationID] DEFAULT (0) NOT NULL,
-		[PassFraction]  AS (case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) else CONVERT([decimal](18,17),CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)) end),
-		[FailFraction]  AS (case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) when [RowsPassed]=(0) AND [RowsFailed]<>(0) then (1) else CONVERT([decimal](18,17),CONVERT([decimal](18,15),CONVERT([decimal](18,3),(1),(0))-CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)),(0)) end),
-		[Passed]  AS ([utility].[CalculatePassedWrapper](case when [RowsPassed]=(0) AND [RowsFailed]=(0) then (0) else CONVERT([decimal](18,17),CONVERT([decimal](18,3),[RowsPassed],(0))/(CONVERT([decimal](18,3),[RowsPassed],(0))+CONVERT([decimal](18,3),[RowsFailed],(0))),(0)) end,[RuleImplementationID])),
-		CONSTRAINT [PK_RuleResult] PRIMARY KEY NONCLUSTERED ( [ID] ASC )
-	)
-END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_RuleResult_RuleImplementation')
-BEGIN
-	ALTER TABLE [dbo].[RuleResult] WITH CHECK ADD CONSTRAINT [FK_RuleResult_RuleImplementation] FOREIGN KEY([RuleImplementationID]) REFERENCES [dbo].[RuleImplementation] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[RuleResult] CHECK CONSTRAINT [FK_RuleResult_RuleImplementation]
-END
-
-IF NOT EXISTS (select * from sys.indexes where name = 'IX_RuleResult_RuleImplementationID')
-BEGIN
-	CREATE NONCLUSTERED INDEX [IX_RuleResult_RuleImplementationID] ON [dbo].[RuleResult] ( [RuleImplementationID] ASC )
-END
-
 			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'RuleResult')
 			BEGIN
 				exec sp_rename 'dbo.RuleResult', 'RuleResult_bak';
