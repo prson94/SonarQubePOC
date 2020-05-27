@@ -104,8 +104,6 @@
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
 	<include file="scripts/Table.dbo.LoadItem.xml"/>
 	<include file="scripts/Table.dbo.LoadItemColumn.xml"/>
-	<include file="scripts/Table.dbo.LookupType.xml"/>
-	<include file="scripts/Table.dbo.Lookup.xml"/>
 	<include file="scripts/Table.dbo.MapType.xml"/>
 	<include file="scripts/Table.dbo.Map.xml"/>
 	<include file="scripts/Table.dbo.MapGraph.xml"/>
