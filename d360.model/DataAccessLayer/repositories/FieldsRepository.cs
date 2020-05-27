@@ -532,7 +532,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var fieldTypeNamesToDelete = new List<string>();
             var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
-            var reservedWords = new List<string>() { "color", "icon", "parentid", "database" };
+            var reservedWords = new List<string>() { "color", "icon", "parentid", "database", "path", "keypath", "displaypath" };
             var maxColumnIndexItem = currentFieldTypes.OrderByDescending(x => x.ColumnOrder).FirstOrDefault();
             var maxColumnIndex = 0;
             if (maxColumnIndexItem != null)
