@@ -967,7 +967,19 @@ where T.ExecutionId = @executionid;
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+                QueueSource.CreateTopicMessages(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+        }
+
+        public void SendGraphAssetTypeEvent(Guid assetTypeUid)
+        {
+            var e = new AssetEventInfo()
+            {
+                Uid = assetTypeUid,
+                CompanyID = CurrentCompanyID,
+                Type = AssetEventType.AssetType
+            };
+
+            QueueSource.CreateTopicMessage(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
         public void SendApiGraphEvent(ApiExecutionInfo info)

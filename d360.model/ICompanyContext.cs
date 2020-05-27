@@ -311,6 +311,7 @@ namespace d360.model
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
+        void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
