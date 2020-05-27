@@ -1524,6 +1524,7 @@ from	IntersectType I
 				inner join field f2 on f2.fieldtypeid = f.id 
 				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId });
         }
+
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
         {
             var RetValueList = new List<Tuple<string, Guid>>();
