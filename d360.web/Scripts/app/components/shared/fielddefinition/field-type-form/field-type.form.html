@@ -445,12 +445,18 @@
                                 [style]="{ 'width': '98%' }"
                                 ngDefaultControl
                                 [ngModelOptions]="{standalone: true}"></p-dropdown>
-                    <p-dropdown *ngIf="currentType == 'Score'"
-                                [options]="scoreTypeOptions"
-                                [(ngModel)]="model.FieldType.Type[currentType].ScoreType"
-                                [style]="{ 'width': '98%' }"
-                                ngDefaultControl
-                                [ngModelOptions]="{standalone: true}"></p-dropdown>
+                    <ng-container *ngIf="currentType == 'Score'">
+                        <p-dropdown *ngIf="scoreTypeOptions?.length > 1" 
+                                    [options]="scoreTypeOptions"
+                                    [(ngModel)]="model.FieldType.Type[currentType].ScoreType"
+                                    [style]="{ 'width': '98%' }"
+                                    ngDefaultControl
+                                    [ngModelOptions]="{standalone: true}"></p-dropdown>
+                        <div *ngIf="scoreTypeOptions?.length == 1"
+                             class="form-instructions">
+                            No scores are currently defined for this asset type
+                        </div>
+                    </ng-container>
                     <p-dropdown *ngIf="currentType == 'Lookup'"
                                 [options]="lookupDefaultValueOptions"
                                 [(ngModel)]="model.FieldType.Type[currentType].DefaultValue"
