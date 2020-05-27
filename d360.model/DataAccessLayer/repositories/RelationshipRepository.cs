@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -14,6 +15,7 @@ using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SpreadsheetLight;
 
 namespace d360.model.DataAccessLayer
 {
@@ -24,7 +26,7 @@ namespace d360.model.DataAccessLayer
         IStorageProvider Storage;
         ICommunityContext communityContext;
         public RelationshipRepository(ICommunityContext communityContext, ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider)
-            :base(companyContext)
+            : base(companyContext)
         {
             this.companyContext = companyContext;
             this.QueueSource = queueSource;
@@ -142,7 +144,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(relationshipTypeUidString, out relationshipTypeUid))
                     {
                         dbArgs.Add("@relationshiptypeuid", relationshipTypeUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";                        
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" T.[Uid] = @relationshiptypeuid";
                         fieldTypes = companyContext.Query<FieldType>("select F.* from FieldType F inner join IntersectType I on F.Object = 'IntersectType' and I.ID = F.ObjectID and I.[Uid] = @relationshipTypeUid", new { relationshipTypeUid }).ToList();
                     }
                 }
@@ -163,7 +165,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                     if (Guid.TryParse(predicateUidString, out predicateUid))
                     {
                         dbArgs.Add("@predicateuid", predicateUid);
-                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";                        
+                        whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $" (P.Uid = @predicateuid)";
                     }
                 }
                 if (queryParamsList.Any(q => q.Key.ToLower() == "subjectuid"))
@@ -204,7 +206,7 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                 }
 
                 if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
-                {                    
+                {
                     if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
                     {
                         includeTotal = true;
@@ -274,8 +276,8 @@ end = @f{fieldType.ID}Value";
                 fieldColumnsSql = string.Join(",\n", fieldColumns) + ",";
 
             var countFullSql = $@"select	@total = count(1) {countSql} {(filteringByFields ? string.Join("\n", fieldJoins) : "")} {whereClause}";
-
-            var sql = $@"
+            
+               var sql = $@"
 declare @total int
 {(includeTotal ? countFullSql : "")}
 
@@ -306,7 +308,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var models = await companyContext.GetDatabaseJsonAsObjectAsync<JObject>(sql, dbArgs);
 
-            return models;
+          return models;
         }
 
         public IQueryable<IntersectType> GetIntersectTypeById(int id)
@@ -605,10 +607,10 @@ from	IntersectType I
 	                        P.Id = I.PredicateID
                             where P.[Type] = @type and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID )
                         )     ";
-            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type=(int) PredicateType.Transformation });
-            return  string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
+            var result = await companyContext.QueryAsync<string>(sql, new { id = assetTypeId, type = (int)PredicateType.Transformation });
+            return string.IsNullOrEmpty(result.FirstOrDefault()) ? false : true;
         }
-        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes,  ApiExecution execution)
+        public List<RelationshipTypeResult> PostRelationshipTypes(List<RelationshipTypeInsert> relationshipTypes, ApiExecution execution)
         {
             companyContext.Add(execution);
 
@@ -632,7 +634,7 @@ from	IntersectType I
 
             return results;
         }
-        
+
         public List<RelationshipTypeResult> PutRelationshipTypes(List<RelationshipTypeUpdate> relationshipTypes, ApiExecution execution)
         {
             companyContext.Add(execution);
@@ -658,7 +660,8 @@ from	IntersectType I
             return results;
         }
 
-        public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution) {
+        public List<RelationshipTypeResult> DeleteRelationshipTypes(List<RelationshipTypeDelete> relationshipTypes, ApiExecution execution)
+        {
             companyContext.Add(execution);
 
             List<RelationshipTypeResult> results = null;
@@ -680,6 +683,134 @@ from	IntersectType I
             }
 
             return results;
+        }
+        public async Task<SLDocument> GetRelationshipsExcel(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            JObject results = await GetRelationships(queryParams);
+            var includeTotal = true;
+
+            if (queryParams != null)
+            {
+                var queryParamsList = queryParams.ToList();
+
+                if (queryParamsList.Any(q => q.Key.ToLower() == "_includetotal"))
+                {
+                    if (!bool.TryParse(queryParamsList.FirstOrDefault(q => q.Key.ToLower() == "_includetotal").Value, out includeTotal))
+                    {
+                        includeTotal = true;
+                    }
+                }
+            }
+            
+            var apiInfo = results.Children().ToList();
+
+            var document = new SLDocument();
+            const string relationshipSheetName = "Relationships";
+            const string apiSheetName = "Api Info";
+
+            var fields = new List<FieldType>();
+
+            //add default fields
+            fields.Add(new FieldType { Type = "string", Object = "Uid", Name = "", FriendlyName = "Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "RelationshipTypeUid", Name = "", FriendlyName = "RelationshipTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Uid", FriendlyName = "Predicate Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Type", FriendlyName = "Predicate Type" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Name", FriendlyName = "Predicate Name" });
+            fields.Add(new FieldType { Type = "string", Object = "Predicate", Name = "Inverse", FriendlyName = "Predicate Inverse" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "Uid", FriendlyName = "Subject Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Subject", Name = "AssetTypeUid", FriendlyName = "Subject AssetTypeUid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "Uid", FriendlyName = "Object Uid" });
+            fields.Add(new FieldType { Type = "string", Object = "Object", Name = "AssetTypeUid", FriendlyName = "Object AssetTypeUid" });
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, relationshipSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, results.GetValue("pageSize").ToString());
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, results.GetValue("pageNum").ToString());
+            if (includeTotal)
+            {
+                document.SetCellValue(3, 1, "total");
+                document.SetCellValue(3, 2, results.GetValue("total").ToString());
+            }
+
+
+            document.SelectWorksheet(relationshipSheetName);
+
+            var items = results.GetValue("items");
+            var rowData = new List<JToken>();
+
+            if (items != null)
+                rowData = items.ToList();
+            else
+                return document;
+
+            int rowNumber = 1;
+            int index = 1;
+            foreach (var row in rowData)
+            {
+                var relationshipTypeUid = row["RelationshipTypeUid"];
+                var customColumns = GetCustomFieldsForExcel(relationshipTypeUid.ToString());
+
+                if (customColumns.Count() > 0)
+                {
+                    index = fields.Count()+1;
+                    foreach (var cus in customColumns)
+                    {
+                        var name = cus.Name;
+                        var friendlyName =  cus.FriendlyName;
+                        var exists = fields.Where(x => x.Object.ToLower() == name.ToLower()).FirstOrDefault();
+                        if(exists == null)
+                        {
+                            var cusField = new FieldType { Type = "string", Object = name, Name = "", FriendlyName = friendlyName };
+                            fields.Insert(2,cusField);
+                        }
+                    }
+                }
+                index = 1;
+
+                foreach (var field in fields)
+                {
+                    document.SetCellValue(1, index++, (string)field.FriendlyName);
+                }
+
+                index = 1;
+                rowNumber++;
+                foreach (var field in fields)
+                {
+                    var token = row[field.Object];
+                    if (field.Name == "")
+                    {
+                        token = row[field.Object];
+                    }
+                    else
+                    {
+                        token = row[field.Object][field.Name];
+                    }
+                    string value = "";
+                    if (token != null)
+                        value = token.Value<string>();
+                    document.SetCellValue(rowNumber, index, value);
+                    index++;
+                }
+            }
+
+            #endregion
+
+            return document;
+        }
+
+        public IEnumerable<dynamic> GetCustomFieldsForExcel(string intersectUid)
+        {
+            return companyContext.Query<dynamic>(
+                @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
+				inner join IntersectType i on i.uid = @uid
+				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
         }
     }
 }
