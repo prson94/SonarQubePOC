@@ -161,7 +161,13 @@ export class AdminTagsComponent extends AdminBaseComponent {
         }
         let target = (<any>(event.target));
         if (element && target.nodeName !== "P-TABLECHECKBOX") {
-            this.clearAllSelectedItems(element);
+            var el = (<any>(event.target));
+            if (el.nodeName === "I")
+                el = el.parentNode.parentNode.parentNode; //gets <a>-><div>-><td>
+            if (el.nodeName === "A")
+                el = el.parentNode.parentNode; //gets <div>-><td>
+            el = (el.nodeName === "TD") ? el.parentNode : el;
+            this.clearAllSelectedItems(el);
             this.selected = [];
             this.selected.push(item);
             this.lastSelectedElement = item;
@@ -175,7 +181,6 @@ export class AdminTagsComponent extends AdminBaseComponent {
             else {
                 this.selected.push(item);
                 var el = (<any>(event.target)).parentNode;
-                el = (el.nodeName === "TD") ? el.parentNode : el;
                 this.selectElement(el);
             }
             this.lastSelectedElement = item;
@@ -185,6 +190,10 @@ export class AdminTagsComponent extends AdminBaseComponent {
 
     closeEditor() {        
         this.showEditor = false;        
+    }
+
+    openEditor() {
+        this.showEditor = true;
     }
 
     add() {
