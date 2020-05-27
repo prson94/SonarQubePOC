@@ -186,7 +186,7 @@ begin
 			order by	F.RowNumber;
 
 		insert into @selects
-			select		'graph.GetPath(H' + F.RRN + '.Segments, '' > '', '' / '')',
+			select		'H' + F.RRN + 'P.DisplayPath',
 						DataField as Alias
 			from		@fields F
 			where		FieldTypeID = 0 
@@ -312,6 +312,7 @@ begin
 						when 1 then ' from graph.AssetNode H'+R.RN+
 									' inner join graph.AssetEdge R'+R.RN+' on R'+R.RN + IIF(R.Direction = 1,'.$from_id', '.$to_id') + ' = H'+R.RN+'.$node_id and R'+R.RN+'.IntersectTypeID = ' + cast(R.IntersectTypeID as varchar) + 
 									' inner join graph.AssetNode A'+R.RN+' on A'+R.RN+'.$node_id = R'+R.RN + IIF(R.Direction = 1,'.$to_id', '.$from_id') + ' and A'+R.RN+'.ID = @assetId' +
+									' inner join graph.AssetNodeDisplayPath H'+R.RN+'P on H'+R.RN+'P.ID = H'+R.RN+'.ID' +
 									case R.[Object]
 										when 'FusionAttributeType' then ' inner join Asset FA'+R.RN+' on FA'+R.RN+'.ID = H'+R.RN+'.ID inner join FusionAttribute F'+R.RN+' on FA'+R.RN+'.Object = ''FusionAttribute'' and F'+R.RN+'.ID = FA'+R.RN+'.ObjectID'
 										when 'ResourceType' then ' inner join reporting.Global_Resource U'+R.RN+' on U'+R.RN+'.uid = H'+R.RN+'.Uid'
@@ -319,6 +320,7 @@ begin
 									end
 						else iif(P.FieldCount = 0, ' inner', ' left') + ' join graph.AssetEdge R'+R.RN+' on R'+R.RN + IIF(R.Direction = 1,'.$to_id', '.$from_id') + ' = H'+cast(P.RowNumber as varchar)+'.$node_id and R'+R.RN+'.IntersectTypeID = ' + cast(R.IntersectTypeID as varchar) + 
 							 iif(P.FieldCount = 0, ' inner', ' left') + ' join graph.AssetNode H'+R.RN+' on H'+R.RN+'.$node_id = R'+R.RN + IIF(R.Direction = 1,'.$from_id', '.$to_id') +
+							 iif(P.FieldCount = 0, ' inner', ' left') + ' join graph.AssetNodeDisplayPath H'+R.RN+'P on H'+R.RN+'P.ID = H'+R.RN+'.ID' +
 							 case R.[Object]
 								when 'FusionAttributeType' then iif(P.FieldCount = 0, ' inner', ' left') + ' join Asset FA'+R.RN+' on FA'+R.RN+'.ID = H'+R.RN+'.ID inner join FusionAttribute F'+R.RN+' on FA'+R.RN+'.Object = ''FusionAttribute'' and F'+R.RN+'.ID = FA'+R.RN+'.ObjectID'
 								when 'ResourceType' then iif(P.FieldCount = 0, ' inner', ' left') + ' join reporting.Global_Resource U'+R.RN+' on U'+R.RN+'.uid = H'+R.RN+'.Uid'
@@ -851,6 +853,7 @@ begin
 						and FieldTypeID = 0 
 						and FieldTypeName in ('FirstName', 'LastName', 'Email', 'LastLoggedInOn')
 			order by	F.RowNumber;
+
 		if @useUidUrls = 0
 		begin
 			insert into @selects
@@ -867,16 +870,19 @@ begin
 				from	@fields F 
 				where	F.BaseField is not null;
 		end
+
 		insert into @selects
 			select	'H' + F.RRN + IIF(F.IsRelationLink = 1, '_A'+F.FT+'.Uid', '.Uid') as ColumnName,
 					F.BaseField + 'Uid' as Alias 
 			from	@fields F 
 			where	F.BaseField is not null;
+
 		insert into @selects
 			select CONCAT('H',RRN,'_R', FT ,'.IntersectTypeUid') as ColumnName,
 			CONCAT('H',RRN,'_',FT,'_IntersectTypeUid') as Alias 
 			 from @fields
 			where FieldTypeName like 'Related Item.%'
+
 		insert into @wheres
 			select	'H' + F.RRN + 
 					case 
@@ -1176,8 +1182,10 @@ begin
 						end, 
 						FieldTypeName 
 				from	@fields
+
 			insert into @selects 
 				select 'A.[uid]','Uid'
+
 			insert into @orders
 				select		case  
 								when FieldDataType = 'number' then
@@ -1196,13 +1204,16 @@ begin
 			end
 		end
 	end
+
 	if @orderBy <> ''
 	begin
 		delete from @orders
 		insert into @orders
 		select ColumnName + ' ' + @orderDirection from @selects where Alias = @orderBy
 	end
+
 	declare @pagingQuery nvarchar(100) = ' offset ((@pageNum-1)*@pageSize) rows fetch next @pageSize rows only'
+
 	declare @sql nvarchar(max) = 'select '
 	if @countOnly = 1
 	begin
@@ -1217,6 +1228,7 @@ begin
 	begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
+
 -- Output to caller.
 	if @countOnly = 0
 	begin
@@ -1229,12 +1241,16 @@ begin
 			begin
 				set @sql = @sql + ' order by 1'
 			end
+
 		if @pageSize <> 2147483647
 		begin
 			set @sql = @sql + @pagingQuery
 		end
+
 		select [text], datafield, columntype, uidfield, urlfield, objectfield, objectidfield, description, columnwidth from @columns order by sort
 		select [name], [type] from @datafields order by sort
+
+
 		exec sp_executesql @sql, N'@assetId bigint, @simpleFilter nvarchar(400), @pageSize int, @pageNum int', @assetId = @assetId, @simpleFilter = @simpleFilter, @pageNum = @pageNum, @pageSize = @pageSize
 	end
 	else

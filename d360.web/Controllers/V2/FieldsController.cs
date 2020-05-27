@@ -168,12 +168,12 @@ namespace d360.web.Controllers.V2
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Relationship` *(Relationship)*
         ///     1. This is a computed field and does not support directly editing values.
+        /// - `Score` *(Score)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// - `Tag` *(Tag)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Text` *(Simple Text)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
-        /// - `Score` *(Score)*
-        ///     1. This is a computed field and does not support directly editing values.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
@@ -196,6 +196,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 #region GetData
+                
                 TypeIdentifierInfoModel typeIdentifierInfoModel = null;
 
                 IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
@@ -234,11 +235,12 @@ namespace d360.web.Controllers.V2
                     if (typeIdentifierInfoModel == null)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
+                
                 #endregion            
 
                 #region SecurityCheck
 
-            bool hasPermissions = false;
+                bool hasPermissions = false;
 
                 if (Company.CurrentResourceIsAdmin)
                 {
@@ -257,9 +259,11 @@ namespace d360.web.Controllers.V2
                 {
                     throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You do not have permissions to change fields on this type.");
                 }
+
                 #endregion
 
                 #region Validation
+                
                 var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
                 var ExistingIntersectID = new List<Tuple<string, Guid>>();
                 if (model.AssetTypeUid.HasValue)
@@ -604,37 +608,44 @@ namespace d360.web.Controllers.V2
 
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
-                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
                 }
 
-                var disallowedScoreClasses = 
-                    new List<AssetTypeClass>() {
-                        AssetTypeClass.Organization,
-                        AssetTypeClass.Fusion,
-                        AssetTypeClass.FusionAttribute,
-                        AssetTypeClass.FusionQuery,
-                        AssetTypeClass.User,
-                        AssetTypeClass.ReferenceItemType,
-                        AssetTypeClass.AttributeGroup,
-                    };
+                var disallowedPathClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.User,
+                    AssetTypeClass.AttributeGroup,
+                };
+                if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path").ToList();
+                }
 
+                var disallowedScoreClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionAttribute,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.User,
+                    AssetTypeClass.ReferenceItemType,
+                    AssetTypeClass.AttributeGroup,
+                };
                 if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
                 }
 
-
-
-                var jsonFieldType = new Dictionary<string, string>()
-            {
-                { "Boolean", "bit" },
-                { "Date", "date" },
-                { "Date With Time", "datetime" },
-                { "Decimal", "float" },
-                { "Text", "nvarchar" },
-                { "Whole Number", "int" },
-                { "Whole Number (Large)", "bigint" },
-            };
+                var jsonFieldType = new Dictionary<string, string>() {
+                    { "Boolean", "bit" },
+                    { "Date", "date" },
+                    { "Date With Time", "datetime" },
+                    { "Decimal", "float" },
+                    { "Text", "nvarchar" },
+                    { "Whole Number", "int" },
+                    { "Whole Number (Large)", "bigint" },
+                };
                 var Field_JsonDataTypes = jsonFieldType.Select(i => new { title = i.Key, value = i.Value });
                 var Field_JsonFields = Company.Filter<FieldType>(ft => ft.Object == sType && ft.ObjectID == id && ft.Type == "JSON")
                     .OrderBy(ft => ft.FriendlyName)
