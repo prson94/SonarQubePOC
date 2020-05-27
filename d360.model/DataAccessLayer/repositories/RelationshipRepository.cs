@@ -730,21 +730,25 @@ from	IntersectType I
             document.SelectWorksheet(apiSheetName);
 
             document.SetCellValue(1, 1, "pageSize");
-            document.SetCellValue(1, 2, (int)apiInfo[0].First);
+            document.SetCellValue(1, 2, results.GetValue("pageSize").ToString());
             document.SetCellValue(2, 1, "pageNum");
-            document.SetCellValue(2, 2, (int)apiInfo[1].First);
+            document.SetCellValue(2, 2, results.GetValue("pageNum").ToString());
             if (includeTotal)
             {
                 document.SetCellValue(3, 1, "total");
-                document.SetCellValue(3, 2, (int)apiInfo[2].First);
+                document.SetCellValue(3, 2, results.GetValue("total").ToString());
             }
 
 
             document.SelectWorksheet(relationshipSheetName);
 
-            var rowData = apiInfo[2].ToList().Children().ToList();
-            if (includeTotal)
-                rowData = apiInfo[3].ToList().Children().ToList();
+            var items = results.GetValue("items");
+            var rowData = new List<JToken>();
+
+            if (items != null)
+                rowData = items.ToList();
+            else
+                return document;
 
             int rowNumber = 1;
             int index = 1;
