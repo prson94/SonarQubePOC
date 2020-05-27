@@ -1450,12 +1450,6 @@ from	(
 
 		union
 
-		select		5 as Sort,
-					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
-		from		AttributeType 
-		where		ParentID is null
-
-        union
 		select		8 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
 					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
