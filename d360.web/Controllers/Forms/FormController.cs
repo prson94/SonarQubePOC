@@ -1448,15 +1448,15 @@ from	(
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 9
 
-		union
-
+        union
+		
 		select		5 as Sort,
 					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
 		from		AttributeType 
 		where		ParentID is null
 
         union
-		select		8 as Sort,
+        select		8 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
 					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType A
@@ -1820,7 +1820,7 @@ order by Sort, title";
                                         // Log any missing key field errors.
                                         errorMessages.AddRange(
                                             levelFields
-                                            .Where(f => f.Level == l.Level && f.PartOfKey && f.ColumnIndex == -1)
+                                            .Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
                                             .Select(f => $"Key column not provided [{f.Name}]")
                                         );
 
@@ -1833,7 +1833,7 @@ order by Sort, title";
 
                                         // Get any key columns that do not have data populated for this level.
                                         invalidKeyFields.AddRange(
-                                            levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+                                            levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.Required && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
                                         );
 
                                         // Get any required, non-key columns that do not have data populated for this level.
