@@ -532,7 +532,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
 
             var fieldTypeNamesToDelete = new List<string>();
             var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
-            var reservedWords = new List<string>() { "color", "icon", "parentid", "database" };
+            var reservedWords = new List<string>() { "color", "icon", "parentid", "database", "path", "keypath", "displaypath" };
             var maxColumnIndexItem = currentFieldTypes.OrderByDescending(x => x.ColumnOrder).FirstOrDefault();
             var maxColumnIndex = 0;
             if (maxColumnIndexItem != null)
@@ -1524,6 +1524,7 @@ from	IntersectType I
 				inner join field f2 on f2.fieldtypeid = f.id 
 				 where f.[object] = @objectType and f.objectid = @id ", new { objectType = objectType.ToString(), id = objectId });
         }
+
         public List<Tuple<string, Guid>> GetFieldInterSetUID(List<FieldType> ExistingFieldType)
         {
             var RetValueList = new List<Tuple<string, Guid>>();

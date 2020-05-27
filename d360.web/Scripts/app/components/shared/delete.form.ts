@@ -17,6 +17,7 @@ export class DeleteForm implements OnChanges {
     @Input() model: any;
     @Input() uri: string;
     @Input() deleteButtonText: string;
+    @Input() cancelButtonText: string;
     @Input() method: string = 'post';
     @Input() prompt: string;
     @Input() callback: Function;

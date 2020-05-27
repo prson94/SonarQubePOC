@@ -1448,15 +1448,9 @@ from	(
 					cross apply dbo.GetAssetTypeTextPathById(A.ID, ' > ') P
 		where		[Class] = 9
 
-        union
-		
-		select		5 as Sort,
-					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
-		from		AttributeType 
-		where		ParentID is null
+		union
 
-        union
-        select		8 as Sort,
+		select		8 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
 					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
 		from		AssetType A
