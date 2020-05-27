@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v18">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v19">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -75,7 +75,7 @@ begin
 					) R
 			where	O.FieldTypeID = @fieldTypeId;
 
-		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], FriendlyName, DisplayOrder, SortOrder, Show, Width, OverrideDisplayName)
+		insert into @fields (AssetTypeUid, Object, ObjectID, FieldTypeID, FieldTypeName, [Filter], OverrideDisplayName, DisplayOrder, SortOrder, Show, Width, FriendlyName)
 			select		F.*,
 						FT.FriendlyName
 			from		FieldTypeLookup O
@@ -92,7 +92,7 @@ begin
 							Show bit, 
 							Width int
 						) F
-						left join FieldType FT on FT.ID = F.FieldTypeID
+						left join FieldType FT on FT.ID = F.FieldTypeID and F.FieldTypeName not like 'Related Item.%'
 			where		O.FieldTypeID = @fieldTypeId
 			order by	F.DisplayOrder, coalesce(F.OverrideDisplayName, FT.FriendlyName, F.FieldTypeName);
 
@@ -625,7 +625,7 @@ begin
 		select  @sql = @sql + ' where ' + STRING_AGG([Statement], ' and ') from (select [Statement] from @wheres group by [Statement]) O
 	end
 
--- Output to caller.
+	-- Output to caller.
 	if @countOnly = 0
 	begin
 		-- Finally, add the order by, if there is any.
