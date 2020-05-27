@@ -7249,10 +7249,15 @@ insert into #Keys
     left join AssetType AT on AT.uid = EP.AssetTypeUid
     where	ExecutionID = @ExecutionID and AT.Id is null;
 
+";
 
-declare @executionId uniqueidentifier = '356E6654-9F7D-4696-8841-430F66E036A7'
+                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 
+                    #endregion
 
+                    #region Parse new json to old format
+
+                    var jsonParseSql = $@"
 drop table if exists #tempData
 create table #tempData
 (
@@ -7262,7 +7267,8 @@ create table #tempData
     AssigneeTypeUid uniqueidentifier, 
     IntersectTypeUid uniqueidentifier, 
     FieldApiName nvarchar(250),
-    Value nvarchar(250)
+    Value nvarchar(250),
+	ValueAsUid uniqueidentifier
 )
 
 insert into #tempData
@@ -7271,7 +7277,11 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 ThenData.AssigneeTypeUid,
-ThenCond.*
+ThenCond.*,
+case 
+when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
+else null
+end as ValueAsUid
 from api.executionresponsibilityrule
 outer apply OPENJSON (Definition, N'$.Then')
   WITH (
@@ -7292,7 +7302,11 @@ ItemNumber,
 ExecutionId,
 AssetTypeUid,
 null,
-WhenData.*
+WhenData.*,
+case 
+when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
+else null
+end as ValueAsUid
 from api.executionresponsibilityrule
 outer apply OPENJSON (Definition, N'$.When')
   WITH (
@@ -7303,30 +7317,105 @@ outer apply OPENJSON (Definition, N'$.When')
 
 where executionid = @executionId
 
-select d.itemnumber, 
-d.executionid ,
-at.object,
-at.objectid,
-case 
-when it.id is null then 'F'
-else 'R'
-end as CheckType,
-isnull(ft.id,ft2.id) as FieldTypeId,
-isnull(ft.FriendlyName,ft2.friendlyname) as FieldTypeName,
-d.value as Value,
-it.id as IntersectTypeId,
-null as TargetObject,
-0 as TargetObjectId
-from #tempData d
-left join assettype at on d.assigneetypeuid = at.uid
-left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
-left join IntersectType it on it.uid = d.IntersectTypeUid
-left join assettype at2 on d.AssetTypeUid = at2.uid
-left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+drop table if exists #parsedData
+select  d.itemnumber, 
+		d.executionid ,
+		at.object,
+		at.objectid,
+		d.valueasuid,
+		case 
+			when it.id is null then 'F'
+			else 'R'
+		end as CheckType,
+		isnull(isnull(ft.id,ft2.id),0) as FieldTypeId,
+		isnull(ft.FriendlyName,ft2.friendlyname) as FieldTypeName,
+		case 
+			when it.id is null then d.Value
+			else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
+		end as Value,
+		isnull(it.id,0) as IntersectTypeId,
+		a.object as TargetObject,
+		isnull(a.objectid,0) as TargetObjectId
+	into #parsedData
+	from #tempData d
+		left join assettype at on d.assigneetypeuid = at.uid
+		left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
+		left join IntersectType it on it.uid = d.IntersectTypeUid
+		left join assettype at2 on d.AssetTypeUid = at2.uid
+		left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+		left join asset a on a.uid = d.ValueAsUid
 
-";
+drop table if exists #convertedData
+create table #convertedData
+(
+    ItemNumber int, 
+    ExecutionId uniqueidentifier, 
+	[When] nvarchar(max),
+	[Then] nvarchar(max),
+	[Definition] nvarchar(max)
+)
 
-                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+insert into #convertedData
+select ItemNumber,ExecutionId, null,null,null
+from #parsedData
+group by ItemNumber,ExecutionId
+
+;with conditions as (select 
+ItemNumber,
+ExecutionId,
+ConditionsThen.json as [Then],
+ConditionsWhen.json as [When]
+ from #parsedData pd
+cross apply (
+	select top 1 Object,ObjectID, Conditions.json as Conditions
+	from #parsedData
+		cross apply(select
+		 CheckType,
+		 FieldTypeID,
+		 FieldTypeName,
+		 Value,
+		 IntersectTypeID,
+		 TargetObject,
+		 TargetObjectId
+		  from #parsedData
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+		 for json path, include_null_values
+		)Conditions(json)
+	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId
+	for json path, include_null_values, without_array_wrapper
+	)ConditionsThen(json)
+
+cross apply (
+select
+		 CheckType,
+		 FieldTypeID,
+		 FieldTypeName,
+		 Value,
+		 IntersectTypeID,
+		 TargetObject,
+		 TargetObjectId
+		  from #parsedData
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
+		 for json path, include_null_values
+)ConditionsWhen(json)
+where 
+object is not null
+group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
+update #convertedData 
+set [When] = c.[When],
+[Then] = c.[Then],
+[Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
+from conditions c
+where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
+
+MERGE api.ExecutionResponsibilityRule err
+USING #convertedData cd
+ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
+WHEN MATCHED
+    THEN UPDATE
+    SET DefinitionConverted = cd.[Definition];
+                    ";
+                    Connection.Execute(jsonParseSql, new { execution.ExecutionID }, commandTimeout: timeout);
 
                     #endregion
 
@@ -7378,7 +7467,7 @@ xrr.Name,
 xrr.Context,
 xrr.IsVisible,
 xrr.ApplyToType, 
-xrr.Definition
+xrr.DefinitionConverted
  from api.executionresponsibilityrule xrr
 inner join assettype at on at.uid = xrr.AssetTypeUid
 inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
@@ -7389,7 +7478,7 @@ WHEN MATCHED
     THEN update set name = data.name
 WHEN NOT MATCHED
     THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.Definition);
+	values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);
 ";
 
                                     Connection.Execute(insertSQL,
