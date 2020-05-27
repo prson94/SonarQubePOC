@@ -658,43 +658,4 @@ and State = 1
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Data.Corrections.GOV-10586-2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-		DECLARE @currentUid uniqueidentifier
-
-DECLARE MY_CURSOR CURSOR 
-  LOCAL STATIC READ_ONLY FORWARD_ONLY
-FOR 
-
-SELECT DISTINCT uid 
-FROM graph.AssetNode
-
-OPEN MY_CURSOR
-FETCH NEXT FROM MY_CURSOR INTO @currentUid
-WHILE @@FETCH_STATUS = 0
-BEGIN 
-    
-	begin try
-		update graph.AssetNode set ReformattedSegments = graph.ReformatSegments(Segments)
-			where uid = @currentUid
-	end try
-	begin catch
-	end catch
-
-    FETCH NEXT FROM MY_CURSOR INTO @currentUid
-END
-CLOSE MY_CURSOR
-DEALLOCATE MY_CURSOR
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-update graph.AssetNode set ReformattedSegments = graph.ReformatSegments(Segments)
-		]]>
-	</rollback>
-  </changeSet>
  </databaseChangeLog>

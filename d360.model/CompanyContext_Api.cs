@@ -1967,22 +1967,7 @@ from	IntersectType I
                                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
                                             }
 
-                                            #endregion
-
-                                            #region Attributes
-
-                                            Connection.Execute($@"
-    delete	T
-    from	Field T 
-		    inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
-		    inner join api.ExecutionDeletedAsset S on S.Object = A.ObjectType and S.ObjectID = A.ObjectID and {querySuffix};
-
-    delete	T
-    from	[Attribute] T
-		    inner join api.ExecutionDeletedAsset S on S.Object = T.ObjectType and S.ObjectID = T.ObjectID and {querySuffix};",
-                                            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
-
-                                            #endregion
+                                            #endregion                                            
 
                                             #region Delete Intersects
 

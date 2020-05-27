@@ -115,42 +115,6 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attribute group successfully added..
-        /// </summary>
-        public static string Add_AttributeType_Confirmation {
-            get {
-                return ResourceManager.GetString("Add_AttributeType_Confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add an attribute group using the form below..
-        /// </summary>
-        public static string Add_AttributeType_Directions {
-            get {
-                return ResourceManager.GetString("Add_AttributeType_Directions", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add Attribute Group.
-        /// </summary>
-        public static string Add_AttributeType_Title {
-            get {
-                return ResourceManager.GetString("Add_AttributeType_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Add Attribute Category.
-        /// </summary>
-        public static string Add_AttributeTypeCategory_Title {
-            get {
-                return ResourceManager.GetString("Add_AttributeTypeCategory_Title", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Field type successfully added..
         /// </summary>
         public static string Add_FieldType_Confirmation {
@@ -409,16 +373,7 @@ namespace Resources {
             get {
                 return ResourceManager.GetString("ArtifactType", resourceCulture);
             }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to A category can group different types of attributes together into more meaningful sets of of similar information..
-        /// </summary>
-        public static string AttributeTypeCategory_Directions {
-            get {
-                return ResourceManager.GetString("AttributeTypeCategory_Directions", resourceCulture);
-            }
-        }
+        }               
         
         /// <summary>
         ///   Looks up a localized string similar to Workflow successfully de-allocated..
@@ -439,29 +394,11 @@ namespace Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Attribute successfully removed..
-        /// </summary>
-        public static string Delete_Attribute_Confirmation {
-            get {
-                return ResourceManager.GetString("Delete_Attribute_Confirmation", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Removing this attribute may affect the score of the item it is tagged to..
         /// </summary>
         public static string Delete_Attribute_Description {
             get {
                 return ResourceManager.GetString("Delete_Attribute_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attribute type successfully removed..
-        /// </summary>
-        public static string Delete_AttributeType_Confirmation {
-            get {
-                return ResourceManager.GetString("Delete_AttributeType_Confirmation", resourceCulture);
             }
         }
         
@@ -543,15 +480,6 @@ namespace Resources {
         public static string Edit_Attribute_Description {
             get {
                 return ResourceManager.GetString("Edit_Attribute_Description", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Attribute type successfully updated..
-        /// </summary>
-        public static string Edit_AttributeType_Confirmation {
-            get {
-                return ResourceManager.GetString("Edit_AttributeType_Confirmation", resourceCulture);
             }
         }
         
@@ -840,15 +768,6 @@ namespace Resources {
         public static string InUse_RelationShipType_Error_Delete {
             get {
                 return ResourceManager.GetString("InUse_RelationShipType_Error_Delete", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to attribute group.
-        /// </summary>
-        public static string NoFormData_AttributeType {
-            get {
-                return ResourceManager.GetString("NoFormData_AttributeType", resourceCulture);
             }
         }
         

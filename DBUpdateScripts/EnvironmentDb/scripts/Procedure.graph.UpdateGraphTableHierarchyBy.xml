@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v5">
+  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v6">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -140,7 +140,23 @@ begin
 			from	hierarchy A
 					left join Asset P on P.Object = A.ParentObject and P.ObjectID = A.ParentObjectID
 
-		if @class = 9
+		if @class = 4
+		begin
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						H.AssetTypeID,
+						H.ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						H.ParentID,
+						[Level] - 1,
+						1,
+						F.Name
+				from	#hierarchy H
+						inner join Asset A on A.ID = H.ID and A.Object = 'FusionAttribute'
+						inner join FusionAttribute F on F.ID = A.ObjectID
+		end
+		else if @class = 9
 		begin
 			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
 				select	GroupID, 
@@ -153,6 +169,22 @@ begin
 						1,
 						Code
 				from	#hierarchy
+		end
+		else if @class = 11
+		begin
+			insert into #tbl (GroupID, AssetTypeID, ID, [Level], [Position], ParentID, ParentLevel, ColumnOrder, FormattedValue)
+				select	GroupID, 
+						H.AssetTypeID,
+						H.ID,
+						[Level],
+						cast(cast([Level] as varchar) + '.1' as decimal(2,1)) as Position,
+						H.ParentID,
+						[Level] - 1,
+						1,
+						F.FirstName + ' ' + F.LastName
+				from	#hierarchy H
+						inner join Asset A on A.ID = H.ID and A.Object = 'Resource'
+						inner join reporting.Global_Resource F on F.ResourceID = A.ObjectID
 		end
 		else
 		begin
@@ -414,6 +446,11 @@ begin
 								order by Position
 								for xml path('segment'), root('path')
 								)
+		from	graph.AssetNode T
+				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
+
+		update	T
+		set		T.ReformattedSegments = graph.ReformatSegments(T.Segments)	
 		from	graph.AssetNode T
 				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 	end
