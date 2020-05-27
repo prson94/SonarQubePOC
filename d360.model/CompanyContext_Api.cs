@@ -7147,7 +7147,7 @@ insert into #Keys
                                 rowError += ";AssetTypeUid is not valid!";
                             }
 
-                            if (string.IsNullOrEmpty(model.Name.Trim()))
+                            if (string.IsNullOrEmpty(model.Name))
                             {
                                 rowError += ";Name cannot be empty.";
                             }
@@ -7159,6 +7159,10 @@ insert into #Keys
                             if (model.Definition.Then == null || model.Definition.Then.Count == 0)
                             {
                                 rowError += ";Then conditions in definition cannot be empty.";
+                            }
+                            if(model.ApplyToType == true && (model.Definition.When != null && model.Definition.When.Count > 0))
+                            {
+                                rowError += "Cannot use When conditions when ApplyToType value is set to true.";
                             }
 
                             model.Definition.Then.ForEach(th =>
@@ -7177,6 +7181,14 @@ insert into #Keys
                                     {
                                         rowError += ";Condition field value is required.";
                                     }
+                                    if (cond.IntersectTypeUid.HasValue)
+                                    {
+                                        Guid parsedUid = Guid.Empty;
+                                        if (!Guid.TryParse(cond.Value, out parsedUid))
+                                        {
+                                            rowError += ";Condition value is not valid UID. Condition value must be UID when used with IntersectTypeUid.";
+                                        }
+                                    }
                                 });
 
                             });
@@ -7192,6 +7204,14 @@ insert into #Keys
                                     if (string.IsNullOrEmpty(cond.Value))
                                     {
                                         rowError += ";Condition field value is required.";
+                                    }
+                                    if (cond.IntersectTypeUid.HasValue)
+                                    {
+                                        Guid parsedUid = Guid.Empty;
+                                        if(!Guid.TryParse(cond.Value, out parsedUid))
+                                        {
+                                            rowError += ";Condition value is not valid UID. Condition value must be UID when used with IntersectTypeUid.";
+                                        }
                                     }
                                 });
                             }
@@ -7294,7 +7314,7 @@ outer apply OPENJSON(ThenData.Conditions)
 	FieldApiName nvarchar(250) N'$.FieldApiName',
 	Value nvarchar(250) N'$.Value'
    ) as ThenCond
-where executionid = @executionId
+where executionid = @executionId and success is null
 
 insert into #tempData
 select
@@ -7314,8 +7334,7 @@ outer apply OPENJSON (Definition, N'$.When')
 	FieldApiName nvarchar(250) N'$.FieldApiName',
 	Value nvarchar(250) N'$.Value'
   ) AS WhenData
-
-where executionid = @executionId
+where executionid = @executionId and success is null
 
 drop table if exists #parsedData
 select  d.itemnumber, 
@@ -7324,18 +7343,19 @@ select  d.itemnumber,
 		at.objectid,
 		d.valueasuid,
 		case 
-			when it.id is null then 'F'
+			when d.IntersectTypeUid is null then 'F'
 			else 'R'
 		end as CheckType,
 		isnull(isnull(ft.id,ft2.id),0) as FieldTypeId,
-		isnull(ft.FriendlyName,ft2.friendlyname) as FieldTypeName,
+		isnull(isnull(ft.FriendlyName,ft2.friendlyname),d.fieldapiname) as FieldTypeName,
 		case 
 			when it.id is null then d.Value
 			else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
 		end as Value,
-		isnull(it.id,0) as IntersectTypeId,
+		it.id as IntersectTypeId,
 		a.object as TargetObject,
-		isnull(a.objectid,0) as TargetObjectId
+		isnull(a.objectid,0) as TargetObjectId,
+		cast('' as nvarchar(max)) as ErrorMessage
 	into #parsedData
 	from #tempData d
 		left join assettype at on d.assigneetypeuid = at.uid
@@ -7344,6 +7364,41 @@ select  d.itemnumber,
 		left join assettype at2 on d.AssetTypeUid = at2.uid
 		left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
 		left join asset a on a.uid = d.ValueAsUid
+
+
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Field name.'
+where isnull(fieldtypeid,0) = 0 and fieldtypename <> ''
+
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Intersect Type Uid for condition.'
+where CheckType = 'R' and IntersectTypeId is null
+
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Asset UID for condition value.'
+where CheckType = 'R' and isnull(targetobjectid,0) = 0
+
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
+where object is not null and object not in('ResourceType','OrganizationType','GroupType')
+
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Asset UID for Intersect Type.'
+from #parsedData
+  left join IntersectType it on it.ID= IntersectTypeId
+  left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
+  left join assettype at on a.AssetTypeID = at.ID 
+where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
+
+MERGE api.ExecutionResponsibilityRule err
+USING (select itemnumber,executionid, errormessage from #parsedData
+group by itemnumber,executionid, errormessage
+) cd
+ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid and cd.ErrorMessage <> ''
+WHEN MATCHED
+    THEN UPDATE
+	SET [Message] = coalesce([Message] + '; ', '') + cd.ErrorMessage,
+	Success = 0;
 
 drop table if exists #convertedData
 create table #convertedData
@@ -7367,21 +7422,21 @@ ConditionsThen.json as [Then],
 ConditionsWhen.json as [When]
  from #parsedData pd
 cross apply (
-	select top 1 Object,ObjectID, Conditions.json as Conditions
+	select top 1 Object,ObjectId, Conditions.json as Conditions
 	from #parsedData
 		cross apply(select
 		 CheckType,
 		 FieldTypeID,
 		 FieldTypeName,
 		 Value,
-		 IntersectTypeID,
+		 isnull(IntersectTypeID,0) as IntersectTypeID,
 		 TargetObject,
 		 TargetObjectId
 		  from #parsedData
 		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
 		 for json path, include_null_values
 		)Conditions(json)
-	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId
+	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
 	for json path, include_null_values, without_array_wrapper
 	)ConditionsThen(json)
 
@@ -7391,7 +7446,7 @@ select
 		 FieldTypeID,
 		 FieldTypeName,
 		 Value,
-		 IntersectTypeID,
+		 isnull(IntersectTypeID,0) as IntersectTypeID,
 		 TargetObject,
 		 TargetObjectId
 		  from #parsedData
@@ -7408,12 +7463,15 @@ set [When] = c.[When],
 from conditions c
 where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
 
+
 MERGE api.ExecutionResponsibilityRule err
 USING #convertedData cd
 ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
 WHEN MATCHED
     THEN UPDATE
+
     SET DefinitionConverted = cd.[Definition];
+
                     ";
                     Connection.Execute(jsonParseSql, new { execution.ExecutionID }, commandTimeout: timeout);
 
@@ -7455,31 +7513,30 @@ WHEN MATCHED
                                 {
 
                                     var insertSQL = $@"
-MERGE dbo.ResponsibilityTypeRelationRule RTRR
+                                        MERGE dbo.ResponsibilityTypeRelationRule RTRR
 
-USING (
-select 
-xrr.uid,
-rt.id as ResponsibilityTypeId,
-at.object as Object,
-at.objectid as ObjectId,
-xrr.Name,
-xrr.Context,
-xrr.IsVisible,
-xrr.ApplyToType, 
-xrr.DefinitionConverted
- from api.executionresponsibilityrule xrr
-inner join assettype at on at.uid = xrr.AssetTypeUid
-inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
-where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber 
-)Data
-ON RTRR.uid = Data.uid
-WHEN MATCHED
-    THEN update set name = data.name
-WHEN NOT MATCHED
-    THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);
-";
+                                        USING (
+                                        select 
+                                        xrr.uid,
+                                        rt.id as ResponsibilityTypeId,
+                                        at.object as Object,
+                                        at.objectid as ObjectId,
+                                        xrr.Name,
+                                        xrr.Context,
+                                        xrr.IsVisible,
+                                        xrr.ApplyToType, 
+                                        xrr.DefinitionConverted
+                                         from api.executionresponsibilityrule xrr
+                                        inner join assettype at on at.uid = xrr.AssetTypeUid
+                                        inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
+                                        where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber and xrr.success is null
+                                        )Data
+                                        ON RTRR.uid = Data.uid
+                                        WHEN MATCHED
+                                            THEN update set name = data.name
+                                        WHEN NOT MATCHED
+                                            THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
