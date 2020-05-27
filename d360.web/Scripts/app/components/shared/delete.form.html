@@ -7,7 +7,7 @@
         <div class="row">
             <form-message [message]="message"></form-message>
             <button pButton (click)="delete()" label="{{deleteButtonText ? deleteButtonText : 'Delete'}}" [disabled]="isLoading"></button>
-            <button pButton (click)="cancel()" label="Cancel" [disabled]="isLoading"></button>
+            <button pButton (click)="cancel()" label="{{cancelButtonText ? cancelButtonText : 'Cancel'}}" [disabled]="isLoading"></button>
         </div>
     </div>
 </ng-template>
@@ -27,7 +27,7 @@
         </div>
         <div class="action-bar">
             <ng-container *ngIf="!hideDeleteButton">
-                <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
                 <span class="grow"></span>
                 <button class="button primary {{deletingInProgress ? 'loading' : ''}}" (click)="delete()" [disabled]="isLoading">
                     {{deleteButtonText ? deleteButtonText : 'Delete'}}
@@ -36,7 +36,7 @@
             </ng-container>
             <ng-container *ngIf="hideDeleteButton">
                 <span class="grow"></span>
-                <button class="button" (click)="cancel()" [disabled]="isLoading">Cancel</button>
+                <button class="button" (click)="cancel()" [disabled]="isLoading">{{cancelButtonText ? cancelButtonText : 'Cancel'}}</button>
             </ng-container>
         </div>
 
