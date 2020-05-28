@@ -153,6 +153,18 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
+                {
+                    bool autoDisplayParent;
+                    var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
+                    if (Boolean.TryParse(autoDisplayParentString, out autoDisplayParent))
+                    {
+
+                        condition += " and A.AutoDisplayParent=@autoDisplayParent ";
+                        dbArgs.Add("autoDisplayParent", autoDisplayParent);
+                    }
+                }
+
             }
 
             if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
