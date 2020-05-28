@@ -686,6 +686,9 @@ namespace d360.core.entities
         [DataMember]
 
         public string Value { get; set; }
+        [DataMember]
+        public Guid? AssetUid { get; set; }
+
     }
 
     [DataContract]
