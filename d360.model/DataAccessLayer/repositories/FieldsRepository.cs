@@ -866,6 +866,10 @@ from	IntersectType I
                         field.DisplayOrder = i.DisplayOrder;
                         field.FieldTypeName = i.FieldTypeName;
                         field.Filter = i.Filter;
+                        if (string.IsNullOrEmpty(i.OverrideDisplayName) || string.IsNullOrWhiteSpace(i.OverrideDisplayName))
+                        {
+                            i.OverrideDisplayName = null;
+                        }
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
