@@ -95,10 +95,8 @@ namespace d360.web.Controllers
              catch (Exception ex)
             {
                 SendException(ex, new Dictionary<string, string>());
+                throw ex;
             }
-
-            return null;
-
         }
     }
     
