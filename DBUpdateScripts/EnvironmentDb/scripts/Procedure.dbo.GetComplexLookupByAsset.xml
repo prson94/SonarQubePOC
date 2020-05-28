@@ -202,11 +202,11 @@ begin
 
 		insert into @selects
 			select		'F' + F.RRN + '.TextPath', --Must stay as this field as it is a hard-coded value on the FusionAttribute table
-						DataField as Alias
+						F.DataField as Alias
 			from		@fields F
-			where		Object = 'FusionAttributeType' 
-						and FieldTypeID = 0 
-						and FieldTypeName = 'AssetPath'
+			where		F.Object = 'FusionAttributeType' 
+						and F.FieldTypeID = 0 
+						and F.FieldTypeName = 'AssetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
@@ -251,10 +251,10 @@ begin
 			where	F.BaseField is not null;
 
 		insert into @selects
-			select CONCAT('H',RRN,'_R', FT ,'.IntersectTypeUid') as ColumnName,
-			CONCAT('H',RRN,'_',FT,'_IntersectTypeUid') as Alias 
-			 from @fields
-			where FieldTypeName like 'Related Item.%'
+			select	CONCAT('H',RRN,'_R', FT ,'.IntersectTypeUid') as ColumnName,
+					CONCAT('H',RRN,'_',FT,'_IntersectTypeUid') as Alias 
+			from	@fields
+			where	FieldTypeName like 'Related Item.%'
 
 		insert into @wheres
 			select	'H' + F.RRN + 
@@ -429,7 +429,7 @@ begin
 					cross apply openjson(F.Definition, N'lax $') with (DataType varchar(25)) J;
 
 			insert into @columns ([text], datafield, columntype, uidfield, urlfield, description, columnwidth, sort)
-				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields order by RowNumber;
+				select coalesce(OverrideDisplayName, FriendlyName, replace(FieldTypeName, 'Related Item.', '')), DataField, ColumnDataType, BaseField+'Uid', BaseField+'Url', Description, Width, RowNumber from @fields where Show = 1 order by RowNumber;
 
 			insert into @datafields
 				select distinct DataField, FieldDataType, RowNumber from @fields where DataField is not null

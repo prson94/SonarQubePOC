@@ -1320,7 +1320,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 Direction: Direction[x.Direction]
             };
 
-            let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show).map((f) => {
+            let mappedFields: DefinitionField[] = x.DisplayFields.filter(x => x.Show || x.Filter !== '' || x.SortOrder).map((f) => {
                 return {
                     AssetTypeUid: x.AssetTypeUid,
                     FieldTypeName: f.FieldTypeName,
