@@ -1427,30 +1427,40 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
             if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-
             var model = new Dictionary<string, object>();
 
-            model.Add("ID", assetType.ObjectID);
-            model.Add("Name", assetType.Name);
-            model.Add("Description", assetType.Description);
-            model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
-            model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
-            model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
-            model.Add("Class", assetType.Class);
-            model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
+            try
+            {
 
-            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
-            model.Add("HasDashboards", hasDashboards);
+                model.Add("ID", assetType.ObjectID);
+                model.Add("Name", assetType.Name);
+                model.Add("Description", assetType.Description);
+                model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+                model.Add("CanOwnFusion", assetType.CanOwnFusion);
+                model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
+                model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
+                model.Add("Class", assetType.Class);
+                model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
-            var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+                bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
+                model.Add("HasDashboards", hasDashboards);
 
-            var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
-            model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
-            model.Add("AssetTypeUID", assetType.uid);
-            model.Add("AssetTypeID", assetType.ID);
+                var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+
+                var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
+                model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
+                model.Add("AssetTypeUID", assetType.uid);
+                model.Add("AssetTypeID", assetType.ID);
+
+            }
+            catch (Exception ex)
+            {
+                SendException(ex, new Dictionary<string, string>());
+                throw ex;
+            }
 
             return model;
+
         }
 
 
