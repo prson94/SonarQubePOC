@@ -185,13 +185,18 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     }
 
     private loadDataAndExecuteAction(action: Function) {
-        this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
-            .subscribe(res => {
-                this.selectedRow.data.ID = res.ObjectID;
-                this.selectedRow.data.AssetTypeID = res.AssetTypeID;
-                if (action) {
-                    action();
-                }
-            });
+        if (this.selectedRow) {
+            this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
+                .subscribe(res => {
+                    this.selectedRow.data.ID = res.ObjectID;
+                    this.selectedRow.data.AssetTypeID = res.AssetTypeID;
+                    if (action) {
+                        action();
+                    }
+                });
+        }
+        else {
+            action();
+        }
     }
 }
