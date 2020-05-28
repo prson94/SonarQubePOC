@@ -1426,6 +1426,7 @@ from	IntersectType I
                     currentFieldType.Type = newFieldType.Type;
                     currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
                     currentFieldType.Definition = newFieldType.Definition;
+                    currentFieldType.UpdatedBy = Company.CurrentResourceID;
                     fieldTypeNamesToDelete.Add(f.Name);
                 }
 
@@ -1456,7 +1457,6 @@ from	IntersectType I
                 assetType.UpdatedBy = Company.CurrentResourceID;
                 assetType.UpdatedOn = DateTime.UtcNow;
             }
-            Company.SaveChangesWithoutEventing();
 
             if (model.Action == FieldTypesApiEditAction.Merge)
             {
