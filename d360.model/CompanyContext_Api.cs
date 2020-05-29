@@ -7169,34 +7169,37 @@ insert into #Keys
                                 }
                                 th.Conditions.ForEach(cond =>
                                 {
-                                    bool checkValue = true;
-                                    int numberOfConditions = 0;
-                                    if (!string.IsNullOrEmpty(cond.FieldApiName)) numberOfConditions++;
-                                    if (cond.IntersectTypeUid.HasValue) numberOfConditions++;
-                                    if (cond.AssetUid.HasValue) numberOfConditions++;
-
-                                    if (numberOfConditions > 1)
+                                    if(cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Condition cannot have FieldApiName, IntersectTypeUid or AssetUid withing same condition.";
+                                        rowError += ";Then condition should have either Field and Asignee values set.";
                                     }
 
-                                    if (cond.AssetUid.HasValue)
+                                    if (cond.Assignee != null && cond.Field != null)
                                     {
-                                        checkValue = false;
+                                        rowError += ";Condition cannot have Field and Asignee within same condition.";
                                     }
 
-                                    if (string.IsNullOrEmpty(cond.Value) && checkValue)
+                                    if (cond.Assignee != null)
                                     {
-                                        rowError += ";Condition field value is required.";
-                                    }
-                                    if (cond.IntersectTypeUid.HasValue)
-                                    {
-                                        Guid parsedUid = Guid.Empty;
-                                        if (!Guid.TryParse(cond.Value, out parsedUid))
+                                        if (!cond.Assignee.Uid.HasValue)
                                         {
-                                            rowError += ";Condition value is not valid UID. Condition value must be UID when used with IntersectTypeUid.";
+                                            rowError += ";Assignee Uid is required field.";
                                         }
                                     }
+
+                                    if (cond.Field != null)
+                                    {
+                                        if (string.IsNullOrEmpty(cond.Field.ApiName))
+                                        {
+                                            rowError += ";ApiName is required field.";
+                                        }
+                                        if (string.IsNullOrEmpty(cond.Field.Value))
+                                        {
+                                            rowError += ";Value is required field.";
+                                        }
+                                    }
+
+
                                 });
 
                             });
@@ -7205,31 +7208,36 @@ insert into #Keys
                             {
                                 model.Definition.When.ForEach(cond =>
                                 {
-                                    bool checkValue = true;
-                                    int numberOfConditions = 0;
-                                    if (!string.IsNullOrEmpty(cond.FieldApiName)) numberOfConditions++;
-                                    if (cond.IntersectTypeUid.HasValue) numberOfConditions++;
-                                    if (cond.AssetUid.HasValue) numberOfConditions++;
-
-                                    if (numberOfConditions > 1)
+                                    if (cond.Relation == null && cond.Field == null)
                                     {
-                                        rowError += ";Condition cannot have FieldApiName, IntersectTypeUid or AssetUid withing same condition.";
+                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                    }
+                                    if (cond.Relation != null && cond.Field != null)
+                                    {
+                                        rowError += ";Condition cannot have Field and Relation within same condition.";
                                     }
 
-                                    if (cond.AssetUid.HasValue)
+                                    if (cond.Relation != null)
                                     {
-                                        rowError += ";AssetUid is allowed only as Then condition.";
-                                    }
-                                    if (string.IsNullOrEmpty(cond.Value))
-                                    {
-                                        rowError += ";Condition field value is required.";
-                                    }
-                                    if (cond.IntersectTypeUid.HasValue)
-                                    {
-                                        Guid parsedUid = Guid.Empty;
-                                        if (!Guid.TryParse(cond.Value, out parsedUid))
+                                        if (!cond.Relation.IntersectTypeUid.HasValue)
                                         {
-                                            rowError += ";Condition value is not valid UID. Condition value must be UID when used with IntersectTypeUid.";
+                                            rowError += ";IntersectTypeUid is required field.";
+                                        }
+                                        if (!cond.Relation.AssetUid.HasValue)
+                                        {
+                                            rowError += ";AssetUid is required field.";
+                                        }
+                                    }
+
+                                    if (cond.Field != null)
+                                    {
+                                        if (string.IsNullOrEmpty(cond.Field.ApiName))
+                                        {
+                                            rowError += ";ApiName is required field.";
+                                        }
+                                        if (string.IsNullOrEmpty(cond.Field.Value))
+                                        {
+                                            rowError += ";Value is required field.";
                                         }
                                     }
                                 });
@@ -7288,6 +7296,22 @@ insert into #Keys
     left join AssetType AT on AT.uid = EP.AssetTypeUid
     where	ExecutionID = @ExecutionID and AT.Id is null;
 
+    drop table if exists #allowedTypes
+    select distinct at.uid 
+    into #allowedTypes
+    from api.ExecutionResponsibilityRule EP
+        inner join ResponsibilityType RT on rt.uid = EP.ResponsibilityTypeUid
+        inner join [ResponsibilityTypeRelation] RR on RR.ResponsibilityTypeID = RT.Id
+	    inner join assettype at on rr.ObjectType=at.Object and rr.ObjectID = at.ObjectID
+    where ExecutionID = @executionId;
+
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid for Responsibility Type.'
+    from api.ExecutionResponsibilityRule EP
+    left join AssetType AT on AT.uid = EP.AssetTypeUid
+    where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * from #allowedTypes));
+
 ";
 
                     Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
@@ -7297,11 +7321,6 @@ insert into #Keys
                     #region Parse new json to old format
 
                     var jsonParseSql = $@"
-update api.ExecutionResponsibilityRule 
-set Success = null,
-Message = null
-where itemnumber = 1
-
 drop table if exists #tempData
 create table #tempData
 (
@@ -7309,10 +7328,11 @@ create table #tempData
     ExecutionId uniqueidentifier, 
 	AssetTypeUid uniqueidentifier,
     AssigneeTypeUid uniqueidentifier, 
-    IntersectTypeUid uniqueidentifier, 
-    FieldApiName nvarchar(250),
-    Value nvarchar(250),
-    AssetUid uniqueidentifier,
+    RelIntersectTypeUid uniqueidentifier, 
+    RelAssetUid uniqueidentifier,
+	FieldApiName nvarchar(250),
+    FieldValue nvarchar(250),
+    AssigneeUid uniqueidentifier,
 	ValueAsUid uniqueidentifier,
 )
 
@@ -7328,17 +7348,18 @@ when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid a
 else null
 end as ValueAsUid
 from api.executionresponsibilityrule
-outer apply OPENJSON (Definition, N'$.Then')
+cross apply OPENJSON (Definition, N'$.Then')
   WITH (
     AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
     Conditions nvarchar(max) N'$.Conditions' as Json
   ) AS ThenData
-outer apply OPENJSON(ThenData.Conditions)
+cross apply OPENJSON(ThenData.Conditions)
    with(
-    IntersectTypeUid uniqueidentifier N'$.IntersectTypeUid',
-	FieldApiName nvarchar(250) N'$.FieldApiName',
-	Value nvarchar(250) N'$.Value',
-	AssetUid uniqueidentifier N'$.AssetUid'
+		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+		AssetUid uniqueidentifier N'$.Relation.AssetUid',
+		FieldApiName nvarchar(250) N'$.Field.ApiName',
+		Value nvarchar(250) N'$.Field.Value',
+		AssetUid uniqueidentifier  N'$.Assignee.Uid'
    ) as ThenCond
 where executionid = @executionId and success is null
 
@@ -7354,12 +7375,13 @@ when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueide
 else null
 end as ValueAsUid
 from api.executionresponsibilityrule
-outer apply OPENJSON (Definition, N'$.When')
+cross apply OPENJSON (Definition, N'$.When')
   WITH (
-    IntersectTypeUid uniqueidentifier N'$.IntersectTypeUid',
-	FieldApiName nvarchar(250) N'$.FieldApiName',
-	Value nvarchar(250) N'$.Value',
-	AssetUid uniqueidentifier N'$.AssetUid'
+		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+		AssetUid uniqueidentifier N'$.Relation.AssetUid',
+		FieldApiName nvarchar(250) N'$.Field.ApiName',
+		Value nvarchar(250) N'$.Field.Value',
+		AssetUid uniqueidentifier  N'$.Assignee.Uid'
   ) AS WhenData
 where executionid = @executionId and success is null
 
@@ -7369,9 +7391,10 @@ select  d.itemnumber,
 		at.object,
 		at.objectid,
 		d.valueasuid,
-		d.assetuid,
+		d.AssigneeUid,
+		d.RelAssetUid,
 		case 
-			when d.IntersectTypeUid is null then 'F'
+			when d.RelIntersectTypeUid is null then 'F'
 			else 'R'
 		end as CheckType,
 		case 
@@ -7383,7 +7406,7 @@ select  d.itemnumber,
 			else isnull(ft2.friendlyname, d.fieldapiname)
 		end as FieldTypeName,
 		case 
-			when it.id is null then d.Value
+			when it.id is null then d.FieldValue
 			else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
 		end as Value,
 		it.id as IntersectTypeId,
@@ -7395,19 +7418,19 @@ select  d.itemnumber,
 	from #tempData d
 		left join assettype at on d.assigneetypeuid = at.uid
 		left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
-		left join IntersectType it on it.uid = d.IntersectTypeUid
+		left join IntersectType it on it.uid = d.RelIntersectTypeUid
 		left join assettype at2 on d.AssetTypeUid = at2.uid
 		left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
-		left join asset a on a.uid = d.ValueAsUid
+		left join asset a on a.uid = d.RelAssetUid
 
 update #parsedData
 set FieldTypeId = 0,
 FieldTypeName = 'Name',
 Value = a.ObjectID
 from #parsedData
-	inner join asset a on a.uid = AssetUid
+	inner join asset a on a.uid = AssigneeUid
 	inner join assettype at on a.assettypeid = at.id and at.objectid = #parsedData.objectid and at.object = #parsedData.object
-where AssetUid is not null
+where AssigneeUid is not null
 
 
 
@@ -7417,11 +7440,11 @@ where fieldtypeid is null and fieldtypename is null and value is null and inters
 
 update #parsedData
 set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Field name.'
-where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssetUid is null
+where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
 
 update #parsedData
 set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid AssetUid for condition.'
-where isnull(value,0) = 0 and fieldtypename <> '' and AssetUid is not null
+where isnull(value,0) = 0 and fieldtypename <> '' and AssigneeUid is not null
 
 update #parsedData
 set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Intersect Type Uid for condition.'
@@ -7446,7 +7469,8 @@ select * from #parsedData
 
 
 MERGE api.ExecutionResponsibilityRule err
-USING (select itemnumber,executionid,string_agg(errormessage,',') as msg from #parsedData
+USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
+where isnull(errormessage,'') <> ''
 group by itemnumber,executionid
 ) cd
 ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid and cd.msg <> '' 
@@ -7524,7 +7548,6 @@ USING #convertedData cd
 ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
 WHEN MATCHED
     THEN UPDATE
-
     SET DefinitionConverted = cd.[Definition];
 
                     ";
@@ -7591,7 +7614,8 @@ WHEN MATCHED
                                             THEN update set name = data.name
                                         WHEN NOT MATCHED
                                             THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);";
+	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);
+";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);

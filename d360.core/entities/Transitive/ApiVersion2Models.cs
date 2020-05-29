@@ -661,34 +661,62 @@ namespace d360.core.entities
     public class RuleDefinition
     {
         [DataMember]
-        public List<RuleThen> Then { get; set; }
+        public List<RuleWhen> When { get; set; }
         [DataMember]
-        public List<RuleCondition> When { get; set; }
+        public List<RuleThenWrapper> Then { get; set; }
+
     }
     [DataContract]
-    public class RuleThen
+    public class RuleThenWrapper
     {
         [DataMember]
         public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
-
-        public List<RuleCondition> Conditions { get; set; }
+        public List<RuleThen> Conditions { get; set; }
     }
+
     [DataContract]
-    public class RuleCondition
+    public class RuleThen
     {
         [DataMember]
+        public RuleFieldCondition Field { get; set; }
+        [DataMember]
+        public RuleAssigneeCondition Assignee { get; set; }
+    }
 
+    [DataContract]
+    public class RuleWhen
+    {
+        [DataMember]
+        public RuleFieldCondition Field { get; set; }
+        [DataMember]
+        public RuleRelationCondition Relation { get; set; }
+    }
+
+    [DataContract]
+    public class RuleFieldCondition
+    {
+        [DataMember]
+        public string ApiName { get; set; }
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    [DataContract]
+    public class RuleAssigneeCondition
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+    }
+
+
+    [DataContract]
+    public class RuleRelationCondition
+    {
+        [DataMember]
         public Guid? IntersectTypeUid { get; set; }
         [DataMember]
-
-        public string FieldApiName { get; set; }
-        [DataMember]
-
-        public string Value { get; set; }
-        [DataMember]
         public Guid? AssetUid { get; set; }
-
     }
 
     [DataContract]
