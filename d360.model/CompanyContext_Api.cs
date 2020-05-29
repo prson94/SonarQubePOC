@@ -7162,10 +7162,11 @@ insert into #Keys
                             {
                                 rowError += ";Definition cannot be empty/null.";
                             }
-                            if (model.Definition.Then == null || model.Definition.Then.Count == 0)
+                            if (model.Definition.Then == null || model.Definition.Then.Count == 0 || model.Definition.Then.Any(x => x.Conditions == null || x.Conditions.Count == 0))
                             {
                                 rowError += ";Then conditions in definition cannot be empty.";
                             }
+
                             if (model.ApplyToType == true && (model.Definition.When != null && model.Definition.When.Count > 0))
                             {
                                 rowError += "Cannot use When conditions when ApplyToType value is set to true.";
@@ -7300,6 +7301,13 @@ insert into #Keys
 
 
                     var checkSQL = $@"
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility Rule with specified Uid not found!'
+    from api.ExecutionResponsibilityRule EP
+    left join ResponsibilityTypeRelationRule rtrr on rtrr.uid = ep.uid
+    where	ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null;
+
     update	api.ExecutionResponsibilityRule 
     set		Success = 0,
 		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid'
@@ -7445,9 +7453,7 @@ where AssigneeUid is not null
 
 
 
-update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid JSON Data.'
-where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null
+
 
 update #parsedData
 set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Field name.'
@@ -7478,6 +7484,9 @@ from #parsedData
 where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
 select * from #parsedData
 
+update #parsedData
+set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid JSON Data.'
+where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null
 
 MERGE api.ExecutionResponsibilityRule err
 USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
@@ -7516,7 +7525,7 @@ cross apply (
 	from #parsedData
 		cross apply(select
 		 CheckType,
-		 FieldTypeID,
+		 isnull(FieldTypeID,0) as FieldTypeId,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,
@@ -7533,7 +7542,7 @@ cross apply (
 cross apply (
 select
 		 CheckType,
-		 FieldTypeID,
+		 isnull(FieldTypeID,0) as FieldTypeId,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,
@@ -7560,6 +7569,7 @@ ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
 WHEN MATCHED
     THEN UPDATE
     SET DefinitionConverted = cd.[Definition];
+
 
                     ";
                     Connection.Execute(jsonParseSql, new { execution.ExecutionID }, commandTimeout: timeout);

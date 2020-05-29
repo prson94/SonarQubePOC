@@ -672,7 +672,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid? AssigneeTypeUid { get; set; }
         [DataMember]
-        public List<RuleThen> Conditions { get; set; }
+        public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
     }
 
     [DataContract]
