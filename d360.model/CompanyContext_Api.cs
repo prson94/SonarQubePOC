@@ -7091,12 +7091,12 @@ insert into #Keys
                     table.Columns.Add("ItemNumber", typeof(int));
                     table.Columns.Add("ResponsibilityTypeUid", typeof(Guid));
                     table.Columns.Add("AssetTypeUid", typeof(Guid));
+                    table.Columns.Add("uid", typeof(Guid));
                     table.Columns.Add("Name", typeof(string));
                     table.Columns.Add("IsVisible", typeof(bool));
                     table.Columns.Add("ApplyToType", typeof(bool));
                     table.Columns.Add("Context", typeof(string));
                     table.Columns.Add("Definition", typeof(string));
-                    table.Columns.Add("uid", typeof(Guid));
                     table.Columns.Add("Message", typeof(string));
                     table.Columns.Add("Success", typeof(bool));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
@@ -7132,9 +7132,19 @@ insert into #Keys
                                 row["Definition"] = JsonConvert.SerializeObject(model.Definition);
                             }
 
-                            if (model.uid.HasValue)
+                            if (execution.Method.ToLower() == "post" && model.Uid.HasValue)
                             {
-                                row["uid"] = model.uid.Value;
+                                rowError += ";Cannot use Uid in POST request. Please use PUT Api for updating records!";
+                            }
+
+                            if (execution.Method.ToLower() == "put" && !model.Uid.HasValue)
+                            {
+                                rowError += ";UID cannot be empty!";
+                            }
+
+                            if (model.Uid.HasValue)
+                            {
+                                row["uid"] = model.Uid.Value;
                             }
 
                             //initial validation
@@ -7169,7 +7179,7 @@ insert into #Keys
                                 }
                                 th.Conditions.ForEach(cond =>
                                 {
-                                    if(cond.Assignee == null && cond.Field == null)
+                                    if (cond.Assignee == null && cond.Field == null)
                                     {
                                         rowError += ";Then condition should have either Field and Asignee values set.";
                                     }
@@ -7270,6 +7280,7 @@ insert into #Keys
                     bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
                     bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Uid", "uid");
                     bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
                     bulkCopy.ColumnMappings.Add("AssetTypeUid", "AssetTypeUid");
                     bulkCopy.ColumnMappings.Add("Name", "Name");
@@ -7591,10 +7602,16 @@ WHEN MATCHED
                                 {
 
                                     var insertSQL = $@"
-                                        MERGE dbo.ResponsibilityTypeRelationRule RTRR
+                                       DECLARE @mergeResults table(  
+                                            uid uniqueidentifier,  
+                                            executionid uniqueidentifier,  
+                                            itemnumber int); 
 
+                                        MERGE dbo.ResponsibilityTypeRelationRule RTRR
                                         USING (
                                         select 
+										xrr.executionid,
+										xrr.itemnumber,
                                         xrr.uid,
                                         rt.id as ResponsibilityTypeId,
                                         at.object as Object,
@@ -7611,11 +7628,26 @@ WHEN MATCHED
                                         )Data
                                         ON RTRR.uid = Data.uid
                                         WHEN MATCHED
-                                            THEN update set name = data.name
+                                            THEN update set 
+                                                name = data.name,
+                                                ResponsibilityTypeId = data.ResponsibilityTypeId,
+                                                object = data.Object,
+                                                objectId = data.ObjectId,
+                                                context = data.context,
+                                                isvisible = data.isvisible,
+                                                applytotype = data.applytotype,
+                                                definition = data.DefinitionConverted,
+                                                updatedon = getdate(),
+                                                updatedby = @resourceId
                                         WHEN NOT MATCHED
                                             THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
-	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted);
-";
+	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
+                                            output inserted.uid, data.executionid, data.itemnumber into @mergeResults;
+
+                                        update api.executionresponsibilityrule
+                                           set uid = mr.uid
+                                        from @mergeResults mr 
+                                            where executionresponsibilityrule.executionid = mr.executionid and executionresponsibilityrule.itemnumber = mr.itemnumber";
 
                                     Connection.Execute(insertSQL,
                                             new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);

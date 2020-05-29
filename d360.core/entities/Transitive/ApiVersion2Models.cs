@@ -645,7 +645,7 @@ namespace d360.core.entities
         [DataMember]
         public Guid? AssetTypeUid { get; set; }
         [DataMember]
-        public Guid? uid { get; set; }
+        public Guid? Uid { get; set; }
         [DataMember]
         public string Name { get; set; }
         [DataMember]
