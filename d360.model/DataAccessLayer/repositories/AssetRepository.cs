@@ -1357,6 +1357,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     assetType.Name = model.Name;
                     assetType.Description = model.Description;
                     assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
+                    assetType.AutoDisplayDescription = model.AutoDisplayDescription;
+                    assetType.Notes = model.Notes ?? assetType.Notes;
 
                     #endregion
                     break;
