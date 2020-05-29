@@ -1353,6 +1353,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     CompanyContext.Update(org);
 
+                    //also update asset type record
+                    assetType.Name = model.Name;
+                    assetType.Description = model.Description;
+                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
+
                     #endregion
                     break;
                 case AssetTypeClass.Rule:
