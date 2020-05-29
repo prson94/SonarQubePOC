@@ -637,7 +637,7 @@ and DefaultValue is not null and DefaultFormattedValue is null
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Data.Corrections.GOV-10789">
+  <changeSet author="TDuric" id="Data.Corrections.GOV-10789-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
