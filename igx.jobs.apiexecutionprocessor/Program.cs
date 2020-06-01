@@ -282,12 +282,13 @@ namespace igx.jobs.apiexecutionprocessor
                                 var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
-                                var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
                                 dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
                                 dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
                                 log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
                                                                 
                                 await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
+                                company.SendApiGraphEvent(Info);
 
                                 break;
                             #endregion
@@ -299,12 +300,13 @@ namespace igx.jobs.apiexecutionprocessor
                                 var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
 
                                 log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
-                                var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
                                 dbExecutionItem.Processed = deleteRelationshipsResults.Count(i => i.Success);
                                 dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
                                 log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
 
                                 await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
+                                company.SendApiGraphEvent(Info);
 
                                 break;
                             #endregion

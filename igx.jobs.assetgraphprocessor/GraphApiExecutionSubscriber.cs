@@ -94,6 +94,17 @@ namespace igx.jobs.assetgraphprocessor
                             await ProcessRelationships(company, relationships, typeUid, info);
 
                             break;
+
+                        case ApiExecutionAction.DeleteRelationships:
+                            var deleteRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(execution.Fields);
+                            typeUid = deleteRelFields.IntersectTypeUid;
+                            string deleteRelationsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+
+                            if (!string.IsNullOrEmpty(deleteRelationsJson))
+                                relationships = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(deleteRelationsJson);
+
+                            await ProcessRelationships(company, relationships, typeUid, info);
+                            break;
                         default:
                             throw new Exception($"Action {info.execution.Action} is not supported");
                     }
@@ -321,7 +332,7 @@ namespace igx.jobs.assetgraphprocessor
                         inner join #GraphEdges E on E.IntersectID = A.ID
                         where not exists (select 1 from [Intersect] where ID = E.IntersectID)
 
-                        delete from #GraphEdges where not exists (select 1 from [Intersect] where ID = E.IntersectID)"
+                        delete from #GraphEdges where not exists (select 1 from [Intersect] where ID = IntersectID)"
                     , transaction: trans
                     , commandTimeout: timeout);
 
@@ -335,13 +346,13 @@ namespace igx.jobs.assetgraphprocessor
 				                graph.AssetEdge E,
 				                graph.AssetNode T
 		                where	MATCH(S-(E)->T)
-				                and E.[ID] = E.IntersectID
+				                and E.[ID] = G.IntersectID
 
                         update  G
                         set     G.Recreate = 1
                         from    #GraphEdges G
                         inner join [IntersectDetail] I on I.ID = G.IntersectID
-                        where I.SubjectAssetUid <> G.SubjectAssetUid or I.ObjectAssetUid <> G.ObjectAssetUid
+                        where I.SubjectUid <> G.SubjectAssetUid or I.ObjectUid <> G.ObjectAssetUid
 
                         delete A
                         from    graph.AssetEdge A
@@ -389,7 +400,7 @@ namespace igx.jobs.assetgraphprocessor
 						        inner join [Intersect] I on I.ID = E.ID
 						        inner join IntersectType T on T.ID = I.IntersectTypeID
 						        inner join [Predicate] P on P.ID = T.PredicateID
-                                inner join #GraphEdges E on E.IntersectID = I.ID"
+                                inner join #GraphEdges G on G.IntersectID = I.ID"
                     , transaction: trans
                     , commandTimeout: timeout);
 
