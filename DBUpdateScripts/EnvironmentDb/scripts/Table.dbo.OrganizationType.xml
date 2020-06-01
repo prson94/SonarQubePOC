@@ -82,7 +82,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.OrganizationType-OrganizationType_AfterUpdate-v1">
+  <changeSet author="TKlok" id="Table.dbo.OrganizationType-OrganizationType_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -102,6 +102,28 @@ BEGIN
 			T.UpdatedOn = S.UpdatedOn
 	from	AssetType T
 			inner join inserted S on T.Object = 'OrganizationType' and T.ObjectID = S.ID
+	where s.[State] <> 3;
+	
+	DECLARE @ObjectID INT;
+	DECLARE @ResourceID INT;
+
+	DECLARE cursorDelete CURSOR
+	LOCAL STATIC
+	FOR
+	SELECT ID AS ObjectID, ISNULL(UpdatedBy, 0) as RecsourceID
+	FROM INSERTED
+	WHERE [State] = 3;
+
+	OPEN cursorDelete;
+
+	FETCH NEXT FROM cursorDelete INTO @ObjectID, @ResourceID;
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		EXEC [dbo].[DeleteObject] 'OrganizationType', @ObjectID, @ResourceID;
+		FETCH NEXT FROM cursorDelete INTO @ObjectID, @ResourceID;
+	END;
+	CLOSE cursorDelete; 
+	DEALLOCATE cursorDelete;	
 END
 		]]>
     </sql>
