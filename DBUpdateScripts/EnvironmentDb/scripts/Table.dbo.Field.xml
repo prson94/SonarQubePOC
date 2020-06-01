@@ -105,7 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="Core" id="Table.dbo.Field-Field_AfterUpsert-v1">
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v2">
+    <comment>GOV-11007</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -156,16 +157,69 @@ AS
 				where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
 	end
 
+  -- only update the assetid field if one was not already provided
+  if exists( select 1 from inserted where AssetID is null )
+  begin
+		UPDATE	T
+		SET		T.AssetID = A.ID
+		FROM	Field T 
+				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
+				inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
+   end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+CREATE OR ALTER TRIGGER [dbo].[Field_AfterUpsert]
+	ON [dbo].[Field]
+	FOR INSERT, UPDATE
+AS
+	SET NOCOUNT ON;
+
+	UPDATE	T
+	SET		T.UpdatedOn = getutcdate()
+	FROM	Field T 
+			inner join inserted F on F.ID = T.ID;
+
+	UPDATE	T
+	SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
+	FROM	Field T 
+			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
+			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+
+	drop table if exists #insertedFields;
+	create table #insertedFields (FieldTypeID int, ObjectType varchar(250), ObjectID int);
+	create clustered index IX_TempInsertedFields ON #insertedFields (FieldTypeID, ObjectType, ObjectID);
+
+	insert into #insertedFields
+	select
+		FieldTypeID,
+		replace(FT.[Object],'Type',''),
+		FT.ObjectID
+	from inserted
+	inner join FieldType FT on FT.ID = FieldTypeID;
+
+
+	if exists(
+		select 1 from 	Field TF
+				inner join FieldType FT on FT.ID = TF.FieldTypeID
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute')
+	begin
+		
+		UPDATE	TF
+		SET		TF.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, TF.Value, FT.AllowMultipleValues)
+		from	Field TF
+				inner join FieldType FT on FT.ID = TF.FieldTypeID
+				inner join	#insertedFields SF on FT.LookupObjectType = SF.ObjectType and FT.LookupObjectID = SF.ObjectID 
+				where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
+	end
+
 	UPDATE	T
 	SET		T.AssetID = A.ID
 	FROM	Field T 
 			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
 			inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
