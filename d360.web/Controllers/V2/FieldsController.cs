@@ -1187,7 +1187,6 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Fields.GetLookupListFilter => ";
             var errorMessage = "";
-            bool validListAssetType = true;
 
             try
             {
@@ -1204,17 +1203,11 @@ namespace d360.web.Controllers.V2
                     {
                         listAssetObjectType = listAssetType.Object;
                         listAssetObjectId = listAssetType.ObjectID;
-                    } else
-                    {
-                        validListAssetType = false;
                     }
-                } else {
-                    validListAssetType = false;
                 }
-                if(!validListAssetType)
-                    throw new Exception("No valid UID for the List asset type provided");
 
                 //Types of List assettypes that can have filtered lookups. If the list assettype is not of one of these types, return an empty list
+                //If an invalid uid has been provided for the uid parameter, this will also return an empty list
                 string[] allowedListTypes = { "ArtifactType", "TaxonomyType" };
                 if (!allowedListTypes.Contains(listAssetObjectType))
                 {
