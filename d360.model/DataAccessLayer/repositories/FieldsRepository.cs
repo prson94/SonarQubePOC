@@ -860,8 +860,8 @@ from	IntersectType I
                                 return;
                             }
                         }
-                        var coputedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
-                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? coputedFieldValue : fieldInfo.FieldTypeID;
+                        var computedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFieldValue : fieldInfo.FieldTypeID;
                         field.AssetTypeUid = i.AssetTypeUid;
                         field.DisplayOrder = i.DisplayOrder;
                         field.FieldTypeName = i.FieldTypeName;
@@ -874,8 +874,14 @@ from	IntersectType I
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
                         field.Show = i.Show;
-
-                        definitionFields.Add(field);
+                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID) && field.FieldTypeID > 0)
+                        {
+                            definitionFields.Add(field);
+                        }
+                        else if (!definitionFields.Any(o => o.FieldTypeName == field.FieldTypeName && o.AssetTypeUid == field.AssetTypeUid) && field.FieldTypeID == 0)
+                        {
+                            definitionFields.Add(field);
+                        }
                     });
 
 
