@@ -1283,7 +1283,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
-            bool shouldRemoveOldRelationshipType = (model.Class == AssetTypeClass.Reference);
+            bool shouldRemoveOldRelationshipType = (model.Class == AssetTypeClass.Reference || model.ParentUid == Guid.Empty);
 
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
@@ -1323,8 +1323,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
-                    assetType.Notes = model.Notes;
-
+                    assetType.Notes = model.Notes;                   
+                    
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
