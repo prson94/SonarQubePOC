@@ -153,6 +153,18 @@ namespace d360.model.DataAccessLayer
                     }
                 }
 
+                if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
+                {
+                    bool autoDisplayParent;
+                    var autoDisplayParentString = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "autodisplayparent").Value;
+                    if (Boolean.TryParse(autoDisplayParentString, out autoDisplayParent))
+                    {
+
+                        condition += " and A.AutoDisplayParent=@autoDisplayParent ";
+                        dbArgs.Add("autoDisplayParent", autoDisplayParent);
+                    }
+                }
+
             }
 
             if (assetTypeUid != null && assetTypeUid.HasValue && assetTypeUid.Value != Guid.Empty)
@@ -663,7 +675,7 @@ namespace d360.model.DataAccessLayer
                     {(includeParent ? parentFieldSQL : "")}
                     {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
                     {(includeSegments ? "Node.Segments," : "")}
-                    KP.KeyPath as Path
+                    KP.KeyPath as [Path]
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
                     {(fusionAttributeWithParent ? " , ATP.uid as ParentUid" : "")}
                     {fieldsSql}
@@ -1271,7 +1283,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
         {
             List<AssetTypeClass> predicateClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference };
 
-            bool shouldRemoveOldRelationshipType = (model.Class == AssetTypeClass.Reference);
+            bool shouldRemoveOldRelationshipType = (model.Class == AssetTypeClass.Reference || model.ParentUid == Guid.Empty);
 
             if (!string.IsNullOrEmpty(model?.Name ?? null))
                 model.Name = model.Name.Trim();
@@ -1311,8 +1323,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
-                    assetType.Notes = model.Notes;
-
+                    assetType.Notes = model.Notes;                   
+                    
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)

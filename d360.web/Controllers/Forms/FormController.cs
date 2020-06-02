@@ -232,30 +232,6 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/new/{objectType}")]
-        public JsonResult DynamicEditorAddFields(string objectType, object[] param)
-        {
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "ATTRIBUTE":
-                    return Attribute_AddFields((int)param[0], param[1].ToString(), (int)param[2], (int)param[3]);
-
-            }
-            throw new Exception("Invalid or non implemented editor type");
-        }
-
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("dynamiceditor/edit/{objectType}")]
-        public JsonResult DynamicEditorEditFields(string objectType, object[] param)
-        {
-            switch ((objectType ?? "").ToUpper())
-            {
-                case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_EditFields((int)param[0], param[1].ToString(), (int)param[2]);                
-                default: break;
-            }
-            throw new Exception("Invalid or non implemented editor type");
-        }
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
@@ -295,8 +271,6 @@ namespace d360.web.Controllers
                     return CustomAPIVersionField_EditFields(oid);
                 case "ARTIFACT":
                     return Artifact_EditFields(oid);
-                case "ATTRIBUTE":
-                    return Attribute_EditFields(oid);
                 case "CONTRACT":
                     return Contract_EditFields(oid);
                 case "ENDPOINT":
@@ -379,8 +353,6 @@ namespace d360.web.Controllers
                     return CustomAPIVersionField_AddFields(parentID.GetValueOrDefault());
                 case "ARTIFACT":
                     return Artifact_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
-                case "ATTRIBUTEALLOCATION":
-                    return AttributeTypeRelation_AddFields(parentID.GetValueOrDefault());
                 case "CONTRACT":
                     return Contract_AddFields(objectID.HasValue ? objectID.Value : 0);
                 case "ENDPOINT":
@@ -470,10 +442,6 @@ namespace d360.web.Controllers
             {
                 case "APIFIELD":
                     return EditApiField(form);
-                case "ATTRIBUTE":
-                    return EditAttribute(form);
-                case "ATTRIBUTETYPE":
-                    return EditAttributeType(form);
                 case "ENDPOINT":
                     return EditServiceEndpoint(form);
                 case "FUSION":
@@ -540,8 +508,6 @@ namespace d360.web.Controllers
                     return DeleteApiField(form);
                 case "ARTIFACTTYPE":
                     return DeleteArtifactType(objectID);
-                case "ATTRIBUTETYPE":
-                    return DeleteAttributeType(form);
                 case "CONTRACT":
                     return DeleteContract(objectID);
                 case "CUSTOMSYNONYM":
@@ -608,10 +574,6 @@ namespace d360.web.Controllers
             {
                 case "APIFIELD":
                     return AddServiceEndpointVersionField(form);                
-                case "ATTRIBUTE":
-                    return AddAttribute(form);
-                case "ATTRIBUTETYPE":
-                    return AddAttributeType(form);
                 case "CUSTOMSYNONYM":
                     return AddCustomSynonym(form);
                 case "ENDPOINT":
@@ -1488,12 +1450,6 @@ from	(
 
 		union
 
-		select		5 as Sort,
-					'AttributeType|' + cast(ID as varchar(10)) as value, 'Attribute: ' + Name as title 
-		from		AttributeType 
-		where		ParentID is null
-
-        union
 		select		8 as Sort,
 					'ArtifactType|' + cast(ObjectID as varchar(10)) as value, 
 					'{CommonNames.AssetTypeClass_Technical.CleanForSql()}: ' + P.[Path] as title 
@@ -1858,7 +1814,7 @@ order by Sort, title";
                                         // Log any missing key field errors.
                                         errorMessages.AddRange(
                                             levelFields
-                                            .Where(f => f.Level == l.Level && f.PartOfKey && f.ColumnIndex == -1)
+                                            .Where(f => f.Level == l.Level && f.PartOfKey && f.Required && f.ColumnIndex == -1)
                                             .Select(f => $"Key column not provided [{f.Name}]")
                                         );
 
@@ -1871,7 +1827,7 @@ order by Sort, title";
 
                                         // Get any key columns that do not have data populated for this level.
                                         invalidKeyFields.AddRange(
-                                            levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
+                                            levelFields.Where(lf => lf.Level == l.Level && lf.PartOfKey && lf.Required && lf.ColumnIndex > -1 && !lf.DataLoaded).Select(lf => lf.Name)
                                         );
 
                                         // Get any required, non-key columns that do not have data populated for this level.

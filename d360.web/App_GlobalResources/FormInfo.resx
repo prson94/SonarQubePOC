@@ -138,9 +138,6 @@
   <data name="Add_AttributeTypeCategory_Title" xml:space="preserve">
     <value>Add Attribute Category</value>
   </data>
-  <data name="Add_AttributeType_Confirmation" xml:space="preserve">
-    <value>Attribute group successfully added.</value>
-  </data>
   <data name="Add_AttributeType_Directions" xml:space="preserve">
     <value>Add an attribute group using the form below.</value>
   </data>
@@ -243,12 +240,6 @@
   <data name="DeAllocate_Workflow_Title" xml:space="preserve">
     <value>De-allocate Workflow</value>
   </data>
-  <data name="Delete_AttributeType_Confirmation" xml:space="preserve">
-    <value>Attribute type successfully removed.</value>
-  </data>
-  <data name="Delete_Attribute_Confirmation" xml:space="preserve">
-    <value>Attribute successfully removed.</value>
-  </data>
   <data name="Delete_Attribute_Description" xml:space="preserve">
     <value>Removing this attribute may affect the score of the item it is tagged to.</value>
   </data>
@@ -278,9 +269,6 @@
   </data>
   <data name="Edit_AttributeTypeCategory_Title" xml:space="preserve">
     <value>Edit Category</value>
-  </data>
-  <data name="Edit_AttributeType_Confirmation" xml:space="preserve">
-    <value>Attribute type successfully updated.</value>
   </data>
   <data name="Edit_AttributeType_Directions" xml:space="preserve">
     <value>Modify your attribute group using the form below.</value>
@@ -377,9 +365,6 @@
   </data>
   <data name="InUse_RelationShipType_Error_Delete" xml:space="preserve">
     <value>The relationship type is referenced by one or more field type definitions. Please update or delete these prior to deleting this relationship type.</value>
-  </data>
-  <data name="NoFormData_AttributeType" xml:space="preserve">
-    <value>attribute group</value>
   </data>
   <data name="NoFormData_FieldType" xml:space="preserve">
     <value>field type</value>

@@ -168,12 +168,12 @@ namespace d360.web.Controllers.V2
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Relationship` *(Relationship)*
         ///     1. This is a computed field and does not support directly editing values.
+        /// - `Score` *(Score)*
+        ///     1. This is a computed field and does not support directly editing values.
         /// - `Tag` *(Tag)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `Text` *(Simple Text)*
         ///     1. Supports adding values through the Govern Application UI and REST API.
-        /// - `Score` *(Score)*
-        ///     1. This is a computed field and does not support directly editing values.
         /// </remarks>
         /// <returns>A list of field types corresponding to the given criteria, if any.</returns>
         [
@@ -196,6 +196,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 #region GetData
+                
                 TypeIdentifierInfoModel typeIdentifierInfoModel = null;
 
                 IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
@@ -234,11 +235,12 @@ namespace d360.web.Controllers.V2
                     if (typeIdentifierInfoModel == null)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
+                
                 #endregion            
 
                 #region SecurityCheck
 
-            bool hasPermissions = false;
+                bool hasPermissions = false;
 
                 if (Company.CurrentResourceIsAdmin)
                 {
@@ -257,9 +259,11 @@ namespace d360.web.Controllers.V2
                 {
                     throw new RestApiException(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You do not have permissions to change fields on this type.");
                 }
+
                 #endregion
 
                 #region Validation
+                
                 var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
                 var ExistingIntersectID = new List<Tuple<string, Guid>>();
                 if (model.AssetTypeUid.HasValue)
@@ -604,37 +608,44 @@ namespace d360.web.Controllers.V2
 
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
-                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
                 }
 
-                var disallowedScoreClasses = 
-                    new List<AssetTypeClass>() {
-                        AssetTypeClass.Organization,
-                        AssetTypeClass.Fusion,
-                        AssetTypeClass.FusionAttribute,
-                        AssetTypeClass.FusionQuery,
-                        AssetTypeClass.User,
-                        AssetTypeClass.ReferenceItemType,
-                        AssetTypeClass.AttributeGroup,
-                    };
+                var disallowedPathClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.User,
+                    AssetTypeClass.AttributeGroup,
+                };
+                if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path").ToList();
+                }
 
+                var disallowedScoreClasses = new List<AssetTypeClass>() {
+                    AssetTypeClass.Organization,
+                    AssetTypeClass.Fusion,
+                    AssetTypeClass.FusionAttribute,
+                    AssetTypeClass.FusionQuery,
+                    AssetTypeClass.User,
+                    AssetTypeClass.ReferenceItemType,
+                    AssetTypeClass.AttributeGroup,
+                };
                 if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
                 }
 
-
-
-                var jsonFieldType = new Dictionary<string, string>()
-            {
-                { "Boolean", "bit" },
-                { "Date", "date" },
-                { "Date With Time", "datetime" },
-                { "Decimal", "float" },
-                { "Text", "nvarchar" },
-                { "Whole Number", "int" },
-                { "Whole Number (Large)", "bigint" },
-            };
+                var jsonFieldType = new Dictionary<string, string>() {
+                    { "Boolean", "bit" },
+                    { "Date", "date" },
+                    { "Date With Time", "datetime" },
+                    { "Decimal", "float" },
+                    { "Text", "nvarchar" },
+                    { "Whole Number", "int" },
+                    { "Whole Number (Large)", "bigint" },
+                };
                 var Field_JsonDataTypes = jsonFieldType.Select(i => new { title = i.Key, value = i.Value });
                 var Field_JsonFields = Company.Filter<FieldType>(ft => ft.Object == sType && ft.ObjectID == id && ft.Type == "JSON")
                     .OrderBy(ft => ft.FriendlyName)
@@ -1176,65 +1187,63 @@ namespace d360.web.Controllers.V2
         {
             var prefix = "Fields.GetLookupListFilter => ";
             var errorMessage = "";
-            bool validListAssetType = true;
 
             try
             {
-                string type = "";
-                int id = 0;
                 string objectType = "";
                 int objectId = 0;
+                string listAssetObjectType = "";
+                int listAssetObjectId = 0;
+
+                //Get Object/ObjectID of Assettype that will be listed
                 if (Guid.TryParse(uid, out Guid assetUid))
                 {
                     AssetType listAssetType = Company.Filter<AssetType>(x => x.uid == assetUid).SingleOrDefault();
                     if (listAssetType != null)
                     {
-                        objectType = listAssetType.Object;
-                        objectId = listAssetType.ObjectID;
-                    } else
-                    {
-                        validListAssetType = false;
+                        listAssetObjectType = listAssetType.Object;
+                        listAssetObjectId = listAssetType.ObjectID;
                     }
-                } else {
-                    validListAssetType = false;
                 }
-                if(!validListAssetType)
-                    throw new Exception("No valid UID for the List asset type provided");
 
+                //Types of List assettypes that can have filtered lookups. If the list assettype is not of one of these types, return an empty list
+                //If an invalid uid has been provided for the uid parameter, this will also return an empty list
+                string[] allowedListTypes = { "ArtifactType", "TaxonomyType" };
+                if (!allowedListTypes.Contains(listAssetObjectType))
+                {
+                    //return nothing no error;
+                    return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
+                }
+
+                //Get Object/ObjectID of assettype/issuetype for which the lookup field is defined
                 if (assetTypeUid != null)
                 {
                     var assetType = Company.Filter<AssetType>(x => x.uid == assetTypeUid).SingleOrDefault();
-                    type = assetType.Object;
-                    id = assetType.ID;
+                    objectType = assetType.Object;
+                    objectId = assetType.ObjectID;
                 }
                 else if (actionTypeUid != null)
                 {
                     var issueType = Company.Filter<IssueType>(x => x.uid == actionTypeUid).SingleOrDefault();
-                    type = SystemObjects.IssueType.ToString();
-                    id = issueType.ID;
+                    objectType = SystemObjects.IssueType.ToString();
+                    objectId = issueType.ID;
                 }
                 else if (relationshipTypeUid != null)
                 {
                     var intersectType = Company.Filter<IntersectType>(i => i.uid == relationshipTypeUid).SingleOrDefault();
-                    type = SystemObjects.IntersectType.ToString();
-                    id = intersectType.ID;
+                    objectType = SystemObjects.IntersectType.ToString();
+                    objectId = intersectType.ID;
                 }
                 else
                 {
                     throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
                 }
 
+                //AssetTypes that can have filtered Lookups
                 string[] allowedAssetTypes = { "IssueType", "ArtifactType", "TaxonomyType", "PolicyType", "RuleType" };
-                string[] allowedListTypes = { "Artifact", "Taxonomy" };
-
-                if (!allowedAssetTypes.Contains(type))
+                if (!allowedAssetTypes.Contains(objectType))
                 {
                     //return nothing no error
-                    return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
-                }
-                if (allowedListTypes.Contains(objectType))
-                {
-                    //return nothing no error;
                     return Request.CreateResponse(HttpStatusCode.OK, new List<dynamic>());
                 }
 
@@ -1270,8 +1279,8 @@ namespace d360.web.Controllers.V2
                             join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
                             join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
                             join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-                        where it.[Subject] = @objectType 
-                        and it.[SubjectID] = @objectId
+                        where it.[Subject] = @listAssetObjectType 
+                        and it.[SubjectID] = @listAssetObjectId
                         and p.Type IN ({predicateTypes})
                         and it.[Object] in ('ArtifactType', 'TaxonomyType')
                         UNION ALL 
@@ -1287,8 +1296,8 @@ namespace d360.web.Controllers.V2
                             join [dbo].[Predicate] p on it.[PredicateID] = p.[ID] 
                             join [dbo].[AssetType] ot on ot.[Object] = it.[Object] and ot.[ObjectId] = it.[ObjectID] 
                             join [dbo].[AssetType] st on st.[Object] = it.[Subject] and st.[ObjectId] = it.[SubjectID] 
-                         where it.[Object] = @objectType 
-                         and it.[ObjectID] = @objectId 
+                         where it.[Object] = @listAssetObjectType 
+                         and it.[ObjectID] = @listAssetObjectId 
                          and p.Type IN ({predicateTypes})
                          and it.[Subject] in ('ArtifactType', 'TaxonomyType')
                         ) A LEFT OUTER JOIN
@@ -1305,23 +1314,23 @@ namespace d360.web.Controllers.V2
                         at.Name
                     FROM [dbo].[FieldType] ft
                     INNER JOIN [dbo].[AssetType] at ON ft.LookupObjectType +'Type' = at.Object AND ft.LookupObjectID = at.ObjectID
-                    WHERE ft.[ObjectID] = @id AND ft.[Object] = @type  
+                    WHERE ft.[ObjectID] = @objectId AND ft.[Object] = @objectType  
                     ) B ON A.[Object] = B.LookupObject AND A.ObjectID = B.LookupObjectID";
                 var parms = new
                 {
-                    objectType = objectType,
-                    objectId = objectId,
-                    type = type,
-                    id = id
+                    listAssetObjectType,
+                    listAssetObjectId,
+                    objectType,
+                    objectId
                 };
                 var list = await Company.QueryAsync<dynamic>(sql, parms);
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new
                     {
-                        PredicateValue = i.PredicateValue,
-                        PredicateName = i.PredicateName,
-                        FieldTypeName = i.FieldTypeName,
-                        FriendlyName = i.FriendlyName,
+                        i.PredicateValue,
+                        i.PredicateName,
+                        i.FieldTypeName,
+                        i.FriendlyName,
                         Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
                     })
                 );

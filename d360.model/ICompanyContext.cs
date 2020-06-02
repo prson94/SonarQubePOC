@@ -43,12 +43,6 @@ namespace d360.model
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
         DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
         DbSet<AssetType> AssetTypes { get; set; }
-        DbSet<AttributeDetail> AttributeDetails { get; set; }
-        DbSet<core.entities.Attribute> Attributes { get; set; }
-        DbSet<AttributeTypeCategory> AttributeTypeCategories { get; set; }
-        DbSet<AttributeTypeRelationDetail> AttributeTypeRelationDetails { get; set; }
-        DbSet<AttributeTypeRelation> AttributeTypeRelations { get; set; }
-        DbSet<AttributeType> AttributeTypes { get; set; }
         DbSet<AuditField> AuditFields { get; set; }
         DbSet<Audit> Audits { get; set; }
         string BulkLoadStatusMsg { get; set; }
@@ -201,9 +195,7 @@ namespace d360.model
         AssetDetail GetAssetDetail(string objectType, long objectId);
         string GetAssetTypeNoReadSqlStatement(string identifier = null);
         string GetAssetTypeNoReadSqlStatement(Permission permission, string identifier = null);
-        IQueryable<AttributeHierarchyItem> GetAttributeAndIntersectHierarchyByObject(SystemObjects type, int id);
         List<FusionAttributeItem> GetAttributesByFusion(int fusionID);
-        List<AllocationPossibility> GetAvailableAllocationOptions(int attributeTypeID);
         IEnumerable<AssetType> GetChildTypes(int id, SystemObjects obj);
         IQueryable<CommentCount> GetCommentCountByFollower(int resourceID, int daysToGet = 0, string searchPhrase = "");
         IQueryable<CommentCount> GetCommentCountByType(SystemObjects type, int id, int daysToGet = 0, string searchPhrase = "");
@@ -319,12 +311,12 @@ namespace d360.model
         void SetApiExecutionProcessingStartTime(Guid ExecutionId);
         string GetEscapedFilterString(string filter);
         Dictionary<Guid, string> GetAssetTypePathsByAssetClasses(List<int> assetClassIds);
+        void SendGraphAssetTypeEvent(Guid assetTypeUid);
         void SendApiGraphEvent(ApiExecutionInfo info);
         int GetFieldLookupValue(string lookupObjectType, int lookupObjectId, int fieldTypeId, string value);
         List<DataQualityResponseModel> UpsertAssetResults(List<IDataQualityUpsert> request, ApiExecution execution, int timeout = 3600, bool sendWorkflowEvents = true);
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
-        bool SaveChangesWithoutEventing();
     }
 }

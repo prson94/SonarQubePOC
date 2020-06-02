@@ -12,14 +12,7 @@ namespace d360.core.enums
         [Name("Modify asset"), Description("Add or update an asset's properties."), Category("M")]
         ModifyAsset = 2,
         [Name("Remove asset"), Description("Remove an asset."), Category("D")]
-        DeleteAsset = 4,
-
-        [Name("Read attributes"), Description("Read an asset's complex attributes."), Category("R")]
-        ReadAttributes = 8,
-        [Name("Modify attributes"), Description("Add or modify an asset's complex attributes."), Category("M")]
-        ModifyAttributes = 16,
-        [Name("Remove attributes"), Description("Remove an asset's complex attributes."), Category("D")]
-        DeleteAttributes = 32,
+        DeleteAsset = 4,        
 
         [Name("Read responsibilties"), Description("Read an asset's roles and responsibilities."), Category("R")]
         ReadResponsibilities = 64,

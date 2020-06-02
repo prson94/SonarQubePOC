@@ -602,13 +602,6 @@ namespace d360.web.Models
                 if ((PermissionsBitMask & (int)Permission.DeleteAsset) == (int)Permission.DeleteAsset)
                     Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAsset));
 
-                if ((PermissionsBitMask & (int)Permission.ReadAttributes) == (int)Permission.ReadAttributes)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ReadAttributes));
-                if ((PermissionsBitMask & (int)Permission.ModifyAttributes) == (int)Permission.ModifyAttributes)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.ModifyAttributes));
-                if ((PermissionsBitMask & (int)Permission.DeleteAttributes) == (int)Permission.DeleteAttributes)
-                    Permissions.Add(rawList.Single(i => i.ID == Permission.DeleteAttributes));
-
                 if ((PermissionsBitMask & (int)Permission.ReadRelationships) == (int)Permission.ReadRelationships)
                     Permissions.Add(rawList.Single(i => i.ID == Permission.ReadRelationships));
                 if ((PermissionsBitMask & (int)Permission.ModifyRelationships) == (int)Permission.ModifyRelationships)

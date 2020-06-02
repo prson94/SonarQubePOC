@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.AttributeTypeRelationDetail-v1">
+  <changeSet author="bquinlivan" id="View.dbo.AttributeTypeRelationDetail-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+	DROP VIEW IF EXISTS [dbo].[AttributeTypeRelationDetail]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter view [dbo].[AttributeTypeRelationDetail]
 as
 	SELECT	R.AttributeTypeID,
@@ -21,11 +26,6 @@ as
 			R.AllowMultipleEntries
 	FROM	AttributeTypeRelation R
 			left join AssetType D on D.[Object] = R.ObjectType and D.ObjectID = R.ObjectID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

@@ -2273,7 +2273,7 @@ namespace d360.model
 
                 var path = item?.UID == null ? null : Query<string>(@"select graph.GetPath(AN.Segments, ' > ', ' / ') from graph.assetNode AN where AN.Uid = @Uid", new { Uid = item.UID }).FirstOrDefault();
 
-                result = result.Replace("[ASSET_PATH]", path ?? "(unknown asset path)");
+                result = result.Replace("[ASSET_PATH]", path ?? "(unknown)");
             }
 
             return result;

@@ -5,12 +5,17 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.dbo.AttributeDetail-v1">
+  <changeSet author="bquinlivan" id="View.dbo.AttributeDetail-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+	DROP VIEW IF EXISTS [dbo].[AttributeDetail]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter view [dbo].[AttributeDetail]
 as
 	select	A.ObjectType,
@@ -25,11 +30,6 @@ as
 	from	Attribute A
 			inner join AttributeType T on A.AttributeTypeID = T.ID
 			left join AttributeTypeCategory C on C.ID = T.AttributeTypeCategoryID
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

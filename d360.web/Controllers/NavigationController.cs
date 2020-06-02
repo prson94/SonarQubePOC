@@ -847,16 +847,6 @@ namespace d360.web.Controllers
                     responseModel.Items.HasAudit = true;
                 }
 
-                if (model.ObjectType == SystemObjects.AttributeType.ToString())
-                {
-                    execProcedure = false;
-                    responseModel.Object = responseModel.ObjectType = SystemObjects.AttributeType.ToString();
-                    responseModel.ObjectID = model.ObjectId ?? 0;
-                    responseModel.DisplayValue = "Attributes";
-                    responseModel.MainTabTitle = "Attribute Groups";
-                    responseModel.Items.HasAudit = true;
-                }
-
                 if (model.ObjectType == SystemObjects.ResponsibilityType.ToString())
                 {
                     execProcedure = false;

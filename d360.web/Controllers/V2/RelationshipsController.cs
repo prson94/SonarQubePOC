@@ -24,6 +24,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -374,7 +375,7 @@ namespace d360.web.Controllers.V2
             HttpGet,
             MapToApiVersion("2.0"),
             Route(""),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json", "application/octet-stream"),
             SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse)),
@@ -395,6 +396,7 @@ namespace d360.web.Controllers.V2
             {
                 #region Validation
                 var queryParams = Request.GetQueryNameValuePairs().ToList();
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
 
 
                 if (queryParams.Any(x => x.Key.ToLower() == "relationshiptypeuid"))
@@ -469,8 +471,27 @@ namespace d360.web.Controllers.V2
                 {
                     return ReturnApiError(HttpStatusCode.BadRequest, isValid);
                 }
-                var items = await RelationshipRepository.GetRelationships(queryParams);
-                return Request.CreateResponse(HttpStatusCode.OK, items);
+
+                HttpResponseMessage response;
+
+                if (isStreamResponse)
+                {
+                    var items = await RelationshipRepository.GetRelationshipsExcel(queryParams);
+
+                    var stream = new MemoryStream();
+                    items.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+                    response = createFileResponseMessage(HttpStatusCode.OK, "GetRelationships.xlsx", bytes);
+                    return response;
+                }
+
+                else
+                {
+                    var results = await RelationshipRepository.GetRelationships(queryParams);
+                    response = Request.CreateResponse(HttpStatusCode.OK, results);
+                    return response;
+                }
+                
             }
             catch (Exception ex)
             {

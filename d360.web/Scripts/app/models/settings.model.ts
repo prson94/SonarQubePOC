@@ -118,7 +118,6 @@ export module SettingsHelper {
             { title: "Rules", value: "Rule", selected: false },
             { title: "Reference Lists", value: "Reference", selected: false },
             { title: "Grammatic Types", value: "Synonym", selected: false },
-            { title: "Attributes", value: "Attribute", selected: false },
             { title: "Fusion", value: "FusionAttributes", selected: false },
             { title: "Fusion Types", value: "FusionType", selected: false },
             { title: "Groups", value: "Group", selected: false },

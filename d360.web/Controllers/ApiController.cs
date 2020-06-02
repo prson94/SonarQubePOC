@@ -976,7 +976,6 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "TypeName", type = "string" });
                     fields.Add(new GridField { name = "Url", type = "string" });
                     fields.Add(new GridField { name = "HasTechnicalRelationships", type = "bool" });
-                    fields.Add(new GridField { name = "HasAttributes", type = "bool" });
                     break;
                 #endregion
                 case SystemObjects.PolicyType:
@@ -1428,30 +1427,40 @@ where   h.ID <> @t order by h.[Level] desc;
 
             var assetType = Company.Filter<AssetType>(i => i.Object == "ArtifactType" && i.ObjectID == typeID).SingleOrDefault();
             if (assetType == null) throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound));
-
             var model = new Dictionary<string, object>();
 
-            model.Add("ID", assetType.ObjectID);
-            model.Add("Name", assetType.Name);
-            model.Add("Description", assetType.Description);
-            model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
-            model.Add("CanOwnFusion", assetType.CanOwnFusion);
-            model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
-            model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
-            model.Add("Class", assetType.Class);
-            model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
+            try
+            {
 
-            bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
-            model.Add("HasDashboards", hasDashboards);
+                model.Add("ID", assetType.ObjectID);
+                model.Add("Name", assetType.Name);
+                model.Add("Description", assetType.Description);
+                model.Add("ParentID", Company.GetParentType(assetType.ObjectID, SystemObjects.ArtifactType)?.ObjectID ?? null);
+                model.Add("CanOwnFusion", assetType.CanOwnFusion);
+                model.Add("HasCustomExportTemplates", Company.AssetTypeExportTemplates.Where(x => x.AssetTypeID == assetType.ID).Any());
+                model.Add("AutoDisplayDescription", assetType.AutoDisplayDescription);
+                model.Add("Class", assetType.Class);
+                model.Add("AutoDisplayParent", assetType.AutoDisplayParent);
 
-            var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+                bool hasDashboards = Company.Filter<Report>(x => x.ObjectType == "ArtifactType" && x.ObjectID == typeID && x.ReportType != "legacy").Any();
+                model.Add("HasDashboards", hasDashboards);
 
-            var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
-            model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
-            model.Add("AssetTypeUID", assetType.uid);
-            model.Add("AssetTypeID", assetType.ID);
+                var sql = $"select count(1) from [workflow].[EventRegistration] where [object] = 'ArtifactType' and [objectId] = {typeID}";
+
+                var hasV2WorkflowsAssigned = (Company.Query<int>(sql).FirstOrDefault() > 0);
+                model.Add("HasV2Workflows", hasV2WorkflowsAssigned);
+                model.Add("AssetTypeUID", assetType.uid);
+                model.Add("AssetTypeID", assetType.ID);
+
+            }
+            catch (Exception ex)
+            {
+                SendException(ex, new Dictionary<string, string>());
+                throw ex;
+            }
 
             return model;
+
         }
 
 
@@ -1460,19 +1469,28 @@ where   h.ID <> @t order by h.[Level] desc;
         public HttpResponseMessage GetArtifactTypePossibleOwners(string objectType, int artifactTypeId)
         {
             var sql = @"
-select  distinct 
-	    ResourceUid as 'ID', 
-	    '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
-	    case 
-            when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
-			when SecurityAsset = 'G' then 'Group' 
-            else [Type] 
-        end as [Type]
-from    ResponsibilityDetail
-where   TypeID = @id 
-        and [Type] = @objectType 
-        and IsVisible = 1 
-order by 'Name'";
+            ;with owners as (select  distinct 
+		            responsibilityTypeId,
+		            securityAssetid,
+	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
+	                case 
+                        when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
+			            when SecurityAsset = 'G' then 'Group' 
+                        else [Type] 
+                    end as [Type]
+				            from    ResponsibilityDetail
+            where   TypeID = @id
+                    and [Type] = @objectType 
+                    and IsVisible = 1)
+            select Res.ResourceUid as ID, o.Name, o.Type  
+            from owners o
+            cross apply (
+            select top 1 * from 
+            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
+									            and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @objectType
+            )Res
+            order by o.[Name]
+";
 
             return Request.CreateResponse(
                 HttpStatusCode.OK,
@@ -1651,12 +1669,6 @@ order by 'Name'";
         #endregion
 
         #region Lookup Methods
-
-        [Route("AttributeTypeCategories")]
-        public IQueryable<AttributeTypeCategory> GetAttributeTypeCategories()
-        {
-            return Company.Table<AttributeTypeCategory>();
-        }
 
         [Route("lookups/{id:int}/allocations")]
         public IEnumerable<dynamic> GetAllocationsByLookupType(int id)
@@ -2738,7 +2750,6 @@ from    ResponsibilityTypeRelationRule R
                     { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
-                    { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "PolicyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "MaximumDepth", row.HierarchyMaximumDepth },
                     { "AssetTypeUID", row.Uid }
@@ -3053,7 +3064,6 @@ order by    Name
                     { "ID", row.ObjectID },
                     { "Name", row.Name },
                     { "Description", row.Description },
-                    { "AllowAttributes", (bool)row.AllowAttributes },
                     { "HasCustomExportTemplates", hasCustomExports },
                     { "HasWorkflow", (bool)row.HasWorkflow },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = id, ot = new DbString {Value = "RuleType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
@@ -3279,57 +3289,6 @@ order by    Name
 
                     }
                     artifactType = null;
-                    break;
-                #endregion
-                case SystemObjects.Attribute:
-                    #region Fields
-                    var attr = Company.GetById<core.entities.Attribute>(id);
-                    if (attr != null)
-                    {
-                        model.columns = 1;
-
-                        model.rows.AddRange(loadDynamicDisplayFields(type, id));
-                    }
-                    attr = null;
-                    break;
-                #endregion
-                case SystemObjects.AttributeType:
-                    #region Fields
-                    var attributeType = Company.Filter<AssetType>(i => i.ObjectID == id && i.Object == "AttributeType").SingleOrDefault();
-                    if (attributeType != null)
-                    {
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name =Fields.ID_Name, FieldName = "AttributeTypeID", FieldDescription = Fields.ID_Description, Value = attributeType.ObjectID.ToString() }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 2,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Fields.Name_Name, FieldName = "AttributeTypeName", FieldDescription = Fields.Name_Description, Value = attributeType.Name }
-                            },
-                            SecondColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Fields.DisplayFormat_Name, FieldName = "AttributeTypeDisplayFormat", FieldDescription =Fields.DisplayFormat_Description, Value = attributeType.DisplayFormat }
-                            }
-                        });
-
-                        model.rows.Add(new DetailReadOnlyRowModel
-                        {
-                            columns = 1,
-                            FirstColumnFields = new List<ReadOnlyField>
-                            {
-                                new ReadOnlyField { Name = Fields.Description_Name, FieldName = "AttributeTypeDescription", FieldDescription = Fields.Description_Description, DataType = "Html", Value = string.IsNullOrEmpty(attributeType.Description) ? "None provided" : attributeType.Description }
-                            }
-                        });
-                    }
-                    attributeType = null;
                     break;
                 #endregion
                 case SystemObjects.Group:
@@ -5589,7 +5548,6 @@ SELECT (
                     { "MaximumDepth", row.MaximumDepth },
                     { "Name", row.Name },
                     { "Description", row.Description },
-                    { "AllowAttributes", (bool)row.AllowAttributes },
                     { "NymTypes", Company.Query<dynamic>(QueryConstants.ObjectNymTypes, new { id = typeID, ot = new DbString {Value = "TaxonomyType", IsFixedLength = true, IsAnsi = true, Length = 50 } }) },
                     { "HasDashboards", row.HasDashboards },
                     { "AssetTypeUID", row.Uid }
@@ -5603,16 +5561,6 @@ SELECT (
             var sql = $@"SELECT top 1 Object, ObjectID, Id from AssetType WHERE Uid = '{uid.ToString()}'";
             var details = Company.Query<dynamic>(sql).Single();
             return Request.CreateResponse<dynamic>(new { details.Object, details.ObjectID, details.Id });
-        }
-
-        #endregion
-
-        #region Allocations
-
-        [Route("AttributeType/{id}/allocations")]
-        public IQueryable<AttributeTypeRelationDetail> GetAllocationsByAttributeType(int id)
-        {
-            return Company.Filter<AttributeTypeRelationDetail>(i => i.AttributeTypeID == id);
         }
 
         #endregion

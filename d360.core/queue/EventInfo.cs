@@ -57,6 +57,7 @@ namespace d360.core.queue
         Node,
         Edge,
         Path,
-        Execution
+        Execution,
+        AssetType
     }
 }

@@ -46,23 +46,11 @@ export class EditorDefinitionService extends BaseObservableService {
                 uri = `form/dynamiceditor/edit/${objectType}/${ID}`;
             }
         }
-
-        if (createParams && createParams.length > 0) {
-            return this.http.post(`form/dynamiceditor/new/${objectType}`, createParams).pipe(
-                map(response => <EditorField[]>response),
-                catchError(err => this.handleError(err))
-            );
-        } else if (editParams && editParams.length > 0) {
-            return this.http.post(`form/dynamiceditor/edit/${objectType}`, editParams).pipe(
-                map(response => <EditorField[]>response),
-                catchError(err => this.handleError(err))
-            );
-        } else {
-            return this.http.get(uri).pipe(
-                map(response => <EditorField[]>response),
-                catchError(err => this.handleError(err))
-            );
-        }
+        
+        return this.http.get(uri).pipe(
+            map(response => <EditorField[]>response),
+            catchError(err => this.handleError(err))
+        );        
     }
 
     public getEditorDefinitionUid(giud: string): Observable<EditorField[]> {

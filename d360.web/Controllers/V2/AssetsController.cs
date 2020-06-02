@@ -29,6 +29,9 @@ using d360.core.resources;
 using Resources;
 using System.IO;
 using d360.model.helpers.filters;
+using System.Data.Entity;
+using System.Dynamic;
+using System.Configuration;
 using SpreadsheetLight;
 
 namespace d360.web.Controllers.V2
@@ -107,11 +110,12 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-             SwaggerParameter("UseAsTransformation", "Filter by Use As Transformation", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("Hierarchical", "Filter by Hierarchical", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("AutoDisplayDescription", "Filter by Auto Display Description", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Businesss and Technical asset types which have been marked as transformational asset types in there configuration. Transformational assets have special meaning in asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on he asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion setting. This option is for assets that can be used to set the owner of a fusion configuration.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
@@ -360,7 +364,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetAssetsByPathAsync(AssetsByPathApiRequestModel model)
         {
-            var prefix = "Assets.GetAssetsByPathAsync => "; 
+            var prefix = "Assets.GetAssetsByPathAsync => ";
 
             try
             {
@@ -467,7 +471,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "Newly asset type Uid and success / failure message.", typeof(AssetTypeSuccess)),
             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),            
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create an asset type", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Request is badly formatted or has failed validation.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PostAssetTypeAsync(AssetTypeUpsert model)
@@ -1064,7 +1068,329 @@ namespace d360.web.Controllers.V2
                 return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
             }
         }
+        /// <summary>
+        /// Retrieves a list of all asset types and asset counts for current user.
+        /// </summary>
+        /// <returns>Returns a list of asset type counts for current user.</returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/fields/{fieldApiName}"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerProduces("application/json", "text/json", "application/xml", "text/xml", "application/octet-stream"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 200.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_order", "The name of the field to order results by, ascending. By default the results are ordered by AssetId.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_direction", "Specify sort direction. Use 'asc' for ascending, or 'desc' as descending. By default the results are ordered ascending.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_simpleFilter", "The text or phrase you want to find within fields. Filtering is done using 'Starts with' logic. Asterisk (*) symbol can be used as a wild card character to match any character.", DataType = "string", ParameterType = "query", Required = false),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetComplexFieldValueForAsset(Guid assetUid, string fieldApiName)
+        {
+            var prefix = "Assets.GetComplexFieldValueForAsset => ";
+            var errorMessage = "";
 
+            try
+            {
+                var qparams = Request.GetQueryNameValuePairs();
+                var result = new Dictionary<string, object>();
+                var asset = AssetRepository.GetAssetByUID(assetUid);
+                int pageSize = 10;
+                int pageNum = 1;
+                string simpleFilter = string.Empty;
+
+                if (asset == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset with UID '{assetUid}' not found!"));
+                }
+
+                var fieldType = Company.FieldTypes.Where(x => x.AssetTypeID == asset.AssetTypeID && x.Name.ToLower().Trim() == fieldApiName.ToLower().Trim()).FirstOrDefault();
+                if (fieldType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Field Type '{fieldApiName}' not found for asset."));
+                }
+
+                if (!new string[] { "ComplexRelationLookup", "RefListRelationship", "OwnershipLookup" }.Contains(fieldType.Type))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Field Type '{fieldType.Type}' is not supported. Allowed field types are ComplexRelationLookup, RefListRelationship and OwnershipLookup "));
+                }
+
+
+                bool useFriendlyNames = true;
+                bool useUnflattedStructure = true;
+                bool returnForUI = false;
+                string orderBy = string.Empty;
+                string direction = string.Empty;
+
+                if (qparams.Any(x => x.Key.ToLower() == "usefriendlynames"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "usefriendlynames").Value.Trim().ToLower(), out useFriendlyNames))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useFriendlyNames'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "useunflattedstructure"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "useunflattedstructure").Value.Trim().ToLower(), out useUnflattedStructure))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'useUnflattedStructure'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "forui"))
+                {
+                    if (!bool.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "forui").Value.Trim().ToLower(), out returnForUI))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid boolean value for parameter 'forUI'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_pagenum"))
+                {
+                    if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value.Trim().ToLower(), out pageNum))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid integer value for parameter '_pageNum'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_pagesize"))
+                {
+                    if (!int.TryParse(qparams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value.Trim().ToLower(), out pageSize))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid integer value for parameter '_pageSize'"));
+                    }
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "simplefilter"))
+                {
+                    simpleFilter = $"%{qparams.FirstOrDefault(x => x.Key.ToLower() == "simplefilter").Value}%";
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_order"))
+                {
+                    orderBy = qparams.FirstOrDefault(x => x.Key.ToLower() == "_order").Value;
+                }
+
+                if (qparams.Any(x => x.Key.ToLower() == "_direction"))
+                {
+                    direction = qparams.FirstOrDefault(x => x.Key.ToLower() == "_direction").Value.ToLower();
+
+                    if (!new string[] { "desc", "asc" }.Contains(direction))
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid value for parameter '_direction'. Allowed values are 'desc' and 'asc'."));
+                    }
+                }
+
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+                if (isStreamResponse)
+                {
+                    pageNum = 1;
+                    pageSize = 10000;
+                }
+
+                if (!string.IsNullOrEmpty(orderBy))
+                {
+                    if (fieldType.Type == "OwnershipLookup")
+                    {
+                        List<string> allowedOrderFields = new List<string>()
+                        {
+                            "ResourceItemUrl","SecurityAssetName","Context","ResourceUid","ResponsibilityTypeName","ResourceName","SecurityAssetUid"
+                        };
+
+                        if (!allowedOrderFields.Select(x => x.ToLower()).Contains(orderBy.ToLower().Trim()))
+                        {
+                            return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid field value for parameter '_order'."));
+                        }
+                    }
+
+                    if (fieldType.Type == "ComplexRelationLookup")
+                    {
+                        var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                        var definition = ftl.ParseComplexLookupDefinition();
+
+                        var mappings = definition.GetFriendlyNamesMapping();
+
+                        if (!mappings.ContainsKey(orderBy))
+                        {
+                            foreach (var item in mappings)
+                            {
+                                if (item.Value.ToLower() == orderBy.ToLower())
+                                {
+                                    orderBy = item.Key;
+                                }
+                            }
+
+                            if (!mappings.ContainsKey(orderBy))
+                                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"Invalid field value for parameter '_order'."));
+                        }
+                    }
+                }
+
+                var reader = await Company.QueryMultipleAsync(
+                        "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId,0, @pageSize, @pageNum, @simpleFilter, @orderBy, @orderDirection, @useUidUrls",
+                        new
+                        {
+                            @object = asset.Object,
+                            objectId = asset.ObjectID,
+                            fieldTypeId = fieldType.ID,
+                            resourceId = Company.CurrentResourceID,
+                            pageSize,
+                            pageNum,
+                            simpleFilter,
+                            orderBy,
+                            orderDirection = direction,
+                            useUidUrls = true
+                        }
+                    );
+
+                var Columns = reader.Read<GridColumn>().ToList();
+                var Fields = reader.Read<GridField>().ToList();
+                var Values = reader.Read<dynamic>().ToList();
+
+                if (returnForUI || isStreamResponse)
+                {
+                    useFriendlyNames = useUnflattedStructure = false;
+                }
+
+                if (fieldType.Type == "ComplexRelationLookup")
+                {
+                    var ftl = Company.FieldTypeLookups.FirstOrDefault(x => x.FieldTypeID == fieldType.ID);
+                    var definition = ftl.ParseComplexLookupDefinition();
+
+                    if (useFriendlyNames)
+                    {
+                        CustomJSONContractResolver customContract = definition.GetFriendlyNameJSONContract();
+                        var settings = new JsonSerializerSettings();
+                        settings.ContractResolver = customContract;
+                        Values = JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(Values, settings)).ToObject<List<dynamic>>();
+
+                        if (useUnflattedStructure)
+                        {
+                            List<dynamic> unflattened = definition.UnflattenJson(Values);
+                            Values = unflattened;
+                        }
+
+                    }
+
+                }
+
+
+                var count = Company.Query<int>(
+                     "exec GetComplexLookupByAsset @object, @objectId, @fieldTypeId, @resourceId, 1, @pageSize, @pageNum, @simpleFilter",
+                     new
+                     {
+                         @object = asset.Object,
+                         objectId = asset.ObjectID,
+                         fieldTypeId = fieldType.ID,
+                         resourceId = Company.CurrentResourceID,
+                         pageSize,
+                         pageNum,
+                         simpleFilter
+                     }
+                     ).First();
+
+                if (isStreamResponse)
+                {
+                    string fileName = "Items";
+
+                    if (fieldType != null)
+                    {
+                        fileName = fieldType.FriendlyName.GetSafeFilename();
+                        fileName += " List";
+                    }
+
+                    if (fieldType.Type == "RefListRelationship")
+                    {
+                        var type = asset.Object;
+                        var id = asset.ObjectID;
+                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+                        if (intersect != null)
+                        {
+                            var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
+                            var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+                            if (assetType != null)
+                            {
+                                fileName = assetType.Name.GetSafeFilename();
+                                fileName += " List";
+                            }
+                        }
+                    }
+
+                    var document = new SLDocument();
+                    document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Items");
+
+                    int colIndex = 1;
+                    for (int i = 0; i < Columns.Count; i++)
+                    {
+                        var colField = Columns[i].datafield;
+                        var dataType = "string";
+
+                        for (int k = 0; k < Fields.Count; k++)
+                        {
+                            var field = Fields[k];
+                            if (field.name == colField)
+                            {
+                                dataType = field.type;
+                                break;
+                            }
+
+                        }
+
+                        document.SetCellValue(1, colIndex, Columns[i].text);
+
+                        int rowIndex = 2;
+
+                        for (int j = 0; j < Values.Count; j++)
+                        {
+                            var data = Values[j] as IDictionary<string, object>;
+                            var value = data[colField];
+
+                            SetCellValue(document, rowIndex, colIndex, dataType, value);
+
+                            rowIndex++;
+                        }
+                        colIndex++;
+                    }
+
+                    var stream = new MemoryStream();
+                    document.SaveAs(stream);
+                    byte[] bytes = stream.ToArray();
+
+                    var response = createFileResponseMessage(HttpStatusCode.OK, $"{fileName} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                }
+                else
+                {
+
+                    result.Add("pageSize", pageSize);
+                    result.Add("pageNum", pageNum);
+                    result.Add("total", count);
+
+
+                    result.Add("items", Values);
+
+                    if (returnForUI)
+                    {
+                        result.Add("Columns", Columns);
+                        result.Add("Fields", Fields);
+                    }
+                    var response = Request.CreateResponse(HttpStatusCode.OK, result);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", "Unknow error."));
+            }
+        }
 
         #region Batch
 

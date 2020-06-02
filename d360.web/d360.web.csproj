@@ -345,7 +345,6 @@
     <Compile Include="App_Start\Startup.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\Forms\FormController_Artifact.cs" />
-    <Compile Include="Controllers\Forms\FormController_Attribute.cs" />
     <Compile Include="Controllers\Forms\FormController_CustomAPI.cs" />
     <Compile Include="Controllers\Forms\FormController_FieldType.cs" />
     <Compile Include="Controllers\Forms\FormController_Fusion.cs" />
@@ -396,9 +395,6 @@
     <Compile Include="Controllers\Services\FusionController.cs" />
     <Compile Include="Controllers\ApiController.cs" />
     <Compile Include="Controllers\AuthenticationController.cs" />
-    <Compile Include="Controllers\AttributesController.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Controllers\BaseController.cs" />
     <Compile Include="Controllers\Forms\FormController.cs" />
     <Compile Include="Controllers\FusionController.cs">
@@ -425,6 +421,7 @@
     </Compile>
     <Compile Include="Controllers\TaxonomyController.cs" />
     <Compile Include="Filters\AjaxValidationAntiForgeryTokenAttribute.cs" />
+    <Compile Include="Filters\CustomJSONContract.cs" />
     <Compile Include="Filters\ExceptionHandlingAttribute.cs" />
     <Compile Include="Filters\StringEnumControllerAttribute.cs" />
     <Compile Include="Filters\SwaggerContentTypesAttribute.cs" />
@@ -697,9 +694,6 @@
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
     <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
-    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.html" />
-    <Content Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.html" />
-    <Content Include="Scripts\app\components\admin\attributes\admin-attributes.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.html" />
@@ -749,6 +743,7 @@
     <Content Include="Scripts\app\components\search\hero-search-input.html" />
     <Content Include="Scripts\app\components\search\search-result-item.component.html" />
     <Content Include="Scripts\app\components\search\search-results-component.html" />
+    <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
@@ -1261,10 +1256,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-allocation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attribute-type-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
@@ -1448,7 +1439,6 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\relationships\admin-relationships.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\relationshipeditor\admin-relationships-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\attributes\admin-attributes.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\admin-base.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\dashboards\admin-dashboards.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\responsibilities\admin-governance.component.ts" />
@@ -1707,7 +1697,6 @@
     <TypeScriptCompile Include="Scripts\app\components\home\board-tile.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-responsibility-grid.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\object-definition.tile.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-attributes.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\fusion\fusion-configuration.tile.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\hierarchies\admin-level-list.component.ts" />
@@ -1725,7 +1714,6 @@
     <Content Include="Scripts\app\main.aot.txt" />
     <TypeScriptCompile Include="Scripts\app\main.ts" />
     <TypeScriptCompile Include="Scripts\app\models\artifacts.model.ts" />
-    <TypeScriptCompile Include="Scripts\app\models\attribute-type.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\audit.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\counts.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\dashboard.model.ts" />
@@ -1804,7 +1792,6 @@
     <TypeScriptCompile Include="Scripts\app\pipes\score-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\pipes\technical-to-display.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\polyfills.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\attribute-type.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\audit.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\authentication.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\dashboard.service.ts" />
