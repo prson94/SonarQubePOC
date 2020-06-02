@@ -37,9 +37,9 @@ namespace d360.core.entities.Metric
         [DataMember]
         public string EvaluatedAssetDisplayPath { get; set; }
         [IgnoreDataMember]
-        public AssetTypeClass EvaluatedAssetTypeClass { get; set; }
+        public AssetTypeClass? EvaluatedAssetTypeClass { get; set; }
         [DataMember]
-        public string EvaluatedAssetClass { get { return EvaluatedAssetTypeClass.GetDisplayName(); } }
+        public string EvaluatedAssetClass { get { return EvaluatedAssetTypeClass.HasValue ? EvaluatedAssetTypeClass.Value.GetDisplayName() : null; } }
         [DataMember]
         public DateTime EffectiveDate { get; set; }
         [DataMember]
