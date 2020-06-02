@@ -3769,7 +3769,7 @@ select [uid] from #ParentChildRelationships",
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false)
+        public List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true)
         {
             var swBegin = Stopwatch.StartNew();
             TelemetryClient client = new TelemetryClient();
@@ -4338,9 +4338,14 @@ end",
 
                     Connection.Close();
                     sw.Restart();
-                    SendAssetGraphEvents(results);
-                    this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
-                    sw.Restart();
+
+                    if (sendGraphEvents)
+                    {
+                        SendAssetGraphEvents(results);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "SendAssetGraphEvents", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
+                    }
+
                     if (sendWorkflowEvents)
                         SendWorkflowEvents("IntersectType", rt.ID, results, null, fieldTypeUpdates);
 
@@ -4351,7 +4356,7 @@ end",
             return results;
         }
 
-        public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false)
+        public List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true)
         {
             var results = new List<DatabaseBulkRelationshipResult>();
             bool generalChecksCompleted = false;
@@ -4684,8 +4689,10 @@ from    [Intersect] T
                 }
 
                 Connection.Close();
-
-                SendAssetGraphEvents(results);
+                if (sendGraphEvents)
+                {
+                    SendAssetGraphEvents(results);
+                }
 
                 if (sendWorkflowEvents)
                     SendWorkflowEvents("IntersectType", it.ID, results, ChangeType.Delete);

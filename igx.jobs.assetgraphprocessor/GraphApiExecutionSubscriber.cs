@@ -42,8 +42,8 @@ namespace igx.jobs.assetgraphprocessor
                 try
                 {
                     var assets = new List<AssetUpdate>();
-                    var isInsert = false;
-                    Guid assetTypeUid;
+                    var relationships = new List<DatabaseBulkRelationshipResult>();
+                    Guid typeUid;
                     
                     company.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
@@ -61,93 +61,141 @@ namespace igx.jobs.assetgraphprocessor
                     {
                         case ApiExecutionAction.PutAssets:
                             var putFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
-                            assetTypeUid = putFields.AssetTypeUid;
+                            typeUid = putFields.AssetTypeUid;
                             string putAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.RequestFileName, Encoding.UTF8);
+                            
                             if (!string.IsNullOrEmpty(putAssetsJson))
                                 assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(putAssetsJson);
 
+                            await ProcessAssets(company, assets, typeUid, info, false);
+
                             break;
                         case ApiExecutionAction.PostAssets:
-                            isInsert = true;
                             var postFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(execution.Fields);
-                            assetTypeUid = postFields.AssetTypeUid;
+                            typeUid = postFields.AssetTypeUid;
                             //we need the response here since the request doesn't contain uids. 
                             //Since this is a POST we don't need to check which fields were updated, we always populate the path
                             string postAssetsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+                            
                             if (!string.IsNullOrEmpty(postAssetsJson))
                                 assets = JsonConvert.DeserializeObject<List<AssetUpdate>>(postAssetsJson);
 
+                            await ProcessAssets(company, assets, typeUid, info, true);
+
+                            break;
+                        case ApiExecutionAction.PostRelationships:
+                            var postRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(execution.Fields);
+                            typeUid = postRelFields.IntersectTypeUid;
+                            string postRelationsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+                            
+                            if (!string.IsNullOrEmpty(postRelationsJson))
+                                relationships = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(postRelationsJson);
+
+                            await ProcessRelationships(company, relationships, typeUid, info);
+
+                            break;
+
+                        case ApiExecutionAction.DeleteRelationships:
+                            var deleteRelFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(execution.Fields);
+                            typeUid = deleteRelFields.IntersectTypeUid;
+                            string deleteRelationsJson = storage.GetFileContentsAsString(info.execution.StorageFolder, info.execution.ResponseFileName, Encoding.UTF8);
+
+                            if (!string.IsNullOrEmpty(deleteRelationsJson))
+                                relationships = JsonConvert.DeserializeObject<List<DatabaseBulkRelationshipResult>>(deleteRelationsJson);
+
+                            await ProcessRelationships(company, relationships, typeUid, info);
                             break;
                         default:
                             throw new Exception($"Action {info.execution.Action} is not supported");
                     }
+                }
+                catch (Exception ex)
+                {
+                    var values = new Dictionary<string, string>();
 
-                    if (assets == null || !assets.Any())
+                    if (info.execution != null)
                     {
-                        throw new Exception("Asset JSON not found in storage");
+                        values.Add("ExecutionID", info.execution.ExecutionID.ToString());
+                        values.Add("ResourceID", info.execution.ResourceID.ToString());
+                        values.Add("Action", info.execution.Action.ToString());
                     }
 
+;                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, values);
+                }
+            }
 
-                    using (var trans = company.BeginTransaction())
-                    {
-                        try
-                        {
-                            var keyFieldsList = (await company.QueryAsync<string>(@"
+            CoreFunction.AITrackJobCompletedNoErrors(functionName);
+            CoreFunction.AIFlush();
+
+        }
+
+        private static async Task ProcessAssets(SqlConnection company, List<AssetUpdate> assets, Guid assetTypeUid, AssetEventInfo info, bool isInsert)
+        {
+            if (assets == null || !assets.Any())
+            {
+                throw new Exception("Asset JSON not found in storage");
+            }
+
+            using (var trans = company.BeginTransaction())
+            {
+                try
+                {
+                    var keyFieldsList = (await company.QueryAsync<string>(@"
                             select F.[Name] from FieldType F 
                             inner join AssetType A on A.ID = F.AssetTypeID 
                             where A.[uid] = @assetTypeUid and F.IsPartOfKey = 1"
-                            , new { assetTypeUid }
-                            , transaction: trans))
-                            .ToList();
+                    , new { assetTypeUid }
+                    , transaction: trans))
+                    .ToList();
 
-                            #region Bulk Copy
+                    #region Bulk Copy
 
-                            var table = new DataTable();
-                            table.Columns.Add("Uid", typeof(Guid));
-                            table.Columns.Add("UpdatePath", typeof(bool));
+                    var table = new DataTable();
+                    table.Columns.Add("Uid", typeof(Guid));
+                    table.Columns.Add("UpdatePath", typeof(bool));
 
-                            foreach (var asset in assets)
-                            {
+                    foreach (var asset in assets)
+                    {
 
-                                var row = table.NewRow();
-                                row["Uid"] = asset.Uid;
+                        var row = table.NewRow();
+                        row["Uid"] = asset.Uid;
 
-                                if (isInsert || (asset.Fields != null && asset.Fields.Keys.Any(k => keyFieldsList.Contains(k))))
-                                {
-                                    row["UpdatePath"] = true;
-                                }
-                                else
-                                {
-                                    row["UpdatePath"] = false;
-                                }
+                        if (isInsert || (asset.Fields != null && asset.Fields.Keys.Any(k => keyFieldsList.Contains(k))))
+                        {
+                            row["UpdatePath"] = true;
+                        }
+                        else
+                        {
+                            row["UpdatePath"] = false;
+                        }
 
-                                table.Rows.Add(row);
-                            }
+                        table.Rows.Add(row);
+                    }
 
-                            await company.ExecuteAsync(@"
+                    await company.ExecuteAsync(@"
                             drop table if exists #GraphAssets;
                             create table #GraphAssets ([Uid] uniqueidentifier not null, [UpdatePath] bit not null, [GraphExists] bit, [AssetExists] bit);
                             ", transaction: trans);
 
-                            var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
-                            {
-                                BatchSize = table.Rows.Count,
-                                DestinationTableName = "#GraphAssets",
-                                BulkCopyTimeout = timeout
-                            };
+                    var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                    {
+                        BatchSize = table.Rows.Count,
+                        DestinationTableName = "#GraphAssets",
+                        BulkCopyTimeout = timeout
+                    };
 
-                            bulkCopy.ColumnMappings.Add("Uid", "Uid");
-                            bulkCopy.ColumnMappings.Add("UpdatePath", "UpdatePath");
+                    bulkCopy.ColumnMappings.Add("Uid", "Uid");
+                    bulkCopy.ColumnMappings.Add("UpdatePath", "UpdatePath");
 
 
-                            await bulkCopy.WriteToServerAsync(table);
-                            
-                            #endregion
+                    await bulkCopy.WriteToServerAsync(table);
 
-                            #region Update Graph Tables
+                    #endregion
 
-                            // Update temp table flags
-                            await company.ExecuteAsync(@"
+                    #region Update Graph Tables
+
+                    // Update temp table flags
+                    await company.ExecuteAsync(@"
                             update  G
                             set     AssetExists = 1
                             from    #GraphAssets G
@@ -160,11 +208,11 @@ namespace igx.jobs.assetgraphprocessor
 
                             update  #GraphAssets set GraphExists = 0 where GraphExists is null;
                             update  #GraphAssets set AssetExists = 0 where AssetExists is null;"
-                            , transaction: trans
-                            , commandTimeout: timeout);
+                    , transaction: trans
+                    , commandTimeout: timeout);
 
-                            // Update graph records
-                            await company.ExecuteAsync(@"
+                    // Update graph records
+                    await company.ExecuteAsync(@"
 		                    delete  E
 		                    from    graph.AssetEdge E
 				                    inner join graph.AssetNode N on E.$from_id = N.$node_id or E.$to_id = N.$node_id
@@ -202,51 +250,205 @@ namespace igx.jobs.assetgraphprocessor
                             set     T.UpdateGraph = S.UpdatePath
                             from    api.ExecutionAsset T
                                     inner join #GraphAssets S on S.Uid = T.Uid;"
-                            , transaction: trans
-                            , commandTimeout: timeout);
+                    , transaction: trans
+                    , commandTimeout: timeout);
 
 
-                            // Update paths/segments for applicable assets
-                            await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
-                            , new { executionId = info.execution.ExecutionID }
-                            , transaction: trans
-                            , commandTimeout: timeout);
+                    // Update paths/segments for applicable assets
+                    await company.ExecuteAsync(@"exec graph.UpdateGraphTableHierarchyBy @executionId, null, null"
+                    , new { executionId = info.execution.ExecutionID }
+                    , transaction: trans
+                    , commandTimeout: timeout);
 
-                            // Cleanup 
-                            await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
-                            , transaction: trans
-                            , commandTimeout: timeout);
+                    // Cleanup 
+                    await company.ExecuteAsync(@"drop table if exists #GraphAssets;"
+                    , transaction: trans
+                    , commandTimeout: timeout);
 
-                            #endregion
+                    #endregion
 
-                            trans.Commit();
-                        }
-                        catch(Exception ex)
-                        {
-                            trans.Rollback();
-                            throw ex;
-                        }
-                        
-                    }
+                    trans.Commit();
                 }
                 catch (Exception ex)
                 {
-                    var values = new Dictionary<string, string>();
-
-                    if (info.execution != null)
-                    {
-                        values.Add("ExecutionID", info.execution.ExecutionID.ToString());
-                        values.Add("ResourceID", info.execution.ResourceID.ToString());
-                        values.Add("Action", info.execution.Action.ToString());
-                    }
-
-;                    CoreFunction.AITrackException(functionName, ex, info.CompanyID, values);
+                    trans.Rollback();
+                    throw ex;
                 }
+
+            }
+        }
+
+        private static async Task ProcessRelationships(SqlConnection company, List<DatabaseBulkRelationshipResult> relationships, Guid intersectTypeUid, AssetEventInfo info)
+        {
+            if (relationships == null || !relationships.Any())
+            {
+                throw new Exception("Intersect JSON not found in storage");
             }
 
-            CoreFunction.AITrackJobCompletedNoErrors(functionName);
-            CoreFunction.AIFlush();
+            using (var trans = company.BeginTransaction())
+            {
+                try
+                {
 
+                    #region Bulk Copy
+
+                    var table = new DataTable();
+                    table.Columns.Add("IntersectID", typeof(int));
+
+
+                    foreach (var relationship in relationships)
+                    {
+
+                        var row = table.NewRow();
+                        row["IntersectID"] = relationship.IntersectID;
+
+                        table.Rows.Add(row);
+                    }
+
+                    await company.ExecuteAsync(@"
+                            drop table if exists #GraphEdges;
+                            create table #GraphEdges ([IntersectID] int not null, SubjectAssetUid uniqueidentifier, ObjectAssetUid uniqueidentifier, Recreate bit);
+                            ", transaction: trans);
+
+                    var bulkCopy = new SqlBulkCopy(company, SqlBulkCopyOptions.Default, trans)
+                    {
+                        BatchSize = table.Rows.Count,
+                        DestinationTableName = "#GraphEdges",
+                        BulkCopyTimeout = timeout
+                    };
+
+                    bulkCopy.ColumnMappings.Add("IntersectID", "IntersectID");
+
+                    await bulkCopy.WriteToServerAsync(table);
+
+                    #endregion
+
+                    #region Update Tables
+
+                    //remove deleted records
+                    await company.ExecuteAsync(@"
+                        delete A
+                        from graph.AssetEdge A
+                        inner join #GraphEdges E on E.IntersectID = A.ID
+                        where not exists (select 1 from [Intersect] where ID = E.IntersectID)
+
+                        delete from #GraphEdges where not exists (select 1 from [Intersect] where ID = IntersectID)"
+                    , transaction: trans
+                    , commandTimeout: timeout);
+
+                    //recreate records with changed subject/object
+                    await company.ExecuteAsync(@"
+                        update  G
+                        set     G.SubjectAssetUid = S.[uid],
+                                G.ObjectAssetUid = T.[uid]
+		                from	#GraphEdges G,
+                                graph.AssetNode S,
+				                graph.AssetEdge E,
+				                graph.AssetNode T
+		                where	MATCH(S-(E)->T)
+				                and E.[ID] = G.IntersectID
+
+                        update  G
+                        set     G.Recreate = 1
+                        from    #GraphEdges G
+                        inner join [IntersectDetail] I on I.ID = G.IntersectID
+                        where I.SubjectUid <> G.SubjectAssetUid or I.ObjectUid <> G.ObjectAssetUid
+
+                        delete A
+                        from    graph.AssetEdge A
+                        inner join #GraphEdges E on E.IntersectID = A.ID and coalesce(E.Recreate, 0) = 1
+
+                        insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+			            select  SG.$node_id,
+					            OG.$node_id,
+					            I.ID,
+					            I.[Uid],
+					            T.ID as IntersectTypeID,
+					            T.[Uid] as IntersectTypeUid,
+					            P.ID as PredicateID,
+					            P.Uid as PredicateUid,
+					            P.Type as PredicateType,
+					            '<props/>' as Properties,
+					            I.[State],
+					            coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+			            from    [Intersect] I
+					            inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+					            inner join graph.AssetNode SG on SG.ID = SA.ID
+					            inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+					            inner join graph.AssetNode OG on OG.ID = OA.ID
+					            inner join IntersectType T on T.ID = I.IntersectTypeID
+					            inner join [Predicate] P on P.ID = T.PredicateID
+                                inner join #GraphEdges E on E.IntersectID = I.ID and coalesce(E.Recreate, 0) = 1
+			            where   I.[ID] = E.IntersectID and not exists (select 1 from graph.AssetEdge where [ID] = E.IntersectID)
+
+                        delete from #GraphEdges where Recreate = 1
+                        "
+                    , transaction: trans
+                    , commandTimeout: timeout);
+
+                    //update existing records
+                    await company.ExecuteAsync(@"
+				        update  E
+				        set     E.UpdatedOn = I.UpdatedOn,
+						        E.IntersectTypeID = I.IntersectTypeID,
+						        E.IntersectTypeUid = T.[Uid],
+						        E.PredicateID = T.PredicateID,
+						        E.PredicateUid = P.[Uid],
+						        E.PredicateType = P.[Type],
+						        E.[State] = I.[State]
+				        from    graph.AssetEdge E
+						        inner join [Intersect] I on I.ID = E.ID
+						        inner join IntersectType T on T.ID = I.IntersectTypeID
+						        inner join [Predicate] P on P.ID = T.PredicateID
+                                inner join #GraphEdges G on G.IntersectID = I.ID"
+                    , transaction: trans
+                    , commandTimeout: timeout);
+
+
+                    //add new records
+                    await company.ExecuteAsync(@"
+                        insert into graph.AssetEdge ($from_id, $to_id, ID, Uid, IntersectTypeID, IntersectTypeUid, PredicateID, PredicateUid, PredicateType, Properties, [State], UpdatedOn)
+                                select  SG.$node_id,
+                                        OG.$node_id,
+                                        I.ID,
+                                        I.[Uid],
+                                        T.ID as IntersectTypeID,
+                                        T.[Uid] as IntersectTypeUid,
+                                        P.ID as PredicateID,
+                                        P.Uid as PredicateUid,
+                                        P.Type as PredicateType,
+		                                '<props/>' as Properties,
+		                                I.[State],
+		                                coalesce(I.UpdatedOn, I.CreatedOn, getutcdate()) as UpdatedOn
+                                from    [Intersect] I
+                                        inner join Asset SA on SA.[Object] = I.[Subject] and SA.ObjectID = I.SubjectID
+		                                inner join graph.AssetNode SG on SG.ID = SA.ID
+		                                inner join Asset OA on OA.[Object] = I.[Object] and OA.ObjectID = I.ObjectID
+		                                inner join graph.AssetNode OG on OG.ID = OA.ID
+		                                inner join IntersectType T on T.ID = I.IntersectTypeID
+		                                inner join [Predicate] P on P.ID = T.PredicateID
+                                        inner join #GraphEdges E on E.IntersectID = I.ID
+                                where   not exists (select 1 from graph.AssetEdge where ID = E.IntersectID)"
+                        , transaction: trans
+                        , commandTimeout: timeout);
+
+                    //cleanup
+                    await company.ExecuteAsync(@"
+				        drop table if exists #GraphEdges"
+                        , transaction: trans
+                        , commandTimeout: timeout);
+
+
+                    #endregion
+
+                    trans.Commit();
+                }
+                catch (Exception ex)
+                {
+                    trans.Rollback();
+                    throw ex;
+                }
+            }
         }
     }
 }
