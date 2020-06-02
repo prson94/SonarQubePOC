@@ -482,16 +482,20 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
                     ,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
+            
+            // if we already have the asset id then insert it
+            bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
             Connection.Execute($@"
 merge       Field as T
 using       (
             select  distinct 
-                    {objectSqlSyntax}, 
+                    {objectSqlSyntax},
                     {objectIdSqlSyntax}, 
                     F.FieldTypeID,
                     coalesce(F.LookupValue, F.FieldValue) as Value,
                     F.FieldValue as FormattedValue
+                    {(hasAssetID ? ",A.AssetID as AssetID" : ",null as AssetID")}                    
             from    {tableName} A
                     inner join api.ExecutionField F on F.ExecutionID = A.ExecutionID
                         and F.ItemNumber = A.ItemNumber 
@@ -505,10 +509,10 @@ using       (
                     and FT.Type != 'Relationship'
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
-{(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId " : " ")}
+{(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() " : " ")}
 when		not matched by target then
-insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy)
-values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId);",
+insert		(FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn, AssetID)
+values		(S.FieldTypeID, S.Object, S.ObjectID, S.Value, S.FormattedValue, @resourceId, getutcdate(), S.AssetID);",
             new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
             return res;
