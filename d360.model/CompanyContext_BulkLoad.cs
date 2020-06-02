@@ -605,7 +605,7 @@ from	[Load] L
                 ExecutionID = Guid.NewGuid(),
                 StartedOn = DateTime.UtcNow,
                 Route = null,
-                Method = null,
+                Method = "BULK",
                 ResourceID = load.UpdatedBy ?? 0,
                 Total = total,
                 Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
