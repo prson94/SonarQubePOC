@@ -3,6 +3,7 @@ using d360.model;
 using d360.web.Filters;
 using Microsoft.Web.Http;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Threading.Tasks;
@@ -57,34 +58,44 @@ namespace d360.web.Controllers
                     Company.CurrentResourceID,
                     DateTime.UtcNow
                 );
+                
 
             }
             catch (Exception e)
             {
+                SendException(e, new Dictionary<string, string>());
                 Console.WriteLine(e.Message);
             }
         }
 
         private string GetClientIp(HttpRequestMessage request = null)
         {
-            request = request ?? Request;
+            try
+            {
+                request = request ?? Request;
 
-            if (request.Properties.ContainsKey("MS_HttpContext"))
-            {
-                return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+                if (request.Properties.ContainsKey("MS_HttpContext"))
+                {
+                    return ((HttpContextWrapper)request.Properties["MS_HttpContext"]).Request.UserHostAddress;
+                }
+                else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
+                {
+                    RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)this.Request.Properties[RemoteEndpointMessageProperty.Name];
+                    return prop.Address;
+                }
+                else if (HttpContext.Current != null)
+                {
+                    return HttpContext.Current.Request.UserHostAddress;
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else if (request.Properties.ContainsKey(RemoteEndpointMessageProperty.Name))
+             catch (Exception ex)
             {
-                RemoteEndpointMessageProperty prop = (RemoteEndpointMessageProperty)this.Request.Properties[RemoteEndpointMessageProperty.Name];
-                return prop.Address;
-            }
-            else if (HttpContext.Current != null)
-            {
-                return HttpContext.Current.Request.UserHostAddress;
-            }
-            else
-            {
-                return null;
+                SendException(ex, new Dictionary<string, string>());
+                throw ex;
             }
         }
     }

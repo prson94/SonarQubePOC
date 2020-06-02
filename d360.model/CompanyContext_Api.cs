@@ -967,7 +967,19 @@ where T.ExecutionId = @executionid;
             }
 
             if (events.Any())
-                QueueSource.CreateTopicMessages<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+                QueueSource.CreateTopicMessages(Config.GetValue<string>("AssetBusTopicName"), events, delayedDelivery ? new DateTime?(DateTime.UtcNow.AddSeconds(15)) : null);
+        }
+
+        public void SendGraphAssetTypeEvent(Guid assetTypeUid)
+        {
+            var e = new AssetEventInfo()
+            {
+                Uid = assetTypeUid,
+                CompanyID = CurrentCompanyID,
+                Type = AssetEventType.AssetType
+            };
+
+            QueueSource.CreateTopicMessage(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
         public void SendApiGraphEvent(ApiExecutionInfo info)
@@ -2062,7 +2074,16 @@ from	IntersectType I
                                     }
                                     catch (Exception ex)
                                     {
-                                        trans.Rollback();
+                                        try
+                                        {
+                                            if (trans != null)
+                                            {
+                                                trans.Rollback();
+                                            }
+                                        }
+                                        catch
+                                        {                                            
+                                        }
 
                                         retryCount++;
 
@@ -3650,7 +3671,16 @@ select [uid] from #ParentChildRelationships",
                                     }
                                     catch (Exception ex)
                                     {
-                                        trans.Rollback();
+                                        try
+                                        {
+                                            if (trans != null)
+                                            {
+                                                trans.Rollback();
+                                            }
+                                        }
+                                        catch
+                                        {                                            
+                                        }
 
                                         retryCount++;
 
@@ -4257,7 +4287,17 @@ end",
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        this.AITrackTrace(client, execution, METHOD_NAME, "LogLoop Execution Error In Rollback", sw.ElapsedMilliseconds, isLog);
+                                    }
 
                                     retryCount++;
 
@@ -4601,8 +4641,18 @@ from    [Intersect] T
                             }
                             catch (Exception ex)
                             {
-                                trans.Rollback();
-
+                                try
+                                {
+                                    if (trans != null)
+                                    {
+                                        trans.Rollback();
+                                    }
+                                }
+                                catch
+                                {
+                                    
+                                }
+                                
                                 retryCount++;
 
                                 if (retryCount > API_V2_RETRY_LIMIT)
@@ -5273,7 +5323,16 @@ where   ER.ExecutionID = @ExecutionID
                                     }
                                     catch (Exception ex)
                                     {
-                                        trans.Rollback();
+                                        try
+                                        {
+                                            if (trans != null)
+                                            {
+                                                trans.Rollback();
+                                            }
+                                        }
+                                        catch
+                                        {
+                                        }
 
                                         retryCount++;
 
@@ -5578,7 +5637,17 @@ where   ER.ExecutionID = @ExecutionID
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        
+                                    }
 
                                     retryCount++;
 
@@ -5834,7 +5903,16 @@ where   ER.ExecutionID = @ExecutionID
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {                                        
+                                    }
 
                                     retryCount++;
 
@@ -6551,7 +6629,16 @@ insert into #Keys
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {                                        
+                                    }                                    
 
                                     retryCount++;
 
@@ -7016,7 +7103,16 @@ insert into #Keys
                                 }
                                 catch (Exception ex)
                                 {
-                                    trans.Rollback();
+                                    try
+                                    {
+                                        if (trans != null)
+                                        {
+                                            trans.Rollback();
+                                        }
+                                    }
+                                    catch
+                                    {                                        
+                                    }
 
                                     retryCount++;
 

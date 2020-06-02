@@ -38,10 +38,15 @@ namespace d360.model.DataAccessLayer
 
         public void DeleteMetric(MetricAsset model)
         {
-
-            var currentAssetVersion = model.Versions.OrderBy(x => x.EffectiveDate).FirstOrDefault();
+            var currentAssetVersion = model.Versions.OrderByDescending(x => x.EffectiveDate).FirstOrDefault();
             currentAssetVersion.State = State.Deleted;
-            currentAssetVersion.EffectiveEndDate = DateTime.Now.Date;
+
+            var lastUsedMetric = GetMetricsLastUsedEffectiveDate(currentAssetVersion.Uid);
+            if (lastUsedMetric == null)
+                currentAssetVersion.EffectiveEndDate = DateTime.Now.Date;
+            else
+                currentAssetVersion.EffectiveEndDate = lastUsedMetric;
+
             model.State = State.Deleted;
             model.UpdatedOn = DateTime.Now;
             var children = Company.MetricAssets.Where(x => x.ParentUid != null && x.ParentUid == model.Uid).ToList();
@@ -296,6 +301,12 @@ namespace d360.model.DataAccessLayer
                             usedFieldTypeIDs.Add(c.FieldTypeID.Value);
                         }
                     });
+                }
+                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.Uid == metricAsset.Uid && x.EffectiveEndDate == null);
+                if (existingAssetVersion != null)
+                {
+                    existingAssetVersion.EffectiveEndDate = effectiveDate;
+                    Company.Update(existingAssetVersion);
                 }
 
                 Company.MetricAssetVersions.Add(metricAssetVersion);
@@ -1054,6 +1065,14 @@ namespace d360.model.DataAccessLayer
 
             Company.Add(execution);
             return executionInfo;
+        }
+
+        private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
+        {
+            return Company.Query<DateTime?>(@"SELECT top 1 EffectiveDate
+                      FROM[metrics].[ScoreItem]
+                      where metricassetuid = @metricVersionUid
+                      order by EffectiveDate desc", new { metricVersionUid = uid }).FirstOrDefault();
         }
     }
 }
