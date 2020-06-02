@@ -1,4 +1,5 @@
-﻿using System;
+﻿using d360.core.enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -35,8 +36,10 @@ namespace d360.core.entities.Metric
         public string EvaluatedAssetSegments { get; set; }
         [DataMember]
         public string EvaluatedAssetDisplayPath { get; set; }
+        [IgnoreDataMember]
+        public AssetTypeClass EvaluatedAssetTypeClass { get; set; }
         [DataMember]
-        public string EvaluatedAssetClass { get; set; }
+        public string EvaluatedAssetClass { get { return EvaluatedAssetTypeClass.GetDisplayName(); } }
         [DataMember]
         public DateTime EffectiveDate { get; set; }
         [DataMember]

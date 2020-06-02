@@ -844,7 +844,6 @@ namespace d360.model.DataAccessLayer
                 switch (sort.Trim()) 
                 {
                     case "EffectiveDate":
-                    case "EvaluatedAssetPath":
                     case "EvaluatedAssetUid":
                     case "FailCount":
                     case "OwningAssetUid":
@@ -856,6 +855,15 @@ namespace d360.model.DataAccessLayer
                     case "TotalCount":
                         orderSql = $"R.{sort}";
                         break;
+                    case "EvaluatedAssetClass":
+                        orderSql = "E.EvaluatedAssetTypeClass";
+                        break;
+                    case "EvaluatedAssetDisplayPath":
+                        orderSql = "E.EvaluatedAssetDisplayPath";
+                        break;
+                    case "EvaluatedAssetPath":
+                        orderSql = "E.EvaluatedAssetPath";
+                        break;
                     case "EvaluatedAssetTypePath":
                         orderSql = "P.[Path]";
                         break;
@@ -863,7 +871,7 @@ namespace d360.model.DataAccessLayer
             }
             orderSql = $"order by {orderSql} {direction??""}";
 
-            columnSql = @" R.ResultUid, R.OwningAssetUid, E.EvaluatedAssetUid, E.EvaluatedAssetPath, E.EvaluatedAssetSegments, P.[Path] as EvaluatedAssetTypePath, E.EvaluatedAssetClass, R.EffectiveDate, R.RunDate, R.PassCount, R.FailCount, R.TotalCount, R.PassFraction, R.Passed";
+            columnSql = @" R.ResultUid, R.OwningAssetUid, E.EvaluatedAssetUid, E.EvaluatedAssetPath, E.EvaluatedAssetDisplayPath, E.EvaluatedAssetSegments, P.[Path] as EvaluatedAssetTypePath, E.EvaluatedAssetTypeClass, R.EffectiveDate, R.RunDate, R.PassCount, R.FailCount, R.TotalCount, R.PassFraction, R.Passed";
             if (includeDuplicateFlag)
             {
                 columnSql += @", case when ROW_NUMBER() over (partition by R.OwningAssetUid, coalesce(E.EvaluatedAssetUid, newid()), R.EffectiveDate order by R.RunDate desc) = 1 then cast(0 as bit) else cast(1 as bit) end as IsDuplicate";
@@ -873,21 +881,24 @@ namespace d360.model.DataAccessLayer
 	E as	(
 			select	R.Uid as ResultUid,
 					AE.Uid as EvaluatedAssetUid,
-					EDP.DisplayPath as EvaluatedAssetPath,
+					EDP.DisplayPath as EvaluatedAssetDisplayPath,
+                    EKP.KeyPath as EvaluatedAssetPath,
 					EDP.Segments as EvaluatedAssetSegments,
 					AE.AssetTypeID,
-					EDP.Class as EvaluatedAssetClass
+					EDP.Class as EvaluatedAssetTypeClass
 			from	AssetResult R,
 					AssetResultEdge EO,
 					graph.AssetNode AO,
 					AssetResultEdge EE,
 					graph.AssetNode AE,
-					[graph].[AssetNodeDisplayPath] EDP
+					[graph].[AssetNodeDisplayPath] EDP,
+                    [graph].[AssetNodeKeyPath] EKP
 			where	match(AO-(EO)->R)
 					and EO.Class = 1 -- Owns
 					and match(AE-(EE)->R)
 					and EE.Class = 2 -- Evals
 					and EDP.ID = AE.ID
+					and EKP.ID = AE.ID
 					and	AO.Uid = @owningAssetUid {whereCteEvaluatedBySql}
 			),
 	R as	(
