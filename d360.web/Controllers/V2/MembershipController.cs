@@ -885,12 +885,12 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (string.IsNullOrEmpty(favorite.Name))
+                if (string.IsNullOrEmpty(favorite.Name.Trim()))
                 {
                     string message = "Name is required.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
                 }
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrEmpty(favorite.Route))
+                if (favorite.Type == FavoriteType.Page && string.IsNullOrEmpty(favorite.Route.Trim()))
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
