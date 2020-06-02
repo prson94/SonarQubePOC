@@ -110,11 +110,12 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("types"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
-             SwaggerParameter("UseAsTransformation", "Filter by Use As Transformation", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("Hierarchical", "Filter by Hierarchical", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("AutoDisplayDescription", "Filter by Auto Display Description", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion", DataType = "boolean", ParameterType = "query", Required = false),
-             SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
+            SwaggerParameter("UseAsTransformation", "Filter results by Use As Transformation setting. This filter is used to show only Businesss and Technical asset types which have been marked as transformational asset types in there configuration. Transformational assets have special meaning in asset browser. Please see the Govern user guide for further details about transformational assets.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("Hierarchical", "Filter results by Hierarchical setting. This value is used to show Model and Policy Types.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("AutoDisplayDescription", "Filter results by Auto Display Description setting. This value is used by the Govern UI to have the Description shown on he asset list page by default or not.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("CanOwnFusion", "Filter by Can Own Fusion setting. This option is for assets that can be used to set the owner of a fusion configuration.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("AutoDisplayParent", "Filter results by AutoDisplayParent setting. The value is used by the Govern UI to display or hide the parent column on the data grids.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerResponse(HttpStatusCode.NotFound, "Asset Type not found based on Uid provided.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset types.", typeof(List<AssetTypeApiViewModel>)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]

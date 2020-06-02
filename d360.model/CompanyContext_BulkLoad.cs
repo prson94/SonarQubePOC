@@ -605,7 +605,7 @@ from	[Load] L
                 ExecutionID = Guid.NewGuid(),
                 StartedOn = DateTime.UtcNow,
                 Route = null,
-                Method = null,
+                Method = "BULK",
                 ResourceID = load.UpdatedBy ?? 0,
                 Total = total,
                 Fields = load.AssetTypeUid.HasValue ? JsonConvert.SerializeObject(
@@ -800,6 +800,15 @@ from	[Load] L
                         {
                             //need to parse parent column here to be used in proposed key
                             await Connection.ExecuteAsync(@"
+                                --flag records with missing parent uids, they will error out later in the API
+                                update A
+                                set A.Success = 0
+                                from #BulkExecutionAsset A
+                                inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
+                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
+                                where A.ExecutionID = @executionID 
+                                and (charindex('[', F.FieldValue) = 0 or charindex(']', F.FieldValue) = 0)
+
                                 update A
                                 set A.ParentUid =
                                 reverse(
@@ -809,7 +818,7 @@ from	[Load] L
                                 from #BulkExecutionAsset A
                                 inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
                                 inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
-                                where A.ExecutionID = @executionID
+                                where A.ExecutionID = @executionID and (A.Success is null or A.Success = 1)
                             ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans, commandTimeout: timeout);
                         }
 

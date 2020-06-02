@@ -12,6 +12,8 @@ using d360.core.enums.Workflow;
 using System.Threading.Tasks;
 using System.Configuration;
 using Microsoft.Azure;
+using Microsoft.ServiceBus;
+using Microsoft.WindowsAzure.Storage.RetryPolicies;
 
 namespace d360.extensions.queue
 {
@@ -25,31 +27,86 @@ namespace d360.extensions.queue
         //256KB message size limit, minus 64KB for header
         private const long MAX_MESSAGE_SIZE = (1024 * 256) - (1024 * 64);
 
+        private CloudQueueClient cloudClient {
+            get
+            {
+                return new CloudQueueClient(
+                    new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
+                    getCredentials()
+                );
+            }        
+        }
+
         private StorageCredentials getCredentials()
         {
             return new StorageCredentials(QueueStorageName, QueueStorageKey);
         }
 
-        public bool CreateMessage<T>(string queueName, T item)
+        private QueueRequestOptions queueRequestOptions
         {
-            var list = new List<T>() { item };
-            return CreateMessages(queueName, list);
+            get
+            {
+                var expRetryPolicy = new ExponentialRetry(TimeSpan.FromSeconds(2), 3);
+
+                return new QueueRequestOptions { RetryPolicy = expRetryPolicy };
+            }
         }
 
-        public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
+        public bool CreateMessage<T>(string queueName, T item)
         {
-            var list = new List<T>() { item };
-            return await CreateMessagesAsync(queueName, list, initialVisibilityDelay);
+            try
+            {
+                var queueClient = cloudClient;
+
+                var queue = queueClient.GetQueueReference(queueName);
+
+                var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+
+                queue.AddMessage(msg, options:queueRequestOptions);
+
+                // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
+                // check added to ensure message was delivered.
+                if (string.IsNullOrEmpty(msg.PopReceipt))
+                    throw new Exception("Queue message has no population receipt and appears to not have been added properly");
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                return false;
+            }
+            return true;
+        }
+    
+        public async Task<bool> CreateMessageAsync<T>(string queueName, T item, TimeSpan? initialVisibilityDelay = null)
+        {            
+            try
+            {
+                var queueClient = cloudClient;
+
+                var queue = queueClient.GetQueueReference(queueName);
+
+                var msg = new CloudQueueMessage(JsonConvert.SerializeObject(item));
+                
+                await queue.AddMessageAsync(msg,null, initialVisibilityDelay, queueRequestOptions, null);
+
+                // per azure docs popreceipt should be present if sucess https://docs.microsoft.com/en-us/dotnet/api/microsoft.azure.storage.queue.cloudqueue.addmessage?view=azure-dotnet-legacy
+                // check added to ensure message was delivered.
+                if (string.IsNullOrEmpty(msg.PopReceipt))
+                    throw new Exception("Queue message has no population receipt and appears to not have been added properly");
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("Error occured trying to connect to Azure queue.  Error is: {0} {1}", ex.Message, (ex.InnerException != null ? ex.InnerException.Message : ""));
+                return false;
+            }
+            return true;
         }
 
         public bool CreateMessages<T>(string queueName, List<T> items)
         {
             try
             {
-                var queueClient = new CloudQueueClient(
-                    new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
-                    getCredentials()
-                );
+                var queueClient = cloudClient;
 
                 var queue = queueClient.GetQueueReference(queueName);
 
@@ -60,8 +117,6 @@ namespace d360.extensions.queue
                     queue.AddMessage(msg);
                 });
 
-                queue = null;
-                queueClient = null;
             }
             catch (Exception ex)
             {
@@ -75,10 +130,7 @@ namespace d360.extensions.queue
         {
             try
             {
-                var queueClient = new CloudQueueClient(
-                    new Uri($"https://{QueueStorageName}.queue.core.windows.net/"),
-                    getCredentials()
-                );
+                var queueClient = cloudClient;
 
                 var queue = queueClient.GetQueueReference(queueName);
 
@@ -89,9 +141,6 @@ namespace d360.extensions.queue
                          queue.AddMessage(msg,initialVisibilityDelay: initialVisibilityDelay);
                      });
                 });
-
-                queue = null;
-                queueClient = null;
             }
             catch (Exception ex)
             {

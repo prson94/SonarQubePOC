@@ -224,6 +224,7 @@
     <Compile Include="GraphApiExecutionSubscriber.cs" />
     <Compile Include="GraphEdgeSubscriber.cs" />
     <Compile Include="GraphNodePathSubscriber.cs" />
+    <Compile Include="GraphAssetTypeSubscriber.cs" />
     <Compile Include="GraphNodeSubscriber.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

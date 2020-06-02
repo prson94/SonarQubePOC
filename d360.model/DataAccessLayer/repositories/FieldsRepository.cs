@@ -527,12 +527,13 @@ for json path, WITHOUT_ARRAY_WRAPPER";
         public WorkHttpStatus UpdateFields(FieldTypesApiEditModel model, TypeIdentifierInfoModel typeIdentifierInfoModel)
         {
             var currentFieldTypes = Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID, i => i.FieldTypeLookup).ToList();
+            var existingKeyFields = string.Join("|", currentFieldTypes.Where(f => f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f));
 
             var newFieldTypes = new List<FieldType>();
 
             var fieldTypeNamesToDelete = new List<string>();
             var allowedConversions = DataType.Boolean.GetAllowedConversionOptions();
-            var reservedWords = new List<string>() { "color", "icon", "parentid", "database" };
+            var reservedWords = new List<string>() { "color", "icon", "parentid", "database", "path", "keypath", "displaypath" };
             var maxColumnIndexItem = currentFieldTypes.OrderByDescending(x => x.ColumnOrder).FirstOrDefault();
             var maxColumnIndex = 0;
             if (maxColumnIndexItem != null)
@@ -859,18 +860,28 @@ from	IntersectType I
                                 return;
                             }
                         }
-                        var coputedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
-                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? coputedFieldValue : fieldInfo.FieldTypeID;
+                        var computedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
+                        field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFieldValue : fieldInfo.FieldTypeID;
                         field.AssetTypeUid = i.AssetTypeUid;
                         field.DisplayOrder = i.DisplayOrder;
                         field.FieldTypeName = i.FieldTypeName;
                         field.Filter = i.Filter;
+                        if (string.IsNullOrEmpty(i.OverrideDisplayName) || string.IsNullOrWhiteSpace(i.OverrideDisplayName))
+                        {
+                            i.OverrideDisplayName = null;
+                        }
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
                         field.Width = i.Width;
                         field.Show = i.Show;
-
-                        definitionFields.Add(field);
+                        if (!definitionFields.Any(o => o.FieldTypeID == field.FieldTypeID) && field.FieldTypeID > 0)
+                        {
+                            definitionFields.Add(field);
+                        }
+                        else if (!definitionFields.Any(o => o.FieldTypeName == field.FieldTypeName && o.AssetTypeUid == field.AssetTypeUid) && field.FieldTypeID == 0)
+                        {
+                            definitionFields.Add(field);
+                        }
                     });
 
 
@@ -1191,21 +1202,35 @@ from	IntersectType I
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field Type - list not specified", $"Lookup Field Type is incomplete as it does not have a List specified.");
                     }
-                    if (f.Type.Lookup.Filter != null && !string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
+                    if (f.Type.Lookup.Filter != null)
                     {
-                        var filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
-                        if (filterFieldType <= 0)
+                        int? filterFieldType = null;
+                        int? filterPredicate = null;
+                        bool? filterPredicateDirection = null;
+                        if (!string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName))
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            filterFieldType = Company.Query<int>(@"select ID from FieldType where Object = @t and ObjectID = @tid and Name = @n", new { t = typeIdentifierInfoModel.Object, tid = typeIdentifierInfoModel.ObjectID, n = f.Type.Lookup.Filter.FieldTypeName }).FirstOrDefault();
+                            if (filterFieldType <= 0)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                        } else if (string.IsNullOrEmpty(f.Type.Lookup.Filter.FieldTypeName) && typeIdentifierInfoModel.Object == SystemObjects.IssueType.ToString())
+                        {
+                            //IssueTypes can have a Filter just based on Preidcate/Predicate direction. That will be Action/Subject and the filterFieldType is null
+                            filterFieldType = null;
                         }
-                        var filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
-                        if (filterPredicate <= 0)
+                        if (f.Type.Lookup.Filter.PredicateUid.HasValue && f.Type.Lookup.Filter.PredicateUid != Guid.Empty)
                         {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            filterPredicate = Company.Query<int>(@"select ID from [Predicate] where Uid = @uid", new { uid = f.Type.Lookup.Filter.PredicateUid }).FirstOrDefault();
+                            if (filterPredicate <= 0)
+                            {
+                                return new WorkHttpStatus(HttpStatusCode.NotFound, "Field Type not found", $"Field Type not found based on Name provided [{f.Type.Lookup.Filter.FieldTypeName}].");
+                            }
+                            filterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
                         }
                         newFieldType.FilterFieldTypeID = filterFieldType;
                         newFieldType.FilterPredicateID = filterPredicate;
-                        newFieldType.FilterPredicateDirection = f.Type.Lookup.Filter.UseDirection;
+                        newFieldType.FilterPredicateDirection = filterPredicateDirection;
                     }
                     if (f.Type.Lookup.Format != null && !string.IsNullOrEmpty(f.Type.Lookup.Format.Display))
                     {
@@ -1425,6 +1450,7 @@ from	IntersectType I
                     currentFieldType.Type = newFieldType.Type;
                     currentFieldType.ValidationDescription = newFieldType.ValidationDescription;
                     currentFieldType.Definition = newFieldType.Definition;
+                    currentFieldType.UpdatedBy = Company.CurrentResourceID;
                     fieldTypeNamesToDelete.Add(f.Name);
                 }
 
@@ -1455,7 +1481,6 @@ from	IntersectType I
                 assetType.UpdatedBy = Company.CurrentResourceID;
                 assetType.UpdatedOn = DateTime.UtcNow;
             }
-            Company.SaveChangesWithoutEventing();
 
             if (model.Action == FieldTypesApiEditAction.Merge)
             {
@@ -1472,6 +1497,20 @@ from	IntersectType I
             }
 
             Company.SaveChanges();
+
+            var newKeyFields = string.Join("|", 
+                Company.Filter<FieldType>(f => f.Object == typeIdentifierInfoModel.Object && f.ObjectID == typeIdentifierInfoModel.ObjectID && f.IsPartOfKey).Select(f => f.ID).OrderBy(f => f)
+            );
+
+            if (!newKeyFields.Equals(existingKeyFields))
+            {
+                // Key fields have changed. You need to update the graph for this asset type.
+                if (model.AssetTypeUid.HasValue)
+                {
+                    Company.SendGraphAssetTypeEvent(model.AssetTypeUid.Value);
+                }
+            }
+
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
 
@@ -1497,10 +1536,17 @@ from	IntersectType I
         public void DeleteFields(List<FieldType> currentFieldTypes, List<string> fieldNamesToDelete)
         {
             var fieldsRemoved = false;
+            bool shouldRefreshPath = false;
+            int? assetTypeID = null;
             currentFieldTypes.ForEach(c =>
             {
+                assetTypeID = c.AssetTypeID;
                 if (fieldNamesToDelete.Contains(c.Name))
                 {
+                    if (c.IsPartOfKey)
+                    {
+                        shouldRefreshPath = true;
+                    }
                     Company.FieldTypes.Remove(c);
                     fieldsRemoved = true;
                 }
@@ -1509,6 +1555,18 @@ from	IntersectType I
             if (fieldsRemoved)
             {
                 Company.SaveChanges();
+            }
+            if (shouldRefreshPath)
+            {
+                // Key fields have changed. You need to update the graph IF this is asset type.
+                if (assetTypeID.HasValue)
+                {
+                    var assetType = Company.GetById<AssetType>(assetTypeID.Value);
+                    if (assetType != null)
+                    {
+                        Company.SendGraphAssetTypeEvent(assetType.uid);
+                    }
+                }
             }
         }
 
