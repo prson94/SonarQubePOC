@@ -1048,7 +1048,11 @@ from	[Load] L
                         {
                             var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
 
-                            if (!fieldsToSkip.Contains(col.Name))
+                            if (parentAssetType != null && col.Name == parentAssetType.Name)
+                            {
+                                continue;
+                            }
+                            else if (!fieldsToSkip.Contains(col.Name))
                             {
                                 if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
                                     update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);
