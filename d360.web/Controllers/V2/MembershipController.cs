@@ -785,7 +785,7 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> GetHomePage()
         {
-            var prefix = "Membership.GetFavorites => ";
+            var prefix = "Membership.GetHomePage => ";
 
             try
             {
@@ -885,13 +885,23 @@ namespace d360.web.Controllers.V2
 
             try
             {
+                if (string.IsNullOrEmpty(favorite.Name.Trim()))
+                {
+                    string message = "Name is required.";
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
+                }
+                if (favorite.Type == FavoriteType.Page && string.IsNullOrEmpty(favorite.Route.Trim()))
+                {
+                    string message = "Favorites of type Page cannot have an empty route.";
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
+                }
                 bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
                 if (result)
                     return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.Created)));
                 else
                 {
                     string message = "Uid Invalid for " + favorite.Type.ToString();
-                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, message)));
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Uid.", message));
                 }
             }
             catch (Exception ex)
@@ -901,7 +911,7 @@ namespace d360.web.Controllers.V2
                     { "Endpoint Method", prefix }
                 });
 
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error.", errorMessage));
             }
         }
 
