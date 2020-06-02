@@ -741,12 +741,47 @@ where 1=1
             return results;
         }
 
-        public List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(List<Guid> rulesForDeletion)
+        public List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion)
         {
-            var list = new List<ResponsibilityRuleDeleteResponse>();
+            return Company.Query<ResponsibilityRuleDeleteResponse>($@"
+                drop table if exists #deleteResults
+                create table #deleteResults
+                (
+                    Uid uniqueidentifier, 
+	                Message nvarchar(max),
+	                Success bit
+                )
+                insert into #deleteResults (Uid)
+                select cast(value as uniqueidentifier) 
+                from
+                string_split(@rulesUids,',')
 
+                update #deleteResults
+                set Message = 'Responsibility rule does not exist.',
+                Success = 0 
+                from #deleteResults dr
+                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+                where rtrr.id is null
 
-            return list;
+                update #deleteResults
+                set Message = 'Responsibility rule not valid for Responsibility Type.',
+                Success = 0 
+                from #deleteResults dr
+                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+                left join responsibilitytype rt on rt.uid = @responsibilityTypeUid
+                where rtrr.responsibilitytypeid <> rt.id
+
+                delete from 
+                ResponsibilityTypeRelationRule
+                where uid in (select uid from #deleteResults where Success is null)
+
+                update #deleteResults
+                set Message = 'Responsibility rule successfully deleted.',
+                Success = 1
+                where Success is null
+
+                select * from #deleteResults
+                ", new { responsibilityTypeUid, rulesUids = string.Join(",", rulesForDeletion.Select(x => x.ToString())) }).ToList();
         }
 
     }

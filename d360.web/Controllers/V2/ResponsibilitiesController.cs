@@ -1041,7 +1041,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Creates ownership rules.
+        /// Adds a list of ownership rules for the specified responsibility type..
         /// </summary>
         /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
         /// <param name="responsibilityRules">A list of responsibility rules you want to add.</param>
@@ -1051,8 +1051,11 @@ namespace d360.web.Controllers.V2
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+
         ]
         public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
@@ -1084,7 +1087,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates ownership rules.
+        /// Edits a list of ownership rules for the specified responsibility type..
         /// </summary>
         /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
         /// <param name="responsibilityRules">A list of responsibility rules you want to update.</param>
@@ -1094,8 +1097,10 @@ namespace d360.web.Controllers.V2
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
         public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
         {
@@ -1127,7 +1132,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Deletes ownership rules.
+        /// Deletes a list of ownership rules for the specified responsibility type..
         /// </summary>
         /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
         /// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
@@ -1137,10 +1142,12 @@ namespace d360.web.Controllers.V2
             Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the relationship type", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>))
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
         ]
-        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<Guid> responsibilityRulesDeletes)
+        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
         {
             var prefix = "Relationships.DeleteResponsibilityRules => ";
             var errorMessage = "";
@@ -1155,7 +1162,7 @@ namespace d360.web.Controllers.V2
                 if (responsibility == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
 
-                var results = ResponsibilityRepository.DeleteResponsibilityRules(responsibilityRulesDeletes);
+                var results = ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
             }
             catch (Exception ex)

@@ -2084,7 +2084,7 @@ from	IntersectType I
                                             }
                                         }
                                         catch
-                                        {                                            
+                                        {
                                         }
 
                                         retryCount++;
@@ -3681,7 +3681,7 @@ select [uid] from #ParentChildRelationships",
                                             }
                                         }
                                         catch
-                                        {                                            
+                                        {
                                         }
 
                                         retryCount++;
@@ -4652,9 +4652,9 @@ from    [Intersect] T
                                 }
                                 catch
                                 {
-                                    
+
                                 }
-                                
+
                                 retryCount++;
 
                                 if (retryCount > API_V2_RETRY_LIMIT)
@@ -5648,7 +5648,7 @@ where   ER.ExecutionID = @ExecutionID
                                     }
                                     catch
                                     {
-                                        
+
                                     }
 
                                     retryCount++;
@@ -5913,7 +5913,7 @@ where   ER.ExecutionID = @ExecutionID
                                         }
                                     }
                                     catch
-                                    {                                        
+                                    {
                                     }
 
                                     retryCount++;
@@ -6642,8 +6642,8 @@ insert into #Keys
                                         }
                                     }
                                     catch
-                                    {                                        
-                                    }                                    
+                                    {
+                                    }
 
                                     retryCount++;
 
@@ -7117,7 +7117,7 @@ insert into #Keys
                                         }
                                     }
                                     catch
-                                    {                                        
+                                    {
                                     }
 
                                     retryCount++;
@@ -7158,11 +7158,17 @@ insert into #Keys
 
 
             var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var uidDupes = import.Where(x => x.Uid.HasValue).GroupBy(x => x.Uid).Where(x => x.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
 
             if (executionItemDupes.Any())
             {
                 execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
                 results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (uidDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate uid item identifiers: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
             }
             else
             {
