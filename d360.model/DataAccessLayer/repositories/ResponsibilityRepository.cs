@@ -741,5 +741,13 @@ where 1=1
             return results;
         }
 
+        public List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(List<Guid> rulesForDeletion)
+        {
+            var list = new List<ResponsibilityRuleDeleteResponse>();
+
+
+            return list;
+        }
+
     }
 }

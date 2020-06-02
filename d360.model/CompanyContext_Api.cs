@@ -7506,6 +7506,7 @@ select  d.itemnumber,
 		at.object,
 		at.objectid,
 		d.valueasuid,
+		d.AssigneeTypeUid,
 		d.AssigneeUid,
 		d.RelAssetUid,
 		case 
@@ -7547,42 +7548,56 @@ from #parsedData
 	inner join assettype at on a.assettypeid = at.id and at.objectid = #parsedData.objectid and at.object = #parsedData.object
 where AssigneeUid is not null
 
-
-
-
-
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Field name.'
+set ErrorMessage = 'Invalid Field name.'
 where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid AssetUid for condition.'
+set ErrorMessage = 'Invalid AssetUid for condition.'
 where isnull(value,0) = 0 and fieldtypename <> '' and AssigneeUid is not null
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Intersect Type Uid for condition.'
+set ErrorMessage = 'Invalid Intersect Type Uid for condition.'
 where CheckType = 'R' and IntersectTypeId is null
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Asset UID for condition value.'
+set ErrorMessage = 'Invalid Asset UID for condition value.'
 where CheckType = 'R' and isnull(targetobjectid,0) = 0
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
+set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
 where object is not null and object not in('ResourceType','OrganizationType','GroupType')
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid Asset UID for Intersect Type.'
+set ErrorMessage = 'Invalid Asset UID for Intersect Type.'
 from #parsedData
   left join IntersectType it on it.ID= IntersectTypeId
   left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
   left join assettype at on a.AssetTypeID = at.ID 
 where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
-select * from #parsedData
 
 update #parsedData
-set ErrorMessage = coalesce([ErrorMessage] + '; ', '') + 'Invalid JSON Data.'
-where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null
+set ErrorMessage = 'AssigneeType not found.'
+from #parsedData pd
+left join AssetType at on at.uid = pd.assigneetypeuid
+where pd.AssigneeTypeUid is not null and at.id is null
+
+update #parsedData
+set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType, GroupType and OrganizationType.'
+from #parsedData pd
+inner join AssetType at on at.uid = pd.assigneetypeuid
+where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType','OrganizationType')
+
+update #parsedData
+set ErrorMessage = 'Invalid Assignee for Assignee Type.'
+from #parsedData pd
+left join AssetType at on at.uid = pd.assigneetypeuid
+left join asset a on a.uid = assigneeuid
+where pd.AssigneeTypeUid is not null and at.id is not null and at.id <> a.assettypeid
+
+update #parsedData
+set ErrorMessage = 'Invalid JSON Data.'
+where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
 
 MERGE api.ExecutionResponsibilityRule err
 USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
