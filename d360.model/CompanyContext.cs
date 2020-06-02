@@ -3111,14 +3111,5 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
 new { obj = lookupObjectType, objId = lookupObjectId, f = fieldTypeId, value = value }).FirstOrDefault();
         }
-
-        public bool SaveChangesWithoutEventing()
-        {
-            this.IsEventingEnabled = false;
-            var res = SaveChanges();
-            this.IsEventingEnabled = true;
-
-            return res > 1;
-        }
     }
 }

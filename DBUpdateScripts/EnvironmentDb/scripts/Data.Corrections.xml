@@ -637,18 +637,65 @@ and DefaultValue is not null and DefaultFormattedValue is null
 	</rollback>
   </changeSet>
 
-  <changeSet author="TDuric" id="Data.Corrections.GOV-10789">
+  <changeSet author="TDuric" id="Data.Corrections.GOV-10789-V2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+		
 update metrics.AssetVersion
 set State = 3
 where Uid in (
 select uid from metrics.assetversion where state = 3
 )
 and State = 1
+		
+drop table if exists #soloMetrics
+
+select uid, max(effectivedate) as EffectiveDate
+into #soloMetrics
+from metrics.assetversion where [state] = 3
+group by uid
+
+
+MERGE metrics.AssetVersion AV
+USING (
+	select uid, #soloMetrics.EffectiveDate, isnull(LastUsage.EffectiveDate, getdate()) as EffectiveEndDate from #soloMetrics
+	outer apply (
+	select top 1 EffectiveDate
+						  FROM[metrics].[ScoreItem]
+						  where metricassetuid = #soloMetrics.Uid
+						  order by EffectiveDate desc
+	)LastUsage
+)Data
+ON AV.State = 3 and av.uid = data.uid and av.effectivedate = data.effectivedate
+WHEN MATCHED
+    THEN UPDATE set AV.EffectiveEndDate = data.EffectiveEndDate;
+
+
+
+drop table if exists #multiMetrics
+
+select uid, count(*) as count
+into #multiMetrics
+from metrics.assetversion where [state] = 3
+group by uid having count(*) > 1
+
+MERGE metrics.AssetVersion AV
+USING (
+	select av.uid, av.EffectiveDate, Next.EffectiveDate as EffectiveEndDate 
+			from metrics.AssetVersion av
+			outer apply (select top 1 EffectiveDate from metrics.assetversion 
+				where uid = av.uid and av.effectivedate < effectivedate
+				order by EffectiveDate
+			)Next
+			where uid in (select uid from #multiMetrics)
+)Data
+ON AV.State = 3 and av.uid = data.uid and av.effectivedate = data.effectivedate and data.effectiveenddate is not null
+WHEN MATCHED
+    THEN UPDATE set AV.EffectiveEndDate = data.EffectiveEndDate;
+
 		]]>
     </sql>
 	<rollback>
