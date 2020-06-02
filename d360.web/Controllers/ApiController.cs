@@ -1482,7 +1482,7 @@ where   h.ID <> @t order by h.[Level] desc;
             where   TypeID = @id
                     and [Type] = @objectType 
                     and IsVisible = 1)
-            select Res.ResourceUid as ID, o.Name, o.Type  
+            select Res.SecurityAssetUid as ID, o.Name, o.Type  
             from owners o
             cross apply (
             select top 1 * from 
