@@ -50,13 +50,17 @@ namespace d360.web
             var host = context.Request.Headers["Host"];
             try
             {
+                var dict = await loadCache();
                 if (host.Contains(".data3sixty"))
                 {
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
-                }                
+                }
 
-                var dict = await loadCache();
-
+                if (!dict.ContainsKey(host))
+                {
+                    host = context.Request.Headers["CompanyID"];
+                }
+                
                 if (dict.ContainsKey(host))
                 {
                     context.Request.Set("CompanyDomain", host);
