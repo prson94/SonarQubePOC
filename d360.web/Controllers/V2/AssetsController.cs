@@ -1248,8 +1248,20 @@ namespace d360.web.Controllers.V2
 
                 var Columns = reader.Read<GridColumn>().ToList();
                 var Fields = reader.Read<GridField>().ToList();
-                var Values = reader.Read<dynamic>().ToList();
+                List<dynamic> Values = new List<dynamic>();
+                try
+                {
+                    Values = reader.Read<dynamic>().ToList();
+                }
+                catch (Exception ex)
+                {
+                    //if reader is disposed there are no results returned
+                    if (!ex.Message.Contains("has been disposed"))
+                    {
+                        throw ex;
+                    }
 
+                }
                 if (returnForUI || isStreamResponse)
                 {
                     useFriendlyNames = useUnflattedStructure = false;
@@ -1369,6 +1381,22 @@ namespace d360.web.Controllers.V2
                     result.Add("pageNum", pageNum);
                     result.Add("total", count);
 
+                    if (fieldType.Type == "RefListRelationship")
+                    {
+                        var type = asset.Object;
+                        var id = asset.ObjectID;
+                        var intersect = Company.Filter<Intersect>(i => i.IntersectTypeID == fieldType.LookupObjectID.Value && ((i.Subject == type && i.SubjectID == id) || (i.Object == type && i.ObjectID == id))).FirstOrDefault();
+                        if (intersect != null)
+                        {
+                            var referenceItemTypeID = (intersect.Subject == type && intersect.SubjectID == id) ? intersect.ObjectID : intersect.SubjectID;
+                            var assetType = Company.Filter<AssetType>(x => x.Object == "ReferenceItemType" && x.ObjectID == referenceItemTypeID).FirstOrDefault();
+                            if (assetType != null)
+                            {
+                                result.Add("name", assetType.Name);
+                                result.Add("description", assetType.Description);
+                            }
+                        }
+                    }
 
                     result.Add("items", Values);
 
