@@ -1,0 +1,96 @@
+﻿<div class="row">
+    <div class="col s12 m5 l4" *ngIf="!isEditingFieldType">
+        <div class="tile tile-detail">
+            <header>
+                {{tabTitle}}
+                <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
+            </header>
+            <input type="text"
+                   pInputText
+                   [(ngModel)]="searchValue"
+                   (keyup)="filter($event)"
+                   placeholder="Search"
+                   style="width: 100%;margin-bottom:10px;">
+
+            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 60%">Name</th>
+                        <th style="width: 30px; overflow:visible"></th>
+                        <th style="width: 30px"></th>
+                        <th style="width: 30px"></th>
+                        <th style="width: 30px"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                    <tr [ttSelectableRow]="rowNode" #treetableRows>
+                        <td>
+                            <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <d3s-preview-tooltip objectType="ArtifactType" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="add(item.uid)"><i class="fa fa-plus"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="edit(item.uid)"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="delete(item.uid)"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+                <ng-template pTemplate="emptymessage" let-columns>
+                    <tr>
+                        <td colspan="5">
+                            No asset types found.
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-treeTable>
+        </div>
+    </div>
+    <div *ngIf="isEditing" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [id]="editorModel?.data?.AssetTypeID" [parentID]="editorModel?.data?.ParentID" [title]="formTitle" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+        </div>
+    </div>
+    <div *ngIf="isAdding" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [parentID]="editorModel?.data?.ID" [title]="addClassName" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+        </div>
+    </div>
+    <div *ngIf="isDeleting" class="col s12 m7 l8">
+        <!--<div class="tile tile-detail">
+            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count"></d3s-artifact-type-delete>
+        </div>-->
+    </div>
+    <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-field-definition-tile [objectName]="selectedRow?.data?.name" [objectType]="'ArtifactType'" [assetTypeUid]="selectedRow?.data?.uid" [supportsPrimaryFilterOption]="true"></d3s-field-definition-tile>
+        </div>
+        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
+            <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
+        </div>
+        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
+            <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-allocation>
+        </div>
+        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
+            <d3s-admin-relationships-list [filterToName]="selectedRow?.data?.Name" [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-relationships-list>
+        </div>
+    </div>
+</div>

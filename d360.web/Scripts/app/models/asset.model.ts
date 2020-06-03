@@ -57,7 +57,8 @@ export enum AssetTypeClass {
     TechnicalAsset = 8,
     Reference = 9,
     Organization = 10,
-    ReferenceItemType = 14
+    ReferenceItemType = 14,
+    DiagramAsset = 15
 }
 
 export class AssetType {
