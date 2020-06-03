@@ -3963,6 +3963,27 @@ select [uid] from #ParentChildRelationships",
                     LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
                     this.AITrackTrace(client, execution, METHOD_NAME, " LogFieldLookupErrors", sw.ElapsedMilliseconds, isLog);
 
+                    #region Invalidate duplicates
+                    sw.Restart();
+                    Connection.Execute(@"
+                            update	T
+                            set		T.Message = coalesce(T.Message + '; ', '') + 'This relationship is specified more than once. Each relationship must be unique within a given request.',
+		                            T.Success = 0
+                            from	api.ExecutionRelationship T
+                            cross apply (
+                                select      SubjectUid, ObjectUid
+                                from        api.ExecutionRelationship
+                                where       ExecutionID = @ExecutionID
+                                group by    SubjectUid, ObjectUid
+                                having      count(*) > 1
+                            ) D
+		                    where   T.ExecutionId = @ExecutionID
+                                    and T.SubjectUid = D.SubjectUid and T.ObjectUid = D.ObjectUid
+                    ",
+                    new { execution.ExecutionID }, commandTimeout: timeout);
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Invalidate duplicates", sw.ElapsedMilliseconds, isLog);
+                    #endregion
+
                     #region Validate subjects/objects
                     sw.Restart();
                     Connection.Execute(@"
