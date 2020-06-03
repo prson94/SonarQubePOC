@@ -333,8 +333,9 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
             },
                 err => {
                     this.isLoading = false;
+                    this.items = [];
+                    this.totalRecords = 0;
                     this.changeDetectorRef.markForCheck();
-                    this.messagesService.showError("Error", err.message);
                 });
     }
 

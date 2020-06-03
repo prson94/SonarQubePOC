@@ -159,4 +159,8 @@ export class BaseObservableService {
             )
             ;
     }
+
+    public isErrorFromFilterExpression(err: any) {
+        return err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') != -1;
+    }
 }
