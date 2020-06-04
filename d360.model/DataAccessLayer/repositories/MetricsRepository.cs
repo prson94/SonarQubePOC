@@ -26,8 +26,7 @@ namespace d360.model.DataAccessLayer
         internal ICompanyContext Company;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
-
-        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
+               
 
         public MetricsRepository(ICompanyContext context, IQueueSource queueSource, IStorageProvider storageProvider) : base(context)
         {
@@ -1037,6 +1036,12 @@ namespace d360.model.DataAccessLayer
 
             // Save to storage container.
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(request));
+                        
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+
+            Company.Add(execution);
 
             // Save to queue.
             if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
@@ -1044,10 +1049,6 @@ namespace d360.model.DataAccessLayer
                 throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
             }
 
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-
-            Company.Add(execution);
             return executionInfo;
         }
 

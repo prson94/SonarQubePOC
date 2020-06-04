@@ -430,10 +430,12 @@ from	IntersectType I
 
             Storage.CreateFolder(executionInfo.StorageFolder);
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
-
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+                        
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
+
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
             return executionInfo;
         }
 
@@ -528,10 +530,12 @@ from	IntersectType I
 
             Storage.CreateFolder(executionInfo.StorageFolder);
             Storage.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(relationships));
-
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+                        
             execution.ExecutionID = executionInfo.ExecutionID;
             companyContext.Add(execution);
+
+            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
+
             return executionInfo;
         }
 
