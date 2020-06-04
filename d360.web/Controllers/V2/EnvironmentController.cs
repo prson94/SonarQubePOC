@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using static d360.model.CommunityContext;
 
 namespace d360.web.Controllers.V2
 {
@@ -24,8 +25,7 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/environment"),
-        Authorize,
-        ApiExplorerSettings(IgnoreApi = true)
+        Authorize
     ]
     public class EnvironmentController : BaseV2ApiController
     {
@@ -35,7 +35,7 @@ namespace d360.web.Controllers.V2
             _storage = storage;
         }
 
-        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds")]
+        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> GetRebuilds()
         {
             try
@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds")]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> Rebuild(CompanyRebuildJobRequest model)
         {
             try
@@ -93,7 +93,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpGet,Route("styles")]
+        [HttpGet, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> StyleCustomizations()
         {
             var css = "";
@@ -118,7 +118,7 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, css);
         }
 
-        [HttpPut, Route("styles")]
+        [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
         public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -163,6 +163,37 @@ namespace d360.web.Controllers.V2
             catch { }
 
             return Request.CreateResponse(HttpStatusCode.OK, "Syles successfully updated.");
+        }
+
+
+        [HttpGet, Route("settings")]
+        public HttpResponseMessage Settings()
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+            }
+
+            try
+            {
+                var companySettings = Community.Query<SettingModel>(
+                    @"select S.ID as SettingID, S.Name, S.FieldName, S.Description, coalesce(C.Value, S.DefaultValue) as Value
+                    from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @c", new { c = Company.CurrentCompanyID })
+                    .ToDictionary(k => k.FieldName, v => v.Value);
+
+                var response = Community
+                    .Settings
+                    .AsEnumerable()
+                    .Select(s => new CompanySettingApiModel(s, companySettings[s.FieldName]));
+   
+
+                return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
         }
     }
 }

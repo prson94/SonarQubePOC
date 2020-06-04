@@ -1,6 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
+using d360.core.enums;
 
 namespace d360.core.entities
 {
@@ -22,4 +24,108 @@ namespace d360.core.entities
         [IgnoreDataMember, ForeignKey("SettingID")]
         public virtual Setting Setting { get; set; }
     }
+
+
+    public class CompanySettingApiModel
+    {
+        public CompanySettingApiModel() { }
+
+        public CompanySettingApiModel(Setting setting, string companyValue) 
+        {
+            SettingID = setting.ID;
+            Description = setting.Description;
+            Locked = setting.Locked;
+            Name = setting.Name;
+            
+            switch(setting.SettingType)
+            {
+                case SettingType.Boolean:
+                    BooleanSetting = new CompanySettingApiBooleanModel(setting, companyValue);
+                    break;
+                case SettingType.Number:
+                    NumberSetting = new CompanySettingApiNumberModel(setting, companyValue);
+                    break;
+                case SettingType.Text:
+                    StringSetting = new CompanySettingApiStringModel(setting, companyValue);
+                    break;
+                case SettingType.IPAddress:
+                    IpAddressSetting = new CompanySettingApiIpAddressModel(setting, companyValue);
+                    break;
+            }
+
+        }
+
+
+        public int SettingID { get; set; }
+        public bool Locked { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+
+        public CompanySettingApiIpAddressModel IpAddressSetting { get; set; }
+        public CompanySettingApiBooleanModel BooleanSetting { get; set; }
+        public CompanySettingApiNumberModel NumberSetting { get; set; }
+        public CompanySettingApiStringModel StringSetting { get; set; }
+
+    }
+
+    #region Settings Data Types
+
+    public class CompanySettingApiBooleanModel
+    {
+        public CompanySettingApiBooleanModel() { }
+
+        public CompanySettingApiBooleanModel(Setting setting, string companyValue)
+        {
+            if (bool.TryParse(setting.DefaultValue, out bool d))
+                Default = d;
+            if (bool.TryParse(companyValue, out bool v))
+                Value = v;
+        }
+
+        public bool Value { get; set; }
+        public bool Default { get; set; }
+    }
+
+    public class CompanySettingApiStringModel
+    {
+        public CompanySettingApiStringModel() { }
+
+        public CompanySettingApiStringModel(Setting setting, string companyValue)
+        {
+            Default = setting.DefaultValue;
+            Value = companyValue;
+        }
+
+        public string Value { get; set; }
+        public string Default { get; set; }
+    }
+
+    public class CompanySettingApiNumberModel
+    {
+        public CompanySettingApiNumberModel() { }
+
+        public CompanySettingApiNumberModel(Setting setting, string companyValue)
+        {
+            if (int.TryParse(setting.DefaultValue, out int d))
+                Default = d;
+            if (int.TryParse(companyValue, out int v))
+                Value = v;
+        }
+
+        public int Value { get; set; }
+        public int Default { get; set; }
+    }
+
+    public class CompanySettingApiIpAddressModel
+    {
+        public CompanySettingApiIpAddressModel() { }
+        public CompanySettingApiIpAddressModel(Setting setting, string companyValue)
+        {
+
+        }
+
+        public List<Ip> Addresses { get; set; }
+    }
+
+    #endregion
 }
