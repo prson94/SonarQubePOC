@@ -43,7 +43,6 @@ namespace d360.web
             }
             return dict;
         }
-
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
@@ -51,12 +50,13 @@ namespace d360.web
             try
             {
                 var dict = await loadCache();
+                bool searchHeaders = true;
                 if (host.Contains(".data3sixty"))
                 {
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
+                    searchHeaders = false;
                 }
-
-                if (!dict.ContainsKey(host))
+                if (searchHeaders)
                 {
                     host = context.Request.Headers["CompanyID"];
                 }
