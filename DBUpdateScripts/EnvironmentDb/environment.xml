@@ -201,8 +201,8 @@
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
-	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
+	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
