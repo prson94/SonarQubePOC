@@ -56,7 +56,7 @@ namespace d360.web
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
                     searchHeaders = false;
                 }
-                if (searchHeaders)
+                if (searchHeaders || !dict.ContainsKey(host))
                 {
                     host = context.Request.Headers["CompanyID"].ToLower();
                 }
