@@ -44,5 +44,28 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  
+  <changeSet author="Pappas" id="Table.metrics.Asset-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset' AND COLUMN_NAME = 'OldMapID')
+BEGIN
+	ALTER TABLE [metrics].[Asset] DROP COLUMN [OldMapID]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Asset' AND COLUMN_NAME = 'OldMapID')
+BEGIN
+	ALTER TABLE [metrics].[Asset] ADD [OldMapID] int null
+END
+		]]>
+	</rollback>
+  </changeSet>  
 
 </databaseChangeLog>

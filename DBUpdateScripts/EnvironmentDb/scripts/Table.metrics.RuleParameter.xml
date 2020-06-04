@@ -5,12 +5,25 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.RuleParameter-v1">
+  <changeSet author="Core" id="Table.metrics.RuleParameter-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+IF EXISTS (select * from sys.foreign_keys where name = 'FK_MetricRuleParameter_MetricRule')
+BEGIN
+	ALTER TABLE [metrics].[RuleParameter] DROP CONSTRAINT [FK_MetricRuleParameter_MetricRule]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RuleParameter')
+BEGIN
+	DROP TABLE [metrics].[RuleParameter]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'RuleParameter')
 BEGIN
 	CREATE TABLE [metrics].[RuleParameter](
@@ -27,11 +40,6 @@ BEGIN
 	ALTER TABLE [metrics].[RuleParameter] WITH CHECK ADD CONSTRAINT [FK_MetricRuleParameter_MetricRule] FOREIGN KEY([Uid]) REFERENCES [metrics].[Rule] ([Uid]) ON DELETE CASCADE
 	ALTER TABLE [metrics].[RuleParameter] CHECK CONSTRAINT [FK_MetricRuleParameter_MetricRule]
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

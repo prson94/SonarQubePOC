@@ -5,12 +5,20 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.Rule-v1">
+  <changeSet author="Core" id="Table.metrics.Rule-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Rule')
+BEGIN
+	DROP TABLE [metrics].[Rule]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Rule')
 BEGIN
 	CREATE TABLE [metrics].[Rule](
@@ -25,11 +33,6 @@ BEGIN
 		CONSTRAINT [PK_MetricRule] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
 	)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>
