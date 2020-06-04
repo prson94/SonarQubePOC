@@ -19,7 +19,6 @@
                         <th style="width: 30px; overflow:visible"></th>
                         <th style="width: 30px"></th>
                         <th style="width: 30px"></th>
-                        <th style="width: 30px"></th>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-rowNode let-item="rowData">
@@ -31,11 +30,6 @@
                         <td>
                             <div class="RowTools">
                                 <d3s-preview-tooltip objectType="ArtifactType" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="RowTools">
-                                <a style="cursor:pointer;" (click)="add(item.uid)"><i class="fa fa-plus"></i></a>
                             </div>
                         </td>
                         <td>
@@ -56,7 +50,7 @@
                 </ng-template>
                 <ng-template pTemplate="emptymessage" let-columns>
                     <tr>
-                        <td colspan="5">
+                        <td colspan="4">
                             No asset types found.
                         </td>
                     </tr>
@@ -75,16 +69,13 @@
         </div>
     </div>
     <div *ngIf="isDeleting" class="col s12 m7 l8">
-        <!--<div class="tile tile-detail">
-            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count"></d3s-artifact-type-delete>
-        </div>-->
+        <div class="tile tile-detail">
+            <d3s-asset-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count" [assetTypeClass]="15" [assetTypeName]="this.selectedRow.data.name"></d3s-asset-type-delete>
+        </div>
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">
         <div class="tile tile-detail">
             <d3s-field-definition-tile [objectName]="selectedRow?.data?.name" [objectType]="'ArtifactType'" [assetTypeUid]="selectedRow?.data?.uid" [supportsPrimaryFilterOption]="true"></d3s-field-definition-tile>
-        </div>
-        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
-            <d3s-responsibility-relations queryType="A" [id]="selectedRow?.data?.AssetTypeID" [showAddButton]="false"></d3s-responsibility-relations>
         </div>
         <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
             <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.data?.ID"></d3s-admin-allocation>

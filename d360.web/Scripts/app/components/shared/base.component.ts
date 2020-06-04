@@ -814,7 +814,7 @@ export class BaseComponent {
             }
             var area = "";
 
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {

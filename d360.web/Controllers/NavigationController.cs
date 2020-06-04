@@ -819,9 +819,25 @@ namespace d360.web.Controllers
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.ArtifactType.ToString();
                     responseModel.ObjectID = model.ObjectId ?? 0;
-                    responseModel.DisplayValue = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Assets" : "Business Assets";
-                    responseModel.MainTabTitle = model.Class == AssetTypeClass.TechnicalAsset ? "Technical Asset Types" : "Business Asset Types";
+
                     responseModel.Items.HasAudit = true;
+
+                    if (model.Class == AssetTypeClass.TechnicalAsset)
+                    {
+                        responseModel.DisplayValue = "Technical Assets";
+                        responseModel.MainTabTitle = "Technical Asset Types";
+                    }
+                    if (model.Class == AssetTypeClass.BusinessAsset)
+                    {
+                        responseModel.DisplayValue = "Business Assets";
+                        responseModel.MainTabTitle = "Business Asset Types";
+                    }
+                    if (model.Class == AssetTypeClass.Diagram)
+                    {
+                        responseModel.DisplayValue = "Diagram Assets";
+                        responseModel.MainTabTitle = "Diagram Asset Types";
+                        responseModel.Object = SystemObjects.TaskType.ToString();
+                    }
 
                 }
 

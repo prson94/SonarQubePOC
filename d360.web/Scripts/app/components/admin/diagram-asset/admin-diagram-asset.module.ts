@@ -34,8 +34,9 @@ import { TreeTableModule } from 'primeng/treetable';
 import { EditorModule } from 'primeng/editor';
 
 import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibilities.module';
-import { ArtifactTypeDeleteComponent } from '../artifacts/artifact-type-delete.component';
 import { AdminDiagramAssetRoutingModule } from './admin-diagram-asset.routes';
+import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
+import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 
 
 @NgModule({
@@ -67,7 +68,7 @@ import { AdminDiagramAssetRoutingModule } from './admin-diagram-asset.routes';
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAssetTypeEditorModule,
-
+        AssetTypeDeleteModule,
         AdminResponsibilitiesModule,
 
         SharedObjectDetailsModule,

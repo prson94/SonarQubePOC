@@ -64,7 +64,6 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
 
             this.tabTitle = `${singularLabel}s`;
             this.formTitle = `Edit ${singularLabel}`;
-            console.log("Ima here");
             this.load();
         });
     }
@@ -156,13 +155,18 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private deleteArtifactType(id: number) {
-        this.artifactsService.deleteArtifactType(id).subscribe(result => {
-            this.showMessageForResult(this.messagesService, result);
-            this.isDeleting = false;
-            this.selectedRow = { data: { ID: 0 } };
-            this.load();
-            this.stateService.reloadLeftNavMenu();
-        })
+        console.log(id);
+        console.log(this.artifactTypes);
+        var data = this.artifactsService.findArtifactTypeById(this.artifactTypes, id);
+        if (data) {
+            this.assetsService.deleteAssetType(data.data.uid).subscribe(result => {
+                this.showMessageForResult(this.messagesService, result);
+                this.isDeleting = false;
+                this.selectedRow = { data: { ID: 0 } };
+                this.load();
+                this.stateService.reloadLeftNavMenu();
+            })
+        }
     }
 
     private filterQ: any;

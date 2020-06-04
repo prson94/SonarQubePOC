@@ -508,7 +508,7 @@ namespace d360.model.DataAccessLayer
                         tempArgs = new DynamicParameters();
                         tempJoins.Clear();
                         tempFieldColumns.Clear();
-                        getFieldSql(allFieldTypes.Where(x=> filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
+                        getFieldSql(allFieldTypes.Where(x => filteredFields.Contains(x.ID) && x.IsListable != true).ToList(), tempArgs, tempJoins, tempFieldColumns);
                         fieldColumns.AddRange(tempFieldColumns);
                         fieldJoins.AddRange(tempJoins);
                         countJoins.AddRange(tempJoins);
@@ -792,7 +792,7 @@ namespace d360.model.DataAccessLayer
             if (assetType.Class == AssetTypeClass.ReferenceItemType)
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
 
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x=>x.ColumnOrder).ThenBy(x=>x.FriendlyName).ToList());
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
             fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
@@ -873,7 +873,7 @@ namespace d360.model.DataAccessLayer
             var returnModel = new AssetsByPathApiViewModel();
 
             var prefilterSql = "";
-            
+
             int i = 1;
             foreach (var filter in model.filters)
             {
@@ -1144,7 +1144,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model                        
+                        Class = AssetTypeClass.Model
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
@@ -1236,6 +1236,36 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CompanyContext.Update(fatAssetType);
                     }
                     break;
+                case AssetTypeClass.Diagram:
+                    #region
+                    var diagram = new AssetType
+                    {
+                        uid = uid,
+                        Name = model.Name,
+                        DisplayFormat = model.DisplayFormat,
+                        Description = model.Description,
+                        Object = SystemObjects.TaskType.ToString(),
+                        State = State.Active,
+                        UpdatedBy = resourceId,
+                        UpdatedOn = DateTime.UtcNow,
+                        CreatedBy = resourceId,
+                        CreatedOn = DateTime.UtcNow,
+                        Hierarchical = true,
+                        Class = model.Class,
+                        AutoDisplayDescription = model.AutoDisplayDescription,
+                        UseAsTransformation = model.UseAsTransformation,
+                        CanOwnFusion = model.CanOwnFusion ?? false,
+                        Parent = parentAssetType,
+                        AutoDisplayParent = model.AutoDisplayParent,
+                        FlowObjectType = model.FlowObjectType
+                    };
+                    CompanyContext.Add(diagram);
+                    parentType = SystemObjects.TaskType;
+                    model.ObjectID = diagram.ObjectID;
+                    model.Object = SystemObjects.TaskType.ToString();
+
+                    #endregion
+                    break;
             }
 
             if (predicate != null)
@@ -1295,6 +1325,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 case AssetTypeClass.Reference:
                 case AssetTypeClass.Model:
                 case AssetTypeClass.TechnicalAsset:
+                case AssetTypeClass.Diagram:
                     #region
 
                     if (assetType == null)
@@ -1315,7 +1346,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
-                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;                        
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
@@ -1323,8 +1354,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
-                    assetType.Notes = model.Notes;                   
-                    
+                    assetType.Notes = model.Notes;
+
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
@@ -1339,6 +1370,11 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                             }
                         }
                         CompanyContext.Delete<AssetTypeLevel>(l => l.Level > assetType.HierarchyMaximumDepth);
+                    }
+
+                    if (model.Class == AssetTypeClass.Diagram)
+                    {
+                        assetType.FlowObjectType = model.FlowObjectType;
                     }
 
                     #endregion
@@ -1483,7 +1519,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             try
             {
                 CompanyContext.Update(assetType);
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 throw ex.InnerException;
             }

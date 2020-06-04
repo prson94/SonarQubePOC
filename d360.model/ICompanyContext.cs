@@ -318,5 +318,7 @@ namespace d360.model
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
+        List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
+
     }
 }

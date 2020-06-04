@@ -195,4 +195,10 @@
   <data name="AutoDisplayParentRestriction" xml:space="preserve">
     <value>Auto Display Parent can be set only asset types that are a Business or Technical class.</value>
   </data>
+  <data name="MissingFlowObjectType" xml:space="preserve">
+    <value>FlowObjectType is required field for Asset Type with class Diagram.</value>
+  </data>
+  <data name="UnsupportedFlowObjectType" xml:space="preserve">
+    <value>FlowObjectType is not support for class {0}.</value>
+  </data>
 </root>

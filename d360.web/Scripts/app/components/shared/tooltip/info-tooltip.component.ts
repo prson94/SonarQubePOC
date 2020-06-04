@@ -4,9 +4,7 @@
     selector: 'd3s-info-tooltip',
     template: `                 
                <div class="d3s-info-tooltip">
-                    <div class="value">
-                        {{titleValue}}
-                    </div>
+                    <div class="value" [innerHtml]="titleValue"></div>
                     <div class="tooltip-content">
                     <ng-content></ng-content>
                     </div>
@@ -16,7 +14,7 @@
 })
 
 export class InfoTooltipComponent  {
-    @Input() titleValue: string;
+    @Input() titleValue: string = `<i class='fa fa-question-circle'><i/>'`;
 };
 
 import { NgModule } from '@angular/core';

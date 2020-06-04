@@ -63,7 +63,21 @@ export class ArtifactTypeService extends BaseObservableService {
         }
         return null;
     }
-
+    findArtifactTypeById(
+        tree: TreeNode[],
+        id: number
+    ): TreeNode {
+        for (var i = 0; i < tree.length; i++) {
+            var n;
+            if (tree[i].data.ID == id)
+                return tree[i];
+            if (tree[i].children && tree[i].children.length > 0) {
+                n = this.findArtifactTypeById(tree[i].children, id);
+            }
+            if (n) return n;
+        }
+        return null;
+    }
     private formTree(data): TreeNode[] {
         var tree = new Array<TreeNode>();
 
@@ -102,6 +116,10 @@ export class ArtifactTypeService extends BaseObservableService {
 
     public deleteArtifactType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
+    }
+
+    public deleteDiagramType(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'diagram', id);
     }
 
     public getFilterListItems(

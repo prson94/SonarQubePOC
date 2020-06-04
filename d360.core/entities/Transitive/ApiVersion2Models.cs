@@ -90,6 +90,8 @@ namespace d360.core.entities
         public int? FusionID { get; set; }
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+        [DataMember]
+        public FlowObjectType? FlowObjectType { get; set; }
     }
 
     public class AssetTypeSuccess
@@ -191,6 +193,16 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+    }
+
+    [DataContract]
+    public class AssetTypeSingleDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
     }
 
     public class AssetImportResult

@@ -1,10 +1,9 @@
 ﻿import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { AdminDiagramAssetModule } from './admin-diagram-asset.module';
-import { SiteUrlHelpers } from '../../../static/site-url-helpers';
+import { AdminDiagramAssetComponent } from './admin-diagram-asset.component';
 
 const routes: Routes = [
-    { path: SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS, component: AdminDiagramAssetModule }
+    { path: '', component: AdminDiagramAssetComponent }
 ];
 
 @NgModule({

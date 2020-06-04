@@ -693,7 +693,7 @@
     <Content Include="Scripts\ai.0.22.9-build00167.min.js" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-asset-type-list.component.html" />
     <Content Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.html" />
-    <Content Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.html" />
+    <Content Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-detail.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields-editor.component.html" />
     <Content Include="Scripts\app\components\admin\customapi\admin-customapi-endpoint-version-fields.component.html" />
@@ -841,8 +841,10 @@
     <Content Include="Scripts\app\components\workflow\workflow-form.component.html" />
     <Content Include="Scripts\app\components\workflow\workflow-new-details.component.html" />
     <Content Include="Scripts\app\components\shared\previewpopup\preview-popup.component.html" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\diagram-asset\admin-diagram-asset.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
@@ -1258,7 +1260,7 @@
     <TypeScriptCompile Include="Scripts\app\components\admin\analytics\admin-metric-condition-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\admin-artifacts.routes.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\admin\artifacts\artifact-type-delete.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\admin\asset-type-delete\asset-type-delete.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\admin\customizations\admin-customizations.routes.ts" />
