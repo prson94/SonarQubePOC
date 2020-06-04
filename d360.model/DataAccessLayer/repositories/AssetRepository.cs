@@ -789,7 +789,7 @@ namespace d360.model.DataAccessLayer
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
-            if (assetType.Class == AssetTypeClass.ReferenceItemType)
+            if (assetType.Class == AssetTypeClass.Reference)
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
 
             fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x=>x.ColumnOrder).ThenBy(x=>x.FriendlyName).ToList());
