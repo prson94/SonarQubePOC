@@ -12,6 +12,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
+declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-diagram-asset',
@@ -22,7 +23,6 @@ import { AssetService } from '../../../services/asset.service';
 export class AdminDiagramAssetComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     searchFilter: string = "";
     objectType: string = "TaskType";
-    adminType: string = "Artifacts";
     addClassName: string;
     selectedRow: TreeNode;
     private sub: any;
@@ -39,6 +39,8 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
 
     searchValue: string = '';
     @ViewChild("dt", { static: false }) dt: TreeTable;
+
+    private disableAdd: boolean = false;
 
     constructor(private route: ActivatedRoute,
         private router: Router,
@@ -66,6 +68,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
             this.formTitle = `Edit ${singularLabel}`;
             this.load();
         });
+        this.disableAdd = CompanySettings['GovernanceRoleReferenceListUid'] === '00000000-0000-0000-0000-000000000000';
     }
 
     selectedItemChange() {

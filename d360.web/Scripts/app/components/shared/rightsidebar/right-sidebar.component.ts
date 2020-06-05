@@ -199,6 +199,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
+
                 if (item.tag === 'GovernanceRoles' && CompanySettings['GovernanceRoleReferenceListUid'] === '00000000-0000-0000-0000-000000000000') {
                     item.warningMessage = `GovRoleWarning`;
                 }
