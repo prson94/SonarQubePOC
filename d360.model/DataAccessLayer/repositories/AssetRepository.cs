@@ -115,6 +115,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [useastransformation]", useAsTransformationString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
@@ -127,6 +129,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [hierarchical]", hierarchicalString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
@@ -139,6 +143,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
@@ -151,6 +157,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
@@ -163,6 +171,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.AutoDisplayParent=@autoDisplayParent ";
                         dbArgs.Add("autoDisplayParent", autoDisplayParent);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [autoDisplayParent]", autoDisplayParentString);
                 }
 
             }
@@ -873,7 +883,7 @@ namespace d360.model.DataAccessLayer
             var returnModel = new AssetsByPathApiViewModel();
 
             var prefilterSql = "";
-            
+
             int i = 1;
             foreach (var filter in model.filters)
             {
@@ -1144,7 +1154,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         CreatedOn = DateTime.UtcNow,
                         Hierarchical = true,
                         UseAsTransformation = model.UseAsTransformation,
-                        Class = AssetTypeClass.Model                        
+                        Class = AssetTypeClass.Model
                     };
 
                     if (t.HierarchyMaximumDepth <= 0 || t.HierarchyMaximumDepth > 10)
@@ -1315,7 +1325,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     if (model.Class == AssetTypeClass.BusinessAsset || model.Class == AssetTypeClass.TechnicalAsset)
                     {
                         assetType.UseAsTransformation = model.UseAsTransformation;
-                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;                        
+                        assetType.CanOwnFusion = model.CanOwnFusion ?? false;
                     }
                     else
                     {
@@ -1323,8 +1333,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         assetType.CanOwnFusion = false;
                     }
                     assetType.Class = model.Class;
-                    assetType.Notes = model.Notes;                   
-                    
+                    assetType.Notes = model.Notes;
+
                     if (model.Class == AssetTypeClass.Model || model.Class == AssetTypeClass.Policy)
                     {
                         if (assetType.HierarchyMaximumDepth <= 0 || assetType.HierarchyMaximumDepth > 10)
