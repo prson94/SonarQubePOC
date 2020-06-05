@@ -21,12 +21,13 @@ namespace d360.core.validators
         List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
         List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        private Guid? _governanceRoleUid = null;
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled, Guid? govRoleUid = null)
         {
             this.CompanyContext = companyContext;
-
+            this._governanceRoleUid = govRoleUid;
             if (isFusionEnabled)
             {
                 SupportedClasses.Add(AssetTypeClass.FusionAttribute);
@@ -158,6 +159,12 @@ namespace d360.core.validators
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MissingFlowObjectType}");
             }
+
+            if(model.Class == AssetTypeClass.Diagram && (_governanceRoleUid == null || _governanceRoleUid == Guid.Empty))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.GovernanceRoleNotSet}");
+            }
+
             if (model.Class != AssetTypeClass.Diagram && model.FlowObjectType != null)
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedFlowObjectType}");

@@ -519,6 +519,13 @@ namespace d360.model
                 var value = settings[key];
                 try
                 {
+                    T checkType = default(T);
+                    if (checkType is Guid)
+                    {
+                        var guid = Guid.Parse(value);
+                        return (T)(Convert.ChangeType(guid, typeof(T)));
+                    }
+
                     return (T)(Convert.ChangeType(value, typeof(T)));
                 }
                 catch (Exception ex)

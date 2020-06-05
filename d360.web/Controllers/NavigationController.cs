@@ -832,13 +832,18 @@ namespace d360.web.Controllers
                         responseModel.DisplayValue = "Business Assets";
                         responseModel.MainTabTitle = "Business Asset Types";
                     }
-                    if (model.Class == AssetTypeClass.Diagram)
-                    {
-                        responseModel.DisplayValue = "Diagram Assets";
-                        responseModel.MainTabTitle = "Diagram Asset Types";
-                        responseModel.Object = SystemObjects.TaskType.ToString();
-                    }
+                }
 
+                if(model.ObjectType == SystemObjects.TaskType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+
+                    responseModel.Items.HasAudit = true;
+                    responseModel.DisplayValue = "Diagram Assets";
+                    responseModel.MainTabTitle = "Diagram Asset Types";
+                    responseModel.Object = SystemObjects.TaskType.ToString();
                 }
 
                 if (model.ObjectType == SystemObjects.IntersectType.ToString())

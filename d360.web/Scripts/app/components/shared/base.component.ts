@@ -55,6 +55,7 @@ export class BaseComponent {
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
+    governanceRolesSidebar: SecondaryNavItem;
 
 
     scoringDataQualitySidebar: SecondaryNavItem;
@@ -242,7 +243,7 @@ export class BaseComponent {
         hasMonitor?: boolean,
         hasField?: boolean,
         hasChild?: boolean,
-        hasRuleResult?:boolean
+        hasRuleResult?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
@@ -379,13 +380,13 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
-            if (hasRuleResult) {                
+            if (hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
                     'Rule Results',
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}/${this.uid}`
-                    ,null,1);
+                    , null, 1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
 
@@ -411,6 +412,13 @@ export class BaseComponent {
                     `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
                 );
                 this.secondaryNavService.showItem(this.actionsSidebar);
+            }
+
+            if (this.objectType == 'TaskType') {
+                this.governanceRolesSidebar = new SecondaryNavItem(
+                    'Governance Roles', 'GovernanceRoles', null,
+                    '/sidebar/governance-roles', null, 3);
+                this.secondaryNavService.showItem(this.governanceRolesSidebar);
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -797,7 +805,7 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-            
+
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
@@ -914,6 +922,7 @@ export class BaseComponent {
         components.push(this.childSidebar);
         components.push(this.fieldNav);
         components.push(this.ruleResultSidebar);
+        components.push(this.governanceRolesSidebar);
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {
@@ -1112,7 +1121,7 @@ export class BaseComponent {
 
                     });
 
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,null,
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, null,
                         true,
                         'Rule',
                         data.ObjectId));

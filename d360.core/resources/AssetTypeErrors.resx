@@ -201,4 +201,7 @@
   <data name="UnsupportedFlowObjectType" xml:space="preserve">
     <value>FlowObjectType is not support for class {0}.</value>
   </data>
+  <data name="GovernanceRoleNotSet" xml:space="preserve">
+    <value>Cannot add Asset Type of class Diagram. Governance Role Reference UID is not set.</value>
+  </data>
 </root>

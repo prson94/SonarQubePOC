@@ -15,6 +15,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { TakeSurveyModule } from '../survey/take-survey.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
+import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 
 
 @NgModule({
@@ -30,7 +31,8 @@ import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.modul
         SiteModalModule,
         TakeSurveyModule,
         PipesModule,
-        ScoreBadgeModule
+        ScoreBadgeModule,
+        InfoTooltipModule
     ],
     declarations: [
         RightSidebarItemComponent,

@@ -793,6 +793,7 @@
     <Content Include="Scripts\app\components\shared\synonyms.tile.html" />
     <Content Include="Scripts\app\components\shared\tags\d3s-tag-view.html" />
     <Content Include="Scripts\app\components\shared\user\user-list.component.html" />
+    <Content Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.html" />
     <Content Include="Scripts\app\components\sidebar\audit\audit.component.html" />
     <Content Include="Scripts\app\components\sidebar\children\artifact-item-child-grid.component.html" />
     <Content Include="Scripts\app\components\shared\tiles\tile-actions.component.html" />
@@ -1393,6 +1394,9 @@
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\actions\actions.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\sidebar\governance-roles\governance-roles-sidebar.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\sidebar\audit\audit.routes.ts" />

@@ -56,6 +56,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
     private isScoringScreen: boolean = false;
+    private menuWarningType: string = '';
 
     status: string;
     showStatus = false;
@@ -176,7 +177,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     getTitle(item: SecondaryNavItem) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
             let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
-            return this.statistics.IssueCount + " outstanding action" + plurality +" assigned to you";
+            return this.statistics.IssueCount + " outstanding action" + plurality + " assigned to you";
         } else {
             return "";
         }
@@ -198,6 +199,9 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
+                if (item.tag === 'GovernanceRoles' && CompanySettings['GovernanceRoleReferenceListUid'] === '00000000-0000-0000-0000-000000000000') {
+                    item.warningMessage = `GovRoleWarning`;
+                }
             });
 
         this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(

@@ -133,6 +133,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add Asset Type of class Diagram. Governance Role Reference UID is not set..
+        /// </summary>
+        public static string GovernanceRoleNotSet {
+            get {
+                return ResourceManager.GetString("GovernanceRoleNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have not provided a proper predicate based on its asset type class..
         /// </summary>
         public static string ImproperPredicate {

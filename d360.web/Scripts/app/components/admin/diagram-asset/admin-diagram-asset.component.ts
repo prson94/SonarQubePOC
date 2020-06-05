@@ -21,7 +21,7 @@ import { AssetService } from '../../../services/asset.service';
 
 export class AdminDiagramAssetComponent extends AdminBaseComponent implements OnInit, OnDestroy {
     searchFilter: string = "";
-    objectType: string = "ArtifactType";
+    objectType: string = "TaskType";
     adminType: string = "Artifacts";
     addClassName: string;
     selectedRow: TreeNode;

@@ -488,7 +488,7 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -549,9 +549,41 @@ namespace d360.web.Controllers.V2
                         });
                     }
 
-                    if(model.Class == AssetTypeClass.Diagram)
+                    if (model.Class == AssetTypeClass.Diagram)
                     {
+                        var refListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                        var refList = Company.AssetTypes.FirstOrDefault(x => x.uid == refListUid);
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "GovernanceRole",
+                            Name = "GovernanceRole",
+                            SortOrder = 2,
+                            Type = DataType.Lookup.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false,
+                            LookupObjectID = refList.ObjectID,
+                            LookupObjectType = refList.Object
+                        });
 
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "Step No",
+                            Name = "StepNo",
+                            SortOrder = 3,
+                            Type = DataType.Decimal.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false
+                        });
                     }
                 }
 

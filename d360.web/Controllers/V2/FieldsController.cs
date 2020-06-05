@@ -377,6 +377,14 @@ namespace d360.web.Controllers.V2
                 }
                 #endregion
 
+                if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+                    if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Bad request", "Fields Name, GovernanceRole and StepNo cannot be delete from Diagram Asset Type.");
+                    }
+                }
+
                 #region Security check
 
                 bool hasPermissions = false;
@@ -638,7 +646,7 @@ namespace d360.web.Controllers.V2
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
                 }
 
-                if(@class == AssetTypeClass.Diagram)
+                if (@class == AssetTypeClass.Diagram)
                 {
                     var notAllowed = new List<string>() {
                         "ComplexRelationLookup",

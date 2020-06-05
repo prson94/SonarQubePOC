@@ -46,6 +46,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_SCORE_ROOT, loadChildren: () => import('./components/sidebar/score/score.module').then(m => m.ScoreModule) },
     { path: SiteUrlHelpers.SITE_URL_ACTIONS_ROOT, loadChildren: () => import('./components/sidebar/actions/actions.module').then(m => m.ActionsModule) },
     { path: SiteUrlHelpers.SITE_URL_RULERESULT_ROOT, loadChildren: () => import('./components/sidebar/ruleresults/rule-results.module').then(m => m.RuleResultsModule) },
+    { path: SiteUrlHelpers.SITE_URL_GOVERNANCE_ROLES_ROOT, loadChildren: () => import('./components/sidebar/governance-roles/governance-roles-sidebar.module').then(m => m.GovernanceRolesModule) },
     {
         path: '**',
         redirectTo: SiteUrlHelpers.getDefaultRoute()

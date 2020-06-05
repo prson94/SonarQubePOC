@@ -6477,7 +6477,7 @@ a.mid-blue {
     }
 
     .tooltip-content {
-        position: absolute;
+        position: fixed;
 
         h2 {
             font-weight: bold;
@@ -6493,7 +6493,6 @@ a.mid-blue {
         display: none;
         z-index: 1000;
         width: 304px;
-        left: 100%;
         padding: 12px;
         border-radius: 4px;
         box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
@@ -6501,12 +6500,20 @@ a.mid-blue {
         background-color: @ig-white;
         font-weight: normal;
         transform: translateY(-50%);
+        margin-left:30px;
     }
 
     &:hover {
         .tooltip-content {
             display: block;
         }
+    }
+
+    .fa-exclamation-triangle {
+        color: white;
+        background-color: #ff7931;
+        padding: 6px;
+        border-radius: 3px;
     }
 }
 
