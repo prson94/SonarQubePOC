@@ -25,7 +25,6 @@ using d360.core.entities.Metric;
 using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
-using d360.core.entities.Scoring;
 
 namespace igx.UnitTests
 {
@@ -575,7 +574,7 @@ namespace igx.UnitTests
                 });
 
             mock.Setup(x => x.GetAllocationByMetricModel(It.IsAny<MetricAssetViewModel>()))
-                .Returns(new ScoreTypeAllocation() { IsExternallyCalculated = false });
+                .Returns(new MetricAllocation() { IsExternallyCalculated = false });
 
             return mock.Object;
         }

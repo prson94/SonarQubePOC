@@ -14,7 +14,6 @@ using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json;
-using d360.core.entities.Scoring;
 using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
@@ -777,9 +776,9 @@ namespace d360.model.DataAccessLayer
             return (result, "");
         }
 
-        public ScoreTypeAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
+        public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
         {
-            return Company.ScoreTypeAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
+            return Company.MetricAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
         }
 
 

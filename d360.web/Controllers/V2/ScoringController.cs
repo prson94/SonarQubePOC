@@ -1,6 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
-using d360.core.entities.Scoring;
+using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.extensions;
 using d360.model;
@@ -133,7 +133,7 @@ namespace d360.web.Controllers.V2
                 if (!allowedClasses.Contains(assetType.Class))
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error adding allocation", $"Asset type has invalid class.");
 
-                ScoreTypeAllocation alloc = ScoringRepository.GetAllocationByModel(model);
+                MetricAllocation alloc = ScoringRepository.GetAllocationByModel(model);
 
                 if (alloc != null && alloc.State == State.Active)
                 {
@@ -196,7 +196,7 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.Unauthorized, "Error updating allocation", "You are not authorized to perform this action.");
                 }
 
-                ScoreTypeAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
+                MetricAllocation alloc = ScoringRepository.GetAllocationByUid(allocationUid);
 
                 if (alloc == null)
                     return errorMessageResponse(HttpStatusCode.NotFound, "Error updating allocation", $"Allocation with uid {allocationUid} does not exist.");
