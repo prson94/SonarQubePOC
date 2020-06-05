@@ -743,6 +743,7 @@ begin
 	declare @wheres table ([Statement] varchar(MAX))
 	declare @orders table ([Statement] varchar(500), SortOrder int)
 	declare @finalOrders table ([Statement] varchar(500), SortOrder int, INDEX IX1 CLUSTERED(SortOrder asc))
+
 	declare @count int = 0
 	if @type = 'ComplexRelationLookup'
 	begin
@@ -1288,6 +1289,7 @@ begin
 					from		@orders 
 					where		[Statement] is not null 
 					group by	[Statement], SortOrder
+
 				select	@sql = @sql + ' order by ' + STRING_AGG([Statement], ', ') 
 				from	@finalOrders
 			end
