@@ -151,6 +151,10 @@ namespace d360.web.Controllers.V2
 
                 return Request.CreateResponse(HttpStatusCode.OK, assetTypes);
             }
+            catch (ArgumentException ex)
+            {
+                return ReturnApiError(HttpStatusCode.BadRequest, ex.Message);
+            }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
