@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Runtime.Serialization;
+using System.Xml.Linq;
 using d360.core.enums;
 
 namespace d360.core.entities
@@ -121,7 +123,15 @@ namespace d360.core.entities
         public CompanySettingApiIpAddressModel() { }
         public CompanySettingApiIpAddressModel(Setting setting, string companyValue)
         {
+            var value = string.IsNullOrEmpty(companyValue) ? setting.DefaultValue : companyValue;
+            Addresses = new List<Ip>();
 
+            if (!string.IsNullOrEmpty(value))
+            {
+                var xml = XElement.Parse(value);
+                var ips = xml.Elements("ip").Select(i => new Ip { Name = i.Element("name").Value, Start = i.Element("start").Value, End = i.Element("end").Value });
+                Addresses.AddRange(ips);
+            }
         }
 
         public List<Ip> Addresses { get; set; }
