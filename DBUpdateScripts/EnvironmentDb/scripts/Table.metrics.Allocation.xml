@@ -93,6 +93,11 @@ begin
 	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT UQ_MetricsAllocation UNIQUE (AssetTypeUid, ScoreType, OverrideName ); 
 end
 
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+begin
+	CREATE CLUSTERED INDEX CIX_MetricsAllocation ON metrics.Allocation ( AssetTypeUid )
+end
+
 if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
 begin
 	ALTER TABLE [metrics].[Allocation] ADD CalculationMethod int constraint DF_MetricsAllocation_CalculationMethod default(4) not null
@@ -115,6 +120,11 @@ end
 if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAllocation')
 begin
 	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT UQ_MetricsAllocation
+end
+
+if exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+begin
+	DROP INDEX [CIX_MetricsAllocation] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
 end
 
 if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
