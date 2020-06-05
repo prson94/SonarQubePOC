@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
-using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Graph;
 using d360.core.enums;
@@ -92,7 +91,6 @@ namespace d360.model
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
-
         public DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
 
         public DbSet<AssetTypeStyle> AssetTypeStyles { get; set; }
@@ -137,8 +135,6 @@ namespace d360.model
 
         public DbSet<FusionQueryAttributeType> FusionQueryAttributeTypes { get; set; }
 
-
-
         public DbSet<FusionStatusLog> FusionStatusLogs { get; set; }
 
         public DbSet<FusionType> FusionTypes { get; set; }
@@ -153,7 +149,6 @@ namespace d360.model
 
         public DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }        /* VIEW */
 
-
         public DbSet<IntersectType> IntersectTypes { get; set; }
 
         public DbSet<Issue> Issues { get; set; }
@@ -166,7 +161,6 @@ namespace d360.model
 
         public DbSet<NymRelation> NymRelations { get; set; }
 
-
         public DbSet<Predicate> Predicates { get; set; }
 
         public DbSet<Question> Questions { get; set; }
@@ -175,15 +169,11 @@ namespace d360.model
 
         public DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
 
-
         public DbSet<Report> Reports { get; set; }
 
         public DbSet<ReportResponsibility> ReportResponsibilities { get; set; }
 
-
         public DbSet<d360.core.entities.Rule> Rules { get; set; }
-
-        public DbSet<Score> Scores { get; set; }
 
         public DbSet<SiteNav> SiteNav { get; set; }
 
@@ -201,18 +191,14 @@ namespace d360.model
 
         public DbSet<SurveyType> SurveyTypes { get; set; }
 
-
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
         public DbSet<AssetTag> AssetTags { get; set; }
 
-
-
         public DbSet<AuditField> AuditFields { get; set; }
 
         public DbSet<Audit> Audits { get; set; }
-        public DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
 
         #endregion
 

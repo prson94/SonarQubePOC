@@ -422,7 +422,7 @@ from	FollowDetail F
             {
                 if (objectType == "Allocation")
                 {
-                    var alloc = Company.ScoreTypeAllocations.FirstOrDefault(x => x.Uid == uid);
+                    var alloc = Company.MetricAllocations.FirstOrDefault(x => x.Uid == uid);
                     return Json(
                     new
                     {
