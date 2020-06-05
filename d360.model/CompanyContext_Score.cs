@@ -431,6 +431,10 @@ when not matched by target then
                         ) M_M
             where T.ExecutionID = @ExecutionID
 
+            update T set T.IsValidMetricDate = 1
+            from api.ExecutionMetric T 
+            where T.IsValidMetricDate is null 
+            and not exists (select 1 from api.ExecutionMetricMeasure M where M.ExecutionID = @executionID and M.ItemNumber = T.ItemNumber)
 
             update T set T.IsValidMetricDate = 0 from api.ExecutionMetric T 
             where T.ExecutionID = @ExecutionID and coalesce(T.IsValidMetricDate, 0) <> 1
