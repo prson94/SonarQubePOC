@@ -22,8 +22,7 @@ namespace d360.core.entities
         [DataMember]
         public string Context { get; set; }
 
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
-        public int UpdatedBy { get; set; }
+        public int UpdatedBy { get; set; } = 0;
 
         [DataMember]
         public DateTime? UpdatedOn
