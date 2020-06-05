@@ -15,6 +15,9 @@ import { TilesModule } from '../../shared/tiles/tiles.module';
 
 import { GovernanceRolesComponent } from './governance-roles-sidebar.component';
 import { GovernanceRolesRoutingModule } from './governance-roles-sidebar.routes';
+import { EditorModule } from 'primeng/editor';
+import { DropdownModule } from 'primeng/dropdown';
+import { ButtonModule } from 'primeng/button';
 
 @NgModule({
     imports: [
@@ -31,7 +34,10 @@ import { GovernanceRolesRoutingModule } from './governance-roles-sidebar.routes'
         SharedGridPagingInfoModule,
         TilesModule,
 
-        //prime        
+        //prime     
+        EditorModule,
+        DropdownModule,
+        ButtonModule,
         SharedModule,
         TableModule,
     ],
