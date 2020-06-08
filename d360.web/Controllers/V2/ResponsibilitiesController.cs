@@ -1041,8 +1041,33 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Adds a list of ownership rules for the specified responsibility type..
+        /// Adds a list of ownership rules for the specified responsibility type.
         /// </summary>
+        /// 
+        /// <remarks>
+        ///###Rules###
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        ///</table>
+        /// <br/>
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
+        /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
+        /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
+        /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Only administrators can use this endpoint.
+        /// 
+        /// </remarks>
+        /// 
         /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
         /// <param name="responsibilityRules">A list of responsibility rules you want to add.</param>
         /// <returns>An HTTP status code and message.</returns>
@@ -1089,6 +1114,29 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Edits a list of ownership rules for the specified responsibility type..
         /// </summary>
+        /// <remarks>
+        ///###Rules###
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        ///</table>
+        /// <br/>
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
+        /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
+        /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
+        /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Only administrators can use this endpoint.
+        /// 
+        /// </remarks>
         /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
         /// <param name="responsibilityRules">A list of responsibility rules you want to update.</param>
         /// <returns>An HTTP status code and message.</returns>
