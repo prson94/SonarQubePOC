@@ -637,4 +637,119 @@ namespace d360.core.entities
         public bool Exists { get; set; }
     }
 
+    [DataContract]
+    public class ResponsibilityRuleUpsertModel
+    {
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+        [DataMember]
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+        [DataMember]
+        public bool IsVisible { get; set; }
+        [DataMember]
+        public bool ApplyToType { get; set; }
+        [DataMember]
+        public string Context { get; set; }
+        [DataMember]
+        public RuleDefinition Definition { get; set; }
+    }
+    [DataContract]
+    public class RuleDefinition
+    {
+        [DataMember]
+        public List<RuleWhen> When { get; set; }
+        [DataMember]
+        public List<RuleThenWrapper> Then { get; set; }
+
+    }
+    [DataContract]
+    public class RuleThenWrapper
+    {
+        [DataMember]
+        public Guid? AssigneeTypeUid { get; set; }
+        [DataMember]
+        public List<RuleThen> Conditions { get; set; } = new List<RuleThen>();
+    }
+
+    [DataContract]
+    public class RuleThen
+    {
+        [DataMember]
+        public RuleFieldCondition Field { get; set; }
+        [DataMember]
+        public RuleAssigneeCondition Assignee { get; set; }
+    }
+
+    [DataContract]
+    public class RuleWhen
+    {
+        [DataMember]
+        public RuleFieldCondition Field { get; set; }
+        [DataMember]
+        public RuleRelationCondition Relation { get; set; }
+    }
+
+    [DataContract]
+    public class RuleFieldCondition
+    {
+        [DataMember]
+        public string ApiName { get; set; }
+        [DataMember]
+        public string Value { get; set; }
+    }
+
+    [DataContract]
+    public class RuleAssigneeCondition
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+    }
+
+
+    [DataContract]
+    public class RuleRelationCondition
+    {
+        [DataMember]
+        public Guid? IntersectTypeUid { get; set; }
+        [DataMember]
+        public Guid? AssetUid { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleUpsertResponseModel
+    {
+        [DataMember]
+        public int ItemNumber { get; set; }
+        [DataMember]
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public Guid? ExecutionItemUid { get; set; }
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleDeleteModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+    }
+
+    [DataContract]
+    public class ResponsibilityRuleDeleteResponse
+    {
+        [DataMember]
+        public Guid? Uid { get; set; }
+        [DataMember]
+        public string Message { get; set; }
+        [DataMember]
+        public bool Success { get; set; }
+    }
+
 }

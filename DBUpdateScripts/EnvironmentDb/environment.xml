@@ -250,6 +250,7 @@
 	<include file="scripts/Table.api.ExecutionRelationshipError.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
+	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
 	
 
   

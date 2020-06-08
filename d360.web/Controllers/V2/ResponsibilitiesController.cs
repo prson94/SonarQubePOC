@@ -1039,5 +1039,188 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
+
+        /// <summary>
+        /// Adds a list of ownership rules for the specified responsibility type.
+        /// </summary>
+        /// 
+        /// <remarks>
+        ///###Rules###
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        ///</table>
+        /// <br/>
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
+        /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
+        /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
+        /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Only administrators can use this endpoint.
+        /// 
+        /// </remarks>
+        /// 
+        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+        /// <param name="responsibilityRules">A list of responsibility rules you want to add.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPost,
+            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to create the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> PostResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        {
+            var prefix = "Relationships.PostResponsibilityRules => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+
+                if (responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
+
+                var execution = getApiExecution(responsibilityRules.Count);
+
+                var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Edits a list of ownership rules for the specified responsibility type..
+        /// </summary>
+        /// <remarks>
+        ///###Rules###
+        /// Conditions can be specified as Field condition (filter by field and its value), Relation condition (filter by relationship) and Assignee (filter by Resource, Group or Organization)
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>When</td><td>List of conditions which filter assets to which rule applies to</td><td>Can be empty - applies to all asset within asset type</td></tr>
+        /// <tr><td>Then</td><td>List of conditions which specify to which Resrouce, Group or Organization rule applies to</td><td>Cannot be empty</td></tr>
+        ///</table>
+        /// <br/>
+        /// <table>
+        /// <tr><td>**Object**</td><td>**Field**</td><td>**Description**</td><td>**Validation**</td></tr>
+        /// <tr><td>Field</td><td>ApiName</td><td>API Name of the field</td><td>Must be a valid field Name for given Asset Type</td></tr>
+        /// <tr><td>Field</td><td>Value</td><td>Field value for comparison. Only assets that match this value will be considered as a part of rule.</td><td>Must NOT be empty</td></tr>
+        /// <tr><td>Relation</td><td>IntersectTypeUid</td><td>Relationship Type Uid</td><td>Must be valid relationship type for given Asset Type</td></tr>
+        /// <tr><td>Relation</td><td>AssetUid</td><td>UID of matching Asset</td><td>Must be valid asset for Relationship Type specified on subject or object side.</td></tr>
+        /// <tr><td>Assignee</td><td>Uid</td><td>UID of Resource, Group or Organization</td><td>Type must match to AssigneeTypeUid.</td></tr>
+        /// <tr><td>Then</td><td>AssigneeTypeUid</td><td>UID of ResourceType, GroupType or OrganizationType</td><td>Must be valid UID</td></tr>
+        /// </table>
+        /// <br/>
+        /// **Notes:** 
+        /// * Only administrators can use this endpoint.
+        /// 
+        /// </remarks>
+        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+        /// <param name="responsibilityRules">A list of responsibility rules you want to update.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to update the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleUpsertResponseModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> PutResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleUpsertModel> responsibilityRules)
+        {
+            var prefix = "Relationships.PutResponsibilityRules => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+
+                if (responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
+
+                var execution = getApiExecution(responsibilityRules.Count);
+
+                var results = ResponsibilityRepository.UpsertResponsibilityRules(responsibilityTypeUid, responsibilityRules, execution);
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Deletes a list of ownership rules for the specified responsibility type..
+        /// </summary>
+        /// <param name="responsibilityTypeUid">Responsibility Type UID.</param>
+        /// <param name="responsibilityRulesDeletes">A list of responsibility rules you want to delete.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("types/{responsibilityTypeUid:guid}/ownershiprules"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to delete the responsibility rule", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.OK, "A list of responsibility rules uid, including any error / success messages.", typeof(List<ResponsibilityRuleDeleteResponse>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Error while processing request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "Responsibility Type not found based on Uid provided.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteResponsibilityRules(Guid responsibilityTypeUid, [FromBody]List<ResponsibilityRuleDeleteModel> responsibilityRulesDeletes)
+        {
+            var prefix = "Relationships.DeleteResponsibilityRules => ";
+            var errorMessage = "";
+            try
+            {
+
+                if (!Company.CurrentResourceIsAdmin)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, "Not authorized", "You are not authorized to perform this action."));
+
+                var responsibility = ResponsibilityRepository.GetResponsibilityTypeByUID(responsibilityTypeUid);
+
+                if (responsibility == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Responsibility Type with Uid '{responsibilityTypeUid}'."));
+
+                var results = ResponsibilityRepository.DeleteResponsibilityRules(responsibilityTypeUid, responsibilityRulesDeletes.Select(x => x.Uid).ToList());
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Error", errorMessage));
+            }
+        }
+
     }
 }
