@@ -1424,6 +1424,84 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Retrieves a list of possible owners for asset type.
+        /// </summary>
+        /// <returns>Returns a list of possible owners for asset type.</returns>
+        /// <param name="assetTypeUid">The unique identifier of the asset type.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("{assetTypeUid:Guid}/possible-owners"),
+            SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetPossibleOwnersByAssetTypeUid(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (assetTypeUid == null || assetTypeUid== Guid.Empty)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"AssetTypeUid is not valid!"));
+                }
+
+                var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+                if (assetType == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not Found", $"Asset Type with uid '{assetTypeUid}' does not exist!"));
+                }
+
+                var sql = $@"
+            ; with owners as (select distinct
+
+                    responsibilityTypeId,
+		            securityAssetid,
+	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
+	                case 
+                        when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource'
+
+                        when SecurityAsset = 'G' then 'Group'
+                        else [Type]
+                    end as [Type]
+
+                            from ResponsibilityDetail
+            where TypeID = @id
+                    and[Type] = @Object
+                    and IsVisible = 1)
+            select Res.SecurityAssetUid as Uid, o.Name, o.Type
+            from owners o
+            cross apply(
+            select top 1 * from
+            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
+
+                                                and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @Object
+            )Res
+            order by o.[Name]
+";
+
+                var results = Company.Query<dynamic>(
+             sql,
+             new { id = assetType.ObjectID, assetType.Object });
+
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
+
         #region Batch
 
         /// <summary>

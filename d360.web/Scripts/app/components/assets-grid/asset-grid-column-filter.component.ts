@@ -24,10 +24,12 @@ import { FilterExpression, FilterField, FilterFieldType } from '../../models/fil
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 import { AssetGridObject } from './asset-grid.model';
+import { AssetService } from '../../services/asset.service';
+import { AssetTypeService } from '../../services/asset-type.service';
 
 @Component({
     selector: 'd3s-asset-grid-column-filter',
-    providers: [RelationshipsService, ArtifactTypeService],
+    providers: [RelationshipsService, ArtifactTypeService, AssetTypeService],
     styles: [`
         div.filter {
             padding-bottom: 5px;
@@ -74,6 +76,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
     constructor(
         private relationshipsService: RelationshipsService,
         private artifactTypeService: ArtifactTypeService,
+        private assetTypeService: AssetTypeService,
         private ref: ChangeDetectorRef
     ) {
     }
@@ -161,9 +164,9 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
                     this.ownerFilter.ownerGroups = [];
                     for (let owner of internalFilter.Data) {
                         if (owner.Type.toUpperCase() == 'RESOURCE') {
-                            this.ownerFilter.ownerUsers.push(owner.ID);
+                            this.ownerFilter.ownerUsers.push(owner.Uid);
                         } else {
-                            this.ownerFilter.ownerGroups.push(owner.ID);
+                            this.ownerFilter.ownerGroups.push(owner.Uid);
                         }
                     }
                     hasOwnerFilter = true;
@@ -274,10 +277,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
             /* already loaded owners */
             return;
         }
-
-        this
-            .artifactTypeService
-            .getPossibleArtifactOwners(this.objectType, this.gridObject.ID)
+        this.assetTypeService.GetAssetTypePossibleOwners(this.gridObject.AssetTypeUID)
             .subscribe(result => {
                 for (let item of result) {
                     this.ownerValues.push({ label: item.Name, value: item });
@@ -290,7 +290,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
 
                     for (let group of this.ownerFilter.ownerGroups) {
                         //find a group in results with type group and id matching
-                        let indx = result.findIndex(x => x.ID == group && x.Type == "Group");
+                        let indx = result.findIndex(x => x.Uid == group && x.Type == "Group");
 
                         if (indx >= 0 && indx < result.length) {
                             owners.push(result[indx]);
@@ -298,7 +298,7 @@ export class AssetGridColumnFilterComponent implements OnInit, OnChanges {
                     }
 
                     for (let user of this.ownerFilter.ownerUsers) {
-                        let indx = result.findIndex(x => x.ID == user && x.Type == "Resource");
+                        let indx = result.findIndex(x => x.Uid == user && x.Type == "Resource");
 
                         if (indx >= 0 && indx < result.length) {
                             owners.push(result[indx]);
