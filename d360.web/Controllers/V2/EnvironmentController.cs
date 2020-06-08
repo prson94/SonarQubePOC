@@ -26,7 +26,8 @@ namespace d360.web.Controllers.V2
     [
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/environment"),
-        Authorize
+        Authorize,
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class EnvironmentController : BaseV2ApiController
     {
@@ -36,7 +37,7 @@ namespace d360.web.Controllers.V2
             _storage = storage;
         }
 
-        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet, AjaxValidateAntiForgeryToken, Route("rebuilds")]
         public async Task<HttpResponseMessage> GetRebuilds()
         {
             try
@@ -57,7 +58,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpPost, AjaxValidateAntiForgeryToken, Route("rebuilds")]
         public async Task<HttpResponseMessage> Rebuild(CompanyRebuildJobRequest model)
         {
             try
@@ -94,7 +95,7 @@ namespace d360.web.Controllers.V2
             }
         }
 
-        [HttpGet, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpGet, Route("styles")]
         public async Task<HttpResponseMessage> StyleCustomizations()
         {
             var css = "";
@@ -119,7 +120,7 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, css);
         }
 
-        [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpPut, Route("styles")]
         public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -239,7 +240,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpPut,
-            Route("settings"),
+            Route("settings")
         ]
         public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
         {
