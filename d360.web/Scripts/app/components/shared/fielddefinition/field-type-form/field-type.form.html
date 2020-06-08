@@ -653,7 +653,7 @@
                                         </thead>
                                         <tbody>
                                             <tr *ngFor="let d of i.DisplayFields">
-                                                <td style="width: 20%; word-break:break-all">{{d.FieldTypeName}}</td>
+                                                <td style="width: 20%; word-break:break-all">{{d.FieldTypeName=='_assetPath' ? "AssetPath (Internal)": d.FieldTypeName}}</td>
                                                 <td style="width: 20%;">
                                                     <input [ngModelOptions]="{standalone: true}"
                                                            type="text"

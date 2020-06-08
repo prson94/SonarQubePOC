@@ -746,7 +746,7 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "AssetPath", 0 } };
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "_assetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
@@ -859,7 +859,7 @@ from	IntersectType I
                                 hasDefinitionError = true;
                                 return;
                             }
-                        }
+                        }                        
                         var computedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
                         field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFieldValue : fieldInfo.FieldTypeID;
                         field.AssetTypeUid = i.AssetTypeUid;
@@ -867,8 +867,8 @@ from	IntersectType I
                         field.FieldTypeName = i.FieldTypeName;
                         field.Filter = i.Filter;
                         if (string.IsNullOrEmpty(i.OverrideDisplayName) || string.IsNullOrWhiteSpace(i.OverrideDisplayName))
-                        {
-                            i.OverrideDisplayName = null;
+                        {                            
+                                i.OverrideDisplayName = null;
                         }
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;
