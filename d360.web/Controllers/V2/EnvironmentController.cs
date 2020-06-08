@@ -27,7 +27,7 @@ namespace d360.web.Controllers.V2
         ApiVersion("2.0"),
         RoutePrefix("api/v{version:apiVersion}/environment"),
         Authorize,
-        ApiExplorerSettings(IgnoreApi = false)
+        ApiExplorerSettings(IgnoreApi = true)
     ]
     public class EnvironmentController : BaseV2ApiController
     {
@@ -264,6 +264,8 @@ namespace d360.web.Controllers.V2
                 if (setting.Locked)
                     return ReturnApiError(HttpStatusCode.Forbidden, "This setting is locked and cannot be updated");
 
+                if (!model.HasExactlyOneValue)
+                    return ReturnApiError(HttpStatusCode.BadRequest, "Exactly one value must be provided based on the setting's data type");
 
                 var companySetting = Community
                     .CompanySettings
@@ -272,32 +274,33 @@ namespace d360.web.Controllers.V2
                 bool clearSetting = false;
                 string value = "";
 
+                string valueErrorMessage = "Provided value does not match the expected data type for this setting";
                 switch (setting.SettingType)
                 {
                     case SettingType.Text:
-                        if (model.StringSetting == null || model.IpAddressSetting != null || model.BooleanSetting != null || model.NumberSetting != null)
-                            return ReturnApiError(HttpStatusCode.BadRequest, "Setting value is missing or does not match the correct data type");
+                        if (model.StringSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.StringSetting.Value == null)
                             clearSetting = true;
                         value = model.StringSetting.Value;
                         break;
                     case SettingType.Number:
-                        if (model.NumberSetting == null || model.IpAddressSetting != null || model.BooleanSetting != null || model.StringSetting != null)
-                            return ReturnApiError(HttpStatusCode.BadRequest, "Setting value is missing or does not match the correct data type");
+                        if (model.NumberSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.NumberSetting.Value == null)
                             clearSetting = true;
                         value = model.NumberSetting.Value.Value.ToString();
                         break;
                     case SettingType.Boolean:
-                        if (model.BooleanSetting == null || model.IpAddressSetting != null || model.StringSetting != null || model.NumberSetting != null)
-                            return ReturnApiError(HttpStatusCode.BadRequest, "Setting value is missing or does not match the correct data type");
+                        if (model.BooleanSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.BooleanSetting.Value == null)
                             clearSetting = true;
                         value = model.BooleanSetting.Value.Value.ToString().ToLower();
                         break;
                     case SettingType.IPAddress:
-                        if (model.IpAddressSetting == null || model.StringSetting != null || model.BooleanSetting != null || model.NumberSetting != null)
-                            return ReturnApiError(HttpStatusCode.BadRequest, "Setting value is missing or does not match the correct data type");
+                        if (model.IpAddressSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
                             clearSetting = true;
                         

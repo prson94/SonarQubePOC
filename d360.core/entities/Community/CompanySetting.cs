@@ -146,6 +146,19 @@ namespace d360.core.entities
         public CompanySettingApiUpdateBooleanModel BooleanSetting { get; set; }
         public CompanySettingApiUpdateIpAddressModel IpAddressSetting { get; set; }
 
+        [IgnoreDataMember]
+        public bool HasExactlyOneValue
+        {
+            get
+            {
+                return
+                    ((StringSetting == null ? 0 : 1) +
+                    (NumberSetting == null ? 0 : 1) +
+                    (BooleanSetting == null ? 0 : 1) +
+                    (IpAddressSetting == null ? 0 : 1)) == 1;
+            }
+        }
+
     }
 
     public class CompanySettingApiUpdateStringModel
