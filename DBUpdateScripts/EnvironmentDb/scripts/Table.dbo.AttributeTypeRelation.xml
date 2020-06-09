@@ -39,4 +39,31 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.AttributeTypeRelation-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation_Retired')
+			BEGIN
+				DROP TABLE dbo.AttributeTypeRelation_Retired;
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation_Retired')
+BEGIN
+	CREATE TABLE [dbo].[AttributeTypeRelation_Retired](
+		[AttributeTypeID] [int] NOT NULL,
+		[ObjectType] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[AllowMultipleEntries] [bit] CONSTRAINT [DF_AttributeTypeRelation_AllowMultipleEntries] DEFAULT (1) NOT NULL,
+		CONSTRAINT [PK_AttributeTypeRelation] PRIMARY KEY CLUSTERED ( [AttributeTypeID] ASC, [ObjectType] ASC, [ObjectID] ASC )
+	)
+END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

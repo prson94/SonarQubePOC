@@ -125,4 +125,49 @@ AS
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.Attribute-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Attribute_Retired')
+			BEGIN
+				DROP TABLE dbo.Attribute_Retired
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Attribute_Retired')
+BEGIN
+	CREATE TABLE [dbo].[Attribute_Retired](
+		[ID] [int] IDENTITY(1,1) NOT NULL,
+		[ParentID] [int] NULL,
+		[AttributeTypeID] [int] NOT NULL,
+		[ObjectType] [varchar](50) NOT NULL,
+		[ObjectID] [int] NOT NULL,
+		[InheritanceObjectType] [varchar](50) NULL,
+		[InheritanceObjectID] [int] NULL,
+		[UpdatedOn] [datetime] NULL,
+		[UpdatedBy] [int] NULL,
+		[DisplayValue]  AS ([utility].[GetObjectDisplayValueWrapper]('Attribute',[ID],[AttributeTypeID])),
+		CONSTRAINT [PK_Attribute] PRIMARY KEY CLUSTERED ( [ID] ASC )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Attribute_ParentAttribute')
+BEGIN
+	ALTER TABLE [dbo].[Attribute_Retired]  WITH CHECK ADD  CONSTRAINT [FK_Attribute_ParentAttribute] FOREIGN KEY([ParentID]) REFERENCES [dbo].[Attribute_Retired] ([ID])
+	ALTER TABLE [dbo].[Attribute_Retired] CHECK CONSTRAINT [FK_Attribute_ParentAttribute]
+END
+
+IF NOT EXISTS (select * from sys.indexes where name = 'IX_Attribute_ObjectType-ObjectID')
+BEGIN
+	CREATE NONCLUSTERED INDEX [IX_Attribute_ObjectType-ObjectID] ON [dbo].[Attribute_Retired] ( [ObjectType] ASC, [ObjectID] ASC )
+END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
