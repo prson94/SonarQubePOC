@@ -584,7 +584,7 @@ namespace d360.web.Controllers.V2
                             FriendlyName = "Step No",
                             Name = "StepNo",
                             SortOrder = 3,
-                            Type = DataType.Decimal.ToString(),
+                            Type = DataType.Number.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false
                         });
