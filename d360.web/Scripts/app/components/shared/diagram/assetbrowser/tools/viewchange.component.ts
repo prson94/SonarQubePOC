@@ -30,11 +30,19 @@ export class AssetBrowserViewChangeComponent implements AfterViewInit {
         this.apply.emit(DiagramType.Lineage);
     }
 
+    private switchToProcessDiagram(event) {
+        this.apply.emit(DiagramType.ProcessDiagram);
+    }
+
     private impactViewButtonSelectedClass() {
         return (this.current == DiagramType.Impact) ? "right-margin-4 selected" : "right-margin-4";
     }
 
     private lineageViewButtonSelectedClass() {
         return (this.current == DiagramType.Lineage) ? "selected" : "";
+    }
+
+    private processDiagramButtonSelectedClass() {
+        return (this.current == DiagramType.ProcessDiagram) ? "selected" : "";
     }
 } 

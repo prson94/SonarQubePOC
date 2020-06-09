@@ -209,6 +209,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     public ngAfterViewChecked() {
 
+        if (this.diagramTypeSpecifiedInPath == DiagramType.ProcessDiagram)
+            return;
+
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
         const panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window');
 
@@ -1432,6 +1435,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private helper_InitializeDiagram() {
+
+        if (this.diagramTypeSpecifiedInPath == DiagramType.ProcessDiagram)
+            return;
+
         this.template_BadgeShapes();
 
         this.diagram = this.template_Diagram();

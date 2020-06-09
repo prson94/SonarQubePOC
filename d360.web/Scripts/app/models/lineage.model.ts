@@ -435,7 +435,8 @@ export class SourceRuleSource {
 
 export enum DiagramType {
     Lineage = 1,
-    Impact = 2
+    Impact = 2,
+    ProcessDiagram = 3
 }
 
 export class AssetBrowserModel {

@@ -18,7 +18,7 @@
                     <d3s-loading isLoading="true">{{loadingText}}</d3s-loading>
                 </div>
             </div>
-            <div class="row" style="position: relative">
+            <div class="row" style="position: relative" *ngIf="diagramTypeSpecifiedInPath != 3">
                 <div class="col s12" style="padding: 0">
 
                     <div #diagram id="LineageDiagram" style="overflow: hidden;" class="diagram"></div>

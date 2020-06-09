@@ -76,6 +76,7 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 
 
 @NgModule({
@@ -151,7 +152,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         LineageEditorComponent,
         ModelDiagramComponent,
 
-        LineageDiagramComponent
+        LineageDiagramComponent,
+        ProcessDiagramComponent
     ],
     exports: [
         AssetBrowserComponent,
