@@ -56,6 +56,9 @@ export class BaseComponent {
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
 
+    governanceRolesSidebar: SecondaryNavItem;
+    connectorLabels: SecondaryNavItem;
+
 
     scoringDataQualitySidebar: SecondaryNavItem;
     scoringGovernanceSidebar: SecondaryNavItem;
@@ -242,7 +245,8 @@ export class BaseComponent {
         hasMonitor?: boolean,
         hasField?: boolean,
         hasChild?: boolean,
-        hasRuleResult?:boolean
+        hasRuleResult?: boolean,
+        hasGovernanceRoleSet?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
@@ -379,13 +383,13 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
-            if (hasRuleResult) {                
+            if (hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
                     'Rule Results',
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}/${this.uid}`
-                    ,null,1);
+                    , null, 1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
 
@@ -411,6 +415,23 @@ export class BaseComponent {
                     `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
                 );
                 this.secondaryNavService.showItem(this.actionsSidebar);
+            }
+
+            if (this.objectType == 'TaskType') {
+                this.governanceRolesSidebar = new SecondaryNavItem(
+                    'Governance Roles', 'GovernanceRoles', null,
+                    '/sidebar/governance-roles', null, 3);
+                if (!hasGovernanceRoleSet) {
+                    this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
+                }
+                this.secondaryNavService.showItem(this.governanceRolesSidebar);
+
+                this.connectorLabels = new SecondaryNavItem(
+                    'Connector Labels', 'ConnectorLabels', null,
+                    '/sidebar/connector-labels', null, 4);
+                this.secondaryNavService.showItem(this.connectorLabels);
+
+
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -797,7 +818,7 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-            
+
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
@@ -814,7 +835,7 @@ export class BaseComponent {
             }
             var area = "";
 
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
@@ -858,7 +879,7 @@ export class BaseComponent {
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule');
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
@@ -914,6 +935,7 @@ export class BaseComponent {
         components.push(this.childSidebar);
         components.push(this.fieldNav);
         components.push(this.ruleResultSidebar);
+        components.push(this.governanceRolesSidebar);
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {
@@ -1112,7 +1134,7 @@ export class BaseComponent {
 
                     });
 
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,null,
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, null,
                         true,
                         'Rule',
                         data.ObjectId));

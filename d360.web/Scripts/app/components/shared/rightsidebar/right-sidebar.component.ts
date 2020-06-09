@@ -13,6 +13,8 @@ import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { SearchDetail } from '../../../models/search-result.model';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 
 declare var CompanySettings
@@ -22,7 +24,7 @@ declare var CurrentResourceID;
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService, CompanySettingsService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -56,6 +58,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     private actionsAssigned: boolean = false;
     private currentResouceID: number;
     private isScoringScreen: boolean = false;
+    private menuWarningType: string = '';
 
     status: string;
     showStatus = false;
@@ -79,6 +82,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
+        private settingsService: CompanySettingsService,
         private router: Router
     ) {
         router.events
@@ -176,7 +180,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
     getTitle(item: SecondaryNavItem) {
         if (this.statistics && this.statistics.IssueCount > 0 && item.title === 'Actions') {
             let plurality = this.statistics.IssueCount == 1 ? ' is' : 's are';
-            return this.statistics.IssueCount + " outstanding action" + plurality +" assigned to you";
+            return this.statistics.IssueCount + " outstanding action" + plurality + " assigned to you";
         } else {
             return "";
         }
@@ -198,6 +202,16 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.items.push(item);
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
+
+                if (item.tag === 'GovernanceRoles') {
+                    this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
+                        if (res[0] && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                            item.warningMessage = `GovRoleWarning`;
+                            this.ref.markForCheck();
+                        }
+                    });
+
+                }
             });
 
         this.buttonSubscription = this.secondaryNavService.rightSidebarButton$.subscribe(

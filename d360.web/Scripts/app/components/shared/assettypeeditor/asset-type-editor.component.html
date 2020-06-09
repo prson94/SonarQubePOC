@@ -1,6 +1,6 @@
 ﻿<div *ngIf="isLoading">
     <div class="row">
-        <d3s-loading [isLoading]="isLoading"></d3s-loading>        
+        <d3s-loading [isLoading]="isLoading"></d3s-loading>
         <div *ngIf="!isLoading">{{prompt}}</div>
     </div>
 </div>
@@ -17,13 +17,12 @@
                     </div>
                     <div class="col l6 m6 s12" *ngIf="showParentPredicates">
                         <div [ngClass]="isPredicateRequired ? 'FieldNameRequired' : 'FieldName'">Predicate To Parent</div>
-                        <p-dropdown 
-                                    [options]="model.Predicates" 
-                                    #predicate="ngModel" 
-                                    [(ngModel)]="model.AssetType.Hierarchy.PredicateUid" 
-                                    (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);" 
-                                    [style]="{'width':'100%'}" 
-                                    name="predicate" 
+                        <p-dropdown [options]="model.Predicates"
+                                    #predicate="ngModel"
+                                    [(ngModel)]="model.AssetType.Hierarchy.PredicateUid"
+                                    (ngModelChange)="model.AssetType.Hierarchy.PredicateUid=$event;updateParent(model.AssetType.Hierarchy.PredicateUid);"
+                                    [style]="{'width':'100%'}"
+                                    name="predicate"
                                     [required]="isPredicateRequired">
                         </p-dropdown>
                         <div [hidden]="predicate.valid || predicate.pristine" class="validation-text">Predicate is required</div>
@@ -57,6 +56,22 @@
                     </div>
                 </div>
 
+                <div class="row" *ngIf="assetTypeClass == 15">
+                    <div class="col s12">
+                        <div class="FieldName" style="overflow:unset;">
+                            Flow Object Type
+                            <d3s-info-tooltip>
+                                <strong>Events</strong> - An event is represented by a circle and is something that “happens” during the course of a business process. These events affect the flow of the process and usually have a cause (trigger) or an impact (result).<br />
+
+                                <strong>Activities</strong> - An activity is represented by a rounded-corner rectangle and is a generic term for work that the company performs. The types of activities are <strong>Task</strong> and <strong>Sub-Process</strong>.<br />
+
+                                <strong>Gateways</strong> - A gateway is represented by the diamond shape and is used to control the divergence and convergence of connections. It will determine traditional decisions, as well as the forking, merging, and joining of paths.<br />
+                            </d3s-info-tooltip>
+                        </div>
+                        <p-dropdown name="FlowObjectType" [(ngModel)]="model.AssetType.FlowObjectType" [options]="flowObjectDDL" (onChange)="selectFlowType($event)" [style]="{'width':'100%'}"></p-dropdown>
+                    </div>
+                </div>
+
                 <div class="row" *ngIf="showNotesField">
                     <div class="col s12">
                         <div class="FieldName">Source Notes</div>
@@ -65,7 +80,7 @@
                 </div>
             </div>
             <div class="col l4 m12 s12">
-                 <simple-accordion header="Settings" active="true" *ngIf="showAssetArtifactSettings">
+                <simple-accordion header="Settings" active="true" *ngIf="showAssetArtifactSettings">
                     <div class="FieldName">Auto Display Description?</div>
                     <div class="row">
                         <div class="col l1 m2 s12">
@@ -133,7 +148,7 @@
                         </div>
                     </div>
                     <div>
-                        <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor"  class="errorMessage">Foreground and background color cannot be the same</div>
+                        <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
                     </div>
 
                     <div class="FieldName">Icon</div>

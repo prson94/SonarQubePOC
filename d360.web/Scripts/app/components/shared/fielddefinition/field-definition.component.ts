@@ -4,18 +4,18 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
-import { FieldTypeAPIModel, FieldTypeAPIModelField, FieldDisplayModel } from '../../../models/fieldtype-api.model';
+import { FieldTypeAPIModel, FieldTypeAPIModelField, FieldDisplayModel, FieldType } from '../../../models/fieldtype-api.model';
 
 
 @Component({
     selector: 'd3s-field-definition-tile',
     templateUrl: './field-definition.component.html',
-    providers: [ FieldsObservableService ]
+    providers: [FieldsObservableService]
 })
 
 export class FieldDefinitionComponent extends BaseComponent implements OnChanges {
     @Input() objectType: string;
-    @Input() objectID: number;    
+    @Input() objectID: number;
     @Input() title: string = 'Field Definition';
 
     @Input() actionTypeUid: string;
@@ -56,7 +56,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        for (let p in changes) {            
+        for (let p in changes) {
             if (p == 'objectID') {
                 this.objectID = changes['objectID'].currentValue;
                 this.isEditing = false;
@@ -109,7 +109,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     get currentUid(): string {
-        return this.actionTypeUid || this.assetTypeUid || this.relationshipTypeUid;        
+        return this.actionTypeUid || this.assetTypeUid || this.relationshipTypeUid;
     }
 
     private checkKeyFields() {
@@ -135,7 +135,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
 
     CheckObjectType() {
         if (this.objectType) {
-           return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
+            return ['ArtifactType', 'TaxonomyType', 'PolicyType', 'RuleType', 'LookupType'].indexOf(this.objectType) != -1;
         }
     }
     getDisplayTypeName(name: string): string {
@@ -195,9 +195,9 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     }
 
     deleteFieldType(name: string) {
-      
+
         this.fieldsService.deleteFieldType(this.selectedRow.Name, this.assetTypeUid, this.actionTypeUid, this.relationshipTypeUid).subscribe(
-            res => {                                        
+            res => {
                 if (res != null && res.Success === true) {
                     this.messagesService.showInfoMessage('Success', 'Field definition successfully removed.');
                     let index = this.fieldDisplayModel.findIndex(f => f.Name == this.selectedRow.Name);
@@ -218,13 +218,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
                     }
 
                     this.onFieldsChanged.emit();
-                } else {      
+                } else {
                     this.isDeleting = false;
                     this.checkKeyFields();
-                }                    
+                }
             }
         );
-       
+
     }
 
     moveUp(field) {
@@ -251,5 +251,13 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
     cancel() {
         this.isEditing = false;
         this.onCancel.emit();
+    }
+
+    showDeleteButtonByFieldType(fdm: FieldDisplayModel) {
+        if (this.objectType == 'TaskType') {
+            if (fdm.Name == 'Name' || fdm.Name == 'StepNo' || fdm.Name == 'GovernanceRole')
+                return false;
+        }
+        return true;
     }
 }

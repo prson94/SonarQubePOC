@@ -492,7 +492,7 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -550,6 +550,43 @@ namespace d360.web.Controllers.V2
                             Type = DataType.Text.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = isNamePartOfKey
+                        });
+                    }
+
+                    if (model.Class == AssetTypeClass.Diagram)
+                    {
+                        var refListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                        var refList = Company.AssetTypes.FirstOrDefault(x => x.uid == refListUid);
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "GovernanceRole",
+                            Name = "GovernanceRole",
+                            SortOrder = 2,
+                            Type = DataType.Lookup.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false,
+                            LookupObjectID = refList.ObjectID,
+                            LookupObjectType = refList.Object
+                        });
+
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "Step No",
+                            Name = "StepNo",
+                            SortOrder = 3,
+                            Type = DataType.Number.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false
                         });
                     }
                 }
@@ -1028,7 +1065,9 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.TechnicalAsset,
                     AssetTypeClass.Model,
                     AssetTypeClass.Policy,
-                    AssetTypeClass.Rule };
+                    AssetTypeClass.Rule,
+                AssetTypeClass.Diagram
+                };
 
                 List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();
 
@@ -1797,6 +1836,81 @@ namespace d360.web.Controllers.V2
                 SendException(ex, new Dictionary<string, string>() {
                     { "Endpoint Method", prefix },
                     { "AssetTypeCount", $"{((assetTypes != null) ? assetTypes.Count : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Removes a single asset type
+        /// </summary>
+        /// <param name="assetType">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("single"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> DeleteSingleAssetTypesAsync(AssetTypeSingleDelete assetType)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to remove asset types."));
+
+            var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+
+                if (governanceRole == assetType.Uid.ToString())
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {assetType.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
+
+                if (assetType == null)
+                    assetType = readRequestJsonContent<AssetTypeSingleDelete>(Request).Result;
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var type = AssetRepository.GetAssetTypeByUID(assetType.Uid);
+                if (type == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Asset Type with UID {assetType.Uid} does not exist."));
+                }
+                if (type.Class != AssetTypeClass.Diagram)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Only Diagram Asset Types are allowed here."));
+
+                }
+
+                var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
+
+                Company.Add(execution);
+                Company.SaveChanges();
+                var deletes = new AssetTypeDeletes();
+                deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
+                var deleteAssetTypesResults = Company.RemoveAssetTypes(execution, deletes, 28800); //dbExecutionTimeout = 8 hours
+                Company.SaveChanges();
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                           deleteAssetTypesResults
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeCount", $"{((assetType != null) ? 1 : 0)}" }
                 });
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
