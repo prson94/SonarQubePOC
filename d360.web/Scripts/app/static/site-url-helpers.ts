@@ -90,7 +90,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
-    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'diagram-assets';
+    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'Diagrams';
 
 
 
