@@ -1432,7 +1432,7 @@ namespace d360.web.Controllers.V2
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
-            Route("{assetTypeUid:Guid}/possible-owners"),
+            Route("{assetTypeUid:Guid}/possibleOwners"),
             SwaggerConsumes("application/json", "application/xml"), SwaggerProduces("application/json", "application/xml"),
             SwaggerResponse(HttpStatusCode.OK, "A list of asset type counts for current user.", typeof(List<AssetTypePossibleOwnersModel>)),
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid Class name specified.", typeof(ErrorResponse)),

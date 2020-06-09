@@ -103,7 +103,7 @@ export class AssetTypeService extends BaseObservableService {
     GetAssetTypePossibleOwners(uid: string): Observable<any[]> {
         return this
             .http
-            .get(`api/v2/assets/${uid}/possible-owners`)
+            .get(`api/v2/assets/${uid}/possibleOwners`)
             .pipe(
                 map((response) => { return <any[]>response }),
                 catchError(err => this.handleError(err))
