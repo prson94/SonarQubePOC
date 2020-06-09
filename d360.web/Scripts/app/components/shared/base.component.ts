@@ -55,7 +55,9 @@ export class BaseComponent {
     commentsSidebar: SecondaryNavItem;
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
+
     governanceRolesSidebar: SecondaryNavItem;
+    connectorLabels: SecondaryNavItem;
 
 
     scoringDataQualitySidebar: SecondaryNavItem;
@@ -423,6 +425,13 @@ export class BaseComponent {
                     this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
                 }
                 this.secondaryNavService.showItem(this.governanceRolesSidebar);
+
+                this.connectorLabels = new SecondaryNavItem(
+                    'Connector Labels', 'ConnectorLabels', null,
+                    '/sidebar/connector-labels', null, 4);
+                this.secondaryNavService.showItem(this.connectorLabels);
+
+
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(

@@ -15,8 +15,8 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_RULE_ROOT, loadChildren: () => import('./components/rule/rule.module').then(m => m.RuleModule) },
     { path: SiteUrlHelpers.SITE_URL_TAG_ROOT, loadChildren: () => import('./components/tag/tag.module').then(m => m.TagModule) },
     { path: SiteUrlHelpers.SITE_URL_GROUP_ROOT, loadChildren: () => import('./components/group/group.module').then(m => m.GroupModule) },
-    { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, data: { type: SiteUrlHelpers.SITE_URL_POLICY_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
-    { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, data: { type: SiteUrlHelpers.SITE_URL_MODEL_ROOT },  loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
+    { path: SiteUrlHelpers.SITE_URL_POLICY_ROOT, data: { type: SiteUrlHelpers.SITE_URL_POLICY_ROOT }, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
+    { path: SiteUrlHelpers.SITE_URL_MODEL_ROOT, data: { type: SiteUrlHelpers.SITE_URL_MODEL_ROOT }, loadChildren: () => import('./components/hierarchy/hierarchy.module').then(m => m.HierarchyModule) },
     { path: SiteUrlHelpers.SITE_URL_RESOURCE_ROOT, loadChildren: () => import('./components/resource/resource.module').then(m => m.ResourceModule) },
     { path: SiteUrlHelpers.SITE_URL_REFERENCE_ROOT, loadChildren: () => import('./components/reference/reference.module').then(m => m.ReferenceModule) },
     { path: SiteUrlHelpers.SITE_URL_ASSET_ROOT, loadChildren: () => import('./components/asset/asset.module').then(m => m.AssetModule), data: { preload: false } },
@@ -47,6 +47,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_ACTIONS_ROOT, loadChildren: () => import('./components/sidebar/actions/actions.module').then(m => m.ActionsModule) },
     { path: SiteUrlHelpers.SITE_URL_RULERESULT_ROOT, loadChildren: () => import('./components/sidebar/ruleresults/rule-results.module').then(m => m.RuleResultsModule) },
     { path: SiteUrlHelpers.SITE_URL_GOVERNANCE_ROLES_ROOT, loadChildren: () => import('./components/sidebar/governance-roles/governance-roles-sidebar.module').then(m => m.GovernanceRolesModule) },
+    { path: SiteUrlHelpers.SITE_URL_CONNECTOR_LABELS_ROOT, loadChildren: () => import('./components/sidebar/connector-labels/connector-labels-sidebar.module').then(m => m.ConnectorLabelsModule) },
     {
         path: '**',
         redirectTo: SiteUrlHelpers.getDefaultRoute()

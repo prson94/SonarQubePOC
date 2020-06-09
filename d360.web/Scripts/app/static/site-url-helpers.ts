@@ -46,7 +46,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
     static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governance-roles';
-
+    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connector-labels';
     //hierarchy child routes
     static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
