@@ -529,6 +529,7 @@ when not matched by target then
                                 when IsValidAsset = 0 then 0
                                 when IsValidMetric = 0 then 0
                                 when IsValidMetricDate = 0 then 0
+                                when IsValidAllocation = 0 then 0
                                 else 1
                                 end 
             where   ExecutionID = @ExecutionID and success is null;
@@ -547,6 +548,11 @@ when not matched by target then
             set     Message = coalesce(Message, '') + 'Invalid metric specified for the date provided; '
             where   ExecutionID = @ExecutionID 
                     and IsValidMetricDate = 0;
+
+            update  api.ExecutionMetric
+            set     Message = coalesce(Message, '') + 'This asset does not have this score type allocated for external scores; '
+            where   ExecutionID = @ExecutionID 
+                    and IsValidAllocation = 0;
 
             update  api.ExecutionMetric
             set     Success = 1
