@@ -48,15 +48,13 @@ export class AppComponent implements AfterContentInit, OnDestroy {
         private cookieService: CookieService,
         private toastService: MessageService) {
         this.msgs = [];
-        //debugger;
+        
         this.subscription = messagesService.errorMessage$.subscribe(
             errorMsg => {
-                //debugger;
                 this.toastService.add({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
             });
         this.subscription = messagesService.infoMessage$.subscribe(
             infoMsg => {       
-                //debugger;
                 this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
         this.aiService.setUserId(String(CurrentResourceID));

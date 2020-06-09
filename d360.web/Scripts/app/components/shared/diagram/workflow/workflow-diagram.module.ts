@@ -11,7 +11,6 @@ import { CalendarModule } from 'primeng/calendar';
 import { ButtonModule } from 'primeng/button';
 import { InputMaskModule } from 'primeng/inputmask';
 import { SharedModule } from 'primeng/api';
-//import { DataListModule } from 'primeng/datalist';
 import { EditorModule } from 'primeng/editor';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -63,7 +62,6 @@ import { WorkflowFieldsService } from '../../../../services/workflow-fields.serv
         ButtonModule,
         CalendarModule,
         InputMaskModule,
-        //DataListModule,
         AutoCompleteModule,
         MultiSelectModule,
         TableModule,

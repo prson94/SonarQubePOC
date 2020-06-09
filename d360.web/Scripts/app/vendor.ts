@@ -29,7 +29,6 @@ import 'primeng/menubar';
 import 'primeng/multiselect';
 import 'primeng/overlaypanel';
 import 'primeng/selectbutton';
-//import 'primeng/api';
 import 'primeng/spinner';
 import 'primeng/table';
 import 'primeng/tabview';
