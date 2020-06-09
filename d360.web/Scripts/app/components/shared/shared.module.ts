@@ -6,7 +6,7 @@ import { GovernRequestInterceptor } from "../../http-interceptors/govern-request
 import { RouterModule } from '@angular/router';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
@@ -17,7 +17,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TreeTableModule } from 'primeng/treetable';
 import { InputSwitchModule } from 'primeng/inputswitch';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 
 
 import { PipesModule } from '../../pipes/pipes.module';
@@ -70,7 +70,7 @@ import { SiteModalModule } from './modal/gov-modal.module';
         RouterModule,
         
         //primeng
-        GrowlModule,
+        ToastModule,
         InputSwitchModule,
         InputTextModule,        
         TreeTableModule,

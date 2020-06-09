@@ -1981,7 +1981,7 @@ input[type=text]::-ms-clear {
 .ui-items-hidden .ui-galleria-thumbnail-item.ui-galleria-thumbnail-item-active {
     visibility: visible;
 }
-@@ -1,776 +0,0 @@
+/*@@ -1,776 +0,0 @@*/
 /* Deprecated Grid CSS */
 .ui-grid {
     clear: both;

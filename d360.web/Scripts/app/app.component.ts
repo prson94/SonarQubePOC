@@ -1,9 +1,10 @@
 import { Component, OnDestroy, AfterContentInit, ViewChild, ElementRef } from '@angular/core';
 import { HeaderActionsService } from './services/header-actions.service';
 import { Subscription } from 'rxjs';
-import { Message } from 'primeng/components/common/api';
+import { Message } from 'primeng/api';
 import { CookieService } from './services/cookie.service';
 import { MessagesObservableService } from './services/messages-observable.service';
+import { MessageService } from 'primeng/api';
 import { ApplicationInsightsService } from './services/application-insights.service';
 
 declare var CurrentResourceID;
@@ -27,8 +28,9 @@ declare var CurrentResourceID;
                         </div>
                     </div>
                 </main>
-                <p-growl [immutable] ="false" [value]="msgs"></p-growl>
-              `
+                <p-toast></p-toast>
+              `,
+    providers: [MessageService]
 })
 
 export class AppComponent implements AfterContentInit, OnDestroy {    
@@ -40,18 +42,22 @@ export class AppComponent implements AfterContentInit, OnDestroy {
     @ViewChild('sidebar', {static: false, read: ElementRef }) sidebar: ElementRef;
     private timer: any;
     constructor(                
-        private messagesService: MessagesObservableService,
+        private messagesService: MessagesObservableService,        
         protected headerActionsService: HeaderActionsService,
         protected aiService: ApplicationInsightsService,
-        private cookieService: CookieService) {
+        private cookieService: CookieService,
+        private toastService: MessageService) {
         this.msgs = [];
+        //debugger;
         this.subscription = messagesService.errorMessage$.subscribe(
             errorMsg => {
-                this.msgs.push({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
+                //debugger;
+                this.toastService.add({ severity: 'error', summary: errorMsg.summary, detail: errorMsg.detail });
             });
         this.subscription = messagesService.infoMessage$.subscribe(
-            infoMsg => {
-                this.msgs.push({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
+            infoMsg => {       
+                //debugger;
+                this.toastService.add({ severity: 'info', summary: infoMsg.summary, detail: infoMsg.detail });
             });
         this.aiService.setUserId(String(CurrentResourceID));
     }

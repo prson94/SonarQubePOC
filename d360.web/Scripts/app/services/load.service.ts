@@ -2,7 +2,7 @@
 import {LoadDetail, LoadFilePostModel, LoadColumn} from '../models/load.model';
 import {MessagesObservableService} from './messages-observable.service';
 import {GridColumn} from '../models/grid-definition.model';
-import {SelectItem} from 'primeng/components/common/api';
+import {SelectItem} from 'primeng/api';
 import {JsonResult} from '../models/jsonresult.model';
 import {BaseObservableService} from "./baseObservable.service";
 import {HttpClient} from "@angular/common/http";

@@ -19,8 +19,8 @@ import { GroupItemComponent } from './group-item.component';
 import { GroupListComponent } from './group-list.component';
 import { GroupResponsibilityComponent } from './group-responsibility.component';
 
-import { GrowlModule } from 'primeng/growl';
-import { SharedModule } from 'primeng/shared';
+import { ToastModule } from 'primeng/toast';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 
 @NgModule({
@@ -33,7 +33,7 @@ import { TableModule } from 'primeng/table';
         GroupRoutingModule,
 
         //primeng
-        GrowlModule,        
+        ToastModule,        
         SharedModule,
         TableModule,
 

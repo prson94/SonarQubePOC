@@ -7,7 +7,7 @@ import { FormsModule } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 
 import { CoreModule } from '../core.module';
 import { TilesModule } from '../tiles/tiles.module';

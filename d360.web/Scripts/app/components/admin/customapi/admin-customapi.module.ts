@@ -23,7 +23,7 @@ import { AdminCustomAPIServiceNamespaceComponent } from './admin-customapi-servi
 
 import { AdminCustomAPIRoutingModule } from './admin-customapi.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TableModule } from 'primeng/table';

@@ -16,7 +16,7 @@ import { GroupForm } from './group.form';
 
 import { AdminGroupsRoutingModule } from './admin-groups.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { EditorModule } from 'primeng/editor';

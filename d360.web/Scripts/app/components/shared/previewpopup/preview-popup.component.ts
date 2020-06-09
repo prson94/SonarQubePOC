@@ -4,7 +4,7 @@ import { Subject, Subscription } from "rxjs";
 import { TooltipInfo } from '../../../models/tooltip-info.model';
 import { PreviewpopupSingletonService } from '../../../services/previewpopup-singleton.service';
 import { ToolTipService } from '../../../services/tooltip.service';
-import { DomHandler } from 'primeng/components/dom/domhandler';
+import { DomHandler } from 'primeng/dom';
 
 
 @Component({

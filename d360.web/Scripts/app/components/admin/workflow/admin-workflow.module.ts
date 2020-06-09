@@ -24,12 +24,12 @@ import { AdminWorkflowDeleteComponent } from './admin-workflow-delete.component'
 import { AdminWorkflowRoutingModule } from './admin-workflow.routes';
 import { DirectivesModule } from '../../../directives/directives.module';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 import { CalendarModule } from 'primeng/calendar';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 
@@ -45,7 +45,7 @@ import { TableModule } from 'primeng/table';
         //prime  
         ButtonModule,
         CalendarModule,        
-        GrowlModule,
+        ToastModule,
         InputTextModule,
         SharedModule,
         EditorModule,
