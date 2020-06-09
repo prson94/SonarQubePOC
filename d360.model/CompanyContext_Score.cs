@@ -431,7 +431,7 @@ when not matched by target then
             cross apply (
                         select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate] and [State] = 1
                         ) M_M
-            where T.ExecutionID = @ExecutionID
+            where T.ExecutionID = @ExecutionID and M_M.EffectiveDate is not null
 
             update T set T.IsValidMetricDate = 1
             from api.ExecutionMetric T 
