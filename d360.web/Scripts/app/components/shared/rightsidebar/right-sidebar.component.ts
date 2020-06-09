@@ -13,6 +13,8 @@ import { Survey } from '../../../models/survey.model';
 import { WorkflowService } from '../../../services/workflow.service';
 import { filter } from "rxjs/operators";
 import { SearchDetail } from '../../../models/search-result.model';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 
 
 declare var CompanySettings
@@ -22,7 +24,7 @@ declare var CurrentResourceID;
     selector: 'd3s-right-sidebar',
     templateUrl: 'right-sidebar.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
-    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService],
+    providers: [SurveysService, ObjectStatisticsService, ArtifactService, WorkflowService, CompanySettingsService],
     host: { '(window:resize)': 'checkSize()' }
 })
 
@@ -80,6 +82,7 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
         private ref: ChangeDetectorRef,
         private artifactService: ArtifactService,
         private workflowService: WorkflowService,
+        private settingsService: CompanySettingsService,
         private router: Router
     ) {
         router.events
@@ -200,8 +203,14 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                 this.items = _.sortBy(this.items, 'orderPriority'); this.emitChanges();
                 this.secondaryNavService.setLocalCurrentTabs([...this.items]);
 
-                if (item.tag === 'GovernanceRoles' && CompanySettings['GovernanceRoleReferenceListUid'] === '00000000-0000-0000-0000-000000000000') {
-                    item.warningMessage = `GovRoleWarning`;
+                if (item.tag === 'GovernanceRoles') {
+                    this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
+                        if (res[0] && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                            item.warningMessage = `GovRoleWarning`;
+                            this.ref.markForCheck();
+                        }
+                    });
+
                 }
             });
 

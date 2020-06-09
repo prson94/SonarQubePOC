@@ -834,7 +834,7 @@ namespace d360.web.Controllers
                     }
                 }
 
-                if(model.ObjectType == SystemObjects.TaskType.ToString())
+                if (model.ObjectType == SystemObjects.TaskType.ToString())
                 {
                     execProcedure = false;
                     responseModel.Object = responseModel.ObjectType = SystemObjects.TaskType.ToString();
@@ -844,6 +844,14 @@ namespace d360.web.Controllers
                     responseModel.DisplayValue = "Diagram Assets";
                     responseModel.MainTabTitle = "Diagram Asset Types";
                     responseModel.Object = SystemObjects.TaskType.ToString();
+
+                    var checkUidSQL = @"select count(*) from companysetting
+                                    where companyid = @companyId and settingid = 73
+                                    and Value != '00000000-0000-0000-0000-000000000000'";
+
+                    var res = Community.Query<int>(checkUidSQL, new { companyid = Company.CurrentCompanyID }).FirstOrDefault();
+                    responseModel.Items.HasGovernanceRoleUidSet = res > 0;
+
                 }
 
                 if (model.ObjectType == SystemObjects.IntersectType.ToString())

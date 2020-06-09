@@ -12,11 +12,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AssetTypeClass, AssetCount } from '../../../models/asset.model';
 import { TreeTable } from 'primeng/treetable';
 import { AssetService } from '../../../services/asset.service';
+import { CompanySettingsService } from '../../../services/settings.service';
+import { CompanySettingEnum } from '../../../models/settings.model';
 declare var CompanySettings;
 
 @Component({
     selector: 'd3s-admin-diagram-asset',
-    providers: [ArtifactTypeService, AuditService, AssetService],
+    providers: [ArtifactTypeService, AuditService, AssetService, CompanySettingsService],
     templateUrl: './admin-diagram-asset.component.html'
 })
 
@@ -50,7 +52,8 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         private artifactsService: ArtifactTypeService,
         private assetsService: AssetService,
         titleService: Title,
-        protected messagesService: MessagesObservableService
+        protected messagesService: MessagesObservableService,
+        private settingsService: CompanySettingsService
     ) {
         super(headerBreadcrumbService, titleService, secondaryNavService);
         this.theDeleteCallback = this.deleteArtifactType.bind(this);
@@ -68,7 +71,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
             this.formTitle = `Edit ${singularLabel}`;
             this.load();
         });
-        this.disableAdd = CompanySettings['GovernanceRoleReferenceListUid'] === '00000000-0000-0000-0000-000000000000';
+
     }
 
     selectedItemChange() {
@@ -98,7 +101,12 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
 
                 }
                 this.selectedItemChange();
-                this.isLoading = false;
+                this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid).subscribe(res => {
+                    if (res[0] && res[0].StringSetting.Value === '00000000-0000-0000-0000-000000000000') {
+                        this.disableAdd = true;
+                    }
+                    this.isLoading = false;
+                });
             });
     }
 
@@ -158,8 +166,6 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private deleteArtifactType(id: number) {
-        console.log(id);
-        console.log(this.artifactTypes);
         var data = this.artifactsService.findArtifactTypeById(this.artifactTypes, id);
         if (data) {
             this.assetsService.deleteAssetType(data.data.uid).subscribe(result => {

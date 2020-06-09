@@ -18,7 +18,6 @@ export class InfoTooltipComponent implements OnInit {
     @Input() style: string;
 
     ngOnInit() {
-        console.log(this);
         if (this.titleValue == '') {
             if (!this.style || this.style == 'info') {
                 this.titleValue = `<i class='fa fa-question-circle'><i/>`;

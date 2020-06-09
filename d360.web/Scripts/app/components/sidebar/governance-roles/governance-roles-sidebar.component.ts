@@ -1,5 +1,5 @@
 ﻿import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { BaseComponent } from '../../shared/base.component';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
@@ -7,13 +7,16 @@ import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { GovernanceRole } from '../../../models/governance-role.model';
 import { AssetTypeService } from '../../../services/asset-type.service';
 import { AssetTypeClass } from '../../../models/asset.model';
-
-declare var CompanySettings;
+import { CompanySettingsService } from '../../../services/settings.service';
+import { forkJoin } from 'rxjs';
+import { CompanySettingEnum, SettingsPutModel, StringSetting } from '../../../models/settings.model';
+import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 
 @Component({
     selector: 'd3s-governance-roles',
     templateUrl: './governance-roles-sidebar.component.html',
-    providers: [AssetTypeService],
+    providers: [AssetTypeService, CompanySettingsService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 
@@ -22,10 +25,13 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
     private refListSub: any;
     constructor(
         private route: ActivatedRoute,
+        private router: Router,
         secondaryNavService: SecondaryNavService,
         private assetsService: AssetTypeService,
         breadcrumbService: HeaderBreadcrumbService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private settingsService: CompanySettingsService,
+        private messagesService: MessagesObservableService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -33,18 +39,19 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
     }
 
     private model: GovernanceRole;
+    private originalModel: GovernanceRole;
     private refListDDL: any[] = [];
     private isSaving: boolean = false;
-    
+
 
     ngOnInit() {
+        this.isLoading = true;
         this.sub = this
             .route
             .params
             .subscribe(params => {
                 this.buildSecondaryNavigationForObject(0, 'TaskType');
             });
-        this.isLoading = true;
         this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
             .subscribe(res => {
                 this.refListDDL = [];
@@ -53,11 +60,26 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
                     this.refListDDL.push({ value: x.uid, label: x.Name });
                 })
 
-                this.isLoading = false;
                 this.cdRef.detectChanges();
-                
+
             });
-        this.model = this.getInitialData();
+
+        forkJoin(
+            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleDescription),
+            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleLabel),
+            this.settingsService.getSettingById(CompanySettingEnum.GovernanceRoleReferenceListUid),
+        ).subscribe(([r1, r2, r3]) => {
+            this.originalModel = new GovernanceRole();
+            this.originalModel.Description = r1[0].StringSetting.Value;
+            this.originalModel.Name = r2[0].StringSetting.Value;
+            this.originalModel.RefListUid = r3[0].StringSetting.Value;
+
+            this.model = this.getInitialData();
+            this.isLoading = false;
+            this.cdRef.detectChanges();
+
+        });
+
     }
 
     discard() {
@@ -65,11 +87,7 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
     }
 
     private getInitialData(): GovernanceRole {
-        var gr = new GovernanceRole();
-        gr.RefListUid = CompanySettings["GovernanceRoleReferenceListUid"];
-        gr.Name = CompanySettings["GovernanceRoleLabel"];
-        gr.Description = CompanySettings["GovernanceRoleDescription"];
-        return gr;
+        return JSON.parse(JSON.stringify(this.originalModel));
     }
 
     private isDirty() {
@@ -80,11 +98,30 @@ export class GovernanceRolesComponent extends BaseComponent implements OnInit, O
     private save() {
         //calling save function
         this.isSaving = true;
-        this.refListSub = this.assetsService.getAssetTypesByClass(AssetTypeClass.Reference)
-            .subscribe(res => {
-                this.isSaving = false;
+        var updateLabel = new SettingsPutModel();
+        updateLabel.StringSetting = new StringSetting();
+        updateLabel.SettingID = CompanySettingEnum.GovernanceRoleLabel;
+        updateLabel.StringSetting.Value = this.model.Name;
 
-            });
+        var updateDesc = new SettingsPutModel();
+        updateDesc.StringSetting = new StringSetting();
+        updateDesc.SettingID = CompanySettingEnum.GovernanceRoleDescription;
+        updateDesc.StringSetting.Value = this.model.Description;
+
+        var updateRefList = new SettingsPutModel();
+        updateRefList.StringSetting = new StringSetting();
+        updateRefList.SettingID = CompanySettingEnum.GovernanceRoleReferenceListUid;
+        updateRefList.StringSetting.Value = this.model.RefListUid;
+
+        forkJoin(
+            this.settingsService.putSetting(updateLabel),
+            this.settingsService.putSetting(updateDesc),
+            this.settingsService.putSetting(updateRefList)
+        ).subscribe(([r1, r2, r3]) => {
+            this.isSaving = false;
+            this.originalModel = this.model;
+            this.messagesService.showInfoMessage('Success', 'Governance Role successfully updated');
+        });
     }
 
     ngOnDestroy() {

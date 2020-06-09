@@ -1,6 +1,8 @@
 ﻿<div class="row">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+
     <div class="col s12 m5 l4" *ngIf="!isEditingFieldType">
-        <div class="tile tile-detail">
+        <div class="tile tile-detail" *ngIf="!isLoading">
             <header>
                 {{tabTitle}}
                 <div *ngIf="disableAdd" class="warningMessage">
