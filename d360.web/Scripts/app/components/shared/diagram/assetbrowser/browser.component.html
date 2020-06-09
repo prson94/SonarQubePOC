@@ -8,9 +8,9 @@
                     <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
                 </div>
                 <div class="controls-right">
-                    <d3s-assetbrowser-panels (click)="panels_Click($event)" 
-                        [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount" 
-                        [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
+                    <d3s-assetbrowser-panels (click)="panels_Click($event)"
+                                             [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"
+                                             [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
                 </div>
             </div>
             <div class="row" *ngIf="isLoading">
@@ -102,6 +102,12 @@
                         <d3s-assetbrowser-zoom [scale]="scale" (change)="zoom_Change($event)"></d3s-assetbrowser-zoom>
                     </div>
 
+                </div>
+            </div>
+
+            <div class="row" style="position: relative" *ngIf="diagramTypeSpecifiedInPath == 3">
+                <div class="col s12" style="padding: 0">
+                    <d3s-process-diagram></d3s-process-diagram>
                 </div>
             </div>
         </div>
