@@ -9,7 +9,6 @@ using d360.core;
 using d360.core.entities;
 using d360.core.entities.Contracts;
 using d360.core.entities.Metric;
-using d360.core.entities.Scoring;
 using d360.core.entities.Views;
 using d360.core.entities.Workflow;
 using d360.core.entities.Graph;
@@ -54,7 +53,7 @@ namespace d360.model
         DbSet<FieldApiModel> FieldApiModels { get; set; }
         DbSet<FieldLookupValue> FieldLookupValues { get; set; }
         DbSet<Field> Fields { get; set; }
-        DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }        
+        DbSet<FieldTypeLookup> FieldTypeLookups { get; set; }
         DbSet<FieldType> FieldTypes { get; set; }
         DbSet<FieldValue> FieldValues { get; set; }
         DbSet<FieldWithRelation> FieldWithRelations { get; set; }
@@ -81,7 +80,7 @@ namespace d360.model
         DbSet<IntegrationExecutionAssetType> IntegrationExecutionAssetTypes { get; set; }
         DbSet<IntegrationSetting> IntegrationSettings { get; set; }
         DbSet<IntegrationUnresolvedRelationItem> IntegrationUnresolvedRelationItems { get; set; }
-        DbSet<IntersectDetail> IntersectDetails { get; set; }        
+        DbSet<IntersectDetail> IntersectDetails { get; set; }
         DbSet<Intersect> Intersects { get; set; }
         DbSet<IntersectTypeDetail> IntersectTypeDetails { get; set; }
         DbSet<IntersectType> IntersectTypes { get; set; }
@@ -118,7 +117,7 @@ namespace d360.model
         DbSet<OrganizationResourceDetail> OrganizationResourceDetails { get; set; }
         DbSet<OrganizationResource> OrganizationResources { get; set; }
         DbSet<Organization> Organizations { get; set; }
-        DbSet<OrganizationType> OrganizationTypes { get; set; }        
+        DbSet<OrganizationType> OrganizationTypes { get; set; }
         DbSet<Predicate> Predicates { get; set; }
         DbSet<Question> Questions { get; set; }
         DbSet<QuestionTypeOption> QuestionTypeOptions { get; set; }
@@ -154,7 +153,7 @@ namespace d360.model
         DbSet<WorkflowVersion> WorkflowVersions { get; set; }
         DbSet<WorkflowVersionStep> WorkflowVersionSteps { get; set; }
         DbSet<WorkflowVersionStepTransition> WorkflowVersionStepTransitions { get; set; }
-        DbSet<ScoreTypeAllocation> ScoreTypeAllocations { get; set; }
+        DbSet<MetricAllocation> MetricAllocations { get; set; }
 
 
         event EventHandler<AssetsPartiallyProcessedEventArgs> AssetsPartiallyProcessed;
@@ -179,7 +178,7 @@ namespace d360.model
         new bool Delete<T>(Expression<Func<T, bool>> predicate) where T : BaseObject;
         new bool Delete<T>(T entity) where T : BaseObject;
         bool DeleteRelationship(int id);
-        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);        
+        IQueryable<CommentDetail> EditComment(Comment comment, ICollection<CommentRelation> relations);
         void Enqueue(string queueName, QueueObject item);
         Task EvaluateWorkflowTransition(long versionStepTransitionID, long itemID, EventObjectInfo objectInfo);
         Task<bool> ExecuteScheduledWorkflow(WorkflowEventRegistration registration);
@@ -203,7 +202,7 @@ namespace d360.model
         IQueryable<CommentDetail> GetCommentDetailsByFollower(int resourceID, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
         IQueryable<CommentDetail> GetCommentDetailsByID(int id);
         IQueryable<CommentDetail> GetCommentDetailsByType(SystemObjects type, int id, int skip, int take, int daysToGet = 0, int commentType = 0, string searchPhrase = "");
-        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);        
+        Task<T> GetDatabaseJsonAsObjectAsync<T>(string query, DynamicParameters dbArgs);
         Task<IEnumerable<FieldFilterModel>> GetFieldFiltersByType(SystemObjects type, int id);
         IQueryable<FieldWithRelation> GetFieldRelationsByObject(SystemObjects type, int id);
         IQueryable<FieldType> GetFieldTypesByObject(SystemObjects type, int id);
@@ -211,7 +210,7 @@ namespace d360.model
         Follow GetFollowingParent(SystemObjects type, int objectID, int? resourceID);
         string GetFormattedFieldLookupValue(int fieldTypeID, string fieldValue);
         Dictionary<string, object> GetFusionAsDictionary(int id);
-        List<FusionOwnerOption> GetFusionOwnerOptions();                
+        List<FusionOwnerOption> GetFusionOwnerOptions();
         string GetIntersectTypeName(IntersectType intersectType);
         List<IntersectTypeOption> GetIntersectTypeOptions(SystemObjects? subject = null, int? subjectID = null, SystemObjects? @object = null, int? objectID = null, int? predicateID = null, List<AssetTypeClass> limitToClasses = null);
         List<Predicate> GetPredicateOptions(int lineageVersion, SystemObjects subject, int subjectID, SystemObjects? @object = null, int? objectID = null, int? predicateID = null);
@@ -234,8 +233,8 @@ namespace d360.model
         AssetType GetParentType(int id, SystemObjects obj);
         List<PermissionInfo> GetPermissions(long assetId, int assetTypeId);
         Dictionary<string, object> GetRelationshipFieldItems(int fieldTypeID, string @object = null, int? objectID = null, int offset = 0, int rows = 25, string query = null, bool includeSelection = true);
-        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");        
-        List<PermissionInfo> GetTypePermissions(string type, int typeID);        
+        Task<List<IntersectTypeApiViewModel>> GetRelationshipTypes(IEnumerable<KeyValuePair<string, string>> queryParams, string whereClause = "");
+        List<PermissionInfo> GetTypePermissions(string type, int typeID);
         string GetUserHomePage();
         IEnumerable<GlobalReportingResource> GetWorkflowUsersBasedOnResponsibility(int typeID, int stepID, long itemID);
         bool HasAssetDefaultReadPermission(string type, int id, Permission permission = Permission.ReadAsset);
@@ -249,8 +248,8 @@ namespace d360.model
         List<RelationshipTypeResult> ImportRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeUpdate> import, int timeout = 3600);
         List<RelationshipTypeResult> DeleteRelationshipTypes(ApiExecution execution, IEnumerable<RelationshipTypeDelete> import, int timeout = 3600);
         List<DatabaseBulkAssetResult> ImportAssets(ApiExecution execution, AssetType at, IEnumerable<IAssetUpsert> import, bool isInsert, int timeout = 3600, bool fieldJsonPropertyLoadLimitToTopLevel = true, bool sendWorkflowEvents = true, bool lookupFieldsPassedByValue = false, int mergeBlockSize = 500, bool sendGraphEvents = true);
-        List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false);
-        List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false);
+        List<DatabaseBulkRelationshipResult> ImportRelationships(ApiExecution execution, IntersectType rt, RelationshipInserts import, int timeout = 3600, bool sendWorkflowEvents = false, bool lookupFieldsPassedByValue = false, bool sendGraphEvents = true);
+        List<DatabaseBulkRelationshipResult> DeleteRelationships(ApiExecution execution, IntersectType it, RelationshipDeletes import, int timeout = 3600, bool sendWorkflowEvents = false, bool sendGraphEvents = true);
         List<AssetCrossReferenceResult> ImportCrossReferences(ApiExecution execution, IEnumerable<AssetCrossReference> import, int timeout = 3600);
         bool IsUserFollowing(SystemObjects type, int objectID, int? resourceID);
         bool IsUserFollowingParent(SystemObjects type, int objectID, int? resourceID);
@@ -318,6 +317,8 @@ namespace d360.model
         List<DataQualityDeleteResponseModel> DeleteAssetResults(List<DataQualityDeleteModel> request, ApiExecution execution, int timeout = 3600);
         void ResolveFieldLookupValues(Guid executionID, string fieldTable = "api.ExecutionField", int timeout = 3600, SqlTransaction trans = null);
         List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
+        List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
+
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
 
     }

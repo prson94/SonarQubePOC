@@ -31,9 +31,7 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
-
-        readonly string AZURE_QUEUE_INSERTION_FAILURE_MESSAGE = "An internal error occured while submitting your batch request.  Please try your request again. [Azure Queue Insertion Failure]";
-
+                
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
@@ -42,6 +40,32 @@ namespace d360.model.DataAccessLayer
             this.StorageProvider = storageProvider;
             this.Community = community;
         }
+
+        /// <summary>
+        /// Common code for creating batch calls.
+        /// </summary>
+        /// <param name="executionInfo"></param>
+        /// <param name="execution"></param>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        protected async Task<ApiExecutionInfo> CreateApiBatchJob(ApiExecutionInfo executionInfo, ApiExecution execution, object data)
+        {
+            // Save to storage container.
+            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(data));
+
+            // Save to the database.
+            execution.ExecutionID = executionInfo.ExecutionID;
+            CompanyContext.Add(execution);
+
+            // Save to queue.
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
+
+            return executionInfo;
+        }
+
         public Asset GetAssetByUID(Guid assetUid)
         {
             return CompanyContext.Filter<Asset>(i => i.uid == assetUid, i => i.AssetType).SingleOrDefault();
@@ -115,6 +139,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.UseAsTransformation=@useAsTransformation ";
                         dbArgs.Add("useAsTransformation", useAsTransformation);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [useastransformation]", useAsTransformationString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "hierarchical"))
@@ -127,6 +153,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.Hierarchical=@hierarchical ";
                         dbArgs.Add("hierarchical", hierarchical);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [hierarchical]", hierarchicalString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplaydescription"))
@@ -139,6 +167,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.AutoDisplayDescription=@autodisplaydescription ";
                         dbArgs.Add("autoDisplayDescription", autoDisplayDescription);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [autoDisplayDescription]", autoDisplayDescriptionString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "canownfusion"))
@@ -151,6 +181,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.CanOwnFusion=@canownfusion ";
                         dbArgs.Add("canownfusion", canOwnFusion);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [canOwnFusion]", canOwnFusionString);
                 }
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "autodisplayparent"))
@@ -163,6 +195,8 @@ namespace d360.model.DataAccessLayer
                         condition += " and A.AutoDisplayParent=@autoDisplayParent ";
                         dbArgs.Add("autoDisplayParent", autoDisplayParent);
                     }
+                    else
+                        throw new ArgumentException("Invalid value for parameter [autoDisplayParent]", autoDisplayParentString);
                 }
 
             }
@@ -783,16 +817,15 @@ namespace d360.model.DataAccessLayer
             };
 
             //add default fields
+            if (assetType.Class == AssetTypeClass.Reference)
+                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
 
             if (includeParent)
             {
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
-            if (assetType.Class == AssetTypeClass.ReferenceItemType)
-                fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
-
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x=>x.ColumnOrder).ThenBy(x=>x.FriendlyName).ToList());
 
             fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
@@ -1389,6 +1422,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     org.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
                     CompanyContext.Update(org);
 
+                    //also update asset type record
+                    assetType.Name = model.Name;
+                    assetType.Description = model.Description;
+                    assetType.DisplayFormat = model.DisplayFormat ?? assetType.DisplayFormat;
+                    assetType.AutoDisplayDescription = model.AutoDisplayDescription;
+                    assetType.Notes = model.Notes ?? assetType.Notes;
+
                     #endregion
                     break;
                 case AssetTypeClass.Rule:
@@ -1564,20 +1604,9 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 Action = ApiExecutionAction.DeleteAssetTypes
             };
 
-            // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assetTypes));
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, assetTypes);
         }
+                
 
         public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
         {
@@ -1601,19 +1630,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 execution.Total = assets.Count;
             }
 
-            // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, assets);
         }
 
         public async Task<ApiExecutionInfo> PutBulkAssets(Guid assetTypeUid, List<AssetUpdate> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -1628,21 +1645,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            // Save to storage container.
-            //Storage.CreateFolder(executionInfo.StorageFolder);
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-            CompanyContext.Add(execution);
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, assets);
         }
 
         public async Task<ApiExecutionInfo> PostBulkAssets(List<AssetInsert> assets, ApiExecution execution, bool sendWorkflowEvents = true)
@@ -1657,20 +1660,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 SendWorkflowEvents = sendWorkflowEvents
             };
 
-            // Save to storage container.
-            StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(assets));
-
-            // Save to queue.
-            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
-            {
-                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
-            }
-
-            // Save to the database.
-            execution.ExecutionID = executionInfo.ExecutionID;
-
-            CompanyContext.Add(execution);
-            return executionInfo;
+            return await CreateApiBatchJob(executionInfo, execution, assets);
         }
 
         public Predicate GetPredicateByUID(Guid predicateGuid)

@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@angular/core';
 import { TooltipInfo, LookupTooltipInfo } from '../models/tooltip-info.model';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, empty } from 'rxjs';
 import { catchError, map, publishReplay, refCount } from 'rxjs/operators';
 import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
@@ -12,6 +12,8 @@ export class ToolTipService extends BaseObservableService {
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getTooltipInfo(objectType: string, objectID: number): Observable<TooltipInfo> {
+        if (objectType === undefined || objectID === undefined) return empty(); 
+
         return this.http.get(`resources/tooltipdata/${objectType}/${objectID}`)
             .pipe(
                 map(response => <TooltipInfo>response),

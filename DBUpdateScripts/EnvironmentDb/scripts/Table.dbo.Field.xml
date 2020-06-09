@@ -105,8 +105,8 @@ END
 	</rollback>
   </changeSet> 
 
-  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v2">
-    <comment>GOV-11007</comment>
+  <changeSet author="kmcnamee" id="Table.dbo.Field-Field_AfterUpsert-v4">
+    <comment>GOV-11007,GOV-11024,GOV-8929</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -119,22 +119,18 @@ AS
 	SET NOCOUNT ON;
 
 	UPDATE	T
-	SET		T.UpdatedOn = getutcdate()
-	FROM	Field T 
-			inner join inserted F on F.ID = T.ID;
-
-	UPDATE	T
 	SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 	FROM	Field T 
 			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
 			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+		
 
 	drop table if exists #insertedFields;
 	create table #insertedFields (FieldTypeID int, ObjectType varchar(250), ObjectID int);
 	create clustered index IX_TempInsertedFields ON #insertedFields (FieldTypeID, ObjectType, ObjectID);
 
 	insert into #insertedFields
-	select
+	select distinct
 		FieldTypeID,
 		replace(FT.[Object],'Type',''),
 		FT.ObjectID
@@ -177,15 +173,11 @@ AS
 	SET NOCOUNT ON;
 
 	UPDATE	T
-	SET		T.UpdatedOn = getutcdate()
-	FROM	Field T 
-			inner join inserted F on F.ID = T.ID;
-
-	UPDATE	T
 	SET		T.FormattedValue = utility.GetFormattedFieldLookupValueWithMultiple(FT.Type, FT.LookupDisplayFormat, FT.LookupObjectType, FT.LookupObjectID, F.Value, FT.AllowMultipleValues)
 	FROM	Field T 
 			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and F.ObjectType <> 'FusionAttribute' and F.ObjectType <> 'FusionQueryAttribute'
 			INNER JOIN FieldType FT ON FT.ID = T.FieldTypeID;
+		
 
 	drop table if exists #insertedFields;
 	create table #insertedFields (FieldTypeID int, ObjectType varchar(250), ObjectID int);
@@ -215,12 +207,16 @@ AS
 				where  SF.ObjectType <> 'FusionAttribute' and SF.ObjectType <> 'FusionQueryAttribute';
 	end
 
-	UPDATE	T
-	SET		T.AssetID = A.ID
-	FROM	Field T 
-			inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
-			inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
-		]]>
+  -- only update the assetid field if one was not already provided
+  if exists( select 1 from inserted where AssetID is null )
+  begin
+		UPDATE	T
+		SET		T.AssetID = A.ID
+		FROM	Field T 
+				inner join inserted F on F.FieldTypeID = T.FieldTypeID and F.ObjectType = T.ObjectType and F.ObjectID = T.ObjectID and T.AssetID is null
+				inner join Asset A on A.Object = F.ObjectType and A.ObjectID = F.ObjectID;
+   end
+   ]]>
 	</rollback>
   </changeSet>
 

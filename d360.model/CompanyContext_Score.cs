@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
-using d360.core.entities.Scoring;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
@@ -14,7 +13,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 
 namespace d360.model
@@ -23,11 +21,15 @@ namespace d360.model
     {
         #region DbSets
 
+        public DbSet<MetricAllocation> MetricAllocations { get; set; }
+
         public DbSet<MetricAsset> MetricAssets { get; set; }
 
         public DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
 
         public DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+
+        public DbSet<Score> Scores { get; set; }
 
         #endregion
 
@@ -431,6 +433,10 @@ when not matched by target then
                         ) M_M
             where T.ExecutionID = @ExecutionID
 
+            update T set T.IsValidMetricDate = 1
+            from api.ExecutionMetric T 
+            where T.IsValidMetricDate is null 
+            and not exists (select 1 from api.ExecutionMetricMeasure M where M.ExecutionID = @executionID and M.ItemNumber = T.ItemNumber)
 
             update T set T.IsValidMetricDate = 0 from api.ExecutionMetric T 
             where T.ExecutionID = @ExecutionID and coalesce(T.IsValidMetricDate, 0) <> 1

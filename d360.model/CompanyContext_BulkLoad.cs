@@ -805,7 +805,7 @@ from	[Load] L
                                 set A.Success = 0
                                 from #BulkExecutionAsset A
                                 inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
-                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
+                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex and F.ItemNumber = A.ItemNumber
                                 where A.ExecutionID = @executionID 
                                 and (charindex('[', F.FieldValue) = 0 or charindex(']', F.FieldValue) = 0)
 
@@ -817,7 +817,7 @@ from	[Load] L
 				                                charindex('[',reverse(F.FieldValue)) - charindex(']',reverse(F.FieldValue)) - 1))
                                 from #BulkExecutionAsset A
                                 inner join [LoadColumn] LC on LC.Name = @parentAssetTypeName and LC.LoadID = @ID
-                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex
+                                inner join #BulkExecutionField F on F.ColumnIndex = LC.ColumnIndex and F.ItemNumber = A.ItemNumber
                                 where A.ExecutionID = @executionID and (A.Success is null or A.Success = 1)
                             ", new { load.ID, executionID, parentAssetTypeName = parentAssetType.Name}, transaction: trans, commandTimeout: timeout);
                         }
@@ -1048,7 +1048,11 @@ from	[Load] L
                         {
                             var col = loadColumns.FirstOrDefault(c => c.ColumnIndex == field.ColumnIndex);
 
-                            if (!fieldsToSkip.Contains(col.Name))
+                            if (parentAssetType != null && col.Name == parentAssetType.Name)
+                            {
+                                continue;
+                            }
+                            else if (!fieldsToSkip.Contains(col.Name))
                             {
                                 if (assetTypeLevel != null && col.Name.StartsWith($"{assetTypeLevel} "))
                                     update.Fields.Add(col.Name.Replace($"{assetTypeLevel} ", ""), field.Value);

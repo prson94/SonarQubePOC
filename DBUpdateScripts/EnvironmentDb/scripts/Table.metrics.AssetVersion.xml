@@ -96,4 +96,26 @@ END
 	  ]]>
     </rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Table.metrics.AssetVersion-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'MetricRuleUid')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersion] DROP COLUMN [MetricRuleUid]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'MetricRuleUid')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersion] ADD [MetricRuleUid] [uniqueidentifier] NULL
+END
+		]]>
+	</rollback>
+  </changeSet>  
 </databaseChangeLog>

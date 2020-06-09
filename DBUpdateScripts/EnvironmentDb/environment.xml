@@ -104,8 +104,6 @@
 	<include file="scripts/Table.dbo.LoadColumn.xml"/>
 	<include file="scripts/Table.dbo.LoadItem.xml"/>
 	<include file="scripts/Table.dbo.LoadItemColumn.xml"/>
-	<include file="scripts/Table.dbo.LookupType.xml"/>
-	<include file="scripts/Table.dbo.Lookup.xml"/>
 	<include file="scripts/Table.dbo.MapType.xml"/>
 	<include file="scripts/Table.dbo.Map.xml"/>
 	<include file="scripts/Table.dbo.MapGraph.xml"/>
@@ -203,8 +201,8 @@
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
-	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
+	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
@@ -252,6 +250,7 @@
 	<include file="scripts/Table.api.ExecutionRelationshipError.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
+	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
 	
 
   

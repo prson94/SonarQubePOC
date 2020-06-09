@@ -43,12 +43,12 @@
                                     </a>
                                 </td>
                                 <td (click)="selectSingleItem($event,item, el);">{{item.UseCount}}</td>
-                                <td (click)="selectSingleItem($event,item);">
+                                <td (click)="selectSingleItem($event,item, el);">
                                     <div class="RowTools">
                                         <d3s-preview-tooltip [objectType]="'Tag'"
                                                              [objectId]="item.uid"
                                                              icon="info"></d3s-preview-tooltip>&nbsp;&nbsp;&nbsp;
-                                        <a style="cursor:pointer;" (click)="showEditor=true;"><i class="fa fa-pencil"></i></a>
+                                        <a style="cursor:pointer;" (click)="openEditor();"><i class="fa fa-pencil"></i></a>
                                         <a style="cursor:pointer;" (click)="openDeleteModal();"><i class="fa fa-trash-o"></i></a>
                                     </div>
                                 </td>

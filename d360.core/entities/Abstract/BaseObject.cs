@@ -25,6 +25,23 @@ namespace d360.core.entities
     }
 
     [Serializable, DataContract(Namespace = NAMESPACE)]
+    public abstract class BaseCreatedAndUpdatedGuidObject : BaseObject, IUpdatedMetadata, ICreatedMetadata
+    {
+        [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Uid { get; set; }
+
+        public int? CreatedBy { get; set; } = 0;
+
+        [DataMember]
+        public DateTime? CreatedOn { get; set; } = DateTime.UtcNow;
+
+        public int? UpdatedBy { get; set; } = 0;
+
+        [DataMember]
+        public DateTime? UpdatedOn { get; set; } = DateTime.UtcNow;
+    }
+
+    [Serializable, DataContract(Namespace = NAMESPACE)]
     public abstract class BaseIntObject : BaseObject
     {
         [

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Runtime.Serialization;
 
 namespace d360.core.entities
@@ -21,7 +22,7 @@ namespace d360.core.entities
         [DataMember]
         public string Context { get; set; }
 
-        public int? UpdatedBy { get; set; }
+        public int UpdatedBy { get; set; } = 0;
 
         [DataMember]
         public DateTime? UpdatedOn

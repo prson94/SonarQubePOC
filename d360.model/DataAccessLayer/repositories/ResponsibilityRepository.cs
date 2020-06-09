@@ -716,6 +716,73 @@ where 1=1
             Company.SaveChanges();
         }
 
+        public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> responsibilityRules, ApiExecution execution)
+        {
+            Company.Add(execution);
+
+            List<ResponsibilityRuleUpsertResponseModel> results = null;
+            try
+            {
+                results = Company.UpsertResponsibilityRules(execution, responsibilityTypeUid, responsibilityRules);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                Company.Update(execution);
+            }
+
+            return results;
+        }
+
+        public List<ResponsibilityRuleDeleteResponse> DeleteResponsibilityRules(Guid responsibilityTypeUid, List<Guid> rulesForDeletion)
+        {
+            return Company.Query<ResponsibilityRuleDeleteResponse>($@"
+                drop table if exists #deleteResults
+                create table #deleteResults
+                (
+                    Uid uniqueidentifier, 
+	                Message nvarchar(max),
+	                Success bit
+                )
+                insert into #deleteResults (Uid)
+                select cast(value as uniqueidentifier) 
+                from
+                string_split(@rulesUids,',')
+
+                update #deleteResults
+                set Message = 'Responsibility rule does not exist.',
+                Success = 0 
+                from #deleteResults dr
+                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+                where rtrr.id is null
+
+                update #deleteResults
+                set Message = 'Responsibility rule not valid for Responsibility Type.',
+                Success = 0 
+                from #deleteResults dr
+                left join responsibilitytyperelationrule rtrr on rtrr.uid = dr.uid
+                left join responsibilitytype rt on rt.uid = @responsibilityTypeUid
+                where rtrr.responsibilitytypeid <> rt.id
+
+                delete from 
+                ResponsibilityTypeRelationRule
+                where uid in (select uid from #deleteResults where Success is null)
+
+                update #deleteResults
+                set Message = 'Responsibility rule successfully deleted.',
+                Success = 1
+                where Success is null
+
+                select * from #deleteResults
+                ", new { responsibilityTypeUid, rulesUids = string.Join(",", rulesForDeletion.Select(x => x.ToString())) }).ToList();
+        }
 
     }
 }

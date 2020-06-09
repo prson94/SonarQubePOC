@@ -25,7 +25,6 @@ using d360.core.entities.Metric;
 using d360.core;
 using System.Dynamic;
 using Newtonsoft.Json.Linq;
-using d360.core.entities.Scoring;
 
 namespace igx.UnitTests
 {
@@ -73,7 +72,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetActiveIntersectTypesByObjectType(It.IsAny<int>(), It.IsAny<SystemObjects>()))
                 .Returns(Task.FromResult(new List<IntersectTypeApiViewModel>() { new IntersectTypeApiViewModel(), new IntersectTypeApiViewModel() }));
 
-            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            mock.Setup(x => x.ImportRelationships(It.IsAny<ApiExecution>(), It.IsAny<IntersectType>(), It.IsAny<RelationshipInserts>(), It.IsAny<int>(), It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .Returns(new List<DatabaseBulkRelationshipResult>() { new DatabaseBulkRelationshipResult() });
 
             mock.Setup(x => x.HasAssetTypePermission(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Permission>()))
@@ -575,7 +574,7 @@ namespace igx.UnitTests
                 });
 
             mock.Setup(x => x.GetAllocationByMetricModel(It.IsAny<MetricAssetViewModel>()))
-                .Returns(new ScoreTypeAllocation() { IsExternallyCalculated = false });
+                .Returns(new MetricAllocation() { IsExternallyCalculated = false });
 
             return mock.Object;
         }
