@@ -89,17 +89,6 @@ export class ArtifactTypeService extends BaseObservableService {
         });
     }
 
-    public getPossibleArtifactOwners(objectType: string, artifactTypeId: number): Observable<any[]> {
-        return this
-            .http
-            .get(`/api/${objectType}/possibleowners/${artifactTypeId}`)
-            .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err))
-            )
-            ;
-    }
-
     public deleteArtifactType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
     }
