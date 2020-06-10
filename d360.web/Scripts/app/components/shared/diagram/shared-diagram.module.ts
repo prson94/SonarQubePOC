@@ -24,6 +24,7 @@ import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
+import { AccordionModule } from 'primeng/accordion';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -77,6 +78,7 @@ import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
+import { DragDropModule } from 'primeng/dragdrop';
 
 
 @NgModule({
@@ -114,6 +116,8 @@ import { ProcessDiagramComponent } from './process-diagram/process-diagram.compo
         TableModule,
         TabViewModule,
         TreeModule,
+        DragDropModule,
+        AccordionModule,
         //JSON Viewer module
         NgxJsonViewModule,
         AssetSearchModule,

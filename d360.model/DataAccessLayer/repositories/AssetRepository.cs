@@ -31,7 +31,7 @@ namespace d360.model.DataAccessLayer
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
         internal ICommunityContext Community;
-                
+
         public AssetRepository(ICompanyContext companyContext, IQueueSource queueSource, IStorageProvider storageProvider, ICommunityContext community)
             : base(companyContext)
         {
@@ -220,6 +220,7 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
+                                    {(Class.HasValue && Class.Value == AssetTypeClass.Diagram ? ",A.FlowObjectType" : "")}
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -825,7 +826,7 @@ namespace d360.model.DataAccessLayer
                 fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
             }
 
-            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x=>x.ColumnOrder).ThenBy(x=>x.FriendlyName).ToList());
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
             fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
@@ -1606,7 +1607,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
 
             return await CreateApiBatchJob(executionInfo, execution, assetTypes);
         }
-                
+
 
         public async Task<ApiExecutionInfo> BulkDeleteAssets(Guid assetTypeUid, AssetDeletes assets, ApiExecution execution, bool clearallassetsfromtype, bool sendWorkflowEvents = true)
         {

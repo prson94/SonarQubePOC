@@ -1,6 +1,46 @@
 ﻿<div id="sample">
+    <button (click)="getData()">Get Data</button>
     <div style="width: 100%; display: flex; justify-content: space-between">
-        <div id="myPaletteDiv" style="width: 105px; margin-right: 2px; background-color: whitesmoke; border: solid 1px black"></div>
-        <div id="myDiagramDiv" style="flex-grow: 1; height: 620px; border: solid 1px black"></div>
+        <div id="myPaletteDiv" *ngIf="isLoaded">
+            <p-accordion>
+                <p-accordionTab header="Events" [selected]="true">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-event" *ngFor="let item of events">
+                            <div class="icon-holder">
+                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+                <p-accordionTab header="Activities">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-activity" *ngFor="let item of activities">
+                            <div class="icon-holder">
+                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+                <p-accordionTab header="Gateways">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-gateway" *ngFor="let item of gateways">
+                            <div class="icon-holder">
+                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
+        <div id="myDiagramDiv" style="flex-grow: 1; height: 620px; border: solid 1px black;"></div>
     </div>
 </div>
