@@ -5,34 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeTypeCategory-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory')
-BEGIN
-	EXEC sp_rename 'AttributeTypeCategory', 'AttributeTypeCategory_Retired';
-END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory')
-BEGIN
-	CREATE TABLE [dbo].[AttributeTypeCategory](
-		[ID] [int] IDENTITY(1,1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
-		[Description] [nvarchar](max) NULL,
-		CONSTRAINT [PK_AttributeTypeCategory] PRIMARY KEY CLUSTERED ( [ID] ASC )
-	)
-END
-		]]>
-	</rollback>
-  </changeSet>
-
   <changeSet author="Puneet Gupta" id="Table.dbo.AttributeTypeCategory-v3">
+    <comment>GOV-10546</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
