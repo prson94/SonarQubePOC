@@ -24,7 +24,7 @@ export class CompanySettings {
     EnableOrganizations: boolean;
     EnableShoppingCart: boolean;
     HideData3SixtyUsers: boolean;
-    ShowAllUsersAPIKey:boolean
+    ShowAllUsersAPIKey: boolean;
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
     WorkflowCatchAllGroup: number;
@@ -41,7 +41,7 @@ export class CompanySettings {
     WorkflowDigestEmailEnabled: boolean = false;
     MaxDropdownItems: number;
     WriteActionDescription: boolean;
-    CurrentCompanyLogoPath: string; 
+    CurrentCompanyLogoPath: string;
     LineageVersion: number;
     FusionEnabled: boolean = true;
 }
@@ -97,6 +97,42 @@ export class CompanyRebuildJobStatusApiModel {
     validationMessage: string;
 }
 
+export enum CompanySettingEnum {
+    GovernanceRoleReferenceListUid = 73,
+    GovernanceRoleLabel = 74,
+    GovernanceRoleDescription = 75
+}
+export class StringSetting {
+    Value: string;
+}
+
+export class NumberSetting {
+    Value: number;
+}
+
+export class BooleanSetting {
+    Value: boolean;
+}
+
+export class Value {
+    Name: string;
+    Start: string;
+    End: string;
+}
+
+export class IpAddressSetting {
+    Value: Value[];
+}
+
+export class SettingsPutModel {
+    SettingID: number;
+    StringSetting: StringSetting;
+    NumberSetting: NumberSetting;
+    BooleanSetting: BooleanSetting;
+    IpAddressSetting: IpAddressSetting;
+}
+
+
 export class SearchType {
     title: string;
     value: string;
@@ -106,6 +142,7 @@ export class SearchType {
         this.title = title;
         this.value = value;
     }
+
 }
 
 export module SettingsHelper {
@@ -126,13 +163,12 @@ export module SettingsHelper {
     }
 
     export function searchTypeListToString(list: SearchType[]): string {
-        return list.filter(l => l.selected).map(l=> l.value).join(',');
+        return list.filter(l => l.selected).map(l => l.value).join(',');
     }
 
     export function searchTypeStringToList(searchTypes: string): SearchType[] {
         let t = getSearchTypesList();
-        searchTypes.split(',').forEach(i =>
-        {
+        searchTypes.split(',').forEach(i => {
             let k = t.find(j => j.value == i);
             if (k)
                 k.selected = true
@@ -141,3 +177,4 @@ export module SettingsHelper {
     }
 
 }
+

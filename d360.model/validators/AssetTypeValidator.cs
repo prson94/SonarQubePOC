@@ -19,14 +19,15 @@ namespace d360.core.validators
     {
         List<AssetTypeClass> PredicateSupportingClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Glossary };
         List<AssetTypeClass> ParentAssetTypeClass = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Reference, AssetTypeClass.Glossary };
-        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary };
+        List<AssetTypeClass> SupportedClasses = new List<AssetTypeClass>() { AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Model, AssetTypeClass.Organization, AssetTypeClass.Policy, AssetTypeClass.Reference, AssetTypeClass.Rule, AssetTypeClass.Glossary, AssetTypeClass.Diagram };
         string ColorRegex = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        private Guid? _governanceRoleUid = null;
 
         ICompanyContext CompanyContext;
-        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled)
+        public AssetTypeValidator(ICompanyContext companyContext, int lineageVersion, bool isFusionEnabled, Guid? govRoleUid = null)
         {
             this.CompanyContext = companyContext;
-
+            this._governanceRoleUid = govRoleUid;
             if (isFusionEnabled)
             {
                 SupportedClasses.Add(AssetTypeClass.FusionAttribute);
@@ -139,7 +140,7 @@ namespace d360.core.validators
                 if (assetCount != 0 && currentParentType != null && currentParentType.uid != model.ParentUid)
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.AssetsWithAssignedParents);
             }
-            
+
             if (model.IconStyle == null || !Regex.Match(model.IconStyle.BackColor, ColorRegex, RegexOptions.IgnoreCase).Success || !Regex.Match(model.IconStyle.ForeColor, ColorRegex, RegexOptions.IgnoreCase).Success)
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.InvalidStyle} {AssetTypeErrors.CheckRequest}");
 
@@ -152,6 +153,21 @@ namespace d360.core.validators
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MatchingIconStyle}");
                 }
+            }
+
+            if (model.Class == AssetTypeClass.Diagram && model.FlowObjectType == null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MissingFlowObjectType}");
+            }
+
+            if(model.Class == AssetTypeClass.Diagram && (_governanceRoleUid == null || _governanceRoleUid == Guid.Empty))
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.GovernanceRoleNotSet}");
+            }
+
+            if (model.Class != AssetTypeClass.Diagram && model.FlowObjectType != null)
+            {
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.UnsupportedFlowObjectType}");
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
@@ -186,7 +202,7 @@ namespace d360.core.validators
 		                                and a.Name = @name", new { name = model.Name.Trim(), cls = model.Class });
                     }
 
-                    return (count > 0);                        
+                    return (count > 0);
                 }
                 else if (CompanyContext.Any<AssetType>(i => i.Name == model.Name.Trim() && i.Class == model.Class))
                     return true;
@@ -282,13 +298,14 @@ namespace d360.core.validators
 
         public bool IsValidOwnersGetAssets(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if(queryParams.Any(x => x.Key.Trim().ToLower() == "_ownedby")) {
+            if (queryParams.Any(x => x.Key.Trim().ToLower() == "_ownedby"))
+            {
                 string[] owners = queryParams.FirstOrDefault(x => x.Key.Trim().ToLower() == "_ownedby").Value.Split(',');
-                foreach(var owner in owners)
+                foreach (var owner in owners)
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))
                         return false;
-                    if(!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString())))
+                    if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString())))
                         return false;
                 }
             }
@@ -296,9 +313,9 @@ namespace d360.core.validators
             return true;
         }
 
-        public bool IsValidRelationFilter(IEnumerable<KeyValuePair<string,string>> queryParams)
+        public bool IsValidRelationFilter(IEnumerable<KeyValuePair<string, string>> queryParams)
         {
-            if(queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLower() == "_relationfilter"))
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_predicateuid") && queryParams.ToList().Any(k => k.Key.ToLower() == "_relationfilter"))
             {
                 return false;
             }

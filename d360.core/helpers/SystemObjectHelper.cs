@@ -30,7 +30,8 @@ namespace d360.core.helpers
                     return SystemObjects.FusionAttributeType;
                 case AssetTypeClass.FusionQuery:
                     return SystemObjects.FusionQueryAttributeType;
-
+                case AssetTypeClass.Diagram:
+                    return SystemObjects.TaskType;
             }
             return SystemObjects.ArtifactType;//default
         }

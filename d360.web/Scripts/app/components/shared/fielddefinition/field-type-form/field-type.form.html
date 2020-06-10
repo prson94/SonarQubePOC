@@ -46,6 +46,7 @@
                                         [style]="{'width':'98%', 'display' : 'block'}"
                                         (onChange)="loadDataType($event.value)"
                                         #dataType="ngModel"
+                                        [disabled]="disableFieldTypeSelection"
                                         ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
@@ -185,6 +186,7 @@
                                 [(ngModel)]="model.FieldType.Type[currentType].List.Uid"
                                 (ngModelChange)="model.FieldType.Type[currentType].List.Uid=$event;lookupTypeSelected($event,true).subscribe();"
                                 [style]="{ 'width': '98%' }"
+                                [disabled]="disableFieldTypeSelection"
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">

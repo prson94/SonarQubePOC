@@ -27,7 +27,7 @@ namespace d360.model.validators
             bool fieldsHaveErrors = false;
             var fieldsHaveErrorsList = new List<string>();
             List<ValidationResult> validationResults = new List<ValidationResult>();
-            bool isValid = true;            
+            bool isValid = true;
 
             foreach (var field in model.Fields)
             {
@@ -59,7 +59,7 @@ namespace d360.model.validators
 
                 #endregion
 
-                if(field.Type == null)
+                if (field.Type == null)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"The 'Type' object is missing from one or more field type definitions.");
                 }
@@ -106,7 +106,7 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Relationship Types cannot have field property 'IsPartOfKey' set to true.");
                     }
                 }
-                
+
                 if (field.Type.Path != null)
                 {
                     if (actionTypeIdentifierInfoModel != null)
@@ -119,12 +119,12 @@ namespace d360.model.validators
                     }
                     if (assetTypeIdentifierInfoModel != null)
                     {
-                        var restrictedTypes = new List<string>() { 
-                            SystemObjects.FusionAttributeType.ToString(), 
+                        var restrictedTypes = new List<string>() {
+                            SystemObjects.FusionAttributeType.ToString(),
                             SystemObjects.FusionQueryAttributeType.ToString(),
                             SystemObjects.FusionType.ToString(),
-                            SystemObjects.OrganizationType.ToString(), 
-                            SystemObjects.ResourceType.ToString() 
+                            SystemObjects.OrganizationType.ToString(),
+                            SystemObjects.ResourceType.ToString()
                         };
                         if (restrictedTypes.Contains(assetTypeIdentifierInfoModel.Object))
                         {
@@ -213,12 +213,12 @@ namespace d360.model.validators
                 }
 
                 if (model.AssetTypeUid.HasValue && field.Type.Relationship != null)
-                 {
+                {
                     if (ExistingIntersectID != null)
                     {
                         if (ExistingIntersectID.Count() > 0)
                         {
-                            var duplicateFieldIntersectTypeUid1 =  ExistingIntersectID.Where(f=> f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
+                            var duplicateFieldIntersectTypeUid1 = ExistingIntersectID.Where(f => f.Item1 != field.Name && f.Item2 == field.Type.Relationship.IntersectTypeUid).Select(f => f.Item1).ToList();
                             if (duplicateFieldIntersectTypeUid1.Count > 0)
                             {
                                 return new WorkHttpStatus(HttpStatusCode.BadRequest, "Duplicate relationship on same asset type", $"The following relationship ID are used more than once: {field.Type.Relationship.IntersectTypeUid}. Relationship must be unique on same assettype");
@@ -226,7 +226,7 @@ namespace d360.model.validators
                             }
                         }
                     }
-                 }
+                }
 
                 #region Type Min/Max
 
@@ -244,7 +244,7 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
-                }                
+                }
 
                 if (field?.Type?.Number != null)
                 {
@@ -252,7 +252,7 @@ namespace d360.model.validators
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "Increment"));
                     }
-                   
+
                     if (field.Type.Number.Validation?.MaximumValue != null && (field.Type.Number.Validation?.MaximumValue % 1) != 0)
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "MaximumValue"));
@@ -276,7 +276,7 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
                 }
-                
+
                 #endregion
 
                 if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
@@ -295,6 +295,98 @@ namespace d360.model.validators
                     }
                 }
 
+                if (assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+
+                    if (field.Type.ComputedFusionLookup != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedFusionLookup fields are not allowed for current Asset Type!");
+
+                    if (field.Type.ComputedOwnershipLookup != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
+
+                    if (field.Type.ComputedRelationshipField != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipField fields are not allowed for current Asset Type!");
+
+                    if (field.Type.ComputedRelationshipLookup != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipLookup fields are not allowed for current Asset Type!");
+
+                    if (field.Type.ComputedRelationshipReferenceList != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedRelationshipReferenceList fields are not allowed for current Asset Type!");
+
+                    if (field.Type.Json != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Json fields are not allowed for current Asset Type!");
+
+                    if (field.Type.JsonElement != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"JsonElement fields are not allowed for current Asset Type!");
+
+                    if (field.Type.Relationship != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Relationship fields are not allowed for current Asset Type!");
+
+                    if (field.Type.Score != null)
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Score fields are not allowed for current Asset Type!");
+                }
+
+                if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+                    if (field.Type.Text != null && field.Name == "Name")
+                    {
+
+                        var message = "Task Types cannot have field property '{0}' on field Name set to {1}.";
+                        var ft = field.Type.Text;
+                        if (ft.IsDisplayable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                        if (ft.IsEditable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
+                        if (ft.IsListable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsListable", "false"));
+                        if (ft.IsPartOfKey == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        if (ft.Validation.IsRequired == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsRequired", "false"));
+                        if (ft.IsPrimaryFilter == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                        if (ft.ShowIfEmpty == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
+
+                    }
+                    if (field.Type.Lookup != null && field.Name == "GovernanceRole")
+                    {
+
+                        var message = "Task Types cannot have field property '{0}' on field GovernanceRole set to {1}.";
+                        var ft = field.Type.Lookup;
+                        if (ft.IsDisplayable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                        if (ft.IsEditable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
+                        if (ft.IsPartOfKey == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        if (ft.IsPrimaryFilter == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                        if (ft.ShowIfEmpty == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
+                        if (ft.List.AllowMultipleValues == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
+                    }
+
+                    if (field.Type.Decimal != null && field.Name == "StepNo")
+                    {
+
+                        var message = "Task Types cannot have field property '{0}' on field StepNo set to {1}.";
+                        var ft = field.Type.Lookup;
+                        if (ft.IsDisplayable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
+                        if (ft.IsEditable == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
+                        if (ft.IsPartOfKey == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        if (ft.IsPrimaryFilter == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
+                        if (ft.ShowIfEmpty == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
+                        if (ft.List.AllowMultipleValues == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
+                    }
+                }
             }
             if (fieldsHaveErrors)
             {
@@ -410,7 +502,7 @@ namespace d360.model.validators
         private static bool IsFieldNameAllowed(string fieldApiName)
         {
             if (string.IsNullOrEmpty(fieldApiName)) return false;
-            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon","parentdisplayname","parentassetuid", "keypath" };
+            List<string> disallowedFieldNames = new List<string> { "id", "uid", "assetid", "assetuid", "assettypeid", "assettypeuid", "createdon", "updatedon", "parentdisplayname", "parentassetuid", "keypath" };
             return !disallowedFieldNames.Contains(fieldApiName.ToLower());
         }
 
@@ -422,7 +514,7 @@ namespace d360.model.validators
             {
                 if (validation?.MaximumLength != null)
                 {
-                    if((validation?.MaximumLength % 1) != 0)
+                    if ((validation?.MaximumLength % 1) != 0)
                     {
                         errMsg = String.Format(FieldErrors.WholeNumberError, "MaximumLength");
                         return false;
@@ -437,13 +529,13 @@ namespace d360.model.validators
                         errMsg = String.Format(FieldErrors.LessThanError, "MaximumLength", FieldErrors.MaxDecimalFieldValue);
                         return false;
                     }
-                    
+
                 }
                 if (validation?.MinimumLength != null)
                 {
                     if ((validation?.MinimumLength % 1) != 0)
                     {
-                        errMsg = String.Format(FieldErrors.WholeNumberError, "MinimumLength"); 
+                        errMsg = String.Format(FieldErrors.WholeNumberError, "MinimumLength");
                         return false;
                     }
                     if (validation?.MinimumLength < 0)
@@ -457,7 +549,7 @@ namespace d360.model.validators
                         return false;
                     }
                 }
-                if(validation?.MinimumLength > validation?.MaximumLength)
+                if (validation?.MinimumLength > validation?.MaximumLength)
                 {
                     errMsg = String.Format(FieldErrors.LessThanError, "MinimumLength", "MaximumLength");
                     return false;
@@ -468,7 +560,7 @@ namespace d360.model.validators
         private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg)
         {
             decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
-            errMsg = "";           
+            errMsg = "";
 
             if (validation?.MaximumValue != null)
             {
@@ -490,7 +582,8 @@ namespace d360.model.validators
                 {
                     errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", FieldErrors.MaxDecimalFieldValue);
                     return false;
-                }else if(validation?.MinimumValue < -maxDecimalFieldValue)
+                }
+                else if (validation?.MinimumValue < -maxDecimalFieldValue)
                 {
                     errMsg = String.Format(FieldErrors.GreaterThanError, "MinimumValue", $"-{FieldErrors.MaxDecimalFieldValue}");
                     return false;
@@ -501,7 +594,7 @@ namespace d360.model.validators
             {
                 errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", "MaximumValue");
                 return false;
-            }            
+            }
             return true;
         }
     }

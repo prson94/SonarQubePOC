@@ -289,7 +289,8 @@ export class SiteMenuComponent extends BaseComponent implements OnInit, OnDestro
         this.configMenu.NavigationItems.push({ Name: 'Predicates', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_PREDICATES}`, Items: null, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Workflows', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_WORKFLOW}`, IsLink: false, IsHomePage: false, count: null });
         this.configMenu.NavigationItems.push({ Name: 'Workflow Actions', Items: null, Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ISSUE_TYPES}`, IsLink: false, IsHomePage: false, count: null });        
-        this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });        
+        this.configMenu.NavigationItems.push({ Name: 'Surveys', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SURVEYS}`, Items: null, IsLink: false, IsHomePage: false, count: null });
+        //this.configMenu.NavigationItems.push({ Name: 'Diagram Assets', Url: `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`, Items: null, IsLink: false, IsHomePage: false, count: null });        
     }
 
     private buildAdminMenu() {

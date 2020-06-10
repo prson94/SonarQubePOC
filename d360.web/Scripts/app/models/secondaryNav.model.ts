@@ -19,6 +19,7 @@ export class SecondaryNavItem {
     count: number;
     orderPriority: number = 99;
     subTabsUrl: string[] = [];
+    warningMessage: string = ''
 }
 
 export class NavState {
@@ -66,7 +67,7 @@ export class DynamicButton {
     constructor(text: string) {
         this.text = text;
     }
-   
+
     text: string;
     disabled: boolean = false;
     isLoading: boolean = false;

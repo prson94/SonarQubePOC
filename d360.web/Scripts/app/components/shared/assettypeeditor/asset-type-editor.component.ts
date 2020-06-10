@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { AssetTypeService } from '../../../services/asset-type.service';
-import { AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
+import { FlowObjectType, AssetTypeClass, AssetTypeEditorModel } from '../../../models/asset.model';
 import { ApiResult } from '../../../models/apiresult.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -27,10 +27,11 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     @Output() onFail = new EventEmitter();
     @Output() onCancel = new EventEmitter();
 
-    action: string = "Edit";    
-    model: AssetTypeEditorModel;   
+    action: string = "Edit";
+    model: AssetTypeEditorModel;
     private isSaving = false;
     AssetTypeClass = AssetTypeClass;
+    selectedFlowType: FlowObjectType;
 
     showAssetStyles: boolean = true;
     showAssetDepthSettings: boolean = false;
@@ -42,9 +43,14 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     private lineageVersion: number = 1;
 
+    private flowObjectDDL: any[] = [];
+
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
         super();
-    }    
+        this.flowObjectDDL.push({ value: FlowObjectType.Event, label: 'Event' });
+        this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: 'Activity' });
+        this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: 'Gateway' });
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
 
@@ -55,7 +61,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         let triggerLoad = false;
         for (let p in changes) {
             if (p == 'id' || p == 'parentID' || p == 'topTypeID') {
-                triggerLoad = true;            
+                triggerLoad = true;
             }
         }
 
@@ -65,9 +71,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
 
-    private load(): void {  
+    private load(): void {
         this.isLoading = true;
-        
+
         if (CompanySettings != null && CompanySettings.FusionEnabled != null) {
             this.isFusionEnabled = CompanySettings.FusionEnabled == "false" ? false : true;
         }
@@ -135,6 +141,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                     && this.model.AssetType.AutoDisplayParent === null && this.model.AssetType.ParentUid != null) {
                     this.model.AssetType.AutoDisplayParent = true;
                 }
+
                 this.isLoading = false;
             });
     }
@@ -149,8 +156,14 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         if (this.fusionId)
             this.model.AssetType.FusionID = this.fusionId;
 
-        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000')
-        {
+        if (this.model.AssetType.Class != AssetTypeClass.DiagramAsset) {
+            delete this.model.AssetType.FlowObjectType;
+        }
+        else if (!this.model.AssetType.FlowObjectType) {
+            this.model.AssetType.FlowObjectType = FlowObjectType.Event;
+        }
+
+        if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000') {
             this
                 .assetTypeService
                 .putAssetType(this.model.AssetType)
@@ -165,8 +178,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                     }
                 });
         }
-        else
-        {
+        else {
 
             delete this.model.AssetType.Uid;
 
@@ -210,7 +222,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
     }
 
     get FirstColumnStyle(): string {
-        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetStyles )
+        if (this.showAssetArtifactSettings || this.showAssetDepthSettings || this.showAssetStyles)
             return "col l8 m12 s12";
         return "col s12";
     }
@@ -223,5 +235,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     get isPredicateRequired(): boolean {
         return this.assetTypeClass == AssetTypeClass.Model || this.assetTypeClass == AssetTypeClass.Policy;
+    }
+
+    public selectFlowObject($event) {
+        console.log($event);
     }
 }
