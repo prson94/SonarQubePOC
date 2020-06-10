@@ -1,0 +1,66 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="MDonato" id="Table.dbo.Color-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'Color')
+BEGIN
+	CREATE TABLE dbo.Color
+	(
+		ID int identity constraint PK_Color_Id primary key not null,
+		[Name] nvarchar(250) not null,
+		[Value] nvarchar(30) not null
+	)
+
+	insert into Color ([Name], [Value]) values ('Cobalt','#2E6EC2');
+	insert into Color ([Name], [Value]) values ('Azure','#0BB8CE');
+	insert into Color ([Name], [Value]) values ('Denim','#248BE5');
+	insert into Color ([Name], [Value]) values ('Sky','#72BEf8');
+	insert into Color ([Name], [Value]) values ('Burgundy','#990132');
+	insert into Color ([Name], [Value]) values ('Scarlet','#EF2832');
+	insert into Color ([Name], [Value]) values ('Hot Pink','#E9005D');
+	insert into Color ([Name], [Value]) values ('Blush','#E55C59');
+	insert into Color ([Name], [Value]) values ('Lilac','#E9BFEA');
+	insert into Color ([Name], [Value]) values ('Emerald','#00A96C');
+	insert into Color ([Name], [Value]) values ('Grass','#459F46');
+	insert into Color ([Name], [Value]) values ('Lime','#98D60C');
+	insert into Color ([Name], [Value]) values ('Spring','#9AE49B');
+	insert into Color ([Name], [Value]) values ('Rust','#C54408');
+	insert into Color ([Name], [Value]) values ('Orange','#FF6600');
+	insert into Color ([Name], [Value]) values ('Amber','#FFA901');
+	insert into Color ([Name], [Value]) values ('Peach','#FFC984');
+	insert into Color ([Name], [Value]) values ('Mustard','#D2B90C');
+	insert into Color ([Name], [Value]) values ('Sunshine','#FFE709');
+	insert into Color ([Name], [Value]) values ('Lemon','#FFFC44');
+	insert into Color ([Name], [Value]) values ('Sand','#EDE8B4');
+	insert into Color ([Name], [Value]) values ('Indigo','#662BB9');
+	insert into Color ([Name], [Value]) values ('Violet','#BB26CC');
+	insert into Color ([Name], [Value]) values ('Mauve','#BF78C8');
+	insert into Color ([Name], [Value]) values ('Cornflower','#C4D0EE');
+	insert into Color ([Name], [Value]) values ('Teal','#02817F');
+	insert into Color ([Name], [Value]) values ('Aqua','#80CBC4');
+	insert into Color ([Name], [Value]) values ('Slate','#657986');
+	insert into Color ([Name], [Value]) values ('Stone','#90A4AE');
+	insert into Color ([Name], [Value]) values ('Chocolate','#4A322B');
+	insert into Color ([Name], [Value]) values ('Wood','#6E4C41');
+	insert into Color ([Name], [Value]) values ('Tan','#BD9255');
+	insert into Color ([Name], [Value]) values ('Coffee','#A18880');
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+</databaseChangeLog>
