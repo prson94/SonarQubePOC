@@ -26,14 +26,14 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     searchFilter: string = "";
     objectType: string = "TaskType";
     addClassName: string;
-    selectedRow: TreeNode;
+    selectedRow: any;
     private sub: any;
     isAdding = false;
     isEditing = false;
     isDeleting = false;
     isEditingFieldType = false;
     isAddingFieldType = false;
-    artifactTypes: TreeNode[];
+    artifactTypes: any[];
     editorModel: any;
     theDeleteCallback: Function;
     assetTypeClass: AssetTypeClass;
@@ -76,7 +76,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
 
     selectedItemChange() {
         this.loadDataAndExecuteAction(() => {
-            this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.data.ID : 0, this.objectType, null, this.assetTypeClass);
+            this.buildSecondaryNavigationForObject(this.selectedRow ? this.selectedRow.ID : 0, this.objectType, null, this.assetTypeClass);
         });
     }
 
@@ -88,16 +88,11 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         this.isLoading = true;
         this.assetsService.getAssetCountsByAssetType(this.assetTypeClass)
             .subscribe(data => {
-                let temp: TreeNode[] = [];
-                data.forEach(n => {
-                    temp.push(AssetCount.ConvertToTreeNode(n));
-                })
-
-                this.artifactTypes = AssetCount.ListToTree(temp);
+                this.artifactTypes = data;
                 if (!uid) {
                     this.selectedRow = this.artifactTypes[0];
                 } else {
-                    this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+                    this.selectedRow = this.getAssetTypeByUid(uid);
 
                 }
                 this.selectedItemChange();
@@ -111,8 +106,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     delete(uid: string) {
-        this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
-
+        this.selectedRow = this.getAssetTypeByUid(uid);
         this.loadDataAndExecuteAction(() => {
             this.isAdding = false;
             this.isEditing = false;
@@ -122,7 +116,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     edit(uid: string) {
-        this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+        this.selectedRow = this.getAssetTypeByUid(uid);
 
         this.loadDataAndExecuteAction(() => {
             this.editorModel = this.selectedRow;
@@ -134,7 +128,7 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
 
     add(uid: string) {
         if (uid)
-            this.selectedRow = this.artifactsService.findArtifactTypeByUid(this.artifactTypes, uid);
+            this.selectedRow = this.getAssetTypeByUid(uid);
         this.loadDataAndExecuteAction(() => {
             if (!uid) {
                 this.editorModel = { data: { ID: 0 } };
@@ -166,9 +160,9 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
     }
 
     private deleteArtifactType(id: number) {
-        var data = this.artifactsService.findArtifactTypeById(this.artifactTypes, id);
+        var data = this.getAssetTypeById(id);
         if (data) {
-            this.assetsService.deleteAssetType(data.data.uid).subscribe(result => {
+            this.assetsService.deleteAssetType(data.uid).subscribe(result => {
                 this.showMessageForResult(this.messagesService, result);
                 this.isDeleting = false;
                 this.selectedRow = { data: { ID: 0 } };
@@ -178,24 +172,19 @@ export class AdminDiagramAssetComponent extends AdminBaseComponent implements On
         }
     }
 
-    private filterQ: any;
-    filter(event) {
-        if (event) {
-            this.searchValue = event.target.value;
-        }
-        window.clearTimeout(this.filterQ);
-        this.filterQ = setTimeout(() => {
-            this.dt.reset();
-            this.filterTreeTable(this.artifactTypes, this.searchValue, this.dt);
-        }, event ? 600 : 0);
+    private getAssetTypeByUid(uid: string): any {
+        return this.artifactTypes.filter(x => x.uid == uid)[0];
+    }
+    private getAssetTypeById(id: number): any {
+        return this.artifactTypes.filter(x => x.ID == id)[0];
     }
 
     private loadDataAndExecuteAction(action: Function) {
         if (this.selectedRow) {
-            this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
+            this.assetsService.getAssetTypeLegacyData(this.selectedRow.uid)
                 .subscribe(res => {
-                    this.selectedRow.data.ID = res.ObjectID;
-                    this.selectedRow.data.AssetTypeID = res.AssetTypeID;
+                    this.selectedRow.ID = res.ObjectID;
+                    this.selectedRow.AssetTypeID = res.AssetTypeID;
                     if (action) {
                         action();
                     }

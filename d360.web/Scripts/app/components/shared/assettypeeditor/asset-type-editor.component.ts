@@ -47,14 +47,9 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
 
     constructor(private assetTypeService: AssetTypeService, private messagesService: MessagesObservableService) {
         super();
-        this.selectedFlowType = FlowObjectType.Event;
         this.flowObjectDDL.push({ value: FlowObjectType.Event, label: 'Event' });
         this.flowObjectDDL.push({ value: FlowObjectType.Activity, label: 'Activity' });
         this.flowObjectDDL.push({ value: FlowObjectType.Gateway, label: 'Gateway' });
-    }
-
-    public selectFlowType($event) {
-        this.selectedFlowType = $event.value;
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -146,6 +141,7 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
                     && this.model.AssetType.AutoDisplayParent === null && this.model.AssetType.ParentUid != null) {
                     this.model.AssetType.AutoDisplayParent = true;
                 }
+
                 this.isLoading = false;
             });
     }
@@ -160,8 +156,11 @@ export class AssetTypeEditorComponent extends BaseComponent implements OnChanges
         if (this.fusionId)
             this.model.AssetType.FusionID = this.fusionId;
 
-        if (this.model.AssetType.Class == AssetTypeClass.DiagramAsset) {
-            this.model.AssetType.FlowObjectType = this.selectedFlowType;
+        if (this.model.AssetType.Class != AssetTypeClass.DiagramAsset) {
+            delete this.model.AssetType.FlowObjectType;
+        }
+        else if (!this.model.AssetType.FlowObjectType) {
+            this.model.AssetType.FlowObjectType = FlowObjectType.Event;
         }
 
         if (this.model.AssetType.Uid != null && this.model.AssetType.Uid != '00000000-0000-0000-0000-000000000000') {

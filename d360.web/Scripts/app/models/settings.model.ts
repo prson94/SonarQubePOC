@@ -24,7 +24,7 @@ export class CompanySettings {
     EnableOrganizations: boolean;
     EnableShoppingCart: boolean;
     HideData3SixtyUsers: boolean;
-    ShowAllUsersAPIKey: boolean
+    ShowAllUsersAPIKey: boolean;
     DefaultRoute: string;
     EnableSearchExactMatch: boolean;
     WorkflowCatchAllGroup: number;
