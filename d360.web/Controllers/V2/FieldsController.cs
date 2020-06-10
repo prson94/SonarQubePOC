@@ -78,7 +78,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
         ]
-        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null, 
+        public async Task<HttpResponseMessage> GetFieldTypesAsync(Guid? AssetTypeUid = null, Guid? RelationshipTypeUid = null, Guid? ActionTypeUid = null,
             string Name = "", string FriendlyName = "", DataType? Type = null, int? _pageSize = null, int? _pageNum = null)
         {
             var prefix = "Fields.GetFieldTypesAsync => ";
@@ -94,7 +94,7 @@ namespace d360.web.Controllers.V2
                     throw new RestApiException(HttpStatusCode.BadRequest, "Invalid request", isValid);
                 }
                 var results = await FieldsRepository.GetFieldTypes(queryParams);
-                if(results.Item2.StatusCode != HttpStatusCode.OK)
+                if (results.Item2.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(results.Item2.StatusCode, results.Item2.Error, results.Item2.Message);
 
                 return Request.CreateResponse(HttpStatusCode.OK, results.Item1);
@@ -196,7 +196,7 @@ namespace d360.web.Controllers.V2
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
 
                 #region GetData
-                
+
                 TypeIdentifierInfoModel typeIdentifierInfoModel = null;
 
                 IEnumerable<TypeIdentifierInfoModel> actionTypeIdentifierInfoModels = null;
@@ -235,8 +235,8 @@ namespace d360.web.Controllers.V2
                     if (typeIdentifierInfoModel == null)
                         return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", $"Relationship Type with Uid {model.AssetTypeUid.Value} could not be found."));
                 }
-                
-                #endregion            
+
+                #endregion
 
                 #region SecurityCheck
 
@@ -263,14 +263,14 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation
-                
+
                 var existingFields = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
                 var ExistingIntersectID = new List<Tuple<string, Guid>>();
                 if (model.AssetTypeUid.HasValue)
                 {
                     ExistingIntersectID = FieldsRepository.GetFieldInterSetUID(existingFields);
                 }
-                
+
                 var isFusionEnabled = Community.IsFusionEnabled();
                 var validationStatus = FieldApiModelValidator.ValidateModel(model, actionTypeIdentifierInfoModel, assetTypeIdentifierInfoModel, relationshipTypeIdentifierInfoModel, isFusionEnabled, existingFields, ExistingIntersectID);
                 if (validationStatus.StatusCode != HttpStatusCode.OK)
@@ -290,17 +290,17 @@ namespace d360.web.Controllers.V2
                 #endregion
 
                 #region Validation done, time to do some work
-                
+
                 foreach (var field in model.Fields)
                 {
-                    if(field.Type?.Text?.Validation != null && (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
+                    if (field.Type?.Text?.Validation != null && (!string.IsNullOrEmpty(field.Type.Text.Validation.Pattern) || !field.Type.Text.Validation.IsRequired))
                     {
                         field.Type.Text.Validation.MinimumLength = 0;
-                    }                    
+                    }
                 }
 
                 var status = FieldsRepository.UpdateFields(model, typeIdentifierInfoModel);
-                if(status.StatusCode != HttpStatusCode.OK)
+                if (status.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(status.StatusCode, status.Error, status.Message);
 
                 #endregion
@@ -377,6 +377,14 @@ namespace d360.web.Controllers.V2
                 }
                 #endregion
 
+                if (model.AssetTypeUid.HasValue && typeIdentifierInfoModel != null && typeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                {
+                    if (model.Fields.Any(x => new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(x.Name)))
+                    {
+                        throw new RestApiException(HttpStatusCode.BadRequest, "Bad request", "Fields Name, GovernanceRole and StepNo cannot be delete from Diagram Asset Type.");
+                    }
+                }
+
                 #region Security check
 
                 bool hasPermissions = false;
@@ -410,7 +418,7 @@ namespace d360.web.Controllers.V2
 
                 List<FieldType> currentFieldTypes = FieldsRepository.GetFieldTypes(typeIdentifierInfoModel);
 
-                (var fieldValidatorStatus,List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
+                (var fieldValidatorStatus, List<string> fieldNamesToDelete) = FieldApiModelValidator.FieldValidator(model, anyExistingItems, currentFieldTypes);
                 if (fieldValidatorStatus.StatusCode != HttpStatusCode.OK)
                     throw new RestApiException(fieldValidatorStatus.StatusCode, fieldValidatorStatus.Error, fieldValidatorStatus.Message);
 
@@ -631,10 +639,24 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
                     AssetTypeClass.AttributeGroup,
+                    AssetTypeClass.Diagram
                 };
                 if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
+                }
+
+                if (@class == AssetTypeClass.Diagram)
+                {
+                    var notAllowed = new List<string>() {
+                        "ComplexRelationLookup",
+                        "OwnershipLookup",
+                        "Relationship",
+                        "FieldFromRelationship",
+                        "RefListRelationship",
+                        "JSON",
+                        "JsonElement" };
+                    dataTypeOptions = dataTypeOptions.Where(x => !notAllowed.Contains(x.value)).ToList();
                 }
 
                 var jsonFieldType = new Dictionary<string, string>() {
@@ -657,21 +679,22 @@ namespace d360.web.Controllers.V2
                 #endregion
 
 
-                return Request.CreateResponse(HttpStatusCode.OK, new {
-                        Attributes = attributes,
-                        Field_Relationships,
-                        Field_JsonFields,
-                        Field_JsonDataTypes,
-                        Field_CardinalRelationships,
-                        Field_FieldFromRelRelationships,
-                        Field_CardinalReferenceRelationships,
-                        DataTypes = dataTypeOptions,
-                        FilteredLookups = filteredLookups,
-                        Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
-                        IntersectTypes = intersectTypes,
-                        FusionAttributeTypes = fusionAttributeTypes,
-                        Lookups = lookups,
-                        ComplexLookupRelations = complexLookupRelations.Select(x => new { ID = (int)x.ID, x.Name, x.DisplayName}) 
+                return Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    Attributes = attributes,
+                    Field_Relationships,
+                    Field_JsonFields,
+                    Field_JsonDataTypes,
+                    Field_CardinalRelationships,
+                    Field_FieldFromRelRelationships,
+                    Field_CardinalReferenceRelationships,
+                    DataTypes = dataTypeOptions,
+                    FilteredLookups = filteredLookups,
+                    Patterns = patterns.Select(i => new { title = i.Key, value = i.Value }),
+                    IntersectTypes = intersectTypes,
+                    FusionAttributeTypes = fusionAttributeTypes,
+                    Lookups = lookups,
+                    ComplexLookupRelations = complexLookupRelations.Select(x => new { ID = (int)x.ID, x.Name, x.DisplayName })
                 });
             }
             catch (RestApiException ex)
@@ -802,13 +825,14 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                return Request.CreateResponse(HttpStatusCode.OK, new {                    
-                        FieldType = ft,
-                        FilteredLookupItems = filteredLookupItems,
-                        FusionItems = fusionItems,
-                        JsonElementSettings,
-                        OwnershipLookupSettings = ownershipLookupSettings,
-                        RelationItems = relationItems
+                return Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    FieldType = ft,
+                    FilteredLookupItems = filteredLookupItems,
+                    FusionItems = fusionItems,
+                    JsonElementSettings,
+                    OwnershipLookupSettings = ownershipLookupSettings,
+                    RelationItems = relationItems
                 });
             }
             catch (RestApiException ex)
@@ -865,7 +889,7 @@ namespace d360.web.Controllers.V2
                 {
                     id = 0;
                 }
-                else if(Guid.TryParse(identifier, out Guid Uid))
+                else if (Guid.TryParse(identifier, out Guid Uid))
                 {
                     var item = Company.Filter<AssetType>(x => x.uid == Uid).SingleOrDefault();
                     Enum.TryParse(item.Object, out type);
@@ -988,7 +1012,7 @@ namespace d360.web.Controllers.V2
                 var list = Company
                     .Filter<FieldType>(f => f.Object == targetObjectType && f.ObjectID == targetObjectTypeID)
                     .Where(i => !restrictedFields.Contains(i.Type))
-                    .Select(i => new { i.Name, i.FriendlyName});
+                    .Select(i => new { i.Name, i.FriendlyName });
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { title = i.FriendlyName, value = i.Name }));
             }
@@ -1020,7 +1044,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the Uid for asset type, relationship type, or action type does not correspond to a known type.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this asset is invalid, possibly due to an incorrectly formatted identifier (uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)            
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<HttpResponseMessage> GetLookupDefaultValues(string Uid)
         {
@@ -1038,7 +1062,7 @@ namespace d360.web.Controllers.V2
                 usersOnly = Company.Filter<AssetType>(x => x.uid == assetUid && x.Class == AssetTypeClass.User).Count() > 0;
                 if (usersOnly)
                 {
-                    string HideD3SUsers = HideData3SixtyUsers() ? "": " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' "; 
+                    string HideD3SUsers = HideData3SixtyUsers() ? "" : " WHERE Email not like '%@data3sixty.com' and Email not like '%@infogix.com' ";
                     sql = $@"
                         select 
                             R.Uid as value,
@@ -1130,13 +1154,13 @@ namespace d360.web.Controllers.V2
                     throw new Exception("No assetTypeUid or actionTypeUid or relationshipTypeUid provided");
                 }
                 AssetType refitem = null;
-                if(Guid.TryParse(uid, out Guid refitemGuid))
+                if (Guid.TryParse(uid, out Guid refitemGuid))
                 {
                     refitem = Company.Filter<AssetType>(x => x.uid == refitemGuid).SingleOrDefault();
                 }
-                
+
                 var list = new List<PrimeSelectItem>();
-                if (refitem != null && refitem.Object == SystemObjects.ReferenceItemType.ToString()) 
+                if (refitem != null && refitem.Object == SystemObjects.ReferenceItemType.ToString())
                 {
 
                     string objectType = type.ToString();
@@ -1326,13 +1350,13 @@ namespace d360.web.Controllers.V2
                 var list = await Company.QueryAsync<dynamic>(sql, parms);
 
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new
-                    {
-                        i.PredicateValue,
-                        i.PredicateName,
-                        i.FieldTypeName,
-                        i.FriendlyName,
-                        Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
-                    })
+                {
+                    i.PredicateValue,
+                    i.PredicateName,
+                    i.FieldTypeName,
+                    i.FriendlyName,
+                    Info = string.IsNullOrEmpty(i.Name) ? "" : "List(" + (AssetTypeClass)i.Class + " : " + i.Name + ")" //@TODO use i.Type instead of hardcoded field type
+                })
                 );
             }
             catch (RestApiException ex)
@@ -1468,10 +1492,10 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                 }
 
                 var intersectTypes = await Company.QueryAsync<dynamic>(
-                    $@"select cast(uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|' + @direction as value, SubjectName as title from IntersectTypeDetail where PredicateType = @pt and ObjectUid = @assetTypeUid", 
+                    $@"select cast(uid as varchar(36)) + '|' + cast(SubjectUid as varchar(36)) + '|' + @direction as value, SubjectName as title from IntersectTypeDetail where PredicateType = @pt and ObjectUid = @assetTypeUid",
                     new { pt = (int)PredicateType.InterTypeHierarchy, assetTypeUid, direction = ((int)FieldTypeComplexLookupRelationDirection.Back).ToString() }
                 );
-                
+
                 return Request.CreateResponse(HttpStatusCode.OK, intersectTypes);
             }
             catch (RestApiException ex)
@@ -1628,7 +1652,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     list.Add("DisplayValue", 0);
                 }
 
-                list.Add("AssetPath", 0);
+                list.Add("_assetPath", 0);
 
                 var relList = Company.GetFieldTypesByObject(SystemObjects.IntersectType, intersectTypeID)
                     .Where(i => i.Type != DataType.Path.ToString())
@@ -1918,7 +1942,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @assetTypeUid and [State] = 1"
                     , new { assetTypeUid }).ToList();
 
-                foreach(var type in types)
+                foreach (var type in types)
                 {
                     try
                     {
@@ -1933,7 +1957,7 @@ where	I.Uid = @intersectTypeUid", new { intersectTypeUid });
                     }
                 }
 
-              
+
                 return Request.CreateResponse(HttpStatusCode.OK, list.Select(i => new { label = i.Value, value = i.Key }));
             }
             catch (RestApiException ex)

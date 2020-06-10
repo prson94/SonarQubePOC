@@ -609,6 +609,15 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
                     }
 
+                    var types = Company.Query<int>(
+                   "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @uid and [State] = 1"
+                   , new { assetType.uid }).ToList();
+
+                    if (!types.Contains((int)f.Type.Score.ScoreType))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Score type {f.Type.Score.ScoreType.ToString()} cannot be allocated to this asset type for field {f.Name}.");
+                    }
+
                     newFieldType.Type = DataType.Score.ToString();
                     newFieldType.ScoreType = (int)f.Type.Score.ScoreType;
                     newFieldType.IsDisplayable = f.Type.Score.IsDisplayable;
@@ -746,7 +755,7 @@ from	IntersectType I
                     var definitionFields = new List<FieldTypeComplexLookupDefinitionField>();
                     var definitionRelations = new List<FieldTypeComplexLookupDefinitionRelation>();
                     var hasDefinitionError = false;
-                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "AssetPath", 0 } };
+                    var computedFields = new Dictionary<string, int>() { { "DisplayValue", 0 }, { "_assetPath", 0 } };
                     var relatedItemUids = new List<Guid>();
 
                     f.Type.ComputedRelationshipLookup.Definition.Relations.ForEach(i =>
@@ -859,7 +868,7 @@ from	IntersectType I
                                 hasDefinitionError = true;
                                 return;
                             }
-                        }
+                        }                        
                         var computedFieldValue = computedFields.ContainsKey(i.FieldTypeName) ? computedFields[i.FieldTypeName] : 0;
                         field.FieldTypeID = (fieldInfo.FieldTypeID == 0) ? computedFieldValue : fieldInfo.FieldTypeID;
                         field.AssetTypeUid = i.AssetTypeUid;
@@ -867,8 +876,8 @@ from	IntersectType I
                         field.FieldTypeName = i.FieldTypeName;
                         field.Filter = i.Filter;
                         if (string.IsNullOrEmpty(i.OverrideDisplayName) || string.IsNullOrWhiteSpace(i.OverrideDisplayName))
-                        {
-                            i.OverrideDisplayName = null;
+                        {                            
+                                i.OverrideDisplayName = null;
                         }
                         field.OverrideDisplayName = i.OverrideDisplayName;
                         field.SortOrder = i.SortOrder;

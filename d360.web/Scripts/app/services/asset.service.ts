@@ -1,6 +1,6 @@
 ﻿import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpClientJsonpModule } from '@angular/common/http';
-import { Observable } from "rxjs";
+import { Observable, throwError } from "rxjs";
 import { catchError, map, debounceTime } from "rxjs/operators";
 
 import { JsonResult } from '../models/jsonresult.model';
@@ -114,6 +114,21 @@ export class AssetService extends BaseObservableService {
                 catchError(err => this.handleError(err, true)));
     }
 
+    public deleteAssetType(uid: string): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: { Uid: uid, Cascade: true }
+        };
+
+        return this
+            .http
+            .delete(`api/v2/assets/single`, httpOptions)
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
     public getAssetTypeLegacyData(uid: string): Observable<any> {
         return this.http.get(`/api/v2/assets/assetTypeLegacyData/${uid}`)
             .pipe(map(res => { return <any>res[0] }),
@@ -135,7 +150,12 @@ export class AssetService extends BaseObservableService {
             .get(`/api/v2/assets/${assetTypeUid}${qString}`)
             .pipe(debounceTime(500),
                 map(res => { return <any>res }),
-                catchError(err => this.handleError(err, true)));
+                catchError(err => {
+                    if (this.isErrorFromFilterExpression(err)) {
+                        return throwError(err);
+                    }
+                    return this.handleError(err);
+                }));
     }
 
     public getUIDetailsForAssetUID(uid: string): Observable<any> {

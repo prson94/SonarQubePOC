@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using System.Xml.Linq;
 using static d360.model.CommunityContext;
 
 namespace d360.web.Controllers.V2
@@ -119,7 +120,7 @@ namespace d360.web.Controllers.V2
             return Request.CreateResponse(HttpStatusCode.OK, css);
         }
 
-        [HttpPut, Route("styles"), ApiExplorerSettings(IgnoreApi = true)]
+        [HttpPut, Route("styles")]
         public async Task<HttpResponseMessage> UpdateStyleCustomizations(UpdateCss UpdateCss)
         {
             if (!Company.CurrentResourceIsAdmin)
@@ -225,6 +226,136 @@ namespace d360.web.Controllers.V2
    
 
                 return Request.CreateResponse(HttpStatusCode.OK, response);
+            }
+            catch (Exception ex)
+            {
+                return ReturnApiError(HttpStatusCode.InternalServerError, ex.Message);
+            }
+
+        }
+
+        /// <summary>
+        /// Update a setting. If the setting value is null, it will be set to the default value.
+        /// </summary>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpPut,
+            Route("settings")
+        ]
+        public HttpResponseMessage UpdateSetting(CompanySettingApiUpdateModel model)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+            {
+                return ReturnApiError(HttpStatusCode.Forbidden, "User not authorized to perfom this action");
+            }
+
+            if (model == null)
+                return ReturnApiError(HttpStatusCode.BadRequest, "Invalid model");
+
+            try
+            {
+                var setting = Community
+                    .Settings
+                    .FirstOrDefault(s => s.ID == model.SettingID);
+
+                if (setting == null)
+                    return ReturnApiError(HttpStatusCode.NotFound, "Setting with this id not found");
+
+                if (setting.Locked)
+                    return ReturnApiError(HttpStatusCode.Forbidden, "This setting is locked and cannot be updated");
+
+                if (!model.HasExactlyOneValue)
+                    return ReturnApiError(HttpStatusCode.BadRequest, "Exactly one value must be provided based on the setting's data type");
+
+                var companySetting = Community
+                    .CompanySettings
+                    .FirstOrDefault(c => c.CompanyID == Company.CurrentCompanyID && c.SettingID == model.SettingID);
+
+                bool clearSetting = false;
+                string value = "";
+
+                string valueErrorMessage = "Provided value does not match the expected data type for this setting";
+                switch (setting.SettingType)
+                {
+                    case SettingType.Text:
+                        if (model.StringSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.StringSetting.Value == null)
+                            clearSetting = true;
+                        value = model.StringSetting.Value;
+                        break;
+                    case SettingType.Number:
+                        if (model.NumberSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.NumberSetting.Value == null)
+                            clearSetting = true;
+                        value = model.NumberSetting.Value.Value.ToString();
+                        break;
+                    case SettingType.Boolean:
+                        if (model.BooleanSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.BooleanSetting.Value == null)
+                            clearSetting = true;
+                        value = model.BooleanSetting.Value.Value.ToString().ToLower();
+                        break;
+                    case SettingType.IPAddress:
+                        if (model.IpAddressSetting == null)
+                            return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
+                        if (model.IpAddressSetting.Value == null || model.IpAddressSetting.Value.Count == 0)
+                            clearSetting = true;
+                        
+                        if (model.IpAddressSetting.Value?.Any() ?? false)
+                        {
+                            value = "<ips />";
+                            var xml = new XElement("ips");
+                            foreach (var ip in model.IpAddressSetting.Value)
+                            {
+                                if (string.IsNullOrEmpty(ip.Name) || string.IsNullOrEmpty(ip.Start) || string.IsNullOrEmpty(ip.End))
+                                    return ReturnApiError(HttpStatusCode.BadRequest, "One or more IP Addresses is missing a value");
+                                if (!IPAddress.TryParse(ip.Start, out IPAddress _))
+                                    return ReturnApiError(HttpStatusCode.BadRequest, $"Start value {ip.Start} is not a valid IP Address");
+                                if (!IPAddress.TryParse(ip.End, out IPAddress _))
+                                    return ReturnApiError(HttpStatusCode.BadRequest, $"End value {ip.End} is not a valid IP Address");
+
+                                xml.Add(new XElement("ip",
+                                    new XElement("name", ip.Name),
+                                    new XElement("start", ip.Start),
+                                    new XElement("end", ip.End)
+                                ));
+
+                            }
+
+                            value = xml.ToString();
+                        }
+                        break;
+                }
+
+
+                if (clearSetting && companySetting != null)
+                {
+                    Community.CompanySettings.Remove(companySetting);
+                }
+                else if (!clearSetting)
+                {
+                    if (companySetting == null)
+                    {
+                        companySetting = new CompanySetting
+                        {
+                            CompanyID = Company.CurrentCompanyID,
+                            SettingID = model.SettingID,
+                            Value = value
+                        };
+
+                        Community.CompanySettings.Add(companySetting);
+                    }
+                    else
+                    {
+                        companySetting.Value = value;
+                    }
+                }
+
+                Community.SaveChanges();
+                return Request.CreateResponse(HttpStatusCode.OK);
             }
             catch (Exception ex)
             {

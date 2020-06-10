@@ -45,7 +45,8 @@ export class SiteUrlHelpers {
     static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
-
+    static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
+    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     //hierarchy child routes
     static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
@@ -89,6 +90,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
+    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'diagrams';
 
 
 
@@ -180,6 +182,8 @@ export class SiteUrlHelpers {
                 return `${SiteUrlHelpers.SITE_URL_DASHBOARD_ROOT}/${objectId}`;
             case 'TAG':
                 return `${SiteUrlHelpers.SITE_URL_TAG_ROOT}/${objectId}`;
+            case 'TASKTYPE':
+                return `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS}`;
             default:
                 console.log('Unable to generate object link', objectType, objectId);
         }

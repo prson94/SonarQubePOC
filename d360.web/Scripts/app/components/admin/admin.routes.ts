@@ -32,6 +32,7 @@ const routes: Routes = [
             { path: SiteUrlHelpers.SITE_URL_ADMIN_CUSTOM_API, loadChildren: () => import('./customapi/admin-customapi.module').then(m => m.AdminCustomAPIModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_EXPORT_TEMPLATES, loadChildren: () => import('./exporttemplates/admin-export-templates.module').then(m => m.AdminExportTemplatesModule) },
             { path: SiteUrlHelpers.SITE_URL_ADMIN_TAGS, loadChildren: () => import('./tags/admin-tags.module').then(m => m.AdminTagsModule) },
+            { path: SiteUrlHelpers.SITE_URL_ADMIN_DIAGRAM_ASSETS, loadChildren: () => import('./diagram-asset/admin-diagram-asset.module').then(m => m.AdminDiagramAssetModule) },
         ]
     }
 ];

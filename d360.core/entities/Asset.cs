@@ -214,4 +214,10 @@ namespace d360.core.entities
         public bool HasAssetRestriction { get; set; }
         public bool HasAssetTypeRestriction { get; set; }
     }
+    public class AssetTypePossibleOwnersModel
+    {
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        public string Type { get; set; }
+    }
 }

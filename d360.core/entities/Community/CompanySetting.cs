@@ -137,5 +137,48 @@ namespace d360.core.entities
         public List<Ip> Addresses { get; set; }
     }
 
+
+    public class CompanySettingApiUpdateModel
+    {
+        public int SettingID { get; set; }
+        public CompanySettingApiUpdateStringModel StringSetting { get; set; }
+        public CompanySettingApiUpdateNumberModel NumberSetting { get; set; }
+        public CompanySettingApiUpdateBooleanModel BooleanSetting { get; set; }
+        public CompanySettingApiUpdateIpAddressModel IpAddressSetting { get; set; }
+
+        [IgnoreDataMember]
+        public bool HasExactlyOneValue
+        {
+            get
+            {
+                return
+                    ((StringSetting == null ? 0 : 1) +
+                    (NumberSetting == null ? 0 : 1) +
+                    (BooleanSetting == null ? 0 : 1) +
+                    (IpAddressSetting == null ? 0 : 1)) == 1;
+            }
+        }
+
+    }
+
+    public class CompanySettingApiUpdateStringModel
+    {
+        public string Value { get; set; }
+    }
+
+    public class CompanySettingApiUpdateNumberModel
+    {
+        public int? Value { get; set; }
+    }
+
+    public class CompanySettingApiUpdateBooleanModel
+    {
+        public bool? Value { get; set; }
+    }
+
+    public class CompanySettingApiUpdateIpAddressModel
+    {
+        public List<Ip> Value { get; set; }
+    }
     #endregion
 }

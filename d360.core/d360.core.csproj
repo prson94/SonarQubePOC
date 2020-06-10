@@ -288,6 +288,7 @@
     <Compile Include="enums\CalculationMethod.cs" />
     <Compile Include="enums\CompanyRebuildJobToken.cs" />
     <Compile Include="enums\CompanyRebuildJobStatusState.cs" />
+    <Compile Include="enums\FlowObjectType.cs" />
     <Compile Include="enums\ResultRelationClass.cs" />
     <Compile Include="enums\SettingType.cs" />
     <Compile Include="enums\SplitFilterCriteriaRelationship.cs" />

@@ -102,7 +102,13 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
             }
             this.isLoading = false;
             this.cdRef.detectChanges();
-        });
+        },
+            err => {
+                this.items = [];
+                this.totalRecords = 0;
+                this.isLoading = false;
+                this.cdRef.detectChanges();
+            });
 
     }
 

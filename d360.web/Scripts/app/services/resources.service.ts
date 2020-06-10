@@ -54,7 +54,7 @@ export class ResourcesService extends BaseObservableService {
                 return response;
             }),
             catchError(err => {
-                if (err && err.error && err.error.message && err.error.message.indexOf('Invalid filter expression') != -1) {
+                if (this.isErrorFromFilterExpression(err)) {
                     return throwError(err);
                 }
                 return this.handleError(err);
