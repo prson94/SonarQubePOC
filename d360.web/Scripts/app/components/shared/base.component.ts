@@ -420,7 +420,7 @@ export class BaseComponent {
             if (this.objectType == 'TaskType') {
                 this.governanceRolesSidebar = new SecondaryNavItem(
                     'Governance Roles', 'GovernanceRoles', null,
-                    '/sidebar/governance-roles', null, 3);
+                    '/sidebar/governanceRoles', null, 3);
                 if (!hasGovernanceRoleSet) {
                     this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
                 }
@@ -428,7 +428,7 @@ export class BaseComponent {
 
                 this.connectorLabels = new SecondaryNavItem(
                     'Connector Labels', 'ConnectorLabels', null,
-                    '/sidebar/connector-labels', null, 4);
+                    '/sidebar/connectorLabels', null, 4);
                 this.secondaryNavService.showItem(this.connectorLabels);
 
 

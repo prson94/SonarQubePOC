@@ -549,7 +549,8 @@ namespace d360.web.Controllers.V2
                             SortOrder = 1,
                             Type = DataType.Text.ToString(),
                             IsDisplayable = true,
-                            IsPartOfKey = isNamePartOfKey
+                            IsPartOfKey = isNamePartOfKey,
+                            UpdatedBy = Company.CurrentResourceID
                         });
                     }
 
@@ -564,14 +565,16 @@ namespace d360.web.Controllers.V2
                             IsListable = true,
                             IsRequired = true,
                             IsEditable = true,
-                            FriendlyName = "GovernanceRole",
+                            FriendlyName = "Governance Role",
                             Name = "GovernanceRole",
                             SortOrder = 2,
                             Type = DataType.Lookup.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
                             LookupObjectID = refList.ObjectID,
-                            LookupObjectType = refList.Object
+                            LookupObjectType = refList.Object,
+                            UpdatedBy = Company.CurrentResourceID
+
                         });
 
                         Company.Add(new FieldType
@@ -586,7 +589,8 @@ namespace d360.web.Controllers.V2
                             SortOrder = 3,
                             Type = DataType.Number.ToString(),
                             IsDisplayable = true,
-                            IsPartOfKey = false
+                            IsPartOfKey = false,
+                            UpdatedBy = Company.CurrentResourceID
                         });
                     }
                 }
@@ -1853,7 +1857,8 @@ namespace d360.web.Controllers.V2
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> DeleteSingleAssetTypesAsync(AssetTypeSingleDelete assetType)
         {

@@ -30,13 +30,12 @@ import { SpinnerModule } from 'primeng/spinner';
 import { CheckboxModule } from 'primeng/checkbox';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ColorPickerModule } from 'primeng/colorpicker';
-import { TreeTableModule } from 'primeng/treetable';
 import { EditorModule } from 'primeng/editor';
 
 import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibilities.module';
 import { AdminDiagramAssetRoutingModule } from './admin-diagram-asset.routes';
 import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
-import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
+import { TableModule } from 'primeng/table';
 
 
 @NgModule({
@@ -54,7 +53,7 @@ import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
         InputTextModule,
         MultiSelectModule,
         SharedModule,
-        TreeTableModule,
+        TableModule,
 
         //color picker 
         ColorPickerModule,

@@ -45,8 +45,8 @@ export class SiteUrlHelpers {
     static SITE_URL_SCORE_ROOT = 'sidebar/score';
     static SITE_URL_ACTIONS_ROOT = 'sidebar/actions';
     static SITE_URL_RULERESULT_ROOT = 'sidebar/ruleResults';
-    static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governance-roles';
-    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connector-labels';
+    static SITE_URL_GOVERNANCE_ROLES_ROOT = 'sidebar/governanceRoles';
+    static SITE_URL_CONNECTOR_LABELS_ROOT = 'sidebar/connectorLabels';
     //hierarchy child routes
     static SITE_URL_HIERARCHY_CLASSIFICATION = 'classification';
 
@@ -90,7 +90,7 @@ export class SiteUrlHelpers {
     static SITE_URL_ADMIN_ORGANIZATIONS = 'organizations';
     static SITE_URL_ADMIN_PREDICATES = 'predicates';
     static SITE_URL_ADMIN_EXPORT_TEMPLATES = 'exporttemplates';
-    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'Diagrams';
+    static SITE_URL_ADMIN_DIAGRAM_ASSETS = 'diagrams';
 
 
 
