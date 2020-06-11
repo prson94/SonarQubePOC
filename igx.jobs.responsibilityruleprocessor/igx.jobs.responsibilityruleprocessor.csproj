@@ -221,9 +221,9 @@
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.core\old.d360.core.csproj">
-      <Project>{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}</Project>
-      <Name>old.d360.core</Name>
+    <ProjectReference Include="..\d360.core\d360.core.csproj">
+      <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
+      <Name>d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.model\d360.model.csproj">
       <Project>{b12a1078-5835-43b8-afb2-c3d24c4aa098}</Project>

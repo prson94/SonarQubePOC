@@ -99,9 +99,9 @@
     <None Include="Resources\favicon.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\d360.core\old.d360.core.csproj">
-      <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
-      <Name>old.d360.core</Name>
+    <ProjectReference Include="..\..\d360.core\d360.core.csproj">
+      <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
+      <Name>d360.core</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

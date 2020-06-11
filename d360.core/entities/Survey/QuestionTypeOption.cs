@@ -3,8 +3,7 @@ using d360.core.entities.Contracts;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
-using System.Web.Script.Serialization;
-using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -20,7 +19,7 @@ namespace d360.core.entities
         [DataMember]
         public int Value { get; set; }
 
-        [ScriptIgnore, XmlIgnore()]
+        [JsonIgnore, XmlIgnore()]
         public virtual QuestionType QuestionType { get; set; }
 
         public virtual ICollection<Question> Questions { get; set; }

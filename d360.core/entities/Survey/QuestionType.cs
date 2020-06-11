@@ -4,8 +4,8 @@ using System;
 using System.Runtime.Serialization;
 using System.ComponentModel.DataAnnotations;
 using System.Xml.Serialization;
-using System.Web.Script.Serialization;
 using System.ComponentModel.DataAnnotations.Schema;
+using Newtonsoft.Json;
 
 namespace d360.core.entities
 {
@@ -36,7 +36,7 @@ namespace d360.core.entities
         public int? UpdatedBy { get; set; }
 
 
-        [ScriptIgnore, XmlIgnore()]
+        [JsonIgnore, XmlIgnore()]
         public virtual SurveyType SurveyType { get; set; }
 
 

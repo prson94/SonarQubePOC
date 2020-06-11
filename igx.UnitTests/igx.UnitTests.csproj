@@ -132,9 +132,9 @@
     <Analyzer Include="..\packages\xunit.analyzers.0.10.0\analyzers\dotnet\cs\xunit.analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.core\old.d360.core.csproj">
-      <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
-      <Name>old.d360.core</Name>
+    <ProjectReference Include="..\d360.core\d360.core.csproj">
+      <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
+      <Name>d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2d52a6c1-a7f3-42f3-90d2-0a0ecb871483}</Project>

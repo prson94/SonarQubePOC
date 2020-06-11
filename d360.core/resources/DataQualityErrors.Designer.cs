@@ -115,7 +115,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} must not be greater than today’s date..
+        ///   Looks up a localized string similar to {0} must not be greater than today&apos;s date..
         /// </summary>
         public static string GreaterThanTodayError {
             get {
