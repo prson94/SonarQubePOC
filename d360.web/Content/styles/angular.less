@@ -6737,6 +6737,29 @@ table {
 }
 
 d3s-process-diagram {
+    #process-diagram {
+
+        &.fullscreen {
+            margin-top: 40px;
+            position: fixed;
+            top: 0px;
+            left: 0px;
+            background-color: #eff2f6;
+            z-index: 10000;
+            width: 100%;
+            height: 100%;
+            padding: 16px;
+        }
+    }
+
+    #process-diagram-placeholder {
+        flex-grow: 1;
+        min-height: 620px;
+        background-color: white;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+    }
+
     #myPaletteDiv {
         width: 248px;
         margin-right: 15px;

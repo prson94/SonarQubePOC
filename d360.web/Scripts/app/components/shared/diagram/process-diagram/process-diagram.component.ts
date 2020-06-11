@@ -1,53 +1,12 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnInit, ViewChild, ChangeDetectionStrategy, ChangeDetectorRef, OnChanges, SimpleChange, SimpleChanges, EventEmitter, Output, AfterViewChecked } from '@angular/core';
-import {
-    AssetBrowserTranslation,
-    AssetBrowserApiHopDirection,
-    AssetBrowserDiagramAsset,
-    AssetBrowserTranslationNode,
-    AssetBrowserTranslationLink,
-    AssetBrowserTranslationRelationCount,
-    AssetBrowserFilterModel,
-    FilterSelectionsModel,
-    AssetBrowserApiHopRequestModel,
-    AssetBrowserApiHopAssetRequestModel,
-    AssetBrowserTranslationOwnerCount,
-    AssetBrowserApiOwnerHopRequestModel,
-    AssetBrowserAssetsModel,
-    AssetBrowserModel,
-    AssetBrowserAssetModel,
-    AssetBrowserGenericRelationModel,
-    LoadedFilterTypesModel,
-    AssetBrowserApiHopType,
-    AssetBrowserAlert,
-    DiagramType,
-    AssetBrowserFilterChangeEventType,
-    AssetBrowserFilterChangeEvent,
-    AssetBrowserPanelCommand,
-    AssetBrowserPanelModel,
-
-    AssetBrowserApiHopIgnoreRequestModel
-} from '../../../../models/lineage.model';
-
-import { BrowserService } from '../../../../services/browser.service';
-import { PermissionsService } from '../../../../services/permissions.service';
-import { MessagesObservableService } from '../../../../services/messages-observable.service';
-
-
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
-import { MenuItem, SelectItem, TreeNode } from 'primeng/api';
-import { Observable } from 'rxjs';
-import { PredicatesService } from '../../../../services/predicates.service';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { Router, ActivatedRoute } from '@angular/router';
-import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
-import { AssetType, FlowObjectType, AssetTypeClass, AssetTypeApiModel } from '../../../../models/asset.model';
+import { FlowObjectType, AssetTypeClass, AssetTypeApiModel } from '../../../../models/asset.model';
 import { AssetTypeService } from '../../../../services/asset-type.service';
 import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
-
-declare var window: any;
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -56,6 +15,7 @@ declare var window: any;
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit {
+    @Input() isEditMode: boolean = false;
 
     private assetTypeNodes: AssetTypeApiModel[] = [];
     private events: AssetTypeApiModel[] = [];
@@ -92,32 +52,46 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 console.log(res);
                 this.isLoaded = true;
                 this.loadDiagram();
+                this.applyEditMode(this.isEditMode);
                 this.cdRef.detectChanges();
             });
     }
-    private diagramUpdated() {
-        console.log("Diagram updated");
+
+    private applyEditMode(state: boolean) {
+        this.myDiagram.nodes.each(function (n) {
+            if (n instanceof go.Node) {
+                n.isEnabled = state;
+                n.movable = state;
+            }
+        });
+        this.myDiagram.links.each(function (n) {
+            if (n instanceof go.Link) {
+                n.isEnabled = state;
+                n.movable = state;
+            }
+        });
+    }
+
+    switchModes() {
+        this.isEditMode = !this.isEditMode;
+        this.applyEditMode(this.isEditMode);
+        this.cdRef.detectChanges();
+    }
+
+    disableDrag() {
+        this.myDiagram.toolManager.panningTool.isEnabled = !this.myDiagram.toolManager.panningTool.isEnabled;
     }
 
     loadDiagram() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         this.myDiagram =
-            $(go.Diagram, "myDiagramDiv",  // must name or refer to the DIV HTML element
+            $(go.Diagram, "process-diagram-placeholder",  // must name or refer to the DIV HTML element
                 {
-
                     "draggingTool.dragsLink": true,
                     "draggingTool.isGridSnapEnabled": true,
-                    "linkingTool.isUnconnectedLinkValid": true,
                     "linkingTool.portGravity": 20,
-                    "relinkingTool.isUnconnectedLinkValid": true,
                     "relinkingTool.portGravity": 20,
-                    "relinkingTool.fromHandleArchetype":
-                        $(go.Shape, "Diamond", { segmentIndex: 0, cursor: "pointer", desiredSize: new go.Size(8, 8), fill: "tomato", stroke: "darkred" }),
-                    "relinkingTool.toHandleArchetype":
-                        $(go.Shape, "Diamond", { segmentIndex: -1, cursor: "pointer", desiredSize: new go.Size(8, 8), fill: "darkred", stroke: "tomato" }),
-                    "linkReshapingTool.handleArchetype":
-                        $(go.Shape, "Diamond", { desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: "deepskyblue" }),
                     "rotatingTool.handleAngle": 270,
                     "rotatingTool.handleDistance": 30,
                     "rotatingTool.snapAngleMultiple": 15,
@@ -128,7 +102,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.grid.gridCellSize = new go.Size(20, 20);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = true;
+        this.myDiagram.toolManager.draggingTool.gridSnapCellSpot = go.Spot.Center;
 
         this.myDiagram.addModelChangedListener(() => {
             this.diagramStateChanged();
@@ -224,11 +198,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     },
                     $(go.Shape, "Circle",
                         {
-                            fill: 'white',
+                            fill: 'transparent',
                             stroke: "black",
                             strokeWidth: 2,
-                            margin: new go.Margin(5, 5, 5, 5),
-                            visible: false
+                            visible: false,
+                            width: 78,
+                            height: 78,
                         },
                         new go.Binding('visible', 'isSelected').ofObject()),
                     $(go.Shape, "Circle",
@@ -240,8 +215,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             stroke: "#708EA6",
                             fill: 'white',
                             strokeWidth: 2,
-                            maxSize: new go.Size(70, NaN)
-
+                            width: 70,
+                            height: 70,
                         }),
                     $(go.TextBlock,
                         {
@@ -268,7 +243,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var gatewayNodeTemplate = $(go.Node, "Spot",
             { locationSpot: go.Spot.Center },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("Diamond") },
+            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate() },
             new go.Binding("angle").makeTwoWay(),
             $(go.Panel, "Vertical",
                 { name: "PANEL" },
@@ -276,22 +251,36 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 $(go.Panel, "Auto",
                     { name: "PANEL" },
                     new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
-                    $(go.Shape, "Diamond",
+                    $(go.Shape, "Rectangle",
                         {
+                            angle: 45,
+                            width: 58,
+                            height: 58,
+                            fill: 'transparent',
+                            stroke: "black",
+                            strokeWidth: 2,
+                            visible: false
+                        },
+                        new go.Binding('visible', 'isSelected').ofObject()),
+                    $(go.Shape, "Rectangle",
+                        {
+                            angle: 45,
+                            width: 50,
+                            height: 50,
                             portId: "",
                             fromLinkable: true,
                             toLinkable: true,
                             cursor: "pointer",
                             stroke: "#708EA6",
                             fill: 'white',
-                            strokeWidth: 2,
-
+                            strokeWidth: 2
                         },
                         new go.Binding("figure"),
                         new go.Binding("fill")),
                     $(go.TextBlock,
                         {
                             alignment: go.Spot.Center,
+                            margin: new go.Margin(5, 0, 0, 0),
                             stroke: '#708EA6',
                             textAlign: "center",
                             font: '32px FontAwesome'
@@ -313,11 +302,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
             this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, false),
-            { // handle mouse enter/leave events to show/hide the ports
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
-            }
+            this.makePort("B", go.Spot.Bottom, true, false)
         );
 
         function showSmallPorts(node, show) {

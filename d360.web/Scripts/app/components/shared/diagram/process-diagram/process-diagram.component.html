@@ -1,9 +1,12 @@
-﻿<div id="sample">
-    <div >
-        <button pButton (click)="getData()">Get Data</button>
-        <button pButton (click)="save()" [disabled]="isSaveDisabled">Save data</button>
-        <button pButton (click)="clear()">Clear data</button>
-        <button pButton (click)="load()">Load data</button>
+﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
+    <div>
+        <button type="button" pButton (click)="getData()">Get Data</button>
+        <button type="button" pButton (click)="save()" [disabled]="isSaveDisabled">Save data</button>
+        <button type="button" pButton (click)="clear()">Clear data</button>
+        <button type="button" pButton (click)="load()">Load data</button>
+        <button type="button" pButton (click)="disableDrag()">Disable drag</button>
+        <button type="button" pButton (click)="switchModes()">Switch modes</button>
+
     </div>
     <br />
     <div style="width: 100%; display: flex; justify-content: space-between">
@@ -47,6 +50,6 @@
                 </p-accordionTab>
             </p-accordion>
         </div>
-        <div id="myDiagramDiv" style="flex-grow: 1; height: 620px; border: solid 1px black;"></div>
+        <div id="process-diagram-placeholder"></div>
     </div>
 </div>
