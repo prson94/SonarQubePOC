@@ -2,7 +2,7 @@
     <button (click)="getData()">Get Data</button>
     <div style="width: 100%; display: flex; justify-content: space-between">
         <div id="myPaletteDiv" *ngIf="isLoaded">
-            <p-accordion>
+            <p-accordion  [multiple]="true">
                 <p-accordionTab header="Events" [selected]="true">
                     <div class="row">
                         <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-event" *ngFor="let item of events">

@@ -216,7 +216,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             textAlign: "center",
                             font: '48px FontAwesome',
                             margin: new go.Margin(5, 0, 0, 0),
-                            minSize: new go.Size(NaN, 30),
+                            minSize: new go.Size(NaN, 20),
                         },
                         new go.Binding("text", "icon").makeTwoWay())
                 ),
@@ -247,30 +247,47 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             { selectable: true, selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate() },
             new go.Binding("angle").makeTwoWay(),
-            // the main object is a Panel that surrounds a TextBlock with a Shape
-            $(go.Panel, "Auto",
+            $(go.Panel, "Vertical",
                 { name: "PANEL" },
                 new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
-                $(go.Shape, "Diamond",  // default figure
-                    {
-                        portId: "", // the default port: if no spot on link data, use closest side
-                        fromLinkable: true, toLinkable: true, cursor: "pointer",
-                        fill: "white",  // default color
-                        strokeWidth: 2
-                    },
-                    new go.Binding("figure"),
-                    new go.Binding("fill")),
+                $(go.Panel, "Auto",
+                    { name: "PANEL" },
+                    new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                    $(go.Shape, "Diamond",
+                        {
+                            portId: "",
+                            fromLinkable: true,
+                            toLinkable: true,
+                            cursor: "pointer",
+                            stroke: "#708EA6",
+                            fill: 'white',
+                            strokeWidth: 2,
+
+                        },
+                        new go.Binding("figure"),
+                        new go.Binding("fill")),
+                    $(go.TextBlock,
+                        {
+                            alignment: go.Spot.Center,
+                            stroke: '#708EA6',
+                            textAlign: "center",
+                            font: '48px FontAwesome',
+                            margin: new go.Margin(5, 0, 0, 0),
+                        },
+                        new go.Binding("text", "icon").makeTwoWay())
+                ),
                 $(go.TextBlock,
                     {
                         font: "bold 11pt Helvetica, Arial, sans-serif",
                         margin: 8,
                         maxSize: new go.Size(160, NaN),
                         wrap: go.TextBlock.WrapFit,
-                        editable: true
-                    },
-                    new go.Binding("text").makeTwoWay())
-            ),
-            // four small named ports, one on each side:
+                        editable: true,
+                        stroke: 'black'
+                    }
+                    , new go.Binding("text", "assetname").makeTwoWay())
+            )
+            ,
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
             this.makePort("R", go.Spot.Right, true, true),
