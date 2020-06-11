@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.dbo.GetComplexLookupByAsset-v24">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v25">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -545,6 +545,8 @@ begin
 
 		insert into @tables values (' from Asset A');		
 		insert into @wheres values ('A.AssetTypeID = ' + cast(@referenceItemTypeID as varchar));
+		insert into @wheres values ('A.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)');
+		insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = A.AssetTypeID)');
 
 		if @countOnly = 0
 		begin
@@ -794,6 +796,15 @@ begin
 			where		O.FieldTypeID = @fieldTypeId
 			order by	F.DisplayOrder, coalesce(F.OverrideDisplayName, FT.FriendlyName, F.FieldTypeName);
 
+		Update @fields
+		Set OverrideDisplayName = 'AssetPath (Internal)'		
+		Where 
+			FieldTypeID = 0 
+			and 
+			FieldTypeName = '_assetPath' 
+			and 
+			OverrideDisplayName is null
+		
 		update	R 
 		set		R.RN = cast(R.RowNumber as varchar(5)),
 				R.IntersectTypeID = I.ID,
@@ -838,7 +849,7 @@ begin
 					end,
 				F.FieldDataType = case 
 									when F.FieldTypeName = 'Name' then 'preview'
-									when F.FieldTypeName = 'AssetPath' then 'preview'
+									when F.FieldTypeName = '_assetPath' then 'preview'
 									when F.FieldTypeName = 'DisplayValue' then 'preview'
 									when F.IsRelationLink = 1 then 'preview'
 									else coalesce(FT.[Type], 'text')
@@ -895,7 +906,7 @@ begin
 			from		@fields F
 			where		FieldTypeID = 0 
 						and Object <> 'FusionAttributeType'
-						and FieldTypeName = 'AssetPath'
+						and FieldTypeName = '_assetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
@@ -904,7 +915,7 @@ begin
 			from		@fields F
 			where		F.Object = 'FusionAttributeType' 
 						and F.FieldTypeID = 0 
-						and F.FieldTypeName = 'AssetPath'
+						and F.FieldTypeName = '_assetPath'
 			order by	F.RowNumber;
 
 		insert into @selects
