@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29215.179
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.core", "d360.core\d360.core.csproj", "{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "old.d360.core", "d360.core\old.d360.core.csproj", "{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.model", "d360.model\d360.model.csproj", "{B12A1078-5835-43B8-AFB2-C3D24C4AA098}"
 EndProject
@@ -85,6 +85,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.assetgraphprocessor", "igx.jobs.assetgraphprocessor\igx.jobs.assetgraphprocessor.csproj", "{AEE9929B-B6D4-4034-B7A2-7836277C7E08}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.communitypackagedeployer", "igx.jobs.communitypackagedeployer\igx.jobs.communitypackagedeployer.csproj", "{5E1CC76B-5C71-43DC-A929-C5A79DE0327C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Functions", "Functions", "{27F0D451-FD9F-4E23-AFCF-F2CE94522A50}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.functions.databasetaskprocessor", "igx.functions.databasetaskprocessor\igx.functions.databasetaskprocessor.csproj", "{EF0E79F5-1688-43E8-9BA4-16EEDC62230C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "d360.core", "igx.core\d360.core.csproj", "{39164B36-A4F8-4605-8C54-BEF59E2F9EE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -224,6 +230,14 @@ Global
 		{5E1CC76B-5C71-43DC-A929-C5A79DE0327C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E1CC76B-5C71-43DC-A929-C5A79DE0327C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E1CC76B-5C71-43DC-A929-C5A79DE0327C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF0E79F5-1688-43E8-9BA4-16EEDC62230C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF0E79F5-1688-43E8-9BA4-16EEDC62230C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF0E79F5-1688-43E8-9BA4-16EEDC62230C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF0E79F5-1688-43E8-9BA4-16EEDC62230C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39164B36-A4F8-4605-8C54-BEF59E2F9EE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39164B36-A4F8-4605-8C54-BEF59E2F9EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39164B36-A4F8-4605-8C54-BEF59E2F9EE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39164B36-A4F8-4605-8C54-BEF59E2F9EE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -264,9 +278,12 @@ Global
 		{D919EFEC-A104-4FE7-B22C-B7FEE5A4DE16} = {757CF48D-6728-4702-AC12-754629196548}
 		{AEE9929B-B6D4-4034-B7A2-7836277C7E08} = {757CF48D-6728-4702-AC12-754629196548}
 		{5E1CC76B-5C71-43DC-A929-C5A79DE0327C} = {757CF48D-6728-4702-AC12-754629196548}
+		{27F0D451-FD9F-4E23-AFCF-F2CE94522A50} = {2CE94CC8-D9FB-4CC5-B44A-1CDD40971448}
+		{EF0E79F5-1688-43E8-9BA4-16EEDC62230C} = {27F0D451-FD9F-4E23-AFCF-F2CE94522A50}
+		{39164B36-A4F8-4605-8C54-BEF59E2F9EE7} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal

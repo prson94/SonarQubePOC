@@ -344,9 +344,9 @@
     <None Include="Properties\webjob-publish-settings.json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\d360.core\d360.core.csproj">
+    <ProjectReference Include="..\d360.core\old.d360.core.csproj">
       <Project>{9341cca8-d3f2-467a-ae9c-0581054b8de2}</Project>
-      <Name>d360.core</Name>
+      <Name>old.d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
       <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>

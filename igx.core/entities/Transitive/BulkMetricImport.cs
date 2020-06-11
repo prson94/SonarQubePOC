@@ -1,0 +1,152 @@
+﻿using d360.core.enums;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+namespace d360.core.entities
+{
+    [JsonArray]
+    [DataContract(Name = "metrics")]
+    public class BulkMetricsImport : List<BulkMetricImport>
+    {
+
+    }
+
+    [DataContract(Name = "metric")]
+    public class BulkMetricImport : BaseObject
+    {
+        [DataMember]
+        public Guid AssetUid { get; set; }
+        [DataMember]
+        public Guid MetricAssetUid { get; set; }
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+        [DataMember]
+        public bool Result { get; set; }
+    }
+
+    [DataContract(Name = "metricItemResult")]
+    public class BulkMetricTemporaryTableModel
+    {
+        [DataMember]
+        public Guid AssetUid { get; set; }
+        [DataMember]
+        public Guid MetricAssetUid { get; set; }
+        [DataMember]
+        public DateTime EffectiveDate { get; set; }
+        [DataMember]
+        public bool Result { get; set; }
+
+        public bool IsValidAsset { get; set; }
+        public bool IsValidMetric { get; set; }
+        public bool IsValidMetricDate { get; set; }
+        public bool IsValidAllocation { get; set; }
+
+        [DataMember]
+        public bool IsSuccess { get; set; }
+        [DataMember]
+        public string ErrorMessage { get; set; }
+    }
+
+    #region Used in Metrics API to display the metric results by asset.
+
+    [JsonArray]
+    [DataContract(Name = "metrics")]
+    public class MetricAssetHierarchyModels : List<MetricAssetHierarchyModel>
+    {
+
+    }
+
+    [DataContract(Name = "metric")]
+    public class MetricAssetHierarchyModel : BaseObject
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public Guid? ParentUid { get; set; }
+
+        public int Level { get; set; }
+
+        [DataMember]
+        public bool IsGroup { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public decimal Weight { get; set; }
+
+        [DataMember]
+        public bool Value { get; set; }
+        [DataMember]
+        public ScoreType ScoreType { get; set; }
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+        [DataMember]
+        public DateTime? EndDate { get; set; }
+    }
+
+    #endregion
+
+    #region Used in Metrics API to define the metrics when calling the definition by asset type.
+
+    [JsonArray, DataContract(Name = "metrics")]
+    public class MetricAssetTypeHierarchyModels : List<MetricAssetTypeHierarchyModel>
+    {
+
+    }
+
+    [DataContract(Name = "metric")]
+    public class MetricAssetTypeHierarchyModel : BaseObject
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        public Guid? ParentUid { get; set; }
+        public int Level { get; set; }
+        [DataMember]
+        public bool IsGroup { get; set; }
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public decimal Weight { get; set; }
+
+        [DataMember]
+        public DateTime? EffectiveDate { get; set; }
+
+        public string ConditionsJson { get; set; }
+
+
+        [DataMember]
+        public List<MetricAssetTypeHierarchyModel> Metrics { get; set; }
+
+        [DataMember]
+        public List<MetricConditionHierarchyModel> Conditions { get; set; }
+    }
+
+    [DataContract(Name = "metricItemCondition")]
+    public class MetricConditionHierarchyModel : BaseObject
+    {
+        [DataMember]
+        public string FieldName { get; set; }
+
+        [DataMember]
+        public string Operator { get; set; }
+
+        //public string ValueJson { get; set; }
+
+        // Future use (mpappas) for when we start adding potentially multiple values that the JSON property above could store.
+        [DataMember]
+        public string Value { get; set; }
+
+        //[DataMember]
+        //public List<string> Values { get; set; }
+    }
+
+    #endregion
+}
