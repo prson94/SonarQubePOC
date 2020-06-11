@@ -274,7 +274,8 @@ namespace d360.web.Controllers
                                 MaximumDepth = 1,
                                 PredicateUid = null
                             },
-                            AutoDisplayParent = assetType.AutoDisplayParent
+                            AutoDisplayParent = assetType.AutoDisplayParent,
+                            FlowObjectType = assetType.FlowObjectType
                         },
                         Tokens = Company.Filter<FieldType>(i => i.Object == assetType.Object && i.ObjectID == assetType.ObjectID && !this.limitedFieldTypes.Contains(i.Type)).OrderBy(i => i.FriendlyName).Select(i => new PrimeSelectItem { label = i.FriendlyName, value = "{" + i.Name + "}" }).ToList()
                     };
@@ -321,6 +322,7 @@ namespace d360.web.Controllers
                             if (model.Tokens != null) model.Tokens.Add(new PrimeSelectItem { label = "Code", value = "{Code}" });
                             break;
                         case AssetTypeClass.Rule:
+                        case AssetTypeClass.Diagram:
                             model.AssetType.Name = assetType.Name;
                             model.AssetType.Description = assetType.Description;
                             model.AssetType.DisplayFormat = assetType.DisplayFormat;

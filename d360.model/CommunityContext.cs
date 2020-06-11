@@ -162,6 +162,11 @@ namespace d360.model
             return Database.Connection.Query<T>(sql, param);
         }
 
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
+        {
+            return await (Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param));
+        }
+
         public override int SaveChanges()
         {
             int returnValue = 0;
@@ -519,6 +524,13 @@ namespace d360.model
                 var value = settings[key];
                 try
                 {
+                    T checkType = default(T);
+                    if (checkType is Guid)
+                    {
+                        var guid = Guid.Parse(value);
+                        return (T)(Convert.ChangeType(guid, typeof(T)));
+                    }
+
                     return (T)(Convert.ChangeType(value, typeof(T)));
                 }
                 catch (Exception ex)

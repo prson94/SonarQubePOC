@@ -733,6 +733,24 @@ CLOSE cursorDelete;
 DEALLOCATE cursorDelete;
 		]]>
     </sql>
+	</changeSet>
+	<changeSet author="bquinlivan" id="Data.Corrections.GOV-11092">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+		<![CDATA[
+			Update FTL
+				Set FTL.[Definition] = REPLACE(FTL.[Definition], '"FieldTypeID":0,"FieldTypeName":"AssetPath"', '"FieldTypeID":0,"FieldTypeName":"_assetPath"')
+			FROM 
+				[dbo].[FieldTypeLookup] FTL
+				inner join 
+				FieldType FT on FT.ID = FTL.[FieldTypeID]
+			where 
+				FT.[Type] = 'ComplexRelationLookup'
+				and
+				FTL.Definition like '%"FieldTypeID":0,"FieldTypeName":"AssetPath"%' 
+		]]>
+    </sql>
   </changeSet>
 
  </databaseChangeLog>

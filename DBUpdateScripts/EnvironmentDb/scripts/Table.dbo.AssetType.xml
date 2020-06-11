@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.dbo.AssetType-v1">
+  <changeSet author="TDuric" id="Table.dbo.AssetType-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -45,11 +45,21 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_AssetType_Object_Objec
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_AssetType_Object_ObjectID_Include] ON [dbo].[AssetType] ( [Object] ASC, [ObjectID] ASC ) INCLUDE([ID])
 END
+
+IF COL_LENGTH('[dbo].[AssetType]','FlowObjectType') IS NULL
+BEGIN
+ALTER TABLE [dbo].[AssetType]
+ADD [FlowObjectType] int 
+END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-
+IF COL_LENGTH('[dbo].[AssetType]','FlowObjectType') IS NOT NULL
+BEGIN
+ALTER TABLE [dbo].[AssetType]
+DROP COLUMN [FlowObjectType]
+END
 		]]>
 	</rollback>
   </changeSet>

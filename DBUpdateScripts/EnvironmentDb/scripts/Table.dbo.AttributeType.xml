@@ -5,23 +5,40 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.AttributeType-v3">
+    <comment>GOV-10546</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType')
-BEGIN
-	EXEC sp_rename 'AttributeType', 'AttributeType_Retired';
-END
+			IF EXISTS (select * 
+			           from sys.foreign_keys 
+					   where name = 'FK_AttributeTypeRelation_AttributeType'
+					   and object_name(parent_object_id) in ('AttributeTypeRelation_Retired'))
+			BEGIN
+				ALTER TABLE [dbo].[AttributeTypeRelation_Retired] DROP CONSTRAINT [FK_AttributeTypeRelation_AttributeType];
+			END
+		
+			IF EXISTS (select * 
+			           from sys.foreign_keys 
+					   where name = 'FK_Attribute_AttributeType'
+					   and object_name(parent_object_id) in ('Attribute_Retired'))
+			BEGIN
+				ALTER TABLE [dbo].[Attribute_Retired] DROP CONSTRAINT [FK_Attribute_AttributeType];
+			END
+
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType_Retired')
+			BEGIN
+				DROP TABLE dbo.AttributeType_Retired
+			END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeType_Retired')
 BEGIN
-	CREATE TABLE [dbo].[AttributeType](
+	CREATE TABLE [dbo].[AttributeType_Retired](
 		[ID] [int] IDENTITY(50000,1) NOT NULL,
 		[ParentID] [int] NULL,
 		[Name] [nvarchar](250) NOT NULL,
@@ -35,100 +52,32 @@ BEGIN
 	)
 END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_AttributeTypeCategory')
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_ParentAttributeType'
+			   and object_name(parent_object_id)='AttributeType_Retired')
 BEGIN
-	ALTER TABLE [dbo].[AttributeType] WITH CHECK ADD CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory] ([ID])
-	ALTER TABLE [dbo].[AttributeType] CHECK CONSTRAINT [FK_AttributeType_AttributeTypeCategory]
+	ALTER TABLE [dbo].[AttributeType_Retired] WITH CHECK ADD CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY([ParentID]) REFERENCES [dbo].[AttributeType_Retired] ([ID])
+	ALTER TABLE [dbo].[AttributeType_Retired] CHECK CONSTRAINT [FK_AttributeType_ParentAttributeType]
 END
 
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_ParentAttributeType')
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeTypeRelation_AttributeType'
+			   and object_name(parent_object_id)='AttributeTypeRelation_Retired')
 BEGIN
-	ALTER TABLE [dbo].[AttributeType] WITH CHECK ADD CONSTRAINT [FK_AttributeType_ParentAttributeType] FOREIGN KEY([ParentID]) REFERENCES [dbo].[AttributeType] ([ID])
-	ALTER TABLE [dbo].[AttributeType] CHECK CONSTRAINT [FK_AttributeType_ParentAttributeType]
+	ALTER TABLE [dbo].[AttributeTypeRelation_Retired] WITH CHECK ADD CONSTRAINT [FK_AttributeTypeRelation_AttributeType] FOREIGN KEY([AttributeTypeID]) REFERENCES [dbo].[AttributeType_Retired] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[AttributeTypeRelation_Retired] CHECK CONSTRAINT [FK_AttributeTypeRelation_AttributeType]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_Attribute_AttributeType'
+			   and object_name(parent_object_id)='Attribute_Retired')
+BEGIN
+	ALTER TABLE [dbo].[Attribute_Retired]  WITH CHECK ADD  CONSTRAINT [FK_Attribute_AttributeType] FOREIGN KEY([AttributeTypeID]) REFERENCES [dbo].[AttributeType_Retired] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [dbo].[Attribute_Retired] CHECK CONSTRAINT [FK_Attribute_AttributeType]
 END
 
 IF NOT EXISTS (select * from sys.indexes where name = 'IX_Attribute_ParentID')
 BEGIN
-	CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID] ON [dbo].[AttributeType] ( [ParentID] ASC )
+	CREATE NONCLUSTERED INDEX [IX_Attribute_ParentID] ON [dbo].[AttributeType_Retired] ( [ParentID] ASC )
 END
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterDelete-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterDelete]
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterDelete]
-   ON  [dbo].[AttributeType] 
-   AFTER DELETE
-AS 
-BEGIN
-	SET NOCOUNT ON
-	delete AssetType where Object = 'AttributeType' and ObjectID in (select ID from deleted);
-END
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterInsert-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterInsert]
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterInsert]
-   ON  [dbo].[AttributeType] 
-   AFTER INSERT
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	insert into AssetType (Name, Description, Class, DisplayFormat, [State], [Hierarchical], [HierarchyMaximumDepth], [Object], [ObjectID], [CreatedOn], [CreatedBy], [UpdatedOn], [UpdatedBy])
-		select Name, Description, 5, DisplayFormat, 1, 0, 1, 'AttributeType', ID, coalesce(UpdatedOn, getutcdate()), UpdatedBy, coalesce(UpdatedOn, getutcdate()), UpdatedBy from inserted;
-END
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeType-AttributeType_AfterUpdate-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-DROP TRIGGER IF EXISTS [dbo].[AttributeType_AfterUpdate]
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-CREATE OR ALTER TRIGGER [dbo].[AttributeType_AfterUpdate]
-   ON  [dbo].[AttributeType] 
-   AFTER UPDATE
-AS 
-BEGIN
-	SET NOCOUNT ON;
-	update	T
-	set		T.Name = S.Name,
-			T.Description = S.Description,
-			T.DisplayFormat = S.DisplayFormat,
-			T.UpdatedBy = S.UpdatedBy,
-			T.UpdatedOn = S.UpdatedOn
-	from	AssetType T
-			inner join inserted S on T.Object = 'AttributeType' and T.ObjectID = S.ID;
-END
-		]]>
+]]>
 	</rollback>
   </changeSet>
 

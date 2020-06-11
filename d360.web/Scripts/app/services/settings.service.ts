@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { CompanySettings, ICompanySettingsService, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel } from '../models/settings.model';
+import { CompanySettings, ICompanySettingsService, CompanyRebuildJobToken, CompanyRebuildJobStatusApiModel, CompanySettingEnum, SettingsPutModel } from '../models/settings.model';
 import { AuthenticationProperties } from '../models/authentication-properties.model';
 import { SelectItem } from 'primeng/api';
 import { JsonResult } from '../models/jsonresult.model';
@@ -10,16 +10,16 @@ import { BaseObservableService } from './baseObservable.service';
 import { MessagesObservableService } from './messages-observable.service';
 
 @Injectable()
-export class CompanySettingsService extends BaseObservableService  implements ICompanySettingsService {
+export class CompanySettingsService extends BaseObservableService implements ICompanySettingsService {
 
     constructor(private http: HttpClient, messagesService: MessagesObservableService) { super(messagesService); }
 
     getSettings(): Observable<CompanySettings> {
         return this.http.get('/form/CompanySettings')
             .pipe(
-            map(response => <CompanySettings>response),
+                map(response => <CompanySettings>response),
                 catchError(err => this.handleError(err))
-                );
+            );
     }
 
     putSettings(companySettings: CompanySettings): Observable<any> {
@@ -29,10 +29,10 @@ export class CompanySettingsService extends BaseObservableService  implements IC
 
         return this.http.put('/form/UpdateCompanySettings', JSON.stringify(companySettings), { headers })
             .pipe(
-                catchError (err => this.handleError(err))
+                catchError(err => this.handleError(err))
             );
-    }    
-    
+    }
+
     getAuthenticationModel(): Observable<AuthenticationProperties> {
         return this.http.get('api/authenticationModel')
             .pipe(
@@ -63,6 +63,24 @@ export class CompanySettingsService extends BaseObservableService  implements IC
             .post(`api/v2/environment/rebuilds`, { Job: jobToken })
             .pipe(
                 map(res => res as JsonResult),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    getSettingById(setting: CompanySettingEnum): Observable<any> {
+        return this.http
+            .get(`/api/v2/environment/settings?_settingId=${setting}`)
+            .pipe(
+                map(res => <any>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
+    putSetting(setting: SettingsPutModel): Observable<any> {
+        return this.http
+            .put(`/api/v2/environment/settings`, setting)
+            .pipe(
+                map(res => <any>res),
                 catchError(err => this.handleError(err))
             );
     }

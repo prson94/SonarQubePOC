@@ -71,10 +71,17 @@
                         (click)="itemClicked(item);">
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
-                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon"  [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
+                    <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
+                    <span *ngIf="item.warningMessage">
+                        <d3s-info-tooltip [style]="'warning'">
+                            <span *ngIf="item.warningMessage == 'GovRoleWarning'">
+                                You must define your <strong>Governance Role</strong> settings in order to display and set the <strong>Governance Role</strong> property in your diagrams.
+                            </span>
+                        </d3s-info-tooltip>
+                    </span>
                 </button>
             </div>
-            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')"  [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
+            <button *ngIf="showScrollButtons" class="right tab-scroller" (click)="scroll('R')" [ngClass]="{'disabled':disableScrollRight}" [disabled]="disableScrollRight">
                 <i class="fa fa-chevron-circle-right"></i>
             </button>
         </div>
@@ -87,7 +94,7 @@
     <div class="action-bar">
         <button class="button" (click)="closeCertifyModal()">Cancel</button>
         <span class="grow"></span>
-        <button class="button primary" (click)="certify()" >
+        <button class="button primary" (click)="certify()">
             Confirm
             <span class="loader"><span class="spinner light"></span></span>
         </button>

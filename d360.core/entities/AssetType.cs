@@ -26,6 +26,9 @@ namespace d360.core.entities
         public string DisplayFormat { get; set; }
 
         [DataMember]
+        public FlowObjectType? FlowObjectType { get; set; }
+
+        [DataMember]
         public State State { get; set; }
 
         [DataMember]
@@ -70,6 +73,7 @@ namespace d360.core.entities
         
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+
     }
 
     public class AssetTypeBrowserApiViewModel
