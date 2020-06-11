@@ -62,6 +62,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: AssetTypeApiModel[] = [];
     private gateways: AssetTypeApiModel[] = [];
     private isLoaded = false;
+    private isSaveDisabled: boolean = false;
+
+
+    private fontColor: string = '#202020';
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -91,7 +95,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.cdRef.detectChanges();
             });
     }
-
+    private diagramUpdated() {
+        console.log("Diagram updated");
+    }
 
     loadDiagram() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
@@ -116,27 +122,34 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     "rotatingTool.handleDistance": 30,
                     "rotatingTool.snapAngleMultiple": 15,
                     "rotatingTool.snapAngleEpsilon": 15,
-                    "undoManager.isEnabled": true,
-                    mouseOver: function (e: go.InputEvent) {
-                    }
+                    "undoManager.isEnabled": true
                 });
 
 
+        this.myDiagram.grid.gridCellSize = new go.Size(20, 20);
+        this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
+        this.myDiagram.toolManager.resizingTool.isGridSnapEnabled = true;
+
+        this.myDiagram.addModelChangedListener(() => {
+            this.diagramStateChanged();
+        })
 
         var activityNodeTemplate = $(go.Node, "Auto",
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
                 selectable: true,
-                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate(),
+                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
 
             },
             $(go.Shape, "RoundedRectangle",
                 {
-                    fill: "#EEEEEE",
+                    fill: "white",
                     stroke: "#708EA6",
                     portId: "",
+                    strokeWidth: 2,
                     fromLinkable: true,
                     toLinkable: true,
+                    margin: new go.Margin(1, 1, 1, 1),
                     cursor: "pointer",
                 }),
 
@@ -148,6 +161,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             fill: "#708EA6",
                             stroke: "#708EA6",
                             strokeWidth: 2,
+
                             minSize: new go.Size(200, NaN)
                         }),
                     $(go.TextBlock,
@@ -164,15 +178,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 $(go.TextBlock,
                     {
                         alignment: go.Spot.LeftCenter,
-                        stroke: "black",
+                        stroke: this.fontColor,
                         textAlign: "center",
                         font: "bold 12pt sans-serif",
                         editable: true,
                         minSize: new go.Size(NaN, 30),
-                        margin: new go.Margin(6, 0, 0, 12)
+                        margin: new go.Margin(12, 0, 0, 5)
 
                     },
-                    new go.Binding("text", "assetname")
+                    new go.Binding("text", "name").makeTwoWay()
                 )
             ),
             this.makePort("T", go.Spot.Top, false, true),
@@ -186,16 +200,37 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         );
 
         var eventNodeTemplate = $(go.Node, "Spot",
-            { locationSpot: go.Spot.Center },
+            {
+                locationSpot: go.Spot.Center,
+                selectable: true,
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+            },
+            this.makePort("T", go.Spot.Top, false, true),
+            this.makePort("L", go.Spot.Left, true, true),
+            this.makePort("R", go.Spot.Right, true, true),
+            this.makePort("B", go.Spot.Bottom, true, false),
+            {
+                mouseEnter: function (e, node) { showSmallPorts(node, true); },
+                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+            },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate() },
-            new go.Binding("angle").makeTwoWay(),
             $(go.Panel, "Vertical",
-                { name: "PANEL" },
-                new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                {
+                    name: "PANEL"
+                },
                 $(go.Panel, "Auto",
-                    { name: "PANEL" },
-                    new go.Binding("desiredSize", "size", go.Size.parse).makeTwoWay(go.Size.stringify),
+                    {
+                        name: "PANEL"
+                    },
+                    $(go.Shape, "Circle",
+                        {
+                            fill: 'white',
+                            stroke: "black",
+                            strokeWidth: 2,
+                            margin: new go.Margin(5, 5, 5, 5),
+                            visible: false
+                        },
+                        new go.Binding('visible', 'isSelected').ofObject()),
                     $(go.Shape, "Circle",
                         {
                             portId: "",
@@ -205,18 +240,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             stroke: "#708EA6",
                             fill: 'white',
                             strokeWidth: 2,
+                            maxSize: new go.Size(70, NaN)
 
-                        },
-                        new go.Binding("figure"),
-                        new go.Binding("fill")),
+                        }),
                     $(go.TextBlock,
                         {
                             alignment: go.Spot.Center,
                             stroke: '#708EA6',
                             textAlign: "center",
                             font: '48px FontAwesome',
-                            margin: new go.Margin(5, 0, 0, 0),
-                            minSize: new go.Size(NaN, 20),
+                            margin: new go.Margin(5, 0, 0, 0)
                         },
                         new go.Binding("text", "icon").makeTwoWay())
                 ),
@@ -224,28 +257,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     {
                         font: "bold 11pt Helvetica, Arial, sans-serif",
                         margin: 8,
-                        maxSize: new go.Size(160, NaN),
                         wrap: go.TextBlock.WrapFit,
                         editable: true,
                         stroke: 'black'
                     }
-                    , new go.Binding("text", "assetname").makeTwoWay())
+                    , new go.Binding("text", "name").makeTwoWay())
             )
-            ,
-            this.makePort("T", go.Spot.Top, false, true),
-            this.makePort("L", go.Spot.Left, true, true),
-            this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, false),
-            { // handle mouse enter/leave events to show/hide the ports
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
-            }
         );
 
         var gatewayNodeTemplate = $(go.Node, "Spot",
             { locationSpot: go.Spot.Center },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate() },
+            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("Diamond") },
             new go.Binding("angle").makeTwoWay(),
             $(go.Panel, "Vertical",
                 { name: "PANEL" },
@@ -271,8 +294,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             alignment: go.Spot.Center,
                             stroke: '#708EA6',
                             textAlign: "center",
-                            font: '48px FontAwesome',
-                            margin: new go.Margin(5, 0, 0, 0),
+                            font: '32px FontAwesome'
                         },
                         new go.Binding("text", "icon").makeTwoWay())
                 ),
@@ -285,7 +307,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                         editable: true,
                         stroke: 'black'
                     }
-                    , new go.Binding("text", "assetname").makeTwoWay())
+                    , new go.Binding("text", "name").makeTwoWay())
             )
             ,
             this.makePort("T", go.Spot.Top, false, true),
@@ -299,10 +321,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         );
 
         function showSmallPorts(node, show) {
-            return;
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
-                    port.fill = show ? "rgba(0,0,0,1)" : null;
+                    port.fill = show ? "rgba(0,0,0,0.3)" : null;
                 }
             });
         }
@@ -351,7 +372,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             editable: true,
 
                         },
-                        new go.Binding("assetname").makeTwoWay())
+                        new go.Binding("name").makeTwoWay())
                 )
             );
 
@@ -374,14 +395,22 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             case FlowObjectType.Gateway: nodeCategory = 'gateway'; break;
         }
         var icon = FontAwesomeHelper.GetHtmlCode($event['IconStyle'].Icon);
-        console.log($event);
-
 
         setTimeout(() => {
             this.myDiagram.startTransaction("make new node");
             var point = go.Point.stringify(this.myDiagram.lastInput.documentPoint);
-            var data = { assetname: this.getNewNodeName($event) };
-            this.myDiagram.model.addNodeData({ key: new Date().toString(), icon: icon, assetname: this.getNewNodeName($event), category: nodeCategory, loc: point, data: data })
+
+            var data = {
+                key: this.newGuid(),
+                icon: icon,
+                category: nodeCategory,
+                loc: point,
+                //asset data
+                name: this.getNewNodeName($event),
+                assetTypeUid: $event.uid,
+            };
+
+            this.myDiagram.model.addNodeData(data);
             this.myDiagram.commitTransaction("make new node");
             this.myDiagram.redraw();
         }, 100);
@@ -389,46 +418,51 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private getNewNodeName(at: AssetTypeApiModel) {
-        return 'New ' + at.Name;
+        return this.returnUniqueName('New ' + at.Name, 1);
+    }
+
+    private returnUniqueName(name: string, iteration: number) {
+        var tempName = name;
+        if (iteration != 1) {
+            tempName = name + ` (${iteration})`
+        }
+        if (this.isUnique(tempName))
+            return tempName;
+        return this.returnUniqueName(name, iteration + 1);
+    }
+
+    private isUnique(name: string) {
+        var exists = false;
+
+        this.myDiagram.nodes.each(function (n) {
+            if (n instanceof go.Node) {
+                if (n.data.name.toString() == name) {
+                    exists = true;
+                }
+            }
+        });
+        return !exists;
     }
 
 
-    private nodeSelectionAdornmentTemplate() {
+    private nodeSelectionAdornmentTemplate(shape: string) {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         return $(go.Adornment, "Auto",
-            $(go.Shape, { fill: null, stroke: "deepskyblue", strokeWidth: 1.5, strokeDashArray: [4, 2] }),
+            $(go.Shape, shape, { fill: null, stroke: "black", strokeWidth: 2 }),
             $(go.Placeholder)
         );
     }
 
-    private nodeResizeAdornmentTemplate() {
+    private nodeSelectionEmptyTemplate() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
-        return $(go.Adornment, "Spot",
-            { locationSpot: go.Spot.Right },
-            $(go.Placeholder),
-            $(go.Shape, { alignment: go.Spot.TopLeft, cursor: "nw-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { alignment: go.Spot.Top, cursor: "n-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { alignment: go.Spot.TopRight, cursor: "ne-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-
-            $(go.Shape, { alignment: go.Spot.Left, cursor: "w-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { alignment: go.Spot.Right, cursor: "e-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-
-            $(go.Shape, { alignment: go.Spot.BottomLeft, cursor: "se-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { alignment: go.Spot.Bottom, cursor: "s-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { alignment: go.Spot.BottomRight, cursor: "sw-resize", desiredSize: new go.Size(6, 6), fill: "lightblue", stroke: "deepskyblue" })
+        return $(go.Adornment, "Auto",
+            $(go.Shape, { fill: null, stroke: null, strokeWidth: 0 }),
+            $(go.Placeholder)
         );
     }
 
-    private nodeRotateAdornmentTemplate() {
-        var $ = go.GraphObject.make;
-        return $(go.Adornment,
-            { locationSpot: go.Spot.Center, locationObjectName: "CIRCLE" },
-            $(go.Shape, "Circle", { name: "CIRCLE", cursor: "pointer", desiredSize: new go.Size(7, 7), fill: "lightblue", stroke: "deepskyblue" }),
-            $(go.Shape, { geometryString: "M3.5 7 L3.5 30", isGeometryPositioned: true, stroke: "deepskyblue", strokeWidth: 1.5, strokeDashArray: [4, 2] })
-        );
-    }
 
     private makePort(name, spot, output, input) {
         var $ = go.GraphObject.make;
@@ -446,6 +480,47 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 cursor: "pointer"  // show a different cursor to indicate potential link point
             });
     }
+    private savedState: go.Model;
+    private diagramStateChanged() {
+        this.isSaveDisabled = this.isCurrentStateSaved();
+        this.cdRef.detectChanges();
+    }
 
+    private isCurrentStateSaved() {
+        return JSON.stringify(this.myDiagram.model) == JSON.stringify(this.savedState);
+    }
 
+    private save() {
+        console.log("save");
+        this.saveToLocalStorage();
+        this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
+        this.diagramStateChanged();
+    }
+    private clear() {
+        this.myDiagram.clear();
+        this.diagramStateChanged();
+        console.log("clear");
+
+    }
+    private load() {
+        console.log("load");
+        this.loadFromLocalStorage();
+    }
+
+    private saveToLocalStorage() {
+        localStorage.setItem('process-diagram', this.myDiagram.model.toJson());
+
+    }
+    private loadFromLocalStorage() {
+        var model = localStorage.getItem('process-diagram');
+        this.myDiagram.model = go.Model.fromJson(model);
+        this.diagramStateChanged();
+    }
+    private newGuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    }
 }
