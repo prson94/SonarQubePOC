@@ -18,6 +18,7 @@ import { ModelsService } from '../../services/models.service';
 import { PoliciesService } from '../../services/policies.service';
 import { HeaderActionsService } from '../../services/header-actions.service';
 import { SecondaryNavService } from '../../services/right-sidebar.service';
+import { TreeTableModule, TreeTable } from 'primeng/treetable';
 
 @Component({
     selector: 'd3s-hierarchy-item-structure',
@@ -64,7 +65,7 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     showDelete: boolean;
     selectedLevel: number = 0;
 
-    @ViewChild("treeTable", { static: false }) treeTable: any;
+    @ViewChild("treeTable", { static: false }) treeTable: TreeTable;
 
     constructor(
         private route: ActivatedRoute,
@@ -86,8 +87,8 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
     }
 
     ngOnInit() {
-        this.type = this.route.parent.snapshot.data.type;
-
+        this.type = this.route.parent.snapshot.data.type;   
+        
         switch (this.type) {
             case SiteUrlHelpers.SITE_URL_MODEL_ROOT:
                 this.assetTypeClass = AssetTypeClass.Model;
@@ -130,9 +131,10 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.setCommonSecondaryNavTabs(true);
         this.currentAreaNameSub = this.headerBreadcrumbService
             .getAreaName(this.objectType, this.objectTypeId)
-            .subscribe(result => { this.currentAreaName = result });
-
-        this.getFieldsDefinition();
+            .subscribe(result => { this.currentAreaName = result });      
+        setTimeout(() => {
+            this.getFieldsDefinition();
+        }, 1000)
         this.loadPermissions(this.permissionsService, this.objectType, this.objectTypeId);
         this.setObjectInfo(this.objectType, this.objectTypeId);
         this.headerBreadcrumbService.setCurrentObjectInfo(this.objectType, this.objectTypeId);
@@ -190,27 +192,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         });
     }
 
-
-    filter(event) {
-        if (event) {
-            this.searchValue = event.target.value;
-        }
-
-        window.clearTimeout(this.filterTimer);
-
-        this.filterTimer = setTimeout(() => {
-            if (!this.treeTable)
-                return;
-            this.filterTreeTable(this.treeNodeArray, this.searchValue, this.treeTable);
-        }, event ? 600 : 0);
-    }
-
     private getFieldsDefinition() {
         this.gridDefinitionService.getGridDefinition(this.objectTypeId, this.objectType).subscribe(
             result => {
                 this.scoreAllocations = result.ScoreAllocations;
                 this.columns = result.Columns;
-                this.fields = result.Fields;
+                this.fields = result.Fields;                
+                var filterColumns = this.fields.filter(function (item) { return item.apiName && item.name.startsWith("Field") });
+                if (this.treeTable) {
+                    this.treeTable.globalFilterFields = this.treeTable.globalFilterFields.concat(filterColumns.map(({ name }) => name));
+                }                
             }
         );
     }
@@ -224,8 +215,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
-
-                        this.filter(null);
                         this.isLoading = false;
                     }
                 );
@@ -238,7 +227,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
                         this.buildScoreAllocationThresholds();
                         this.treeNodeArray = this.buildTreeNodeArray(this.hierarchy, 1);
 
-                        this.filter(null);
                         this.isLoading = false;
                     }
                 );
@@ -287,7 +275,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
         this.selected = null;
         this.showDelete = false;
-        this.filter(null);
     }
 
     private deleteSelectedTreeNode(id: number): TreeNode {
@@ -344,7 +331,6 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private closeEditor() {
         this.showEditor = false;
-        this.filter(null);
     }
 
     private showAdd(level: number) {
@@ -401,5 +387,25 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private showHierarchy(id: number) {
         this.router.navigateByUrl(SiteUrlHelpers.getObjectUrl(this.object, id, this.objectTypeId));
+    }
+
+    private expandNodes() {        
+        if (this.treeTable.filters["global"]) { // only expand if global filter populated.
+            this.expandChildNodes(this.treeTable.filteredNodes, this.treeTable.globalFilterFields, this.treeTable.filters["global"].value);
+        }
+    }
+
+    private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
+        nodes.forEach((node) => {
+            var match = false;
+            fields.forEach(field => { if (node.data[field].includes(search)) { match = true } }); //check each of the global filterfields for filter value
+            if (!match) { // if we haven't found a match expand the node and check children.
+                node.expanded = true;
+                if (node.children && node.children.length > 0) {
+                    this.expandChildNodes(node.children, fields, search);
+                }
+            }            
+        }
+        );
     }
 }

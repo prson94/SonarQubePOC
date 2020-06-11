@@ -37,7 +37,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
     assetTypeClass: AssetTypeClass;
     formTitle: string;
 
-    searchValue: string = '';
     @ViewChild("dt", { static: false }) dt: TreeTable;
 
     constructor(private route: ActivatedRoute,
@@ -172,18 +171,6 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         })
     }
 
-    private filterQ: any;
-    filter(event) {
-        if (event) {
-            this.searchValue = event.target.value;
-        }
-        window.clearTimeout(this.filterQ);
-        this.filterQ = setTimeout(() => {
-            this.dt.reset();
-            this.filterTreeTable(this.artifactTypes, this.searchValue, this.dt);
-        }, event ? 600 : 0);
-    }
-
     private loadDataAndExecuteAction(action: Function) {
         if (this.selectedRow) {
             this.assetsService.getAssetTypeLegacyData(this.selectedRow.data.uid)
@@ -198,5 +185,26 @@ export class AdminArtifactsComponent extends AdminBaseComponent implements OnIni
         else {
             action();
         }
+    }
+
+    private expandNodes() {
+        if (this.dt.filters["global"]) { // only expand if global filter populated.
+            this.expandChildNodes(this.dt.filteredNodes, this.dt.globalFilterFields, this.dt.filters["global"].value);
+        }
+    }
+
+    private expandChildNodes(nodes: TreeNode[], fields: string[], search: string) {
+        var match = false;
+        nodes.forEach((node) => {            
+            fields.forEach(field => { if (node.data[field].includes(search)) { match = true } }); //check each of the global filterfields for filter value            
+            if (node.children && node.children.length > 0) {
+                node.expanded = this.expandChildNodes(node.children, fields, search);   //expand the node if any child matches.          
+                if (node.expanded) {
+                    match = true; // if current node doesn't match but a child does.
+                }
+            }      
+        }
+        );
+        return match;
     }
 }

@@ -9,21 +9,21 @@
             </header>
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
-                 class="item-description"></div>
-            <input type="text"
-                   pInputText
-                   [(ngModel)]="searchValue"
-                   (keyup)="filter($event)"
-                   placeholder="Search"
-                   style="width: 100%;margin-bottom:10px;"
-                   *ngIf="!showDelete && !showEditor">
-            <p-treeTable #treeTable 
+                 class="item-description"></div>            
+            <p-treeTable #treeTable
                          *ngIf="!showDelete && !showEditor"
                          [value]="treeNodeArray"
                          selectionMode="single"
                          [(selection)]="selected"
                          styleClass="breadcrumbTree"
-                         [style]="{'line-height':'25px'}">
+                         [style]="{'line-height':'25px'}"
+                         [globalFilterFields]="['DisplayValue']"
+                         (onFilter)="expandNodes()">
+                <ng-template pTemplate="caption">
+                    <div>
+                        <input type="text" pInputText placeholder="Search" (input)="treeTable.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+                    </div>
+                </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Item</th>
