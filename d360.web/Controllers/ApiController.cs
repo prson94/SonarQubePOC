@@ -1462,45 +1462,6 @@ where   h.ID <> @t order by h.[Level] desc;
             return model;
 
         }
-
-
-
-        [Route("{objectType}/possibleowners/{artifactTypeId:int}")]
-        public HttpResponseMessage GetArtifactTypePossibleOwners(string objectType, int artifactTypeId)
-        {
-            var sql = @"
-            ;with owners as (select  distinct 
-		            responsibilityTypeId,
-		            securityAssetid,
-	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName  as 'Name', 
-	                case 
-                        when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource' 
-			            when SecurityAsset = 'G' then 'Group' 
-                        else [Type] 
-                    end as [Type]
-				            from    ResponsibilityDetail
-            where   TypeID = @id
-                    and [Type] = @objectType 
-                    and IsVisible = 1)
-            select Res.SecurityAssetUid as ID, o.Name, o.Type  
-            from owners o
-            cross apply (
-            select top 1 * from 
-            ResponsibilityDetail rd where rd.ResponsibilityTypeID = o.responsibilityTypeId
-									            and rd.SecurityAssetID = o.SecurityAssetID and rd.TypeID = @id and rd.[Type] = @objectType
-            )Res
-            order by o.[Name]
-";
-
-            return Request.CreateResponse(
-                HttpStatusCode.OK,
-                Company.Query<dynamic>(
-                    sql,
-                    new { id = artifactTypeId, objectType }
-                )
-            );
-        }
-
         #endregion
 
         #region Followers

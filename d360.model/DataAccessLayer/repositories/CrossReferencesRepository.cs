@@ -11,16 +11,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using d360.model.DataAccessLayer.repositories;
 
 namespace d360.model.DataAccessLayer
 {
-    public class CrossReferencesRepository : ICrossReferencesRepository
+    public class CrossReferencesRepository : BaseRepository, ICrossReferencesRepository
     {
         ICompanyContext CompanyContext;
         internal IQueueSource QueueSource;
         internal IStorageProvider StorageProvider;
 
-        public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queueSource, IStorageProvider storageProvider)
+        public CrossReferencesRepository(ICompanyContext compCtx, IQueueSource queueSource, IStorageProvider storageProvider) : base(compCtx)
         {
             this.CompanyContext = compCtx;
             this.QueueSource = queueSource;
@@ -185,14 +186,18 @@ namespace d360.model.DataAccessLayer
 
             // Save to storage container.
             StorageProvider.CreateFile(executionInfo.StorageFolder, executionInfo.RequestFileName, JsonConvert.SerializeObject(crossReferences));
-
-            // Save to queue.
-            await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo);
-
+                        
             // Save to the database.
             execution.ExecutionID = executionInfo.ExecutionID;
 
             CompanyContext.Add(execution);
+
+            // Save to queue.
+            if (!await QueueSource.CreateMessageAsync(Config.GetValue<string>("ApiExecutionQueue"), executionInfo))
+            {
+                throw new Exception(AZURE_QUEUE_INSERTION_FAILURE_MESSAGE);
+            }
+
             return executionInfo;
         }
 

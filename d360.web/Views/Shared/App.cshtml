@@ -14,15 +14,15 @@
     environmentSettingsJson = "{" + environmentSettingsJson + "}";
 
     var settings = (Dictionary<string, string>)ViewData["Settings"];
-    var settingsJson = "";
-    foreach (var k in settings.Keys)
+    var removeKeys = new List<string>() { "PowerBIAccessKey", "PowerBIWorkspaceId", "AzureADTenant", "AzureGraphAPIKey", "AzureApplicationId" };
+
+    removeKeys.ForEach(k =>
     {
-        if (k != "PowerBIAccessKey" && k != "PowerBIWorkspaceId" && k != "AzureADTenant" && k != "AzureGraphAPIKey" && k != "AzureApplicationId")
-        {
-            settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
-        }
-    }
-    settingsJson = "{" + settingsJson + "}";
+        if (settings.ContainsKey(k))
+            settings.Remove(k);
+    });
+
+    var settingsJson = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
 
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");

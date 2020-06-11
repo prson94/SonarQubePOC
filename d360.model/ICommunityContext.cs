@@ -49,6 +49,7 @@ namespace d360.model
         Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);
         string HashPassword(string value);
         IEnumerable<T> Query<T>(string sql, object param = null);
+        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null);
         int SaveChanges();
         new bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);

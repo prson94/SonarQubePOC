@@ -1326,7 +1326,8 @@ where	ID = @loadId", new { loadId }, transaction: trans);
                     else
                     {
                         var responsiblityOverride = new ResponsibilityTypeRelationOverrideItem();
-
+                        responsiblityOverride.UpdatedBy = load.UpdatedBy.GetValueOrDefault();
+                        
                         if (!int.TryParse(assetCol.Value, out int assetId))
                         {
                             msg = $"Bulk load responsibilities asset ID value {assetCol.Value} is not a valid asset id.  Asset ID values must be an integer.";

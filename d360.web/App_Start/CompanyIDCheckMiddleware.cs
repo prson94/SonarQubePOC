@@ -43,20 +43,24 @@ namespace d360.web
             }
             return dict;
         }
-
         public async Task Invoke(IDictionary<string, object> environment)
         {
             IOwinContext context = new OwinContext(environment);
             var host = context.Request.Headers["Host"];
             try
             {
+                var dict = await loadCache();
+                bool searchHeaders = true;
                 if (host.Contains(".data3sixty"))
                 {
                     host = host.Substring(0, host.IndexOf(".data3sixty")).ToLower();
-                }                
-
-                var dict = await loadCache();
-
+                    searchHeaders = false;
+                }
+                if (searchHeaders || !dict.ContainsKey(host))
+                {
+                    host = context.Request.Headers["CompanyID"].ToLower();
+                }
+                
                 if (dict.ContainsKey(host))
                 {
                     context.Request.Set("CompanyDomain", host);

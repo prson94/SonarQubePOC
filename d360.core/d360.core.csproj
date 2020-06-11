@@ -132,12 +132,14 @@
     <Compile Include="entities\Membership\UserApiModel.cs" />
     <Compile Include="entities\Metric\DataQualityResponseModels.cs" />
     <Compile Include="entities\Metric\DataQualityUpsertModels.cs" />
+    <Compile Include="entities\Metric\MetricAllocation.cs" />
     <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
     <Compile Include="entities\AssetDataProfile.cs" />
     <Compile Include="entities\Metric\MetricScoreApiModel.cs" />
+    <Compile Include="entities\Metric\Score.cs" />
     <Compile Include="entities\Organization\ContractAcceptance.cs" />
     <Compile Include="entities\Organization\OrganizationType.cs" />
     <Compile Include="entities\Organization\OrganizationRegistration.cs" />
@@ -157,8 +159,6 @@
     <Compile Include="entities\Relation\RelationshipApiModels.cs" />
     <Compile Include="entities\ReportResponsibility.cs" />
     <Compile Include="entities\ResourcePasswordReset.cs" />
-    <Compile Include="entities\Scoring\Scoring.cs" />
-    <Compile Include="entities\Scoring\ScoringApiModels.cs" />
     <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
     <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
@@ -285,8 +285,10 @@
     <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
     <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
     <Compile Include="enums\ApiUriType.cs" />
+    <Compile Include="enums\CalculationMethod.cs" />
     <Compile Include="enums\CompanyRebuildJobToken.cs" />
     <Compile Include="enums\CompanyRebuildJobStatusState.cs" />
+    <Compile Include="enums\FlowObjectType.cs" />
     <Compile Include="enums\ResultRelationClass.cs" />
     <Compile Include="enums\SettingType.cs" />
     <Compile Include="enums\SplitFilterCriteriaRelationship.cs" />

@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using d360.core.entities.Metric;
-using d360.core.entities.Scoring;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
@@ -14,7 +13,6 @@ using System.Data;
 using System.Data.Entity;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 
 namespace d360.model
@@ -23,11 +21,15 @@ namespace d360.model
     {
         #region DbSets
 
+        public DbSet<MetricAllocation> MetricAllocations { get; set; }
+
         public DbSet<MetricAsset> MetricAssets { get; set; }
 
         public DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
 
         public DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+
+        public DbSet<Score> Scores { get; set; }
 
         #endregion
 
@@ -429,8 +431,12 @@ when not matched by target then
             cross apply (
                         select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate] and [State] = 1
                         ) M_M
-            where T.ExecutionID = @ExecutionID
+            where T.ExecutionID = @ExecutionID and M_M.EffectiveDate is not null
 
+            update T set T.IsValidMetricDate = 1
+            from api.ExecutionMetric T 
+            where T.IsValidMetricDate is null 
+            and not exists (select 1 from api.ExecutionMetricMeasure M where M.ExecutionID = @executionID and M.ItemNumber = T.ItemNumber)
 
             update T set T.IsValidMetricDate = 0 from api.ExecutionMetric T 
             where T.ExecutionID = @ExecutionID and coalesce(T.IsValidMetricDate, 0) <> 1
@@ -523,6 +529,7 @@ when not matched by target then
                                 when IsValidAsset = 0 then 0
                                 when IsValidMetric = 0 then 0
                                 when IsValidMetricDate = 0 then 0
+                                when IsValidAllocation = 0 then 0
                                 else 1
                                 end 
             where   ExecutionID = @ExecutionID and success is null;
@@ -541,6 +548,11 @@ when not matched by target then
             set     Message = coalesce(Message, '') + 'Invalid metric specified for the date provided; '
             where   ExecutionID = @ExecutionID 
                     and IsValidMetricDate = 0;
+
+            update  api.ExecutionMetric
+            set     Message = coalesce(Message, '') + 'This asset does not have this score type allocated for external scores; '
+            where   ExecutionID = @ExecutionID 
+                    and IsValidAllocation = 0;
 
             update  api.ExecutionMetric
             set     Success = 1

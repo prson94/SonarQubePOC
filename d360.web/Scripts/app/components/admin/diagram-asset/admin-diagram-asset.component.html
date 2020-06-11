@@ -1,0 +1,83 @@
+﻿<div class="row">
+    <div class="col s12 m5 l4" *ngIf="!isEditingFieldType">
+        <div class="tile tile-detail">
+            <header>
+                {{tabTitle}}
+                <div *ngIf="disableAdd" class="warningMessage">
+                    Cannot add new Diagram Asset Type before Governance Role is set.
+                </div>
+                <d3s-tile-actions *ngIf="!disableAdd" [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
+            </header>
+            <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
+            <p-table #dt [value]="artifactTypes" [globalFilterFields]="['name']" selectionMode="single" filterMode="strict" (onRowSelect)="selectedItemChange()" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 60%">Name</th>
+                        <th style="width: 30px; overflow:visible"></th>
+                        <th style="width: 30px"></th>
+                        <th style="width: 30px"></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-rowNode let-item>
+                    <tr [pSelectableRow]="item">
+                        <td>
+                            {{item.name}}
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <d3s-preview-tooltip objectType="TaskType" [uid]="item.uid" icon="info"></d3s-preview-tooltip>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="edit(item.uid)"><i class="fa fa-pencil"></i></a>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="RowTools">
+                                <a style="cursor:pointer;" (click)="delete(item.uid)"><i class="fa fa-trash-o"></i></a>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="summary">
+                    <d3s-grid-paging-info [first]="dt.first" [rows]="dt.rows"
+                                          [totalRecords]="dt.totalRecords"></d3s-grid-paging-info>
+                </ng-template>
+                <ng-template pTemplate="emptymessage" let-columns>
+                    <tr>
+                        <td colspan="4">
+                            No asset types found.
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+    <div *ngIf="isEditing" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [id]="editorModel?.AssetTypeID" [parentID]="editorModel?.ParentID" [title]="formTitle" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+        </div>
+    </div>
+    <div *ngIf="isAdding" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-asset-type-editor [assetTypeClass]="assetTypeClass" [parentID]="editorModel?.ID" [title]="addClassName" (onCancel)="cancel()" (onComplete)="actionComplete($event)"></d3s-asset-type-editor>
+        </div>
+    </div>
+    <div *ngIf="isDeleting" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-asset-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.ID" [assetTypeId]="selectedRow.AssetTypeID" [count]="selectedRow.count" [assetTypeClass]="15" [assetTypeName]="this.selectedRow.name"></d3s-asset-type-delete>
+        </div>
+    </div>
+    <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.ID && selectedRow?.AssetTypeID)" class="col s12 m7 l8">
+        <div class="tile tile-detail">
+            <d3s-field-definition-tile [objectName]="selectedRow?.name" [objectType]="'TaskType'" [assetTypeUid]="selectedRow?.uid" [supportsPrimaryFilterOption]="true"></d3s-field-definition-tile>
+        </div>
+        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
+            <d3s-admin-allocation [objectType]="objectType" [objectID]="selectedRow?.ID"></d3s-admin-allocation>
+        </div>
+        <div class="tile tile-detail" *ngIf="!isEditingFieldType && !isAddingFieldType">
+            <d3s-admin-relationships-list [filterToName]="selectedRow?.Name" [objectType]="objectType" [objectID]="selectedRow?.ID"></d3s-admin-relationships-list>
+        </div>
+    </div>
+</div>

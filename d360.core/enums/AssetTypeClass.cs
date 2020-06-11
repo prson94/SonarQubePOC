@@ -15,7 +15,8 @@ namespace d360.core.enums
         Generic = 0,
         [
             Name("Business Asset"), 
-            Description("Business assets.")
+            Description("Business assets."),
+            IsAllowedAutoDisplayParent(true)
         ]
         BusinessAsset = 1,
         [
@@ -50,7 +51,8 @@ namespace d360.core.enums
         Rule = 7,
         [
             Name("Technical Asset"),
-            Description("Technical asset that replaces fusion attribute types.")
+            Description("Technical asset that replaces fusion attribute types."),
+            IsAllowedAutoDisplayParent(true)
         ]
         TechnicalAsset = 8,
         [
@@ -120,6 +122,16 @@ namespace d360.core.enums
         {
             return type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<DescriptionAttribute>().Description;
         }
+
+        public static bool AllowsAutoDisplayParent(this AssetTypeClass type)
+        {
+            var attr = type.GetType().GetMember(type.ToString()).Single().GetCustomAttribute<IsAllowedAutoDisplayParentAttribute>();
+            if (attr == null)
+                return false;
+            else
+                return attr._isAllowedAutoDisplayParent;
+        }
+
 
         public static List<AssetTypeClassInfo> GetAsList(this AssetTypeClass type)
         {

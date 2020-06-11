@@ -151,6 +151,16 @@ namespace d360.core
         }
     }
 
+    public class IsAllowedAutoDisplayParentAttribute : Attribute
+    {
+        public bool _isAllowedAutoDisplayParent = false;
+        public bool IsAllowedAutoDisplayParent { get { return _isAllowedAutoDisplayParent; } }
+        public IsAllowedAutoDisplayParentAttribute(bool _isAllowed)
+        {
+            _isAllowedAutoDisplayParent = _isAllowed;
+        }
+    }
+
     public class EnableAuditAttribute : Attribute
     {
         public bool Enabled { get; set; }

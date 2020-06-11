@@ -9,6 +9,7 @@ using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -470,7 +471,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
         {
             List<AssetFieldTypeUpdate> res = new List<AssetFieldTypeUpdate>();
 
-            if(sendWorkflowEvents)
+            if (sendWorkflowEvents)
             {
                 res = Connection.Query<AssetFieldTypeUpdate>($@"
                     select EA.Object, EA.ObjectID, EF.FieldTypeID AS Id from {tableName} EA 
@@ -480,7 +481,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                                             and EF.FieldTypeID is not null
 	                    inner join Field F on F.FieldTypeId = EF.FieldTypeID and F.ObjectType = EA.Object and F.ObjectId = EA.ObjectID
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
-                    ,new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
+                    , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
             
             // if we already have the asset id then insert it
@@ -1039,13 +1040,15 @@ where T.ExecutionId = @executionid;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
                 if (fieldType == null)
                 {
-                    if (ot == "FusionAttributeType" && (fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
+                    if (ot == "FusionAttributeType" && !(fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
                     {
-                        success = true;
+                        success = false;
+                        errorMessages.Add($"{fieldName} is not a valid field");
                     }
                     else if (ot == "ReferenceItemType")
                     {
-                        switch (fieldName.ToLower()) {
+                        switch (fieldName.ToLower())
+                        {
                             case "code":
                                 if ((fieldValue ?? "").Length > 250)
                                 {
@@ -1069,9 +1072,10 @@ where T.ExecutionId = @executionid;
                                 break;
                         }
                     }
-                    else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
+                    else if (ot == "RuleType" && !(fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
                     {
-                        success = true;
+                        success = false;
+                        errorMessages.Add($"{fieldName} is not a valid field");
                     }
                     else
                     {
@@ -1088,9 +1092,9 @@ where T.ExecutionId = @executionid;
                         success = false;
                         errorMessages.Add($"{fieldName} is a {fieldType.Type} field and cannot be updated on this request");
                     }
-                    else 
+                    else
                     {
-                        if (string.IsNullOrEmpty(fieldValue)) 
+                        if (string.IsNullOrEmpty(fieldValue))
                         {
                             if (fieldType.IsRequired)
                             {
@@ -2086,7 +2090,7 @@ from	IntersectType I
                                             }
                                         }
                                         catch
-                                        {                                            
+                                        {
                                         }
 
                                         retryCount++;
@@ -2867,7 +2871,7 @@ where   ExecutionID = @ExecutionID
 
                         this.AITrackTrace(client, execution, METHOD_NAME, "BuildDatatable and initialization", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         // Get field types.
                         fieldTypes = Query<FieldType>("select * from FieldType where Object = @Object and ObjectID = @ObjectID", new { at.Object, at.ObjectID }).ToList();
                         jsonFieldTypes = fieldTypes.Where(f => f.Type == DataType.JSON.ToString()).ToList();
@@ -2876,7 +2880,7 @@ where   ExecutionID = @ExecutionID
                         hasRelationshipFieldTypes = fieldTypes.Any(f => f.Type == DataType.Relationship.ToString());
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get field types", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         #region Generate data sets
 
                         if (predicateType.HasValue)
@@ -2908,7 +2912,7 @@ where   ExecutionID = @ExecutionID
                         this.AITrackTrace(client, execution, METHOD_NAME, "Get predicateType.HasValue", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
                         int i = 1;
-                        
+
                         foreach (var model in import)
                         {
                             if (i > currentLocation.HighestItemNumber)
@@ -3029,7 +3033,7 @@ where   ExecutionID = @ExecutionID
                         }
                         this.AITrackTrace(client, execution, METHOD_NAME, "ValidateFields", sw.ElapsedMilliseconds, isLog);
                         sw.Restart();
-                        
+
                         #endregion
 
                         if (results.Count > 0) // There are errors already processed.
@@ -3683,7 +3687,7 @@ select [uid] from #ParentChildRelationships",
                                             }
                                         }
                                         catch
-                                        {                                            
+                                        {
                                         }
 
                                         retryCount++;
@@ -3736,7 +3740,7 @@ select [uid] from #ParentChildRelationships",
                             {
 
                                 var changedFields = new Dictionary<Guid, List<string>>();
-                                foreach(var key in importFields.Keys)
+                                foreach (var key in importFields.Keys)
                                 {
                                     var r = results.SingleOrDefault(i => i.ItemNumber == key);
                                     if (r != null && !changedFields.ContainsKey(r.uid))
@@ -3781,10 +3785,10 @@ select [uid] from #ParentChildRelationships",
             bool checkCircularRelationships = false;
             bool checkSemanticRelation = false;
 
-            if ( (rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation )
+            if ((rt.Predicate != null) && rt.Predicate.Type == PredicateType.Transformation)
                 checkCircularRelationships = true;
 
-            if ( (rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType )
+            if ((rt.Predicate != null) && rt.Predicate.Type.AsInfoModel().SingleRelationshipByFunctionalType)
                 checkSemanticRelation = true;
 
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
@@ -3962,6 +3966,27 @@ select [uid] from #ParentChildRelationships",
                     sw.Restart();
                     LogFieldLookupErrors(execution.ExecutionID, "IntersectType", rt.ID, "Relationship", timeout);
                     this.AITrackTrace(client, execution, METHOD_NAME, " LogFieldLookupErrors", sw.ElapsedMilliseconds, isLog);
+
+                    #region Invalidate duplicates
+                    sw.Restart();
+                    Connection.Execute(@"
+                            update	T
+                            set		T.Message = coalesce(T.Message + '; ', '') + 'This relationship is specified more than once. Each relationship must be unique within a given request.',
+		                            T.Success = 0
+                            from	api.ExecutionRelationship T
+                            cross apply (
+                                select      SubjectUid, ObjectUid
+                                from        api.ExecutionRelationship
+                                where       ExecutionID = @ExecutionID
+                                group by    SubjectUid, ObjectUid
+                                having      count(*) > 1
+                            ) D
+		                    where   T.ExecutionId = @ExecutionID
+                                    and T.SubjectUid = D.SubjectUid and T.ObjectUid = D.ObjectUid
+                    ",
+                    new { execution.ExecutionID }, commandTimeout: timeout);
+                    this.AITrackTrace(client, execution, METHOD_NAME, " Invalidate duplicates", sw.ElapsedMilliseconds, isLog);
+                    #endregion
 
                     #region Validate subjects/objects
                     sw.Restart();
@@ -4182,7 +4207,7 @@ end",
 		                            where T.ExecutionId = @ExecutionID
                                     and T.IsNew = 1 
 		                            and graph.CheckCircularRelationshipCollision(T.SubjectUid, T.ObjectUid, @predicateType) = 1
-                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type}, commandTimeout: timeout);
+                            ", new { execution.ExecutionID, predicateType = rt.Predicate.Type }, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Circular Relationships Validation", sw.ElapsedMilliseconds, isLog);
 
                     }
@@ -4201,7 +4226,7 @@ end",
                                     inner join [Predicate] P on P.ID = IT.PredicateID and P.[Type] = @predicateType  
 		                            where IT.ID <> @intersectTypeID and T.ExecutionId = @ExecutionID 
                                     and T.IsNew = 1 
-                            ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID}, commandTimeout: timeout);
+                            ", new { execution.ExecutionID, predicateType = (int)PredicateType.SemanticRelation, intersectTypeID = rt.ID }, commandTimeout: timeout);
                         this.AITrackTrace(client, execution, METHOD_NAME, "  Semantic Relationships Validation", sw.ElapsedMilliseconds, isLog);
                     }
 
@@ -4659,9 +4684,9 @@ from    [Intersect] T
                                 }
                                 catch
                                 {
-                                    
+
                                 }
-                                
+
                                 retryCount++;
 
                                 if (retryCount > API_V2_RETRY_LIMIT)
@@ -5657,7 +5682,7 @@ where   ER.ExecutionID = @ExecutionID
                                     }
                                     catch
                                     {
-                                        
+
                                     }
 
                                     retryCount++;
@@ -5922,7 +5947,7 @@ where   ER.ExecutionID = @ExecutionID
                                         }
                                     }
                                     catch
-                                    {                                        
+                                    {
                                     }
 
                                     retryCount++;
@@ -6187,12 +6212,14 @@ insert into #Keys
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDate", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
                                 }
-                                else {
+                                else
+                                {
                                     if (rundate > DateTime.Now)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GreaterThanTodayError, "RunDate");
                                         row["Success"] = 0;
-                                    }else if(rundate == DateTime.MinValue)
+                                    }
+                                    else if (rundate == DateTime.MinValue)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, model.RunDate, "RunDate");
                                         row["Success"] = 0;
@@ -6217,7 +6244,8 @@ insert into #Keys
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "EffectiveDate", "yyyy-MM-dd");
                                         row["Success"] = 0;
-                                    }else if (effectiveDate == DateTime.MinValue)
+                                    }
+                                    else if (effectiveDate == DateTime.MinValue)
                                     {
                                         row["Message"] = String.Format(DataQualityErrors.GenericInvalidFieldValueError, dataQualityInsertModel.EffectiveDate, "EffectiveDate");
                                         row["Success"] = 0;
@@ -6242,7 +6270,7 @@ insert into #Keys
                                     row["Success"] = 0;
                                 }
 
-                                if(!model.PassCount.HasValue)
+                                if (!model.PassCount.HasValue)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.RequiredFieldError, "PassCount");
                                     row["Success"] = 0;
@@ -6255,7 +6283,7 @@ insert into #Keys
                                 }
                             }
 
-                            if(model is DataQualityUpdateModel dataQualityUpdateModel)
+                            if (model is DataQualityUpdateModel dataQualityUpdateModel)
                             {
                                 row["Uid"] = dataQualityUpdateModel.Uid;
 
@@ -6274,7 +6302,7 @@ insert into #Keys
                             {
                                 row["EvaluatedAssetUid"] = DBNull.Value;
                             }
-                            if(model.PassCount.HasValue)
+                            if (model.PassCount.HasValue)
                             {
                                 row["PassCount"] = model.PassCount.Value;
                             }
@@ -6283,7 +6311,7 @@ insert into #Keys
                                 row["PassCount"] = DBNull.Value;
                             }
 
-                            if(model.FailCount.HasValue)
+                            if (model.FailCount.HasValue)
                             {
                                 row["FailCount"] = model.FailCount.Value;
                             }
@@ -6308,7 +6336,7 @@ insert into #Keys
                             {
                                 ulong total = (ulong)model.PassCount.Value + (ulong)model.FailCount.Value;
 
-                                if(total > 9223372036854775807)
+                                if (total > 9223372036854775807)
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.GreaterThanError, "PassCount + FailCount", "9223372036854775807", 0);
                                     row["Success"] = 0;
@@ -6648,8 +6676,8 @@ insert into #Keys
                                         }
                                     }
                                     catch
-                                    {                                        
-                                    }                                    
+                                    {
+                                    }
 
                                     retryCount++;
 
@@ -6833,7 +6861,8 @@ insert into #Keys
                                 {
                                     row["Message"] = String.Format(DataQualityErrors.InvalidFormatError, "RunDateEnd", "yyyy-MM-dd HH:mm:ss");
                                     row["Success"] = 0;
-                                }else if (model.RunDateStart != null && runDateStart > runDateEnd)
+                                }
+                                else if (model.RunDateStart != null && runDateStart > runDateEnd)
                                 {
                                     messages.Add(String.Format(DataQualityErrors.GreaterThanError, "RunDateStart", "RunDateEnd"));
                                     row["Success"] = 0;
@@ -6969,7 +6998,7 @@ insert into #Keys
 
                                    ";
 
-                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset}, commandTimeout: timeout);
+                    Connection.Execute(checkSQL, new { ResourceID = CurrentResourceID, execution.ExecutionID, p = Permission.DeleteAsset }, commandTimeout: timeout);
 
                     #endregion
 
@@ -7107,7 +7136,7 @@ insert into #Keys
 
                                 try
                                 {
-                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber}, transaction: trans, commandTimeout: timeout);
+                                    Connection.Execute(deleteAssetResultSQL, new { ExecutionID = execution.ExecutionID, beginItemNumber = beginItemNumber, endItemNumber = endItemNumber }, transaction: trans, commandTimeout: timeout);
                                     trans.Commit();
                                     runCompleted = true;
 
@@ -7122,7 +7151,7 @@ insert into #Keys
                                         }
                                     }
                                     catch
-                                    {                                        
+                                    {
                                     }
 
                                     retryCount++;
@@ -7152,6 +7181,680 @@ insert into #Keys
 
             return results;
         }
+
+        public List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600)
+        {
+            var results = new List<ResponsibilityRuleUpsertResponseModel>();
+            bool generalChecksCompleted = false;
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+
+            var executionItemDupes = import.Where(i => i.ExecutionItemUid.HasValue).GroupBy(i => i.ExecutionItemUid).Where(i => i.Count() > 1).Select(i => new { ExecutionItemUid = i.Key, Count = i.Count() }).ToList();
+            var uidDupes = import.Where(x => x.Uid.HasValue).GroupBy(x => x.Uid).Where(x => x.Count() > 1).Select(i => new { Uid = i.Key, Count = i.Count() }).ToList();
+
+            if (executionItemDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate execution item identifiers: {string.Join(", ", executionItemDupes.Select(i => i.ExecutionItemUid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else if (uidDupes.Any())
+            {
+                execution.ErrorMessage = $"Duplicate uid item identifiers: {string.Join(", ", uidDupes.Select(i => i.Uid.ToString()))}. Identifiers must be unique within a batch.";
+                results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { Uid = i.Uid.Value, Message = execution.ErrorMessage, Success = false }));
+            }
+            else
+            {
+                try
+                {
+                    currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionResponsibilityRule");
+
+                    if (currentLocation.HighestItemNumberProcessed > 0)
+                    {
+                        results.AddRange(
+                            Query<ResponsibilityRuleUpsertResponseModel>(
+                                $"select * from api.ExecutionResponsibilityRule where ExecutionID = @ExecutionID and ItemNumber <= {currentLocation.HighestItemNumberProcessed}",
+                                new { execution.ExecutionID }
+                            )
+                        );
+                    }
+
+                    #region Build data tables.
+
+                    var table = new DataTable();
+                    table.Columns.Add("ExecutionID", typeof(Guid));
+                    table.Columns.Add("ItemNumber", typeof(int));
+                    table.Columns.Add("ResponsibilityTypeUid", typeof(Guid));
+                    table.Columns.Add("AssetTypeUid", typeof(Guid));
+                    table.Columns.Add("uid", typeof(Guid));
+                    table.Columns.Add("Name", typeof(string));
+                    table.Columns.Add("IsVisible", typeof(bool));
+                    table.Columns.Add("ApplyToType", typeof(bool));
+                    table.Columns.Add("Context", typeof(string));
+                    table.Columns.Add("Definition", typeof(string));
+                    table.Columns.Add("Message", typeof(string));
+                    table.Columns.Add("Success", typeof(bool));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
+
+                    #endregion
+
+                    #region Generate data sets
+
+                    for (int i = 1; i <= import.Count; i++)
+                    {
+                        if (i > currentLocation.HighestItemNumber)
+                        {
+                            var model = import[i - 1];
+                            var rowError = string.Empty;
+
+                            var row = table.NewRow();
+
+                            row["ExecutionID"] = execution.ExecutionID;
+                            row["ItemNumber"] = i;
+                            if (model.ExecutionItemUid.HasValue) row["ExecutionItemUid"] = model.ExecutionItemUid.Value;
+                            else row["ExecutionItemUid"] = Guid.NewGuid();
+
+                            row["ResponsibilityTypeUid"] = responsibilityTypeUid;
+
+                            if (model.AssetTypeUid.HasValue)
+                                row["AssetTypeUid"] = model.AssetTypeUid;
+                            row["Name"] = model.Name;
+                            row["IsVisible"] = model.IsVisible;
+                            row["ApplyToType"] = model.ApplyToType;
+                            row["Context"] = model.Context;
+                            if (model.Definition != null)
+                            {
+                                row["Definition"] = JsonConvert.SerializeObject(model.Definition);
+                            }
+
+                            if (execution.Method.ToLower() == "post" && model.Uid.HasValue)
+                            {
+                                rowError += ";Cannot use Uid in POST request. Please use PUT Api for updating records!";
+                            }
+
+                            if (execution.Method.ToLower() == "put" && !model.Uid.HasValue)
+                            {
+                                rowError += ";UID cannot be empty!";
+                            }
+
+                            if (model.Uid.HasValue)
+                            {
+                                row["uid"] = model.Uid.Value;
+                            }
+
+                            //initial validation
+                            if (!model.AssetTypeUid.HasValue || model.AssetTypeUid.Value == Guid.Empty)
+                            {
+                                rowError += ";AssetTypeUid is not valid!";
+                            }
+
+                            if (string.IsNullOrEmpty(model.Name))
+                            {
+                                rowError += ";Name cannot be empty.";
+                            }
+
+                            if (model.Definition == null)
+                            {
+                                rowError += ";Definition cannot be empty/null.";
+                            }
+                            if (model.Definition.Then == null || model.Definition.Then.Count == 0 || model.Definition.Then.Any(x => x.Conditions == null || x.Conditions.Count == 0))
+                            {
+                                rowError += ";Then conditions in definition cannot be empty.";
+                            }
+
+                            if (model.ApplyToType == true && (model.Definition.When != null && model.Definition.When.Count > 0))
+                            {
+                                rowError += "Cannot use When conditions when ApplyToType value is set to true.";
+                            }
+
+                            model.Definition.Then.ForEach(th =>
+                            {
+                                if (th.AssigneeTypeUid == null || th.AssigneeTypeUid == Guid.Empty)
+                                {
+                                    rowError += ";AssigneeTypeUid cannot be null or empty.";
+                                }
+                                th.Conditions.ForEach(cond =>
+                                {
+                                    if (cond.Assignee == null && cond.Field == null)
+                                    {
+                                        rowError += ";Then condition should have either Field and Asignee values set.";
+                                    }
+
+                                    if (cond.Assignee != null && cond.Field != null)
+                                    {
+                                        rowError += ";Condition cannot have Field and Asignee within same condition.";
+                                    }
+
+                                    if (cond.Assignee != null)
+                                    {
+                                        if (!cond.Assignee.Uid.HasValue)
+                                        {
+                                            rowError += ";Assignee Uid is required field.";
+                                        }
+                                    }
+
+                                    if (cond.Field != null)
+                                    {
+                                        if (string.IsNullOrEmpty(cond.Field.ApiName))
+                                        {
+                                            rowError += ";ApiName is required field.";
+                                        }
+                                        if (string.IsNullOrEmpty(cond.Field.Value))
+                                        {
+                                            rowError += ";Value is required field.";
+                                        }
+                                    }
+
+
+                                });
+
+                            });
+
+                            if (model.Definition.When != null && model.Definition.When.Count > 0)
+                            {
+                                model.Definition.When.ForEach(cond =>
+                                {
+                                    if (cond.Relation == null && cond.Field == null)
+                                    {
+                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                    }
+                                    if (cond.Relation != null && cond.Field != null)
+                                    {
+                                        rowError += ";Condition cannot have Field and Relation within same condition.";
+                                    }
+
+                                    if (cond.Relation != null)
+                                    {
+                                        if (!cond.Relation.IntersectTypeUid.HasValue)
+                                        {
+                                            rowError += ";IntersectTypeUid is required field.";
+                                        }
+                                        if (!cond.Relation.AssetUid.HasValue)
+                                        {
+                                            rowError += ";AssetUid is required field.";
+                                        }
+                                    }
+
+                                    if (cond.Field != null)
+                                    {
+                                        if (string.IsNullOrEmpty(cond.Field.ApiName))
+                                        {
+                                            rowError += ";ApiName is required field.";
+                                        }
+                                        if (string.IsNullOrEmpty(cond.Field.Value))
+                                        {
+                                            rowError += ";Value is required field.";
+                                        }
+                                    }
+                                });
+                            }
+
+                            if (!string.IsNullOrEmpty(rowError))
+                            {
+                                row["Message"] = rowError.Trim(';');
+                                row["Success"] = false;
+                            }
+
+                            table.Rows.Add(row);
+                        }
+                    }
+
+                    #endregion
+
+                    if (Database.Connection.State != ConnectionState.Open)
+                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+
+                    #region Bulk Copy
+
+                    SqlBulkCopy bulkCopy = new SqlBulkCopy(Connection);
+
+                    bulkCopy.BatchSize = SqlBulkBatchSize;
+                    bulkCopy.DestinationTableName = "api.ExecutionResponsibilityRule";
+                    bulkCopy.BulkCopyTimeout = SqlBulkBatchTimeout;
+
+
+                    bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                    bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
+                    bulkCopy.ColumnMappings.Add("Uid", "uid");
+                    bulkCopy.ColumnMappings.Add("ResponsibilityTypeUid", "ResponsibilityTypeUid");
+                    bulkCopy.ColumnMappings.Add("AssetTypeUid", "AssetTypeUid");
+                    bulkCopy.ColumnMappings.Add("Name", "Name");
+                    bulkCopy.ColumnMappings.Add("IsVisible", "IsVisible");
+                    bulkCopy.ColumnMappings.Add("ApplyToType", "ApplyToType");
+                    bulkCopy.ColumnMappings.Add("Context", "Context");
+                    bulkCopy.ColumnMappings.Add("Definition", "Definition");
+                    bulkCopy.ColumnMappings.Add("Success", "Success");
+                    bulkCopy.ColumnMappings.Add("Message", "Message");
+
+
+                    bulkCopy.WriteToServer(table);
+
+                    #endregion
+
+                    #region Log data errors
+
+
+                    var checkSQL = $@"
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Responsibility Rule with specified Uid not found!'
+    from api.ExecutionResponsibilityRule EP
+    left join ResponsibilityTypeRelationRule rtrr on rtrr.uid = ep.uid
+    where	ExecutionID = @ExecutionID and EP.Uid is not null and rtrr.uid is null;
+
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid'
+    from api.ExecutionResponsibilityRule EP
+    left join AssetType AT on AT.uid = EP.AssetTypeUid
+    where	ExecutionID = @ExecutionID and AT.Id is null;
+
+    drop table if exists #allowedTypes
+    select distinct at.uid 
+    into #allowedTypes
+    from api.ExecutionResponsibilityRule EP
+        inner join ResponsibilityType RT on rt.uid = EP.ResponsibilityTypeUid
+        inner join [ResponsibilityTypeRelation] RR on RR.ResponsibilityTypeID = RT.Id
+	    inner join assettype at on rr.ObjectType=at.Object and rr.ObjectID = at.ObjectID
+    where ExecutionID = @executionId;
+
+    update	api.ExecutionResponsibilityRule 
+    set		Success = 0,
+		    [Message] = coalesce([Message] + '; ', '') + 'Invalid Asset Type Uid for Responsibility Type.'
+    from api.ExecutionResponsibilityRule EP
+    left join AssetType AT on AT.uid = EP.AssetTypeUid
+    where	ExecutionID = @ExecutionID and (AT.Id is null or AT.uid not in (select * from #allowedTypes));
+
+";
+
+                    Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    #endregion
+
+                    #region Parse new json to old format
+
+                    var jsonParseSql = $@"
+drop table if exists #tempData
+create table #tempData
+(
+    ItemNumber int, 
+    ExecutionId uniqueidentifier, 
+	AssetTypeUid uniqueidentifier,
+    AssigneeTypeUid uniqueidentifier, 
+    RelIntersectTypeUid uniqueidentifier, 
+    RelAssetUid uniqueidentifier,
+	FieldApiName nvarchar(250),
+    FieldValue nvarchar(250),
+    AssigneeUid uniqueidentifier,
+	ValueAsUid uniqueidentifier,
+)
+
+insert into #tempData
+select
+ItemNumber,
+ExecutionId,
+AssetTypeUid,
+ThenData.AssigneeTypeUid,
+ThenCond.*,
+case 
+when ThenCond.IntersectTypeUid is not null then cast(thencond.intersecttypeuid as uniqueidentifier)
+else null
+end as ValueAsUid
+from api.executionresponsibilityrule
+cross apply OPENJSON (Definition, N'$.Then')
+  WITH (
+    AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
+    Conditions nvarchar(max) N'$.Conditions' as Json
+  ) AS ThenData
+cross apply OPENJSON(ThenData.Conditions)
+   with(
+		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+		AssetUid uniqueidentifier N'$.Relation.AssetUid',
+		FieldApiName nvarchar(250) N'$.Field.ApiName',
+		Value nvarchar(250) N'$.Field.Value',
+		AssetUid uniqueidentifier  N'$.Assignee.Uid'
+   ) as ThenCond
+where executionid = @executionId and success is null
+
+insert into #tempData
+select
+ItemNumber,
+ExecutionId,
+AssetTypeUid,
+null as AssigneeTypeUid,
+WhenData.*,
+case 
+when WhenData.IntersectTypeUid is not null then cast(WhenData.value as uniqueidentifier)
+else null
+end as ValueAsUid
+from api.executionresponsibilityrule
+cross apply OPENJSON (Definition, N'$.When')
+  WITH (
+		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
+		AssetUid uniqueidentifier N'$.Relation.AssetUid',
+		FieldApiName nvarchar(250) N'$.Field.ApiName',
+		Value nvarchar(250) N'$.Field.Value',
+		AssetUid uniqueidentifier  N'$.Assignee.Uid'
+  ) AS WhenData
+where executionid = @executionId and success is null
+
+drop table if exists #parsedData
+select  d.itemnumber, 
+		d.executionid ,
+		at.object,
+		at.objectid,
+		d.valueasuid,
+		d.AssigneeTypeUid,
+		d.AssigneeUid,
+		d.RelAssetUid,
+		case 
+			when d.RelIntersectTypeUid is null then 'F'
+			else 'R'
+		end as CheckType,
+		case 
+			when at.uid is not null then ft.id
+			else ft2.id
+		end as FieldTypeId,
+		case
+			when at.uid is not null then isnull(ft.friendlyname,d.fieldapiname)
+			else isnull(ft2.friendlyname, d.fieldapiname)
+		end as FieldTypeName,
+		case 
+			when it.id is null then d.FieldValue
+			else a.Object+'|'+ cast(a.objectid as nvarchar(20)) 
+		end as Value,
+		it.id as IntersectTypeId,
+		a.object as TargetObject,
+		isnull(a.objectid,0) as TargetObjectId,
+		cast('' as nvarchar(max)) as ErrorMessage,
+		ROW_NUMBER() OVER(ORDER BY(SELECT NULL)) as rowNumber
+	into #parsedData
+	from #tempData d
+		left join assettype at on d.assigneetypeuid = at.uid
+		left join FieldType ft on at.Object = ft.Object and at.ObjectID = ft.ObjectID and ft.Name = d.FieldApiName
+		left join IntersectType it on it.uid = d.RelIntersectTypeUid
+		left join assettype at2 on d.AssetTypeUid = at2.uid
+		left join FieldType ft2 on ft2.object = at2.object and ft2.objectid = at2.objectid and ft2.name = d.fieldapiname
+		left join asset a on a.uid = d.RelAssetUid
+
+update #parsedData
+set FieldTypeId = 0,
+FieldTypeName = 'Name',
+Value = a.ObjectID
+from #parsedData
+	inner join asset a on a.uid = AssigneeUid
+	inner join assettype at on a.assettypeid = at.id and at.objectid = #parsedData.objectid and at.object = #parsedData.object
+where AssigneeUid is not null
+
+update #parsedData
+set ErrorMessage = 'Invalid Field name.'
+where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+update #parsedData
+set ErrorMessage = 'Invalid AssetUid for condition.'
+where isnull(value,0) = 0 and fieldtypename <> '' and AssigneeUid is not null
+
+update #parsedData
+set ErrorMessage = 'Invalid Intersect Type Uid for condition.'
+where CheckType = 'R' and IntersectTypeId is null
+
+update #parsedData
+set ErrorMessage = 'Invalid Asset UID for condition value.'
+where CheckType = 'R' and isnull(targetobjectid,0) = 0
+
+update #parsedData
+set ErrorMessage =  'Invalid Assignee Type. Allowed Types are ''Resource'', ''Group'' and ''Organization'''
+where object is not null and object not in('ResourceType','OrganizationType','GroupType')
+
+update #parsedData
+set ErrorMessage = 'Invalid Asset UID for Intersect Type.'
+from #parsedData
+  left join IntersectType it on it.ID= IntersectTypeId
+  left join Asset A on a.object = TargetObject and a.objectid = targetobjectid
+  left join assettype at on a.AssetTypeID = at.ID 
+where CheckType = 'R' and (at.uid <> it.subjectuid and at.uid <> it.objectuid)
+
+update #parsedData
+set ErrorMessage = 'AssigneeType not found.'
+from #parsedData pd
+left join AssetType at on at.uid = pd.assigneetypeuid
+where pd.AssigneeTypeUid is not null and at.id is null
+
+update #parsedData
+set ErrorMessage = 'Invalid AssigneeType. Allowed types are ResourceType, GroupType and OrganizationType.'
+from #parsedData pd
+inner join AssetType at on at.uid = pd.assigneetypeuid
+where pd.AssigneeTypeUid is not null and at.Object not in ('ResourceType', 'GroupType','OrganizationType')
+
+update #parsedData
+set ErrorMessage = 'Invalid Assignee for Assignee Type.'
+from #parsedData pd
+left join AssetType at on at.uid = pd.assigneetypeuid
+left join asset a on a.uid = assigneeuid
+where pd.AssigneeTypeUid is not null and at.id is not null and at.id <> a.assettypeid
+
+update #parsedData
+set ErrorMessage = 'Invalid JSON Data.'
+where fieldtypeid is null and fieldtypename is null and value is null and intersecttypeid is null and TargetObject is null and errormessage is null
+
+MERGE api.ExecutionResponsibilityRule err
+USING (select itemnumber,executionid,trim(string_agg(errormessage,',')) as msg from #parsedData
+where isnull(errormessage,'') <> ''
+group by itemnumber,executionid
+) cd
+ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid and cd.msg <> '' 
+WHEN MATCHED
+    THEN UPDATE
+	SET [Message] = coalesce([Message] + '; ', '') + cd.msg,
+	Success = 0;
+
+drop table if exists #convertedData
+create table #convertedData
+(
+    ItemNumber int, 
+    ExecutionId uniqueidentifier, 
+	[When] nvarchar(max),
+	[Then] nvarchar(max),
+	[Definition] nvarchar(max)
+)
+
+insert into #convertedData
+select ItemNumber,ExecutionId, null,null,null
+from #parsedData
+group by ItemNumber,ExecutionId
+
+;with conditions as (select 
+ItemNumber,
+ExecutionId,
+ConditionsThen.json as [Then],
+ConditionsWhen.json as [When]
+ from #parsedData pd
+cross apply (
+	select top 1 Object,ObjectId, Conditions.json as Conditions
+	from #parsedData
+		cross apply(select
+		 CheckType,
+		 isnull(FieldTypeID,0) as FieldTypeId,
+		 FieldTypeName,
+		 Value,
+		 isnull(IntersectTypeID,0) as IntersectTypeID,
+		 TargetObject,
+		 TargetObjectId
+		  from #parsedData
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+		 for json path, include_null_values
+		)Conditions(json)
+	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+	for json path, include_null_values, without_array_wrapper
+	)ConditionsThen(json)
+
+cross apply (
+select
+		 CheckType,
+		 isnull(FieldTypeID,0) as FieldTypeId,
+		 FieldTypeName,
+		 Value,
+		 isnull(IntersectTypeID,0) as IntersectTypeID,
+		 TargetObject,
+		 TargetObjectId
+		  from #parsedData
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object is null
+		 for json path, include_null_values
+)ConditionsWhen(json)
+where 
+object is not null
+group by ItemNumber,ExecutionId,ConditionsThen.json, ConditionsWhen.json)
+update #convertedData 
+set [When] = c.[When],
+[Then] = c.[Then],
+[Definition] = '{{'+Concat_ws(',','""When"":' + c.[When],'""Then"":' + c.[Then]) + '}}'
+from conditions c
+where #convertedData.itemnumber = c.itemnumber and #convertedData.executionid = c.executionid
+
+
+MERGE api.ExecutionResponsibilityRule err
+USING #convertedData cd
+ON cd.itemnumber = err.itemnumber and cd.executionid = err.executionid
+WHEN MATCHED
+    THEN UPDATE
+    SET DefinitionConverted = cd.[Definition];
+
+
+                    ";
+                    Connection.Execute(jsonParseSql, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                    #endregion
+
+                    generalChecksCompleted = true;
+                }
+                catch (Exception generalEx)
+                {
+                    generalChecksCompleted = false;
+                    var msg = generalEx.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = import.Count();
+
+                    results = new List<ResponsibilityRuleUpsertResponseModel>();
+                    results.AddRange(import.Select(i => new ResponsibilityRuleUpsertResponseModel { ExecutionItemUid = i.ExecutionItemUid, Message = msg, Success = false }));
+                }
+
+                if (generalChecksCompleted)
+                {
+                    int loopSize = 250;
+                    int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                    int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                    int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+                    var predicateTypes = Enum.GetValues(typeof(PredicateType)).Cast<PredicateType>().ToList();
+
+                    for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                    {
+                        bool runCompleted = false;
+                        int retryCount = 0;
+
+                        while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                        {
+                            var querySuffix = $"P.Success is null and P.ExecutionID = @ExecutionID and P.ItemNumber between @beginItemNumber and @endItemNumber";
+                            using (var trans = Connection.BeginTransaction())
+                            {
+                                try
+                                {
+
+                                    var insertSQL = $@"
+                                       DECLARE @mergeResults table(  
+                                            uid uniqueidentifier,  
+                                            executionid uniqueidentifier,  
+                                            itemnumber int); 
+
+                                        MERGE dbo.ResponsibilityTypeRelationRule RTRR
+                                        USING (
+                                        select 
+										xrr.executionid,
+										xrr.itemnumber,
+                                        xrr.uid,
+                                        rt.id as ResponsibilityTypeId,
+                                        at.object as Object,
+                                        at.objectid as ObjectId,
+                                        xrr.Name,
+                                        xrr.Context,
+                                        xrr.IsVisible,
+                                        xrr.ApplyToType, 
+                                        xrr.DefinitionConverted
+                                         from api.executionresponsibilityrule xrr
+                                        inner join assettype at on at.uid = xrr.AssetTypeUid
+                                        inner join ResponsibilityType rt on rt.uid = xrr.ResponsibilityTypeUid
+                                        where xrr.executionid = @ExecutionID and xrr.ItemNumber between @beginItemNumber and @endItemNumber and xrr.success is null
+                                        )Data
+                                        ON RTRR.uid = Data.uid
+                                        WHEN MATCHED
+                                            THEN update set 
+                                                name = data.name,
+                                                ResponsibilityTypeId = data.ResponsibilityTypeId,
+                                                object = data.Object,
+                                                objectId = data.ObjectId,
+                                                context = data.context,
+                                                isvisible = data.isvisible,
+                                                applytotype = data.applytotype,
+                                                definition = data.DefinitionConverted,
+                                                updatedon = getdate(),
+                                                updatedby = @resourceId
+                                        WHEN NOT MATCHED
+                                            THEN insert (ResponsibilityTypeId,Object,ObjectId,Name,Context,IsVisible, ApplyToType,CreatedOn,CreatedBy,Definition)
+	                                        values (data.ResponsibilityTypeId,data.Object, data.ObjectId, data.Name, data.Context, data.IsVisible, data.ApplyToType, getdate(), @resourceId,data.DefinitionConverted)
+                                            output inserted.uid, data.executionid, data.itemnumber into @mergeResults;
+
+                                        update api.executionresponsibilityrule
+                                           set uid = mr.uid
+                                        from @mergeResults mr 
+                                            where executionresponsibilityrule.executionid = mr.executionid and executionresponsibilityrule.itemnumber = mr.itemnumber";
+
+                                    Connection.Execute(insertSQL,
+                                            new { execution.ExecutionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+                                    Connection.Execute(
+                                        $"update P set P.Success = 1 from api.ExecutionResponsibilityRule P where	{querySuffix};",
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                    trans.Commit();
+                                    runCompleted = true;
+
+                                }
+                                catch (Exception ex)
+                                {
+                                    trans.Rollback();
+
+                                    retryCount++;
+
+                                    if (retryCount > API_V2_RETRY_LIMIT)
+                                    {
+                                        LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionResponsibilityRule", ex.GetFullExceptionData(false), timeout);
+                                    }
+                                }
+                            }
+                        }
+
+                        results.AddRange(
+                            Query<ResponsibilityRuleUpsertResponseModel>(
+                                $"select * from api.ExecutionResponsibilityRule where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+
+
+                        beginItemNumber += loopSize;
+                        endItemNumber += loopSize;
+                    }
+
+                    Connection.Close();
+
+                }
+            }
+
+            return results;
+        }
+
 
     }
 

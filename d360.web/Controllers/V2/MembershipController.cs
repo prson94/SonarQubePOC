@@ -3,6 +3,7 @@ using d360.core.entities.Membership;
 using d360.model;
 using d360.model.DataAccessLayer;
 using d360.model.helpers;
+using d360.model.helpers.filters;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
@@ -34,7 +35,7 @@ namespace d360.web.Controllers.V2
         ICompanyContext _company;
         IMembershipRepository membershipRepository;
         IAssetRepository assetRepository;
-        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository,IAssetRepository assetRepository)
+        public MembershipController(ICommunityContext community, ICompanyContext company, IMembershipRepository membershipRepository, IAssetRepository assetRepository)
             : base(community, company)
         {
             _company = company;
@@ -68,198 +69,216 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.BadRequest, "Invalid PageSize/PageNum value provided. Number is too large"),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
         ]
-        public async Task<HttpResponseMessage> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
+        public async Task<IHttpActionResult> GetUsers(Guid? Uid = null, string FirstName = null, string LastName = null, core.enums.CompanyResourceState? State = null, bool? IsAdministrator = null, string _pageSize = "5", string _pageNum = "1", string _order = "ResourceID", string _direction = "asc", string _filter = "", string _simpleFilter = "")
         {
-            string finalSql = "";
-            string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
-            string whereSql = "";
-            string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
+            try
+            {
+                string finalSql = "";
+                string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
+                string whereSql = "";
+                string selectSql = @"select gr.uid, ResourceID, FirstName, LastName, Email, IsAdministrator, LastLoggedInOn, 
                     case gr.State 
                      when 1 then 'Active'
                      when 2 then 'InActive'
                      when 3 then 'Deleted' end as State ";
-            string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
-            string orderBySQL = $"";
-            long pageSize;
-            long pageNum;
+                string countSql = "select count(*) from [reporting].[Global_Resource] gr ";
+                string orderBySQL = $"";
+                long pageSize;
+                long pageNum;
 
-            DynamicParameters dbArgs = new DynamicParameters();
-            List<string> queries = new List<string>();
-            ResourceApiViewModel model = new ResourceApiViewModel();
-            List<string> fieldColumns = new List<string>();
-            List<string> fieldJoins = new List<string>();
-            Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
-            string isValid = isPageSizeAndNumValid(pageParams);
+                DynamicParameters dbArgs = new DynamicParameters();
+                List<string> queries = new List<string>();
+                ResourceApiViewModel model = new ResourceApiViewModel();
+                List<string> fieldColumns = new List<string>();
+                List<string> fieldJoins = new List<string>();
+                Dictionary<string, string> pageParams = new Dictionary<string, string> { { "_pageSize", _pageSize }, { "_pageNum", _pageNum } };
+                string isValid = isPageSizeAndNumValid(pageParams);
 
-            if (!string.IsNullOrEmpty(isValid))
-            {
-                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, isValid));
-            }
-
-            var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
-
-            IDictionary<string, string> customFields = new Dictionary<string, string>();
-            var queryParams = Request.GetQueryNameValuePairs();
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
-
-            if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
-            {
-                if (Uid != null)
+                if (!string.IsNullOrEmpty(isValid))
                 {
-                    dbArgs.Add("uid", Uid);
-                    queries.Add(" gr.uid = @uid");
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", isValid));
                 }
-                if (FirstName != null)
-                {
-                    dbArgs.Add("FirstName", FirstName);
-                    queries.Add(" FirstName = @FirstName");
-                }
-                if (LastName != null)
-                {
-                    dbArgs.Add("LastName", LastName);
-                    queries.Add(" LastName = @LastName");
-                }
-                if (State != null)
-                {
-                    dbArgs.Add("state", State);
-                    queries.Add(" gr.state = @state");
-                }
-                if (IsAdministrator != null)
-                {
-                    dbArgs.Add("isAdministrator", IsAdministrator);
-                    queries.Add(" isAdministrator = @isAdministrator");
-                }
-            }
-            foreach (var col in fieldColumns)
-            {
-                selectSql += "," + col;
-            }
-            foreach (var join in fieldJoins)
-            {
-                joinsSql += join;
-            }
-            foreach (FieldType customField in fieldTypes)
-            {
-                if (queryParams.Any(x => x.Key == customField.Name))
-                {
-                    var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
-                    queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
-                    dbArgs.Add($"@field{customField.ID}", paramval);
-                }
-            }
 
-            if (queryParams.Any(x => x.Key.ToLower() == "_filter"))
-            {
-                var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+                var fieldTypes = _company.FieldTypes.Where(f => f.Object == "ResourceType" && f.ObjectID == 1).ToList();
 
-                if (!string.IsNullOrEmpty(filterValue))
+                IDictionary<string, string> customFields = new Dictionary<string, string>();
+                var queryParams = Request.GetQueryNameValuePairs();
+                getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+                if (Uid != null || FirstName != null || LastName != null || State != null || IsAdministrator != null)
                 {
-                    var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
-                    filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
-                    Dictionary<string, object> sqlParams = new Dictionary<string, object>();
-                    List<int> filteredFieldIds = new List<int>();
-                    queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds) + ")");
-
-                    foreach (var item in sqlParams)
+                    if (Uid != null)
                     {
-                        dbArgs.Add(item.Key, item.Value);
+                        dbArgs.Add("uid", Uid);
+                        queries.Add(" gr.uid = @uid");
+                    }
+                    if (FirstName != null)
+                    {
+                        dbArgs.Add("FirstName", FirstName);
+                        queries.Add(" FirstName = @FirstName");
+                    }
+                    if (LastName != null)
+                    {
+                        dbArgs.Add("LastName", LastName);
+                        queries.Add(" LastName = @LastName");
+                    }
+                    if (State != null)
+                    {
+                        dbArgs.Add("state", State);
+                        queries.Add(" gr.state = @state");
+                    }
+                    if (IsAdministrator != null)
+                    {
+                        dbArgs.Add("isAdministrator", IsAdministrator);
+                        queries.Add(" isAdministrator = @isAdministrator");
                     }
                 }
-            }
-
-            if (!string.IsNullOrEmpty(_simpleFilter))
-            {
-                dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
-                List<string> simpleFilters = new List<string>();
-
-                foreach (var field in fieldTypes.Where(x => x.IsListable == true))
+                foreach (var col in fieldColumns)
                 {
-                    _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
-
-                    foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                    selectSql += "," + col;
+                }
+                foreach (var join in fieldJoins)
+                {
+                    joinsSql += join;
+                }
+                foreach (FieldType customField in fieldTypes)
+                {
+                    if (queryParams.Any(x => x.Key == customField.Name))
                     {
-                        if (ft.Type == "Lookup" && ft.AllowAllValue)
+                        var paramval = queryParams.FirstOrDefault(x => x.Key == customField.Name).Value;
+                        queries.Add($"F{customField.ID}.FormattedValue = @field{customField.ID}");
+                        dbArgs.Add($"@field{customField.ID}", paramval);
+                    }
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_filter"))
+                {
+                    var filterValue = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_filter").Value;
+
+                    if (!string.IsNullOrEmpty(filterValue))
+                    {
+                        var filterExpressionParser = new FilterExpressionParser(Company, FilterExpressionParseType.CustomFields, false, true);
+                        filterExpressionParser.LoadFieldTypes(fieldTypes, fieldColumns);
+                        Dictionary<string, object> sqlParams = new Dictionary<string, object>();
+                        List<int> filteredFieldIds = new List<int>();
+                        queries.Add("(" + filterExpressionParser.Parse(filterValue, out sqlParams, out filteredFieldIds) + ")");
+
+                        foreach (var item in sqlParams)
                         {
-                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
-                        }
-                        else
-                        {
-                            simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                            dbArgs.Add(item.Key, item.Value);
                         }
                     }
                 }
-                List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
 
-                defaultFields.ForEach(f =>
+                if (!string.IsNullOrEmpty(_simpleFilter))
                 {
-                    simpleFilters.Add($"{f} like @simpleFilter");
-                });
+                    dbArgs.Add("@simpleFilter", "%" + _simpleFilter + "%");
+                    List<string> simpleFilters = new List<string>();
 
-                simpleFilters.Add(@"(case gr.State 
+                    foreach (var field in fieldTypes.Where(x => x.IsListable == true))
+                    {
+                        _simpleFilter = Company.GetEscapedFilterString(_simpleFilter);
+
+                        foreach (var ft in fieldTypes.Where(x => x.IsListable == true))
+                        {
+                            if (ft.Type == "Lookup" && ft.AllowAllValue)
+                            {
+                                simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                            }
+                            else
+                            {
+                                simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
+                            }
+                        }
+                    }
+                    List<string> defaultFields = new List<string> { "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn" };
+
+                    defaultFields.ForEach(f =>
+                    {
+                        simpleFilters.Add($"{f} like @simpleFilter");
+                    });
+
+                    simpleFilters.Add(@"(case gr.State 
                      when 1 then 'Active'
                      when 2 then 'InActive'
                      when 3 then 'Deleted' end) like @simpleFilter");
-                queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
-            }
-
-            if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers"))
-            {
-                queries.Add("email not like '%@infogix.com'");
-            }
-
-            if (queries.Count() > 0)
-            {
-                whereSql += "where ";
-            }
-
-            for (int i = 0; i < queries.Count(); i++)
-            {
-                whereSql += queries[i].ToString();
-                if (i < queries.Count() - 1)
-                {
-                    whereSql += " and ";
+                    queries.Add("(" + string.Join(" or ", simpleFilters) + ")");
                 }
+
+                if (Community.GetCompanySettingByKey<bool>("HideData3SixtyUsers"))
+                {
+                    queries.Add("email not like '%@infogix.com'");
+                }
+
+                if (queries.Count() > 0)
+                {
+                    whereSql += "where ";
+                }
+
+                for (int i = 0; i < queries.Count(); i++)
+                {
+                    whereSql += queries[i].ToString();
+                    if (i < queries.Count() - 1)
+                    {
+                        whereSql += " and ";
+                    }
+                }
+                List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
+                validCols.AddRange(fieldTypes.Select(x => x.Name));
+
+                if (validCols.All(x => x.ToLower() != _order.ToLower()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order by passed in the request"));
+
+                if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request submitted", "Invalid order passed in the request"));
+
+                orderBySQL = $"order by {_order} {_direction}";
+
+                finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
+                countSql += joinsSql + " " + whereSql;
+
+                long.TryParse(_pageSize, out pageSize);
+                long.TryParse(_pageNum, out pageNum);
+
+                model.pageNum = pageNum;
+                model.pageSize = pageSize;
+                string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
+                finalSql += offsetSql;
+
+                var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
+                var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
+
+                var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
+
+                if (isStreamResponse)
+                {
+                    byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
+
+                    var response = createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+                }
+                else
+                {
+                    model.items = results;
+                    model.total = countResults.FirstOrDefault();
+                    var response = Request.CreateResponse(HttpStatusCode.OK, model);
+                    return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+                }
+
             }
-            List<string> validCols = new List<string> { "uid", "ResourceID", "FirstName", "LastName", "Email", "IsAdministrator", "LastLoggedInOn", "State" };
-            validCols.AddRange(fieldTypes.Select(x => x.Name));
-
-            if (validCols.All(x => x.ToLower() != _order.ToLower()))
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order by passed in the request");
-            if (!new string[] { "asc", "desc" }.Contains(_direction.ToLower()))
-                return Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Invalid order passed in the request");
-
-            orderBySQL = $"order by {_order} {_direction}";
-
-            finalSql = selectSql + " from[reporting].[Global_Resource] gr " + joinsSql + " " + whereSql;
-            countSql += joinsSql + " " + whereSql;
-
-            long.TryParse(_pageSize, out pageSize);
-            long.TryParse(_pageNum, out pageNum);
-
-            model.pageNum = pageNum;
-            model.pageSize = pageSize;
-            string offsetSql = $" {orderBySQL} offset {pageSize * (pageNum - 1)} rows fetch next {pageSize} rows only";
-            finalSql += offsetSql;
-
-            var results = await Company.QueryAsync<dynamic>(finalSql, dbArgs);
-            var countResults = await Company.QueryAsync<int>(countSql, dbArgs);
-
-            var isStreamResponse = Request?.Headers?.Accept?.Any(a => a.MediaType == "application/octet-stream") ?? false;
-
-            if (isStreamResponse)
+            catch (FilterExpressionParserException ex)
             {
-                byte[] xlsResult = GetUsersExcelFromResults(results, fieldTypes);
-                return createFileResponseMessage(HttpStatusCode.OK, $"Users {System.DateTime.Now.ToShortDateString()}.xlsx", xlsResult);
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Filter expression parse error", errorMessage));
             }
-            else
+            catch (Exception ex)
             {
-                model.items = results;
-                model.total = countResults.FirstOrDefault();
-                return Request.CreateResponse(HttpStatusCode.OK, model);
+                string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
-
         }
-
 
         /// <summary>
         /// Adds members to a group for a given group unique identifier.
@@ -292,7 +311,7 @@ namespace d360.web.Controllers.V2
 
             var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
-            if(duplicatedUsers.Count() != 0)
+            if (duplicatedUsers.Count() != 0)
             {
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Same User UID appears multiple times."));
             }
@@ -781,7 +800,7 @@ namespace d360.web.Controllers.V2
         Route("users/me/getHomePage"),
         SwaggerResponse(HttpStatusCode.OK, "", typeof(bool)),
         SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occured while processing this request.", typeof(ErrorResponse)),
-        ApiExplorerSettings(IgnoreApi =true )
+        ApiExplorerSettings(IgnoreApi = true)
         ]
         public async Task<IHttpActionResult> GetHomePage()
         {
@@ -869,9 +888,9 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> ToggleHomepage(FavoriteApiModel favorite)
         {
-            var currentHome = Company.Filter<Favorite>(x=>x.ResourceID == _company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
+            var currentHome = Company.Filter<Favorite>(x => x.ResourceID == _company.CurrentResourceID && x.IsHomePage).FirstOrDefault();
             bool isNewHomePage = true;
-            if(currentHome != null)
+            if (currentHome != null)
             {
                 if (currentHome.Name == favorite.Name && currentHome.Type == favorite.Type.ToString() && favorite.Route == currentHome.Route)
                     isNewHomePage = false;

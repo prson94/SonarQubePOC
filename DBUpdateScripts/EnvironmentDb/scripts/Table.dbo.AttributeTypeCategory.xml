@@ -5,31 +5,46 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeTypeCategory-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.AttributeTypeCategory-v3">
+    <comment>GOV-10546</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory')
-BEGIN
-	EXEC sp_rename 'AttributeTypeCategory', 'AttributeTypeCategory_Retired';
-END
+			IF EXISTS (select * 
+			           from sys.foreign_keys 
+					   where name = 'FK_AttributeType_AttributeTypeCategory'
+					   and object_name(parent_object_id) in ('AttributeType_Retired'))
+			BEGIN
+				ALTER TABLE [dbo].[AttributeType_Retired] DROP CONSTRAINT [FK_AttributeType_AttributeTypeCategory];
+			END
+
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory_Retired')
+			BEGIN
+				DROP TABLE dbo.AttributeTypeCategory_Retired
+			END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeCategory_Retired')
 BEGIN
-	CREATE TABLE [dbo].[AttributeTypeCategory](
+	CREATE TABLE [dbo].[AttributeTypeCategory_Retired](
 		[ID] [int] IDENTITY(1,1) NOT NULL,
 		[Name] [nvarchar](250) NOT NULL,
 		[Description] [nvarchar](max) NULL,
 		CONSTRAINT [PK_AttributeTypeCategory] PRIMARY KEY CLUSTERED ( [ID] ASC )
 	)
 END
+	
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeType_AttributeTypeCategory'
+	and object_name(parent_object_id)='AttributeType_Retired')
+BEGIN
+	ALTER TABLE [dbo].[AttributeType_Retired] WITH CHECK ADD CONSTRAINT [FK_AttributeType_AttributeTypeCategory] FOREIGN KEY([AttributeTypeCategoryID]) REFERENCES [dbo].[AttributeTypeCategory_Retired] ([ID])
+	ALTER TABLE [dbo].[AttributeType_Retired] CHECK CONSTRAINT [FK_AttributeType_AttributeTypeCategory]
+END
 		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

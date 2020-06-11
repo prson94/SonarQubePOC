@@ -75,4 +75,77 @@ END
 		]]>
 	</rollback>
   </changeSet>
+
+  <changeSet author="Pappas" id="Table.metrics.Allocation-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT PK_MetricAllocation WITH ( ONLINE = OFF )
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT PK_MetricAllocation PRIMARY KEY NONCLUSTERED  ( [Uid] )
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAllocation')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CONSTRAINT UQ_MetricsAllocation UNIQUE (AssetTypeUid, ScoreType, OverrideName ); 
+end
+
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+begin
+	CREATE CLUSTERED INDEX CIX_MetricsAllocation ON metrics.Allocation ( AssetTypeUid )
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD CalculationMethod int constraint DF_MetricsAllocation_CalculationMethod default(4) not null
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
+begin
+	ALTER TABLE [metrics].[Allocation] ADD IsThresholdBased bit constraint DF_MetricsAllocation_IsThresholdBased default(0) not null
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+if exists (select 1 from [sys].[key_constraints] where name = 'PK_MetricAllocation')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT PK_MetricAllocation WITH ( ONLINE = OFF )
+	ALTER TABLE [metrics].[Allocation] ADD  CONSTRAINT PK_MetricAllocation PRIMARY KEY CLUSTERED  ( [AssetTypeUid] ASC, [ScoreType] ASC )
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAllocation')
+begin
+	ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT UQ_MetricsAllocation
+end
+
+if exists (select * from sys.indexes where name = 'CIX_MetricsAllocation')
+begin
+	DROP INDEX [CIX_MetricsAllocation] ON [metrics].[Allocation] WITH ( ONLINE = OFF )
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'CalculationMethod')
+begin
+	if exists (select * from [sys].[default_constraints] where name = 'DF_MetricsAllocation_CalculationMethod')
+	begin
+		ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_CalculationMethod]
+	end
+	ALTER TABLE [metrics].[Allocation] DROP COLUMN CalculationMethod
+end
+
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Allocation' and COLUMN_NAME = 'IsThresholdBased')
+begin
+	if exists (select * from [sys].[default_constraints] where name = 'DF_MetricsAllocation_IsThresholdBased')
+	begin
+		ALTER TABLE [metrics].[Allocation] DROP CONSTRAINT [DF_MetricsAllocation_IsThresholdBased]
+	end
+	ALTER TABLE [metrics].[Allocation] DROP COLUMN IsThresholdBased
+end
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>
