@@ -1072,10 +1072,13 @@ where T.ExecutionId = @executionid;
                             success = false;
                         }
                     }
-                    else if (ot == "FusionAttributeType" && !(fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
+                    else if (ot == "FusionAttributeType")
                     {
-                        success = false;
-                        errorMessages.Add($"{fieldName} is not a valid field");
+                        if (fieldName != "FusionID" && fieldName != "Name" && fieldName != "SourceID")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else if (ot == "ReferenceItemType")
                     {
@@ -1095,12 +1098,19 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
+                            default:
+                                success = false;
+                                errorMessages.Add($"{fieldName} is not a valid field");
+                                break;
                         }
                     }
-                    else if (ot == "RuleType" && !(fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
+                    else if (ot == "RuleType")
                     {
-                        success = false;
-                        errorMessages.Add($"{fieldName} is not a valid field");
+                        if (fieldName != "Threshold" && fieldName != "Status" && fieldName != "Dimension")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else
                     {
