@@ -1556,11 +1556,11 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
 }
 
 .ig-colorfield-item-selected .ig-colorfield-item-label {
-	top: 0;
+	top: -4px;
 }
 
 .ig-colorfield-item-selected .ig-colorfield-swatch {
-	top: -1px;
+	top: -4px;
 }
 
 .d3s-color-picker .ui-dropdown {
@@ -1666,11 +1666,20 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
   background-color: #ffffff;
   margin: 0;
 }
+.d3s-color-picker .pi {
+    font-size: 1.25em;
+}
+.d3s-color-picker .ui-inputtext:enabled:focus:not(.ui-state-error) {
+    outline: 0 none;
+    outline-offset: 0;
+    box-shadow: 0 0 0 2px #8abddf;
+    border-color: #006fba;
+}
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter {
-  width: 100%;
-  padding-right: 32px;
-  border-radius: 4px;
+    width: 100%;
+    padding-right: 32px;
+    border-radius: 4px;
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon {
