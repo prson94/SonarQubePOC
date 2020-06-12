@@ -646,19 +646,6 @@ namespace d360.web.Controllers.V2
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
                 }
 
-                if (@class == AssetTypeClass.Diagram)
-                {
-                    var notAllowed = new List<string>() {
-                        "ComplexRelationLookup",
-                        "OwnershipLookup",
-                        "Relationship",
-                        "FieldFromRelationship",
-                        "RefListRelationship",
-                        "JSON",
-                        "JsonElement" };
-                    dataTypeOptions = dataTypeOptions.Where(x => !notAllowed.Contains(x.value)).ToList();
-                }
-
                 var jsonFieldType = new Dictionary<string, string>() {
                     { "Boolean", "bit" },
                     { "Date", "date" },

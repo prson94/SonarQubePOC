@@ -707,7 +707,8 @@ namespace d360.model.DataAccessLayer
                     A.UpdatedOn,
                     A.CreatedOn,
                     {(includeParent ? parentFieldSQL : "")}
-                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Color, A.Icon," : "")}
+                    {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+                    ACJ.ColorJson as Color,
                     {(includeSegments ? "Node.Segments," : "")}
                     KP.KeyPath as [Path]
                     {(assetType.Object == "FusionAttributeType" ? " , FA.SourceID, FA.Name, FA.TextPath" : "")} 
@@ -721,6 +722,7 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", fieldJoins)}
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+                cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
