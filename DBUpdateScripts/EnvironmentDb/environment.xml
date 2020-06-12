@@ -124,6 +124,7 @@
 	<include file="scripts/Table.dbo.OrganizationInvitation.xml"/>
 	<include file="scripts/Table.dbo.OrganizationRegistration.xml"/>
 	<include file="scripts/Table.dbo.OrganizationResource.xml"/>
+	<include file="scripts/Table.dbo.Color.xml"/>
 	<include file="scripts/Table.dbo.Contract.xml"/>
 	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
@@ -354,6 +355,7 @@
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactDisplayValue.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactKeyHashByIdWithParent.xml"/>
+	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetFieldHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
