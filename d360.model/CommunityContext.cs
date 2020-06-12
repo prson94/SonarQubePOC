@@ -162,6 +162,11 @@ namespace d360.model
             return Database.Connection.Query<T>(sql, param);
         }
 
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
+        {
+            return await (Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param));
+        }
+
         public override int SaveChanges()
         {
             int returnValue = 0;

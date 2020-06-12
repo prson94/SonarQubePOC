@@ -23,7 +23,7 @@ import { AdminLevelEditorComponent } from './admin-level-editor.component';
 
 import { AdminHierarchiesRoutingModule } from './admin-hierarchies.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';

@@ -30,7 +30,7 @@ import { SortOrder } from '../models/enums.model';
 import { MessagesObservableService } from './messages-observable.service';
 import { BaseObservableService } from "./baseObservable.service";
 import { FormHelper } from "../models/form.model";
-import { TreeNode } from 'primeng/components/common/api';
+import { TreeNode } from 'primeng/api';
 import { AssetTypeStyle } from '../models/asset-type-style.model';
 
 @Injectable()

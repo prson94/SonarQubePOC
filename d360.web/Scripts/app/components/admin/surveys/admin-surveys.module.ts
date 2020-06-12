@@ -17,7 +17,7 @@ import { AdminSurveyQuestionsComponent } from './admin-survey-questions.componen
 
 import { AdminSurveysRoutingModule } from './admin-surveys.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';

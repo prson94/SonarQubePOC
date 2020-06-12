@@ -2264,5 +2264,37 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
+
+        /// <summary>
+        /// Retrieves a list of all pre defined colors.
+        /// </summary>
+        /// <returns>Returns a list colors.</returns>
+        [
+            HttpGet,
+            Route("colors"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all pre defined colors.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetColors()
+        {
+            var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
+            var errorMessage = "";
+            try
+            {
+                var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Value }))));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
     }
 }

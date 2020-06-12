@@ -14,15 +14,15 @@
     environmentSettingsJson = "{" + environmentSettingsJson + "}";
 
     var settings = (Dictionary<string, string>)ViewData["Settings"];
-    var settingsJson = "";
-    foreach (var k in settings.Keys)
+    var removeKeys = new List<string>() { "PowerBIAccessKey", "PowerBIWorkspaceId", "AzureADTenant", "AzureGraphAPIKey", "AzureApplicationId" };
+
+    removeKeys.ForEach(k =>
     {
-        if (k != "PowerBIAccessKey" && k != "PowerBIWorkspaceId" && k != "AzureADTenant" && k != "AzureGraphAPIKey" && k != "AzureApplicationId")
-        {
-            settingsJson += (string.IsNullOrEmpty(settingsJson) ? "" : ", ") + string.Format("{0}: '{1}'", k, settings[k]);
-        }
-    }
-    settingsJson = "{" + settingsJson + "}";
+        if (settings.ContainsKey(k))
+            settings.Remove(k);
+    });
+
+    var settingsJson = Newtonsoft.Json.JsonConvert.SerializeObject(settings);
 
     var suffix = System.Configuration.ConfigurationManager.AppSettings["ResourceSuffix"];
     var customStylesheetURL = (settings["CustomCSSLocation"] ?? "");
@@ -82,12 +82,12 @@
         var ResourceEmail = '@(ViewData["ResourceEmail"].ToString())';
         var VersionNumber = '@(VersionNumber)';
 </script>
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v7.1.3/primeng.min.css", baseUrl)" />
+<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/primeng.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeicons/2.0.0/primeicons.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/font-awesome.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/styles/materialize.min.css", baseUrl)" />
 <link rel="stylesheet" href="/Content/styles/ang@(suffix).css?version=@(VersionNumber)" />
-<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v7.1.3/theme.min.css", baseUrl)" />
+<link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/primeng/v9.1.0/theme.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/quill/v1.3.7/quill.snow.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/codemirror.min.css", baseUrl)" />
 <link rel="stylesheet" type="text/css" href="@string.Format("{0}/content/codemirror/eclipse.min.css", baseUrl)" />

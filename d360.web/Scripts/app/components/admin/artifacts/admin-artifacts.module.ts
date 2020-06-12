@@ -23,7 +23,7 @@ import {AdminArtifactsRoutingModule} from './admin-artifacts.routes';
 
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';

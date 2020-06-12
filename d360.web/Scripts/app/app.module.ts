@@ -6,7 +6,7 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app.routes';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
-import { GrowlModule } from 'primeng/components/growl/growl';
+import { ToastModule } from 'primeng/toast';
 
 import { RightsidebarModule } from './components/shared/rightsidebar/right-sidebar.module';
 import { SiteMenuModule } from './components/shared/menu/site-menu.module';
@@ -80,7 +80,7 @@ export function localeInitializer(localeId: string) {
         BrowserAnimationsModule,
 
         // prime 
-        GrowlModule,
+        ToastModule,
         DialogModule,
 
         //d3s modules                                            

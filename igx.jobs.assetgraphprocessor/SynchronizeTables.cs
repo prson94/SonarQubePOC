@@ -11,6 +11,7 @@ using d360.extensions.caching;
 using d360.extensions.queue;
 using d360.model;
 using d360.core.enums;
+using System.Collections.Generic;
 
 namespace igx.jobs.assetgraphprocessor
 {
@@ -33,9 +34,14 @@ namespace igx.jobs.assetgraphprocessor
 
             var populatePaths = DateTime.UtcNow.DayOfWeek == DayOfWeek.Saturday;
 
+            CoreFunction.AITrackJobStart(functionName);
+
             companies.AsParallel().WithDegreeOfParallelism(3).ForAll(async company => {
                 try
                 {
+                    CoreFunction.AITrackEvent(functionName, "Graph Rebuild", new Dictionary<string, string>() { { "PopulatePaths", populatePaths.ToString() } }, company.CompanyID);
+                    CoreFunction.AIFlush();
+
                     #region Create EF connection
 
                     var sec = new UriSecurityContextProvider()
@@ -58,7 +64,7 @@ namespace igx.jobs.assetgraphprocessor
 
                         using (conn)
                         {
-                            const int timeout = 60 * 180; //3 hours
+                            const int timeout = 60 * 360; // 6 hours
 
                             try
                             {
@@ -84,12 +90,8 @@ namespace igx.jobs.assetgraphprocessor
                 }
             });
 
-
-#if DEBUG  
             CoreFunction.AITrackJobCompletedNoErrors(functionName);
             CoreFunction.AIFlush();
-#endif
-
         }
     }
 }

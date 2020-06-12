@@ -29,8 +29,8 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 import { D3SSharedModule } from '../shared/shared.module';
 import { SimpleAccordionModule } from '../shared/simple-accordion.part';
 
-import { SharedModule } from 'primeng/shared';
-import { GrowlModule } from 'primeng/growl';
+import { SharedModule } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
@@ -50,7 +50,7 @@ import { TooltipModule } from 'primeng/tooltip';
         PipesModule,
 
         //primeng
-        GrowlModule,
+        ToastModule,
         SharedModule,
         MultiSelectModule,
         DropdownModule,

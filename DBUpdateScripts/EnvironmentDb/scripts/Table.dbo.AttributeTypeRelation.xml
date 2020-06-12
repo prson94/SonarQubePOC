@@ -5,23 +5,24 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Table.dbo.AttributeTypeRelation-v2">
+  <changeSet author="Puneet Gupta" id="Table.dbo.AttributeTypeRelation-v3">
+    <comment>GOV-10546</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation')
-BEGIN
-	EXEC sp_rename 'AttributeTypeRelation', 'AttributeTypeRelation_Retired';
-END
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation_Retired')
+			BEGIN
+				DROP TABLE dbo.AttributeTypeRelation_Retired;
+			END
 		]]>
     </sql>
 	<rollback>
 		<![CDATA[	
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation')
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AttributeTypeRelation_Retired')
 BEGIN
-	CREATE TABLE [dbo].[AttributeTypeRelation](
+	CREATE TABLE [dbo].[AttributeTypeRelation_Retired](
 		[AttributeTypeID] [int] NOT NULL,
 		[ObjectType] [varchar](50) NOT NULL,
 		[ObjectID] [int] NOT NULL,
@@ -29,14 +30,7 @@ BEGIN
 		CONSTRAINT [PK_AttributeTypeRelation] PRIMARY KEY CLUSTERED ( [AttributeTypeID] ASC, [ObjectType] ASC, [ObjectID] ASC )
 	)
 END
-
-IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_AttributeTypeRelation_AttributeType')
-BEGIN
-	ALTER TABLE [dbo].[AttributeTypeRelation] WITH CHECK ADD CONSTRAINT [FK_AttributeTypeRelation_AttributeType] FOREIGN KEY([AttributeTypeID]) REFERENCES [dbo].[AttributeType] ([ID]) ON DELETE CASCADE
-	ALTER TABLE [dbo].[AttributeTypeRelation] CHECK CONSTRAINT [FK_AttributeTypeRelation_AttributeType]
-END
 		]]>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

@@ -1,6 +1,6 @@
 ﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
 
-import { TreeNode } from 'primeng/components/common/api';
+import { TreeNode } from 'primeng/api';
 import * as _ from 'lodash';
 
 @Pipe({ name: 'treeSearch' })
