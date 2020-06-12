@@ -858,6 +858,8 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
