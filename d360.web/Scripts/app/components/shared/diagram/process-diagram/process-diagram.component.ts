@@ -23,6 +23,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private gateways: AssetTypeApiModel[] = [];
     private isLoaded = false;
     private isSaveDisabled: boolean = false;
+    private isCanvasEmpty: boolean = true;
 
 
     private fontColor: string = '#202020';
@@ -49,7 +50,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
-                console.log(res);
                 this.isLoaded = true;
                 this.loadDiagram();
                 this.applyEditMode(this.isEditMode);
@@ -70,6 +70,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 n.movable = state;
             }
         });
+        this.myDiagram.isModelReadOnly = !state;
+
     }
 
     switchModes() {
@@ -86,7 +88,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         this.myDiagram =
-            $(go.Diagram, "process-diagram-placeholder",  // must name or refer to the DIV HTML element
+            $(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
                 {
                     "draggingTool.dragsLink": true,
                     "draggingTool.isGridSnapEnabled": true,
@@ -201,9 +203,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             fill: 'transparent',
                             stroke: "black",
                             strokeWidth: 2,
-                            visible: false,
-                            width: 78,
-                            height: 78,
+                            visible: false
                         },
                         new go.Binding('visible', 'isSelected').ofObject()),
                     $(go.Shape, "Circle",
@@ -397,6 +397,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
             this.myDiagram.model.addNodeData(data);
             this.myDiagram.commitTransaction("make new node");
+            this.isCanvasEmpty = false;
             this.myDiagram.redraw();
         }, 100);
 
@@ -490,6 +491,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load() {
         console.log("load");
         this.loadFromLocalStorage();
+        this.isCanvasEmpty = false;
     }
 
     private saveToLocalStorage() {

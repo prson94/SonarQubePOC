@@ -1,16 +1,29 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
-    <div>
-        <button type="button" pButton (click)="getData()">Get Data</button>
-        <button type="button" pButton (click)="save()" [disabled]="isSaveDisabled">Save data</button>
-        <button type="button" pButton (click)="clear()">Clear data</button>
-        <button type="button" pButton (click)="load()">Load data</button>
-        <button type="button" pButton (click)="disableDrag()">Disable drag</button>
-        <button type="button" pButton (click)="switchModes()">Switch modes</button>
 
+    <div>
+        <div class="asset-browser-button-group">
+            <button type="button" (click)="switchModes()">
+                <i class="fa fa-chevron-circle-left"></i> Exit Designer
+            </button>
+            <div class="button-spacer"></div>
+            <button *ngIf="isEditMode" type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled">
+                <i class="fa fa-save"></i>
+            </button>
+            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="clear()">
+                <i class="fa fa-refresh"></i>
+            </button>
+            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="load()">
+                <i class="fa fa-upload"></i>
+            </button>
+            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="disableDrag()">
+                <i class="fa fa-times-rectangle"></i>
+            </button>
+        </div>
     </div>
+
     <br />
-    <div style="width: 100%; display: flex; justify-content: space-between">
-        <div id="myPaletteDiv" *ngIf="isLoaded">
+    <div class="diagram-content">
+        <div id="myPaletteDiv" *ngIf="isLoaded && isEditMode">
             <p-accordion [multiple]="true">
                 <p-accordionTab header="Events" [selected]="true">
                     <div class="row">
@@ -50,6 +63,16 @@
                 </p-accordionTab>
             </p-accordion>
         </div>
-        <div id="process-diagram-placeholder"></div>
+        <div id="process-diagram-placeholder">
+            <div class="empty-overlay">
+                <div class="content" *ngIf="isCanvasEmpty && isEditMode">
+                    <div class="icon-holder">
+                        <i class="fa fa-plus"></i>
+                    </div>
+                    <span>Drag and drop flow objects to start building your diagram</span>
+                </div>
+            </div>
+            <div id="diagram"></div>
+        </div>
     </div>
 </div>

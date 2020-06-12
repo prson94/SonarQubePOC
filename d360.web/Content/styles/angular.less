@@ -6737,6 +6737,13 @@ table {
 }
 
 d3s-process-diagram {
+    .diagram-content {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        height: 88%;
+    }
+
     #process-diagram {
 
         &.fullscreen {
@@ -6758,10 +6765,33 @@ d3s-process-diagram {
         background-color: white;
         border-radius: 4px;
         box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+        position: relative;
+
+        .empty-overlay {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+
+            .content {
+                text-align: center;
+                top: 50%;
+                position: relative;
+            }
+        }
+
+        #diagram {
+            width: 100%;
+            height: 100%;
+
+            canvas {
+                outline: none;
+            }
+        }
     }
 
     #myPaletteDiv {
-        width: 248px;
+        overflow-y: scroll;
+        width: 258px;
         margin-right: 15px;
         border-radius: 4px;
         box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
