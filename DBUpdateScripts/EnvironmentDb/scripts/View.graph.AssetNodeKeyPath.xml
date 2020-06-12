@@ -5,12 +5,9 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="View.graph.AssetNodeKeyPath-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
+	<changeSet author="Pappas" id="View.graph.AssetNodeKeyPath-v2.1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<![CDATA[
 create or alter view graph.AssetNodeKeyPath WITH SCHEMABINDING
 as
 	select	ID,
@@ -44,13 +41,13 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_GraphAssetNodeKeyPath_
 BEGIN
 	create nonclustered index IX_GraphAssetNodeKeyPath_AssetType on graph.AssetNodeKeyPath (AssetTypeID asc)
 END
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+			]]>
+		</sql>
+		<rollback>
+			<![CDATA[	
 drop view if exists graph.AssetNodeKeyPath
-		]]>
-	</rollback>
-  </changeSet>
+			]]>
+		</rollback>
+	</changeSet>
 
 </databaseChangeLog>
