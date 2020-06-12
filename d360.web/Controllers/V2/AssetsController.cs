@@ -535,7 +535,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
                     {
-                        Company.Add(new FieldType
+                        var nameFieldType = new FieldType
                         {
                             ObjectID = model.ObjectID,
                             Object = model.Object,
@@ -551,7 +551,15 @@ namespace d360.web.Controllers.V2
                             IsDisplayable = true,
                             IsPartOfKey = isNamePartOfKey,
                             UpdatedBy = Company.CurrentResourceID
-                        });
+                        };
+
+                        if (model.Class == AssetTypeClass.Diagram)
+                        {
+                            nameFieldType.ColumnOrder = 2;
+                            nameFieldType.ShowIfEmpty = true;
+                        }
+
+                        Company.Add(nameFieldType);
                     }
 
                     if (model.Class == AssetTypeClass.Diagram)
@@ -567,14 +575,14 @@ namespace d360.web.Controllers.V2
                             IsEditable = true,
                             FriendlyName = "Governance Role",
                             Name = "GovernanceRole",
-                            SortOrder = 2,
+                            ColumnOrder = 3,
                             Type = DataType.Lookup.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
                             LookupObjectID = refList.ObjectID,
-                            LookupObjectType = refList.Object,
-                            UpdatedBy = Company.CurrentResourceID
-
+                            LookupObjectType = SystemObjects.ReferenceItem.ToString(),
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true
                         });
 
                         Company.Add(new FieldType
@@ -586,12 +594,13 @@ namespace d360.web.Controllers.V2
                             IsEditable = true,
                             FriendlyName = "Step No",
                             Name = "StepNo",
-                            SortOrder = 3,
-                            Type = DataType.Number.ToString(),
+                            ColumnOrder = 1,
+                            Type = DataType.Decimal.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
-                            UpdatedBy = Company.CurrentResourceID
-                        });
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true
+                        }); 
                     }
                 }
 

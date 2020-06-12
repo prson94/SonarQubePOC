@@ -3,10 +3,10 @@
         <div class="tile tile-detail" style="max-width:700px;">
             <header>Governance Role Settings</header>
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
-            <form #form="ngForm" *ngIf="!isLoading">
+            <form #form="ngForm" *ngIf="!isLoading" class="gov-form-v2">
                 <div class="row">
                     <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">Property Display Name</div>
+                        <div class="FieldNameRequired no-margin">Property Display Name</div>
                         <input maxlength="250" pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.Name" required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Property Display Name is required field.</div>
                     </div>
