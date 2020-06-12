@@ -1,4 +1,4 @@
-﻿import { TreeNode } from 'primeng/components/common/api';
+﻿import { TreeNode } from 'primeng/api';
 import { SearchResult } from './search-result.model';
 
 export class Breadcrumb {

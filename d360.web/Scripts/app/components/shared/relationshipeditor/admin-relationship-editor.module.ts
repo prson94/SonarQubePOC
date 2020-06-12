@@ -15,7 +15,7 @@ import { AdminRelationshipsEditor } from './admin-relationships-editor.component
 import { AdminRelationshipsListComponent } from './admin-relationships-list.component';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';

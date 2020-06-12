@@ -13,7 +13,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
 import { ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { EditorModule } from 'primeng/editor';
 import { ListboxModule } from 'primeng/listbox';

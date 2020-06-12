@@ -28,12 +28,12 @@ import { RuleColumnFilterComponent } from './rule-column-filter.component';
 import { TabViewModule } from 'primeng/tabview';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputMaskModule } from 'primeng/inputmask';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TreeTableModule } from 'primeng/treetable';
 import { TooltipModule } from 'primeng/tooltip';
@@ -53,7 +53,7 @@ import { AssetGridModule } from '../assets-grid/asset-grid.module';
         RuleRoutingModule,
 
         //primeng
-        GrowlModule,
+        ToastModule,
         InputTextModule,
         InputMaskModule,
         TreeTableModule,

@@ -5,7 +5,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { GovernRequestInterceptor } from '../../../http-interceptors/govern-request.interceptor';
 import { RouterModule } from '@angular/router';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 
 import { CoreModule } from '../../shared/core.module';
 import { SharedDiagramModule } from '../../shared/diagram/shared-diagram.module';

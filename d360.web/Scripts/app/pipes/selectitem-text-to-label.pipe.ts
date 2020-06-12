@@ -1,5 +1,5 @@
 ﻿import { Pipe, PipeTransform, Injectable } from '@angular/core';
-import { SelectItem } from 'primeng/components/common/api';
+import { SelectItem } from 'primeng/api';
 
 @Pipe({ name: 'selectItemTextToLabel' })
 export class SelectItemTextToLabelPipe implements PipeTransform {

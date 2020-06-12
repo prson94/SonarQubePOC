@@ -11,7 +11,7 @@ import { D3SSharedModule } from '../../shared/shared.module';
 
 import { AdminResourcesComponent } from './admin-resources.component';
 import { AdminResourcesRoutingModule } from './admin-resources.routes';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 
 
 @NgModule({

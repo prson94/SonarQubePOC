@@ -153,7 +153,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { TreeModule } from 'primeng/tree';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { DialogModule } from 'primeng/dialog';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 
 import { PipesModule } from '../../../pipes/pipes.module';
 

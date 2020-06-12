@@ -21,7 +21,7 @@ import { BoardTile} from './board-tile.component';
 import { HomeRoutingModule } from './home.routes';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { D3SColorPickerModule } from '../shared/small-widgets/color-picker/color-picker.module';
