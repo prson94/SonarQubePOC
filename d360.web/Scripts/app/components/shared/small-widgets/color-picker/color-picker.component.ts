@@ -8,7 +8,7 @@ import { AssetService } from '../../../../services/asset.service';
 @Component({
     selector: 'd3s-color-picker',
     template: `
-                <div class="d3s-color-picker" style="width:240px">
+                <div class="d3s-color-picker">
                     <p-dropdown [options]="colors" placeholder="Optional" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected"><span class="ig-colorfield-swatch" [style.background-color]=item.value></span>

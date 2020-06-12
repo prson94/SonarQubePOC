@@ -1528,15 +1528,18 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
    d3s-color-picker
 */
 
+.d3s-color-picker{
+    max-width: 300px;
+}
 
 .ig-colorfield-swatch {
-	display: inline-block;
-	position: relative;
-	width: 12px;
-	height: 12px;
-	border-radius: 50%;
-	margin-right: 8px;
-	border: 1px solid rgba(0, 0, 0, 0.1);
+    display: inline-block;
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .ig-colorfield-item, .ig-colorfield-item-selected {
