@@ -1098,6 +1098,8 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
+                            case "referenceitemtypeid":
+                                break;
                             default:
                                 success = false;
                                 errorMessages.Add($"{fieldName} is not a valid field");
