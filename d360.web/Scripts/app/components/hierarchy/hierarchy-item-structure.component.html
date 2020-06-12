@@ -9,7 +9,7 @@
             </header>
             <div *ngIf="!showDelete && !showEditor && assetType && assetType.Description && assetType.Description.length >0"
                  [innerHtml]="assetType.Description"
-                 class="item-description"></div>            
+                 class="item-description"></div>
             <p-treeTable #treeTable
                          *ngIf="!showDelete && !showEditor"
                          [value]="treeNodeArray"
@@ -93,7 +93,7 @@
                                 [objectType]="object"
                                 [objectTypeUid]="assetType?.AssetTypeUID"
                                 [parentID]="selectedParentId"
-                                [title]="assetTypeTitle"
+                                [title]="selected?.data?.DisplayValue ? selected?.data?.DisplayValue : assetTypeTitle"
                                 [selection]="selected?.data"
                                 (saveClick)="save()"
                                 (closeClick)="closeEditor();"
