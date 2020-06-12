@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -14,7 +14,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit {
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked {
     @Input() isEditMode: boolean = false;
 
     private assetTypeNodes: AssetTypeApiModel[] = [];
@@ -41,6 +41,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     myDiagram: go.Diagram;
+
+    ngAfterViewChecked() {
+        if (this.myDiagram && this.myDiagram.model) {
+            console.log(this.myDiagram.model);
+            if (this.myDiagram.model.nodeDataArray.length > 0) {
+                this.isCanvasEmpty = false
+                this.cdRef.detectChanges();
+            }
+            else {
+                this.isCanvasEmpty = true;
+                this.cdRef.detectChanges();
+            }
+        }
+    }
 
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
@@ -128,7 +142,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     margin: new go.Margin(1, 1, 1, 1),
                     cursor: "pointer",
                 }),
-
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
                     { stretch: go.GraphObject.Horizontal },  // as wide as the whole node
@@ -302,7 +315,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
             this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, false)
+            this.makePort("B", go.Spot.Bottom, true, false),
+
         );
 
         function showSmallPorts(node, show) {
@@ -397,7 +411,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
             this.myDiagram.model.addNodeData(data);
             this.myDiagram.commitTransaction("make new node");
-            this.isCanvasEmpty = false;
             this.myDiagram.redraw();
         }, 100);
 
@@ -412,8 +425,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (iteration != 1) {
             tempName = name + ` (${iteration})`
         }
-        if (this.isUnique(tempName))
+        if (this.isUnique(tempName)) {
             return tempName;
+        }
+
         return this.returnUniqueName(name, iteration + 1);
     }
 
@@ -491,7 +506,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load() {
         console.log("load");
         this.loadFromLocalStorage();
-        this.isCanvasEmpty = false;
     }
 
     private saveToLocalStorage() {
