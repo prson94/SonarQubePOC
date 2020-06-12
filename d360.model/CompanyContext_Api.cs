@@ -3507,19 +3507,17 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    T.FieldValue as Threshold,
-                    CR.LookupValue as Color
+                    T.FieldValue as Threshold
             from    api.ExecutionAsset A
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
-                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
-    values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
     output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3544,12 +3542,10 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
             T.UpdatedBy = @R,
-		    T.UpdatedOn = @D,
-            T.Color = case when CR.ExecutionID si not null then CR.LookupValue else T.Color end
+		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
             left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
-            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
