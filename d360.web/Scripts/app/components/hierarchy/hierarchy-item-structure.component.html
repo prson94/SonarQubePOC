@@ -17,7 +17,7 @@
                          [(selection)]="selected"
                          styleClass="breadcrumbTree"
                          [style]="{'line-height':'25px'}"
-                         [globalFilterFields]="['DisplayValue']"
+                         [globalFilterFields]="filterColumns"
                          (onFilter)="expandNodes()">
                 <ng-template pTemplate="caption">
                     <div>
