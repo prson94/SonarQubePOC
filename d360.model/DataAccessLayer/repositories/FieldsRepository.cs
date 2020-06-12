@@ -1401,6 +1401,7 @@ from	IntersectType I
                     currentFieldType.ColumnOrder = newFieldType.ColumnOrder;
                     currentFieldType.ColumnWidth = newFieldType.ColumnWidth;
                     currentFieldType.DefaultValue = newFieldType.DefaultValue;
+                    currentFieldType.DefaultFormattedValue = newFieldType.DefaultFormattedValue;
                     currentFieldType.DisplayDescription = newFieldType.DisplayDescription;
                     if (currentFieldType.FieldTypeLookup != null)
                     {
