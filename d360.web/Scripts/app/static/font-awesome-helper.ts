@@ -3,8 +3,10 @@
 export class FontAwesomeHelper {
 
     static GetHtmlCode(code: string): string {
+        if (!code)
+            return '';
         var icon = this.icons.filter(x => x.class == code)[0];
-        return icon.html.replace(";","");
+        return icon.html.replace(";", "");
     }
 
     static icons = [{
