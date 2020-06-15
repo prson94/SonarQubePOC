@@ -1289,6 +1289,14 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             if ((this.name == 'StepNo' || this.name == 'GovernanceRole') && (val != 'IsEditable' && val != 'IsRequired')) {
                 return true;
             }
+            var staticFields: string[] = [];
+            staticFields.push('Name');
+            staticFields.push('GovernanceRole');
+            staticFields.push('Governance');
+
+            if (!staticFields.some(x => x == this.name)) {
+                if (val == 'IsListable' || val == 'IsPartOfKey' || val == 'IsPrimaryFilter') return true;
+            }
         }
 
         switch (val) {
