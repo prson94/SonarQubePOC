@@ -49,7 +49,6 @@ export class RuleResultsGridComponent extends BaseComponent {
     }    
 
     public filterGridData(filterData) {
-        debugger;
         this.currentPageNumber = 0;
         this.getData();        
     }
@@ -95,7 +94,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
-        debugger;
+
         this.getData();
     }
 
