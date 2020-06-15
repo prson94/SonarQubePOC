@@ -712,7 +712,7 @@ order by r.Name";
             {
                 var lineageVersion = Community.GetCompanySettingByKey<int>("LineageVersion");
                 var models = Company.GetPredicateOptions(lineageVersion, subject, subjectID, @object, objectID, predicateID)
-                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType })
+                    .Select(i => new { label = $"{i.Name} / {i.Inverse} ({i.Type.AsInfoModel().Name})", value = i.ID, isSemantic = i.Type.AsInfoModel().SingleRelationshipByFunctionalType, type = i.Type.ToString() })
                     .OrderBy(i => i.label);
 
                 return new JsonNetResult { Data = models, Formatting = Newtonsoft.Json.Formatting.None };

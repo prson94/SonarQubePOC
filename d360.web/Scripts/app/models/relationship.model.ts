@@ -72,6 +72,7 @@ export class PredicateDropdown {
     label: string;
     value: string;
     isSemantic: boolean;
+    type: string;
 }
 
 export class RelationshipV2 {
