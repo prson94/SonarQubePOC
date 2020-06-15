@@ -904,15 +904,21 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (string.IsNullOrEmpty(favorite.Name.Trim()))
+                if (string.IsNullOrWhiteSpace(favorite.Name))
                 {
                     string message = "Name is required.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
+                } else
+                {
+                    favorite.Name = favorite.Name.Trim();
                 }
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrEmpty(favorite.Route.Trim()))
+                if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
+                } else
+                {
+                    favorite.Route = favorite.Route.Trim();
                 }
                 bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
                 if (result)
