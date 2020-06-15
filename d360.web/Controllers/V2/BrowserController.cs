@@ -739,5 +739,99 @@ order by Name";
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Returns a list of available diagram types for the current user and asset, as well as the default view
+        /// </summary>
+        /// <param name="uid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("types/{uid:Guid}/me"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetDiagramTypes(Guid uid)
+        {
+            if (uid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified"));
+
+            var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
+
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset for this uid could not be found"));
+
+            var assetType = (await Company.QueryAsync<AssetType>("select * from AssetType where id = @assetTypeID", new { asset.AssetTypeID })).FirstOrDefault();
+
+            if (assetType == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset type for this asset could not be found"));
+
+
+            var items = new List<dynamic>();
+            int? initialView = null;
+
+            var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
+            var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar");
+
+            if (includeLineage && assetType.Class != AssetTypeClass.ReferenceItemType)
+            {
+                items.Add(new 
+                {
+                    label = "Lineage Diagram",
+                    value = ((int)AssetBrowserDiagramType.Lineage)
+                }); ;
+
+                if (assetType.Class == AssetTypeClass.TechnicalAsset)
+                {
+                    initialView = (int)AssetBrowserDiagramType.Lineage;
+                }
+            }
+
+
+            if (PredicateType.Diagram.AsInfoModel().SubjectAssetClassesSupported.Contains(assetType.Class))
+            {
+                var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select 1 from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+
+                if (anyDiagramRelationTypes)
+                {
+                    var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
+
+                    if (canEdit)
+                    {
+                        items.Add(new 
+                        {
+                            label = "Process Diagram",
+                            value = ((int)AssetBrowserDiagramType.Process)
+                        });
+
+                        if (assetType.Class == AssetTypeClass.BusinessAsset)
+                        {
+                            initialView = (int)AssetBrowserDiagramType.Process;
+                        }
+                    }
+                }
+            }
+
+            if (includeImpact)
+            {
+                items.Add(new 
+                {
+                    label = "Impact Diagram",
+                    value = ((int)AssetBrowserDiagramType.Impact)
+            });
+
+                if (assetType.Class == AssetTypeClass.BusinessAsset && !initialView.HasValue)
+                {
+                    initialView = (int)AssetBrowserDiagramType.Impact;
+                }
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { initial = initialView, items }));
+        }
     }
 }
