@@ -1292,7 +1292,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             var staticFields: string[] = [];
             staticFields.push('Name');
             staticFields.push('GovernanceRole');
-            staticFields.push('Governance');
+            staticFields.push('StepNo');
 
             if (!staticFields.some(x => x == this.name)) {
                 if (val == 'IsListable' || val == 'IsPartOfKey' || val == 'IsPrimaryFilter') return true;
