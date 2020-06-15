@@ -43,7 +43,7 @@ namespace igx.jobs.fusiondeploymentprocessor
             try
             {
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                community.Open();
 
                 var clientFusionTypes = community.Query<ClientFusionType>("select * from plugin.ClientFusionType");
                 var fusionTypes = community.Query<FusionType>("select * from plugin.FusionType");

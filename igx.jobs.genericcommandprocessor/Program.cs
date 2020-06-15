@@ -42,7 +42,7 @@ namespace igx.jobs.genericcommandprocessor
 #endif
 
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                community.Open();
                 var genericCommands = community.Query<GenericCommand>("select * from GenericCommand").ToList();
                 community.Close();
                 community.Dispose();

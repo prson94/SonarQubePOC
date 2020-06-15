@@ -131,7 +131,7 @@ namespace d360.web
                 {
                     try
                     {
-                        comm.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        comm.Open();
                         var res = comm.Query<string>(@"select 'server=' + s.Server + ';Database=D3S_' + cast(@companyId as varchar) + ';User ID=' + s.Username + ';Password='+ s.Password + ';MultipleActiveResultSets=True;' from Company c
                                 inner join DatabaseServer s on s.ID = c.DatabaseServerID 
                                 where c.ID = @companyId", new { companyId }).FirstOrDefault();

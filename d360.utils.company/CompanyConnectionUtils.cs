@@ -26,21 +26,18 @@ namespace d360.utils.company
 
         public static SqlConnection GetCompanyConnection(int companyID)
         {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
-            var db = cnn.Query<DatabaseServer>(
-                @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
-                new { id = companyID }
-            ).SingleOrDefault();
-            cnn.Close();
-            cnn.Dispose();
-
-            if (db != null)
+            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
             {
-                cnn = new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
-                db = null;
+                cnn.Open();
+                var db = cnn.Query<DatabaseServer>(
+                    @"select D.* from Company C inner join DatabaseServer D on D.ID = C.DatabaseServerID where C.ID = @id",
+                    new { id = companyID }
+                ).SingleOrDefault();
+
+                if (db == null) throw new Exception("Invalid company id or database server id.  Cannot load server information.");
+
+                return new SqlConnection(GetConnectionString(companyID, db.Server, db.Username, db.Password));
             }
-            return cnn;
         }
 
         public static string GetEventTopicName(int companyID)
@@ -51,7 +48,7 @@ namespace d360.utils.company
         public static List<CompanyWithDatabaseServerSettings> GetCompaniesWithDatabaseServerSettings()
         {
             var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+            cnn.Open();
             var companies = cnn.Query<CompanyWithDatabaseServerSettings>(@"
 select  c.ID as CompanyID, 
         c.ClientID,
@@ -79,17 +76,18 @@ from    company c
 
         public static List<CompanySetting> GetCompanySettings(int companyID)
         {
-            var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+            using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
+            {
+                cnn.Open();
 
-            var settings = cnn.Query<CompanySetting>(@"
-            select 
-                @companyID as CompanyID, 
-                S.ID as SettingID, 
-                coalesce(CS.Value, S.DefaultValue) as Value
-            from Setting S 
-            left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
-            return settings;
+                return cnn.Query<CompanySetting>(@"
+                    select 
+                        @companyID as CompanyID, 
+                        S.ID as SettingID, 
+                        coalesce(CS.Value, S.DefaultValue) as Value
+                    from Setting S 
+                    left join CompanySetting CS on CS.CompanyID = @companyID and CS.SettingID = S.ID", new { companyID }).ToList();
+            }
         }
 
 
@@ -104,7 +102,7 @@ from    company c
 
             using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
             {
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
                 
                 companies = cnn.Query<int>(@"
 declare @ids table (CompanyID int)
