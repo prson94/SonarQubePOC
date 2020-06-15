@@ -27,7 +27,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isSaveDisabled: boolean = false;
     private isCanvasEmpty: boolean = true;
 
-
+    private defaultStrokeColor: string = '#708EA6';
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -98,11 +98,19 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     "rotatingTool.handleDistance": 30,
                     "rotatingTool.snapAngleMultiple": 15,
                     "rotatingTool.snapAngleEpsilon": 15,
-                    "undoManager.isEnabled": true
+                    "undoManager.isEnabled": true,
+                    "textEditingTool.doActivate": function () {
+                        go.TextEditingTool.prototype.doActivate.call(this);
+                        if (this.textBlock) this.textBlock.opacity = 0.0;
+                    },
+                    "textEditingTool.doDeactivate": function () {
+                        if (this.textBlock) this.textBlock.opacity = 1.0;
+                        go.TextEditingTool.prototype.doDeactivate.call(this);
+                    }
                 });
 
 
-        this.myDiagram.grid.gridCellSize = new go.Size(20, 20);
+        this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
         this.myDiagram.toolManager.draggingTool.gridSnapCellSpot = go.Spot.Center;
 
@@ -155,8 +163,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 icon: icon,
                 category: nodeCategory,
                 loc: point,
+                refItemColor: this.defaultStrokeColor,
                 //asset data
                 name: this.getNewNodeName($event),
+                assetTypeName: $event.Name,
                 assetTypeUid: $event.uid,
             };
 

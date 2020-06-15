@@ -3,8 +3,81 @@
 export class ProcessDiagramTemplates {
     private static fontColor: string = '#202020';
 
+    static get activity_BodyPanel() {
+        var $ = go.GraphObject.make;
+
+        return $(go.Panel, 'Auto',
+            {
+                stretch: go.GraphObject.Horizontal
+            },
+            $(go.Shape,
+                {
+                    fill: "white",
+                    minSize: new go.Size(200, 30),
+                },
+                new go.Binding('stroke', 'refItemColor').makeTwoWay()
+            ),
+            $(go.TextBlock,
+                {
+                    background: 'white',
+                    alignment: go.Spot.LeftCenter,
+                    stroke: this.fontColor,
+                    textAlign: "center",
+                    font: "bold 12pt 'Source Sans Pro',sans-serif",
+                    editable: true,
+                    margin: new go.Margin(0, 0, 0, 10),
+                    maxLines: 1,
+                    isMultiline: false
+                },
+                new go.Binding("text", "name").makeTwoWay()
+            )
+        );
+    }
+
+    static get activity_HeaderPanel() {
+        var $ = go.GraphObject.make;
+        return $(go.Panel, 'Auto',
+            {
+                stretch: go.GraphObject.Horizontal
+            },
+            $(go.Shape,
+                {
+                    strokeWidth: 2,
+                    minSize: new go.Size(200, NaN),
+                    maxSize: new go.Size(NaN, 60)
+                },
+                new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                new go.Binding('fill', 'refItemColor').makeTwoWay()
+
+            ),
+            $(go.TextBlock,
+                {
+                    alignment: go.Spot.LeftCenter,
+                    stroke: "white",
+                    textAlign: "center",
+                    font: '18px FontAwesome',
+                    margin: new go.Margin(6, 0, 0, 12),
+                    minSize: new go.Size(NaN, 24)
+                }
+                , new go.Binding("text", "icon").makeTwoWay()
+            ),
+            $(go.TextBlock,
+                {
+                    alignment: go.Spot.LeftCenter,
+                    stroke: "white",
+                    textAlign: "center",
+                    font: `18px 'Source Sans Pro',sans-serif`,
+                    margin: new go.Margin(6, 0, 0, 40),
+                    minSize: new go.Size(NaN, 24)
+                }
+                , new go.Binding("text", "assetTypeName").makeTwoWay()
+            )
+        );
+    }
+
     static get activityTemplate() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
+
 
         return $(go.Node, "Auto",
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
@@ -15,61 +88,24 @@ export class ProcessDiagramTemplates {
             },
             $(go.Shape, "RoundedRectangle",
                 {
-                    fill: "#708EA6",
-                    stroke: "#708EA6",
                     portId: "",
                     strokeWidth: 2,
                     fromLinkable: true,
                     toLinkable: true,
                     margin: new go.Margin(1, 1, 1, 1),
                     cursor: "pointer",
-                }),
-            $(go.Panel, "Vertical",
-                $(go.Panel, "Auto",
-                    { stretch: go.GraphObject.Horizontal },  // as wide as the whole node
-                    $(go.Shape,
-                        {
-                            fill: "#708EA6",
-                            stroke: "#708EA6",
-                            strokeWidth: 2,
-
-                            minSize: new go.Size(200, NaN)
-                        }),
-                    $(go.TextBlock,
-                        {
-                            alignment: go.Spot.LeftCenter,
-                            stroke: "white",
-                            textAlign: "center",
-                            font: '18px FontAwesome',
-                            margin: new go.Margin(6, 0, 0, 12),
-                            minSize: new go.Size(NaN, 24)
-                        }
-                        , new go.Binding("text", "icon").makeTwoWay()
-                    )),
-                $(go.TextBlock,
-                    {
-                        alignment: go.Spot.LeftCenter,
-                        background: "white",
-                        stroke: this.fontColor,
-                        textAlign: "center",
-                        font: "bold 12pt sans-serif",
-                        editable: true,
-                        minSize: new go.Size(NaN, 30),
-                        margin: new go.Margin(12, 0, 0, 5)
-
-                    },
-                    new go.Binding("text", "name").makeTwoWay()
-                )
+                },
+                new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                new go.Binding('fill', 'refItemColor').makeTwoWay()
+            ),
+            $(go.Panel, 'Vertical',
+                $(go.Panel, this.activity_HeaderPanel),
+                $(go.Panel, this.activity_BodyPanel)
             ),
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
             this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, false),
-            //{ // handle mouse enter/leave events to show/hide the ports
-            //    mouseEnter: function (e, node) { showSmallPorts(node, true); },
-            //    mouseLeave: function (e, node) { showSmallPorts(node, false); }
-            //}
-        );
+            this.makePort("B", go.Spot.Bottom, true, false));
     }
 
     static get eventTemplate() {
@@ -90,13 +126,7 @@ export class ProcessDiagramTemplates {
             //},
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             $(go.Panel, "Vertical",
-                {
-                    name: "PANEL"
-                },
                 $(go.Panel, "Auto",
-                    {
-                        name: "PANEL"
-                    },
                     $(go.Shape, "Circle",
                         {
                             fill: 'transparent',
@@ -105,28 +135,31 @@ export class ProcessDiagramTemplates {
                             visible: false
                         },
                         new go.Binding('visible', 'isSelected').ofObject()),
-                    $(go.Shape, "Circle",
-                        {
-                            portId: "",
-                            fromLinkable: true,
-                            toLinkable: true,
-                            cursor: "pointer",
-                            stroke: "#708EA6",
-                            fill: 'white',
-                            strokeWidth: 2,
-                            width: 70,
-                            height: 70,
-                        }),
-                    $(go.TextBlock,
-                        {
-                            alignment: go.Spot.Center,
-                            stroke: '#708EA6',
-                            textAlign: "center",
-                            font: '48px FontAwesome',
-                            margin: new go.Margin(5, 0, 0, 0)
-                        },
-                        new go.Binding("text", "icon").makeTwoWay())
-                ),
+                    $(go.Panel, 'Auto',
+                        $(go.Shape, "Circle",
+                            {
+                                portId: "",
+                                fromLinkable: true,
+                                toLinkable: true,
+                                cursor: "pointer",
+                                fill: 'transparent',
+                                strokeWidth: 2,
+                                width: 70,
+                                height: 70,
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.Center,
+                                stroke: '#708EA6',
+                                textAlign: "center",
+                                font: '48px FontAwesome',
+                                margin: new go.Margin(5, 0, 0, 0)
+                            },
+                            new go.Binding("text", "icon").makeTwoWay())
+                    ))
+                ,
                 $(go.TextBlock,
                     {
                         font: "bold 11pt Helvetica, Arial, sans-serif",
