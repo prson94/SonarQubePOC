@@ -29,7 +29,9 @@
                     <div class="row">
                         <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-event" *ngFor="let item of events">
                             <div class="icon-holder">
-                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                                <div class="rounder">
+                                    <i class="fa {{item.IconStyle.Icon}}"></i>
+                                </div>
                             </div>
                             <div class="item-name">
                                 {{item.Name}}
@@ -41,7 +43,9 @@
                     <div class="row">
                         <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-activity" *ngFor="let item of activities">
                             <div class="icon-holder">
-                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                                <div class="rectangler">
+                                    <i class="fa {{item.IconStyle.Icon}}"></i>
+                                </div>
                             </div>
                             <div class="item-name">
                                 {{item.Name}}
@@ -53,7 +57,9 @@
                     <div class="row">
                         <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-gateway" *ngFor="let item of gateways">
                             <div class="icon-holder">
-                                <i class="fa {{item.IconStyle.Icon}}"></i>
+                                <div class="diamonder">
+                                    <i class="fa {{item.IconStyle.Icon}}"></i>
+                                </div>
                             </div>
                             <div class="item-name">
                                 {{item.Name}}
@@ -70,6 +76,12 @@
                         <i class="fa fa-plus"></i>
                     </div>
                     <span>Drag and drop flow objects to start building your diagram</span>
+                </div>
+                <div class="content" style="top:13%;" *ngIf="isCanvasEmpty && !isEditMode">
+                    <div class="icon-holder">
+                        <i class="fa fa-pencil"></i>
+                    </div>
+                    <span>Choose Edit to start creating your diagram</span>
                 </div>
             </div>
             <div id="diagram"></div>

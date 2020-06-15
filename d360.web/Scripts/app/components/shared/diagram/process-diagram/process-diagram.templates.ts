@@ -15,7 +15,7 @@ export class ProcessDiagramTemplates {
             },
             $(go.Shape, "RoundedRectangle",
                 {
-                    fill: "white",
+                    fill: "#708EA6",
                     stroke: "#708EA6",
                     portId: "",
                     strokeWidth: 2,
@@ -49,6 +49,7 @@ export class ProcessDiagramTemplates {
                 $(go.TextBlock,
                     {
                         alignment: go.Spot.LeftCenter,
+                        background: "white",
                         stroke: this.fontColor,
                         textAlign: "center",
                         font: "bold 12pt sans-serif",

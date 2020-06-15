@@ -122,6 +122,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.nodeTemplateMap = templmap;
 
         this.myDiagram.linkTemplate = ProcessDiagramTemplates.linkTemplate;
+
+
+        //load current asset diagram
+        this.load();
     }
 
 
