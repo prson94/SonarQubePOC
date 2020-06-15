@@ -35,10 +35,8 @@ namespace d360.core.entities
 
         public int? UpdatedBy { get; set; }
 
-
         [JsonIgnore, XmlIgnore()]
         public virtual SurveyType SurveyType { get; set; }
-
 
         [ForeignKey("QuestionTypeID")]
         public virtual ICollection<QuestionTypeOption> QuestionTypeOptions { get; set; }
