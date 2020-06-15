@@ -624,7 +624,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Fusion,
                     AssetTypeClass.FusionQuery,
                     AssetTypeClass.User,
-                    AssetTypeClass.AttributeGroup,
                 };
                 if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
                 {
@@ -638,7 +637,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.FusionQuery,
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
-                    AssetTypeClass.AttributeGroup,
                     AssetTypeClass.Diagram
                 };
                 if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))

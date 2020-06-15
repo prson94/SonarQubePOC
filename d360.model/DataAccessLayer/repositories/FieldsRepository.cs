@@ -600,8 +600,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         AssetTypeClass.FusionAttribute, 
                         AssetTypeClass.FusionQuery, 
                         AssetTypeClass.User, 
-                        AssetTypeClass.ReferenceItemType, 
-                        AssetTypeClass.AttributeGroup,
+                        AssetTypeClass.ReferenceItemType
                     };
 
                     if (disallowedClasses.Contains(assetType.Class))
