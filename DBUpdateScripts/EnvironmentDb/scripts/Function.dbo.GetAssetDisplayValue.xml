@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Function.dbo.GetAssetDisplayValue-v1">
+  <changeSet author="Tklok" id="Function.dbo.GetAssetDisplayValue-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -25,7 +25,7 @@ RETURN
 				inner join AssetType T on T.ID = A.AssetTypeID 
 				outer apply (
 							select	TL.value,
-									coalesce(case when TF.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name) as FormattedValue
+									coalesce(case when TL.Value = 'FirstName' then R.FirstName + ' ' else R.LastName end, F.FormattedValue, RI.Code, FA.TextPath, FA.Name, FU.Name) as FormattedValue
 							from	string_split(replace(T.DisplayFormat, '{', '|'), '|') TF
 									cross apply string_split(replace(TF.[value], '}', '|'), '|') TL
 									left join FieldType FT on FT.AssetTypeID = T.ID and FT.Name like TL.Value
@@ -33,7 +33,7 @@ RETURN
 									left join Asset RI on TL.Value = 'Code' and A.Object = 'ReferenceItem' and RI.ID = A.ID
 									left join FusionAttribute FA on TL.Value = 'Name' and A.Object = 'FusionAttribute' and FA.ID = A.ObjectID
 									left join Fusion FU on TL.Value = 'Name' and A.Object = 'Fusion' and FU.ID = A.ObjectID
-									left join reporting.Global_resource R on TF.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
+									left join reporting.Global_resource R on TL.Value in ('FirstName', 'LastName') and A.Object = 'Resource' and R.ResourceID = A.ObjectID
 							where	RTRIM(TF.value) <> ''
 									and RTRIM(TL.value) <> ''
 							) D
