@@ -773,47 +773,33 @@ order by Name";
 
 
             var items = new List<dynamic>();
-            int? initialView = null;
+            int? initial = ((int)AssetBrowserDiagramType.Lineage);
 
             var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
-            var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar");
+            var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar") && assetType.Class != AssetTypeClass.ReferenceItemType;
+            var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select 1 from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+            var anyProcessDiagram = (await Company.QueryAsync<bool>("select 1 from [Intersect] I inner join IntersectTypeDetail D on D.ID = I.IntersectTypeID where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
 
-            if (includeLineage && assetType.Class != AssetTypeClass.ReferenceItemType)
+            if (includeLineage)
             {
                 items.Add(new 
                 {
                     label = "Lineage Diagram",
                     value = ((int)AssetBrowserDiagramType.Lineage)
                 }); ;
-
-                if (assetType.Class == AssetTypeClass.TechnicalAsset)
-                {
-                    initialView = (int)AssetBrowserDiagramType.Lineage;
-                }
             }
 
-
-            if (PredicateType.Diagram.AsInfoModel().SubjectAssetClassesSupported.Contains(assetType.Class))
+            if (anyDiagramRelationTypes)
             {
-                var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select 1 from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+                var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
 
-                if (anyDiagramRelationTypes)
+                if (anyProcessDiagram || canEdit)
                 {
-                    var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
-
-                    if (canEdit)
+                    items.Add(new 
                     {
-                        items.Add(new 
-                        {
-                            label = "Process Diagram",
-                            value = ((int)AssetBrowserDiagramType.Process)
-                        });
-
-                        if (assetType.Class == AssetTypeClass.BusinessAsset)
-                        {
-                            initialView = (int)AssetBrowserDiagramType.Process;
-                        }
-                    }
+                        label = "Process Diagram",
+                        value = ((int)AssetBrowserDiagramType.Process)
+                    });
                 }
             }
 
@@ -823,15 +809,30 @@ order by Name";
                 {
                     label = "Impact Diagram",
                     value = ((int)AssetBrowserDiagramType.Impact)
-            });
+                });
+            }
 
-                if (assetType.Class == AssetTypeClass.BusinessAsset && !initialView.HasValue)
+            if (assetType.Class == AssetTypeClass.BusinessAsset)
+            {
+                if (anyDiagramRelationTypes && anyProcessDiagram)
                 {
-                    initialView = (int)AssetBrowserDiagramType.Impact;
+                    initial = ((int)AssetBrowserDiagramType.Process);
+
+                }
+                else if (includeImpact)
+                {
+                    initial = ((int)AssetBrowserDiagramType.Impact);
+                }
+            }
+            else if (assetType.Class == AssetTypeClass.TechnicalAsset)
+            {
+                if (includeLineage)
+                {
+                    initial = ((int)AssetBrowserDiagramType.Lineage);
                 }
             }
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { initial = initialView, items }));
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { initial, items }));
         }
     }
 }
