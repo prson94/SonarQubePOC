@@ -913,6 +913,7 @@ namespace d360.model.DataAccessLayer
                     document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
+            document.AutoFitColumn(1, fields.Count);
             #endregion
 
             return document;
