@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
+import { AfterViewInit, Component, Input, ChangeDetectionStrategy, ChangeDetectorRef, Output, EventEmitter, SimpleChanges, OnChanges } from '@angular/core';
 import { DiagramType } from '../../../../../models/lineage.model';
 
 @Component({
@@ -8,8 +8,9 @@ import { DiagramType } from '../../../../../models/lineage.model';
     providers: [],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AssetBrowserViewChangeComponent implements AfterViewInit {
+export class AssetBrowserViewChangeComponent implements AfterViewInit, OnChanges {
     @Input() current: DiagramType;
+    @Input() items: any[] = [];
     @Output() apply: EventEmitter<DiagramType> = new EventEmitter();
 
     constructor(
@@ -18,23 +19,24 @@ export class AssetBrowserViewChangeComponent implements AfterViewInit {
         
     }
 
+    public ngOnChanges(changes: SimpleChanges) {
+        if (changes != null && changes['items'] != null && (changes['items'].firstChange || changes['items'].currentValue != changes['items'].previousValue)) {
+            this.cdRef.markForCheck();
+        }
+    }
+
     public ngAfterViewInit() {
         this.cdRef.markForCheck();
     }
 
-    private switchToImpactView(event) {
-        this.apply.emit(DiagramType.Impact);
+
+    private diagramTypeChange(e: any) {
+        this.current = e.value;
+        this.apply.emit(e.value);
     }
 
-    private switchToLineageView(event) {
-        this.apply.emit(DiagramType.Lineage);
+    get disabled(): boolean {
+        return this.items == null || this.items.length < 2;
     }
 
-    private impactViewButtonSelectedClass() {
-        return (this.current == DiagramType.Impact) ? "right-margin-4 selected" : "right-margin-4";
-    }
-
-    private lineageViewButtonSelectedClass() {
-        return (this.current == DiagramType.Lineage) ? "selected" : "";
-    }
 } 

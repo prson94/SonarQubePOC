@@ -25,8 +25,9 @@ import {
     AssetBrowserFilterChangeEventType,
     AssetBrowserFilterChangeEvent,
     AssetBrowserPanelCommand,
-    AssetBrowserPanelModel,
-    AssetBrowserApiHopIgnoreRequestModel
+    AssetBrowserPanelModel,
+    AssetBrowserApiHopIgnoreRequestModel,
+    DiagramTypesModel
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -95,6 +96,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     scale = 1;
     filter_AvailableOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
     filter_AllOptions: FilterSelectionsModel = new FilterSelectionsModel([], [], []);
+    private diagramTypes: DiagramTypesModel = null;
 
     //#region Constants
 
@@ -178,26 +180,36 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.filter_AllOptions = options;
             });
 
+
         this.route.params.subscribe(
             params => {
                 this.originalAssetUid = params['assetUid'];
 
                 this.loadFilter(); // Load the default filter BEFORE updating the pre-selected diagram type.
 
-                if (params['diagramType']) {
-                    let diagramTypeParameterValue: string = params['diagramType'];
+                this.browserService.getDiagramTypes(this.originalAssetUid)
+                    .subscribe(res => {
+                        this.diagramTypes = res;
 
-                    this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
-                    if (!this.isDiagramTypeSpecifiedInPath) {
-                        diagramTypeParameterValue = 'Lineage';
-                    }
+                        if (params['diagramType']) {
+                            let diagramTypeParameterValue: string = params['diagramType'];
 
-                    this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
-                    this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
-                }
+                            this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
+                            if (!this.isDiagramTypeSpecifiedInPath) {
+                                diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
+                            }
 
-                if (this.diagram) this.diagram.div = null;
-                this.helper_InitializeDiagram();
+                            this.diagramTypeSpecifiedInPath = DiagramType[diagramTypeParameterValue];
+                            this.helper_UpdateDiagramType(this.diagramTypeSpecifiedInPath);
+                        } else {
+                            this.helper_UpdateDiagramType(this.diagramTypes.initial);
+
+                        }
+
+                        if (this.diagram) this.diagram.div = null;
+                        this.helper_InitializeDiagram();
+
+                    });
             }
         );
     }
@@ -838,6 +850,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private helper_DisableDragging() {
         let unlockedKeys: string[] = [];
+
+        if (this.diagram == null)
+            return;
 
         this.diagram.links.each(function (l) {
             if (!unlockedKeys.some(x => x == l.fromNode.data.key))
