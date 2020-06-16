@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { Condition, ConditionForm, MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -12,7 +12,7 @@ import { FormHelpers } from '../../../static/form-helpers';
 })
 
 export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() condition: MetricAssetVersionConditionViewModel = null;
+    @Input() condition: MetricAssetVersionConditionItemViewModel = null;
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
     @Input() usedFieldTypes: number[] = [];
@@ -36,10 +36,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
 
         this.usedFieldTypes.forEach(i => {
-            let ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID == i);
+            let ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === i);
             if (ft) {
                 if (this.condition) {
-                    if (this.condition.FieldTypeID != i) {
+                    if (this.condition.ConditionFieldTypeID !== i) {
                         ft.Disabled = true;
                     }
                 }
@@ -57,12 +57,12 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     getLookupValues(fieldTypeID: number) {
-        return this.metricConditionEditorFieldTypes.find(i => i.ID == fieldTypeID).Values;
+        return this.metricConditionEditorFieldTypes.find(i => i.ID === fieldTypeID).Values;
     }
 
     load() {
         if (this.condition) {
-            if (this.condition.FieldTypeID) {
+            if (this.condition.ConditionFieldTypeID) {
                 this.selectFieldType();
             }
         }
@@ -72,7 +72,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     valid() {
         let valid = true;
 
-        if (this.condition == null) {
+        if (this.condition === null) {
             valid = false;
         }
 
@@ -84,13 +84,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         if (this.condition.FieldType) {
             switch (this.condition.FieldType.Type) {
                 case "Boolean":
-                    this.condition.ValuesText = this.condition.Values.toString();
+                    this.condition.ValuesText = this.condition.Values[0].Text;
                     break;
                 case "Lookup":
-                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
+                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value === +this.condition.Values[0].Value).Text;
                     break;
                 default:
-                    this.condition.ValuesText = this.condition.Values;
+                    this.condition.ValuesText = this.condition.Values[0].Text;
                     break;
             }
         }
@@ -102,32 +102,32 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     changeFieldType(e: any) {
-        this.condition.FieldTypeID = +e;
+        this.condition.ConditionFieldTypeID = e;
         this.selectFieldType();
     }
 
     selectFieldType() {
-        if (this.condition.FieldTypeID) {
-            let field = this.metricConditionEditorFieldTypes.find(f => f.ID == this.condition.FieldTypeID);
-            if (field != null) {
+        if (this.condition.ConditionFieldTypeID) {
+            let field = this.metricConditionEditorFieldTypes.find(f => f.ID === this.condition.ConditionFieldTypeID);
+            if (field !== null) {
                 this.condition.FieldTypeName = field.Name;
                 this.condition.FieldType = field;
                 if (!this.condition.Values) {
-                    this.condition.Values = "";
+                    this.condition.Values.push({ Value: 0, Text: ''});
                 }
 
-                switch (field.Type) {
-                    case "Boolean":
-                        this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
-                        break;
-                    case "Date":
-                    case "DateTime":
-                        this.condition['Type'] = 'Date';
-                        if (this.condition.Values) {
-                            this.condition.Values = new Date(<string>this.condition.Values);
-                        }
-                        break;
-                }
+                //switch (field.Type) {
+                //    case "Boolean":
+                //        this.condition.Values = (this.condition.Values[0].Text === 'true') || (this.condition.Values[0].Text === true);
+                //        break;
+                //    case "Date":
+                //    case "DateTime":
+                //        this.condition['Type'] = 'Date';
+                //        if (this.condition.Values) {
+                //            this.condition.Values = new Date(<string>this.condition.Values);
+                //        }
+                //        break;
+                //}
             }
         }
     }

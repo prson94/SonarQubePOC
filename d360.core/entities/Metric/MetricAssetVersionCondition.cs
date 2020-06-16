@@ -8,32 +8,24 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Metric
 {
     [DataContract(Namespace = NAMESPACE), Table("AssetVersionCondition", Schema = "metrics")]
-    public class MetricAssetVersionCondition : BaseObject
+    public class MetricAssetVersionCondition : BaseUidObject
     {
-        [DataMember, Key, Column(Order = 1)]
-        public Guid Uid { get; set; }
+        [DataMember]
+        public Guid VersionUid { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
-        public DateTime EffectiveDate { get; set; }
+        [DataMember]
+        public MetricMatchType MatchType { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
-        public int FieldTypeID { get; set; }
+        [DataMember]
+        public int Position { get; set; }
 
-        [DataMember, StringLength(10)]
-        public string Operator { get; set; }
+        [DataMember]
+        public float? Threshold { get; set; }
 
-        [IgnoreDataMember]
-        public string ValueJson { get; set; }
+        [DataMember]
+        public decimal? Weight { get; set; }
 
-        // Future use (mpappas) for when we start adding potentially multiple values that the JSON property above could store.
-        [NotMapped, DataMember]
-        public string Value {
-            get {
-                return ValueJson;
-            }
-        }
-
-        [DataMember, ForeignKey("Uid, EffectiveDate")]
-        public virtual MetricAssetVersion Version { get; set; } 
+        //[DataMember, ForeignKey("VersionUid")]
+        //public virtual MetricAssetVersion Version { get; set; } 
     }
 }

@@ -200,6 +200,7 @@
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
 	<include file="scripts/Table.metrics.Rule.xml"/>
@@ -411,7 +412,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailByID.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByFollower.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
-  <include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
+	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
@@ -460,7 +461,10 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
-  <!-- Data Changes -->
+	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
+	
+	<!-- Migration -->
+	<include file="scripts/Migration.Metrics.xml"/>
 </databaseChangeLog>

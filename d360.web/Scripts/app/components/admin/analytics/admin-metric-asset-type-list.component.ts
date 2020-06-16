@@ -155,7 +155,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
 
     private openMeasures(event: ScoreTypeAllocationFormatted) {
         var alloc = this.getAllocationByUid(event.uid);
-        var url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.scoreType}`;
+        var url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
         this.router.navigateByUrl(url);
     }
 

@@ -136,6 +136,7 @@
     <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
+    <Compile Include="entities\Metric\MetricAssetVersionConditionItem.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
     <Compile Include="entities\AssetDataProfile.cs" />
     <Compile Include="entities\Metric\MetricScoreApiModel.cs" />
@@ -288,8 +289,11 @@
     <Compile Include="enums\CalculationMethod.cs" />
     <Compile Include="enums\CompanyRebuildJobToken.cs" />
     <Compile Include="enums\CompanyRebuildJobStatusState.cs" />
+    <Compile Include="enums\MetricConditionType.cs" />
+    <Compile Include="enums\MetricConditionMatchType.cs" />
     <Compile Include="enums\FlowObjectType.cs" />
     <Compile Include="enums\ResultRelationClass.cs" />
+    <Compile Include="enums\MetricUpdateFrequency.cs" />
     <Compile Include="enums\SettingType.cs" />
     <Compile Include="enums\SplitFilterCriteriaRelationship.cs" />
     <Compile Include="enums\BulkRelationshipOperation.cs" />

@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel, MetricFieldTypeValueViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemValueViewModel } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -12,9 +12,10 @@ import { MessagesObservableService } from '../../../services/messages-observable
 })
 
 export class AdminMetricConditionListComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() metricUid: string;
+    @Input() conditionUid: string;
+    @Input() position: number;
     @Input() assetTypeUid: string;
-    @Input() conditions = [];
+    @Input() conditions: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() metricConditionListFieldTypes: MetricFieldTypeViewModel[] = [];
 
     @Output() editClick = new EventEmitter();
@@ -24,8 +25,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
     @Output() formModeChange = new EventEmitter();
 
-    private usedFieldTypeIDs: number[] = [];
-    private selection: MetricAssetVersionConditionViewModel = null;
+    private usedFieldTypes: number[] = [];
+    private selection: MetricAssetVersionConditionItemViewModel = null;
     private selectedIndex = -1;
     private formMode = FormMode.Default;
     FormMode = FormMode;
@@ -57,16 +58,16 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.refreshSelectedFieldTypeIds();
 
         this.conditions.forEach(c => {
-            c.OperatorText = this.operators.find(o => o.value == c.Operator).label;
+            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
 
-            let field = this.metricConditionListFieldTypes.find(f => f.ID == c.FieldTypeID);
-            if (field != null) {
+            const field = this.metricConditionListFieldTypes.find(f => f.ID === c.ConditionFieldTypeID);
+            if (field !== null) {
                 c.FieldTypeName = field.Name;
-                c.Type = field.Type;
+                //c.Type = field.Type;
                 if (field.Values) {
                     if (field.Values.length > 0) {
-                        let valueModel: MetricFieldTypeValueViewModel = field.Values.find(o => o.Value == c.Values);
-                        valueModel = field.Values.find(o => o.Value == c.Values);
+                        let valueModel: MetricAssetVersionConditionItemValueViewModel = field.Values.find(o => o.Value === c.Values[0].Value);
+                        valueModel = field.Values.find(o => o.Value === c.Values[0].Value);
                         if (valueModel) {
                             c.ValuesText = valueModel.Text;
                         }
@@ -74,7 +75,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                 }
 
                 if (!c.ValuesText) {
-                    c.ValuesText = c.Values;
+                    c.ValuesText = c.Values[0].Text;
                 }
 
             }
@@ -85,7 +86,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     }
 
     add() {
-        this.selection = new MetricAssetVersionConditionViewModel();
+        this.selection = new MetricAssetVersionConditionItemViewModel();
         this.selection.IsEditMode = false;
         //this.selection. = this.mapId;
         this.formMode = FormMode.Adding;
@@ -114,8 +115,8 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.formModeChange.emit(this.formMode);
     }
 
-    save(e: MetricAssetVersionConditionViewModel) {
-        e.OperatorText = this.operators.find(o => o.value == e.Operator).label;
+    save(e: MetricAssetVersionConditionItemViewModel) {
+        e.OperatorText = this.operators.find(o => o.value === e.Operator).label;
 
         if (!e.IsEditMode) {
             this.conditions.push(e);
@@ -130,14 +131,14 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     }
 
     showAddButton() {
-        return (this.usedFieldTypeIDs.length < this.metricConditionListFieldTypes.length);
+        return (this.usedFieldTypes.length < this.metricConditionListFieldTypes.length);
     }
 
     refreshSelectedFieldTypeIds() {
         // Clear out the selected field type IDs, and reload.
-        this.usedFieldTypeIDs = [];
+        this.usedFieldTypes = [];
         this.conditions.forEach(c => {
-            this.usedFieldTypeIDs.push(c.FieldTypeID);
+            this.usedFieldTypes.push(c.ConditionFieldTypeID);
         });
     }
 };

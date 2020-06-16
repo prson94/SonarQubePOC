@@ -60,14 +60,12 @@ namespace d360.model.DataAccessLayer
                 olderVersions.ForEach(x => x.State = State.Deleted);
             }
 
-
-
             Company.SaveChanges();
         }
 
         public MetricAsset GetMetricByUid(Guid uid)
         {
-            return Company.Filter<MetricAsset>(i => i.Uid == uid, i => i.Children).SingleOrDefault();
+            return Company.GetByUid<MetricAsset>(uid, i => i.Children);
         }
 
         public MetricAsset GetActiveMetric(Guid uid)
@@ -83,124 +81,154 @@ namespace d360.model.DataAccessLayer
 
             if (model.Uid != null && model.Uid != Guid.Empty)
             {
-                Guid assetTypeId = Company.MetricAssets.FirstOrDefault(x => x.Uid == model.Uid).AssetTypeUid;
-                targetAssetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeId);
+                isNew = false;
+                metricAsset = Company.GetByUid<MetricAsset>(model.Uid, i => i.Allocation);
+                if (metricAsset == null)
+                {
+                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Metric not found.");
+                }
+                Guid assetTypeId = metricAsset.Allocation.AssetTypeUid;
+                targetAssetType = Company.Filter<AssetType>(x => x.uid == assetTypeId).SingleOrDefault();
             }
-
-            if (model.AssetTypeUid != null && model.AssetTypeUid != Guid.Empty)
+            else
             {
-                targetAssetType = Company.AssetTypes.FirstOrDefault(x => x.uid == model.AssetTypeUid);
+                if (model.AllocationUid != null && model.AllocationUid != Guid.Empty)
+                {
+                    targetAssetType = (
+                                      from allocation in Company.MetricAllocations
+                                      join assettype in Company.AssetTypes on allocation.AssetTypeUid equals assettype.uid
+                                      where allocation.Uid == model.AllocationUid
+                                      select assettype
+                                      ).SingleOrDefault();
+                }
+                else
+                {
+                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric", "You must provide a valid AllocationUid.");
+                }
             }
-
 
             var existingResultCount = 0;
             var childMetricCount = 0;
 
-
             List<string> validTypes = new List<string>() { "Boolean", "Decimal", "Date", "Lookup", "Number", "Text" };
 
-            foreach (var condition in model.Conditions)
+            foreach (var group in model.ConditionGroups)
             {
-                var fieldType = new FieldType();
-                if (condition.FieldTypeID.HasValue)
-                {
-                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldTypeID);
-                }
-                else
-                {
-                    fieldType = Company.FieldTypes.FirstOrDefault(x => x.Name.ToLower() == condition.FieldName.Trim().ToLower() && x.Object == targetAssetType.Object && x.ObjectID == targetAssetType.ObjectID);
+                foreach (var condition in group.ConditionItems)
+                { 
+                    var fieldType = new FieldType();
+                
+                    if (condition.ConditionFieldTypeID.HasValue)
+                    {
+                        fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.ConditionFieldTypeID.Value);
+                    }
+                    //else
+                    //{
+                    //    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldName.Trim().ToLower() && x.Object == targetAssetType.Object && x.ObjectID == targetAssetType.ObjectID);
+
+                    //    if (fieldType == null)
+                    //    {
+                    //        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                    //    }
+                    //    condition.ConditionFieldTypeID = fieldType.ID;
+                    //}
 
                     if (fieldType == null)
                     {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
+                    }  
+
+                    if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
+                    {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
                     }
-                    condition.FieldTypeID = fieldType.ID;
-                }
 
-                if (fieldType == null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
-                }
+                    if (!validTypes.Contains(fieldType.Type))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
+                    }
+                
+                    bool tempBool;
+                    decimal tempDecimal;
+                    DateTime tempDate;
+                    int tempInt;
 
-                if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                    //switch (fieldType.Type)
+                    //{
+                    //    case "Boolean":
+                    //        if (!bool.TryParse(condition.Values[0].Value, out tempBool))
+                    //            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(group.FieldName) ? group.FieldTypeID.Value.ToString() : group.FieldName)}' does not contain valid '{fieldType.Type}' value!");
+                    //        break;
+                    //    case "Decimal":
+                    //        if (!decimal.TryParse(condition.Values[0].Value, out tempDecimal))
+                    //            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(group.FieldName) ? group.FieldTypeID.Value.ToString() : group.FieldName)}' does not contain valid '{fieldType.Type}' value!");
+                    //        break;
+                    //    case "Date":
+                    //        if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
+                    //            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(group.FieldName) ? group.FieldTypeID.Value.ToString() : group.FieldName)}' does not contain valid '{fieldType.Type}' value!");
+                    //        condition.Values[0].Value = tempDate.ToShortDateString();
+                    //        break;
+                    //    case "Number":
+                    //        if (!int.TryParse(condition.Values[0].Value, out tempInt))
+                    //            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(group.FieldName) ? group.FieldTypeID.Value.ToString() : group.FieldName)}' does not contain valid '{fieldType.Type}' value!");
+                    //        break;
+                    //    default:
+                    //        break;
+                    //}
                 }
-
-                if (!validTypes.Contains(fieldType.Type))
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
-                }
-                bool tempBool;
-                decimal tempDecimal;
-                DateTime tempDate;
-                int tempInt;
-
-                switch (fieldType.Type)
-                {
-                    case "Boolean":
-                        if (!bool.TryParse(condition.Values, out tempBool))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
-                        break;
-                    case "Decimal":
-                        if (!decimal.TryParse(condition.Values, out tempDecimal))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
-                        break;
-                    case "Date":
-                        if (!DateTime.TryParse(condition.Values, out tempDate))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
-                        condition.Values = tempDate.ToShortDateString();
-                        break;
-                    case "Number":
-                        if (!int.TryParse(condition.Values, out tempInt))
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{(string.IsNullOrEmpty(condition.FieldName) ? condition.FieldTypeID.Value.ToString() : condition.FieldName)}' does not contain valid '{fieldType.Type}' value!");
-                        break;
-                    default:
-                        break;
-                }
-
             }
 
             int metricExistsCount = 0;
-            metricExistsCount = (model.ParentUid.HasValue) ?
-                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and [State] = 1 and ParentUid = @p and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value, assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single() :
-                Company.Query<int>($"select count(1) from metrics.Asset where lower(Name) = @n and [State] = 1 and ParentUid is null and AssetTypeUid = @assetTypeUid and uid <> @uid", new { n = model.Name.Trim().ToLower(), assetTypeUid = targetAssetType.uid, uid = model.Uid }).Single();
+            var metricCountSql = $@"select count(1) from (
+select A.Uid, max(V.EffectiveDate) as EffectiveDate
+from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and A.State = 1 and A.AllocationUid = @AllocationUid and A.Uid <> @Uid and lower(V.Name) = @n and {(model.ParentUid.HasValue ? "A.ParentUid = @p" : "A.ParentUid is null")} group by A.Uid) O";
+            metricExistsCount = Company.Query<int>(metricCountSql, new { n = model.Name.Trim().ToLower(), p = model.ParentUid.Value, model.AllocationUid, model.Uid }).Single();
 
             if (metricExistsCount > 0)
             {
-                return new WorkHttpStatus(
-                    HttpStatusCode.BadRequest,
-                    "Error adding metric",
+                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error adding metric",
                     (model.ParentUid.HasValue) ?
                     "You may not add a metric with the same name under the same grouping." :
                     $"Measure with name '{model.Name}' already exists.");
             }
 
 
-            if (model.Uid != Guid.Empty)
+            if (isNew)
             {
-                isNew = false;
-
-                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
-
-                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State=1", new { model.Uid }).Single();
-
-                metricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.Uid).SingleOrDefault();
-                if (metricAsset == null)
+                metricAsset = new MetricAsset
                 {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Metric not found.");
+                    Uid = Guid.NewGuid(),
+                    AllocationUid = model.AllocationUid,
+                    IsGroup = model.IsGroup,
+                    State = State.Active
+                };
+
+                if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
+                {
+                    var parentExists = Company.Any<MetricAsset>(i => i.AllocationUid == model.AllocationUid && i.Uid == model.ParentUid.Value);
+                    if (!parentExists)
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
+                    }
+                    metricAsset.ParentUid = model.ParentUid;
                 }
 
-                metricAsset.Description = model.Description;
-                metricAsset.Name = model.Name.Trim();
-                metricAsset.ScoreType = model.ScoreType.Value;
+                Company.Add(metricAsset);
+            }
+            else 
+            {
+                existingResultCount = Company.Query<int>("select count(1) from metrics.ScoreItem where MetricAssetUid = @Uid", new { model.Uid }).Single();
+                childMetricCount = Company.Query<int>("select count(1) from metrics.Asset where ParentUid = @Uid and State = 1", new { model.Uid }).Single();
+
                 metricAsset.UpdatedBy = Company.CurrentResourceID;
                 metricAsset.UpdatedOn = DateTime.Now;
+                
                 // If results, then you cannot change. 
                 if (existingResultCount > 0 && model.IsGroup)
                 {
                     return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"You may not convert this metric to a grouping as there are results already associated with it.");
                 }
+                
                 // If has child metrics, you cannot change.
                 if (childMetricCount > 0 && !model.IsGroup)
                 {
@@ -210,46 +238,10 @@ namespace d360.model.DataAccessLayer
                 // If made it past above, then we can save the grouping change.
                 metricAsset.IsGroup = model.IsGroup;
             }
-            else
-            {
-                metricAsset = new MetricAsset
-                {
-                    Uid = Guid.NewGuid(),
-                    AssetTypeUid = model.AssetTypeUid,
-                    Description = model.Description,
-                    IsGroup = model.IsGroup,
-                    Name = model.Name.Trim(),
-                    State = State.Active,
-                    ScoreType = model.ScoreType.Value
-                };
-
-                if (model.AssetTypeUid == Guid.Empty)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Asset type not found or is empty.");
-                }
-
-                if (model.ParentUid != Guid.Empty && model.ParentUid.HasValue)
-                {
-                    var parentMetricAsset = Company.Filter<MetricAsset>(i => i.Uid == model.ParentUid).SingleOrDefault();
-                    if (parentMetricAsset == null)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Parent metric not found.");
-                    }
-                    else
-                    {
-                        if (parentMetricAsset.AssetTypeUid != metricAsset.AssetTypeUid)
-                        {
-                            return new WorkHttpStatus(HttpStatusCode.NotFound, "Error updating metric", "Parent metric must belong to the same asset type.");
-                        }
-                    }
-                    metricAsset.ParentUid = model.ParentUid;
-                }
-                Company.MetricAssets.Add(metricAsset);
-            }
 
             var effectiveDate = model.EffectiveDate == DateTime.MinValue ? DateTime.UtcNow : model.EffectiveDate;
 
-            var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where [Uid] = @Uid", new { model.Uid }).SingleOrDefault();
+            var maxEffectiveDate = Company.Query<DateTime?>("select max(EffectiveDate) from metrics.AssetVersion where AssetUid = @Uid", new { model.Uid }).SingleOrDefault();
 
             if (maxEffectiveDate.HasValue)
             {
@@ -259,55 +251,55 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.Uid == model.Uid && i.EffectiveDate == effectiveDate, v => v.Conditions).SingleOrDefault();
+            var metricAssetVersion = Company.Filter<MetricAssetVersion>(i => i.AssetUid == model.Uid && i.EffectiveDate == effectiveDate).SingleOrDefault(); //, v => v.Conditions
 
-            string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
-            newConditionHash = newConditionHash.GetD3sHashString();
+            //string newConditionHash = string.Join("|", model.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.Values)));
+            //newConditionHash = newConditionHash.GetD3sHashString();
             if (metricAssetVersion == null)
             {
                 //Set the default to a = And.
-                if (string.IsNullOrEmpty(model.ConditionAndOr))
-                {
-                    model.ConditionAndOr = "a";
-                }
+                //if (string.IsNullOrEmpty(model.ConditionAndOr))
+                //{
+                //    model.ConditionAndOr = "a";
+                //}
 
                 metricAssetVersion = new MetricAssetVersion
                 {
-                    Uid = metricAsset.Uid,
+                    AssetUid = metricAsset.Uid,
                     CreatedBy = Company.CurrentResourceID,
                     CreatedOn = DateTime.UtcNow,
-                    ConditionAndOr = model.ConditionAndOr,
+                    //ConditionAndOr = model.ConditionAndOr,
                     EffectiveDate = effectiveDate,
                     Weight = model.Weight,
                     State = metricAsset.State,
                     EffectiveEndDate = null
                 };
 
-                if (model.Conditions.Count > 0)
-                {
-                    if (metricAssetVersion.Conditions == null)
-                        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+                //if (model.Conditions.Count > 0)
+                //{
+                //    if (metricAssetVersion.Conditions == null)
+                //        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
 
-                    var usedFieldTypeIDs = new List<int>();
+                //    var usedFieldTypeIDs = new List<int>();
 
-                    model.Conditions.ForEach(c =>
-                    {
-                        // You can only add one of a specific field type ID.
-                        if (!usedFieldTypeIDs.Contains(c.FieldTypeID.Value))
-                        {
-                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
-                            usedFieldTypeIDs.Add(c.FieldTypeID.Value);
-                        }
-                    });
-                }
-                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.Uid == metricAsset.Uid && x.EffectiveEndDate == null);
+                //    model.Conditions.ForEach(c =>
+                //    {
+                //        // You can only add one of a specific field type ID.
+                //        if (!usedFieldTypeIDs.Contains(c.FieldTypeID.Value))
+                //        {
+                //            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
+                //            usedFieldTypeIDs.Add(c.FieldTypeID.Value);
+                //        }
+                //    });
+                //}
+                var existingAssetVersion = Company.MetricAssetVersions.FirstOrDefault(x => x.AssetUid == metricAsset.Uid && x.EffectiveEndDate == null);
                 if (existingAssetVersion != null)
                 {
                     existingAssetVersion.EffectiveEndDate = effectiveDate;
                     Company.Update(existingAssetVersion);
                 }
 
-                Company.MetricAssetVersions.Add(metricAssetVersion);
+                Company.Add(metricAssetVersion);
             }
             else
             {
@@ -319,89 +311,91 @@ namespace d360.model.DataAccessLayer
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the weight of this metric without also altering its effective date.");
                     }
 
-                    if (metricAssetVersion.ConditionAndOr != model.ConditionAndOr)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
-                    }
+                    //if (metricAssetVersion.ConditionAndOr != model.ConditionAndOr)
+                    //{
+                    //    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the condition type of this metric without also altering its effective date.");
+                    //}
 
-                    //Set the default to a = And.
-                    if (string.IsNullOrEmpty(model.ConditionAndOr))
-                    {
-                        model.ConditionAndOr = "a";
-                    }
+                    ////Set the default to a = And.
+                    //if (string.IsNullOrEmpty(model.ConditionAndOr))
+                    //{
+                    //    model.ConditionAndOr = "a";
+                    //}
 
-                    string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
-                    existingConditionHash = existingConditionHash.GetD3sHashString();
-                    if (newConditionHash != existingConditionHash)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
-                    }
+                    //string existingConditionHash = string.Join("|", metricAssetVersion.Conditions.Select(c => string.Join(";", c.FieldTypeID, c.Operator, c.ValueJson)));
+                    //existingConditionHash = existingConditionHash.GetD3sHashString();
+                    //if (newConditionHash != existingConditionHash)
+                    //{
+                    //    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "You may not alter the conditions of this metric without also altering its effective date.");
+                    //}
                 }
 
                 // Set the properties.
-                metricAssetVersion.ConditionAndOr = model.ConditionAndOr;
+                //metricAssetVersion.ConditionAndOr = model.ConditionAndOr;
                 metricAssetVersion.Weight = model.Weight;
 
                 #region Deal with processing the conditions.
-                if (model.Conditions.Count > 0)
-                {
-                    if (metricAssetVersion.Conditions == null)
-                        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
 
-                    // Handle UPDATEs and ADDs.
-                    model.Conditions.ForEach(c =>
-                    {
-                        var ec = metricAssetVersion.Conditions.SingleOrDefault(i => i.FieldTypeID == c.FieldTypeID);
-                        if (ec != null)
-                        {
-                            // Update the values.
-                            ec.Operator = c.Operator;
-                            ec.ValueJson = c.Values;
-                        }
-                        else
-                        {
-                            // Add to collection.
-                            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
-                        }
-                    });
+                //if (model.Conditions.Count > 0)
+                //{
+                //    if (metricAssetVersion.Conditions == null)
+                //        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
 
-                    // Handle DELETEs.
-                    var fieldTypeIdsToDelete = new List<int>();
-                    foreach (var c in metricAssetVersion.Conditions)
-                    {
-                        if (!model.Conditions.Any(i => i.FieldTypeID == c.FieldTypeID))
-                        {
-                            fieldTypeIdsToDelete.Add(c.FieldTypeID);
-                        }
-                    }
-                    foreach (var id in fieldTypeIdsToDelete)
-                    {
-                        var dc = metricAssetVersion.Conditions.Single(i => i.FieldTypeID == id);
-                        metricAssetVersion.Conditions.Remove(dc);
-                    }
-                }
-                else
-                {
-                    metricAssetVersion.Conditions = null;
-                }
+                //    // Handle UPDATEs and ADDs.
+                //    model.Conditions.ForEach(c =>
+                //    {
+                //        var ec = metricAssetVersion.Conditions.SingleOrDefault(i => i.FieldTypeID == c.FieldTypeID);
+                //        if (ec != null)
+                //        {
+                //            // Update the values.
+                //            ec.Operator = c.Operator;
+                //            ec.ValueJson = c.Values;
+                //        }
+                //        else
+                //        {
+                //            // Add to collection.
+                //            metricAssetVersion.Conditions.Add(new MetricAssetVersionCondition { FieldTypeID = c.FieldTypeID.Value, Operator = c.Operator, ValueJson = c.Values });
+                //        }
+                //    });
+
+                //    // Handle DELETEs.
+                //    var fieldTypeIdsToDelete = new List<int>();
+                //    foreach (var c in metricAssetVersion.Conditions)
+                //    {
+                //        if (!model.Conditions.Any(i => i.FieldTypeID == c.FieldTypeID))
+                //        {
+                //            fieldTypeIdsToDelete.Add(c.FieldTypeID);
+                //        }
+                //    }
+                //    foreach (var id in fieldTypeIdsToDelete)
+                //    {
+                //        var dc = metricAssetVersion.Conditions.Single(i => i.FieldTypeID == id);
+                //        metricAssetVersion.Conditions.Remove(dc);
+                //    }
+                //}
+                //else
+                //{
+                //    metricAssetVersion.Conditions = null;
+                //}
+
                 #endregion Deal with processing the conditions.
             }
 
-            var operatorErrorMessage = "";
-            var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
-            model.Conditions.ForEach(c =>
-            {
-                if (!operators.Contains(c.Operator))
-                {
-                    operatorErrorMessage += $"Invalid operator used: {c.Operator}; ";
-                }
-            });
+            //var operatorErrorMessage = "";
+            //var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
+            //model.Conditions.ForEach(c =>
+            //{
+            //    if (!operators.Contains(c.Operator))
+            //    {
+            //        operatorErrorMessage += $"Invalid operator used: {c.Operator}; ";
+            //    }
+            //});
 
-            if (!string.IsNullOrEmpty(operatorErrorMessage))
-            {
-                operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
-                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
-            }
+            //if (!string.IsNullOrEmpty(operatorErrorMessage))
+            //{
+            //    operatorErrorMessage += $"Only the operators ({string.Join(", ", operators)}) may be used.";
+            //    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", operatorErrorMessage);
+            //}
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
@@ -476,7 +470,7 @@ namespace d360.model.DataAccessLayer
                     from	h
                     order by [Level] asc";
 
-            if (cnn.State != System.Data.ConnectionState.Open)
+            if (cnn.State != ConnectionState.Open)
                 cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
@@ -566,43 +560,58 @@ namespace d360.model.DataAccessLayer
                             inner join assettype att on ma.AssetTypeUid = att.[uid]
                             inner join asset a on att.id = a.AssetTypeID
 							inner join metrics.score ms on ms.AssetUid = a.uid and ms.ScoreType = ma.ScoreType
-                        where 
-                            a.[uid] = '{assetUid.ToString()}' 
+                        where a.[uid] = @assetUid
 							and ma.[state] = 1
 							and EndDate is null";
-            return Company.Query<int>(sql).ToList();
+            return Company.Query<int>(sql, new { assetUid }).ToList();
         }
 
-        public List<string> GetMetricStructureFragments(Guid assetTypeUid, ScoreType scoreTypeFilter)
+        public List<string> GetMetricStructureFragments(Guid allocationUid)
         {
             return Company.Query<string>($@"
                     select	A.Uid,
                     		A.ParentUid,
-                    		A.AssetTypeUid,
+                            A.AllocationUid,
+                    		Al.AssetTypeUid,
                     		A.IsGroup,
-                    		A.Name,
-                    		A.Description,
+                    		V.Name,
+                    		V.Description,
                     		V.EffectiveDate,
-                    		V.Weight,
-                    		V.ConditionAndOr,
-                    		(
-                    			select	FieldTypeID,
-                    					Operator,
-                    					[ValueJson] as [Values]
-                    			from	metrics.AssetVersionCondition
-                    			where	Uid = V.Uid and EffectiveDate = V.EffectiveDate
+							V.Weight,
+                    		V.Threshold,
+							V.UpdateFrequency,
+							V.MatchConditionsOnly,
+							(
+                    			select		C.Uid,
+											C.Position,
+											C.Threshold,
+											C.Weight,
+											C.MatchType,
+											(
+												select	CI.Uid,
+														CI.ConditionType,
+														CI.ConditionFieldTypeID,
+														CI.ConditionIntersectTypeID,
+														CI.Operator,
+														CI.Value
+												from	metrics.AssetVersionConditionItem CI
+												where	CI.AssetVersionConditionUid = C.Uid
+												for json path
+											) as ConditionItems
+                    			from		metrics.AssetVersionCondition C
+                    			where		C.AssetVersionUid = V.Uid
+								order by	C.Position
                     			for		json path
-                    
-                    		) as Conditions
+                    		) as ConditionGroups
                     from	metrics.Asset A
-                    		cross apply (
+                    		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.Uid = @allocationUid
+                            cross apply (
                     			select	max(EffectiveDate) as EffectiveDate
                     			from	metrics.AssetVersion
-                    			where	Uid = A.Uid
+                    			where	AssetUid = A.Uid
                     		) MV
-                    		inner join metrics.AssetVersion V on V.Uid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
-                    where	A.AssetTypeUid = '{assetTypeUid.ToString()}' and A.ScoreType = {(int)scoreTypeFilter}
-                    for		json path").ToList();
+                    		inner join metrics.AssetVersion V on V.AssetUid = A.Uid and V.EffectiveDate = MV.EffectiveDate and A.[State] = 1
+                    for		json path", new { allocationUid }).ToList();
         }
 
         public List<string> GetMetricFieldFragments(Guid assetTypeUid)
@@ -620,8 +629,8 @@ namespace d360.model.DataAccessLayer
                             
                             		) as [Values]
                             from	AssetType A
-                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = '{assetTypeUid.ToString()}' and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
-                            for		json path").ToList();
+                            		inner join FieldType F on F.AssetTypeID = A.ID and A.[uid] = @assetTypeUid and F.Type in ('Boolean', 'Decimal', 'Date', 'Lookup', 'Number', 'Text')
+                            for		json path", new { assetTypeUid }).ToList();
         }
 
         public List<BulkMetricTemporaryTableModel> BulkMetricsImport(BulkMetricsImport model, ApiExecution execution)
@@ -777,9 +786,8 @@ namespace d360.model.DataAccessLayer
 
         public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
         {
-            return Company.MetricAllocations.FirstOrDefault(x => x.AssetTypeUid == model.AssetTypeUid && x.ScoreType == model.ScoreType);
+            return Company.GetByUid<MetricAllocation>(model.AllocationUid);
         }
-
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)
         {
@@ -807,6 +815,7 @@ namespace d360.model.DataAccessLayer
 
             return results;
         }
+        
         public DataQualityGetResultModel GetDataQualityResults(Guid owningAssetUid, Guid? evaluatedAssetUid = null, int pageSize = 250, int pageNum = 1, string sort = null, string direction = "asc", DateTime? effectiveDateStart = null, DateTime? effectiveDateEnd = null, bool includeDuplicateFlag = false)
         {
             var result = new DataQualityGetResultModel();
@@ -949,7 +958,6 @@ namespace d360.model.DataAccessLayer
 
         public List<DataQualityAssetResultModel> GetAssetResultDetailsByUid(Guid value)
         {
-            var result = new List<DataQualityAssetResultModel>();
             var parameters = new DynamicParameters();
             parameters.Add("@Uid", value);
 
@@ -962,10 +970,7 @@ namespace d360.model.DataAccessLayer
 	                                    and 
 	                                    AR.Uid = @Uid";
 
-            result = Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters).ToList();
-
-            return result;
-
+            return Company.Query<DataQualityAssetResultModel>(assetResultSQL, parameters).ToList();
         }
 
         public List<DataQualityDeleteResponseModel> DeleteDataQualityResult(List<DataQualityDeleteModel> request, ApiExecution execution)
@@ -1020,7 +1025,6 @@ namespace d360.model.DataAccessLayer
             return results;
         }
 
-
         public async Task<ApiExecutionInfo> PostBulkDataQualityResults(List<DataQualityInsertModel> request, ApiExecution execution, bool sendWorkflowEvents = true)
         {
             var executionInfo = new ApiExecutionInfo
@@ -1054,7 +1058,7 @@ namespace d360.model.DataAccessLayer
         private DateTime? GetMetricsLastUsedEffectiveDate(Guid uid)
         {
             return Company.Query<DateTime?>(@"SELECT top 1 EffectiveDate
-                      FROM[metrics].[ScoreItem]
+                      from [metrics].[ScoreItem]
                       where metricassetuid = @metricVersionUid
                       order by EffectiveDate desc", new { metricVersionUid = uid }).FirstOrDefault();
         }

@@ -17,7 +17,25 @@ namespace d360.core.entities.Metric
         public DateTime EffectiveDate { get; set; }
 
         [DataMember]
+        public Guid AssetUid { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public float Threshold { get; set; }
+
+        [DataMember]
         public decimal Weight { get; set; }
+
+        [DataMember]
+        public MetricUpdateFrequency UpdateFrequency { get; set; }
+
+        [DataMember]
+        public bool MatchConditionsOnly { get; set; } = false;
 
         [DataMember, StringLength(1)]
         public string ConditionAndOr { get; set; }
@@ -31,7 +49,7 @@ namespace d360.core.entities.Metric
         [DataMember, ForeignKey("Uid")]
         public virtual MetricAsset Asset { get; set; }
 
-        [DataMember, ForeignKey("Uid, EffectiveDate")]
-        public virtual ICollection<MetricAssetVersionCondition> Conditions { get; set; }
+        //[DataMember, ForeignKey("VersionUid")]
+        //public virtual ICollection<MetricAssetVersionCondition> Conditions { get; set; }
     }
 }

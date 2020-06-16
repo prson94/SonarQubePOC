@@ -92,7 +92,7 @@ import { AllocationService } from '../../../services/allocations.service';
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() assetType: AssetTypeMetricModel;
-    @Input() scoreType: ScoreType;
+    @Input() allocationUid: string;
     @Output() selectionChange = new EventEmitter();
 
     private metrics: MetricAssetViewModel[] = [];
@@ -116,7 +116,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['assetType'] && this.assetType) {
+        if (changes['allocationUid'] && this.allocationUid) {
             this.formMode = FormMode.Default;
             this.load();
         }
@@ -126,8 +126,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.isLoading = true;
         this.metrics = [];
         this.metricTree = [];
-        if (this.assetType) {
-            this.metricsService.getMetricsByAssetType(this.assetType.Uid, this.scoreType)
+        if (this.allocationUid) {
+            this.metricsService.getMetricsByAllocation(this.allocationUid)
                 .subscribe(r => {
 
                     this.metrics = r;
@@ -153,7 +153,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
                             this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                                 this.isLoading = false;
-                                this.isExternallyCalculated = res.find(x => x.scoreType == this.scoreType).isExternallyCalculated;
+                                this.isExternallyCalculated = res.find(x => x.uid == this.allocationUid).isExternallyCalculated;
                             })
                         });
                 });
