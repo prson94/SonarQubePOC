@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemValueViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -61,23 +61,37 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
 
             const field = this.metricConditionListFieldTypes.find(f => f.ID === c.ConditionFieldTypeID);
+
             if (field !== null) {
-                c.FieldTypeName = field.Name;
-                //c.Type = field.Type;
-                if (field.Values) {
-                    if (field.Values.length > 0) {
-                        let valueModel: MetricAssetVersionConditionItemValueViewModel = field.Values.find(o => o.Value === c.Values[0].Value);
-                        valueModel = field.Values.find(o => o.Value === c.Values[0].Value);
-                        if (valueModel) {
-                            c.ValuesText = valueModel.Text;
+                c.FieldTypeName = field.Name; 
+                c.FieldType = field;
+
+                switch (field.Type) {
+                    case 'Lookup':
+                        if (field.Values) {
+                            if (field.Values.length > 0) {
+                                if (c.Values) {
+                                    if (c.Values[0].Value) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                        if (valueModel) {
+                                            c.SingleValue = c.Values[0].Value;
+                                            c.ValuesText = valueModel.Text;
+                                        }
+                                    }
+                                }
+                            }
                         }
-                    }
+                        break;
+                    default:
+                        if (c.Values) {
+                            if (c.Values[0].Value) {
+                                c.SingleValue = c.Values[0].Value; 
+                                c.ValuesText = c.Values[0].Value;
+                            }
+                        }
+                        break;
                 }
-
-                if (!c.ValuesText) {
-                    c.ValuesText = c.Values[0].Text;
-                }
-
             }
         });
         this.isLoading = false;
@@ -119,12 +133,13 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         e.OperatorText = this.operators.find(o => o.value === e.Operator).label;
 
         if (!e.IsEditMode) {
+            //this.conditions = [];
             this.conditions.push(e);
         }
 
         this.refreshSelectedFieldTypeIds();
 
-        this.conditions.slice();
+        //this.conditions.slice();
         this.conditionsChange.emit(this.conditions);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);

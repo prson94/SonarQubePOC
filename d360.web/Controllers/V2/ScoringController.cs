@@ -56,7 +56,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpGet,
-            ApiExplorerSettings(IgnoreApi = true),
+            //ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
@@ -96,7 +96,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPost,
-            ApiExplorerSettings(IgnoreApi = true),
+            //ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -178,7 +178,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The allocation.</returns>
         [
             HttpPut,
-            ApiExplorerSettings(IgnoreApi = true),
+            //ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -277,7 +277,7 @@ namespace d360.web.Controllers.V2
         /// <returns>The metric.</returns>
         [
             HttpDelete,
-            ApiExplorerSettings(IgnoreApi = true),
+            //ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(ConfirmResponse)),

@@ -136,6 +136,7 @@
     <Compile Include="entities\Metric\MetricApiViewModels.cs" />
     <Compile Include="entities\Metric\MetricAsset.cs" />
     <Compile Include="entities\Metric\MetricAssetVersion.cs" />
+    <Compile Include="entities\Metric\MetricAssetVersionConditionItemValue.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionConditionItem.cs" />
     <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
     <Compile Include="entities\AssetDataProfile.cs" />

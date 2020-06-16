@@ -52,7 +52,7 @@
     <div class="row" *ngIf="!isLoading && !isExternallyCalculated">
         <div class="col s12">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
-                <div class="row" *ng-for="let g in model.ConditionGroups">
+                <div class="row" *ngFor="let g of model.ConditionGroups">
                     <div class="col l3 m12 s12">
                         <div class="FieldName">
                             Condition Type

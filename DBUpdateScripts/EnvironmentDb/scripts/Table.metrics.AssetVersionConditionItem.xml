@@ -1,0 +1,53 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Table.metrics.AssetVersionConditionItem-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersionConditionItem')
+BEGIN
+	create table metrics.AssetVersionConditionItem (
+		Uid uniqueidentifier CONSTRAINT DF_MetricAssetVersionConditionItem_Uid DEFAULT (newid()) NOT NULL,
+		AssetVersionConditionUid uniqueidentifier NOT NULL,
+		ConditionType int NOT NULL,
+		ConditionFieldTypeID int NULL,
+		ConditionIntersectTypeID int NULL,
+		[Operator] varchar(10) NOT NULL,
+		CONSTRAINT PK_MetricAssetVersionConditionItem PRIMARY KEY NONCLUSTERED ( [Uid] )
+	)
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_FieldType')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionConditionItem] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType] FOREIGN KEY([ConditionFieldTypeID]) REFERENCES [dbo].[FieldType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_FieldType]
+END
+
+IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_IntersectType')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersionConditionItem] WITH CHECK ADD CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType] FOREIGN KEY([ConditionIntersectTypeID]) REFERENCES [dbo].[IntersectType] ([ID]) ON DELETE CASCADE
+	ALTER TABLE [metrics].[AssetVersionConditionItem] CHECK CONSTRAINT [FK_MetricAssetVersionConditionItem_IntersectType]
+END
+
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionConditionItem')
+begin
+	create clustered index CIX_MetricsAssetVersionConditionItem on [metrics].[AssetVersionConditionItem] ( AssetVersionConditionUid )
+end
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+drop table if exists metrics.AssetVersionConditionItem
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

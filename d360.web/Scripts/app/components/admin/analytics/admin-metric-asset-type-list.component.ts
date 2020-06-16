@@ -62,7 +62,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     }
 
     getFormattedItem(x: ScoreTypeAllocation): ScoreTypeAllocationFormatted {
-        let formatted: ScoreTypeAllocationFormatted = new ScoreTypeAllocationFormatted();
+        const formatted = new ScoreTypeAllocationFormatted();
         formatted.assetClassName = this.getClassFriendlyName(x.assetClassName);
         formatted.assetTypePath = x.assetTypePath;
         formatted.assetTypeUid = x.assetTypeUid;
@@ -127,7 +127,7 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     }
 
     private getAllocationByUid(uid: string): ScoreTypeAllocation {
-        return this._loadedAllocations.find(x => x.uid == uid);
+        return this._loadedAllocations.find(x => x.uid === uid);
     }
 
     private deleteAllocation($event) {
@@ -146,16 +146,16 @@ export class AdminMetricAssetTypeListComponent extends BaseComponent implements 
     }
 
     private getClass(item): string {
-        var listItem = this.getAllocationByUid(item.uid);
-        if (this.selection.assetTypeUid == listItem.assetTypeUid && this.selection.scoreType == listItem.scoreType) {
+        const listItem = this.getAllocationByUid(item.uid);
+        if (this.selection.assetTypeUid === listItem.assetTypeUid && this.selection.scoreType === listItem.scoreType) {
             return 'ui-state-highlight';
         }
         return '';
     }
 
     private openMeasures(event: ScoreTypeAllocationFormatted) {
-        var alloc = this.getAllocationByUid(event.uid);
-        var url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
+        const alloc = this.getAllocationByUid(event.uid);
+        const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${alloc.assetTypeUid}/${alloc.uid}`;
         this.router.navigateByUrl(url);
     }
 

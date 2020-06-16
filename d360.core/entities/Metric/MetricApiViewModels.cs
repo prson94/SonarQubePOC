@@ -62,13 +62,13 @@ namespace d360.core.entities.Metric
         public Guid Uid { get; set; }
 
         [DataMember]
-        public int Position { get; set; }
+        public int Position { get; set; } = 1;
 
         [DataMember]
-        public float Threshold { get; set; }
+        public float? Threshold { get; set; }
 
         [DataMember]
-        public decimal Weight { get; set; }
+        public decimal? Weight { get; set; }
 
         [DataMember]
         public MetricMatchType MatchType { get; set; }
@@ -90,20 +90,13 @@ namespace d360.core.entities.Metric
         public int? ConditionFieldTypeID{ get; set; }
         
         [DataMember]
-        public int? ConditionInterectTypeID { get; set; }
+        public int? ConditionIntersectTypeID { get; set; }
 
         [DataMember, StringLength(10)]
         public string Operator { get; set; }
 
-        internal string Value { get; set; }
-
         [DataMember]
-        public List<MetricAssetVersionConditionItemValue> Values
-        {
-            get { return JsonConvert.DeserializeObject<List<MetricAssetVersionConditionItemValue>>(Value); }
-            set { Value = JsonConvert.SerializeObject(value); }
-        }
-
+        public List<MetricAssetVersionConditionItemValue> Values { get; set; }
 
     }
 

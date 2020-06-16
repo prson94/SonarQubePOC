@@ -65,10 +65,10 @@ import { AllocationService } from '../../../services/allocations.service';
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
                         <header>
@@ -112,7 +112,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
-        //this.load(); 
+        this.load();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
@@ -132,7 +132,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
                     this.metrics = r;
                     if (this.metrics) {
-                        this.metrics.filter(g => g.ParentUid == null).forEach(g => {
+                        this.metrics.filter(g => g.ParentUid === null).forEach(g => {
                             let n = {
                                 data: g,
                                 children: [],
@@ -141,7 +141,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                             this.metricTree.push(n);
                             this.addChildren(n);
                         });
-                        if (this.metricTree != null && this.metricTree.length > 0) {
+                        if (this.metricTree !== null && this.metricTree.length > 0) {
                             this.selection = this.metricTree[0].data;
                             this.selectionChange.emit(this.selection);
                         }
@@ -150,10 +150,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
                         .subscribe(f => {
                             this.metricListFieldTypes = f;
-
                             this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                                 this.isLoading = false;
-                                this.isExternallyCalculated = res.find(x => x.uid == this.allocationUid).isExternallyCalculated;
+                                this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
                             })
                         });
                 });
@@ -165,7 +164,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     addChildren(node: TreeNode) {
-        let children = this.metrics.filter(g => g.ParentUid == node.data.Uid);
+        let children = this.metrics.filter(g => g.ParentUid === node.data.Uid);
         if (children.length > 0) {
             children.forEach(c => {
                 let n = {
@@ -181,7 +180,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     selectNode(e: any) {
         this.selectedNode = e;
-        this.selection = e == null ? null : e.data;
+        this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
     }
 

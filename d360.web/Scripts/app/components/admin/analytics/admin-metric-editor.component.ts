@@ -1,10 +1,10 @@
 import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType } from '../../../models/metrics.model';
+import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from "../../../models/form.model";
 import { FormHelpers } from '../../../static/form-helpers';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
+import { MessagesObservableService } from '../../../services/messages-observable.service'; 
 
 
 @Component({
@@ -63,6 +63,13 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
             this.model.EffectiveDate = new Date();
             this.model.AllocationUid = this.allocationUid;
         }
+
+        if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 
+            const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
+            dummyConditionGroup.Position = 1;
+            dummyConditionGroup.MatchType = MetricMatchType.Any; 
+            this.model.ConditionGroups.push(dummyConditionGroup);
+        }
     }
 
     valid() {
@@ -96,12 +103,26 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
 
         this.model.ConditionGroups.forEach(g => {
             g.ConditionItems.forEach(c => {
-                if (c['Type'] === 'Date') {
-
-                    const d = new Date(c.Values[0].Text as string);
-                    const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
-                    condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
-                    c.SingleValue = condate.toISOString();
+                if (!c.Values) {
+                    c.Values = [];
+                }
+                if (c.Values.length === 0) {
+                    c.Values.push({ Value: '' });
+                }
+                switch (c.FieldType.Type) {
+                    case 'Date':
+                    case 'DateTime':
+                        const d = new Date(c.SingleValue as string);
+                        const condate = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0);
+                        condate.setMinutes(condate.getMinutes() - condate.getTimezoneOffset());
+                        c.Values[0].Value = condate.toISOString();
+                        break;
+                    case 'Lookup':
+                        c.Values[0].Value = c.SingleValue;
+                        break;
+                    default:
+                        c.Values[0].Value = c.SingleValue;
+                        break;
                 }
             });
         });
@@ -134,9 +155,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
     }
 
     private clamp(val: any, min: number, max: number, precision: number): any {
-        let newVal = FormHelpers.clamp(val, min, max, precision);
+        const newVal = FormHelpers.clamp(val, min, max, precision);
 
-        if (this.weightInput != null && this.weightInput.nativeElement != null)
+        if (this.weightInput !== null && this.weightInput.nativeElement !== null)
             this.weightInput.nativeElement.value = newVal;
 
         return newVal;

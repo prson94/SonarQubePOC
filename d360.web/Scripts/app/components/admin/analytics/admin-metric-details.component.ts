@@ -73,11 +73,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);
+        this.setCommonItems(true, this.selectedAssetType.Name);  
         this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocations()
+        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid) 
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
+
                 r.forEach(x => {
                     const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
                     const searchRes: SearchResult = new SearchResult();

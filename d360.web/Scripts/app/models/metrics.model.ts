@@ -31,7 +31,7 @@ export class MetricAssetVersionConditionItemViewModel {
     Uid: string;
     ConditionType: MetricConditionType;
     ConditionFieldTypeID: number;
-    ConditionInterectTypeID: number;
+    ConditionIntersectTypeID: number;
     Operator: string;
     Values: MetricAssetVersionConditionItemValueViewModel[] = [];
 
@@ -42,7 +42,7 @@ export class MetricAssetVersionConditionItemViewModel {
     OperatorText: string;
     IsEditMode: boolean;
 
-    SingleValue: string; //For non-list fields
+    SingleValue: any; //For non-list fields
 }
 
 export class MetricFieldTypeViewModel {
@@ -50,9 +50,13 @@ export class MetricFieldTypeViewModel {
     Name: string;
     Type: string;
     Disabled = false;
-    Values: MetricAssetVersionConditionItemValueViewModel[] = [];
+    Values: MetricAssetVersionConditionItemFieldValueViewModel[] = [];
 }
 export class MetricAssetVersionConditionItemValueViewModel {
+    Value: string; 
+}
+
+export class MetricAssetVersionConditionItemFieldValueViewModel {
     Value: number;
     Text: string;
 }
@@ -167,10 +171,10 @@ export enum ScoreType {
     Perceptional = 3
 }
 
-export const ScoreTypeInfo = new Map<number, string>([
-    [ScoreType.Governance, "Governance Score"],
-    [ScoreType.DataQuality, "Data Quality Score"],
-    [ScoreType.Perceptional, "Perception Score"]
+export const ScoreTypeInfo = new Map<string, string>([
+    ["Governance", "Governance Score"],
+    ["DataQuality", "Data Quality Score"],
+    ["Perceptional", "Perception Score"]
 ]);
 
 export enum MetricUpdateFrequency {

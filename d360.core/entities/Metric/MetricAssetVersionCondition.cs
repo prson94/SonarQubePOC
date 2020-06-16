@@ -11,7 +11,7 @@ namespace d360.core.entities.Metric
     public class MetricAssetVersionCondition : BaseUidObject
     {
         [DataMember]
-        public Guid VersionUid { get; set; }
+        public Guid AssetVersionUid { get; set; }
 
         [DataMember]
         public MetricMatchType MatchType { get; set; }
@@ -25,7 +25,11 @@ namespace d360.core.entities.Metric
         [DataMember]
         public decimal? Weight { get; set; }
 
-        //[DataMember, ForeignKey("VersionUid")]
-        //public virtual MetricAssetVersion Version { get; set; } 
+        // Used only during the measure update process to tell if this item has been touched. If not, it should be deleted.
+        [NotMapped]
+        public bool Updated { get; set; }
+
+        [DataMember, ForeignKey("AssetVersionConditionUid")]
+        public virtual ICollection<MetricAssetVersionConditionItem> Items { get; set; }
     }
 }

@@ -59,9 +59,6 @@ export class BaseComponent {
     governanceRolesSidebar: SecondaryNavItem;
     connectorLabels: SecondaryNavItem;
 
-
-    scoringDataQualitySidebar: SecondaryNavItem;
-    scoringGovernanceSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -207,10 +204,11 @@ export class BaseComponent {
             this.clearSidebar();
 
             let priority = 10;
+
             allocations.forEach(allocation => {
                 const navItem = new SecondaryNavItem(
-                    ScoreTypeInfo.get(allocation.scoreType),
-                    ScoreTypeInfo.get(allocation.scoreType),
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
                     [allocation.icon],
                     `/${baseUrl}${allocation.uid}`, null, priority
                 );

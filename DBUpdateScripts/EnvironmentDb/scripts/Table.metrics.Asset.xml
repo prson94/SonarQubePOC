@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="Table.metrics.Asset-v1">
+  <changeSet author="Pappas" id="Table.metrics.Asset-v1.1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -16,17 +16,15 @@ BEGIN
 	CREATE TABLE [metrics].[Asset](
 		[Uid] [uniqueidentifier] CONSTRAINT [DF_MetricsAsset_uid] DEFAULT (newid()) NOT NULL,
 		[ParentUid] [uniqueidentifier] NULL,
-		[AssetTypeUid] [uniqueidentifier] NOT NULL,
+		[AllocationUid] uniqueidentifier NOT NULL,
 		[IsGroup] [bit] CONSTRAINT [DF_MetricAsset_IsGroup] DEFAULT (1) NOT NULL,
 		[State] [int] CONSTRAINT [DF_MetricAsset_State] DEFAULT (1) NOT NULL,
-		[Name] [nvarchar](250) NOT NULL,
+		[Name] [nvarchar](250) NULL,
 		[Description] [nvarchar](4000) NULL,
 		[CreatedOn] [datetime] NULL,
 		[CreatedBy] [int] NULL,
 		[UpdatedOn] [datetime] NULL,
 		[UpdatedBy] [int] NULL,
-		[OldMapID] [int] NULL,
-		[ScoreType] [int] CONSTRAINT [DF_MetricScore_ScoreType] DEFAULT (1) NOT NULL,
 		CONSTRAINT [PK_MetricAsset] PRIMARY KEY NONCLUSTERED ( [Uid] ASC )
 	)
 END
@@ -36,6 +34,13 @@ BEGIN
 	ALTER TABLE [metrics].[Asset] WITH CHECK ADD CONSTRAINT [FK_MetricAsset_Parent] FOREIGN KEY([ParentUid]) REFERENCES [metrics].[Asset] ([Uid])
 	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_Parent]
 END
+
+-- Will be uncommented in subsequent sprint.
+--IF NOT EXISTS (select * from sys.foreign_keys where name = 'FK_MetricAsset_MetricAllocation')
+--BEGIN
+--	ALTER TABLE [metrics].[Asset] WITH CHECK ADD CONSTRAINT [FK_MetricAsset_MetricAllocation] FOREIGN KEY([AllocationUid]) REFERENCES [metrics].[Allocation] ([Uid]) ON DELETE CASCADE
+--	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_MetricAllocation]
+--END
 		]]>
     </sql>
 	<rollback>
@@ -66,64 +71,6 @@ BEGIN
 END
 		]]>
 	</rollback>
-  </changeSet>  
-
-  <changeSet author="Pappas" id="Table.metrics.Asset-v3">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<![CDATA[
-if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AllocationUid')
-begin
-	alter table metrics.Asset add AllocationUid uniqueidentifier null;
-end
-GO
-
-if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AssetTypeUid')
-begin
-	update	T
-	set		T.AllocationUid = S.Uid
-	from	metrics.Asset T
-			inner join metrics.Allocation S on S.AssetTypeUid = T.AssetTypeUid and S.ScoreType = T.ScoreType;
-
-	alter table metrics.Asset alter column AllocationUid uniqueidentifier not null;
-
-	ALTER TABLE [metrics].[Asset]  WITH CHECK ADD  CONSTRAINT [FK_MetricAsset_MetricAllocation] FOREIGN KEY([AllocationUid]) REFERENCES [metrics].[Allocation] ([Uid]) ON DELETE CASCADE
-	ALTER TABLE [metrics].[Asset] CHECK CONSTRAINT [FK_MetricAsset_MetricAllocation]
-end
-GO
-
-if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AssetTypeUid')
-begin
-	alter table metrics.Asset drop column AssetTypeUid;
-	alter table metrics.Asset drop column ScoreType;
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AllocationUid')
-begin
-	alter table metrics.Asset add AssetTypeUid uniqueidentifier null;
-	alter table metrics.Asset add ScoreType int null;
-end
-GO
-
-if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AllocationUid')
-begin
-	update	T
-	set		T.AssetTypeUid = S.AssetTypeUid,
-			T.ScoreType = S.ScoreType
-	from	metrics.Asset T
-			inner join metrics.Allocation S on S.Uid = T.AllocationUid;
-
-
-	ALTER TABLE [metrics].[Asset] DROP CONSTRAINT [FK_MetricAsset_MetricAllocation];
-	alter table metrics.Asset drop column AllocationUid;
-end
-		]]>
-	</rollback>
-  </changeSet>  
+  </changeSet>   
 
 </databaseChangeLog>

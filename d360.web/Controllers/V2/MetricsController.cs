@@ -352,8 +352,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("structure/{allocationUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            ApiExplorerSettings(IgnoreApi = true)
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json")//, //, "application/xml"
+            //ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMetricStructureByAssetType(Guid allocationUid)
         {
@@ -371,7 +371,7 @@ namespace d360.web.Controllers.V2
                 models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
                 if (models == null)
                     models = new List<MetricAssetViewModel>();
-                
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)
