@@ -3330,7 +3330,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         update	T
                                                         set		T.UpdatedBy = @R,
                                                                 T.UpdatedOn = @D,
-                                                                T.Color = case when CR.ExecutionID is not null then CR.Color else T.Color end
+                                                                T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
                                                         from	[Asset] T
                                                         inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql}
                                                         left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
