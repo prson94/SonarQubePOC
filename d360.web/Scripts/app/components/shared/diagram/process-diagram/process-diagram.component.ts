@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -15,8 +15,10 @@ import { ProcessDiagramTemplates } from './process-diagram.templates';
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit {
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked {
     @Input() isEditMode: boolean = false;
+    @Input() isFullScreen: boolean = false;
+    @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
     private assetTypeNodes: AssetTypeApiModel[] = [];
@@ -56,8 +58,27 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.cdRef.detectChanges();
             });
     }
+    @ViewChild('diagram', { static: false }) diagramRef;
+    @HostListener('window:resize', ['$event'])
+    private onResize(event) {
+        let height = window.innerHeight;
+
+        if (this.isEditMode)
+            this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
+        else if (this.isFullScreen) 
+            this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
+        else
+            this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+    }
+
+    ngAfterViewChecked() {
+        this.onResize(null);
+        this.applyEditMode(this.isEditMode);
+        this.cdRef.detectChanges();
+    }
 
     private applyEditMode(state: boolean) {
+        if (!this.myDiagram) return;
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
                 n.isEnabled = state;
@@ -77,6 +98,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     switchModes() {
         this.isEditMode = !this.isEditMode;
         this.applyEditMode(this.isEditMode);
+
+        if (!this.isEditMode) {
+            this.editModeClosed.emit();
+        }
+
         this.cdRef.detectChanges();
     }
 

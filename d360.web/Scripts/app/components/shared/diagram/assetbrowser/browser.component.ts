@@ -207,7 +207,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
 
                         if (this.diagram) this.diagram.div = null;
-                        this.helper_InitializeDiagram();
+
+                        if (this.diagramTypeSpecifiedInPath != DiagramType.Process)
+                            this.helper_InitializeDiagram();
 
                     });
             }
@@ -215,11 +217,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewInit() {
+        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+            return;
+
         this.helper_ResizeDiagram();
         this.cdRef.markForCheck();
     }
 
     public ngAfterViewChecked() {
+        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+            return;
 
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
         const panelElements: HTMLElement[] = this.myElement.nativeElement.querySelectorAll('.asset-browser-window');
@@ -255,7 +262,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngOnDestroy() {
-        this.diagram.div = null;    // Garbage collection.
+        if (this.diagram)
+            this.diagram.div = null;    // Garbage collection.
     }
 
     //#endregion
@@ -311,7 +319,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             }
             this.displayConfiguration = m;
         }
-            
+
     }
 
     //#endregion
@@ -319,6 +327,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     //Core events
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
+        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+            return;
+
         this.helper_ResizeDiagram();
     }
 
@@ -364,7 +375,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     this.diagram.model.removeArrayItem(node.relations, ix);
                     this.diagram.model.insertArrayItem(node.relations, ix, relation);
                     this.helper_CalculateAlertCount();
-                    this.cdRef.markForCheck();                    
+                    this.cdRef.markForCheck();
                     relation.disabled = false;
                 }
                 else {
@@ -619,7 +630,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                     else {
                                         this.helper_ShowDetail(uid);
                                     }
-                                    
+
                                 }
                                 this.cdRef.markForCheck();
                             }
@@ -1262,7 +1273,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             //#endregion
         });
 
-        this.diagram.findNodesByExample({ template: function (t) { return (t == "Owners") || (t == "HiddenData"); }}).each(n => {
+        this.diagram.findNodesByExample({ template: function (t) { return (t == "Owners") || (t == "HiddenData"); } }).each(n => {
             let topLevelNode: AssetBrowserTranslationNode = n.data as AssetBrowserTranslationNode;
 
             //#region Owners node/link logic
@@ -2035,6 +2046,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         let model: AssetBrowserFilterModel = _.cloneDeep(this.displayConfiguration);
         model.DiagramType = dt;
         this.displayConfiguration = model;
+        this.cdRef.detectChanges();
     }
 
     private helper_UpdateVisualization(): void {
@@ -2102,7 +2114,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 if (this.selectedDiagramAsset) {
                     allowInformationPopup = (this.selectedDiagramAsset.Uid != this.emptyUid);
                 }
-                
+
                 if (allowInformationPopup) {
                     if (this.selectedDiagramAsset != null) {
                         this.helper_ShowDetail(this.selectedDiagramAsset.Uid);
@@ -2311,7 +2323,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 background: "transparent",
                 contextMenu: this.template_ContextMenu(),
                 click: (e, obj) => this.helper_HighlightPath(e, obj as any),
-                computesBoundsAfterDrag: true, 
+                computesBoundsAfterDrag: true,
                 handlesDragDropForMembers: true,
                 stretch: go.GraphObject.Horizontal,
                 movable: false,
@@ -3257,5 +3269,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     */
     private zoom_Change(_scale: number) {
         this.helper_ScaleDiagram(_scale);
+    }
+
+    private isProcessDiagramInEditMode: boolean = false;
+    editProcess() {
+        this.isFullScreen = false;
+        this.isProcessDiagramInEditMode = true;
     }
 } 

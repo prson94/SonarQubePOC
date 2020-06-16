@@ -9,11 +9,14 @@
                     </div>
                     <div class="button-spacer"></div>
                     <div style="display: inline-block">
-                        <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
+                        <d3s-assetbrowser-search *ngIf="diagramTypeSpecifiedInPath != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
+                        <button type="button" class="gov-button-v2 primary" *ngIf="diagramTypeSpecifiedInPath == 3" (click)="editProcess();"><i class="fa fa-pencil"></i>Edit</button>
                     </div>
+
                 </div>
                 <div class="controls-right">
                     <d3s-assetbrowser-panels (click)="panels_Click($event)"
+                                             [diagramType]="diagramTypeSpecifiedInPath"
                                              [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"
                                              [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
                 </div>
@@ -112,7 +115,7 @@
 
             <div class="row" style="position: relative" *ngIf="diagramTypeSpecifiedInPath == 3">
                 <div class="col s12" style="padding: 0">
-                    <d3s-process-diagram></d3s-process-diagram>
+                    <d3s-process-diagram (editModeClosed)="isProcessDiagramInEditMode = false" [isFullScreen]="isFullScreen" [isEditMode]="isProcessDiagramInEditMode"></d3s-process-diagram>
                 </div>
             </div>
         </div>

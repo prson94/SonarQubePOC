@@ -6746,6 +6746,41 @@ table {
     }
 }
 
+.gov-button-v2 {
+    display: inline-flex;
+    position: relative;
+    box-sizing: border-box;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: pointer;
+    height: 32px;
+    font-family: 'Source Sans Pro' !important;
+    font-size: 14px;
+    text-align: center;
+    white-space: nowrap;
+    background: #f0f0f0;
+    color: #202020;
+    border: none;
+    border-radius: 3px;
+    line-height: normal;
+
+    &.primary {
+        background: #08619f;
+        color: white;
+        padding: 0px 16px;
+
+        &:hover {
+            background: #0067ad;
+        }
+    }
+
+    .fa {
+        margin-right: 8px;
+    }
+}
+
 d3s-process-diagram {
     .diagram-content {
         width: 100%;
@@ -6767,11 +6802,14 @@ d3s-process-diagram {
             height: 100%;
             padding: 16px;
         }
+
+        .menu {
+            margin-bottom: 16px;
+        }
     }
 
     #process-diagram-placeholder {
         flex-grow: 1;
-        min-height: 620px;
         background-color: white;
         border-radius: 4px;
         box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);

@@ -1,27 +1,25 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
 
-    <div>
+    <div class="menu" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
             <button type="button" (click)="switchModes()">
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
             </button>
             <div class="button-spacer"></div>
-            <button *ngIf="isEditMode" type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled">
+            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled">
                 <i class="fa fa-save"></i>
             </button>
-            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="clear()">
+            <button type="button" class="icon mr8" (click)="clear()">
                 <i class="fa fa-refresh"></i>
             </button>
-            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="load()">
+            <button type="button" class="icon mr8" (click)="load()">
                 <i class="fa fa-upload"></i>
             </button>
-            <button *ngIf="isEditMode" type="button" class="icon mr8" (click)="disableDrag()">
+            <button type="button" class="icon mr8" (click)="disableDrag()">
                 <i class="fa fa-mouse-pointer"></i>
             </button>
         </div>
     </div>
-
-    <br />
     <div class="diagram-content">
         <div id="myPaletteDiv" *ngIf="isLoaded && isEditMode">
             <p-accordion [multiple]="true">
@@ -69,7 +67,7 @@
                 </p-accordionTab>
             </p-accordion>
         </div>
-        <div id="process-diagram-placeholder">
+        <div #diagram id="process-diagram-placeholder">
             <div class="empty-overlay">
                 <div class="content" *ngIf="isCanvasEmpty && isEditMode">
                     <div class="icon-holder">

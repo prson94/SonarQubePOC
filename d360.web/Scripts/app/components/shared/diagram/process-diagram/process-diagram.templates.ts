@@ -105,7 +105,12 @@ export class ProcessDiagramTemplates {
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
             this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, false));
+            this.makePort("B", go.Spot.Bottom, true, false),
+            //{
+            //    mouseEnter: function (e, node) { showSmallPorts(node, true); },
+            //    mouseLeave: function (e, node) { showSmallPorts(node, false); }
+            //}
+        );
     }
 
     static get eventTemplate() {
@@ -127,14 +132,18 @@ export class ProcessDiagramTemplates {
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
-                    $(go.Shape, "Circle",
+                    $(go.Shape,
                         {
-                            fill: 'transparent',
+                            fill: "transparent",
                             stroke: "black",
                             strokeWidth: 2,
-                            visible: false
+                            geometryString: 'M 230 230 A 45 45, 0, 1, 1, 230,229',
+                            width: 76,
+                            height: 76
+
                         },
-                        new go.Binding('visible', 'isSelected').ofObject()),
+                        new go.Binding('visible', 'isSelected').ofObject(),
+                    ),
                     $(go.Panel, 'Auto',
                         $(go.Shape, "Circle",
                             {
@@ -146,6 +155,7 @@ export class ProcessDiagramTemplates {
                                 strokeWidth: 2,
                                 width: 70,
                                 height: 70,
+                                margin: new go.Margin(2, 2, 2, 2)
                             },
                             new go.Binding('stroke', 'refItemColor').makeTwoWay(),
                         ),
@@ -171,6 +181,7 @@ export class ProcessDiagramTemplates {
                     , new go.Binding("text", "name").makeTwoWay())
             )
         );
+
     }
 
     static get gatewayTemplate() {
