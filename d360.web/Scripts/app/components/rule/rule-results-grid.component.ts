@@ -46,18 +46,11 @@ export class RuleResultsGridComponent extends BaseComponent {
 
     constructor(private ruleService: RulesService) {
         super();
-    }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['ruleId'] && this.ruleId) {            
-            this.filters = [];
-            this.getData();
-        }
-    }
+    }    
 
     public filterGridData(filterData) {
         this.currentPageNumber = 0;
-        this.getData();
+        this.getData();        
     }
 
     private getData() {
@@ -66,7 +59,7 @@ export class RuleResultsGridComponent extends BaseComponent {
             console.log("ERROR - NO RULE ID");
             return;
         }        
-
+        
         //remove any invalid filters
         if (this.filters && this.filters.length > 0) {
             for (var i = this.filters.length - 1; i >= 0; i--) {
@@ -101,7 +94,7 @@ export class RuleResultsGridComponent extends BaseComponent {
         this.sortField = event.sortField == undefined ? "" : event.sortField;
         this.rowsPerPage = event.rows;
         this.currentPageNumber = event.first / event.rows;
-       
+
         this.getData();
     }
 
