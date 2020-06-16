@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 	<!-- Core Objects -->
+	<include file="scripts/DatabaseSettings.xml"/>
 	<include file="scripts/Schemas.xml"/>
 	<include file="scripts/Sequences.xml"/>
 	<include file="scripts/FullTextCatalog.xml"/>
