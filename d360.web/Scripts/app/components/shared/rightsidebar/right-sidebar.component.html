@@ -72,7 +72,7 @@
                     {{item.title}}
                     <span *ngIf="statistics?.CommentCount && item.title === 'Comments'" class="d3s-icon small-icon primary">{{statistics?.CommentCount}}</span>
                     <span *ngIf="statistics?.IssueCount && item.title === 'Actions'" class="d3s-icon small-icon" [ngClass]="{'bad':actionsAssigned,'primary':!actionsAssigned}">{{statistics?.IssueCount}}</span>
-                    <span *ngIf="item.warningMessage" style="margin-left:8px;">
+                    <span *ngIf="item.warningMessage" class="sidebar-warning">
                         <d3s-info-tooltip [style]="'warning'">
                             <span *ngIf="item.warningMessage == 'GovRoleWarning'">
                                 You must define your <strong>Governance Role</strong> settings in order to display and set the <strong>Governance Role</strong> property in your diagrams.
