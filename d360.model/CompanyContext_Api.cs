@@ -7370,7 +7370,7 @@ insert into #Keys
                                 {
                                     if (cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Asignee values set.";
+                                        rowError += ";Then condition should have either Field and Assignee values set.";
                                     }
 
                                     if (cond.Assignee != null && cond.Field != null)
