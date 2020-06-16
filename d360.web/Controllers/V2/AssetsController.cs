@@ -240,6 +240,11 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
+                if(assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
+                }
+                
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
