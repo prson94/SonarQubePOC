@@ -624,7 +624,6 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.Fusion,
                     AssetTypeClass.FusionQuery,
                     AssetTypeClass.User,
-                    AssetTypeClass.AttributeGroup,
                 };
                 if (AssetTypeUid != null && disallowedPathClasses.Contains(@class))
                 {
@@ -638,25 +637,11 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.FusionQuery,
                     AssetTypeClass.User,
                     AssetTypeClass.ReferenceItemType,
-                    AssetTypeClass.AttributeGroup,
                     AssetTypeClass.Diagram
                 };
                 if (AssetTypeUid != null && disallowedScoreClasses.Contains(@class))
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
-                }
-
-                if (@class == AssetTypeClass.Diagram)
-                {
-                    var notAllowed = new List<string>() {
-                        "ComplexRelationLookup",
-                        "OwnershipLookup",
-                        "Relationship",
-                        "FieldFromRelationship",
-                        "RefListRelationship",
-                        "JSON",
-                        "JsonElement" };
-                    dataTypeOptions = dataTypeOptions.Where(x => !notAllowed.Contains(x.value)).ToList();
                 }
 
                 var jsonFieldType = new Dictionary<string, string>() {

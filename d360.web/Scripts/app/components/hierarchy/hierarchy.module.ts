@@ -22,7 +22,7 @@ import { HierarchyItemComponent } from './hierarchy-item.component';
 import { HierarchyItemStructureComponent } from './hierarchy-item-structure.component';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputMaskModule } from 'primeng/inputmask';
 import { DropdownModule } from 'primeng/dropdown';
@@ -30,7 +30,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TreeTableModule } from 'primeng/treetable';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { TreeModule } from 'primeng/tree';
 import { TableModule } from 'primeng/table';
 
@@ -47,7 +47,7 @@ import { SharedObjectGovernanceModule } from '../shared/objectgovernance/shared-
         HierarchyRoutingModule,
 
         //primeng
-        GrowlModule,
+        ToastModule,
         InputTextModule,
         InputMaskModule,
         TreeTableModule,

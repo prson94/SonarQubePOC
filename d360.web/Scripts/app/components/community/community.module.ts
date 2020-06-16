@@ -18,8 +18,8 @@ import { CommunityResponsibilityCountComponent } from './community-responsibilit
 
 import { CommunityRoutingModule } from './community.routes';
 
-import { GrowlModule } from 'primeng/growl';
-import { SharedModule } from 'primeng/shared';
+import { ToastModule } from 'primeng/toast';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 
 import { HighchartsStatic } from 'angular2-highcharts/dist/HighchartsService';
@@ -46,7 +46,7 @@ export function highchartsFactory() {
 
         //prime
         SharedModule,
-        GrowlModule,
+        ToastModule,
         TableModule,
 
         //d3s

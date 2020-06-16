@@ -16,7 +16,7 @@ import { ShortcutListComponent } from './shortcut-list.component';
 import { ShortcutItemComponent } from './shortcut-item.component';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { TableModule } from 'primeng/table';
 

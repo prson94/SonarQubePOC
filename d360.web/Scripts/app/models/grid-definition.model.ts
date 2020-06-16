@@ -1,5 +1,5 @@
 ﻿import { ObjectRelationship } from './relationship.model';
-import { SelectItem } from 'primeng/components/common/api';
+import { SelectItem } from 'primeng/api';
 import { FieldType } from './fields.model';
 
 export class GridField {

@@ -26,8 +26,8 @@ import { WorkflowBulkReassignComponent } from './workflow-bulk-reassign.componen
 
 import { WorkflowRoutingModule } from './workflow.routes';
 
-import { SharedModule } from 'primeng/shared';
-import { GrowlModule } from 'primeng/growl';
+import { SharedModule } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import { CalendarModule } from 'primeng/calendar';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
@@ -50,7 +50,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
         WorkflowRoutingModule,
         //primeng  
         CalendarModule,
-        GrowlModule,
+        ToastModule,
         ToggleButtonModule,
         InputTextModule,
         ButtonModule,

@@ -635,7 +635,7 @@ namespace d360.web.Controllers.V2
             Guid _owningAssetUid;
             Guid? _evaluatedAssetUid = null;
             string _order = null;
-            string _direction = "asc";
+            string _direction = "desc";
             DateTime? _effectiveDateStart = null;
             DateTime? _effectiveDateEnd = null;
             int _pageSize = 250;

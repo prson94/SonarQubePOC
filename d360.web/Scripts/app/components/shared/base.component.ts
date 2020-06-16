@@ -669,25 +669,6 @@ export class BaseComponent {
         return FormHelpers.getLocaleDateString();
     }
 
-    public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
-        var arrDeepCopy = originalArray.map(x => Object.assign({}, x));
-        if (search.length == 0) {
-            tree.value = arrDeepCopy;
-            return;
-        }
-        else {
-            let temp: TreeNode[] = [];
-            arrDeepCopy.forEach(n => {
-                if (this.doesNodeContainsValue(n, search)) {
-                    temp.push(n);
-                    this.expandTreeNode(n);
-                }
-            });
-
-            tree.value = temp;
-        }
-    }
-
     expandTreeNode(node: TreeNode) {
         node.expanded = true;
         if (node.children) {

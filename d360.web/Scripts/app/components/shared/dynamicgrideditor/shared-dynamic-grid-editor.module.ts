@@ -10,7 +10,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CalendarModule } from 'primeng/calendar';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { DropdownModule } from 'primeng/dropdown';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { EditorModule } from 'primeng/editor';
 import { OverlayPanelModule } from 'primeng/overlaypanel';

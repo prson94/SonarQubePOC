@@ -50,7 +50,7 @@ import { FusionDataProfileDetailComponent } from './fusion-data-profile-detail.c
 
 import { TabViewModule } from 'primeng/tabview';
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputMaskModule } from 'primeng/inputmask';
 import { DropdownModule } from 'primeng/dropdown';
@@ -59,7 +59,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
 import { SelectButtonModule } from 'primeng/selectbutton';
 import { TreeTableModule } from 'primeng/treetable';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { FileUploadModule } from 'primeng/fileupload';
 import { TreeModule } from 'primeng/tree';
 
@@ -89,7 +89,7 @@ export function highchartsFactory() {
         FusionRoutingModule,
 
         //primeng
-        GrowlModule,
+        ToastModule,
         InputTextModule,
         InputMaskModule,
         TreeTableModule,

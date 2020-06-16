@@ -15,7 +15,7 @@ import { AdminCustomizationsRoutingModule } from './admin-customizations.routes'
 import { CodemirrorModule } from 'ng2-codemirror';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 
 @NgModule({
     imports: [

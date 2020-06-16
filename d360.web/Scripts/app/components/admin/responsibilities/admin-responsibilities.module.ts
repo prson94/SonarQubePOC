@@ -24,7 +24,7 @@ import { AdminResponsibilitiesRoutingModule } from './admin-responsibilities.rou
 
 import { SimpleAccordionModule } from '../../shared/simple-accordion.part';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { CheckboxModule } from 'primeng/checkbox';

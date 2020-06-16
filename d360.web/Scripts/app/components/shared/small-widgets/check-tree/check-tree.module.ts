@@ -1,7 +1,7 @@
 ﻿import { NgModule } from '@angular/core';
 import { CoreModule } from '../../core.module';
 import { CommonModule } from '@angular/common';
-import { SharedModule } from 'primeng/components/common/shared';
+import { SharedModule } from 'primeng/api';
 
 import { CheckTree } from './check-tree.component';
 import { UICheckTreeNode } from './check-tree-node.component';

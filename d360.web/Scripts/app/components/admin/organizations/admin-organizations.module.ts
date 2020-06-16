@@ -29,7 +29,7 @@ import { SharedFieldDefinitionModule } from '../../shared/fielddefinition/shared
 
 import { AdminOrganizationsRoutingModule } from './admin-organizations.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
