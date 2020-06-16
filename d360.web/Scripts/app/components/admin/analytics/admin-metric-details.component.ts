@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, Output } from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, Output, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -93,7 +93,6 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                 this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocationUid, r);
 
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
-                this.isLoading = false;
             });
     }
 

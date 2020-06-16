@@ -132,14 +132,16 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
                     this.metrics = r;
                     if (this.metrics) {
-                        this.metrics.filter(g => g.ParentUid === null).forEach(g => {
+                        this.metrics.filter(g => g.ParentUid == null).forEach(g => {
                             let n = {
                                 data: g,
                                 children: [],
                                 expanded: true
                             }
-                            this.metricTree.push(n);
-                            this.addChildren(n);
+                            if (this.metricTree.findIndex(o => o.data.Uid === g.Uid) == -1) {
+                                this.metricTree.push(n);
+                                this.addChildren(n);
+                            }
                         });
                         if (this.metricTree !== null && this.metricTree.length > 0) {
                             this.selection = this.metricTree[0].data;
