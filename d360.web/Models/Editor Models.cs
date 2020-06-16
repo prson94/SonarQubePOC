@@ -756,7 +756,8 @@ namespace d360.web.Models
     public enum AssetBrowserDiagramType
     {
         Lineage = 1,
-        Impact = 2
+        Impact = 2,
+        Process = 3
     }
 
     [DataContract]

@@ -4,8 +4,13 @@
         <div class="tile tile-detail" style="padding: 0">
             <div [hidden]="isLoading" class="asset-browser-header">
                 <div class="controls-left">
-                    <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)"></d3s-assetbrowser-viewchange>
-                    <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
+                    <div style="display: inline-block">
+                        <d3s-assetbrowser-viewchange [current]="displayConfiguration.DiagramType" (apply)="viewchange_Apply($event)" [items]="diagramTypes?.items"></d3s-assetbrowser-viewchange>
+                    </div>
+                    <div class="button-spacer"></div>
+                    <div style="display: inline-block">
+                        <d3s-assetbrowser-search (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
+                    </div>
                 </div>
                 <div class="controls-right">
                     <d3s-assetbrowser-panels (click)="panels_Click($event)"

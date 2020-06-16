@@ -276,7 +276,7 @@ export class BaseComponent {
                     let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
                     if (!isVisualizationDisabled) {
                         this.lineageSidebar = new SecondaryNavItem(
-                            'Visualization',
+                            'Diagrams',
                             'lineage',
                             ['fa-random'],
                             `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
