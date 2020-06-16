@@ -95,7 +95,7 @@ select  at.Name,
         at.id as Id								
 from    Asset a
         inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
-group by at.name,at.objectid order by at.name";
+group by at.name,at.id order by at.name";
 
         public static string ObjectNymTypes = @"
                                 select 

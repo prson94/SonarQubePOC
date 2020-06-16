@@ -51,7 +51,6 @@ export enum AssetTypeClass {
     Fusion = 3,
     FusionAttribute = 4,
     FusionQuery = 4,
-    AttributeGroup = 5,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,

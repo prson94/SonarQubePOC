@@ -800,6 +800,7 @@ namespace d360.model.DataAccessLayer
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             var fields = new List<FieldType>();
 
+            bool includeAssetUrl = true;
             bool includeParent = false;
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
             {
@@ -807,7 +808,7 @@ namespace d360.model.DataAccessLayer
                 bool.TryParse(value, out includeParent);
             }
             var hierarchy = CompanyContext.IntersectTypes
-                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy)?.ID;
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
 
             if (hierarchy == null)
             {
@@ -821,11 +822,22 @@ namespace d360.model.DataAccessLayer
 
             //add default fields
             if (assetType.Class == AssetTypeClass.Reference)
+            {
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+                includeAssetUrl = false;
+            }
 
             if (includeParent)
             {
-                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+                var columnName = "Parent";
+                if (assetType.Class == AssetTypeClass.Reference && hierarchy != null)
+                {
+                    var parent = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == hierarchy.Subject && x.ObjectID == hierarchy.SubjectID);
+                    if (parent != null)
+                        columnName = parent.Name;
+                }
+
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = columnName });
             }
 
             fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
@@ -865,7 +877,8 @@ namespace d360.model.DataAccessLayer
                     continue;
                 document.SetCellValue(1, index++, (string)field.FriendlyName);
             }
-            document.SetCellValue(1, index++, "Url");
+            if (includeAssetUrl)
+                document.SetCellValue(1, index++, "Url");
 
 
             if (rowData == null || rowData.Count == 0)
@@ -896,9 +909,12 @@ namespace d360.model.DataAccessLayer
 
                     index++;
                 }
-                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+
+                if (includeAssetUrl)
+                    document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
+            document.AutoFitColumn(1, fields.Count);
             #endregion
 
             return document;

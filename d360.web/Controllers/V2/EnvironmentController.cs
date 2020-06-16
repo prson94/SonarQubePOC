@@ -288,15 +288,40 @@ namespace d360.web.Controllers.V2
                         if (model.NumberSetting == null)
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.NumberSetting.Value == null)
+                        {
                             clearSetting = true;
-                        value = model.NumberSetting.Value.Value.ToString();
+                        }
+                        else
+                        {
+                            if (int.TryParse(model.NumberSetting.Value, out int val))
+                            {
+                                value = val.ToString();
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid number");
+                            }
+                        }
                         break;
                     case SettingType.Boolean:
                         if (model.BooleanSetting == null)
                             return ReturnApiError(HttpStatusCode.BadRequest, valueErrorMessage);
                         if (model.BooleanSetting.Value == null)
+                        {
                             clearSetting = true;
-                        value = model.BooleanSetting.Value.Value.ToString().ToLower();
+                        }
+                        else
+                        {
+                            if (bool.TryParse(model.BooleanSetting.Value, out bool val))
+                            {
+                                value = val.ToString();
+                            }
+                            else
+                            {
+                                return ReturnApiError(HttpStatusCode.BadRequest, "Provided value is not a valid boolean");
+                            }
+                        }
+
                         break;
                     case SettingType.IPAddress:
                         if (model.IpAddressSetting == null)

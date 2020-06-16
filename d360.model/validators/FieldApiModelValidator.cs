@@ -295,7 +295,8 @@ namespace d360.model.validators
                     }
                 }
 
-                if (assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
+                //Diagram asset type validators
+                if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
 
                     if (field.Type.ComputedFusionLookup != null)
@@ -324,10 +325,7 @@ namespace d360.model.validators
 
                     if (field.Type.Score != null)
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Score fields are not allowed for current Asset Type!");
-                }
 
-                if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
-                {
                     if (field.Type.Text != null && field.Name == "Name")
                     {
 
@@ -345,8 +343,8 @@ namespace d360.model.validators
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsRequired", "false"));
                         if (ft.IsPrimaryFilter == true)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
-                        if (ft.ShowIfEmpty == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
+                        if (ft.ShowIfEmpty == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
 
                     }
                     if (field.Type.Lookup != null && field.Name == "GovernanceRole")
@@ -356,35 +354,41 @@ namespace d360.model.validators
                         var ft = field.Type.Lookup;
                         if (ft.IsDisplayable == false)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
-                        if (ft.IsEditable == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
-                        if (ft.IsPartOfKey == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        if (ft.IsPartOfKey == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "true"));
                         if (ft.IsPrimaryFilter == true)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
-                        if (ft.ShowIfEmpty == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
+                        if (ft.ShowIfEmpty == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
                         if (ft.List.AllowMultipleValues == true)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
                     }
-
                     if (field.Type.Decimal != null && field.Name == "StepNo")
                     {
 
                         var message = "Task Types cannot have field property '{0}' on field StepNo set to {1}.";
-                        var ft = field.Type.Lookup;
+                        var ft = field.Type.Decimal;
                         if (ft.IsDisplayable == false)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsDisplayable", "false"));
-                        if (ft.IsEditable == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsEditable", "false"));
-                        if (ft.IsPartOfKey == false)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "false"));
+                        if (ft.IsPartOfKey == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPartOfKey", "true"));
                         if (ft.IsPrimaryFilter == true)
                             return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "IsPrimaryFilter", "true"));
-                        if (ft.ShowIfEmpty == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "true"));
-                        if (ft.List.AllowMultipleValues == true)
-                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "AllowMultipleValues", "true"));
+                        if (ft.ShowIfEmpty == false)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", string.Format(message, "ShowIfEmpty", "false"));
+
+                    }
+
+                    if (!new string[] { "Name", "GovernanceRole", "StepNo" }.Contains(field.Name))
+                    {
+                        var editableViewModel = GetEditableViewModel(field);
+                        if (editableViewModel.IsListable == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsListable' set to true!");
+                        if (editableViewModel.IsPartOfKey == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPartOfKey' set to true!");
+                        if (editableViewModel.IsPrimaryFilter == true)
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Non static fields on Diagram Asset Type cannot have 'IsPrimaryFilter' set to true!");
+
                     }
                 }
             }
@@ -414,6 +418,30 @@ namespace d360.model.validators
             }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
+        }
+
+        private static FieldTypeEditableApiViewModel GetEditableViewModel(FieldTypeApiEditModel field)
+        {
+            var editableViewModel = new FieldTypeEditableApiViewModel();
+            if (field.Type.Text != null)
+                editableViewModel = field.Type.Text as FieldTypeEditableApiViewModel;
+            if (field.Type.Boolean != null)
+                editableViewModel = field.Type.Boolean as FieldTypeEditableApiViewModel;
+            if (field.Type.Date != null)
+                editableViewModel = field.Type.Date as FieldTypeEditableApiViewModel;
+            if (field.Type.DateTime != null)
+                editableViewModel = field.Type.DateTime as FieldTypeEditableApiViewModel;
+            if (field.Type.Decimal != null)
+                editableViewModel = field.Type.Decimal as FieldTypeEditableApiViewModel;
+            if (field.Type.Html != null)
+                editableViewModel = field.Type.Html as FieldTypeEditableApiViewModel;
+            if (field.Type.Link != null)
+                editableViewModel = field.Type.Link as FieldTypeEditableApiViewModel;
+            if (field.Type.Lookup != null)
+                editableViewModel = field.Type.Lookup as FieldTypeEditableApiViewModel;
+            if (field.Type.Number != null)
+                editableViewModel = field.Type.Number as FieldTypeEditableApiViewModel;
+            return editableViewModel;
         }
 
         public static WorkHttpStatus ValidateModel(FieldTypesApiDeleteModel model, TypeIdentifierInfoModel actionTypeIdentifierInfoModel, TypeIdentifierInfoModel assetTypeIdentifierInfoModel, TypeIdentifierInfoModel relationshipTypeIdentifierInfoModel)

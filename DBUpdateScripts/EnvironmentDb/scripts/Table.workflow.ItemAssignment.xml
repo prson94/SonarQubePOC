@@ -41,4 +41,27 @@ END
 	</rollback>
   </changeSet>
 
+    <changeSet author="Puneet Gupta" id="Table.workflow.ItemAssignment-v2">
+    <comment>GOV-11149</comment>
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+		IF NOT EXISTS (select * from sys.indexes where name = 'IX_ItemAssignment_ItemID')
+		BEGIN
+			CREATE NONCLUSTERED INDEX [IX_ItemAssignment_ItemID] ON [workflow].[ItemAssignment] ([ItemID] ASC )
+		END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+			IF EXISTS (select * from sys.indexes where name = 'IX_ItemAssignment_ItemID')
+			BEGIN
+				DROP INDEX [IX_ItemAssignment_ItemID] ON [workflow].[ItemAssignment]
+			END
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

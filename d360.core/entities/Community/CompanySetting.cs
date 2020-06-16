@@ -168,12 +168,12 @@ namespace d360.core.entities
 
     public class CompanySettingApiUpdateNumberModel
     {
-        public int? Value { get; set; }
+        public string Value { get; set; }
     }
 
     public class CompanySettingApiUpdateBooleanModel
     {
-        public bool? Value { get; set; }
+        public string Value { get; set; }
     }
 
     public class CompanySettingApiUpdateIpAddressModel

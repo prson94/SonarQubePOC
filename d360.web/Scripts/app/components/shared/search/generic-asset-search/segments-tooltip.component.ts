@@ -34,10 +34,7 @@ export class SegmentsTooltipComponent implements OnInit {
     ngOnInit() {
         this.tooltipService.getTooltipInfoByUid(this.item.AssetTypeUid)
             .subscribe(info => {
-                switch (info.Class) {
-                    case AssetTypeClass.AttributeGroup:
-                        this.assetTypeText = "Attribute Group";
-                        break;
+                switch (info.Class) {                    
                     case AssetTypeClass.BusinessAsset:
                         this.assetTypeText = "Business Asset";
                         break;
