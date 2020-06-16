@@ -777,8 +777,8 @@ order by Name";
 
             var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
             var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar") && assetType.Class != AssetTypeClass.ReferenceItemType;
-            var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select 1 from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
-            var anyProcessDiagram = (await Company.QueryAsync<bool>("select 1 from [Intersect] I inner join IntersectTypeDetail D on D.ID = I.IntersectTypeID where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+            var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+            var anyProcessDiagram = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from [Intersect] I inner join IntersectTypeDetail D on D.ID = I.IntersectTypeID where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
 
             if (includeLineage)
             {
