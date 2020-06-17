@@ -46,7 +46,29 @@ END
 		]]>
 	</rollback>
   </changeSet>
+    <changeSet author="MDonato" id="Table.dbo.Rule-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Rule] add [Color] varchar(7) null
+end
 
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Rule' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Rule] drop column [Color]
+end
+
+]]>
+	</rollback>
+  </changeSet>
   <changeSet author="Core" id="Table.dbo.Rule-Rule_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
@@ -70,7 +92,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Rule-Rule_AfterInsert-v1">
+  <changeSet author="MDonato" id="Table.dbo.Rule-Rule_AfterInsert-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -82,8 +104,8 @@ CREATE OR ALTER TRIGGER [dbo].[Rule_AfterInsert]
 AS 
 BEGIN
 	SET NOCOUNT ON
-	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy])
-		SELECT	T.ID, 1, O.SourceID,'Rule', O.ID, O.[CreatedOn], O.[CreatedBy], O.[UpdatedOn], O.[UpdatedBy]
+	INSERT INTO [dbo].[Asset] ([AssetTypeID],[State],SourceID,[Object],[ObjectID],[CreatedOn],[CreatedBy],[UpdatedOn],[UpdatedBy], Color)
+		SELECT	T.ID, 1, O.SourceID,'Rule', O.ID, O.[CreatedOn], O.[CreatedBy], O.[UpdatedOn], O.[UpdatedBy], O.Color
 		FROM	inserted O inner join  AssetType T on T.Object = 'RuleType' and T.ObjectID = O.RuleTypeID
 END
 		]]>
@@ -95,7 +117,7 @@ END
 	</rollback>
   </changeSet>
 
-  <changeSet author="Core" id="Table.dbo.Rule-Rule_AfterUpdate-v1">
+  <changeSet author="MDonato" id="Table.dbo.Rule-Rule_AfterUpdate-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -110,7 +132,8 @@ BEGIN
 	update	T
 	set		T.UpdatedBy = S.UpdatedBy,
 			T.UpdatedOn = S.UpdatedOn,
-			T.SourceID = S.SourceID
+			T.SourceID = S.SourceID,
+			T.Color = S.Color
 	from	Asset T
 			inner join inserted S on T.Object = 'Rule' and T.ObjectID = S.ID
 END
@@ -122,5 +145,7 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+
 
 </databaseChangeLog>
