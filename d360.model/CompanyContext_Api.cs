@@ -7370,7 +7370,7 @@ insert into #Keys
                                 {
                                     if (cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Assignee values set.";
+                                        rowError += ";Then condition should have either Field or Assignee values set.";
                                     }
 
                                     if (cond.Assignee != null && cond.Field != null)
@@ -7409,7 +7409,7 @@ insert into #Keys
                                 {
                                     if (cond.Relation == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                        rowError += ";Then condition should have either Field or Relation value set.";
                                     }
                                     if (cond.Relation != null && cond.Field != null)
                                     {
