@@ -88,7 +88,6 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
 END
-
 		]]>
     </sql>
 	<rollback>
