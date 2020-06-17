@@ -5,12 +5,94 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadHopHierarchies-v2">
+  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadHopHierarchies-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter procedure [graph].[Hop_LoadHopHierarchies]
+	@hopSalt varchar(25),
+	@direction char(1),
+	@hopNumber int
+as
+begin
+	with h as (
+		select	L.RowID,
+				A.ID,
+				A.Uid,
+				I.Object,
+				I.ObjectID,
+				P.ID ParentID,
+				I.Subject as ParentObject,
+				I.SubjectID as ParentObjectID
+		from	Asset A
+				inner join #links L on L.ID = A.ID and L.Direction = @direction and L.HopNumber = @hopNumber
+				left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		union all
+		select	h.RowID,
+				A.ID,
+				A.Uid,
+				A.Object,
+				A.ObjectID,
+				I.ParentID,
+				I.Subject as ParentObject,
+				I.SubjectID as ParentObjectID
+		from	h
+				inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
+				outer apply (
+					select	P.ID as ParentID,
+							I.Subject,
+							I.SubjectID
+					from	PredicateIntersect I 
+							inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+					where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+				) I
+	)
+	insert into #nodes ([Level], [Position], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
+		select	1 as [Level]
+				,1 as [Position]
+				,A.Uid as AssetUid
+				,h.ID AssetID
+				,case 
+					when L.[Key] is not null and A.Uid = L.AssetUid then L.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) )
+				 end as [Key]
+				,h.ParentID
+				,iif(
+					h.ParentID is null, 
+					null, 
+					utility.GetHash(@hopSalt + '|' + cast(h.ParentID as varchar) )
+					) as [ParentKey]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,A.AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,D.DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,cast(0 as bit) as IsLeaf
+				,0 as Parsed
+				,L.IsFocal
+		from	#links L
+				inner join h on h.RowID = L.RowID
+				inner join AssetWithType A on A.ID = h.ID
+				inner join AssetDisplayValue D on D.AssetID = A.ID
+		where	L.Direction = @direction and L.HopNumber = @hopNumber;
+
+	update	#nodes
+	set		IsLeaf = 1
+	where	AssetID not in (select ParentID from #nodes);
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
 create or alter procedure [graph].[Hop_LoadHopHierarchies]
 	@hopSalt varchar(25),
 	@direction char(1),
@@ -51,77 +133,6 @@ begin
 				cross apply N.ReformattedSegments.nodes('/path/segment') doc(c)
 				inner join AssetWithType A on A.ID = doc.c.value('assetId', 'bigint')
 		where	L.Direction = @direction and L.HopNumber = @hopNumber;
-end
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-create or alter procedure [graph].[Hop_LoadHopHierarchies]
-	@hopSalt varchar(25),
-	@direction char(1),
-	@hopNumber int
-as
-begin
-	with cte as (
-		select	Segment.query('
-				<path> {
-					let $segments := (/path/segment)
-					for $x in $segments
-					return 
-					 <segment>
-						<position>{data($x/@position)}</position>
-						<level>{data($x/@level)}</level>
-						<assetTypeId>{data($x/@assetTypeId)}</assetTypeId>
-						<assetId>{data($x/@assetId)}</assetId>
-						<parentLevel>{data(/path/segment[. << $x][last()]/@level)}</parentLevel>
-						<parentPosition>{data(/path/segment[. << $x][last()]/@position)}</parentPosition>
-						<parentAssetId>{data(/path/segment[. << $x][last()]/@assetId)}</parentAssetId>
-						<value>{data($x)}</value>
-						<leaf>{$x is $segments[last()]}</leaf>
-					 </segment>
-				}
-				</path>
-				') as Segment,
-				[Key], 
-				AssetUid,
-				IsFocal
-		from	#links
-		where	Direction = @direction and HopNumber = @hopNumber
-	)
-
-	insert into #nodes ([Level], [Position], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
-		select	distinct
-				doc.c.value('(level/text())[1]', 'int') as [Level]
-				,doc.c.value('(position/text())[1]', 'int') as [Position]
-				,A.Uid as AssetUid
-				,doc.c.value('(assetId/text())[1]', 'bigint') as AssetID
-				,case 
-					when T.[Key] is not null and A.Uid = T.AssetUid and doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then T.[Key]
-					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) + '|' + cast( doc.c.value('(level/text())[1]', 'int') * doc.c.value('(position/text())[1]', 'int') as varchar ) )
-				 end as [Key]
-				,doc.c.value('(parentAssetId/text())[1]', 'bigint') as ParentID
-				,utility.GetHash(
-					@hopSalt + '|' + 
-					doc.c.value('(parentAssetId/text())[1]', 'varchar(50)') + '|' + 
-					cast( doc.c.value('(parentLevel/text())[1]', 'int') * doc.c.value('(parentPosition/text())[1]', 'int') as varchar ) 
-				) as [ParentKey]
-				,A.BackColor as Back
-				,A.ForeColor as Fore
-				,A.Icon
-				,coalesce(A.AssetTypeID, doc.c.value('(assetTypeId/text())[1]', 'int')) as AssetTypeID
-				,A.AssetTypeUid
-				,A.AssetTypeClass as Class
-				,doc.c.value('(value/text())[1]', 'nvarchar(250)') as DisplayValue
-				,0 as Reveal
-				,0 as ActionCount
-				,'[]' as RelationCounts
-				,0 as UseAsTransformation
-				,case when doc.c.value('(leaf/text())[1]', 'nvarchar(1)') = 't' then cast(1 as bit) else cast(0 as bit) end as IsLeaf
-				,0 as Parsed
-				,T.IsFocal
-		from	cte T
-				cross apply T.Segment.nodes('/path/segment') doc(c)
-				inner join AssetWithType A on A.ID = doc.c.value('(assetId/text())[1]', 'bigint');
 end
 		]]>
 	</rollback>
