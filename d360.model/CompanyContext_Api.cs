@@ -2337,6 +2337,19 @@ from	IntersectType I
             and T.[Cascade] = 0
             and A.ChildCount > 0;
 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'There are ' + cast(A.ChildCount as nvarchar) + ' Organizations defined for this OrganizationType.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as ChildCount
+                from	Organization O
+		        where O.OrganizationTypeID = T.ObjectID
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.Object = 'OrganizationType'
+            and A.ChildCount > 0;
+
     --Check if asset Results exist 
     update	T
     set		T.Success = 0,
