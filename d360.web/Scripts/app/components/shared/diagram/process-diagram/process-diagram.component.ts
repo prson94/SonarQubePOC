@@ -4,27 +4,30 @@ import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, A
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { FlowObjectType, AssetTypeClass, AssetTypeApiModel } from '../../../../models/asset.model';
-import { AssetTypeService } from '../../../../services/asset-type.service';
+import { FlowObjectType, } from '../../../../models/asset.model';
 import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
+import { ProcessService } from '../../../../services/process.service';
+import { DiagramNodeBase } from '../../../../models/process.model';
 
 @Component({
     selector: 'd3s-process-diagram',
     templateUrl: './process-diagram.component.html',
-    providers: [AssetTypeService],
+    providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked {
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
+    @Input() assetUid: string = '';
+
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
-    private assetTypeNodes: AssetTypeApiModel[] = [];
-    private events: AssetTypeApiModel[] = [];
-    private activities: AssetTypeApiModel[] = [];
-    private gateways: AssetTypeApiModel[] = [];
+    private assetTypeNodes: DiagramNodeBase[] = [];
+    private events: DiagramNodeBase[] = [];
+    private activities: DiagramNodeBase[] = [];
+    private gateways: DiagramNodeBase[] = [];
     private isLoaded = false;
     private isSaveDisabled: boolean = false;
     private isCanvasEmpty: boolean = true;
@@ -34,7 +37,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
-        private assetTypeService: AssetTypeService,
+        private processService: ProcessService,
         private cdRef: ChangeDetectorRef
     ) {
         super();
@@ -46,7 +49,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
-        this.assetTypeService.getAssetTypesByClass(AssetTypeClass.DiagramAsset)
+        this.processService.getAvailableNodes(this.assetUid)
             .subscribe(res => {
                 this.assetTypeNodes = res;
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
@@ -65,7 +68,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         if (this.isEditMode)
             this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
-        else if (this.isFullScreen) 
+        else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
             this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
@@ -170,7 +173,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         console.log(this.myDiagram);
     }
 
-    private dragEnd($event: AssetTypeApiModel) {
+    private dragEnd($event: DiagramNodeBase) {
         var nodeCategory: string = '';
 
         switch ($event.FlowObjectType) {
@@ -178,7 +181,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             case FlowObjectType.Event: nodeCategory = 'event'; break;
             case FlowObjectType.Gateway: nodeCategory = 'gateway'; break;
         }
-        var icon = FontAwesomeHelper.GetHtmlCode($event['IconStyle'].Icon);
+        var icon = FontAwesomeHelper.GetHtmlCode($event.Icon);
 
         setTimeout(() => {
             this.myDiagram.startTransaction("make new node");
@@ -204,7 +207,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
-    private getNewNodeName(at: AssetTypeApiModel) {
+    private getNewNodeName(at: DiagramNodeBase) {
         return this.returnUniqueName('New ' + at.Name, 1);
     }
 
@@ -250,10 +253,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private save() {
-        console.log("save");
         this.saveToLocalStorage();
-        this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
-        this.diagramStateChanged();
+
+        this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
+            .subscribe(res => {
+                console.log(res);
+                this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
+                this.diagramStateChanged();
+
+            })
     }
     private clear() {
         this.myDiagram.clear();

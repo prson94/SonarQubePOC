@@ -360,6 +360,7 @@
     <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
     <Compile Include="Controllers\V2\BaseV2ApiController.cs" />
@@ -447,6 +448,7 @@
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Formatters\GuidConverter.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\ProcessDiagramModels.cs" />
     <Compile Include="Models\RestApiException.cs" />
     <Compile Include="Models\SwaggerExampleModels.cs" />
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
@@ -1572,6 +1574,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\process.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance-role.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
@@ -1600,6 +1603,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
