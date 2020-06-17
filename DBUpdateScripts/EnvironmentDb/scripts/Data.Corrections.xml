@@ -752,5 +752,19 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
   </changeSet>
-
+  <changeSet author="TKlok" id="Data.Corrections.GOV-10856-2">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+		<![CDATA[
+			UPDATE [dbo].[OrganizationType]
+			SET State = 3
+			WHERE State = 1 AND ID NOT IN (
+				SELECT ObjectID
+				FROM [dbo].[AssetType]
+				WHERE [Object] = 'OrganizationType'
+			)
+		]]>
+    </sql>
+	</changeSet>
  </databaseChangeLog>
