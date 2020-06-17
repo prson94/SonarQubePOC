@@ -344,6 +344,25 @@ namespace d360.core.entities
     }
 
 
+    public class RelationshipUidResultItem
+    {
+        [DataMember]
+        public Guid RelationshipUid { get; set; }
+        [DataMember]
+        public Guid? SubjectUid { get; set; }
+
+        [DataMember]
+        public Guid? ObjectUid { get; set; }        
+    }
+
+    public class RelationshipUidResult
+    {
+        [DataMember]
+        public IEnumerable<RelationshipUidResultItem> Results { get; set; }
+        [DataMember]
+        public int? Total { get; set; }
+    }
+
     public class RelationshipTypeInsert
     {
         [DataMember]
