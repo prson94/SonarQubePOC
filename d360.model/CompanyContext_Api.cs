@@ -906,12 +906,17 @@ where T.ExecutionId = @executionid;
                         from    api.ExecutionField F
                         where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) = '#'
 
+                        update  F
+                        set     F.LookupValue = null
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and coalesce(F.FieldValue, '') = ''
+                        
                         update  T 
                         set     T.Success = 0,
                                 T.Message = coalesce(T.Message, '') + 'Color value is not a valid Govern color; '
                         from    api.ExecutionAsset T
-                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color'
-                        where   S.LookupValue is null
+                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
+                        where   S.LookupValue is null and coalesce(S.FieldValue, '') <> ''
                         ", new { executionID }, commandTimeout: timeout);
         }
 
@@ -3507,17 +3512,19 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    T.FieldValue as Threshold
+                    T.FieldValue as Threshold,
+                    CR.LookupValue as Color
             from    api.ExecutionAsset A
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
     output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3541,11 +3548,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     update	T
     set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
             T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
+            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
