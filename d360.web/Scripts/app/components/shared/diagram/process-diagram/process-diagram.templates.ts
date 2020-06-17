@@ -29,7 +29,7 @@ export class ProcessDiagramTemplates {
                     maxLines: 1,
                     isMultiline: false
                 },
-                new go.Binding("text", "name").makeTwoWay()
+                new go.Binding("text", "Name").makeTwoWay()
             )
         );
     }
@@ -178,7 +178,7 @@ export class ProcessDiagramTemplates {
                         editable: true,
                         stroke: 'black'
                     }
-                    , new go.Binding("text", "name").makeTwoWay())
+                    , new go.Binding("text", "Name").makeTwoWay())
             )
         );
 
@@ -243,7 +243,7 @@ export class ProcessDiagramTemplates {
                         editable: true,
                         stroke: 'black'
                     }
-                    , new go.Binding("text", "name").makeTwoWay())
+                    , new go.Binding("text", "Name").makeTwoWay())
             )
             ,
             this.makePort("T", go.Spot.Top, false, true),

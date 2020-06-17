@@ -88,6 +88,7 @@ IF NOT EXISTS (select * from sys.indexes where name = 'IX_Asset_uid')
 BEGIN
 	CREATE NONCLUSTERED INDEX [IX_Asset_uid] ON [dbo].[Asset] ( [uid] ASC )
 END
+
 		]]>
     </sql>
 	<rollback>
@@ -125,6 +126,36 @@ if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'db
 begin
 	alter table [dbo].[Asset] drop column [Icon]
 end
+]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="TDuric" id="Table.dbo.Asset-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+
+IF NOT EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'Diagram'
+          AND Object_ID = Object_ID(N'dbo.Asset'))
+BEGIN
+	ALTER TABLE dbo.Asset
+	ADD Diagram nvarchar(max) SPARSE NULL
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+IF  EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'Diagram'
+          AND Object_ID = Object_ID(N'dbo.Asset'))
+BEGIN
+ALTER TABLE dbo.Asset
+DROP COLUMN Diagram 
+END
+
 ]]>
 	</rollback>
   </changeSet>

@@ -1,23 +1,25 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
 
+    <div *ngIf="isEditMode" class="top-menu-hider"></div>
+
     <div class="menu" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
-            <button type="button" (click)="switchModes()">
+            <button type="button" (click)="switchModes()" title="Exit Designer">
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
             </button>
             <div class="button-spacer"></div>
-            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled">
+            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
                 <i class="fa fa-save"></i>
             </button>
-            <button type="button" class="icon mr8" (click)="clear()">
+            <!--<button type="button" class="icon mr8" (click)="clear()" title="Temp: Clear Diagram">
                 <i class="fa fa-refresh"></i>
             </button>
-            <button type="button" class="icon mr8" (click)="load()">
+            <button type="button" class="icon mr8" (click)="load()" title="Temp: Load from storage">
                 <i class="fa fa-upload"></i>
-            </button>
-            <button type="button" class="icon mr8" (click)="disableDrag()">
+            </button>-->
+            <!--<button type="button" class="icon mr8" (click)="disableDrag()" title="Temp: Selection tool">
                 <i class="fa fa-mouse-pointer"></i>
-            </button>
+            </button>-->
         </div>
     </div>
     <div class="diagram-content">
@@ -75,7 +77,7 @@
                     </div>
                     <span>Drag and drop flow objects to start building your diagram</span>
                 </div>
-                <div class="content" style="top:13%;" *ngIf="isCanvasEmpty && !isEditMode">
+                <div class="content" *ngIf="isCanvasEmpty && !isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-pencil"></i>
                     </div>

@@ -483,7 +483,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
                     , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
-            
+
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
@@ -3434,10 +3434,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.BusinessAsset:
                                             case AssetTypeClass.TechnicalAsset:
+                                            case AssetTypeClass.Diagram:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                if (at.Class == AssetTypeClass.Diagram)
+                                                    @object = "Task";
 
                                                 sw.Restart();
                                                 if (isInsert)

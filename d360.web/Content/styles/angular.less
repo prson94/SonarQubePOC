@@ -590,6 +590,11 @@ nav.top, .left-side-nav {
         min-width: 500px;
         max-width: 550px;
     }
+
+    .top-menu-hider {
+        width: 318px;
+        right: 68px;
+    }
 }
 
 
@@ -598,6 +603,7 @@ nav.top, .left-side-nav {
         min-width: 500px;
         max-width: 550px;
     }
+
 }
 
 @media only screen and (max-width : 1200px) {
@@ -6789,6 +6795,15 @@ d3s-process-diagram {
         height: 88%;
     }
 
+    .top-menu-hider {
+        height: 39px;
+        width: 472px;
+        background-color: #252c41;
+        position: fixed;
+        top: 0px;
+        right: 80px;
+    }
+
     #process-diagram {
 
         &.fullscreen {
@@ -6823,24 +6838,29 @@ d3s-process-diagram {
 
             .content {
                 text-align: center;
-                top: 39%;
+                top: 100px;
                 position: relative;
-                max-width: 200px;
+                max-width: 164px;
                 margin: 0 auto;
-                color: rgb(0,111,186);
+                color: #597897;
+
+                span {
+                    font-size: 14px;
+                    line-height: 18px;
+                }
 
                 .icon-holder {
-                    background-color: #e6f0fa;
-                    height: 130px;
-                    width: 130px;
+                    background-color: rgba(89, 120, 151, 0.1);
+                    height: 128px;
+                    width: 128px;
                     text-align: center;
                     margin: 0 auto;
                     border-radius: 50%;
-                    margin-bottom: 20px;
-                    padding-top: 38px;
+                    margin-bottom: 16px;
 
                     .fa {
                         font-size: 56px;
+                        line-height: 128px;
                     }
                 }
             }

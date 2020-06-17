@@ -29,7 +29,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
     private isLoaded = false;
-    private isSaveDisabled: boolean = false;
+    private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
 
     private defaultStrokeColor: string = '#708EA6';
@@ -165,14 +165,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.load();
     }
 
-
-
-
-    private getData() {
-        console.log(this.myDiagram.model.toJson())
-        console.log(this.myDiagram);
-    }
-
     private dragEnd($event: DiagramNodeBase) {
         var nodeCategory: string = '';
 
@@ -194,7 +186,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 loc: point,
                 refItemColor: this.defaultStrokeColor,
                 //asset data
-                name: this.getNewNodeName($event),
+                Name: this.getNewNodeName($event),
                 assetTypeName: $event.Name,
                 assetTypeUid: $event.uid,
             };
@@ -228,7 +220,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
-                if (n.data.name.toString() == name) {
+                if (n.data.Name.toString() == name) {
                     exists = true;
                 }
             }
@@ -253,36 +245,29 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private save() {
-        this.saveToLocalStorage();
 
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
-                console.log(res);
                 this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
                 this.diagramStateChanged();
 
-            })
+            },
+                err => {
+                });
     }
     private clear() {
         this.myDiagram.clear();
         this.diagramStateChanged();
-        console.log("clear");
-
     }
     private load() {
-        console.log("load");
-        this.loadFromLocalStorage();
+        this.processService.getProcessDiagram(this.assetUid)
+            .subscribe(res => {
+                this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
+                this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
+                this.diagramStateChanged();
+            });
     }
 
-    private saveToLocalStorage() {
-        localStorage.setItem('process-diagram', this.myDiagram.model.toJson());
-
-    }
-    private loadFromLocalStorage() {
-        var model = localStorage.getItem('process-diagram');
-        this.myDiagram.model = go.Model.fromJson(model);
-        this.diagramStateChanged();
-    }
     private newGuid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0,

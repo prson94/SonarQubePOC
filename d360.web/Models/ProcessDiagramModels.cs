@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -6,19 +7,58 @@ using System.Web;
 namespace d360.web.Models
 {
 
-    public class NodeDataArray
+    public class NodeData : Dictionary<string, string>
     {
-        public string key { get; set; }
-        public string icon { get; set; }
-        public string category { get; set; }
-        public string loc { get; set; }
-        public string refItemColor { get; set; }
-        public string name { get; set; }
-        public string assetTypeName { get; set; }
-        public string assetTypeUid { get; set; }
+        //other keys are custom fields
+
+        private string[] systemFields = new string[] {
+            "key","assetTypeName", "assetTypeUid","category","icon","key","loc","refItemColor"
+        };
+        public string GetHash()
+        {
+            var data = JsonConvert.SerializeObject(this.CustomFields);
+            return data;
+        }
+
+        public Dictionary<string, string> CustomFields
+        {
+            get
+            {
+                Dictionary<string, string> ret = new Dictionary<string, string>();
+                foreach (KeyValuePair<string, string> entry in this)
+                {
+                    if (!this.systemFields.Contains(entry.Key))
+                    {
+                        ret.Add(entry.Key, entry.Value);
+                    }
+                }
+                return ret;
+            }
+        }
+
+        public void UpdateAssetUid(Guid uid)
+        {
+            this["key"] = uid.ToString();
+        }
+
+        public Guid AssetUid
+        {
+            get
+            {
+                return Guid.Parse(this["key"]);
+            }
+        }
+
+        public Guid AssetTypeUid
+        {
+            get
+            {
+                return Guid.Parse(this["assetTypeUid"]);
+            }
+        }
     }
 
-    public class LinkDataArray
+    public class LinkData
     {
         public string from { get; set; }
         public string to { get; set; }
@@ -28,8 +68,8 @@ namespace d360.web.Models
     public class ProcessDiagramModel
     {
         public string @class { get; set; }
-        public IList<NodeDataArray> nodeDataArray { get; set; }
-        public IList<LinkDataArray> linkDataArray { get; set; }
+        public IList<NodeData> nodeDataArray { get; set; }
+        public IList<LinkData> linkDataArray { get; set; }
     }
 
 }

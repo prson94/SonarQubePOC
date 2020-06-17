@@ -28,15 +28,24 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
-    public putProcessDiagram(uid: string, model: any): Observable<any[]> {
+    public getProcessDiagram(uid: string): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/process/${uid}`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
+
+    public putProcessDiagram(uid: string, model: any): Observable<any> {
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
         return this
             .http
             .put(`/api/v2/process/${uid}`, model, { headers: headers })
             .pipe(
-                map(response => <any[]>response),
-                catchError(err => this.handleError(err, true))
+                map(response => <any>response)
             );
     }
 }
