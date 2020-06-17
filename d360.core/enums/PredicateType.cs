@@ -263,7 +263,7 @@ namespace d360.core.enums
             Name("Diagram"),
             Description(""),
             ReadOnly(false),
-            SingleRelationshipByFunctionalType(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -288,7 +288,7 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.Diagram),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Rule, AssetTypeClass.Policy),
             AllowIntersectTypeAsSubject(false)
         ]
         DiagramUse = 16,
@@ -297,7 +297,7 @@ namespace d360.core.enums
             Name("Diagram Reference"),
             Description(""),
             ReadOnly(false),
-            SingleRelationshipByFunctionalType(true),
+            SingleRelationshipByFunctionalType(false),
             AllowIntersectTypeAssignment(true),
             AllowMultiplePredicates(true),
             AllowDifferentSubjectObject(true),
@@ -305,7 +305,7 @@ namespace d360.core.enums
             AllowEditFromPredicateEditor(true),
             AllowEditFromRelationshipEditor(true),
             SubjectAssetClassesSupported(AssetTypeClass.Diagram),
-            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset),
+            ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Rule, AssetTypeClass.Policy),
             AllowIntersectTypeAsSubject(false)
         ]
         DiagramReference = 17

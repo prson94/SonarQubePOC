@@ -97,7 +97,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Task.
+        ///   Looks up a localized string similar to Diagram.
         /// </summary>
         public static string AssetTypeClass_Task {
             get {

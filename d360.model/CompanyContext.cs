@@ -1404,8 +1404,17 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                     classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
                 }
             }
-
+            var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+            string whereStatement = "";
+
+            if (predicate != null && predicate.Type == PredicateType.DiagramReference)
+            {
+                whereStatement = $@" and exists(select top 1 it.id from intersecttype it
+				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
+				 where it.subject = T.object and it.subjectid = T.objectid
+				)";
+            }
 
             if (subject.HasValue && subjectID.HasValue && limitToClasses != null)
             {
@@ -1440,7 +1449,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
                 where	T.Object not in ({excludeClassInStatement}){classLimitSql}
-			 	{noClassLimitSql}
+			 	{noClassLimitSql}{whereStatement}
                 ) I";
 
             if (subject.HasValue && subjectID.HasValue)
