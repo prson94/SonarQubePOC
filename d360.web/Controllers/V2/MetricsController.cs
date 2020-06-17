@@ -165,25 +165,32 @@ namespace d360.web.Controllers.V2
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
             }
 
-            //foreach (var cond in model.ConditionGroups)
-            //{
-            //    if (cond.FieldTypeID.HasValue && !string.IsNullOrEmpty(cond.FieldName))
-            //    {
-            //        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both FieldTypeID and FieldName as a Field identifier in condition.");
-            //    }
+            foreach (var cond in model.ConditionGroups)
+            {
+                foreach (var item in cond.ConditionItems)
+                {
+                    if (item.ConditionFieldTypeID.HasValue && item.ConditionIntersectTypeID.HasValue)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeID and ConditionIntersectTypeID within a single condition.");
+                    }
+                    else if (!item.ConditionFieldTypeID.HasValue && !item.ConditionIntersectTypeID.HasValue)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeID or ConditionIntersectTypeID within a condition.");
+                    }
+                    else
+                    {
+                        if (item.ConditionFieldTypeID.HasValue && item.ConditionFieldTypeID <= 0)
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeID must be greater than 0.");
+                        }
 
-            //    bool hasFieldDefinition = cond.FieldTypeID.HasValue || !string.IsNullOrEmpty(cond.FieldName);
-
-            //    if (!hasFieldDefinition)
-            //    {
-            //        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeId or FieldName definition missing from condition.");
-            //    }
-
-            //    if (cond.FieldTypeID.HasValue && cond.FieldTypeID <= 0)
-            //    {
-            //        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
-            //    }
-            //}
+                        if (item.ConditionIntersectTypeID.HasValue && item.ConditionIntersectTypeID <= 0)
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeID must be greater than 0.");
+                        }
+                    }
+                }
+            }
 
             if (model.ParentUid != null && model.ParentUid != Guid.Empty)
             {
