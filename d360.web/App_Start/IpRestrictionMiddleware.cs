@@ -65,7 +65,7 @@ namespace d360.web
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
                     dict = (await cnn.QueryAsync<CompanyIpSetting>(@"select	D.UrlPrefix,
 		coalesce(S.Value, '<ips />') as Value 
 from	Company C 
