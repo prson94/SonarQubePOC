@@ -64,7 +64,7 @@ namespace d360.model.DataAccessLayer.repositories
 
         }
         #endregion
-        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]")
+        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool appendColorToLists = false)
         {
             fieldTypes.ForEach(f =>
             {
@@ -113,7 +113,11 @@ namespace d360.model.DataAccessLayer.repositories
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
+                    }
+                    else if (f.Type == "Lookup" && appendColorToLists)
+                    {
+                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                     }
                     else if (f.Type == "Path")
                     {
@@ -349,6 +353,20 @@ namespace d360.model.DataAccessLayer.repositories
                                 where AT.AssetID = A.ID
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
+                }
+                else if(f.Type =="Lookup" && appendColorToLists)
+                {
+                    string sql = $@"outer apply(
+                                select FormattedValue = (
+                                                        SELECT ({tableAlias}.{valueColumn} +|+  STRING_AGG (AC{tableAlias}.Color,','))
+							                            from Field {tableAlias} 
+	                            inner join FieldLookupValue V{tableAlias} on V{tableAlias}.FieldTypeID = {tableAlias}.FieldTypeID and V{tableAlias}.Value in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
+	                            inner join Asset AC{tableAlias} on AC{tableAlias}.Object = V{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = V{tableAlias}.Value   
+	                            inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
+	                            where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
+	                            )
+                            ){tableAlias}(FormattedValue) ";
+                    fieldJoins.Add(sql);
                 }
                 else
                 {

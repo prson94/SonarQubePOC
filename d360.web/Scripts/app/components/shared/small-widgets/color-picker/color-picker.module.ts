@@ -15,10 +15,10 @@ import { DropdownModule } from 'primeng/dropdown';
 
     ],
     declarations: [
-        ColorPickerComponent
+        ColorPickerComponent,
     ],
     exports: [
-        ColorPickerComponent
+        ColorPickerComponent,
     ],
     providers: [
         {

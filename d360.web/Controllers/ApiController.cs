@@ -999,7 +999,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
-
+                    columns.Add(new GridColumn { text = "Color", datafield = "Color" });
                     var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
                     var loopCount = 0;
                     //add the parent columns
@@ -1016,6 +1016,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Code", type = "string" });
+                    fields.Add(new GridField { name = "Color", type = "Color" });
                     fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
                     break;
                 #endregion

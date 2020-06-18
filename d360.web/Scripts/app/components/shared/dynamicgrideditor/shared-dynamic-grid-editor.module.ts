@@ -8,7 +8,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { CalendarModule } from 'primeng/calendar';
-import { ColorPickerModule } from 'primeng/colorpicker';
 import { DropdownModule } from 'primeng/dropdown';
 import { SharedModule } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
@@ -36,6 +35,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
 import { SiteModalModule } from '../modal/gov-modal.module';
 import { TagUsageInfoModule } from '../../admin/tags/tags-usage-info.module';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
+import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 
 @NgModule({
     imports: [
@@ -55,7 +55,7 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
         SimilarItemsModule,
         TagUsageInfoModule,
         TagViewModule,
-
+        D3SColorPickerModule,
         //prime        
         CalendarModule,
         DropdownModule,
@@ -70,7 +70,6 @@ import { TagViewModule } from '../tags/d3s-tag-view.module';
         SiteModalModule,
         OverlayPanelModule,
 
-        ColorPickerModule,
         NgxJsonViewModule
     ],
     declarations: [

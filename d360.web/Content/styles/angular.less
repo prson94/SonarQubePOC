@@ -6731,6 +6731,35 @@ table {
         }
     }
 }
+.ref-list-color {
+    display: inline-flex;
+
+    &.color-text {
+        margin-top: -4px;
+    }
+}
+.d3s-color-picker.multi{
+    .ui-multiselect-label {
+        height: 32px !important;
+        line-height: 26px !important;
+    }
+}
+.d3s-color-picker.multi .d3s-color-multiSelect {
+    .ig-colorfield-item-selected:first-child {
+        margin-left: -6px;
+    }
+    .ig-colorfield-item-selected {
+        background: #f0f0f0;
+        border-radius: 4px;
+        padding: 4px;
+        margin-left: 4px;
+        height: 26px;
+        margin-top: -1px;
+        .ig-colorfield-swatch, .ig-colorfield-item-label {
+            top: 0px
+        }
+    }
+}
 
 .dropdown-z-correction {
     z-index: 899 !important;

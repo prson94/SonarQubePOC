@@ -616,6 +616,8 @@ namespace d360.web.Controllers
                             {
                                 fld.MultiSelect = f.AllowMultipleValues;
                                 fld.ParentFieldTypeID = f.ParentFieldTypeID;
+                                var lookupType = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
+                                fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && f.LookupObjectID == x.AssetType.ObjectID);
 
                                 fld.Items = new List<SelectListItem>();
 
@@ -657,23 +659,28 @@ namespace d360.web.Controllers
                                         V.LookupObjectType,
                                         V.LookupObjectID,
                                         V.Value,
-                                        V.Text";
+                                        {(fld.UseColorControl ? "V.Text +'|'+ COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '') as Text" : "V.Text")}";
 
                                     var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
 
                                     var resourceJoin = $@"
                                         inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
                                         ";
-
+                                    var colorjoin = $@"
+                                        Inner join Asset A on A.Object = v.LookupObjectType and A.ObjectID = V.Value
+                                        cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                                        ";
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
                                         {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(fld.UseColorControl ? colorjoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
                                     var countSql = $@"select count(*)
                                         from FieldLookupValue V
                                         {(f.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(fld.UseColorControl ? colorjoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
@@ -829,10 +836,10 @@ namespace d360.web.Controllers
                             try
                             {
                                 fld.Items = new List<SelectListItem>();
-
                                 fld.ParentFieldTypeID = ft.ParentFieldTypeID;
                                 fld.MultiSelect = ft.AllowMultipleValues;
-
+                                var lookupType = ft.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : ft.LookupObjectType;
+                                fld.UseColorControl = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && ft.LookupObjectID == x.AssetType.ObjectID);
 
                                 if (ft.ParentFieldTypeID > 0)
                                 {
@@ -884,7 +891,7 @@ namespace d360.web.Controllers
                                         V.LookupObjectType,
                                         V.LookupObjectID,
                                         V.Value,
-                                        V.Text";
+                                        {(fld.UseColorControl ? "V.Text +'|'+ COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '') as Text" : "V.Text")}";
 
                                     var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
 
@@ -892,15 +899,22 @@ namespace d360.web.Controllers
                                         inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
                                         ";
 
+                                    var colorjoin = $@"
+                                        Inner join Asset A on A.Object = v.LookupObjectType and A.ObjectID = V.Value
+                                        cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                                        ";
+
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(fld.UseColorControl ? colorjoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
                                     var countSql = $@"select count(*)
                                         from FieldLookupValue V
                                         {(ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                                        {(fld.UseColorControl ? colorjoin : "")}
                                         where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId
                                         ";
 
