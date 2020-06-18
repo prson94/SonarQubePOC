@@ -222,91 +222,126 @@ namespace igx.jobs.apiexecutionprocessor
                             case ApiExecutionAction.PostAssets:
                                 #region
                                 var postAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).Single();
+                                assetType = company.Filter<AssetType>(i => i.uid == postAssetsFields.AssetTypeUid).SingleOrDefault();
                                 
-                                List<AssetInsert> postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
+                                if (assetType != null)
+                                {
+                                    List<AssetInsert> postAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetInsert>>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
-                                dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
-                                dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
-                                log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
+                                    log.WriteLine($"POST Assets (DB Start): Total raw assets: {postAssets.Count}. Asset Type Uid: {postAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
+                                    var postAssetsResults = company.ImportAssets(dbExecutionItem, assetType, postAssets, true, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
+                                    dbExecutionItem.Processed = postAssetsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = postAssetsResults.Count(i => !i.Success);
+                                    log.WriteLine($"POST Assets (DB Complete): Total results: {postAssetsResults.Count}.");
 
-                                await SaveResultsJsonToAzure(postAssetsResults, log, "Assets", HttpMethod.Post);
+                                    await SaveResultsJsonToAzure(postAssetsResults, log, "Assets", HttpMethod.Post);
 
-                                company.SendApiGraphEvent(Info);
+                                    company.SendApiGraphEvent(Info);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{postAssetsFields.AssetTypeUid}] not found.";
+                                }
 
                                 break;
                             #endregion
                             case ApiExecutionAction.PutAssets:
                                 #region
                                 var putAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PutAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).Single();
+                                assetType = company.Filter<AssetType>(i => i.uid == putAssetsFields.AssetTypeUid).SingleOrDefault();
 
-                                var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
+                                if (assetType != null)
+                                {
+                                    var putAssets = await storage.DeserializeJsonObjectFromBlobAsync<List<AssetUpdate>>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
-                                var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
-                                dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
-                                dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
-                                log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
+                                    log.WriteLine($"PUT Assets (DB Start): Total raw assets: {putAssets.Count}. Asset Type Uid: {putAssetsFields.AssetTypeUid}. Timeout: {dbExecutionTimeout}. Merge Block Size: {mergeBlockSize}.");
+                                    var putAssetsResults = company.ImportAssets(dbExecutionItem, assetType, putAssets, false, dbExecutionTimeout, fieldJsonPropertyLoadLimitToTopLevel, Info.SendWorkflowEvents, mergeBlockSize: mergeBlockSize, sendGraphEvents: false);
+                                    dbExecutionItem.Processed = putAssetsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = putAssetsResults.Count(i => !i.Success);
+                                    log.WriteLine($"PUT Assets (DB Complete): Total results: {putAssetsResults.Count}.");
 
-                                await SaveResultsJsonToAzure(putAssetsResults, log, "Assets", HttpMethod.Put);
+                                    await SaveResultsJsonToAzure(putAssetsResults, log, "Assets", HttpMethod.Put);
 
-                                company.SendApiGraphEvent(Info);
+                                    company.SendApiGraphEvent(Info);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{putAssetsFields.AssetTypeUid}] not found.";
+                                }
 
                                 break;
                             #endregion
                             case ApiExecutionAction.DeleteAssets:
                                 #region
                                 var deleteAssetsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteAssets>(dbExecutionItem.Fields);
-                                assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).Single();
+                                assetType = company.Filter<AssetType>(i => i.uid == deleteAssetsFields.AssetTypeUid).SingleOrDefault();
 
-                                var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
-                                
-                                log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
-                                var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
-                                dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
-                                dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
-                                log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
-                                
-                                await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
+                                if (assetType != null)
+                                {
+                                    var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
+
+                                    log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
+                                    var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                    dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
+                                    log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
+
+                                    await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Asset Type for uid [{deleteAssetsFields.AssetTypeUid}] not found.";
+                                }
 
                                 break;
                             #endregion
                             case ApiExecutionAction.PostRelationships:
                                 #region
                                 var postRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_PostRelationships>(dbExecutionItem.Fields);
-                                intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).Single();
+                                intersectType = company.Filter<IntersectType>(i => i.uid == postRelationshipsFields.IntersectTypeUid).SingleOrDefault();
                                 
-                                var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
+                                if (intersectType != null)
+                                {
+                                    var postRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipInserts>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
-                                var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
-                                dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
-                                dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
-                                log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
-                                                                
-                                await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
-                                company.SendApiGraphEvent(Info);
+                                    log.WriteLine($"POST Relationships (DB Start): Total raw assets: {postRelationships.Count}. Intersect Type Uid: {postRelationshipsFields.IntersectTypeUid}.");
+                                    var postRelationshipsResults = company.ImportRelationships(dbExecutionItem, intersectType, postRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false, false);
+                                    dbExecutionItem.Processed = postRelationshipsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = postRelationshipsResults.Count(i => !i.Success);
+                                    log.WriteLine($"POST Relationships (DB Complete): Total results: {postRelationshipsResults.Count}.");
+
+                                    await SaveResultsJsonToAzure(postRelationshipsResults, log, "Relationships", HttpMethod.Post);
+                                    company.SendApiGraphEvent(Info);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{postRelationshipsFields.IntersectTypeUid}] not found.";
+                                }
 
                                 break;
                             #endregion
                             case ApiExecutionAction.DeleteRelationships:
                                 #region
                                 var deleteRelationshipsFields = JsonConvert.DeserializeObject<ApiExecutionFields_DeleteRelationships>(dbExecutionItem.Fields);
-                                intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).Single();
+                                intersectType = company.Filter<IntersectType>(i => i.uid == deleteRelationshipsFields.IntersectTypeUid).SingleOrDefault();
                                 
-                                var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
+                                if (intersectType != null)
+                                {
+                                    var deleteRelationships = await storage.DeserializeJsonObjectFromBlobAsync<RelationshipDeletes>(Info.StorageFolder, Info.RequestFileName);
 
-                                log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
-                                var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
-                                dbExecutionItem.Processed = deleteRelationshipsResults.Count(i => i.Success);
-                                dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
-                                log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
+                                    log.WriteLine($"DELETE Relationships (DB Start): Total raw assets: {deleteRelationships.Count}. Intersect Type Uid: {deleteRelationshipsFields.IntersectTypeUid}.");
+                                    var deleteRelationshipsResults = company.DeleteRelationships(dbExecutionItem, intersectType, deleteRelationships, dbExecutionTimeout, Info.SendWorkflowEvents, false);
+                                    dbExecutionItem.Processed = deleteRelationshipsResults.Count(i => i.Success);
+                                    dbExecutionItem.Error = deleteRelationshipsResults.Count(i => !i.Success);
+                                    log.WriteLine($"DELETE Relationships (DB Complete): Total results: {deleteRelationshipsResults.Count}.");
 
-                                await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
-                                company.SendApiGraphEvent(Info);
+                                    await SaveResultsJsonToAzure(deleteRelationshipsResults, log, "Relationships", HttpMethod.Delete);
+                                    company.SendApiGraphEvent(Info);
+                                }
+                                else
+                                {
+                                    dbExecutionItem.ErrorMessage = $"Intersect Type for uid [{deleteRelationshipsFields.IntersectTypeUid}] not found.";
+                                }
 
                                 break;
                             #endregion
