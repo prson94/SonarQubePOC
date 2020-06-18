@@ -1280,6 +1280,18 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                         where   L.LoadID = @id 
                                 and (L.IntersectUid = 0x0 or L.IntersectUid is null);
 
+                        update	L
+                        set		L.[Status] = 0, 
+		                        L.[StatusMessage] = 'This relationship is specified more than once.'
+                        from    LoadItem L
+                        cross apply (
+	                        select IntersectUid from LoadItem where LoadId = @id group by IntersectUid
+	                        having count(*) > 1
+                        ) D
+                        where	D.IntersectUid = L.IntersectUid 
+		                        and L.LoadId = @id
+		                        and L.Status is null;
+
                         ", new { id = load.ID, subjectAssetIDFieldIndex, objectAssetIDFieldIndex, intersectTypeUid = intersectType.uid}, commandTimeout: timeout);
 
                     var results = (await QueryAsync<RelationshipDelete>(@"
@@ -1287,7 +1299,7 @@ where	T.LoadID = @id and T.RowIndex = @rowIndex;", new { id = item.LoadID, rowIn
                                     cast(0 as bit) as [Cascade], 
                                     L.IntersectUid as [Uid]
                         from    LoadItem L 
-                        where   L.LoadID = @id and L.IntersectUid is not null and L.IntersectUid != 0x0
+                        where   L.LoadID = @id and L.Status is null
                         ", new { id = load.ID, intersectTypeUid = intersectType.uid }, timeout: timeout)).ToList();
 
                     deletes.AddRange(results);
