@@ -1143,10 +1143,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     model.ObjectID = org.ID;
                     model.Object = SystemObjects.OrganizationType.ToString();
                     var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
-                    orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
-                    orgAssetType.Notes = model.Notes;
                     if (orgAssetType != null)
                     {
+                        orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
+                        orgAssetType.Notes = model.Notes;
                         orgAssetType.uid = uid;
                         CompanyContext.Update(orgAssetType);
                     }
