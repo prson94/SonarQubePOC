@@ -1134,6 +1134,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                         Description = model.Description,
                         DisplayFormat = model.DisplayFormat
                     };
+
                     var existing = CompanyContext.Filter<OrganizationType>(o => o.Name == org.Name && o.State == State.Active).FirstOrDefault();
                     if (existing != null)
                         return new Tuple<HttpStatusCode, string, string>(HttpStatusCode.BadRequest, "Wrong Name", AssetTypeErrors.ExistingOrganizationType);
@@ -1144,6 +1145,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                     var orgAssetType = CompanyContext.Filter<AssetType>(i => i.Object == model.Object && i.ObjectID == model.ObjectID).SingleOrDefault();
                     if (orgAssetType != null)
                     {
+                        orgAssetType.AutoDisplayDescription = model.AutoDisplayDescription;
+                        orgAssetType.Notes = model.Notes;
                         orgAssetType.uid = uid;
                         CompanyContext.Update(orgAssetType);
                     }
