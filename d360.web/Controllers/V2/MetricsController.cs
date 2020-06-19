@@ -361,7 +361,7 @@ namespace d360.web.Controllers.V2
             Route("structure/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
-        public IHttpActionResult GetMetricStructureByAssetType(Guid allocationUid)
+        public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));

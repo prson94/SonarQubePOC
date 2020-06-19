@@ -272,7 +272,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetMetricStructureByAssetType()
         {
-            var actionResult = metricsController.GetMetricStructureByAssetType(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var actionResult = metricsController.GetMetricStructureByAllocation(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
