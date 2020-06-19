@@ -41,9 +41,9 @@ namespace d360.web.Controllers
             if (ignoreObjects.Count > 0)
                 ignoreObjectTypeSQL = $" AND T.Object not in ({string.Join(",", ignoreObjects.Select(o => "'" + o + "'"))})";
 
-            var availableTypes = Company.Query<SelectListItem>($@"select T.ID as [Value], {QueryConstants.HighLevelTypeCaseStatement} + coalesce(FAT.TextPath, T.[Name]) as [Text]
+            var availableTypes = Company.Query<SelectListItem>($@"select T.ID as [Value], {QueryConstants.HighLevelTypeCaseStatement} + coalesce(P.[Path], T.[Name]) as [Text]
                 from AssetType T
-                left join FusionAttributeType FAT on T.[Object] = 'FusionAttributeType' and FAT.ID = T.ObjectID
+                cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
                 where not exists (select 1 from IssueTypeRelation where AssetTypeID = T.ID and IssueTypeID = @issueTypeId)
                 {ignoreObjectTypeSQL}
                 order by 2", new { issueTypeId }).ToList();
