@@ -276,7 +276,7 @@ namespace d360.model.DataAccessLayer
 
         public bool HasActiveMeasures(MetricAllocation alloc)
         {
-            return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AssetTypeUid == alloc.AssetTypeUid && x.ScoreType == alloc.ScoreType);
+            return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AllocationUid == alloc.Uid);
         }
 
         public bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model)
@@ -286,7 +286,7 @@ namespace d360.model.DataAccessLayer
 
         public MetricAllocation GetAllocationByUid(Guid allocationUid)
         {
-            return companyContext.Filter<MetricAllocation>(i => i.Uid == allocationUid).SingleOrDefault();
+            return companyContext.GetByUid<MetricAllocation>(allocationUid);
         }
 
         public MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model)

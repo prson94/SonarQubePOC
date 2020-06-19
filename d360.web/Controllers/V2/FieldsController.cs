@@ -63,7 +63,7 @@ namespace d360.web.Controllers.V2
         /// </remarks>
         /// <param name="AssetTypeUid">The asset type Uid to retrieve field types for.</param>
         /// <param name="RelationshipTypeUid">The relationship type Uid to retrieve field types for.</param>
-        /// /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
+        /// <param name="ActionTypeUid">The action type Uid to retrieve field types for.</param>
         /// <param name="Name">The API Name to search for.</param>
         /// <param name="FriendlyName">The Friendly Name to search for.</param>
         /// <param name="Type">The data type to search for.</param>

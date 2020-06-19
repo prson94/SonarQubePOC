@@ -33,7 +33,7 @@
         <div *ngSwitchCase="FormMode.Adding">
             <d3s-admin-metric-condition-editor [uid]="metricUid"
                                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                               [usedFieldTypes]="usedFieldTypeIDs"
+                                               [usedFieldTypes]="usedFieldTypes"
                                                [assetTypeUid]="assetTypeUid"
                                                [(condition)]="selection"
                                                (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"
@@ -43,7 +43,7 @@
         <div *ngSwitchCase="FormMode.Editing">
             <d3s-admin-metric-condition-editor [uid]="metricUid"
                                                [metricConditionEditorFieldTypes]="metricConditionListFieldTypes"
-                                               [usedFieldTypes]="usedFieldTypeIDs"
+                                               [usedFieldTypes]="usedFieldTypes"
                                                [assetTypeUid]="assetTypeUid"
                                                [(condition)]="selection"
                                                (onCancel)="formMode = FormMode.Default; formModeChange.emit(formMode);"

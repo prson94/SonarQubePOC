@@ -134,35 +134,19 @@ namespace d360.web.Controllers.V2
 
             }
 
-            List<ScoreType> allowedScoreTypes = new List<ScoreType>() { ScoreType.Governance, ScoreType.DataQuality };
-
-            if (model.ScoreType != null && !allowedScoreTypes.Contains(model.ScoreType.Value))
-            {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You have not provided valid Score Type.");
-            }
-
-            if (model.ScoreType == null)
-            {
-                model.ScoreType = ScoreType.Governance;
-            }
-
             var allocation = MetricsRepository.GetAllocationByMetricModel(model);
-
             if (allocation == null)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
             }
 
-
             List<ValidationResult> validationResults = new List<ValidationResult>();
-            bool isValid = true;
-
-            isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
+            
+            bool isValid = Validator.TryValidateObject(model, new ValidationContext(model, serviceProvider: null, items: null), validationResults, true);
             if (!isValid)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", validationResults.First().ErrorMessage);
             }
-
 
             if (allocation.IsExternallyCalculated == false)
             {
@@ -174,31 +158,37 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
                 }
-
             }
 
-            if (model.IsGroup && model.Conditions.Count > 0)
+            if (model.IsGroup && model.ConditionGroups.Count > 0)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
             }
 
-            foreach (var cond in model.Conditions)
+            foreach (var cond in model.ConditionGroups)
             {
-                if (cond.FieldTypeID.HasValue && !string.IsNullOrEmpty(cond.FieldName))
+                foreach (var item in cond.ConditionItems)
                 {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both FieldTypeID and FieldName as a Field identifier in condition.");
-                }
+                    if (item.ConditionFieldTypeID.HasValue && item.ConditionIntersectTypeID.HasValue)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You cannot use both ConditionFieldTypeID and ConditionIntersectTypeID within a single condition.");
+                    }
+                    else if (!item.ConditionFieldTypeID.HasValue && !item.ConditionIntersectTypeID.HasValue)
+                    {
+                        return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "You must use either a ConditionFieldTypeID or ConditionIntersectTypeID within a condition.");
+                    }
+                    else
+                    {
+                        if (item.ConditionFieldTypeID.HasValue && item.ConditionFieldTypeID <= 0)
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionFieldTypeID must be greater than 0.");
+                        }
 
-                bool hasFieldDefinition = cond.FieldTypeID.HasValue || !string.IsNullOrEmpty(cond.FieldName);
-
-                if (!hasFieldDefinition)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeId or FieldName definition missing from condition.");
-                }
-
-                if (cond.FieldTypeID.HasValue && cond.FieldTypeID <= 0)
-                {
-                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "FieldTypeID must be greater than 0.");
+                        if (item.ConditionIntersectTypeID.HasValue && item.ConditionIntersectTypeID <= 0)
+                        {
+                            return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "ConditionIntersectTypeID must be greater than 0.");
+                        }
+                    }
                 }
             }
 
@@ -221,8 +211,6 @@ namespace d360.web.Controllers.V2
                     return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Maximum number of levels for measures is 2.");
                 }
             }
-
-
 
             var isNew = true;
             model.EffectiveDate = model.EffectiveDate.Date;
@@ -364,60 +352,37 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the asset type Uid provided.
+        /// Gets a administrative hierarchical structure of metrics associated with the allocation Uid provided.
         /// </summary>
-        /// <param name="assetTypeUid">The Uid of the asset type.</param>
+        /// <param name="allocationUid">The Uid of the score allocation.</param>
         /// <returns>An HTTP status code and message.</returns>
         [
             HttpGet,
-            Route("structure/{assetTypeUid:Guid}"),
-            SwaggerParameter("_scoreType", "Filter results by score type. By default results are filtered by Governance Score type", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            ApiExplorerSettings(IgnoreApi = true)
+            Route("structure/{allocationUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
-        public IHttpActionResult GetMetricStructureByAssetType(Guid assetTypeUid)
+        public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));
 
             var prefix = "Metrics.GetMetricStructureByAssetType => ";
-            var errorMessage = "";
-
+            
             try
             {
                 List<MetricAssetViewModel> models = null;
 
-                ScoreType filterScoreTypes = ScoreType.Governance;
-
-                var queryParams = Request.GetQueryNameValuePairs();
-
-                foreach (var qp in queryParams.ToList())
-                {
-                    switch (qp.Key.ToLower())
-                    {
-                        case "_scoretype":
-                            Enum.TryParse(qp.Value, true, out filterScoreTypes);
-
-                            List<ScoreType> scoreTypes = new List<ScoreType>() { ScoreType.DataQuality, ScoreType.Governance };
-
-                            if (!scoreTypes.Contains(filterScoreTypes) || string.IsNullOrEmpty(qp.Value))
-                            {
-                                return errorMessageResponse(HttpStatusCode.BadRequest, "Error retrieve the metric heirarchy", $"You have not provided valid scoreType.");
-                            }
-                            break;
-                    }
-                }
-
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(assetTypeUid, filterScoreTypes);
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid);
 
                 models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
                 if (models == null)
                     models = new List<MetricAssetViewModel>();
+
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 Trace.TraceError("{0}{1}", prefix, errorMessage);
 
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
@@ -433,16 +398,13 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("fields/{assetTypeUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
         {
             if (!Company.CurrentResourceIsAdmin)
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the fields for this asset type."));
-
-            var prefix = "Metrics.GetMetricFieldsByAssetType => ";
-            var errorMessage = "";
 
             try
             {
@@ -455,9 +417,8 @@ namespace d360.web.Controllers.V2
             }
             catch (Exception ex)
             {
-                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError($"Metrics.GetMetricFieldsByAssetType => {errorMessage}");
                 return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
             }
         }

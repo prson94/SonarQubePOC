@@ -105,8 +105,10 @@ namespace d360.model
         DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
         DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
         DbSet<MetricAsset> MetricAssets { get; set; }
-        DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
+        DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+        DbSet<MetricAssetVersionConditionItem> MetricAssetVersionConditionItems { get; set; }
+        DbSet<MetricAssetVersionConditionItemValue> MetricAssetVersionConditionItemValues { get; set; }
         DbSet<NymRelation> NymRelations { get; set; }
         DbSet<Nym> Nyms { get; set; }
         DbSet<OrganizationDetail> OrganizationDetails { get; set; }

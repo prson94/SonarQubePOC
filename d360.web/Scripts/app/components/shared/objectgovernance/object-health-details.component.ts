@@ -387,21 +387,32 @@ export class ObjectHealthDetailsComponent extends BaseComponent implements OnCha
         var years = Math.floor(months / 12);
         let type = this.selectedScoreType == ScoreType.Governance ? 'Governance ' : ' Data Quality';
         let latestScore = score;
-        if (this.searchDetails)
-            latestScore = this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] }).length > 0 ?
-                this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] })[0].Value : score;
+
+        if (this.searchDetails) {
+            let searchDetailRelevantScores = this.searchDetails.Scores.filter(x => { return x.ScoreType == ScoreType[this.selectedScoreType] });
+            if (searchDetailRelevantScores.length > 0) {
+                latestScore = searchDetailRelevantScores[0].Value;
+            }
+            searchDetailRelevantScores = null;
+        }
+        
+        if (latestScore > 1) {
+            latestScore /= 100;
+        }
+
+        let scorePercentage = this.getAsPrecentage(latestScore);
 
         if (days == 0 || days == 1) {
-            this.calculatedScoreText = "Your " + type + " Score changed to  <strong> " + this.getAsPrecentage(latestScore) + " </strong> today</strong>";
+            this.calculatedScoreText = "Your " + type + " Score changed to  <strong> " + scorePercentage + " </strong> today</strong>";
         }
         else if (days > 0 && days <= 90) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + days + " days</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + days + " days</strong>";
         }
         else if (days > 90 && days <= 780) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + months + " months</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + months + " months</strong>";
         }
         else if (days > 780) {
-            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + this.getAsPrecentage(latestScore) + " </strong> for <strong>" + years + " years</strong>";
+            this.calculatedScoreText = "Your " + type + " Score has been <strong> " + scorePercentage + " </strong> for <strong>" + years + " years</strong>";
         }
     }
     getAsPrecentage(val: number) {

@@ -6,7 +6,7 @@
                 Field
             </div>
             <div>
-                <select [ngModel]="condition.FieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
+                <select [ngModel]="condition.ConditionFieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
                     <option></option>
                     <option *ngFor="let i of metricConditionEditorFieldTypes | metricConditionDisabledFilter" [value]="i.ID">{{i.Name}}</option>
                 </select>
@@ -17,7 +17,7 @@
                 Operator
             </div>
             <div *ngIf="condition.FieldType.Type == 'Boolean'">
-                <select [(ngModel)]="condition.Operator" style="width: 95%">
+                <select [(ngModel)]="condition.Operator" style="width: 95%"> 
                     <option value="eq">=</option>
                 </select>
             </div>
@@ -44,28 +44,28 @@
             </div>
             <!--div *ngFor="let cv of condition.Values"-->
             <div *ngIf="condition.FieldType.Type == 'Text'">
-                <input type="text" style="width: 95%" [(ngModel)]="condition.Values" />
+                <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Lookup'">
-                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.Values">
+                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.SingleValue">
                     <option></option>
-                    <option *ngFor="let l of getLookupValues(condition.FieldTypeID)" [value]="l.Value">{{l.Text}}</option>
+                    <option *ngFor="let l of getLookupValues()" [value]="l.Value">{{l.Text}}</option>
                 </select>
             </div>
             <div *ngIf="condition.FieldType.Type == 'Date'">
-                <p-calendar [(ngModel)]="condition.Values"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+                <p-calendar [(ngModel)]="condition.SingleValue"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
             </div>
             <div *ngIf="condition.FieldType.Type == 'DateTime'">
-                <p-calendar [(ngModel)]="condition.Values"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+                <p-calendar [(ngModel)]="condition.SingleValue"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition.FieldType.Type == 'Number'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.Values" />
+                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Decimal'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.Values" [step]="0.25" />
+                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [step]="0.25" />
             </div>
             <div *ngIf="condition.FieldType.Type == 'Boolean'">
-                <p-toggleButton [(ngModel)]="condition.Values" onLabel="True" offLabel="False"></p-toggleButton>
+                <p-toggleButton [(ngModel)]="condition.SingleValue" onLabel="True" offLabel="False"></p-toggleButton>
             </div>
             <!--/div-->
         </div>
