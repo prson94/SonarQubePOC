@@ -284,6 +284,7 @@ export class BaseComponent {
 
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
                         this.secondaryNavService.showItem(this.lineageSidebar);
                     }

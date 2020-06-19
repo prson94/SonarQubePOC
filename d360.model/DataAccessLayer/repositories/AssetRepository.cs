@@ -220,6 +220,7 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
+                                    {(Class.HasValue && Class.Value == AssetTypeClass.Diagram ? ",A.FlowObjectType" : "")}
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon

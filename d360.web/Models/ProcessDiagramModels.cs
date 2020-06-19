@@ -1,0 +1,75 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+
+namespace d360.web.Models
+{
+
+    public class NodeData : Dictionary<string, string>
+    {
+        //other keys are custom fields
+
+        private string[] systemFields = new string[] {
+            "key","assetTypeName", "assetTypeUid","category","icon","key","loc","refItemColor"
+        };
+        public string GetHash()
+        {
+            var data = JsonConvert.SerializeObject(this.CustomFields);
+            return data;
+        }
+
+        public Dictionary<string, string> CustomFields
+        {
+            get
+            {
+                Dictionary<string, string> ret = new Dictionary<string, string>();
+                foreach (KeyValuePair<string, string> entry in this)
+                {
+                    if (!this.systemFields.Contains(entry.Key))
+                    {
+                        ret.Add(entry.Key, entry.Value);
+                    }
+                }
+                return ret;
+            }
+        }
+
+        public void UpdateAssetUid(Guid uid)
+        {
+            this["key"] = uid.ToString();
+        }
+
+        public Guid AssetUid
+        {
+            get
+            {
+                return Guid.Parse(this["key"]);
+            }
+        }
+
+        public Guid AssetTypeUid
+        {
+            get
+            {
+                return Guid.Parse(this["assetTypeUid"]);
+            }
+        }
+    }
+
+    public class LinkData
+    {
+        public string from { get; set; }
+        public string to { get; set; }
+        public IList<double> points { get; set; }
+    }
+
+    public class ProcessDiagramModel
+    {
+        public string @class { get; set; }
+        public IList<NodeData> nodeDataArray { get; set; }
+        public IList<LinkData> linkDataArray { get; set; }
+    }
+
+}
