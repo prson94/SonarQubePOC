@@ -132,7 +132,7 @@ export class ObjectHealthDetailsItemComponent extends BaseComponent implements O
                             let expandable = !(
                                 !x.data.Description
                                 && !x.children
-                                && !(this.GetChildPropertValue(this.item, x, 'Conditions').length && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
+                                && !(this.GetChildPropertValue(this.item, x, 'Conditions') && !(this.GetChildPropertValue(this.item, x, 'Conditions').length > 0))
                             )
                             x.data.expandable = expandable;
                         });

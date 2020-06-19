@@ -5,7 +5,7 @@ import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component
 
 const routes: Routes = [
     { path: '', component: AdminAnalyticsComponent },
-    { path: ':assetTypeUid/:scoreTypeEnumValue', component: AdminAnalyticsDetailsComponent }
+    { path: ':assetTypeUid/:allocationUid', component: AdminAnalyticsDetailsComponent } 
 ];
 
 @NgModule({

@@ -27,9 +27,9 @@ export class MetricsService extends BaseObservableService {
             .pipe(catchError(err => this.handleError(err)));
     }
 
-    public getMetricsByAssetType(assetTypeUid: string, scoreType: ScoreType): Observable<MetricAssetViewModel[]> {
+    public getMetricsByAllocation(allocationUid: string): Observable<MetricAssetViewModel[]> {
         return this.http
-            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${assetTypeUid}?_scoreType=${scoreType.toString()}`)
+            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${allocationUid}`)
             .pipe(catchError(err => this.handleError(err)));
     }
 
