@@ -16,7 +16,6 @@ using d360.web.Filters;
 using d360.web.Models;
 using d360.core.entities;
 using Newtonsoft.Json;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using d360.core;
 
 namespace d360.web.Controllers.V2
@@ -168,7 +167,7 @@ namespace d360.web.Controllers.V2
             using (SqlConnection conn = new SqlConnection(Company.CompanyConnectionString))
             {
                 if (conn.State != ConnectionState.Open)
-                    conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    conn.Open();
 
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {
@@ -425,7 +424,7 @@ namespace d360.web.Controllers.V2
             using (SqlConnection conn = new SqlConnection(Company.CompanyConnectionString))
             {
                 if (conn.State != ConnectionState.Open)
-                    conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    conn.Open();
 
                 using (SqlTransaction trans = conn.BeginTransaction())
                 {

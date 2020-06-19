@@ -8,7 +8,6 @@ using Dapper;
 using System.Linq;
 using d360.extensions.caching;
 using System.Diagnostics;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace d360.web
 {

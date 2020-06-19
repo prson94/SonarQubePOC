@@ -2,7 +2,6 @@
 using d360.extensions.caching;
 using Dapper;
 using Microsoft.Owin;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using NetTools;
 using System;
 using System.Collections.Generic;

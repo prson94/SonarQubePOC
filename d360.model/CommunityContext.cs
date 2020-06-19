@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
 using Dapper;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -364,17 +365,13 @@ namespace d360.model
                 return cs;
             }
             else
-            {
-                var c = Filter<Company>(i => i.ID == CurrentCompanyID, i => i.DatabaseServer).Single();
-                cs = string.Format(
-                    "server={0};Database=D3S_{1};User ID={2};Password={3};MultipleActiveResultSets=True;",
-                    c.DatabaseServer.Server,
-                    c.ID,
-                    c.DatabaseServer.Username,
-                    c.DatabaseServer.Password
-                );
-                c = null;
+            {                
+                var res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
+                                inner join DatabaseServer s on s.ID = c.DatabaseServerID 
+                                where c.ID = @companyId", new { companyId = CurrentCompanyID });
 
+                cs = CompanyConnectionStringHelper.ConnectionString(CurrentCompanyID, res.Server, res.Username, res.Password);
+                
                 if (!skipCacheCheck)
                 {
                     Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);

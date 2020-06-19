@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.utils.company;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using d360.extensions.info;
 using d360.extensions.caching;
 using d360.extensions.queue;
@@ -68,7 +67,7 @@ namespace igx.jobs.assetgraphprocessor
 
                             try
                             {
-                                conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                conn.Open();
                                 await conn.ExecuteAsync("graph.SynchronizeTables @populatePaths", new { populatePaths }, commandTimeout: timeout);
                             }
                             catch (Exception ex)

@@ -3,7 +3,6 @@ using d360.core.entities.Community.Templates;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1427,7 +1426,7 @@ update  set
                         {
                             try
                             {
-                                conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                conn.Open();
                                 var processor = new CompanyProcessor(conn);
 
                                 processor.SynchronizePredicates(clientPredicates);

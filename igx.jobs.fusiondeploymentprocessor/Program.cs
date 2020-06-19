@@ -3,7 +3,6 @@ using d360.core.entities.Plugins;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Data.SqlClient;
 using System.IO;
@@ -256,7 +255,7 @@ from	plugin.FusionAttributeType A
 
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            company.Open();
 
                             using (var trans = company.BeginTransaction())
                             {

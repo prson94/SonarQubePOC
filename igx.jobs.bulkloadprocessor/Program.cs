@@ -9,7 +9,6 @@ using d360.model;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using SpreadsheetLight;
 using System;
@@ -81,7 +80,7 @@ namespace igx.jobs.bulkloadprocessor
 
                     load = company.Loads.Include("LoadColumns").SingleOrDefault(i => i.ID == loadInfo.LoadID);
 
-                    companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    companyConnection.Open();
                     var loadItemRowCount = companyConnection.Query<int>("select count(1) from LoadItem where LoadID = @id", new { id = load.ID }).Single();
                     companyConnection.Close();
 
@@ -161,7 +160,7 @@ namespace igx.jobs.bulkloadprocessor
                             rowIndex++;
                         }
 
-                        companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        companyConnection.Open();
 
                         #region Bulk LoadItems
 
@@ -368,7 +367,7 @@ namespace igx.jobs.bulkloadprocessor
 
                     #endregion
 
-                    companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    companyConnection.Open();
 
                     switch (load.Action)
                     {
