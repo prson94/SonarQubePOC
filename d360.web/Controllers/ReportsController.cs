@@ -45,7 +45,12 @@ namespace d360.web.Controllers
             
             companySettings.TryGetValue("PowerBIClientId", out clientId);
             companySettings.TryGetValue("PowerBIGroupId", out groupId);
-                        
+
+            if (string.IsNullOrEmpty(groupId))
+            {
+                throw new Exception("PowerBI has not been setup on this Govern environment.  You are possibly seeing reports because the environment was copied from another region.  Please re-upload your PowerBI files to resolve this issue.");
+            }
+
             // Create a user password cradentials.
             var credential = new UserPasswordCredential(pbiUsername, pbiPassword);
 
