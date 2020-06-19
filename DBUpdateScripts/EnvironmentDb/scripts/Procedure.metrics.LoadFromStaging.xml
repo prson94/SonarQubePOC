@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v9">
+  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v10">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -193,7 +193,7 @@ begin
 					inner join #assets E on E.AssetTypeUid = Al.AssetTypeUid and A.State = 1 and E.ScoreType = Al.ScoreType
 					inner join #maxEffectiveMetrics MV on MV.MetricAssetUid = A.[Uid]
 					left join #conditionChecks C on C.AssetUid = E.AssetUid and C.MetricAssetUid = MV.MetricAssetUid and C.EffectiveDate = MV.EffectiveDate
-					left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.AssetUid and S.EffectiveDate = '2020-06-15'--@current_date
+					left join metrics.StagingScoreItem S on S.AssetUid = E.AssetUid and S.MetricAssetUid = V.AssetUid and S.EffectiveDate = @current_date
 					left join #priorResults P on P.AssetUid = E.AssetUid and P.MetricAssetUid = A.Uid
 			where	V.EffectiveDate = MV.EffectiveDate
 					and (
