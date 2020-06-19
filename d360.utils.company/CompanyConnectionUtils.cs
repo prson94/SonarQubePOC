@@ -6,17 +6,17 @@ using Dapper;
 using d360.core;
 using System.Diagnostics;
 using d360.core.entities;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Configuration;
 using d360.core.enums;
 
 namespace d360.utils.company
 {
     public static class CompanyConnectionUtils
-    {
+    {        
+
         public static string GetConnectionString(int id, string server, string username, string password)
         {
-            return string.Format("server={0};Database=D3S_{1};User ID={2};Password={3};MultipleActiveResultSets=True;", server, id, username, password);
+            return CompanyConnectionStringHelper.ConnectionString(id, server, username, password);
         }
 
         public static SqlConnection GetCompanyConnection(int id, string server, string username, string password)

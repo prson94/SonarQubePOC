@@ -13,7 +13,6 @@ using d360.utils.company;
 using Dapper;
 using igx.jobs.igc;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -100,7 +99,7 @@ namespace igx.jobs
                             {
                                 cnn = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID);
                                 if (cnn.State != System.Data.ConnectionState.Open)
-                                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                    cnn.Open();
 
                                 cnn.Execute(@"
 update  T
@@ -924,7 +923,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                     if (hasChanges)
                                     {
                                         if (cnn.State != System.Data.ConnectionState.Open)
-                                            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                            cnn.Open();
 
                                         // Section 0 : Asset
                                         writeLogEntry($"Executing section 0 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
@@ -994,7 +993,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                     if (hasChanges)
                                     {
                                         if (cnn.State != System.Data.ConnectionState.Open)
-                                            cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                            cnn.Open();
 
                                         // Section 2 : Relationships
                                         writeLogEntry($"Executing section 2 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
@@ -1128,7 +1127,7 @@ where	[AllowChangeDetection] = 0").ToList();
                                         if (hasChanges)
                                         {
                                             if (cnn.State != System.Data.ConnectionState.Open)
-                                                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                                cnn.Open();
 
                                             // Section 3 : Fields
                                             writeLogEntry($"Executing section 3 of procedure for {SynchedAssetType.SourceAssetTypeName} - request number {requestNumber}", currentStep);
@@ -1160,7 +1159,7 @@ where	[AllowChangeDetection] = 0").ToList();
                     OnStepStarted(new StepStartedEventArgs { Step = currentStep });
 
                     if (cnn.State != System.Data.ConnectionState.Open)
-                        cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        cnn.Open();
 
                     cnn.Query<dynamic>(
                         "exec integration.CompleteExecution @ExecutionID, @SynchedAssetTypeID, @AssetTypeID, @r",
@@ -1529,7 +1528,7 @@ where	[AllowChangeDetection] = 0").ToList();
             });
 
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
 
             var p = new DynamicParameters();
             p.Add("@SynchedAssetTypeID", ExecutionAssetType.SynchedAssetTypeID);
@@ -1639,7 +1638,7 @@ where	[AllowChangeDetection] = 0").ToList();
             if (fieldTbl.Rows.Count > 0)
             {
                 if (cnn.State != System.Data.ConnectionState.Open)
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
 
                 using (var bulkCopy = new SqlBulkCopy(cnn))
                 {

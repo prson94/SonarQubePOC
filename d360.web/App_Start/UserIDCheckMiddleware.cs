@@ -7,7 +7,6 @@ using IdentityModel.Client;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;

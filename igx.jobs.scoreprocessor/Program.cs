@@ -5,7 +5,6 @@ using Microsoft.Azure.WebJobs;
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.jobs.scoreprocessor
 {
@@ -49,7 +48,7 @@ namespace igx.jobs.scoreprocessor
                     {
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                            company.Open();
                             company.Execute("metrics.LoadFromStaging", commandTimeout: 3600);
                             lock (log)
                             {

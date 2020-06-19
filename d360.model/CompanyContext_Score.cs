@@ -5,7 +5,6 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -104,7 +103,7 @@ namespace d360.model
                 #endregion
 
                 if (Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
 
@@ -383,7 +382,7 @@ when not matched by target then
             #endregion
 
             if (Connection.State != ConnectionState.Open)
-                Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                Connection.Open();
 
             #region Bulk Copy
 

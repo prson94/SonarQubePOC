@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.extensions.caching;
 using Dapper;
 using Microsoft.Owin;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -79,7 +78,7 @@ namespace d360.web
                 resourceCompany.ID = companyId;
 
                 int contractCount = 0;
-                var cnn = GetCompanyConnection(companyId);
+                var cnn = await GetCompanyConnection(companyId);
 
                 if (cnn != null)
                 {
@@ -120,7 +119,7 @@ namespace d360.web
             }
         }
 
-        public SqlConnection GetCompanyConnection(int companyId)
+        public async Task<SqlConnection> GetCompanyConnection(int companyId)
         {
             var cache = new MemoryCachingProvider();
 
@@ -132,10 +131,12 @@ namespace d360.web
                     try
                     {
                         comm.Open();
-                        var res = comm.Query<string>(@"select 'server=' + s.Server + ';Database=D3S_' + cast(@companyId as varchar) + ';User ID=' + s.Username + ';Password='+ s.Password + ';MultipleActiveResultSets=True;' from Company c
+                        
+                        var res = await (comm.QuerySingleAsync(@"select s.Server, s.Username, s.Password from Company c
                                 inner join DatabaseServer s on s.ID = c.DatabaseServerID 
-                                where c.ID = @companyId", new { companyId }).FirstOrDefault();
-                        return new SqlConnection(res);
+                                where c.ID = @companyId", new { companyId }));
+                                                
+                        return new SqlConnection(CompanyConnectionStringHelper.ConnectionString(companyId, res.Server, res.Username, res.Password));
                     }
                     catch
                     {

@@ -1,6 +1,5 @@
 ﻿using d360.utils.company;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.IO;
 using System.Linq;
@@ -77,7 +76,7 @@ namespace igx.jobs.displayvaluechecker
                         {
                             using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                             {
-                                company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                company.Open();
                                 await company.ExecuteAsync("CheckDisplayValues", commandTimeout: 600);
                             }
                         }

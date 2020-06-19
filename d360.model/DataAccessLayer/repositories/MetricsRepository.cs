@@ -10,7 +10,6 @@ using d360.core.enums;
 using d360.model;
 using System.Net;
 using d360.core;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Data.SqlClient;
 using Dapper;
 using Newtonsoft.Json;
@@ -477,7 +476,7 @@ namespace d360.model.DataAccessLayer
                     order by [Level] asc";
 
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
 
             var results = cnn.Query<MetricAssetTypeHierarchyModel>(sql, new { assetTypeUid, effectiveDate = effectiveDate.Value }).ToList();
             var model = new MetricAssetTypeHierarchyModels();
@@ -546,7 +545,7 @@ namespace d360.model.DataAccessLayer
 
 
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
 
             var results = cnn.Query<MetricAssetHierarchyModel>(sql, new { assetUid, effectiveDate = effectiveDate.Value, scoreType = (int)type }).ToList();
 

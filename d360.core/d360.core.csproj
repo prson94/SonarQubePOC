@@ -358,6 +358,7 @@
     <Compile Include="exceptions\NotFoundException.cs" />
     <Compile Include="exceptions\UnauthorizedException.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="helpers\CompanyConnectionStringHelper.cs" />
     <Compile Include="helpers\HtmlHelper.cs" />
     <Compile Include="helpers\PluralServiceHelper.cs" />
     <Compile Include="helpers\DataTypeHelper.cs" />

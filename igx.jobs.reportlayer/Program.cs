@@ -5,7 +5,6 @@ using d360.core.helpers;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity.Design.PluralizationServices;
@@ -132,7 +131,7 @@ namespace igx.jobs.reportlayer
                     {
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            companyConnection.Open();
 
                             var selectSql = "";
                             var objectName = "";
