@@ -1817,3 +1817,11 @@ body .ui-toast .ui-toast-message.ui-toast-message-error {
 body .ui-toast .ui-toast-message.ui-toast-message-error .ui-toast-close-icon {
     color: #FFFFFF;
 }
+
+.ui-dropdown {
+	display: inline-block;
+	position: relative;
+	cursor: pointer;
+	vertical-align: middle;
+	min-width: 12.5em;
+}

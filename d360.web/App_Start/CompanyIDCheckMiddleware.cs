@@ -36,7 +36,7 @@ namespace d360.web
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
                     dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);                                        
                 }
                 cache.SetItem(key, dict, true, 5);

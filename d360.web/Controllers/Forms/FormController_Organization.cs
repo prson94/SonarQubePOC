@@ -761,16 +761,45 @@ namespace d360.web.Controllers
                 if (!Company.CurrentResourceIsAdmin)
                     return jsonException(FormInfo.Permisions_Error_Delete, HttpStatusCode.Forbidden);
 
-                var model = Company.GetById<OrganizationType>(id);
-                if (model == null) throw new NotFoundException("organizationType");
+                AssetType assetType = Company.AssetTypes.Where(a => a.Object == "OrganizationType" && a.ObjectID == id).FirstOrDefault();
+                if (assetType == null) throw new NotFoundException("organizationType");
 
-                model.State = State.Deleted;
+                var execution = new ApiExecution
+                {
+                    ExecutionID = Guid.NewGuid(),
+                    StartedOn = DateTime.UtcNow,
+                    Route = Request?.Url?.LocalPath,
+                    Method = Request?.HttpMethod,
+                    ResourceID = Company.CurrentResourceID,
+                    Total = 1,
+                    Fields = "{}",
+                    Error = 0,
+                    Processed = 0
+                };
 
+                Company.Add(execution);
                 Company.SaveChanges();
+                var deletes = new AssetTypeDeletes{
+                    new AssetTypeDelete() { Cascade = false, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.uid }
+                };
+                var deleteAssetTypesResults = Company.RemoveAssetTypes(execution, deletes, 28800); //dbExecutionTimeout = 8 hours
+
+                execution.CompletedOn = DateTime.UtcNow;
+                execution.Processed = deleteAssetTypesResults.Count(r => r.Success);
+                execution.Error = deleteAssetTypesResults.Count(r => !r.Success);
+
+                if (execution.Error > 0)
+                    execution.ErrorMessage = deleteAssetTypesResults.First().Message;
+
+                Company.Update(execution);
+                Company.SaveChanges();
+
+                if (execution.Error > 0)
+                    throw new Exception("Could not delete Organization Type");
 
                 dynamic custom = new
                 {
-                    Name = model.Name,
+                    Name = assetType.Name,
                     action = "delete"
                 };
 

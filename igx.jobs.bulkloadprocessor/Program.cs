@@ -909,7 +909,7 @@ where	I.LoadID = @loadId", new { loadId }, commandTimeout: 1200).ToList();
             #region Process in Community database.
 
             var community = new SqlConnection(d360.core.constants.COMMUNITY_DATABASE_CONNECTION);
-            community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+            community.Open();
             using (var trans = community.BeginTransaction())
             {
                 try

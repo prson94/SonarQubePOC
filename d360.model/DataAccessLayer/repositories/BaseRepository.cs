@@ -66,7 +66,7 @@ namespace d360.model.DataAccessLayer.repositories
         #endregion
         protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]")
         {
-            fieldTypes.ForEach(f =>
+            fieldTypes.OrderBy(x=> x.ID).ToList().ForEach(f =>
             {
                 var defaultVal = f.DefaultFormattedValue;
                 var joinPrefix = "left";

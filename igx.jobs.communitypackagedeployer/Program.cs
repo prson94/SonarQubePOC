@@ -1345,7 +1345,7 @@ update  set
             try
             {
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                community.Open();
 
                 var environment = CoreFunction.GetConfigValueByKey("Environment");
                 
@@ -1457,7 +1457,7 @@ update  set
                 {
                     using (var communityConn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                     {
-                        communityConn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        communityConn.Open();
                         communityConn.Execute("insert into community.PackageDeploymentHistory (ChangeOn) values (@Now)", new { Now });
                         communityConn.Close();
                     }

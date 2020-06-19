@@ -139,7 +139,7 @@ namespace d360.web
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
                     var baseSql = @"
 select	C.*,
         R.APIPrivateKey,
@@ -430,7 +430,7 @@ from	Resource R
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
                     cnName = (await cnn.QueryAsync<string>(@"select coalesce(C.Value, S.DefaultValue) as Value
 from Setting S left join CompanySetting C on C.SettingID = S.ID and C.CompanyID = @cId
 where S.ID = 54", new { cId = companyId })).FirstOrDefault();

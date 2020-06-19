@@ -816,5 +816,80 @@ from	IntersectType I
 				inner join IntersectType i on i.uid = @uid
 				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
         }
+
+        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal)
+        {
+            int? total = null;
+
+            if (includeTotal)
+            {
+                var cntsql = @"select
+	                        count(1)
+                        from
+	                        [intersect] i	                        
+                        where 
+	                        i.IntersectTypeID = @intersectTypeID";
+
+                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID });
+            }
+
+            var sql = @"
+                        begin                         
+                         -- create temp table
+                         drop table if exists #TempIntersectInfo
+                         create table #TempIntersectInfo
+                        (
+                            IntersectUid UniqueIdentifier not null, 
+                            SubjectUid UniqueIdentifier null,
+	                        ObjectUid UniqueIdentifier null,
+	                        [Object] varchar(20) not null,
+	                        [ObjectID] int not null,
+	                        [Subject] varchar(20) not null,
+	                        [SubjectID] int not null
+                        )
+
+                        create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([Object],[ObjectID],[Subject],[SubjectID])
+
+                         -- add intersect info into temp table
+
+                         insert into #TempIntersectInfo
+	                        (IntersectUid, [Object],[ObjectID], [Subject], [SubjectID])
+                           select 
+	                        I.[UID],
+	                        I.[Object],
+	                        I.[ObjectID],
+	                        I.[Subject],
+	                        I.[SubjectID]
+                           from [intersect] I 
+                           where I.IntersectTypeID = @intersectTypeID
+                            Order by I.ID OFFSET @offset ROWS 
+                                FETCH NEXT @rows ROWS ONLY
+
+
+	                        UPDATE
+		                        #TempIntersectInfo
+	                        SET
+		                        #TempIntersectInfo.SubjectUID =  a.[uid]
+	                        FROM 
+		                        asset a
+		                        INNER JOIN #TempIntersectInfo t ON a.[object] = t.[subject] and a.[objectid] = t.[subjectid];
+
+	                        UPDATE
+		                        #TempIntersectInfo
+	                        SET
+		                        #TempIntersectInfo.ObjectUID =  a.[uid]
+	                        FROM 
+		                        asset a
+		                        INNER JOIN #TempIntersectInfo t ON a.[object] = t.[object] and a.[objectid] = t.[objectid];
+
+	                        select IntersectUid as RelationshipUid,ObjectUid,SubjectUid from #TempIntersectInfo
+
+
+                        end";
+
+            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize } );
+
+            return new RelationshipUidResult { Total = total, Results = results };
+        }
     }
 }
