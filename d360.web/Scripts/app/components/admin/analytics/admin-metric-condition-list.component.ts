@@ -102,7 +102,6 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     add() {
         this.selection = new MetricAssetVersionConditionItemViewModel();
         this.selection.IsEditMode = false;
-        //this.selection. = this.mapId;
         this.formMode = FormMode.Adding;
         this.formModeChange.emit(this.formMode);
     }
@@ -133,13 +132,11 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         e.OperatorText = this.operators.find(o => o.value === e.Operator).label;
 
         if (!e.IsEditMode) {
-            //this.conditions = [];
             this.conditions.push(e);
         }
 
         this.refreshSelectedFieldTypeIds();
 
-        //this.conditions.slice();
         this.conditionsChange.emit(this.conditions);
         this.formMode = FormMode.Default;
         this.formModeChange.emit(this.formMode);

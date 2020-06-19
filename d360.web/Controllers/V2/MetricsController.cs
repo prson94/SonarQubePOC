@@ -359,8 +359,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("structure/{allocationUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json")//, //, "application/xml"
-            //ApiExplorerSettings(IgnoreApi = true)
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
         ]
         public IHttpActionResult GetMetricStructureByAssetType(Guid allocationUid)
         {
@@ -399,7 +398,7 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("fields/{assetTypeUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             ApiExplorerSettings(IgnoreApi = true)
         ]
         public IHttpActionResult GetMetricFieldsByAssetType(Guid assetTypeUid)
