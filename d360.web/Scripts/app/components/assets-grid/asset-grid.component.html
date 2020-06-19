@@ -151,7 +151,8 @@
               class="RowTools"
               *ngIf="
                 item[certificationStatusIndex] != null &&
-                item[certificationStatusIndex] != ''
+                item[certificationStatusIndex] != '' &&
+                 !statusHasColor
               "
             >
               <i

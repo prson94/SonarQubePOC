@@ -89,4 +89,5 @@ export class V2ApiFilters {
     _excludeCount: boolean;
     usegraphforparent: boolean;
     _onlyListableFields: boolean;
+    _appendColorsForLists: boolean;
 }

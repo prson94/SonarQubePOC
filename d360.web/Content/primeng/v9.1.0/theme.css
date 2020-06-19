@@ -1528,27 +1528,12 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
    d3s-color-picker
 */
 
-.d3s-color-picker{
+.d3s-color-picker {
     max-width: 300px;
 }
 
 .d3s-color-picker.multi{
     max-width:unset;
-}
-
-.ig-colorfield-swatch {
-    display: inline-block;
-    position: relative;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    margin-right: 8px;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    margin-left: 8px;
-}
-
-.ig-colorfield-swatch.empty{
-    border: 1px dashed rgba(0,0,0,0.3);
 }
 
 .ig-colorfield-item, .ig-colorfield-item-selected {
@@ -1690,6 +1675,16 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
     font-weight: bold;
     color: black;
 }
+.d3s-color-picker .ui-multiselect .ui-multiselect-header {
+    display: flex;
+}
+.d3s-color-picker .ui-multiselect .ui-multiselect-header.ui-chkbox {
+    display: flex;
+    vertical-align: middle;
+    cursor: pointer;
+    margin-top: 8px;
+    margin-left: 4px;
+}
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container, 
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container {
@@ -1760,14 +1755,19 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
     border-color: #006fba;
 }
 
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:focus,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:focus{
+    border: none !important;
+    outline: none !important;
+}
 
-    .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
-    .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
-    .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
-    .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover {
-        color: #202020;
-        background-color: #e4f5f8;
-    }
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-dropdown-panel .ui-dropdown-items .ui-dropdown-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item:not(.ui-state-highlight):not(.ui-state-disabled):hover,
+.d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover {
+    color: #202020;
+    background-color: #e4f5f8;
+}
 
 .ui-dropdown-empty-message, .ui-multiselect-empty-message {
   font-family: 'Source Sans Pro', sans-serif;

@@ -298,7 +298,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         if (this.field.FieldType == 'Color') {
             this.colorValue = this.field.Value;
-            console.log(this.colorValue);
         }
 
         if (this.field.FieldType == 'Relationship') {

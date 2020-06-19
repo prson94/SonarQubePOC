@@ -76,7 +76,7 @@ namespace d360.model.DataAccessLayer.repositories
                 var fieldDataType = getFieldDataType(f);
 
                 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
-
+                
                 if (f.Type == "JsonElement")
                 {
                     jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
@@ -354,17 +354,18 @@ namespace d360.model.DataAccessLayer.repositories
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
-                else if(f.Type =="Lookup" && appendColorToLists)
+                else if(f.Type =="Lookup" && appendColorToLists && LookupFieldHasColorItem(f))
                 {
                     string sql = $@"outer apply(
-                                select FormattedValue = (
-                                                        SELECT ({tableAlias}.{valueColumn} +|+  STRING_AGG (AC{tableAlias}.Color,','))
-							                            from Field {tableAlias} 
-	                            inner join FieldLookupValue V{tableAlias} on V{tableAlias}.FieldTypeID = {tableAlias}.FieldTypeID and V{tableAlias}.Value in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
-	                            inner join Asset AC{tableAlias} on AC{tableAlias}.Object = V{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = V{tableAlias}.Value   
-	                            inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
-	                            where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]
-	                            )
+                                select FormattedValue = (SELECT STRING_AGG (FV.NameWithColor,''))
+                                from 
+                                (SELECT ('<span class=""ig-colorfield-swatch"" style=""background-color:' + COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'unset') + '"" ></span>' + '<span>' + COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) + '</span><br/>') as NameWithColor
+                                from Field {tableAlias} 
+                                inner join FieldLookupValue V{tableAlias} on V{tableAlias}.FieldTypeID = {tableAlias}.FieldTypeID and V{tableAlias}.Value in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
+                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = V{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = V{tableAlias}.Value   
+                                inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
+                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ
+                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]) as FV 
                             ){tableAlias}(FormattedValue) ";
                     fieldJoins.Add(sql);
                 }
@@ -374,6 +375,22 @@ namespace d360.model.DataAccessLayer.repositories
                 }
             });
         }
+
+        private bool LookupFieldHasColorItem(FieldType f)
+        {
+            var lookup = CompanyContext.FieldLookupValues.FirstOrDefault(x => x.LookupObjectType == f.LookupObjectType && f.LookupObjectID == x.LookupObjectID && f.ID == x.FieldTypeID);
+            if (lookup != null)
+            {
+                var obj = lookup.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : lookup.LookupObjectType;
+                if (obj != "ReferenceItemType")
+                    return false;
+                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == lookup.LookupObjectID);
+                if (assettype != null)
+                    return CompanyContext.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+            }
+            return false;
+        }
+
         protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)

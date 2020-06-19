@@ -38,7 +38,6 @@ export class ColorPickerComponent implements OnInit {
     constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
     }
     ngOnInit() {
-        console.log(this.selectedColor);
         this.colors = []; 
         this.load();
     }
