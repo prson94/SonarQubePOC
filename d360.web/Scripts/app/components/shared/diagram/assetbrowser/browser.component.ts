@@ -1430,13 +1430,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         if (subgraph) {
                             subgraph.nodes.forEach(nd => {
                                 // You have found the node, now traverse the hidden links for this node.
-                                let relevantRelations = allRelations.filter(r => { return nd.key == (direction == AssetBrowserApiHopDirection.Backward ? r.to : r.from) });
+                                let relevantRelations: Array<AssetBrowserGenericRelationModel> = [];
+                                if (direction == AssetBrowserApiHopDirection.Backward) {
+                                    relevantRelations = allRelations.filter(r => { return key == r.to && nd.key == r.from });
+                                }
+                                else {
+                                    relevantRelations = allRelations.filter(r => { return key == r.from && nd.key == r.to });
+                                }
                                 relevantRelations.forEach(r => {
-                                    let nodeToHighlight = this.diagram.findNodeForKey((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to));
+                                    let keyToFind: string = (direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to);
+                                    let nodeToHighlight = this.diagram.findNodeForKey(keyToFind);
                                     if (nodeToHighlight) {
                                         nodeToHighlight.isHighlighted = true;
                                     }
-                                    this.helper_HighlightNodeImpacts((direction == AssetBrowserApiHopDirection.Backward ? r.from : r.to), direction, allRelations);
+                                    this.helper_HighlightNodeImpacts(keyToFind, direction, allRelations);
                                 });
                             });
                         }
