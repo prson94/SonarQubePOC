@@ -322,7 +322,6 @@
 	<include file="scripts/View.reporting.Integration_ExecutionErrors.xml"/>
 	<include file="scripts/View.reporting.Integration_Mappings.xml"/>
 	<include file="scripts/View.reporting.Issue_All.xml"/>
-	<include file="scripts/View.reporting.Metric_All.xml"/>
 	<include file="scripts/View.reporting.Model_All.xml"/>
 	<include file="scripts/View.reporting.Model_Fields.xml"/>
 	<include file="scripts/View.reporting.Policy_All.xml"/>
@@ -471,5 +470,6 @@
 	
 	<!-- Migration -->
 	<include file="scripts/Migration.Metrics.xml"/>
+	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
 	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/> <!--temporary location. would normally be above in commented line.-->
 </databaseChangeLog>
