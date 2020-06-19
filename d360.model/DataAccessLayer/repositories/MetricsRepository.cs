@@ -334,153 +334,155 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 }
 
                 // Set the properties.
+                metricAssetVersion.Name = model.Name;
+                metricAssetVersion.Description = model.Description;
                 metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
                 metricAssetVersion.Weight = model.Weight;
-
-                #region Process conditions
-
-                if (model.ConditionGroups.Count > 0)
-                {
-                    if (metricAssetVersion.Conditions == null)
-                        metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
-
-                    model.ConditionGroups.ForEach(g =>
-                    {
-                        var usedFieldTypeIDs = new List<int>();
-                        var usedIntersectTypeIDs = new List<int>();
-
-                        var cg = metricAssetVersion.Conditions.SingleOrDefault(i => i.Uid == g.Uid);
-
-                        if (g.ConditionItems.Count > 0)
-                        {
-                            var isNewGroup = (cg == null);
-                            if (isNewGroup) 
-                            {
-                                cg = new MetricAssetVersionCondition();
-                            }
-
-                            // Update the group's properties.
-                            cg.MatchType = g.MatchType;
-                            cg.Position = g.Position;
-                            cg.Threshold = g.Threshold;
-                            cg.Weight = g.Weight;
-
-                            if (cg.Items == null)
-                            {
-                                cg.Items = new List<MetricAssetVersionConditionItem>();
-                            }
-
-                            g.ConditionItems.ForEach(c =>
-                            {
-                                var ci = cg.Items.SingleOrDefault(i => i.Uid == c.Uid);
-
-                                if (ci == null)
-                                {
-                                    ci = new MetricAssetVersionConditionItem();
-                                }
-
-                                Action<MetricAssetVersionConditionItem, List<MetricAssetVersionConditionItemValue>> checkValues = delegate (MetricAssetVersionConditionItem item, List<MetricAssetVersionConditionItemValue> newValues) {
-                                    if (item.Values != null)
-                                    {
-                                        item.Values.RemoveAll(i => 1 == 1);
-                                    }
-
-                                    newValues.ForEach(nv =>
-                                    {
-                                        if (item.Values == null)
-                                        {
-                                            item.Values = new List<MetricAssetVersionConditionItemValue>();
-                                        }
-                                        if (!item.Values.Any(ev => ev.Value == nv.Value) && nv.Value != null)
-                                        {
-                                            item.Values.Add(nv);
-                                        }
-                                    });
-                                };
-
-                                if (c.ConditionFieldTypeID.HasValue)
-                                {
-                                    // Only one of the specific field per condition group.
-                                    if (!usedFieldTypeIDs.Contains(c.ConditionFieldTypeID.Value))
-                                    {
-                                        ci.ConditionFieldTypeID = c.ConditionFieldTypeID.Value;
-                                        ci.ConditionType = c.ConditionType;
-                                        ci.Operator = c.Operator;
-
-                                        checkValues(ci, c.Values);
-                                        ci.Updated = true;
-
-                                        if (ci.Uid == Guid.Empty || ci.Uid == null) 
-                                        {
-                                            cg.Items.Add(ci);
-                                        }
-
-                                        usedFieldTypeIDs.Add(c.ConditionFieldTypeID.Value);
-                                    }
-                                }
-                                else if (c.ConditionIntersectTypeID.HasValue)
-                                {
-                                    // Only one of the specific relationship per condition group.
-                                    if (!usedIntersectTypeIDs.Contains(c.ConditionFieldTypeID.Value))
-                                    {
-                                        ci.ConditionIntersectTypeID = c.ConditionIntersectTypeID;
-                                        ci.ConditionType = c.ConditionType;
-                                        ci.Operator = c.Operator;
-                                        checkValues(ci, c.Values);
-                                        ci.Updated = true;
-
-                                        if (ci.Uid == Guid.Empty || ci.Uid == null)
-                                        {
-                                            cg.Items.Add(ci);
-                                        }
-
-                                        usedIntersectTypeIDs.Add(c.ConditionFieldTypeID.Value);
-                                    }
-                                }
-                            });
-
-                            // Now remove the items that were NOT updated during this process.
-                            while (cg.Items.Any(i => !i.Updated))
-                            {
-                                var itemToRemove = cg.Items.First(i => !i.Updated);
-                                Company.MetricAssetVersionConditionItems.Remove(itemToRemove);
-                                //cg.Items.Remove(itemToRemove);
-                            }
-
-                            cg.Updated = true;
-                            if (cg.Uid == Guid.Empty || cg.Uid == null)
-                            {
-                                metricAssetVersion.Conditions.Add(cg);
-                            }
-                        }
-                        else 
-                        {
-                            if (cg != null)
-                            {
-                                metricAssetVersion.Conditions.Remove(cg); //This is now an empty group, so remove the group entirely.
-                            }
-                        }
-                    });
-
-                    // Now remove the groups that were NOT updated during this process.
-                    while (metricAssetVersion.Conditions.Any(i => !i.Updated))
-                    {
-                        var itemToRemove = metricAssetVersion.Conditions.First(i => !i.Updated);
-                        //metricAssetVersion.Conditions.Remove(itemToRemove);
-                        Company.MetricAssetVersionConditions.Remove(itemToRemove);
-                    }
-                }
-                else 
-                {
-                    metricAssetVersion.Conditions = null;
-                }
-
-                #endregion
-
-                Company.Update(metricAssetVersion);
             }
 
             #endregion
+
+            #region Process conditions for ADDs or UPDATEs
+
+            if (model.ConditionGroups.Count > 0)
+            {
+                if (metricAssetVersion.Conditions == null)
+                    metricAssetVersion.Conditions = new List<MetricAssetVersionCondition>();
+
+                model.ConditionGroups.ForEach(g =>
+                {
+                    var usedFieldTypeIDs = new List<int>();
+                    var usedIntersectTypeIDs = new List<int>();
+
+                    var cg = metricAssetVersion.Conditions.SingleOrDefault(i => i.Uid == g.Uid);
+
+                    if (g.ConditionItems.Count > 0)
+                    {
+                        var isNewGroup = (cg == null);
+                        if (isNewGroup) 
+                        {
+                            cg = new MetricAssetVersionCondition();
+                        }
+
+                        // Update the group's properties.
+                        cg.MatchType = g.MatchType;
+                        cg.Position = g.Position;
+                        cg.Threshold = g.Threshold;
+                        cg.Weight = g.Weight;
+
+                        if (cg.Items == null)
+                        {
+                            cg.Items = new List<MetricAssetVersionConditionItem>();
+                        }
+
+                        g.ConditionItems.ForEach(c =>
+                        {
+                            var ci = cg.Items.SingleOrDefault(i => i.Uid == c.Uid);
+
+                            if (ci == null)
+                            {
+                                ci = new MetricAssetVersionConditionItem();
+                            }
+
+                            Action<MetricAssetVersionConditionItem, List<MetricAssetVersionConditionItemValue>> checkValues = delegate (MetricAssetVersionConditionItem item, List<MetricAssetVersionConditionItemValue> newValues) {
+                                if (item.Values != null)
+                                {
+                                    item.Values.RemoveAll(i => 1 == 1);
+                                }
+
+                                newValues.ForEach(nv =>
+                                {
+                                    if (item.Values == null)
+                                    {
+                                        item.Values = new List<MetricAssetVersionConditionItemValue>();
+                                    }
+                                    if (!item.Values.Any(ev => ev.Value == nv.Value) && nv.Value != null)
+                                    {
+                                        item.Values.Add(nv);
+                                    }
+                                });
+                            };
+
+                            if (c.ConditionFieldTypeID.HasValue)
+                            {
+                                // Only one of the specific field per condition group.
+                                if (!usedFieldTypeIDs.Contains(c.ConditionFieldTypeID.Value))
+                                {
+                                    ci.ConditionFieldTypeID = c.ConditionFieldTypeID.Value;
+                                    ci.ConditionType = c.ConditionType;
+                                    ci.Operator = c.Operator;
+
+                                    checkValues(ci, c.Values);
+                                    ci.Updated = true;
+
+                                    if (ci.Uid == Guid.Empty || ci.Uid == null) 
+                                    {
+                                        cg.Items.Add(ci);
+                                    }
+
+                                    usedFieldTypeIDs.Add(c.ConditionFieldTypeID.Value);
+                                }
+                            }
+                            else if (c.ConditionIntersectTypeID.HasValue)
+                            {
+                                // Only one of the specific relationship per condition group.
+                                if (!usedIntersectTypeIDs.Contains(c.ConditionFieldTypeID.Value))
+                                {
+                                    ci.ConditionIntersectTypeID = c.ConditionIntersectTypeID;
+                                    ci.ConditionType = c.ConditionType;
+                                    ci.Operator = c.Operator;
+                                    checkValues(ci, c.Values);
+                                    ci.Updated = true;
+
+                                    if (ci.Uid == Guid.Empty || ci.Uid == null)
+                                    {
+                                        cg.Items.Add(ci);
+                                    }
+
+                                    usedIntersectTypeIDs.Add(c.ConditionFieldTypeID.Value);
+                                }
+                            }
+                        });
+
+                        // Now remove the items that were NOT updated during this process.
+                        while (cg.Items.Any(i => !i.Updated))
+                        {
+                            var itemToRemove = cg.Items.First(i => !i.Updated);
+                            Company.MetricAssetVersionConditionItems.Remove(itemToRemove);
+                            //cg.Items.Remove(itemToRemove);
+                        }
+
+                        cg.Updated = true;
+                        if (cg.Uid == Guid.Empty || cg.Uid == null)
+                        {
+                            metricAssetVersion.Conditions.Add(cg);
+                        }
+                    }
+                    else 
+                    {
+                        if (cg != null)
+                        {
+                            metricAssetVersion.Conditions.Remove(cg); //This is now an empty group, so remove the group entirely.
+                        }
+                    }
+                });
+
+                // Now remove the groups that were NOT updated during this process.
+                while (metricAssetVersion.Conditions.Any(i => !i.Updated))
+                {
+                    var itemToRemove = metricAssetVersion.Conditions.First(i => !i.Updated);
+                    //metricAssetVersion.Conditions.Remove(itemToRemove);
+                    Company.MetricAssetVersionConditions.Remove(itemToRemove);
+                }
+            }
+            else 
+            {
+                metricAssetVersion.Conditions = null;
+            }
+
+            #endregion
+
+            Company.Update(metricAssetVersion);
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
