@@ -814,9 +814,9 @@ order by Name";
                 });
             }
 
-            if (assetType.Class == AssetTypeClass.BusinessAsset)
+            if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Model || assetType.Class == AssetTypeClass.Policy)
             {
-                if (anyDiagramRelationTypes && anyProcessDiagram)
+                if (anyDiagramRelationTypes || anyProcessDiagram)
                 {
                     initial = ((int)AssetBrowserDiagramType.Process);
 
