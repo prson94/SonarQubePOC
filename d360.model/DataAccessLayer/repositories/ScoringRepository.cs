@@ -222,7 +222,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
@@ -243,8 +245,6 @@ namespace d360.model.DataAccessLayer
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();
 
-
-
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@uid", alloc.Uid);
 
@@ -255,7 +255,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
