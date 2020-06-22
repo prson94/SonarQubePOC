@@ -5,7 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="entities\reference\" />
+    <Compile Remove="entities\reference\**" />
+    <EmbeddedResource Remove="entities\reference\**" />
+    <None Remove="entities\reference\**" />
   </ItemGroup>
 
   <ItemGroup>
