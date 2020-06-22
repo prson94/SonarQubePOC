@@ -19,6 +19,8 @@ import { TableModule } from 'primeng/table';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+
 
 @NgModule({
     imports: [
@@ -37,11 +39,13 @@ import { TooltipModule } from 'primeng/tooltip';
         TableModule,
         TagViewModule,
         TilesModule,
-        TooltipModule
+        TooltipModule,
+        D3SColorPickerModule,
+        
     ],
     declarations: [
         DynamicLookupGridComponent,
-        ObjectDetailComponent,
+        ObjectDetailComponent, 
         ObjectDetailFieldComponent,
     ],
     exports: [

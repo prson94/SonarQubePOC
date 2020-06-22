@@ -246,7 +246,7 @@ namespace d360.model.DataAccessLayer
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
             string populateRestrictedAssetTableSQL = "";
-            bool appendColorsForLists = false;
+            bool listColorsAsJSON = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -270,9 +270,9 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_appendcolorsforlists"))
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
             {
-                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_appendcolorsforlists").Value, out appendColorsForLists);
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
             }
 
             List<string> fieldColumns = new List<string>();
@@ -291,7 +291,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", appendColorsForLists);
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
@@ -1902,7 +1902,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
             dbArgs.Add("@assetUid", asset.uid.ToString());
             dbArgs.Add("@id", asset.ID);
-
+            //add to the search results to return the colors object that the badge can use for color!!!!!!! 
             var sql = $@"
                 select
 	                A.[UID] as [uid],

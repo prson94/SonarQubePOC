@@ -64,7 +64,7 @@ namespace d360.model.DataAccessLayer.repositories
 
         }
         #endregion
-        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool appendColorToLists = false)
+        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false)
         {
             fieldTypes.ForEach(f =>
             {
@@ -115,7 +115,7 @@ namespace d360.model.DataAccessLayer.repositories
                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
                         dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
                     }
-                    else if (f.Type == "Lookup" && appendColorToLists)
+                    else if (f.Type == "Lookup" && listColorsAsJSON)
                     {
                         fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                     }
@@ -354,18 +354,18 @@ namespace d360.model.DataAccessLayer.repositories
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
-                else if(f.Type =="Lookup" && appendColorToLists && LookupFieldHasColorItem(f))
+                else if(f.Type =="Lookup" && listColorsAsJSON && LookupFieldHasColorItem(f))
                 {
                     string sql = $@"outer apply(
-                                select FormattedValue = (SELECT STRING_AGG (FV.NameWithColor,''))
-                                from 
-                                (SELECT ('<span class=""ig-colorfield-swatch"" style=""background-color:' + COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'unset') + '"" ></span>' + '<span>' + COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) + '</span><br/>') as NameWithColor
+                                select FormattedValue = 
+                                (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
+								COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field {tableAlias} 
                                 inner join FieldLookupValue V{tableAlias} on V{tableAlias}.FieldTypeID = {tableAlias}.FieldTypeID and V{tableAlias}.Value in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
                                 inner join Asset AC{tableAlias} on AC{tableAlias}.Object = V{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = V{tableAlias}.Value   
                                 inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
-                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ
-                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID]) as FV 
+                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID] FOR JSON PATH) 
                             ){tableAlias}(FormattedValue) ";
                     fieldJoins.Add(sql);
                 }

@@ -1536,30 +1536,6 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
     max-width:unset;
 }
 
-.ig-colorfield-item, .ig-colorfield-item-selected {
-    display: inline-flex;
-    height: 32px;
-    margin: 0;
-    padding: 0;
-    align-items: center;
-    max-width: 100%;
-}
-
-.ig-colorfield-item-label {
-	overflow: hidden;
-	text-overflow: ellipsis;
-	position: relative;
-	top: 1px;
-}
-
-.ig-colorfield-item-selected .ig-colorfield-item-label {
-	top: -4px;
-}
-
-.ig-colorfield-item-selected .ig-colorfield-swatch {
-	top: -4px;
-}
-
 .d3s-color-picker .ui-dropdown,
 .d3s-color-picker .ui-multiselect {
     background: #ffffff;

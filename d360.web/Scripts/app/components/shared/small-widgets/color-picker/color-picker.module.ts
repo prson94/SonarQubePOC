@@ -6,6 +6,7 @@ import { GovernRequestInterceptor } from '../../../../http-interceptors/govern-r
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ColorPickerComponent } from './color-picker.component';
 import { DropdownModule } from 'primeng/dropdown';
+import { ColorDisplayComponent } from './color-display.component';
 
 @NgModule({
     imports: [
@@ -16,9 +17,11 @@ import { DropdownModule } from 'primeng/dropdown';
     ],
     declarations: [
         ColorPickerComponent,
+        ColorDisplayComponent,       
     ],
     exports: [
         ColorPickerComponent,
+        ColorDisplayComponent,
     ],
     providers: [
         {

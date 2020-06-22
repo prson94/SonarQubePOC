@@ -235,7 +235,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
-        params._appendColorsForLists = true; 
+        params._listColorsAsJSON = true; 
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
@@ -330,15 +330,13 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
                 this.statusHasColor = this.items.filter(x => {
                     let foundColorToken = false;
-                    if (x.FieldName.toLowerCase() == "status") {    
-                        for (var prop in x) {
-                            if (Object.prototype.hasOwnProperty.call(x, prop)) {
-                                if ((x[prop] + "").indexOf('class="ig-colorfield-swatch"') > -1)
-                                    foundColorToken = true;
-                            }
+                    for (var prop in x) { 
+                        if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
+                            if ((x[prop] + "").indexOf('class="ig-colorfield-swatch"') > -1)
+                                foundColorToken = true;
                         }
+                        
                     }
-
                     return foundColorToken;
                 }).length > 0;
 
