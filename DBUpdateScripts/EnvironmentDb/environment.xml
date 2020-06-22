@@ -342,6 +342,10 @@
 	<include file="scripts/View.reporting.Workflows.xml"/>
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
+	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
+	<include file="scripts/Migration.Metrics.xml"/>
+	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
+	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
@@ -378,7 +382,6 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
-	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -456,7 +459,7 @@
 	<include file="scripts/Procedure.integration.MergeAssetHashes.xml"/>
 	<include file="scripts/Procedure.integration.ProcessExecutionAssets.xml"/>
 	<include file="scripts/Procedure.lineage.GetByObject.xml"/>
-	<!-- <include file="scripts/Procedure.metrics.LoadFromStaging.xml"/> -->
+	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/>
 	<include file="scripts/Procedure.tile.GetObjectStatistics.xml"/>
 	<include file="scripts/Procedure.utility.AddAuditEntry.xml"/>
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
@@ -467,9 +470,4 @@
 	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
-	
-	<!-- Migration -->
-	<include file="scripts/Migration.Metrics.xml"/>
-	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
-	<include file="scripts/Procedure.metrics.LoadFromStaging.xml"/> <!--temporary location. would normally be above in commented line.-->
 </databaseChangeLog>
