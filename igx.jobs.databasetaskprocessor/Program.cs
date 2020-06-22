@@ -18,7 +18,6 @@ using Dapper;
 using Mandrill;
 using Mandrill.Model;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.jobs.databasetaskprocessor
 {
@@ -102,7 +101,7 @@ namespace igx.jobs.databasetaskprocessor
 
                         using (var outerCompanyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                         {
-                            outerCompanyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            outerCompanyConnection.Open();
 
                             #region Indexer Func
 
@@ -351,7 +350,7 @@ from    [queue].[Task] T
                                     {
                                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID))
                                         {
-                                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                            companyConnection.Open();
 
                                             try
                                             {

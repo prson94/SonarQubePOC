@@ -6,7 +6,6 @@ using d360.extensions.queue;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -133,7 +132,7 @@ namespace igx.jobs.indexer
         {
             IEnumerable<IndexObjectModel> models = null;
 
-            company.OpenWithRetry(RetryPolicy.DefaultFixed);
+            company.Open();
             List<CompanySetting> settings = CompanyConnectionUtils.GetCompanySettings(c.CompanyID);
             bool fusionEnabled = (settings.Any(i => i.SettingID == 70) ? bool.Parse(settings.Single(i => i.SettingID == 70).Value) : true);
 

@@ -4,7 +4,6 @@ using d360.extensions.storage;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Microsoft.ServiceBus.Messaging;
 using Newtonsoft.Json;
 using System;
@@ -45,7 +44,7 @@ namespace igx.jobs.assetgraphprocessor
                     var relationships = new List<DatabaseBulkRelationshipResult>();
                     Guid typeUid;
                     
-                    company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    company.Open();
 
                     var execution = (
                         await company.QueryAsync<ApiExecution>(@"select * from api.Execution where ExecutionID = @executionID", new { info.execution.ExecutionID })

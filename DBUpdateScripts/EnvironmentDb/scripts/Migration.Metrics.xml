@@ -1,0 +1,328 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+ 
+	<changeSet author="Pappas" id="Migration.Metrics-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AllocationUid')
+begin
+	alter table metrics.Asset add AllocationUid uniqueidentifier null;
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AssetTypeUid')
+begin
+	update	T
+	set		T.AllocationUid = S.Uid
+	from	metrics.Asset T
+			inner join metrics.Allocation S on S.AssetTypeUid = T.AssetTypeUid and S.ScoreType = T.ScoreType;
+
+	alter table metrics.Asset alter column AllocationUid uniqueidentifier not null;
+
+	alter table [metrics].[Asset] with check add constraint [FK_MetricAsset_MetricAllocation] foreign key([AllocationUid]) references [metrics].[Allocation] ([Uid]) on delete cascade
+	alter table [metrics].[Asset] check constraint [FK_MetricAsset_MetricAllocation]
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'AssetTypeUid')
+begin
+	alter table metrics.Asset drop column AssetTypeUid;
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'ScoreType')
+begin
+	alter table [metrics].[Asset] drop constraint [DF_MetricScore_ScoreType]
+	alter table metrics.Asset drop column ScoreType;
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Name')
+begin
+	alter table metrics.Asset alter column Name nvarchar(250) null;
+end
+
+if exists (select * from sys.foreign_keys where  name = 'FK_MetricAssetVersion_MetricAsset')
+begin
+	alter table [metrics].[AssetVersion] drop constraint [FK_MetricAssetVersion_MetricAsset]	
+end
+GO
+
+if exists (select * from sys.foreign_keys where  name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+begin
+	alter table [metrics].[AssetVersionCondition] drop constraint [FK_MetricAssetVersionCondition_MetricAssetVersion]
+end
+GO
+
+if exists (select * from sys.key_constraints where  name = 'PK_MetricAssetVersion')
+begin
+	alter table [metrics].[AssetVersion] drop constraint [PK_MetricAssetVersion]
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'AssetUid')
+begin
+	exec sp_rename 'metrics.AssetVersion.Uid', 'AssetUid', 'COLUMN'
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'AssetUid')
+begin
+	alter table [metrics].[AssetVersion] with check add constraint [FK_MetricAssetVersion_MetricAsset] foreign key([AssetUid]) references [metrics].[Asset] ([Uid]) on delete cascade
+	alter table [metrics].[AssetVersion] check constraint [FK_MetricAssetVersion_MetricAsset]
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Uid')
+begin
+	alter table [metrics].[AssetVersion] add [Uid] uniqueidentifier constraint DF_MetricAssetVersion_Uid default(newid()) not null
+end
+GO
+
+if not exists (select * from sys.key_constraints where name = 'PK_MetricAssetVersion')
+begin
+	alter table [metrics].[AssetVersion] add constraint [PK_MetricAssetVersion] primary key nonclustered ( [Uid] asc )
+end
+GO
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricsAssetVersion')
+begin
+	alter table [metrics].[AssetVersion] add constraint UQ_MetricsAssetVersion unique ( AssetUid, EffectiveDate ); 
+end
+GO
+
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersion')
+begin
+	create clustered index CIX_MetricsAssetVersion on [metrics].[AssetVersion] ( AssetUid asc, EffectiveDate desc )
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Name')
+begin
+	alter table [metrics].[AssetVersion] add [Name] nvarchar(250) constraint DF_MetricAssetVersion_Name default('') not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Description')
+begin
+	alter table [metrics].[AssetVersion] add [Description] nvarchar(4000) null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Threshold')
+begin
+	alter table [metrics].[AssetVersion] add [Threshold] float null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'UpdateFrequency')
+begin
+	alter table [metrics].[AssetVersion] add UpdateFrequency int constraint DF_MetricAssetVersion_UpdateFrequency default(0) not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'MatchConditionsOnly')
+begin
+	alter table [metrics].[AssetVersion] add MatchConditionsOnly bit constraint DF_MetricAssetVersion_MatchConditionsOnly default(1) not null
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Internal')
+begin
+	alter table [metrics].[AssetVersion] drop constraint [DF_MetricAssetVersion_Internal]
+	alter table [metrics].[AssetVersion] drop column Internal
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersion' and COLUMN_NAME = 'Name')
+begin
+  update  T
+  set     T.Name = S.Name,
+          T.Description = S.Description
+  from    metrics.AssetVersion T
+          inner join metrics.Asset S on S.Uid = T.AssetUid
+end
+GO
+
+if exists (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionCondition_FieldType')
+begin
+	alter table [metrics].[AssetVersionCondition] drop constraint [FK_MetricAssetVersionCondition_FieldType]
+end
+GO
+
+if exists (select * from sys.key_constraints where name = 'PK_MetricAssetVersionCondition')
+begin
+	alter table [metrics].[AssetVersionCondition] drop constraint [PK_MetricAssetVersionCondition]
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'AssetVersionUid')
+begin
+	alter table [metrics].[AssetVersionCondition] add AssetVersionUid uniqueidentifier constraint DF_MetricAssetVersionCondition_AssetVersionUid default(newid()) not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'AssetUid')
+begin
+	exec sp_rename 'metrics.AssetVersionCondition.Uid', 'AssetUid', 'COLUMN'
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'Uid')
+begin
+	alter table [metrics].[AssetVersionCondition] add [Uid] uniqueidentifier constraint DF_MetricAssetVersionCondition_Uid default(newid()) not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'MatchType')
+begin
+	alter table [metrics].[AssetVersionCondition] add MatchType int constraint DF_MetricAssetVersionCondition_MatchType default(1) not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'Position')
+begin
+	alter table [metrics].[AssetVersionCondition] add Position int constraint DF_MetricAssetVersionCondition_Position default(1) not null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'Threshold')
+begin
+	alter table [metrics].[AssetVersionCondition] add Threshold float null
+end
+GO
+
+if not exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'Weight')
+begin
+	alter table [metrics].[AssetVersionCondition] add [Weight] decimal(5,3) null
+end
+GO
+
+if not exists (select * from sys.indexes where name = 'CIX_MetricsAssetVersionCondition')
+begin
+	create clustered index CIX_MetricsAssetVersionCondition on [metrics].[AssetVersionCondition] ( AssetVersionUid, [Position] asc )
+end
+GO
+
+create table #Conditions (
+	Uid uniqueidentifier not null,
+	AssetVersionUid uniqueidentifier not null,
+	AssetVersionConditionUid uniqueidentifier not null,
+	MatchType int not null,
+	EffectiveDate date not null,
+	ValueJson nvarchar(250)
+)
+GO
+
+insert into #Conditions
+	select		newid(),
+				V.Uid,
+				C.Uid,
+				iif(ConditionAndOr = 'a', 2, 1) as MatchType,
+				C.EffectiveDate,
+				C.ValueJson
+	from		metrics.AssetVersionCondition C
+				inner join metrics.AssetVersion V on V.AssetUid = C.AssetUid and V.EffectiveDate = C.EffectiveDate
+	group by	V.Uid,
+				C.Uid,
+				ConditionAndOr,
+				C.EffectiveDate,
+				C.ValueJson
+GO
+
+insert into [metrics].[AssetVersionConditionItem] (Uid, AssetVersionConditionUid, ConditionType, ConditionFieldTypeID, ConditionIntersectTypeID, Operator)
+	select	newid(),
+			C.Uid as AssetVersionConditionUid,
+			1 as ConditionType,
+			VC.FieldTypeID as ConditionFieldTypeID,
+			null as ConditionIntersectTypeID,
+			VC.Operator
+	from	#Conditions C
+			inner join metrics.AssetVersionCondition VC on VC.Uid = C.AssetVersionConditionUid
+GO
+
+truncate table [metrics].[AssetVersionCondition]
+GO
+
+insert into [metrics].[AssetVersionConditionItemValue] (Uid, [Value])
+	select	C.Uid,
+			VC.ValueJson
+	from	[metrics].[AssetVersionConditionItem] C
+			inner join #Conditions VC on VC.Uid = C.AssetVersionConditionUid
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'EffectiveDate')
+begin
+	alter table [metrics].[AssetVersionCondition] drop column [EffectiveDate]
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'FieldTypeID')
+begin
+	alter table [metrics].[AssetVersionCondition] drop column [FieldTypeID]
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'Operator')
+begin
+	alter table [metrics].[AssetVersionCondition] drop column [Operator]
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'ValueJson')
+begin
+	alter table [metrics].[AssetVersionCondition] drop column [ValueJson]
+end
+GO
+
+if exists (select * from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA = 'metrics' and TABLE_NAME = 'AssetVersionCondition' and COLUMN_NAME = 'AssetUid')
+begin
+	alter table [metrics].[AssetVersionCondition] drop column [AssetUid]
+end
+GO
+
+insert into [metrics].[AssetVersionCondition] (Uid, AssetVersionUid, MatchType)
+	select	Uid,
+			AssetVersionUid,
+			MatchType
+	from	#Conditions
+GO
+
+if exists (select * from sys.foreign_keys where  name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+begin
+	alter table [metrics].[AssetVersionCondition] drop constraint [FK_MetricAssetVersionCondition_MetricAssetVersion]
+end
+GO
+
+if not exists (select * from sys.key_constraints where  name = 'PK_MetricAssetVersionCondition')
+begin
+	alter table [metrics].[AssetVersionCondition] add constraint [PK_MetricAssetVersionCondition] primary key nonclustered ( [Uid] ASC )
+end
+GO
+
+if not exists (select * from sys.foreign_keys where  name = 'FK_MetricAssetVersionCondition_MetricAssetVersion')
+begin
+	alter table [metrics].[AssetVersionCondition] with check add constraint [FK_MetricAssetVersionCondition_MetricAssetVersion] foreign key([AssetVersionUid]) references [metrics].[AssetVersion] ([Uid]) on delete cascade
+	alter table [metrics].[AssetVersionCondition] check constraint [FK_MetricAssetVersionCondition_MetricAssetVersion]
+end
+GO
+
+if not exists (select * from sys.foreign_keys where name = 'FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition')
+begin
+	alter table [metrics].[AssetVersionConditionItem] with check add constraint [FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition] foreign key([AssetVersionConditionUid]) references [metrics].[AssetVersionCondition] ([Uid]) on delete cascade
+	alter table [metrics].[AssetVersionConditionItem] check constraint [FK_MetricAssetVersionConditionItem_MetricAssetVersionCondition]
+end
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
+</databaseChangeLog>

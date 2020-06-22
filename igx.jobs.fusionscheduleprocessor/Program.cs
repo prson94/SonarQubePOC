@@ -1,7 +1,6 @@
 ﻿using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.IO;
 
@@ -127,8 +126,8 @@ namespace igx.jobs.fusionscheduleprocessor
                     try
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                        company.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                        company.Execute(sql);
+                        company.Open();
+						company.Execute(sql);
                         company.Close();
                         company.Dispose();
                     }

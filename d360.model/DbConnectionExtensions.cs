@@ -1,7 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -24,8 +23,8 @@ namespace d360.model
         public static async Task ProcessResponsibilityRelationRules(this SqlConnection cnn, int? ruleID = null, int timeout = 7200)
         {
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultFixed);
-            
+                cnn.Open();
+
             // Do two passes 1 pass for rules applying to type second pass for rules not applying to type
             // PASS 1 - Do rules that apply to types 
             await ProcessTypeBasedResponsibilityRelationRules(cnn, ruleID, timeout);

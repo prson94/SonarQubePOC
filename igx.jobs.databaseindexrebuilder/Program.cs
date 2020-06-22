@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace igx.jobs.databaseindexrebuilder
 {
@@ -54,7 +53,7 @@ namespace igx.jobs.databaseindexrebuilder
                         var start = DateTime.Now;
                         using (var companyConnection = CompanyConnectionUtils.GetCompanyConnection(item.CompanyID))
                         {
-                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            companyConnection.Open();
                             var res = companyConnection.Execute("EXEC [dbo].[AzureSQLMaintenance]", new { Operation = "reindex", From = 30, To = 100, MinNumberOfPages = 10 }, null, commandTimeout);
                         }
                         TimeSpan end = DateTime.Now - start;

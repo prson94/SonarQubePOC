@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.Azure.WebJobs;
 using d360.utils.company;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using d360.core.queue;
 using d360.extensions.info;
@@ -58,7 +57,7 @@ namespace igx.jobs.assetgraphprocessor
             {
                 const int timeout = 60 * 180;
 
-                companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                companyConnection.Open();
 
                 try
                 {

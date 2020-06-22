@@ -128,7 +128,7 @@ namespace igx.UpdateDatabases
 
                                 if (SelectOnly)
                                 {
-                                    var items = cnn.Query<dynamic>(s).ToList();
+                                    var items = cnn.Query<dynamic>(s, commandTimeout: 12000).ToList();
                                     databaseResult.Results = JsonConvert.DeserializeObject<JArray>(JsonConvert.SerializeObject(items));
 
                                     int columnNumber = 4;
@@ -163,7 +163,7 @@ namespace igx.UpdateDatabases
                                     var cmd = new System.Data.SqlClient.SqlCommand();
                                     cmd.CommandText = s;
                                     cmd.Connection = cnn;
-                                    cmd.CommandTimeout = 1200;
+                                    cmd.CommandTimeout = 12000;
                                     cmd.CommandType = CommandType.Text;
                                     cmd.ExecuteNonQuery();
                                 }

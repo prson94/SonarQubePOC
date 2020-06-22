@@ -8,7 +8,6 @@ using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -1505,7 +1504,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -2261,7 +2260,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -2493,7 +2492,7 @@ from	IntersectType I
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -2630,7 +2629,7 @@ where   ExecutionID = @ExecutionID
                     try
                     {
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
                         var bulkCopy = new SqlBulkCopy(Connection)
@@ -2734,7 +2733,7 @@ where   ExecutionID = @ExecutionID
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     var bulkCopy = new SqlBulkCopy(Connection)
@@ -3100,7 +3099,7 @@ where   ExecutionID = @ExecutionID
                         }
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -3981,7 +3980,7 @@ select [uid] from #ParentChildRelationships",
                     }
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     sw.Restart();
@@ -4513,7 +4512,7 @@ end",
                 #endregion
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
 
@@ -5205,7 +5204,7 @@ where   ER.ExecutionID = @ExecutionID
 
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
                 var bulkCopy = new SqlBulkCopy(Connection)
@@ -5330,7 +5329,7 @@ where   ER.ExecutionID = @ExecutionID
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -5566,7 +5565,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -5882,7 +5881,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6429,7 +6428,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6961,7 +6960,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -7480,7 +7479,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
