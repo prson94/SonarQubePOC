@@ -376,6 +376,7 @@
     <Compile Include="queue\EventInfo.cs" />
     <Compile Include="queue\BulkLoadInfo.cs" />
     <Compile Include="queue\IndexObjectModel.cs" />
+    <Compile Include="queue\IServiceBusMessageType.cs" />
     <Compile Include="queue\QueueAction.cs" />
     <Compile Include="queue\QueueObject.cs" />
     <Compile Include="resources\AssetTypeErrors.Designer.cs">

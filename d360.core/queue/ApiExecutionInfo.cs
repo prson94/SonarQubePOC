@@ -17,7 +17,7 @@ namespace d360.core.queue
         PostCrossReferences,
         PostDataQualityResults
     }
-    public class ApiExecutionInfo
+    public class ApiExecutionInfo: IServiceBusMessageType
     {
         public int CompanyID { get; set; }
 
@@ -39,5 +39,8 @@ namespace d360.core.queue
 
         [JsonIgnore]
         public string ResponseFileName { get { return $"{CompanyID}/{ExecutionID}_response.json"; } }
+
+        [JsonIgnore]
+        public int MessageType { get { return (int)Action; } }
     }
 }
