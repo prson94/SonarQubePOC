@@ -600,8 +600,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         AssetTypeClass.FusionAttribute, 
                         AssetTypeClass.FusionQuery, 
                         AssetTypeClass.User, 
-                        AssetTypeClass.ReferenceItemType, 
-                        AssetTypeClass.AttributeGroup,
+                        AssetTypeClass.ReferenceItemType
                     };
 
                     if (disallowedClasses.Contains(assetType.Class))
@@ -1401,6 +1400,7 @@ from	IntersectType I
                     currentFieldType.ColumnOrder = newFieldType.ColumnOrder;
                     currentFieldType.ColumnWidth = newFieldType.ColumnWidth;
                     currentFieldType.DefaultValue = newFieldType.DefaultValue;
+                    currentFieldType.DefaultFormattedValue = newFieldType.DefaultFormattedValue;
                     currentFieldType.DisplayDescription = newFieldType.DisplayDescription;
                     if (currentFieldType.FieldTypeLookup != null)
                     {

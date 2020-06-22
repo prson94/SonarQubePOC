@@ -5,7 +5,7 @@
 */
 
 import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
-import { DomHandler } from 'primeng/components/dom/domhandler';
+import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 
 @Directive({

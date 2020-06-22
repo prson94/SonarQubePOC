@@ -22,7 +22,7 @@ import { ReferenceListComponent } from './reference-list.component';
 import { ReferenceItemTypeGridComponent } from './reference-item-type-list.component';
 
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 import { TooltipModule } from 'primeng/tooltip';

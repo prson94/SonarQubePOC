@@ -276,7 +276,7 @@ export class BaseComponent {
                     let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
                     if (!isVisualizationDisabled) {
                         this.lineageSidebar = new SecondaryNavItem(
-                            'Visualization',
+                            'Diagrams',
                             'lineage',
                             ['fa-random'],
                             `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
@@ -284,6 +284,7 @@ export class BaseComponent {
 
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
                         this.secondaryNavService.showItem(this.lineageSidebar);
                     }
@@ -682,25 +683,6 @@ export class BaseComponent {
 
     public getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
-    }
-
-    public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
-        var arrDeepCopy = originalArray.map(x => Object.assign({}, x));
-        if (search.length == 0) {
-            tree.value = arrDeepCopy;
-            return;
-        }
-        else {
-            let temp: TreeNode[] = [];
-            arrDeepCopy.forEach(n => {
-                if (this.doesNodeContainsValue(n, search)) {
-                    temp.push(n);
-                    this.expandTreeNode(n);
-                }
-            });
-
-            tree.value = temp;
-        }
     }
 
     expandTreeNode(node: TreeNode) {

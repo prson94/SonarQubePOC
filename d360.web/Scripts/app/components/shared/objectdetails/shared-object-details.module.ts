@@ -11,7 +11,7 @@ import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { RouterModule } from '@angular/router';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SimpleAccordionModule } from '../simple-accordion.part';

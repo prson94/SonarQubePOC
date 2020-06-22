@@ -50,7 +50,7 @@ namespace igx.jobs.resourcecache
 
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
 
                     foreach (var c in companies)
                     {

@@ -6,12 +6,12 @@
 </div>
 <div *ngIf="!isLoading" class="row">
     <header>{{title}}</header>
-    <form #form="ngForm">
+    <form #form="ngForm" class="gov-form-v2">
         <div class="row">
             <div [class]="FirstColumnStyle">
                 <div class="row">
                     <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired">Name</div>
+                        <div class="FieldNameRequired no-margin">Name</div>
                         <input maxlength="250" pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.AssetType.Name" required />
                         <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
                     </div>
@@ -126,43 +126,40 @@
                     </div>
                 </simple-accordion>
                 <simple-accordion header="Styles" active="true" *ngIf="showAssetStyles">
-                    <div class="FieldName">Background Color</div>
-                    <div class="row">
-                        <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
+                    <div class="colors-tab" *ngIf="assetTypeClass != 15">
+                        <div class="FieldName">Background Color</div>
+                        <div class="row">
+                            <div class="col s12">
+                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolor"></p-colorPicker>
+                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.BackColor" name="iconbackcolortext" style="padding:2px;width:65px" />
+                            </div>
+                            <div class="col s12">
+                                <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
+                            </div>
                         </div>
-                        <div class="col s12">
-                            <div class="FieldInstructions">Sets the background color of icons representing items of this type within diagrams.</div>
-                        </div>
-                    </div>
 
-                    <div class="FieldName">Text Color</div>
-                    <div class="row">
-                        <div class="col s12">
-                            <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor"></p-colorPicker>
-                            <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
+                        <div class="FieldName">Text Color</div>
+                        <div class="row">
+                            <div class="col s12">
+                                <p-colorPicker [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolor"></p-colorPicker>
+                                <input type="text" [(ngModel)]="model.AssetType.IconStyle.ForeColor" name="iconforecolortext" style="padding:2px;width:65px" />
+                            </div>
+                            <div class="col s12">
+                                <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
+                            </div>
                         </div>
-                        <div class="col s12">
-                            <div class="FieldInstructions">Sets the text color of icons representing items of this type within diagrams.</div>
+                        <div>
+                            <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
                         </div>
                     </div>
-                    <div>
-                        <div *ngIf="model.AssetType.IconStyle.ForeColor == model.AssetType.IconStyle.BackColor" class="errorMessage">Foreground and background color cannot be the same</div>
-                    </div>
-
                     <div class="FieldName">Icon</div>
                     <div class="row">
                         <div class="col s12">
-                            <div class="col s6">
-                                <d3s-icon-picker [(ngModel)]="model.AssetType.IconStyle.Icon" [ngModelOptions]="{standalone: true}" ngDefaultControl></d3s-icon-picker>
-                            </div>
-                            <div class="col s6">
-                                <span style="font-size: 15px"><i [class]="'fa ' + model.AssetType.IconStyle.Icon"></i></span>
-                            </div>
+                            <d3s-icon-picker [(ngModel)]="model.AssetType.IconStyle.Icon" [ngModelOptions]="{standalone: true}" ngDefaultControl></d3s-icon-picker>
                         </div>
                         <div class="col s12">
-                            <div class="FieldInstructions">Sets the icon representing items of this type within summary page / search results.</div>
+                            <div class="FieldInstructions" *ngIf="assetTypeClass != 15">Sets the icon representing items of this type within summary page / search results.</div>
+                            <div class="FieldInstructions" *ngIf="assetTypeClass == 15">Sets the icon representing items of this type within diagrams.</div>
                         </div>
                     </div>
                 </simple-accordion>

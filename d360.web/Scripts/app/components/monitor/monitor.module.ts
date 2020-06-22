@@ -20,13 +20,13 @@ import { SharedObjectDetailsModule } from '../shared/objectdetails/shared-object
 
 import { TabViewModule } from 'primeng/tabview';
 import { ButtonModule } from 'primeng/button';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';
 import { TableModule } from 'primeng/table';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { TooltipModule } from 'primeng/tooltip';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 
 import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.component';
 
@@ -38,7 +38,7 @@ import { MonitorWorkflowVersionComponent } from './monitor-workflow-version.comp
         FormsModule,
 
         //primeng
-        GrowlModule,
+        ToastModule,
         SharedModule,
         MultiSelectModule,
         DropdownModule,

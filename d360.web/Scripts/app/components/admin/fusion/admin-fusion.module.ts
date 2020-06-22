@@ -27,7 +27,7 @@ import { FusionAttributeTypeCustomQueryEditorComponent } from './fusion-attribut
 
 import { AdminFusionRoutingModule } from './admin-fusion.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
@@ -35,7 +35,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { CalendarModule } from 'primeng/calendar';
 import { EditorModule } from 'primeng/editor';
 import { TableModule } from 'primeng/table';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { InputMaskModule } from 'primeng/inputmask';
 import { TreeTableModule } from 'primeng/treetable';
 import { TooltipModule } from 'primeng/tooltip';
@@ -56,7 +56,7 @@ import { DirectivesModule } from '../../../directives/directives.module';
         CalendarModule,
         DropdownModule,
         EditorModule,
-        GrowlModule,
+        ToastModule,
         InputMaskModule,
         InputTextModule,
         SharedModule,

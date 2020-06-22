@@ -42,11 +42,18 @@ namespace d360.web.Controllers
         [Route("LogActivity"), HttpPost()]
         [ValidateHttpAntiForgeryToken]
         public void PostLogActivity(WebActivityEntity value)
-        {
-            var IP = GetClientIp(Request);
-
+        {            
             try
             {
+                string IP = "0.0.0.0";
+                try
+                {
+                    IP = GetClientIp(Request);
+                }
+                catch
+                {                    
+                }
+
                 Company.AddWebStatistic(
                     (SystemObjects)Enum.Parse(typeof(SystemObjects), value.ObjectName),
                     value.ObjectId,

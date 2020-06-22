@@ -17,7 +17,7 @@ import { AdminLoadComponent } from './admin-load.component';
 
 import { AdminLoadRoutingModule } from './admin-load.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';

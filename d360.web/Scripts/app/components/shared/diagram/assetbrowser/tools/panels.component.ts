@@ -1,6 +1,6 @@
 import * as _ from 'lodash';
 import { Component, ChangeDetectionStrategy, Output, EventEmitter, Input } from '@angular/core';
-import { AssetBrowserPanelCommand } from '../../../../../models/lineage.model';
+import { AssetBrowserPanelCommand, DiagramType } from '../../../../../models/lineage.model';
 
 @Component({
     selector: 'd3s-assetbrowser-panels',
@@ -21,9 +21,11 @@ export class AssetBrowserPanelsComponent {
     @Input() isFullScreen: boolean;
     @Input() totalAlertCount: number;
 
+    @Input() diagramType = DiagramType.Lineage;
+
     @Output() refresh: EventEmitter<boolean> = new EventEmitter();
     @Output() download: EventEmitter<boolean> = new EventEmitter();
-    @Output() click: EventEmitter<AssetBrowserPanelCommand> = new EventEmitter();    
+    @Output() click: EventEmitter<AssetBrowserPanelCommand> = new EventEmitter();
 
     private alert_ButtonWidth() {
         let width: number = 32;

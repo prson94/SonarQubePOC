@@ -19,7 +19,7 @@ import {AdminAnalyticsRoutingModule} from './admin-analytics.routes';
 import {AdminMetricEditorComponent} from './admin-metric-editor.component';
 import {AdminMetricListComponent} from './admin-metric-list.component';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';

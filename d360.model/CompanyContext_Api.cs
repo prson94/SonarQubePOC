@@ -483,7 +483,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
                     , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
-            
+
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
@@ -891,6 +891,35 @@ where T.ExecutionId = @executionid;
                         ", new { executionID }, commandTimeout: timeout);
         }
 
+        private void ResolveColorValues(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+
+                        update  F
+                        set     F.LookupValue = C.Id
+                        from    api.ExecutionField F
+                                left join Color C on C.Name = F.FieldValue
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) <> '#'
+
+                        update  F
+                        set     F.LookupValue = F.FieldValue
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) = '#'
+
+                        update  F
+                        set     F.LookupValue = null
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and coalesce(F.FieldValue, '') = ''
+                        
+                        update  T 
+                        set     T.Success = 0,
+                                T.Message = coalesce(T.Message, '') + 'Color value is not a valid Govern color; '
+                        from    api.ExecutionAsset T
+                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
+                        where   S.LookupValue is null and coalesce(S.FieldValue, '') <> ''
+                        ", new { executionID }, commandTimeout: timeout);
+        }
+
         private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
         {
             try
@@ -1040,9 +1069,21 @@ where T.ExecutionId = @executionid;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
                 if (fieldType == null)
                 {
-                    if (ot == "FusionAttributeType" && (fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
+                    if (fieldName.ToLower() == "color")
                     {
-                        success = true;
+                        if (fieldValue.StartsWith("#") && fieldValue.Length != 7)
+                        {
+                            errorMessages.Add($"The Color field must be a seven character RGB code or the name of a Govern color");
+                            success = false;
+                        }
+                    }
+                    else if (ot == "FusionAttributeType")
+                    {
+                        if (fieldName != "FusionID" && fieldName != "Name" && fieldName != "SourceID")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else if (ot == "ReferenceItemType")
                     {
@@ -1055,13 +1096,6 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
-                            case "color":
-                                if ((fieldValue ?? "").Length > 7)
-                                {
-                                    errorMessages.Add($"The Color field must be a seven character RGB code");
-                                    success = false;
-                                }
-                                break;
                             case "icon":
                                 if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
@@ -1069,11 +1103,21 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
+                            case "referenceitemtypeid":
+                                break;
+                            default:
+                                success = false;
+                                errorMessages.Add($"{fieldName} is not a valid field");
+                                break;
                         }
                     }
-                    else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
+                    else if (ot == "RuleType")
                     {
-                        success = true;
+                        if (fieldName != "Threshold" && fieldName != "Status" && fieldName != "Dimension")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else
                     {
@@ -2298,6 +2342,19 @@ from	IntersectType I
             and T.[Cascade] = 0
             and A.ChildCount > 0;
 
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'There are ' + cast(A.ChildCount as nvarchar) + ' Organizations defined for this OrganizationType.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as ChildCount
+                from	Organization O
+		        where O.OrganizationTypeID = T.ObjectID
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.Object = 'OrganizationType'
+            and A.ChildCount > 0;
+
     --Check if asset Results exist 
     update	T
     set		T.Success = 0,
@@ -3106,6 +3163,11 @@ where   ExecutionID = @ExecutionID
                         sw.Restart();
                         #endregion
 
+
+                        ResolveColorValues(execution.ExecutionID, timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "ResolveColorValues", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
+
                         if (hasLookupFieldTypes)
                         {
                             if (lookupFieldsPassedByValue)
@@ -3254,16 +3316,18 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         merge   [Asset] as T
                                                         using   (
-                                                                select  ItemNumber
-                                                                from    api.ExecutionAsset
-                                                                where   ExecutionID = @ExecutionID
-                                                                        and Success is null
-                                                                        and ItemNumber between @beginItemNumber and @endItemNumber
+                                                                select  A.ItemNumber,
+                                                                        CR.LookupValue as Color
+                                                                from    api.ExecutionAsset A
+                                                                        left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                                                                where   A.ExecutionID = @ExecutionID
+                                                                        and A.Success is null
+                                                                        and A.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
                                                         on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
                                                         when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D)
+                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D, S.Color)
                                                         output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T
@@ -3283,9 +3347,12 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
                                                         update	T
                                                         set		T.UpdatedBy = @R,
-                                                        T.UpdatedOn = @D
+                                                                T.UpdatedOn = @D,
+                                                                T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
                                                         from	[Asset] T
-                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql};
+                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql}
+                                                        left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
@@ -3385,10 +3452,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.BusinessAsset:
                                             case AssetTypeClass.TechnicalAsset:
+                                            case AssetTypeClass.Diagram:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                if (at.Class == AssetTypeClass.Diagram)
+                                                    @object = "Task";
 
                                                 sw.Restart();
                                                 if (isInsert)
@@ -3399,16 +3469,18 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     merge   [Asset] as T
     using   (
-            select  ItemNumber
-            from    api.ExecutionAsset
-            where   ExecutionID = @ExecutionID
-                    and Success is null
-                    and ItemNumber between @beginItemNumber and @endItemNumber
+            select  A.ItemNumber,
+                    CR.LookupValue as Color
+            from    api.ExecutionAsset A
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+            where   A.ExecutionID = @ExecutionID
+                    and A.Success is null
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D)
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
     output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3429,9 +3501,12 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
     update	T
     set		T.UpdatedBy = @R,
-		    T.UpdatedOn = @D
+		    T.UpdatedOn = @D,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
     from	[Asset] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql};
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql}
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3453,17 +3528,19 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    T.FieldValue as Threshold
+                    T.FieldValue as Threshold,
+                    CR.LookupValue as Color
             from    api.ExecutionAsset A
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
     output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3487,11 +3564,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     update	T
     set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
             T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
+            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3514,7 +3593,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         using   (
                                                                 select  A.ItemNumber,
                                                                         C.FieldValue as [Code],
-                                                                        CR.FieldValue as [Color],
+                                                                        CR.LookupValue as [Color],
                                                                         I.FieldValue as [Icon]
                                                                 from    api.ExecutionAsset A
                                                                         inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
@@ -3546,7 +3625,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
                                                         update	T
                                                         set		T.[Code] = C.FieldValue,
-                                                                T.[Color] = CR.FieldValue,
+                                                                T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
                                                                 T.[Icon] = I.FieldValue,
                                                                 T.UpdatedBy = @R,
                                                                 T.UpdatedOn = @D
@@ -7316,7 +7395,7 @@ insert into #Keys
                                 {
                                     if (cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Asignee values set.";
+                                        rowError += ";Then condition should have either Field or Assignee values set.";
                                     }
 
                                     if (cond.Assignee != null && cond.Field != null)
@@ -7355,7 +7434,7 @@ insert into #Keys
                                 {
                                     if (cond.Relation == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                        rowError += ";Then condition should have either Field or Relation value set.";
                                     }
                                     if (cond.Relation != null && cond.Field != null)
                                     {

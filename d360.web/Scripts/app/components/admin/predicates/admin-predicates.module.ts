@@ -15,10 +15,10 @@ import { AdminPredicatesComponent } from './admin-predicates.component';
 
 import { AdminPredicateRoutingModule } from './admin-predicates.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { GrowlModule } from 'primeng/growl';
+import { ToastModule } from 'primeng/toast';
 import { TableModule } from 'primeng/table';
 
 @NgModule({
@@ -33,7 +33,7 @@ import { TableModule } from 'primeng/table';
         ButtonModule,
         InputTextModule,
         SharedModule,
-        GrowlModule,
+        ToastModule,
         TableModule,
 
         //d3s        

@@ -9,7 +9,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { SpinnerModule } from 'primeng/spinner';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 

@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { TreeNode } from 'primeng/components/common/api';
+import { TreeNode } from 'primeng/api';
 import {
     AssetTypeClass
 } from '../models/asset.model';

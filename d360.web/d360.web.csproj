@@ -360,6 +360,7 @@
     <Compile Include="Controllers\Forms\FormController_Taxonomy.cs" />
     <Compile Include="Controllers\Services\CustomController.cs" />
     <Compile Include="Controllers\Services\OrganizationsController.cs" />
+    <Compile Include="Controllers\V2\ProcessController.cs" />
     <Compile Include="Controllers\V2\FieldsController.cs" />
     <Compile Include="Controllers\V2\AuditController.cs" />
     <Compile Include="Controllers\V2\BaseV2ApiController.cs" />
@@ -447,6 +448,7 @@
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Formatters\GuidConverter.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
+    <Compile Include="Models\ProcessDiagramModels.cs" />
     <Compile Include="Models\RestApiException.cs" />
     <Compile Include="Models\SwaggerExampleModels.cs" />
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />
@@ -476,7 +478,7 @@
     <Content Include="Content\images\govern-small-white.svg" />
     <Content Include="Content\images\govern-small.svg" />
     <Content Include="Content\images\govern.svg" />
-    <Content Include="Content\images\home.background.new.png" />
+    <Content Include="Content\images\home.background.new.jpg" />
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
@@ -625,16 +627,16 @@
     <Content Include="Content\primeicons\2.0.0\raw-svg\wifi.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-maximize.svg" />
     <Content Include="Content\primeicons\2.0.0\raw-svg\window-minimize.svg" />
-    <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.svg" />
-    <Content Include="Content\primeng\v7.1.3\images\color.png" />
-    <Content Include="Content\primeng\v7.1.3\images\hue.png" />
-    <Content Include="Content\primeng\v7.1.3\images\line.gif" />
-    <Content Include="Content\primeng\v7.1.3\images\loading.gif" />
-    <Content Include="Content\primeng\v7.1.3\images\password-meter.png" />
-    <Content Include="Content\primeng\v7.1.3\primeng.css" />
-    <Content Include="Content\primeng\v7.1.3\primeng.min.css" />
-    <Content Include="Content\primeng\v7.1.3\theme.css" />
-    <Content Include="Content\primeng\v7.1.3\theme.min.css">
+    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.svg" />
+    <Content Include="Content\primeng\v9.1.0\images\color.png" />
+    <Content Include="Content\primeng\v9.1.0\images\hue.png" />
+    <Content Include="Content\primeng\v9.1.0\images\line.gif" />
+    <Content Include="Content\primeng\v9.1.0\images\loading.gif" />
+    <Content Include="Content\primeng\v9.1.0\images\password-meter.png" />
+    <Content Include="Content\primeng\v9.1.0\primeng.css" />
+    <Content Include="Content\primeng\v9.1.0\primeng.min.css" />
+    <Content Include="Content\primeng\v9.1.0\theme.css" />
+    <Content Include="Content\primeng\v9.1.0\theme.min.css">
       <DependentUpon>theme.css</DependentUpon>
     </Content>
     <Content Include="Content\quill\v1.3.7\quill.min.js" />
@@ -758,6 +760,7 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-relationships.component.html" />
@@ -856,8 +859,12 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.templates.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
     <Content Include="Scripts\dist\*.js" />
     <Content Include="webpack.aot.config.js" />
@@ -996,12 +1003,12 @@
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.eot" />
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.ttf" />
     <Content Include="Content\primeicons\2.0.0\fonts\primeicons.woff" />
-    <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.eot" />
-    <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.ttf" />
-    <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.woff" />
-    <Content Include="Content\primeng\v7.1.3\fonts\roboto-v15-latin-regular.woff2" />
     <Content Include="Content\quill\v1.3.7\quill.min.js.map" />
     <Content Include="Content\json\fontawesome4x.json" />
+    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.eot" />
+    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.ttf" />
+    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.woff" />
+    <Content Include="Content\primeng\v9.1.0\fonts\roboto-v15-latin-regular.woff2" />
     <None Include="Content\redactor\redactor-iframe.css">
       <DependentUpon>redactor-iframe.less</DependentUpon>
     </None>
@@ -1567,6 +1574,7 @@
     <TypeScriptCompile Include="Scripts\app\models\asset-type-style.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\authentication-properties.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset.model.ts" />
+    <TypeScriptCompile Include="Scripts\app\models\process.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\governance-role.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\cascade.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\custom-api.model.ts" />
@@ -1595,6 +1603,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\cascade.service.ts" />
@@ -1852,6 +1861,7 @@
     <TypeScriptCompile Include="Scripts\app\services\web-analytics.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\workflow.service.ts" />
     <None Include="Scripts\app\tsconfig.aot.json" />
+    <TypeScriptCompile Include="Scripts\app\static\font-awesome-helper.ts" />
     <TypeScriptCompile Include="Scripts\app\static\string-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\static\workflow-helpers.ts" />
     <TypeScriptCompile Include="Scripts\app\vendor.ts" />

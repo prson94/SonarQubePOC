@@ -1,4 +1,4 @@
-﻿import { SelectItem } from 'primeng/components/common/api';
+﻿import { SelectItem } from 'primeng/api';
 import { Observable } from 'rxjs';
 
 export interface IResponsibilityTypeService {

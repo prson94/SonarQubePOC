@@ -240,6 +240,11 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
+                if(assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
+                }
+                
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
@@ -535,7 +540,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
                     {
-                        Company.Add(new FieldType
+                        var nameFieldType = new FieldType
                         {
                             ObjectID = model.ObjectID,
                             Object = model.Object,
@@ -551,7 +556,15 @@ namespace d360.web.Controllers.V2
                             IsDisplayable = true,
                             IsPartOfKey = isNamePartOfKey,
                             UpdatedBy = Company.CurrentResourceID
-                        });
+                        };
+
+                        if (model.Class == AssetTypeClass.Diagram)
+                        {
+                            nameFieldType.ColumnOrder = 2;
+                            nameFieldType.ShowIfEmpty = true;
+                        }
+
+                        Company.Add(nameFieldType);
                     }
 
                     if (model.Class == AssetTypeClass.Diagram)
@@ -567,14 +580,14 @@ namespace d360.web.Controllers.V2
                             IsEditable = true,
                             FriendlyName = "Governance Role",
                             Name = "GovernanceRole",
-                            SortOrder = 2,
+                            ColumnOrder = 3,
                             Type = DataType.Lookup.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
                             LookupObjectID = refList.ObjectID,
-                            LookupObjectType = refList.Object,
-                            UpdatedBy = Company.CurrentResourceID
-
+                            LookupObjectType = SystemObjects.ReferenceItem.ToString(),
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true
                         });
 
                         Company.Add(new FieldType
@@ -586,12 +599,13 @@ namespace d360.web.Controllers.V2
                             IsEditable = true,
                             FriendlyName = "Step No",
                             Name = "StepNo",
-                            SortOrder = 3,
-                            Type = DataType.Number.ToString(),
+                            ColumnOrder = 1,
+                            Type = DataType.Decimal.ToString(),
                             IsDisplayable = true,
                             IsPartOfKey = false,
-                            UpdatedBy = Company.CurrentResourceID
-                        });
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true
+                        }); 
                     }
                 }
 
@@ -2264,5 +2278,37 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
+
+        /// <summary>
+        /// Retrieves a list of all pre defined colors.
+        /// </summary>
+        /// <returns>Returns a list colors.</returns>
+        [
+            HttpGet,
+            Route("colors"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all pre defined colors.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetColors()
+        {
+            var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
+            var errorMessage = "";
+            try
+            {
+                var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Value }))));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
     }
 }

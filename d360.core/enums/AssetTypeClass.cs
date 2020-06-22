@@ -33,12 +33,7 @@ namespace d360.core.enums
             Name("Fusion Attribute"),
             Description("Fusion attribute assets.")
         ]
-        FusionAttribute = 4,
-        [
-            Name("Attribute Group"),
-            Description("Attribute group data.")
-        ]
-        AttributeGroup = 5,
+        FusionAttribute = 4,        
         [
             Name("Policy"),
             Description("Policy asset.")

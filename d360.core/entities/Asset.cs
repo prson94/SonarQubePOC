@@ -50,6 +50,9 @@ namespace d360.core.entities
         public string FieldHash { get; set; }
 
         [IgnoreDataMember]
+        public string Diagram { get; set; }
+
+        [IgnoreDataMember]
         public virtual AssetType AssetType { get; set; }
 
         [DataMember]

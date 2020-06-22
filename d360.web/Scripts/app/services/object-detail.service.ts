@@ -2,7 +2,7 @@
 import {HttpClient} from "@angular/common/http";
 import {Observable} from "rxjs";
 import {catchError, map} from "rxjs/operators";
-import {TreeNode} from 'primeng/components/common/api';
+import {TreeNode} from 'primeng/api';
 
 import {FormHelper} from '../models/form.model';
 import {JsonResult} from '../models/jsonresult.model';
