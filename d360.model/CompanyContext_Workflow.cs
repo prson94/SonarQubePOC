@@ -16,6 +16,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.ApplicationInsights;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace d360.model
 {
@@ -2168,6 +2170,42 @@ namespace d360.model
 
                         if (fieldRecord != null)
                             fieldValue = fieldRecord.FormattedValue;
+                    }
+
+                    result = result.Replace(item, fieldValue);
+                }
+            }
+
+            if (Regex.IsMatch(result, "\\[JSON([0-9.]+)\\]"))
+            {
+                var fields = Regex.Matches(result, "\\[JSON([0-9.]+)\\]");
+
+                foreach (var field in fields)
+                {
+                    var item = field.ToString();
+
+                    var fieldTypeId = 0;
+
+                    var fieldValue = "";
+
+                    var fieldTypeIdStringitem = item.Replace("[JSON", "");
+                    fieldTypeIdStringitem = fieldTypeIdStringitem.Replace("]", "");
+
+                    int.TryParse(fieldTypeIdStringitem, out fieldTypeId);
+
+                    var fieldType = FieldTypes.Where(x => x.ID == fieldTypeId).FirstOrDefault();
+
+                    FieldTypeDefinition_JsonElement jsonElementDefinition = null;
+
+                    if (fieldType!= null && fieldType.Type == DataType.JsonElement.ToString())
+                    {
+                        jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(fieldType.Definition);
+                        
+                        var fieldRecord = Fields.Where(x => x.ObjectID == objectID && x.ObjectType == obj.ToString() && x.FieldTypeID == jsonElementDefinition.FieldTypeID).FirstOrDefault();
+
+                        var fielddata = JObject.Parse(fieldRecord.Value);
+
+                        fieldValue = fielddata.SelectToken(jsonElementDefinition.Path, false)?.ToString() ?? "";
                     }
 
                     result = result.Replace(item, fieldValue);
