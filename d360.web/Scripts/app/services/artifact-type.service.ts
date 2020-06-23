@@ -13,13 +13,15 @@ import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class ArtifactTypeService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesObservableService
+        messagesService: MessagesObservableService,
+        private router: Router
     ) {
         super(messagesService);
     }
@@ -38,13 +40,13 @@ export class ArtifactTypeService extends BaseObservableService {
             ;
     }
 
-    getArtifactTypeDetails(id: number): Observable<ArtifactType> {
+    getArtifactTypeDetails(id: number, redirectToHome: boolean = false): Observable<ArtifactType> {
         return this
             .http
             .get(`api/artifacts/${id}`)
             .pipe(
                 map(response => <ArtifactType>response),
-                catchError(err => this.handleError(err))
+                catchError(err => this.handleError(err, false, redirectToHome ? this.router : null))
             )
             ;
     }

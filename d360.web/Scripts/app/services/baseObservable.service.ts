@@ -6,6 +6,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { JsonResult } from '../models/jsonresult.model';
 
 import { MessagesObservableService } from './messages-observable.service';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class BaseObservableService {
@@ -13,7 +14,7 @@ export class BaseObservableService {
     constructor(protected messages: MessagesObservableService) {
     }
 
-    handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false) {
+    handleError(error: HttpErrorResponse, handleAsAPI2Error: boolean = false, router: Router = null) {
         return this.messages.saveClientError(error, handleAsAPI2Error).pipe(
             tap(res => {
                 if (error instanceof Error) {
@@ -23,6 +24,14 @@ export class BaseObservableService {
                     // server side error
                     console.error('An error occurred[server side]', error);
                     if (error.status !== 0) {
+
+                        if (router && error && error.status) {
+                            if (error.status === 404) {
+                                router.navigateByUrl('');
+                                return;
+                            }
+                        }
+
                         let errorMessage = "";
                         const isError_body = Object.keys(error).indexOf("_body") > -1;
                         const isErrorError = Object.keys(error).indexOf("error") > -1;
@@ -40,6 +49,8 @@ export class BaseObservableService {
                         if (errorMessage == null || errorMessage == '') {
                             errorMessage = 'An error has occurred.';
                         }
+
+
 
                         this.messages.showError('Error', errorMessage);
                     }
