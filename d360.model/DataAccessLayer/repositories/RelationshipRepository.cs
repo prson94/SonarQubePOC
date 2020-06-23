@@ -225,10 +225,12 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             if (fieldType != null)
                             {
                                 whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
- when FT{fieldType.ID}.AllowAllValue = 1 and F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))
+{(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))" : "")}
  when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
- when FT{fieldType.ID}.DefaultFormattedValue is not null then cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))
+{(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))" : "")}
 end = @f{fieldType.ID}Value";
+
+
                                 dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
                                 filteringByFields = true;
                             }
