@@ -17,6 +17,7 @@ using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 using DocumentFormat.OpenXml.Office.CustomUI;
+using Microsoft.ApplicationInsights;
 
 namespace d360.model.DataAccessLayer
 {
@@ -879,7 +880,21 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
         public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
         {
-            return Company.GetByUid<MetricAllocation>(model.AllocationUid);
+            if (model.AllocationUid == Guid.Empty)
+            {
+                if (model.AssetTypeUid.HasValue && model.ScoreType.HasValue)
+                {
+                    return Company.Filter<MetricAllocation>(a => a.AssetTypeUid == model.AssetTypeUid.Value && a.ScoreType == model.ScoreType.Value && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return Company.GetByUid<MetricAllocation>(model.AllocationUid);
+            }
         }
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)

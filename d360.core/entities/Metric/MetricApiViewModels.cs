@@ -23,7 +23,10 @@ namespace d360.core.entities.Metric
         public Guid AllocationUid { get; set; }
 
         [DataMember]
-        public Guid AssetTypeUid { get; set; }
+        public Guid? AssetTypeUid { get; set; }
+
+        [DataMember]
+        public ScoreType? ScoreType { get; set; }
 
         [DataMember]
         public bool IsGroup { get; set; }
