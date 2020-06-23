@@ -276,7 +276,7 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Get a list of workflows contained within the system.
         /// </summary>
-        /// <param name="Active">Active: is the workflow in an activate (non-completed) state; Default is Active
+        /// <param name="Active">Active: is the workflow in an active (non-completed) state; Default is Active
         /// </param>
         /// <returns>Returns list of workflows and a HTTP status code</returns>
         [
