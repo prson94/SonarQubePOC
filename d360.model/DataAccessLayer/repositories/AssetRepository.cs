@@ -2050,5 +2050,32 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                 Results = results
             };
         }
+
+        public List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution)
+        {
+            if (assetTypes.Count > 1)
+                throw new ArgumentException("Maximum number of asset types for this method is 1.");
+
+            CompanyContext.Add(execution);
+            List<DatabaseBulkAssetTypeResult> results = null;
+            try
+            {
+                var deletes = new AssetTypeDeletes();
+                results = CompanyContext.RemoveAssetTypes(execution, assetTypes, 28800); //dbExecutionTimeout = 8 hours
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+            return results;
+        }
     }
 }
