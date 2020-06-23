@@ -1,0 +1,30 @@
+<div class="asset-editor">
+    <div *ngIf="!nodeData" class="">
+        <div class="empty-overlay">
+            <div class="content">
+                <div class="icon-holder">
+                    <i class="fa fa-info-circle"></i>
+                </div>
+                <span>Drag and drop flow objects to start building your diagram</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="editor" *ngIf="nodeData">
+        <div class="header">
+            <span class="asset-name">{{nodeData.Name}}</span>
+            <span class="asset-type-name">{{nodeData.assetTypeName}}</span>
+        </div>
+        <d3s-dynamic-editor [title]="Name"
+                            [selectedObject]="'TaskType'"
+                            [objectTypeUid]="nodeData.assetTypeUid"
+                            [assetUid]="nodeData.isNew ? null : nodeData.key"
+                            [isV2API]="useV2Api"
+                            [useNonLegacyData]="true"
+                            [useModelBinding]="true"
+                            [hasHeader]="false"
+                            [cachedForm]="formGroupCached"
+                            (modelChanged)="onModelChange($event)"></d3s-dynamic-editor>
+    </div>
+</div>

@@ -2310,5 +2310,44 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
             }
         }
+
+        /// <summary>
+        /// Validates a request for POST/PUT.
+        /// </summary>
+        /// <returns>Returns a list colors.</returns>            
+        /// <param name="model">The payload of your request.</param>
+
+        [
+            HttpPost,
+            Route("validate"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all pre defined colors.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> Validate(List<UpsertModel> model)
+        {
+            var prefix = "Assets.Validate => ";
+            var errorMessage = "";
+            try
+            {
+                var errors = AssetRepository.ValidateAssetUpsertModel(model);
+
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, errors)));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
+
+
+
+
     }
 }

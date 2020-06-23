@@ -45,6 +45,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() objectTypeUid: string;
+    @Input() assetUid: string;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -65,6 +66,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
 
+    @Input() useModelBinding: boolean = false;
+
+    @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
@@ -72,12 +76,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
+    @Input() useNonLegacyData: boolean = true;
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
     private isInError: boolean = false;
     private isInErrorMessage: string = "";
 
     form: FormGroup;
+    @Input() cachedForm: FormGroup;
 
     action: string = "Edit";
     fields: EditorField[] = [];
@@ -112,6 +118,16 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         if (changes['objectID']) {
             if (!changes['objectID'].isFirstChange() && (changes['objectID'].previousValue != changes['objectID'].currentValue)) { // object has changed            
+                this.load();
+            }
+        }
+        if (changes['objectTypeUid']) {
+            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue != changes['objectTypeUid'].currentValue)) { // object has changed            
+                this.load();
+            }
+        }
+        if (changes['assetUid']) {
+            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue != changes['assetUid'].currentValue)) { // object has changed            
                 this.load();
             }
         }
@@ -176,7 +192,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
-        } else {
+        }
+        else if (this.useNonLegacyData) {
+            this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
+                .subscribe(result => {
+                    this.handleEditor(result);
+                });
+        }
+        else {
             this.editorDefinitionService.getEditorDefinition(
                 id,
                 this.objectID,
@@ -275,7 +298,18 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
 
             this.form = this.toFormGroup(this.fields);
+            if (this.useModelBinding) {
+                this.form.valueChanges.subscribe(x => {
+                    this.modelChanged.emit({ data: x, formGroup: this.form });
+                })
+            }
         }
+        if (this.useModelBinding) {
+
+            if (this.cachedForm)
+                this.form = this.cachedForm;
+        }
+
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();

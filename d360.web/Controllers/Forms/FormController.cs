@@ -232,6 +232,17 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
+        [HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
+        public JsonResult DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
+        {
+
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+            var o = assetType.Object;
+            return this.DynamicEditorEditFields(o, assetUid);
+
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
@@ -317,6 +328,8 @@ namespace d360.web.Controllers
                     return SurveyType_EditFields(oid);
                 case "TAG":
                     return Tag_EditFields(oid);
+                case "TASKTYPE":
+                    return Diagram_EditFields(oid);
                 case "TAXONOMY":
                     return Taxonomy_EditFields(oid);
                 case "VERSION":
@@ -397,6 +410,8 @@ namespace d360.web.Controllers
                     return SurveyType_AddFields();
                 case "TAG":
                     return Tag_AddFields();
+                case "TASK":
+                    return Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":

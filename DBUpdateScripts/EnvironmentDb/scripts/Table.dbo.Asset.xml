@@ -129,31 +129,25 @@ end
 	</rollback>
   </changeSet>
   
-  <changeSet author="TDuric" id="Table.dbo.Asset-v3">
+  <changeSet author="TDuric" id="Table.dbo.Asset-v4">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 <![CDATA[
 
-IF NOT EXISTS(SELECT 1 FROM sys.columns 
+IF  EXISTS(SELECT 1 FROM sys.columns 
           WHERE Name = N'Diagram'
           AND Object_ID = Object_ID(N'dbo.Asset'))
 BEGIN
 	ALTER TABLE dbo.Asset
-	ADD Diagram nvarchar(max) SPARSE NULL
+	DROP COLUMN Diagram 
 END
 ]]>
     </sql>
 	<rollback>
 <![CDATA[
-IF  EXISTS(SELECT 1 FROM sys.columns 
-          WHERE Name = N'Diagram'
-          AND Object_ID = Object_ID(N'dbo.Asset'))
-BEGIN
-ALTER TABLE dbo.Asset
-DROP COLUMN Diagram 
-END
+
 
 ]]>
 	</rollback>

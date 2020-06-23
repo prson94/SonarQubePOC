@@ -24,7 +24,7 @@ export class ProcessDiagramTemplates {
                     stroke: this.fontColor,
                     textAlign: "center",
                     font: "bold 12pt 'Source Sans Pro',sans-serif",
-                    editable: true,
+                    editable: false,
                     margin: new go.Margin(0, 0, 0, 10),
                     maxLines: 1,
                     isMultiline: false
@@ -75,7 +75,7 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    static get activityTemplate() {
+    public static activityTemplate(component: any) {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
@@ -84,6 +84,7 @@ export class ProcessDiagramTemplates {
             {
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
+                selectionChanged: (node) => { component.onSelectionChanged(node) }
 
             },
             $(go.Shape, "RoundedRectangle",
@@ -113,13 +114,16 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    static get eventTemplate() {
+    public static eventTemplate(component: any) {
         var $ = go.GraphObject.make;
         return $(go.Node, "Spot",
             {
                 locationSpot: go.Spot.Center,
                 selectable: true,
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                selectionChanged: (node) => {
+                    component.onSelectionChanged(node)
+                }
             },
             this.makePort("T", go.Spot.Top, false, true),
             this.makePort("L", go.Spot.Left, true, true),
@@ -184,13 +188,18 @@ export class ProcessDiagramTemplates {
 
     }
 
-    static get gatewayTemplate() {
+    public static gatewayTemplate(component: any) {
         var $ = go.GraphObject.make;
 
         return $(go.Node, "Spot",
             { locationSpot: go.Spot.Center },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            { selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate() },
+            {
+                selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                selectionChanged: (node) => {
+                    component.onSelectionChanged(node)
+                }
+            },
             new go.Binding("angle").makeTwoWay(),
             $(go.Panel, "Vertical",
                 { name: "PANEL" },
@@ -339,4 +348,6 @@ export class ProcessDiagramTemplates {
             }
         });
     }
+
+
 }

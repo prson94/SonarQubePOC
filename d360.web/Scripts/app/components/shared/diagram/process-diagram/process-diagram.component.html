@@ -1,8 +1,16 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
-
     <div *ngIf="isEditMode" class="top-menu-hider"></div>
 
-    <div class="menu" *ngIf="isEditMode">
+    <div class="saving-overlay" *ngIf="isSaving">
+        <div class="loader">
+            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+            <span class="text">
+                Saving changes
+            </span>
+        </div>
+    </div>
+
+    <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
             <button type="button" (click)="switchModes()" title="Exit Designer">
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
@@ -20,6 +28,13 @@
             <!--<button type="button" class="icon mr8" (click)="disableDrag()" title="Temp: Selection tool">
                 <i class="fa fa-mouse-pointer"></i>
             </button>-->
+        </div>
+        <div class="controls-right">
+            <div class="asset-browser-button-group">
+                <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
+                    <i class="fa fa-info-circle"></i>
+                </button>
+            </div>
         </div>
     </div>
     <div class="diagram-content">
@@ -86,5 +101,28 @@
             </div>
             <div id="diagram"></div>
         </div>
+        <d3s-process-diagram-asset-editor *ngIf="isInfoPanelOpened && isEditMode"
+                                          [nodeData]="selectedNodeData"
+                                          (nodeDataChange)="updateNodeFromForm($event)">
+        </d3s-process-diagram-asset-editor>
     </div>
+
+    <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="isErrorModalOpened=false" [isVisible]="isErrorModalOpened">
+        <div class="content">
+            <div class="row">
+                Sorry, we cannot save your changes to the diagram until the following issues are resolved:
+                <br />
+                <br />
+                <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
+                    <div class="validation-error" *ngFor="let item of validationErrors.errors">
+                        {{item.Error}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="action-bar">
+            <button class="button" (click)="isErrorModalOpened=false">Close</button>
+
+        </div>
+    </d3s-modal>
 </div>
