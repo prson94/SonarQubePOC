@@ -447,6 +447,8 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             this.defaultLinkAdress = this.model.FieldType.Type[this.currentType].DefaultValue.Url;
         }
 
+        this.errorMessage = ""; //clear the error message when changing types
+
         observables
             .filter(x => x != null && x != undefined)
             .forEach(obs => obs.pipe(map(() => this.validate('*'))).subscribe());
@@ -783,6 +785,10 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
         }
 
         if (this.currentType == 'Lookup' && !this.model.FieldType.Type[this.currentType].List.Uid) {
+            valid = false;
+        }
+
+        if (this.currentType == 'Lookup' && this.model.FieldType.Type[this.currentType].AllowAllValue && !this.model.FieldType.Type[this.currentType].AllowAllLabel) {
             valid = false;
         }
 
@@ -1193,6 +1199,16 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                 })());
             }
 
+        }
+        
+        if (this.currentType == 'Lookup') {
+            this.setValidation('AllowAllLabel_text', 'Please specify a label for ALL Value Selection.', (() => {
+                if (this.model.FieldType.Type[this.currentType].AllowAllValue) {
+                    return (this.model.FieldType.Type[this.currentType].AllowAllLabel == undefined || this.model.FieldType.Type[this.currentType].AllowAllLabel.length == 0);
+                } else {
+                    return false;
+                }
+            })());
         }
 
         this.errorMessage = Array.from(this.validationErrors.values()).join('\n');
