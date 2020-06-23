@@ -26,6 +26,7 @@ import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { filter } from 'rxjs/operators';
+import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -131,14 +132,42 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     getColorItemsAsSelectItem(items: any[]): SelectItem[] {
         if (items.length > 0) {
             return items.map((x) => {
-                let parts = <string[]>x.Text.split('|');
-                let name = parts[0];
-                let color = parts.length > 1 ? parts[1] : null;
-                return { label: name, value: x.Value, title: color };
+                if (x.Text == "Choose...") {
+                    return { label: "Optional", value: null, title: '' };
+                }
+                try {
+                    let colorobj = JSON.parse(x.Text);
+                    if (colorobj)
+                        return { label: colorobj.name, value: x.Value, title: colorobj.color };
+                } catch (ex) {
+                }
             });
         }
     }
 
+    getLabelByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.Value == id);
+            if (filterItems.length > 0) {
+                let options = this.getColorItemsAsSelectItem(filterItems);
+                if (options.length > 0)
+                    return options[0].label;
+            }
+        }
+        return "";
+    }
+
+    getColorByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.Value == id);
+            if (filterItems.length > 0) {
+                let options = this.getColorItemsAsSelectItem(filterItems);
+                if (options.length > 0)
+                    return options[0].title;
+            }
+        }
+        return "";
+    }
     selectTag(event) {
         var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
         this.autoCompleteSelected.emit(obj);
@@ -664,32 +693,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private onColorSelect(item) {
         this.form.controls[this.field.FieldName].setValue(item);
         this.field.Value = item;
-    }
-
-    getColorFromLabel(label: string): string {
-        if (label && label.split('|').length > 0) return label.split('|')[label.split('|').length - 1];
-        else return null;
-    }
-
-    getLabelForColor(label: string): string {
-        if (label && label.split('|').length > 0) return label.split('|').splice(0, label.split('|').length - 1).join('|');
-        else return label;
-    }
-    getLabelByID(id) {
-        if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.Value == id);
-            if (filterItems.length > 0)
-                return this.getLabelForColor(filterItems[0].Text);
-        }
-        return "";
-    }
-    getColorByID(id) {
-        if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.Value == id);
-            if (filterItems.length > 0)
-                return this.getColorFromLabel(filterItems[0].Text);
-        }
-        return "";
     }
 
     private clearTypeahead(e: any) {

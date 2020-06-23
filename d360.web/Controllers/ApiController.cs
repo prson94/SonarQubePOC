@@ -149,7 +149,7 @@ namespace d360.web.Controllers
                                             {
                                                 ro.DataType = "color";
                                                 var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({detail.AssetID}) ").FirstOrDefault();
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({(detail != null ? detail.AssetID : 0)}) ").FirstOrDefault();
                                                 var obj = JObject.Parse(colorData ?? "{}");
 
                                                 ro.Values.Add(new ReadOnlyFieldValue
@@ -208,18 +208,6 @@ namespace d360.web.Controllers
                                         }
 
                                     }
-                                    else if(ft.LookupObjectType == "ReferenceItem")
-                                    {
-                                        var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
-                                        var detail = Company.GetObjectDetail(ft.LookupObjectType, long.Parse(lookupID.ToString()));
-                                        var colorData = Company.Query<dynamic>($@"SELECT colorJSON from dbo.GEtAssetColorJsonByID({detail.AssetID}) ").FirstOrDefault();
-                                        if (colorData != null)
-                                        {
-                                            var obj = JObject.Parse(colorData ?? "{}");
-                                            ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
-                                            ro.DataType = "color";
-                                        }
-                                    }
                                     else
                                     {
                                         if (ft.LookupObjectType == "Artifact" || ft.LookupObjectType == "Taxonomy" || ft.LookupObjectType == "TaxonomyType")
@@ -249,10 +237,22 @@ namespace d360.web.Controllers
                                         else if (int.TryParse(value, out int val))
                                         {
                                             var det = Company.GetObjectDetail(k.LookupObjectType, val);
-                                            //need to get color details for indivdual item here!!!!!!
                                             if (det != null)
                                             {
                                                 ro.TooltipUrl = det.Url;
+                                            }
+
+                                            if (ft.LookupObjectType == "ReferenceItem")
+                                            {
+                                                var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
+                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, val);
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GEtAssetColorJsonByID({(detail != null ? detail.AssetID : 0)})").FirstOrDefault();
+                                                if (colorData != null)
+                                                {
+                                                    var obj = JObject.Parse(colorData);
+                                                    ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
+                                                    ro.DataType = "color";
+                                                }
                                             }
                                         }
 

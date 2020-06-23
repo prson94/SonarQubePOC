@@ -72,14 +72,17 @@
                 </d3s-preview-tooltip>
                 <ng-template #listTooltip>
                     <d3s-lookup-tooltip *ngIf="field.TooltipUrl;else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                        <a (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>
+                        <a *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>
+                        <d3s-color-display *ngIf="fieldDataType == 'color'" (click)="navigate(field.TooltipUrl)" [colorsJSON]="field.Value"></d3s-color-display>
                     </d3s-lookup-tooltip>
                     <ng-template #noLinkTooltip>
                         <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                            <span [innerText]="field.Value"></span>
+                            <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
+                            <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value"></d3s-color-display>
                         </d3s-lookup-tooltip>
                     </ng-template>
                 </ng-template>
+                
             </div>
         </ng-container>
     </div>

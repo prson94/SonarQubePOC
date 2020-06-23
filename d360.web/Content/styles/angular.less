@@ -6754,9 +6754,16 @@ table {
     }
 }
 .d3s-color-picker.multi .d3s-color-multiSelect {
+    width: auto;
+
     .ig-colorfield-item-selected:first-child {
         margin-left: -6px;
     }
+
+    .ig-colorfield-item-selected:last-child {
+        margin-right: 16px;
+    }
+
     .ig-colorfield-item-selected {
         background: #f0f0f0;
         border-radius: 4px;
@@ -6764,6 +6771,8 @@ table {
         margin-left: 4px;
         height: 26px;
         margin-top: -1px;
+        margin-right: 16px;
+
         .ig-colorfield-swatch, .ig-colorfield-item-label {
             top: 0px
         }
