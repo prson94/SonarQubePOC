@@ -240,6 +240,33 @@ where	ExecutionID = @executionID
             new { executionID }, commandTimeout: timeout);
         }
 
+        private void LogNullIsRequiredFields(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+            drop table if exists #tempreqfield;
+            
+            select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
+            into #tempreqfield
+            from api.ExecutionAsset A
+            inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
+            left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
+            left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+            where A.executionid = @executionID 
+            and (trim(EF.Value) is null or EF.Value = char(0))
+            and (trim(F.FieldValue) is null or trim(F.FieldValue) = char(0))
+            group by A.executionid,a.itemnumber;
+
+            create index idx_tempreqfield on #tempreqfield(itemnumber,executionid);
+
+            update	A
+            set		Success = 0,
+		            [Message] = coalesce([Message] + '; ', '') + f.stringfield + case when f.cnt = 1 then ' is a ' else ' are ' end + 'required field' + case when f.cnt = 1 then '' else 's' end 
+            from api.ExecutionAsset A
+            inner join #tempreqfield F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+            where A.executionid = @executionID;",
+            new { executionID }, commandTimeout: timeout);
+        }
+
         private void LogAssetPermissionErrors(Guid executionID, AssetType at, Permission p, bool isInsert, string apiTableName, int timeout = 3600)
         {
             if (string.IsNullOrEmpty(apiTableName))
@@ -3204,6 +3231,7 @@ where   ExecutionID = @ExecutionID
                         {
                             LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                             LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
+                            LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
                         }
 
                         this.AITrackTrace(client, execution, METHOD_NAME, "Log Errors", sw.ElapsedMilliseconds, isLog);
