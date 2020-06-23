@@ -78,12 +78,28 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         if (this.model === null) {
             valid = false;
         } else {
-            if (this.model.Name === null || this.model.Name.trim().length > 250 || this.model.Name.trim().length === 0)
+            if (this.model.Name === null || !this.model.Name) {
                 valid = false;
+            }
+            else {
+                if (this.model.Name.trim().length > 250 || this.model.Name.trim().length === 0) {
+                    valid = false;
+                }
+            }
+
             if (this.model.EffectiveDate === null)
                 valid = false;
-            if (!this.isExternallyCalculated && (this.model.Weight === null || parseFloat(this.model.Weight.toFixed(2)) === 0))
-                valid = false;
+
+            if (!this.isExternallyCalculated) {
+                if (this.model.Weight === null || !this.model.Weight) {
+                    valid = false; 
+                }
+                else {
+                    if (parseFloat(this.model.Weight.toFixed(2)) === 0) { 
+                        valid = false;
+                    }
+                }
+            }
         }
 
         return valid;
@@ -154,12 +170,12 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         return FormHelpers.getLocaleDateString();
     }
 
-    private clamp(val: any, min: number, max: number, precision: number): any {
+    private clamp(val: any, min: number, max: number, precision: number) {
         const newVal = FormHelpers.clamp(val, min, max, precision);
 
-        if (this.weightInput !== null && this.weightInput.nativeElement !== null)
+        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined) 
             this.weightInput.nativeElement.value = newVal;
 
-        return newVal;
+        this.model.Weight = newVal;
     }
 };
