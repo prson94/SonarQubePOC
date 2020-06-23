@@ -240,11 +240,11 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
-                if(assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+                if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
                 }
-                
+
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
@@ -605,7 +605,7 @@ namespace d360.web.Controllers.V2
                             IsPartOfKey = false,
                             UpdatedBy = Company.CurrentResourceID,
                             ShowIfEmpty = true
-                        }); 
+                        });
                     }
                 }
 
@@ -1502,7 +1502,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (assetTypeUid == null || assetTypeUid== Guid.Empty)
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"AssetTypeUid is not valid!"));
                 }
@@ -1907,13 +1907,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
-
-                Company.Add(execution);
-                Company.SaveChanges();
                 var deletes = new AssetTypeDeletes();
                 deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
-                var deleteAssetTypesResults = Company.RemoveAssetTypes(execution, deletes, 28800); //dbExecutionTimeout = 8 hours
-                Company.SaveChanges();
+
+                var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
+
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(

@@ -47,6 +47,7 @@ namespace d360.model.DataAccessLayer
         Task<IEnumerable<AssetTypeCountModel>> GetAssetTypeCounts(int[] filterClasses);
         Task<dynamic> GetAssetTypeObjectAndObjectId(Guid uid);
         dynamic GetExecutionStatusModel(Guid executionUid);
+        List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
 
     }
 }
