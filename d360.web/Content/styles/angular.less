@@ -6793,11 +6793,40 @@ table {
 }
 
 d3s-process-diagram {
+    .saving-overlay {
+        position: fixed;
+        top: 0px;
+        left: 0px;
+        width: 100%;
+        height: 100%;
+        background: rgba(255,255,255,0.5);
+        z-index: 1000000;
+
+        .loader {
+            width: 200px;
+            margin: 0 auto;
+            position: relative;
+            top: 50px;
+            background-color: white;
+            border: 1px solid #eef0f1;
+            padding: 16px;
+            box-shadow: 2px 2px 20px 0px #cecece;
+            color: #7d7d7d;
+            text-align: center;
+
+            .text {
+                position: relative;
+                top: -2px;
+                margin-left: 12px;
+            }
+        }
+    }
+
     .diagram-content {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        height: 88%;
+        height: 90%;
     }
 
     .top-menu-hider {
@@ -6825,6 +6854,7 @@ d3s-process-diagram {
 
         .menu {
             margin-bottom: 16px;
+            position:relative;
         }
     }
 
@@ -6835,41 +6865,7 @@ d3s-process-diagram {
         box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
         position: relative;
 
-        .empty-overlay {
-            position: absolute;
-            width: 100%;
-            height: 100%;
 
-
-            .content {
-                text-align: center;
-                top: 100px;
-                position: relative;
-                max-width: 164px;
-                margin: 0 auto;
-                color: #597897;
-
-                span {
-                    font-size: 14px;
-                    line-height: 18px;
-                }
-
-                .icon-holder {
-                    background-color: rgba(89, 120, 151, 0.1);
-                    height: 128px;
-                    width: 128px;
-                    text-align: center;
-                    margin: 0 auto;
-                    border-radius: 50%;
-                    margin-bottom: 16px;
-
-                    .fa {
-                        font-size: 56px;
-                        line-height: 128px;
-                    }
-                }
-            }
-        }
 
         #diagram {
             width: 100%;
@@ -6882,13 +6878,14 @@ d3s-process-diagram {
     }
 
     #myPaletteDiv {
-        overflow-y: scroll;
+        overflow-y: auto;
         width: 258px;
         margin-right: 15px;
         border-radius: 4px;
         box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
         background-color: white;
         padding: 8px;
+        height: 100%;
 
 
         .icon-holder {
@@ -6958,6 +6955,73 @@ d3s-process-diagram {
 
             .ui-accordion-header-text {
                 text-transform: none;
+            }
+        }
+    }
+
+    .asset-editor {
+        overflow-y: auto;
+        width: 300px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px 0 rgba(63, 63, 68, 0.15), 0 0 0 1px rgba(63, 63, 68, 0.05);
+        background-color: white;
+        padding: 8px;
+        height: 100%;
+        margin-left: 16px;
+        position: relative;
+
+        .header {
+            .asset-name {
+                color: rgb(2,112,186);
+                display: block;
+                text-overflow: ellipsis;
+                font-size: 22px;
+            }
+
+            .asset-type-name {
+                font-size: 14px;
+                color: black;
+                opacity: 0.3;
+            }
+        }
+
+        .FieldName {
+            color: black;
+        }
+    }
+
+    .empty-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+
+
+        .content {
+            text-align: center;
+            top: 100px;
+            position: relative;
+            max-width: 164px;
+            margin: 0 auto;
+            color: #597897;
+
+            span {
+                font-size: 14px;
+                line-height: 18px;
+            }
+
+            .icon-holder {
+                background-color: rgba(89, 120, 151, 0.1);
+                height: 128px;
+                width: 128px;
+                text-align: center;
+                margin: 0 auto;
+                border-radius: 50%;
+                margin-bottom: 16px;
+
+                .fa {
+                    font-size: 56px;
+                    line-height: 128px;
+                }
             }
         }
     }
