@@ -76,8 +76,8 @@ namespace d360.web.Controllers.V2
                     isSubjectInTransformation = h.isSubjectInTransformation
                 };
                 //child.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
-                
-                recurse(model, hierarchies, child, multiplier+1);
+
+                recurse(model, hierarchies, child, multiplier + 1);
 
                 if (current.items == null)
                 {
@@ -98,26 +98,27 @@ namespace d360.web.Controllers.V2
 
             foreach (var h in hierarchies.Where(i => string.IsNullOrEmpty(i.parentKey)))
             {
-                var current = new AssetBrowserAssetModel { 
+                var current = new AssetBrowserAssetModel
+                {
                     focal = h.isFocal,
-                    key = h.key, 
-                    assetUid = h.assetUid, 
-                    assetTypeId = h.assetTypeID, 
+                    key = h.key,
+                    assetUid = h.assetUid,
+                    assetTypeId = h.assetTypeID,
                     assetTypeUid = h.assetTypeUid,
                     backAmount = ((multiplier <= 4) ? multiplier : 4) * .2,
-                    backColor = h.back, 
+                    backColor = h.back,
                     foreAmount = 0,
-                    foreColor = h.fore, 
-                    icon = h.icon, 
-                    @class = h.@class, 
-                    displayValue = h.displayValue, 
+                    foreColor = h.fore,
+                    icon = h.icon,
+                    @class = h.@class,
+                    displayValue = h.displayValue,
                     reveal = h.reveal,
                     actionCount = h.actionCount,
                     ownerCounts = parseArrayCount<AssetBrowserOwnerCountModel>(h.ownerCounts),
                     relationCounts = parseArrayCount<AssetBrowserAssetRelationCountModel>(h.relationCounts),
-                    useAsTransformation = h.useAsTransformation, 
+                    useAsTransformation = h.useAsTransformation,
                     hasAssetReadAccess = h.hasAssetReadAccess,
-                    isSubjectInTransformation = h.isSubjectInTransformation 
+                    isSubjectInTransformation = h.isSubjectInTransformation
                 };
                 //current.ownerCounts.ForEach(o => o.Users = JsonConvert.DeserializeObject<List<int>>(o.UsersList));
                 recurse(model, hierarchies, current, multiplier + 1);
@@ -151,8 +152,8 @@ namespace d360.web.Controllers.V2
             bool initial,
             AssetBrowserDiagramType diagramType,
             AssetBrowserApiHopType hopType,
-            List<AssetBrowserApiHopAssetRequestModel> assets, 
-            List<AssetBrowserApiHopIgnoreRequestModel> ignoredRelations, 
+            List<AssetBrowserApiHopAssetRequestModel> assets,
+            List<AssetBrowserApiHopIgnoreRequestModel> ignoredRelations,
             int hopCount,
             AssetBrowserApiHopDirection direction,
             Guid? predicateUid,
@@ -292,7 +293,7 @@ where	A.Uid in @assetUids
 order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).ToList(), criteria.ResponsibilityTypeId });
 
                 // Check to see if keys are populated on incoming assets. If not, populate with auto-generated salt.
-                foreach(var o in owners)
+                foreach (var o in owners)
                 {
                     o.key = hashKey($"{criteria.ResponsibilityTypeId}|{o.resourceId}");
                     if (!distinctOwners.Any(d => d.key == o.key))
@@ -466,7 +467,7 @@ where	A.Uid = @uid
 for json path, WITHOUT_ARRAY_WRAPPER";
 
                 var reader = await Company.QueryAsync<string>(sql, new { uid, ignoredFields }, timeout: 10);
-                var json = string.Join("",reader);
+                var json = string.Join("", reader);
 
                 var model = JsonConvert.DeserializeObject<AssetBrowserDiagramAsset>(json);
 
@@ -574,7 +575,7 @@ select  Id,
         Name
 from    ResponsibilityType
 order by Name";
-                
+
                 #endregion
 
                 var reader = await Company.QueryMultipleAsync(sql, timeout: 60);
@@ -583,10 +584,11 @@ order by Name";
                 var predicates = reader.Read<AssetBrowserPredicateFilterItem>().ToList();
                 var responsibilityTypes = reader.Read<AssetBrowserResponsibilityTypeFilterItem>().ToList();
 
-                return Request.CreateResponse(HttpStatusCode.OK, new { 
-                    AssetTypeOptions = assetTypes, 
-                    PredicateOptions = predicates, 
-                    ResponsibilityTypeOptions = responsibilityTypes 
+                return Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    AssetTypeOptions = assetTypes,
+                    PredicateOptions = predicates,
+                    ResponsibilityTypeOptions = responsibilityTypes
                 });
             }
             catch (Exception ex)
@@ -646,7 +648,7 @@ order by Name";
         {
             try
             {
-                if(GraphFilterRepository.CreateGraphFilter(model))
+                if (GraphFilterRepository.CreateGraphFilter(model))
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
                 else
                     return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ApiStatusResponse { Message = "Save failed", Success = false, Uid = Guid.Empty }));
@@ -738,6 +740,101 @@ order by Name";
                 string errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
             }
+        }
+
+        /// <summary>
+        /// Returns a list of available diagram types for the current user and asset, as well as the default view
+        /// </summary>
+        /// <param name="uid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("types/{uid:Guid}/me"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetDiagramTypes(Guid uid)
+        {
+            if (uid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified"));
+
+            var asset = (await Company.QueryAsync<Asset>("select * from Asset where uid = @uid", new { uid })).FirstOrDefault();
+
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset for this uid could not be found"));
+
+            var assetType = (await Company.QueryAsync<AssetType>("select * from AssetType where id = @assetTypeID", new { asset.AssetTypeID })).FirstOrDefault();
+
+            if (assetType == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.NotFound, "The asset type for this asset could not be found"));
+
+
+            var items = new List<dynamic>();
+            int? initial = ((int)AssetBrowserDiagramType.Lineage);
+
+            var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
+            var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar") && assetType.Class != AssetTypeClass.ReferenceItemType;
+            var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+            var anyProcessDiagram = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from [Intersect] I inner join IntersectTypeDetail D on D.ID = I.IntersectTypeID where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+
+            if (includeLineage)
+            {
+                items.Add(new
+                {
+                    label = "Lineage Diagram",
+                    value = ((int)AssetBrowserDiagramType.Lineage)
+                }); ;
+            }
+
+            if (anyDiagramRelationTypes)
+            {
+                var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
+
+                if (anyProcessDiagram || canEdit)
+                {
+                    items.Add(new
+                    {
+                        label = "Process Diagram",
+                        value = ((int)AssetBrowserDiagramType.Process)
+                    });
+                }
+            }
+
+            if (includeImpact)
+            {
+                items.Add(new
+                {
+                    label = "Impact Diagram",
+                    value = ((int)AssetBrowserDiagramType.Impact)
+                });
+            }
+
+            if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Model || assetType.Class == AssetTypeClass.Policy)
+            {
+                if (anyDiagramRelationTypes || anyProcessDiagram)
+                {
+                    initial = ((int)AssetBrowserDiagramType.Process);
+
+                }
+                else if (includeImpact)
+                {
+                    initial = ((int)AssetBrowserDiagramType.Impact);
+                }
+            }
+            else if (assetType.Class == AssetTypeClass.TechnicalAsset)
+            {
+                if (includeLineage)
+                {
+                    initial = ((int)AssetBrowserDiagramType.Lineage);
+                }
+            }
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { initial, items }));
         }
     }
 }

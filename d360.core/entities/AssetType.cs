@@ -141,5 +141,7 @@ namespace d360.core.entities
         public IconStyleInsert IconStyle { get; set; }
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+        [DataMember]
+        public FlowObjectType? FlowObjectType { get; set; }
     }
 }

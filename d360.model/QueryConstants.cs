@@ -1301,10 +1301,11 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			            'Shopping Cart'
 		            else
 			            ''
-		            end + ' :: ' + [name] as label, 
+		            end + ' :: ' + coalesce(P.[Path], T.[Name]) as label, 
 		            assetCount.[count]
 	            from 
 		            AssetType T
+					cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
 		            cross apply 
 		            (
 				            select count(*) as [count] from Asset A

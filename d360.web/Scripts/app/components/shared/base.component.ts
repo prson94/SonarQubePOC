@@ -16,7 +16,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ScoreType } from '../../models/metrics.model';
+import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 
 declare var CompanySettings;
 
@@ -59,9 +59,6 @@ export class BaseComponent {
     governanceRolesSidebar: SecondaryNavItem;
     connectorLabels: SecondaryNavItem;
 
-
-    scoringDataQualitySidebar: SecondaryNavItem;
-    scoringGovernanceSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -200,37 +197,25 @@ export class BaseComponent {
             this.breadcrumbsService.buildFromStorage();
     }
 
-    setScoringSecondaryNavTabs(assetTypeUid: string, hasGovernance: boolean, hasDataQuality: boolean, currentType: ScoreType) {
+    setScoringSecondaryNavTabs(assetTypeUid: string, selectedAllocationUid: string, allocations: ScoreTypeAllocation[]) {
         var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
 
         if (this.secondaryNavService) {
             this.clearSidebar();
 
-            if (hasGovernance) {
-                this.scoringGovernanceSidebar = new SecondaryNavItem(
-                    'Governance Score',
-                    'Governance Score',
-                    ['fa-drivers-license-o'],
-                    `/${baseUrl}Governance`, null, 10
+            let priority = 10;
+
+            allocations.forEach(allocation => {
+                const navItem = new SecondaryNavItem(
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
+                    [allocation.icon],
+                    `/${baseUrl}${allocation.uid}`, null, priority
                 );
-                this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
-            }
-
-            if (hasDataQuality) {
-                this.scoringDataQualitySidebar = new SecondaryNavItem(
-                    'Data Quality Score',
-                    'Data Quality Score',
-                    ['fa-drivers-license-o'],
-                    `/${baseUrl}DataQuality`, null, 20
-                );
-                this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
-            }
-
-            if (currentType.toString() == 'Governance')
-                this.scoringGovernanceSidebar.active = true;
-
-            if (currentType.toString() == 'DataQuality')
-                this.scoringDataQualitySidebar.active = true;
+                navItem.active = (selectedAllocationUid === allocation.uid);
+                this.secondaryNavService.showItem(navItem);
+                priority += 10;
+            });
         }
     }
 
@@ -276,7 +261,7 @@ export class BaseComponent {
                     let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
                     if (!isVisualizationDisabled) {
                         this.lineageSidebar = new SecondaryNavItem(
-                            'Visualization',
+                            'Diagrams',
                             'lineage',
                             ['fa-random'],
                             `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
@@ -284,6 +269,7 @@ export class BaseComponent {
 
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
                         this.secondaryNavService.showItem(this.lineageSidebar);
                     }

@@ -222,7 +222,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
@@ -243,8 +245,6 @@ namespace d360.model.DataAccessLayer
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();
 
-
-
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@uid", alloc.Uid);
 
@@ -255,7 +255,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
@@ -276,7 +278,7 @@ namespace d360.model.DataAccessLayer
 
         public bool HasActiveMeasures(MetricAllocation alloc)
         {
-            return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AssetTypeUid == alloc.AssetTypeUid && x.ScoreType == alloc.ScoreType);
+            return companyContext.MetricAssets.Any(x => x.State == State.Active && x.AllocationUid == alloc.Uid);
         }
 
         public bool DoesAllocationExist(Guid allocationUid, AllocationApiUpsertModel model)
@@ -286,7 +288,7 @@ namespace d360.model.DataAccessLayer
 
         public MetricAllocation GetAllocationByUid(Guid allocationUid)
         {
-            return companyContext.Filter<MetricAllocation>(i => i.Uid == allocationUid).SingleOrDefault();
+            return companyContext.GetByUid<MetricAllocation>(allocationUid);
         }
 
         public MetricAllocation GetAllocationByModel(AllocationApiUpsertModel model)

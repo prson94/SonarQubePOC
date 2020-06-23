@@ -5,7 +5,6 @@ using d360.core.enums.Workflow;
 using d360.core.queue;
 using d360.extensions;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -81,7 +80,7 @@ namespace d360.model
             List<dynamic> retResults = null;
 
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
 
             using (var trans = cnn.BeginTransaction())
             {
@@ -234,7 +233,7 @@ namespace d360.model
             #region
 
             if (cnn.State != System.Data.ConnectionState.Open)
-                cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                cnn.Open();
 
             using (var trans = cnn.BeginTransaction())
             {

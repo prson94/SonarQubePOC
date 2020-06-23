@@ -8,7 +8,6 @@ using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -483,7 +482,7 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
                     , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
-            
+
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
@@ -906,12 +905,17 @@ where T.ExecutionId = @executionid;
                         from    api.ExecutionField F
                         where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) = '#'
 
+                        update  F
+                        set     F.LookupValue = null
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and coalesce(F.FieldValue, '') = ''
+                        
                         update  T 
                         set     T.Success = 0,
                                 T.Message = coalesce(T.Message, '') + 'Color value is not a valid Govern color; '
                         from    api.ExecutionAsset T
-                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color'
-                        where   S.LookupValue is null
+                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
+                        where   S.LookupValue is null and coalesce(S.FieldValue, '') <> ''
                         ", new { executionID }, commandTimeout: timeout);
         }
 
@@ -1500,7 +1504,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -2256,7 +2260,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -2335,6 +2339,19 @@ from	IntersectType I
     where	T.ExecutionID = @ExecutionID
             and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
+            and A.ChildCount > 0;
+
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'There are ' + cast(A.ChildCount as nvarchar) + ' Organizations defined for this OrganizationType.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as ChildCount
+                from	Organization O
+		        where O.OrganizationTypeID = T.ObjectID
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.Object = 'OrganizationType'
             and A.ChildCount > 0;
 
     --Check if asset Results exist 
@@ -2475,7 +2492,7 @@ from	IntersectType I
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -2612,7 +2629,7 @@ where   ExecutionID = @ExecutionID
                     try
                     {
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
                         var bulkCopy = new SqlBulkCopy(Connection)
@@ -2716,7 +2733,7 @@ where   ExecutionID = @ExecutionID
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     var bulkCopy = new SqlBulkCopy(Connection)
@@ -3082,7 +3099,7 @@ where   ExecutionID = @ExecutionID
                         }
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -3434,10 +3451,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.BusinessAsset:
                                             case AssetTypeClass.TechnicalAsset:
+                                            case AssetTypeClass.Diagram:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                if (at.Class == AssetTypeClass.Diagram)
+                                                    @object = "Task";
 
                                                 sw.Restart();
                                                 if (isInsert)
@@ -3507,17 +3527,19 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    T.FieldValue as Threshold
+                    T.FieldValue as Threshold,
+                    CR.LookupValue as Color
             from    api.ExecutionAsset A
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
     output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3541,11 +3563,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     update	T
     set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
             T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
+            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3956,7 +3980,7 @@ select [uid] from #ParentChildRelationships",
                     }
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     sw.Restart();
@@ -4488,7 +4512,7 @@ end",
                 #endregion
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
 
@@ -5180,7 +5204,7 @@ where   ER.ExecutionID = @ExecutionID
 
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
                 var bulkCopy = new SqlBulkCopy(Connection)
@@ -5305,7 +5329,7 @@ where   ER.ExecutionID = @ExecutionID
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -5541,7 +5565,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -5857,7 +5881,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6404,7 +6428,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6936,7 +6960,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -7370,7 +7394,7 @@ insert into #Keys
                                 {
                                     if (cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Asignee values set.";
+                                        rowError += ";Then condition should have either Field or Assignee values set.";
                                     }
 
                                     if (cond.Assignee != null && cond.Field != null)
@@ -7409,7 +7433,7 @@ insert into #Keys
                                 {
                                     if (cond.Relation == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                        rowError += ";Then condition should have either Field or Relation value set.";
                                     }
                                     if (cond.Relation != null && cond.Field != null)
                                     {
@@ -7455,7 +7479,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 

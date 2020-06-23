@@ -62,11 +62,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of predicates.
         /// </summary>
-        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="PredicateUid">Filter by a predicate's unique identifier.</param>
         /// <param name="Type">Filter by a predicate's functional type.</param>
-        /// <param name="Name">Filter by an predicate's Name.</param>
-        /// <param name="Inverse">Filter by an predicate's Inverse.</param>
-        /// <param name="IsUsed">Filter by an predicate's usage.</param>
+        /// <param name="Name">Filter by a predicate's Name.</param>
+        /// <param name="Inverse">Filter by a predicate's Inverse.</param>
+        /// <param name="IsUsed">Filter by a predicate's usage.</param>
         /// <returns>A list of predicates contained within your Govern environment.</returns>
         [
             HttpGet,
@@ -379,8 +379,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse)),
-            SwaggerParameter("RelationshipTypeUid", "Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("PredicateUid", "Filter by an predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("RelationshipTypeUid", "Filter by a relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("PredicateUid", "Filter by a predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("SubjectUid", "Filter by a subject asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("ObjectUid", "Filter by an object asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
@@ -503,10 +503,111 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// GET a list of relationship uids and the uids for the subject / object items in a given relationship type if applicable.
+        /// </summary>
+        /// <remarks>
+        /// Used to return just the relationship uid, subject uid and object uid for a given relationship type.  Objects that are not assets will not have subject / object uids returned.  This endpoint is limited to administrators only.  Other API endpoints can then be used to get further details.
+        /// </remarks>        
+        /// <returns></returns>
+        [
+            HttpGet,
+            MapToApiVersion("2.0"),
+            Route("uids/{RelationshipTypeUid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(RelationshipUidResult)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Invalid parameters provided to the api endpoint.", typeof(ErrorResponse)),
+            SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageSize", "Allows for changing the page size of results you are requesting. The default is 5000 and the maximum value is 100,000.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+       ]
+        public async Task<HttpResponseMessage> GetRelationshipUidsAsync(Guid RelationshipTypeUid)
+        {
+            var prefix = "Relationships.GetRelationshipUidsAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                if (!Company.CurrentResourceIsAdmin)
+                {
+                    return ReturnApiError(HttpStatusCode.Forbidden, "You are not authorized to perform this action.");
+                }
+
+
+                var queryParams = Request.GetQueryNameValuePairs().ToList();                
+                long pageSize = 5000;
+                long pageNum = 1;
+                bool includeTotal = true;
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_pagenum"))
+                {                    
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value;
+                    if(!long.TryParse(value, out pageNum))                    
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageNum parameter passed in the request");
+                    }                    
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_pagesize"))
+                {
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value;
+                    if (!long.TryParse(value, out pageSize))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request");
+                    }       
+                    
+                    if(pageSize > 100000)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is greater than the maximum supported value of 100,000.");
+                    }
+
+                    if(pageSize<= 0)
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _pageSize parameter passed in the request value is less than or equal to zero.");
+                    }
+                }
+
+                if (queryParams.Any(x => x.Key.ToLower() == "_includetotal"))
+                {
+                    var value = queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value;
+                    if (!bool.TryParse(value, out includeTotal))
+                    {
+                        return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid _includeTotal parameter passed in the request, value must be true false or not specified");
+                    }
+                }
+
+                if(RelationshipTypeUid == Guid.Empty)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid.");
+                }
+
+                int intersectTypeID = await (Company.QueryFirstOrDefaultAsync<int>("select id from [intersecttype] where [uid] = @uid", new { uid = RelationshipTypeUid }));
+
+                if (intersectTypeID <= 0)
+                {
+                    return ReturnApiError(HttpStatusCode.BadRequest, $"Invalid relationship type uid specified.  Please specify a valid uid for an existing relationship type.");
+                }
+
+                var results = await RelationshipRepository.GetRelationshipsUids(intersectTypeID, pageSize, pageNum, includeTotal);
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results );
+                return response;
+
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ReturnApiError(HttpStatusCode.InternalServerError, errorMessage);
+            }
+        }
+
+        /// <summary>
         /// Creates relationship types based on the provided subject, object and predicate properties.
         /// </summary>
         /// <remarks>
-        /// You have the option of providing a Uid for each of the new relationship types. This is particularly useful in a migration scenario where you want to migrate an relationship type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
+        /// You have the option of providing a Uid for each of the new relationship types. This is particularly useful in a migration scenario where you want to migrate a relationship type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
         /// </remarks>
         /// <param name="relationshiptypes">A list of relationship types you want to add.</param>
         /// <returns>An HTTP status code and message.</returns>

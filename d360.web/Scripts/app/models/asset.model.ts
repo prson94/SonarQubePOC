@@ -105,6 +105,7 @@ export class AssetTypeApiModel {
     CanOwnFusion: boolean;
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
+    FlowObjectType: FlowObjectType;
 }
 
 export class IconStyle {

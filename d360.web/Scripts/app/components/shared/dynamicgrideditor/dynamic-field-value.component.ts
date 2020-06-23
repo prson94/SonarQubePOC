@@ -103,7 +103,6 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     private formatAsPath(): string {
         let replacement = (this.fieldValue !== '' && this.fieldValue !== null ? this.fieldValue.split(" > ").join(" <i class='fa fa-angle-right'></i> ") : ""); 
-        console.log(replacement);
         return replacement;
     }
 

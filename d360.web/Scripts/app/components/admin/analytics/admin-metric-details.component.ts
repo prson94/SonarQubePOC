@@ -1,4 +1,4 @@
-﻿import { Input, Component, OnInit, OnDestroy, Output } from '@angular/core';
+﻿import { Input, Component, OnInit, OnDestroy, Output, ChangeDetectorRef } from '@angular/core';
 import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.service';
 import { SecondaryNavService } from '../../../services/right-sidebar.service';
 import { AdminBaseComponent } from '../admin-base.component';
@@ -21,7 +21,7 @@ import { ScoreType } from '../../../models/metrics.model';
                         <div class="row" *ngIf="selectedAssetType != null">
                             <div class="col s12">
                                 <div class="tile tile-detail">  
-                                    <d3s-admin-metric-list [scoreType]="scoreTypeEnumValue" [assetType]="selectedAssetType" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
+                                    <d3s-admin-metric-list [assetType]="selectedAssetType" [allocationUid]="allocationUid" (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
                                 </div>
                             </div>
                         </div>
@@ -35,8 +35,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private selectedMetric = null;
     routeParamsSubscription: any;
 
-    private assetGuid: string;
-    private scoreTypeEnumValue: ScoreType;
+    private assetTypeUid: string;
+    private allocationUid: string;
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -54,9 +54,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     ngOnInit() {
         this.routeParamsSubscription = this.route.params.subscribe(params => {
-            this.assetGuid = params['assetTypeUid'];
-            this.scoreTypeEnumValue = params['scoreTypeEnumValue'];
-            this.assetTypeService.GetAssetTypeByUid(this.assetGuid).subscribe(res => {
+            this.assetTypeUid = params['assetTypeUid'];
+            this.allocationUid = params['allocationUid'];
+            this.assetTypeService.GetAssetTypeByUid(this.assetTypeUid).subscribe(res => {
                 this.selectedAssetType = { Class: res.Class.Name, Name: res.Name, Uid: res.uid };
                 this.changeAssetType(this.selectedAssetType);
             });
@@ -73,25 +73,26 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         this.areaLink = '/admin/scoring';
         this.tabTitle = 'Governance Score';
 
-        this.setCommonItems(true, this.selectedAssetType.Name);
+        this.setCommonItems(true, this.selectedAssetType.Name);  
         this.setCommonSecondaryNavTabs(false);
-        this.allocationService.getAllocations()
+        this.allocationService.getAllocationsByAssetTypeUid(this.assetTypeUid) 
             .subscribe(r => {
                 var crumb = new Breadcrumb(this.selectedAssetType.Name, null, null, 'allocation', 1);
+
                 r.forEach(x => {
-                    var url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.scoreType}`;
-                    let searchRes: SearchResult = new SearchResult();
+                    const url = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${x.assetTypeUid}/${x.uid}`;
+                    const searchRes: SearchResult = new SearchResult();
                     searchRes.Name = x.assetTypePath;
                     searchRes.Url = url;
                     searchRes.Uid = x.assetTypeUid;
                     crumb.preLoadedTypeAhead.push(searchRes);
+
+                    x.icon = 'fa-drivers-license-o';
                 });
 
-                var types = r.filter(x => x.assetTypeUid.toLowerCase() == this.selectedAssetType.Uid.toLowerCase()).map(x => x.scoreType.toString())
-                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, types.some(x => x == 'Governance'), types.some(x => x == 'DataQuality'), this.scoreTypeEnumValue);
+                this.setScoringSecondaryNavTabs(this.selectedAssetType.Uid, this.allocationUid, r);
 
                 this.headerBreadcrumbService.showBreadcrumb(crumb);
-                this.isLoading = false;
             });
     }
 

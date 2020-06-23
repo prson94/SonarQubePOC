@@ -25,7 +25,8 @@ import {
     AssetBrowserOwnersModel,
     AssetBrowserAssetRelationModel,
     AssetBrowserAlert,
-    AssetBrowserAlertRequest
+    AssetBrowserAlertRequest,
+    DiagramTypesModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -214,6 +215,12 @@ export class BrowserService extends BaseObservableService {
             map((response: ApiResult) => response.Success),
             catchError(err => this.handleError(err))
         );
+    }
+
+    public getDiagramTypes(uid: string): Observable<DiagramTypesModel> {
+        return this.http.get(`api/v2/browser/types/${uid}/me`).pipe(
+            map((response: DiagramTypesModel) => response),
+            catchError(err => this.handleError(err)));
     }
 
     /**

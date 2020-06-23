@@ -128,7 +128,7 @@ export class SearchResultItemComponent extends BaseComponent implements OnInit {
         ];
         if (this.result.Uid && CompanySettings.LineageVersion == 3 && ['Reference', 'Resource', 'Group', 'Grammatic type', 'Attribute', 'Fusion'].indexOf(this.result.Group) == -1) {
             menu.push({
-                label: 'View Visualization',
+                label: 'View Diagram',
                 command: (event) => { this.navigateVisualization(); }
             });
         }

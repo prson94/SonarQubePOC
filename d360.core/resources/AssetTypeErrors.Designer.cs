@@ -142,6 +142,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to /api/v2/membership/groups.
+        /// </summary>
+        public static string GroupEndPoint {
+            get {
+                return ResourceManager.GetString("GroupEndPoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have not provided a proper predicate based on its asset type class..
         /// </summary>
         public static string ImproperPredicate {
@@ -318,6 +327,15 @@ namespace d360.core.resources {
         public static string UnsupportedFlowObjectType {
             get {
                 return ResourceManager.GetString("UnsupportedFlowObjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /api/v2/membership/users.
+        /// </summary>
+        public static string UserEndPoint {
+            get {
+                return ResourceManager.GetString("UserEndPoint", resourceCulture);
             }
         }
     }

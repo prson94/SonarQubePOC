@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="bquinlivan" id="Procedure.api.DeleteAssetType-v3">
+  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v5">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -274,9 +274,11 @@ begin
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
 			delete	T
 			from	[metrics].[Asset] T
-					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					inner join [metrics].Allocation A on A.Uid = T.AllocationUid
+					inner join api.ExecutionDeletedAssetType S on S.Uid = A.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
 			from	[metrics].[Allocation] T
@@ -404,6 +406,13 @@ begin
 			delete T
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					
+			update	OrganizationType
+			set		State = 3,
+					UpdatedBy = @resource,
+					UpdatedOn = getutcdate()
+			from	OrganizationType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'OrganizationType' and S.ObjectID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
 			from	Asset T
@@ -439,7 +448,11 @@ end
 		]]>
     </sql>
 	<rollback>
-		<![CDATA[	
+		<sql dbms="mssql"
+				endDelimiter="\nGO"
+				splitStatements="true"
+				stripComments="false">
+			<![CDATA[	
 create or alter procedure [api].[DeleteAssetType]
 	@executionUid uniqueidentifier,
 	@itemNumber int,
@@ -525,20 +538,7 @@ begin
 			delete	T
 			from	api.Entity T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete	T
-			from	Field T 
-					inner join [Attribute] A on T.ObjectType = 'Attribute' and A.ID = T.ObjectID
-					inner join Asset O on O.Object = A.ObjectType and O.ObjectID = A.ObjectID 
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			delete	T
-			from	[Attribute] T
-					inner join Asset O on O.Object = T.ObjectType and O.ObjectID = T.ObjectID 
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
-			
-			delete  E
-			from    AttributeTypeRelation E 
-					inner join api.ExecutionDeletedAssetType S on S.Object = E.ObjectType and S.ObjectID = E.ObjectID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+
 			
 			drop table if exists #w;
 			create table #w (ID int);
@@ -879,6 +879,7 @@ begin
 			and FromHierarchy = 0;
 end
 		]]>
+		</sql>
 	</rollback>
   </changeSet>
 

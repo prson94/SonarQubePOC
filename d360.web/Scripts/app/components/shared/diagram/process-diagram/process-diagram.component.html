@@ -1,0 +1,90 @@
+﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
+
+    <div *ngIf="isEditMode" class="top-menu-hider"></div>
+
+    <div class="menu" *ngIf="isEditMode">
+        <div class="asset-browser-button-group">
+            <button type="button" (click)="switchModes()" title="Exit Designer">
+                <i class="fa fa-chevron-circle-left"></i> Exit Designer
+            </button>
+            <div class="button-spacer"></div>
+            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
+                <i class="fa fa-save"></i>
+            </button>
+            <!--<button type="button" class="icon mr8" (click)="clear()" title="Temp: Clear Diagram">
+                <i class="fa fa-refresh"></i>
+            </button>
+            <button type="button" class="icon mr8" (click)="load()" title="Temp: Load from storage">
+                <i class="fa fa-upload"></i>
+            </button>-->
+            <!--<button type="button" class="icon mr8" (click)="disableDrag()" title="Temp: Selection tool">
+                <i class="fa fa-mouse-pointer"></i>
+            </button>-->
+        </div>
+    </div>
+    <div class="diagram-content">
+        <div id="myPaletteDiv" *ngIf="isLoaded && isEditMode">
+            <p-accordion [multiple]="true">
+                <p-accordionTab header="Events" [selected]="true">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-event" *ngFor="let item of events">
+                            <div class="icon-holder">
+                                <div class="rounder">
+                                    <i class="fa {{item.Icon}}"></i>
+                                </div>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+                <p-accordionTab header="Activities">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-activity" *ngFor="let item of activities">
+                            <div class="icon-holder">
+                                <div class="rectangler">
+                                    <i class="fa {{item.Icon}}"></i>
+                                </div>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+                <p-accordionTab header="Gateways">
+                    <div class="row">
+                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-gateway" *ngFor="let item of gateways">
+                            <div class="icon-holder">
+                                <div class="diamonder">
+                                    <i class="fa {{item.Icon}}"></i>
+                                </div>
+                            </div>
+                            <div class="item-name">
+                                {{item.Name}}
+                            </div>
+                        </div>
+                    </div>
+                </p-accordionTab>
+            </p-accordion>
+        </div>
+        <div #diagram id="process-diagram-placeholder">
+            <div class="empty-overlay">
+                <div class="content" *ngIf="isCanvasEmpty && isEditMode">
+                    <div class="icon-holder">
+                        <i class="fa fa-plus"></i>
+                    </div>
+                    <span>Drag and drop flow objects to start building your diagram</span>
+                </div>
+                <div class="content" *ngIf="isCanvasEmpty && !isEditMode">
+                    <div class="icon-holder">
+                        <i class="fa fa-pencil"></i>
+                    </div>
+                    <span>Choose Edit to start creating your diagram</span>
+                </div>
+            </div>
+            <div id="diagram"></div>
+        </div>
+    </div>
+</div>

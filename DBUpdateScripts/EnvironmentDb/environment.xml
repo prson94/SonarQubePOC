@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 	<!-- Core Objects -->
+	<include file="scripts/DatabaseSettings.xml"/>
 	<include file="scripts/Schemas.xml"/>
 	<include file="scripts/Sequences.xml"/>
 	<include file="scripts/FullTextCatalog.xml"/>
@@ -201,6 +202,8 @@
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
 	<include file="scripts/Table.metrics.Rule.xml"/>
@@ -319,7 +322,6 @@
 	<include file="scripts/View.reporting.Integration_ExecutionErrors.xml"/>
 	<include file="scripts/View.reporting.Integration_Mappings.xml"/>
 	<include file="scripts/View.reporting.Issue_All.xml"/>
-	<include file="scripts/View.reporting.Metric_All.xml"/>
 	<include file="scripts/View.reporting.Model_All.xml"/>
 	<include file="scripts/View.reporting.Model_Fields.xml"/>
 	<include file="scripts/View.reporting.Policy_All.xml"/>
@@ -340,6 +342,10 @@
 	<include file="scripts/View.reporting.Workflows.xml"/>
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
+	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
+	<include file="scripts/Migration.Metrics.xml"/>
+	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
+	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
@@ -376,7 +382,6 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
-	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -413,7 +418,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailByID.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByFollower.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
-  <include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
+	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
@@ -462,7 +467,7 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
-  <!-- Data Changes -->
+	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
 </databaseChangeLog>

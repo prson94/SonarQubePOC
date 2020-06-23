@@ -5,12 +5,53 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Core" id="View.reporting.Metric_All-v1">
+  <changeSet author="Pappas" id="View.reporting.Metric_All-v2">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
+create or alter view [reporting].[Metric_All] as
+	select	Al.AssetTypeUid,
+			A.[Uid],
+			V.Name,
+			V.Description,
+			A.ParentUid,
+			A.IsGroup,
+			V.Weight,
+			V.EffectiveDate as MetricMaxEffectiveDate,
+			(
+				select	F.Name as FieldName,
+						CI.Operator,
+						CIV.Value,
+						CIV.Value as ValueJson
+				from	[metrics].[AssetVersionCondition] C
+						inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid
+						inner join FieldType F on F.ID = CI.ConditionFieldTypeID
+						inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid
+				where	C.AssetVersionUid = V.Uid
+				for json path
+			) as ConditionsJson
+from	metrics.AssetVersion V
+		inner join metrics.Asset A on A.[Uid] = V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid
+		inner join (
+				select		IA.[Uid],
+							max(IV.EffectiveDate) as EffectiveDate
+				from		metrics.AssetVersion IV
+							inner join metrics.Asset IA on IA.[Uid] = IV.AssetUid 
+														and IV.EffectiveDate <= getutcdate()
+														and IA.State = 1
+				group by	IA.[Uid]
+		) MV on MV.[Uid] = V.AssetUid AND MV.EffectiveDate = V.EffectiveDate
+GO
+
+
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
  CREATE OR ALTER VIEW [reporting].[Metric_All] AS
     select	A.AssetTypeUid,
 		A.[Uid],
@@ -40,11 +81,6 @@ from	metrics.AssetVersion V
 														and IA.State = 1
 				group by	IA.[Uid]
 		) MV on MV.[Uid] = V.[Uid] AND MV.EffectiveDate = V.EffectiveDate
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
-
 		]]>
 	</rollback>
   </changeSet>

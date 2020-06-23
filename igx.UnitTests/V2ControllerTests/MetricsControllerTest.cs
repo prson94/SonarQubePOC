@@ -66,7 +66,15 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "test model";
             model.Weight = 1;
             model.IsGroup = false;
-            model.Conditions = new List<MetricAssetVersionConditionViewModel>() { new MetricAssetVersionConditionViewModel() { FieldTypeID = 1 } };
+            model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
+                new MetricAssetVersionConditionViewModel() { 
+                    ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() { 
+                        new MetricAssetVersionConditionItemViewModel { 
+                            ConditionFieldTypeID = 1 
+                        } 
+                    } 
+                } 
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -83,7 +91,15 @@ namespace igx.UnitTests.V2ControllerTests
         {
             var model = new MetricAssetViewModel();
             model.Name = "";
-            model.Conditions = new List<MetricAssetVersionConditionViewModel>() { new MetricAssetVersionConditionViewModel() { FieldTypeID = 1 } };
+            model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
+                new MetricAssetVersionConditionViewModel() { 
+                    ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
+                        new MetricAssetVersionConditionItemViewModel {
+                            ConditionFieldTypeID = 1
+                        }
+                    }  
+                } 
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -101,7 +117,15 @@ namespace igx.UnitTests.V2ControllerTests
             var model = new MetricAssetViewModel();
             model.Name = "good name";
             model.Weight = 0;
-            model.Conditions = new List<MetricAssetVersionConditionViewModel>() { new MetricAssetVersionConditionViewModel() { FieldTypeID = 1 } };
+            model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
+                new MetricAssetVersionConditionViewModel() {
+                    ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
+                        new MetricAssetVersionConditionItemViewModel {
+                            ConditionFieldTypeID = 1
+                        }
+                    }
+                } 
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -120,7 +144,15 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = true;
-            model.Conditions = new List<MetricAssetVersionConditionViewModel>() { new MetricAssetVersionConditionViewModel() { FieldTypeID = 1 } };
+            model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
+                new MetricAssetVersionConditionViewModel() {
+                    ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
+                        new MetricAssetVersionConditionItemViewModel {
+                            ConditionFieldTypeID = 1
+                        }
+                    }
+                } 
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -139,7 +171,15 @@ namespace igx.UnitTests.V2ControllerTests
             model.Name = "good name";
             model.Weight = 1;
             model.IsGroup = false;
-            model.Conditions = new List<MetricAssetVersionConditionViewModel>() { new MetricAssetVersionConditionViewModel() { FieldTypeID = 0 } };
+            model.ConditionGroups = new List<MetricAssetVersionConditionViewModel>() { 
+                new MetricAssetVersionConditionViewModel() {
+                    ConditionItems = new List<MetricAssetVersionConditionItemViewModel>() {
+                        new MetricAssetVersionConditionItemViewModel {
+                            ConditionFieldTypeID = 0
+                        }
+                    }
+                } 
+            };
 
             var actionResult = metricsController.UpsertAsset(model).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
@@ -232,7 +272,7 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetMetricStructureByAssetType()
         {
-            var actionResult = metricsController.GetMetricStructureByAssetType(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
+            var actionResult = metricsController.GetMetricStructureByAllocation(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JArray>(str);
