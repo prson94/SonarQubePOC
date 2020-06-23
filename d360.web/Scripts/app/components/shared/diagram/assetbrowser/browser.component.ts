@@ -208,7 +208,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                         if (this.diagram) this.diagram.div = null;
 
-                        if (this.diagramTypeSpecifiedInPath != DiagramType.Process)
+                        if (this.displayConfiguration.DiagramType != DiagramType.Process)
                             this.helper_InitializeDiagram();
 
                     });
@@ -217,7 +217,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewInit() {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType == DiagramType.Process)
             return;
 
         this.helper_ResizeDiagram();
@@ -225,7 +225,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewChecked() {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType == DiagramType.Process)
             return;
 
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
@@ -264,6 +264,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     public ngOnDestroy() {
         if (this.diagram)
             this.diagram.div = null;    // Garbage collection.
+        if (this.cdRef)
+            this.cdRef.detach();
     }
 
     //#endregion
@@ -3298,7 +3300,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private viewchange_Apply(e: DiagramType) {
         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
         this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;
-        this.helper_UpdateDiagramType(e);
         this.saveFilter();
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }

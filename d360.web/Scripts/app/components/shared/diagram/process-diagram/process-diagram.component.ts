@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -16,7 +16,7 @@ import { DiagramNodeBase } from '../../../../models/process.model';
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked {
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy {
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
     @Input() assetUid: string = '';
@@ -78,6 +78,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
         this.cdRef.detectChanges();
+    }
+
+    ngOnDestroy() {
+        if (this.cdRef)
+            this.cdRef.detach();
+        if (this.myDiagram)
+            this.myDiagram = null;
     }
 
     private applyEditMode(state: boolean) {
