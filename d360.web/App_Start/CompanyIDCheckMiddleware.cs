@@ -57,7 +57,8 @@ namespace d360.web
                 }
                 if (searchHeaders || !dict.ContainsKey(host))
                 {
-                    host = context.Request.Headers["CompanyID"].ToLower();
+                    if (!string.IsNullOrEmpty(context.Request.Headers["CompanyID"]))
+                        host = context.Request.Headers["CompanyID"].ToLower();
                 }
                 
                 if (dict.ContainsKey(host))
