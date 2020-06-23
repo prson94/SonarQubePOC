@@ -22,7 +22,6 @@ using System.Text;
 using d360.core.entities.Views;
 using d360.model.DataAccessLayer;
 using d360.core.entities.Graph;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System.Data;
 using Dapper;
 using Newtonsoft.Json.Linq;
@@ -318,7 +317,7 @@ namespace d360.web.Controllers.V2
             var validationRes = new List<ValidationError>();
 
             if (Company.Database.Connection.State != ConnectionState.Open)
-                Company.Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                Company.Connection.Open();
 
             //Validation passed lets do some work
             var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
