@@ -417,7 +417,7 @@ namespace d360.model.DataAccessLayer
 
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-
+           
             var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
@@ -794,6 +794,77 @@ namespace d360.model.DataAccessLayer
 
             return model;
         }
+
+        public async Task<AssetPathResults> GetAssetPaths(AssetType assetType, IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            var dbArgs = new DynamicParameters();
+
+            dbArgs.Add("@assetTypeId", assetType.ID);
+
+            int pageSize = 5000;
+            int pageNum = 0;
+            bool includeTotal = true;
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    pageSize = res;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    pageNum = res - 1;
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    includeTotal = res;
+                }
+            }
+
+
+            dbArgs.Add("@assetTypeUid", assetType.uid);
+            dbArgs.Add("@pageNum", pageNum);
+            dbArgs.Add("@pageSize", pageSize);
+            
+            var countSql = $@"select count(*) 
+                from	graph.AssetNodeKeyPath P
+		                inner join Asset A on A.ID = P.ID
+		                inner join AssetType T on T.id = A.AssetTypeID
+                where T.uid = @assetTypeUid";
+
+            var sql = $@"
+                select	P.[uid],
+		                P.[keypath] as [path]  
+                from	graph.AssetNodeKeyPath P
+		                inner join Asset A on A.ID = P.ID
+		                inner join AssetType T on T.id = A.AssetTypeID
+                where T.uid = @assetTypeUid
+                order by A.ID
+                OFFSET @pageSize*@pageNum ROWS FETCH NEXT @pageSize ROWS ONLY";
+
+            int? total = null;
+            if (includeTotal)
+            {
+                total = (await CompanyContext.QueryAsync<int>(countSql, dbArgs)).FirstOrDefault();
+            }
+
+            var results = await CompanyContext.QueryAsync<AssetPathResult>(sql, dbArgs);
+
+            return new AssetPathResults
+            {
+                items = results,
+                total = total
+            };
+        }
+
         public async Task<SLDocument> GetAssetsExcel(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             var results = await GetAssets(uid, queryParams);
