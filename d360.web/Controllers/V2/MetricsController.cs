@@ -172,6 +172,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
             if (model.IsGroup && model.ConditionGroups.Count > 0)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
