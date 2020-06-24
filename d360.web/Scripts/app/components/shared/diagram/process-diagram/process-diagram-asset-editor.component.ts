@@ -14,12 +14,6 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
     @Input() nodeData: any;
     @Output() nodeDataChange = new EventEmitter();
 
-    public formGroupCached: any;
-
-
-    private formGroupCache: any = {};
-
-
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -40,21 +34,13 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
     }
 
     load() {
-        this.formGroupCached = null;
-        if (this.formGroupCache && this.formGroupCache[this.nodeData.key]) {
-            this.formGroupCached = this.formGroupCache[this.nodeData.key];
-        }
         this.cdRef.detectChanges();
         this.cdRef.markForCheck();
     }
 
     private onModelChange($event) {
-        console.log($event);
-        var data = $event['data'];
-        data['key'] = this.nodeData.key;
-        this.nodeDataChange.emit(data);
-
-        this.formGroupCache[this.nodeData.key] = $event['formGroup'];
+        $event.key = this.nodeData.key;
+        this.nodeDataChange.emit($event);
     }
 
 

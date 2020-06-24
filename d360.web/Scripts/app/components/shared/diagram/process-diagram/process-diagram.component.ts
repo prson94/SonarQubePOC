@@ -24,6 +24,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
+
+
     private assetTypeNodes: DiagramNodeBase[] = [];
     private events: DiagramNodeBase[] = [];
     private activities: DiagramNodeBase[] = [];
@@ -35,6 +37,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private defaultStrokeColor: string = '#708EA6';
 
     private selectedNodeData: any;
+    private loadedEditors: any[] = [];
 
     private isErrorModalOpened: boolean = false;
 
@@ -76,7 +79,19 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
             this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
-    } 
+    }
+
+    @HostListener('click', ['$event.target'])
+    onClick(btn) {
+        if (this.myDiagram) {
+            if (this.myDiagram.selection.count == 0) {
+                this.selectedNodeData = null;
+            }
+        }
+        this.cdRef.detectChanges();
+
+    }
+
 
     ngAfterViewChecked() {
         this.onResize(null);
@@ -129,14 +144,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram =
             $(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
                 {
-                    "draggingTool.dragsLink": true,
-                    "draggingTool.isGridSnapEnabled": true,
-                    "linkingTool.portGravity": 20,
-                    "relinkingTool.portGravity": 20,
-                    "rotatingTool.handleAngle": 270,
-                    "rotatingTool.handleDistance": 30,
-                    "rotatingTool.snapAngleMultiple": 15,
-                    "rotatingTool.snapAngleEpsilon": 15,
+                    //"draggingTool.dragsLink": true,
+                    //"draggingTool.isGridSnapEnabled": true,
+                    //"linkingTool.portGravity": 20,
+                    //"relinkingTool.portGravity": 20,
+                    //"rotatingTool.handleAngle": 270,
+                    //"rotatingTool.handleDistance": 30,
+                    //"rotatingTool.snapAngleMultiple": 15,
+                    //"rotatingTool.snapAngleEpsilon": 15,
                     "undoManager.isEnabled": true,
                     "textEditingTool.doActivate": function () {
                         go.TextEditingTool.prototype.doActivate.call(this);
@@ -151,7 +166,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
-        this.myDiagram.toolManager.draggingTool.gridSnapCellSpot = go.Spot.Center;
 
         this.myDiagram.addModelChangedListener(() => {
             this.diagramStateChanged();
@@ -299,6 +313,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
+                this.loadedEditors = [];
                 this.cdRef.detectChanges();
             });
     }
@@ -314,6 +329,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
+        if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)){
+            this.loadedEditors.push(this.selectedNodeData);
+        }
+
         this.cdRef.detectChanges();
     }
 

@@ -83,7 +83,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     private isInErrorMessage: string = "";
 
     form: FormGroup;
-    @Input() cachedForm: FormGroup;
 
     action: string = "Edit";
     fields: EditorField[] = [];
@@ -300,14 +299,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.form = this.toFormGroup(this.fields);
             if (this.useModelBinding) {
                 this.form.valueChanges.subscribe(x => {
-                    this.modelChanged.emit({ data: x, formGroup: this.form });
+                    this.modelChanged.emit(x);
                 })
             }
-        }
-        if (this.useModelBinding) {
-
-            if (this.cachedForm)
-                this.form = this.cachedForm;
         }
 
         this.ref.markForCheck();

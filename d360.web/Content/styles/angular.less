@@ -603,7 +603,6 @@ nav.top, .left-side-nav {
         min-width: 500px;
         max-width: 550px;
     }
-
 }
 
 @media only screen and (max-width : 1200px) {
@@ -6498,33 +6497,7 @@ a.mid-blue {
         font-weight: normal;
     }
 
-    .tooltip-content {
-        position: fixed;
 
-        h2 {
-            font-weight: bold;
-            font-size: 18px;
-        }
-
-        a {
-            display: block;
-            padding: 2px 0px;
-        }
-
-        color: @ig-black;
-        display: none;
-        z-index: 1000;
-        width: 304px;
-        padding: 12px;
-        border-radius: 4px;
-        box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
-        border: solid 1px #c8cfd9;
-        background-color: @ig-white;
-        font-weight: normal;
-        transform: translateY(-50%);
-        margin-left: 30px;
-        text-align: left;
-    }
 
     &:hover {
         .tooltip-content {
@@ -6538,6 +6511,34 @@ a.mid-blue {
         padding: 6px;
         border-radius: 3px;
     }
+}
+
+.tooltip-content {
+    position: fixed;
+
+    h2 {
+        font-weight: bold;
+        font-size: 18px;
+    }
+
+    a {
+        display: block;
+        padding: 2px 0px;
+    }
+
+    color: @ig-black;
+    display: none;
+    z-index: 1000;
+    width: 304px;
+    padding: 12px;
+    border-radius: 4px;
+    box-shadow: 0 0 16px 0 rgba(103, 108, 122, 0.2);
+    border: solid 1px #c8cfd9;
+    background-color: @ig-white;
+    font-weight: normal;
+    transform: translateY(-50%);
+    margin-left: 30px;
+    text-align: left;
 }
 
 .threshold-holder {
@@ -6793,6 +6794,31 @@ table {
 }
 
 d3s-process-diagram {
+    .show {
+        display: block;
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .process-item-event {
+        &:hover {
+            .tooltip-content {
+                display: block;
+                margin-left: 0px;
+                transform: translateY(-100%);
+                width: unset;
+                max-width: 400px;
+
+                p {
+                    padding: 0px;
+                    margin: 0px;
+                }
+            }
+        }
+    }
+
     .saving-overlay {
         position: fixed;
         top: 0px;
@@ -6826,7 +6852,7 @@ d3s-process-diagram {
         width: 100%;
         display: flex;
         justify-content: space-between;
-        height: 90%;
+        height: 88%;
     }
 
     .top-menu-hider {
@@ -6854,7 +6880,7 @@ d3s-process-diagram {
 
         .menu {
             margin-bottom: 16px;
-            position:relative;
+            position: relative;
         }
     }
 
@@ -6941,6 +6967,9 @@ d3s-process-diagram {
         .item-name {
             text-align: center;
             padding: 6px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .ui-accordion-content {
