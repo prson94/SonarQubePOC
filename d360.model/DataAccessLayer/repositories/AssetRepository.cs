@@ -830,6 +830,7 @@ namespace d360.model.DataAccessLayer
             if (assetType.Class == AssetTypeClass.Reference)
             {
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+                fields.Add(new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
                 includeAssetUrl = false;
             }
 
@@ -909,8 +910,18 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                        var val = rowValues[field.Name];
-                        setCellValueFromField(document, rowNumber, index, field, val);
+                       
+                        if(field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
                     }
 
                     index++;
@@ -925,6 +936,17 @@ namespace d360.model.DataAccessLayer
 
             return document;
         }
+
+        private string extractColorNameFromJSON(string jsonString)
+        {
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                var colorObj = JObject.Parse(jsonString);
+                return (string)colorObj["Name"] ?? "";
+            }
+            return "";
+        }
+
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
         {
             var dbArgs = new DynamicParameters();

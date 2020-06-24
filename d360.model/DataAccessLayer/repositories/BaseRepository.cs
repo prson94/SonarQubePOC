@@ -376,15 +376,16 @@ namespace d360.model.DataAccessLayer.repositories
             });
         }
 
-        private bool LookupFieldHasColorItem(FieldType f)
+        private bool LookupFieldHasColorItem(FieldType fieldType)
         {
-            var lookup = CompanyContext.FieldLookupValues.FirstOrDefault(x => x.LookupObjectType == f.LookupObjectType && f.LookupObjectID == x.LookupObjectID && f.ID == x.FieldTypeID);
+            var lookup = CompanyContext.Query<dynamic>($"SELECT * FROM [dbo].[FieldLookupValue] WHERE FieldTypeID = {fieldType.ID}").FirstOrDefault();
             if (lookup != null)
             {
-                var obj = lookup.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : lookup.LookupObjectType;
+                string obj = lookup.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : lookup.LookupObjectType;
                 if (obj != "ReferenceItemType")
                     return false;
-                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == lookup.LookupObjectID);
+                int id = lookup.LookupObjectID;
+                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == id);
                 if (assettype != null)
                     return CompanyContext.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
             }

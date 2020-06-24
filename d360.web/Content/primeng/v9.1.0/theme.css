@@ -1529,7 +1529,7 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
 */
 
 .d3s-color-picker {
-    max-width: 300px;
+    width: 248px;
 }
 
 .d3s-color-picker.multi{
@@ -1542,6 +1542,7 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
     border: 1px solid #a6a6a6;
     height: 32px;
     border-radius: 4px;
+	width: 100%;
 }
 
 .d3s-color-picker .ui-dropdown:not(.ui-state-disabled):hover
