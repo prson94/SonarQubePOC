@@ -137,7 +137,19 @@ namespace d360.web.Controllers.V2
             var allocation = MetricsRepository.GetAllocationByMetricModel(model);
             if (allocation == null)
             {
-                return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
+                if (model.AllocationUid == Guid.Empty)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Asset Type UID and Score Type.");
+                }
+                else 
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "There is no allocation for specified Allocation Uid.");
+                }
+            }
+            else 
+            {
+                // In case measure sent in with an asset type and score type instead of allocation.
+                model.AllocationUid = allocation.Uid;
             }
 
             List<ValidationResult> validationResults = new List<ValidationResult>();

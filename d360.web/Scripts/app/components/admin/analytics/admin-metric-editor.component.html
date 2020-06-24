@@ -26,13 +26,13 @@
                             <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" name="effectiveDate"></p-calendar>
                         </div>
                     </div>
-                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
+                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated"> 
                         <div class="FieldNameRequired">
                             Weight
                         </div>
                         <div class="directions">Weight must be a value between 0 and 1</div>
                         <div>
-                            <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="model.Weight = clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner>
+                            <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner> 
                         </div>
                     </div>
                 </div>

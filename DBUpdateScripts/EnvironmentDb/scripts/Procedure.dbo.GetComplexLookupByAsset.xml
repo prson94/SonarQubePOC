@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v26">
+  <changeSet author="Pappas" id="Procedure.dbo.GetComplexLookupByAsset-v27">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -464,27 +464,30 @@ begin
 
 		if @countOnly = 0
 		begin
-			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1)
-
-			insert into @datafields values 
-				('ResponsibilityTypeName', 'string', 1), 
-				('ResourceItemUrl', 'string', 4), 
-				('SecurityAssetUid', 'string', 5), 
-				('SecurityAssetName', 'preview', 6), 
-				('ResourceName', 'preview', 2),
-				('Context', 'html', 7);
-
-			insert into @selects values 
-				('R.ResponsibilityTypeName', 'ResponsibilityTypeName'),
-				('case SecurityAsset when ''R'' then '''' else SecurityAssetName end', 'SecurityAssetName'),
-				('SecurityAssetUid', 'SecurityAssetUid'),
-				('R.Context', 'Context');
+			-- Common
+			insert into @columns ([text], datafield, columntype, sort) values ('Responsibility', 'ResponsibilityTypeName', 'textbox', 1);
+			
+			insert into @datafields values ('ResponsibilityTypeName', 'string', 1);
+			insert into @datafields values ('ResourceName', 'preview', 2);
+			insert into @datafields values ('ResourceItemUrl', 'string', 4);
+			insert into @datafields values ('Context', 'html', 7);
+			
+			insert into @selects values ('R.ResponsibilityTypeName', 'ResponsibilityTypeName');
+			insert into @selects values ('R.Context', 'Context');
 			
 			insert into @orders values ('R.ResponsibilityTypeName', 1);
 
 			if @expandGroupMembership = 1
 			begin
-				
+				if @displayAssignmentSource = 1
+				begin
+					insert into @datafields values ('SecurityAssetUid', 'string', 5);
+					insert into @datafields values ('SecurityAssetName', 'preview', 6);
+					insert into @selects values ('SecurityAssetUid', 'SecurityAssetUid');
+					insert into @selects values ('case SecurityAsset when ''R'' then '''' else SecurityAssetName end', 'SecurityAssetName')
+					insert into @columns ([text], datafield, columntype, uidfield, sort) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid', 3)
+				end
+
 				insert into @selects values ('R.ResourceUid', 'ResourceUid');
 				insert into @selects values ('ResourceName', 'ResourceName');
 				insert into @selects values ('''/resource/'' + cast(R.ResourceID as varchar)', 'ResourceItemUrl');
@@ -495,7 +498,15 @@ begin
 			end
 			else
 			begin
+				insert into @datafields values ('SecurityAssetUid', 'string', 5);
 				insert into @columns ([text], datafield, columntype, urlfield, uidfield, sort) values ('Assigned User/Group', 'ResourceName', 'preview', 'ResourceItemUrl', 'SecurityAssetUid', 2)
+
+				if @displayAssignmentSource = 1
+				begin
+					insert into @datafields values ('SecurityAssetName', 'preview', 6);
+					insert into @selects values ('case SecurityAsset when ''R'' then '''' else SecurityAssetName end', 'SecurityAssetName')
+					insert into @columns ([text], datafield, columntype, uidfield, sort) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid', 3)
+				end
 
 				insert into @selects values ('case SecurityAssetName when ResourceName then ''Resource'' else ''Group'' end', 'ResourceObject');
 				insert into @selects values ('SecurityAssetName', 'ResourceName');
@@ -503,13 +514,8 @@ begin
 
 				insert into @orders values ('SecurityAssetName', 2);
 			end
-
-			if @displayAssignmentSource = 1
-			begin
-				insert into @columns ([text], datafield, columntype, uidfield, sort) values ('Via', 'SecurityAssetName', 'preview', 'SecurityAssetUid', 3)
-			end			
+			
 			insert into @columns ([text], datafield, columntype, sort) values ('Context', 'Context', 'textbox', 4)
-
 		end
 
 		insert into @tables values 
@@ -1247,6 +1253,11 @@ begin
 
 		insert into @tables values (' from Asset A');		
 		insert into @wheres values ('A.AssetTypeID = ' + cast(@referenceItemTypeID as varchar));
+		if @referenceItemTypeID is not null
+		begin
+			insert into @wheres values ('A.ID not in (select AssetID from dbo.UserAssetPermissions('+cast(@resourceId as varchar)+', A.AssetTypeID) where ((PermissionsBitMask & 1)) = 0)')
+			insert into @wheres values ('not exists (select 1 from dbo.AssetTypesUserCantRead('+cast(@resourceId as varchar)+') u where u.AssetTypeID = A.AssetTypeID)')
+		end
 
 		if @countOnly = 0
 		begin

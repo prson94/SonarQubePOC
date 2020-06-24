@@ -512,15 +512,18 @@
                      *ngIf="currentType == 'Lookup'">
                     <p-checkbox binary="true"
                                 [(ngModel)]="model.FieldType.Type[currentType].AllowAllValue"
+                                (click)="validate('AllowAll')"
                                 [ngModelOptions]="{standalone: true}"></p-checkbox>
                 </div>
                 <div class="col l5 m5 s12"
                      *ngIf="currentType == 'Lookup'">
-                    <input pInputText
+                    <input required
+                           pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.Type[currentType].AllowAllLabel"
                            [ngModelOptions]="{standalone: true}"
                            style="width: 100%"
+                           (keyup)="validate('AllowAll')"
                            [disabled]="!model.FieldType.Type[currentType].AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12"

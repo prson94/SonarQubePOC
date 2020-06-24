@@ -155,6 +155,19 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
+    public class AssetPathResult
+    {
+        public string path { get; set; }
+        public Guid uid { get; set; }
+    }
+
+    public class AssetPathResults
+    {
+        public IEnumerable<AssetPathResult> items { get; set; }
+        public int? total { get; set; }
+    }
+
+
     [JsonArray]
     [DataContract(Name = "assets")]
     public class AssetDeletes : List<AssetDelete>
