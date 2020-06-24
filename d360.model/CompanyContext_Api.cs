@@ -7667,8 +7667,21 @@ from #parsedData pd
 where pd.fieldtypeid is not null and ft.type = 'Boolean'
 
 update #parsedData
+set Value = flv.Value
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+	left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
+where pd.fieldtypeid is not null and ft.type = 'Lookup'
+
+update #parsedData
 set ErrorMessage = 'Invalid Field name.'
 where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+update #parsedData
+set ErrorMessage = 'Invalid Lookup value.'
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+where pd.fieldtypeid is not null and ft.type = 'Lookup' and Value is null
 
 update #parsedData
 set ErrorMessage = 'Invalid AssetUid for condition.'
@@ -7761,7 +7774,7 @@ cross apply (
 		 TargetObject,
 		 TargetObjectId
 		  from #parsedData
-		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and (FieldTypeName is not null and FieldTypeID <> 0)
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 		 for json path, include_null_values
 		)Conditions(json)
 	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
