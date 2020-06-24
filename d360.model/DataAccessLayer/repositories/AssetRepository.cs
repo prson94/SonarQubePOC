@@ -1928,7 +1928,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@typeUid", asset.AssetType.uid.ToString());
             dbArgs.Add("@assetUid", asset.uid.ToString());
             dbArgs.Add("@id", asset.ID);
-            //add to the search results to return the colors object that the badge can use for color!!!!!!! 
+
             var sql = $@"
                 select
 	                A.[UID] as [uid],
