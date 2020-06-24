@@ -356,10 +356,13 @@ namespace d360.model.DataAccessLayer.repositories
                 }
                 else if(f.Type =="Lookup" && listColorsAsJSON && LookupFieldHasColorItem(f))
                 {
+                    string emptycolor = "transparent";
+                    if (f.Name.ToLower() == "status")
+                        emptycolor = "calculatebyname";
                     string sql = $@"outer apply(
                                 select FormattedValue = 
                                 (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
-                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
+                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), '{emptycolor}') as color
                                 from Field {tableAlias} 
                                 inner join FieldType f on f.ID = {tableAlias}.FieldTypeID
                                 inner join Asset AC{tableAlias} on AC{tableAlias}.Object = f.LookupObjectType and AC{tableAlias}.ObjectID in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   

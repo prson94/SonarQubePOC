@@ -659,7 +659,7 @@ namespace d360.web.Controllers
                                         V.LookupObjectType,
                                         V.LookupObjectID,
                                         V.Value,
-                                        {(fld.UseColorControl ? "V.Text +'|'+ COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '') as Text" : "V.Text")}";
+                                        {(fld.UseColorControl ? "colorJson.FV AS Text" : "V.Text")}";
 
                                     var hideData3SixtyUsersCondition = $@" and R.Email not like '%@data3sixty.com' and R.Email not like '%@infogix.com'";
 
@@ -667,8 +667,11 @@ namespace d360.web.Controllers
                                         inner join reporting.Global_resource R on R.ResourceID = V.Value and R.State <> 3 {(hideData3SixtyUsers ? hideData3SixtyUsersCondition : "")}
                                         ";
                                     var colorjoin = $@"
-                                        Inner join Asset A on A.Object = v.LookupObjectType and A.ObjectID = V.Value
-                                        cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                                        outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+                                                    from Asset A 
+                                                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+                                        )colorJSON 
                                         ";
                                     var itemSql = $@"select {columns} 
                                         from FieldLookupValue V

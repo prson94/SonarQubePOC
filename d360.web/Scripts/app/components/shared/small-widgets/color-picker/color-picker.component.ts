@@ -9,7 +9,7 @@ import { AssetService } from '../../../../services/asset.service';
     selector: 'd3s-color-picker',
     template: `
                 <div class="d3s-color-picker">
-                    <p-dropdown [options]="colors" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="Optional" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
+                    <p-dropdown [options]="colors" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
                         <ng-template let-item pTemplate="selectedItem">
                             <div class="ig-colorfield-item-selected">
                                 <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
@@ -31,7 +31,7 @@ import { AssetService } from '../../../../services/asset.service';
 export class ColorPickerComponent implements OnInit {
 
     @Input() colors: SelectItem[] = [];
-    
+    @Input() placeholder: string = 'Optional';
     @Input() selectedColor: string;
     @Output() selectedColorChange = new EventEmitter();
 

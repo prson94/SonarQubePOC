@@ -3156,8 +3156,8 @@ order by    Name
                 string colorAndStatusSql = $@"(SELECT COALESCE(ACf.Code,f.FormattedValue) as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
-                                inner join FieldLookupValue Vf on Vf.FieldTypeID = f.FieldTypeID and Vf.Value in (SELECT value  FROM STRING_SPLIT(f.Value, ',')  WHERE RTRIM(value) <> '')   
-                                inner join Asset ACf on ACf.Object = Vf.LookupObjectType and ACf.ObjectID = Vf.Value   
+								inner join FieldType ft on ft.ID = f.FieldTypeID
+								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID in (SELECT value  FROM STRING_SPLIT(f.Value, ',')  WHERE RTRIM(value) <> '')    
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";

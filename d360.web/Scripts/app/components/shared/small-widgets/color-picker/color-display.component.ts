@@ -29,8 +29,31 @@ export class ColorDisplayComponent implements OnInit {
     ngOnInit() {
         try {
             this.colorsObject = JSON.parse(this.colorsJSON);
+            if (this.colorsObject.length == 1 && this.colorsObject[0].color == 'calculatebyname') {
+                this.colorsObject[0].color = this.getColorFromName(this.colorsObject[0].name);
+            }
         } catch{
             console.log("invalid color JSON string. " + this.colorsJSON);
+        }
+    }
+
+    getColorFromName(status: string) {
+        status = status.toLowerCase().trim();
+        switch (status) {
+            case 'draft':
+                return '#d1dce4';
+            case 'certified':
+                return '#4ecc89';
+            case 'under review':
+                return '#e2792a';
+            default:
+                //custom status, we need to generate a color
+                let hash = 0;
+                for (let i = 0; i < status.length; i++) {
+                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                    hash = hash & hash;
+                }
+                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
         }
     }
 };

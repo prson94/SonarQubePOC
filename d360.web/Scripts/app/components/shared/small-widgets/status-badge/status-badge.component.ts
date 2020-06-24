@@ -29,7 +29,10 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
         try {
             this.colorObjects = JSON.parse(this.status);
             this.useDefinedColor = true;
-            this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == null;       
+            this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == 'transparent'; 
+            if (this.colorObjects.length == 1 && this.colorObjects[0].color == 'calculatebyname') {
+                this.colorObjects[0].color = this.getBackgroundColor(this.colorObjects[0].name)
+            }
         } catch{
             this.useDefinedColor = false;
             this.singleUndefinedColor = false;       
@@ -41,8 +44,10 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
 
     }
-    getBackgroundColor() {
+    getBackgroundColor(name: string = "") {
         status = this.status.toLowerCase().trim();
+        if (name)
+            status = name;
         if (!this.useDefinedColor) {
             switch (status) {
                 case 'draft':
@@ -79,6 +84,7 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
             }
         }
     }
+
     getBackgroundGradient() {
         if (this.colorObjects.length > 0) {
             if (this.colorObjects.length == 1) {
