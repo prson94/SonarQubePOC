@@ -359,13 +359,13 @@ namespace d360.model.DataAccessLayer.repositories
                     string sql = $@"outer apply(
                                 select FormattedValue = 
                                 (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
-								COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
+                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field {tableAlias} 
-                                inner join FieldLookupValue V{tableAlias} on V{tableAlias}.FieldTypeID = {tableAlias}.FieldTypeID and V{tableAlias}.Value in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
-                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = V{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = V{tableAlias}.Value   
+                                inner join FieldType f on f.ID = {tableAlias}.FieldTypeID
+                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = f.LookupObjectType and AC{tableAlias}.ObjectID in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
                                 inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
-                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = A.[Object] and {tableAlias}.[ObjectID] = A.[ObjectID] FOR JSON PATH) 
+                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH) 
                             ){tableAlias}(FormattedValue) ";
                     fieldJoins.Add(sql);
                 }
@@ -378,14 +378,12 @@ namespace d360.model.DataAccessLayer.repositories
 
         private bool LookupFieldHasColorItem(FieldType fieldType)
         {
-            var lookup = CompanyContext.Query<dynamic>($"SELECT * FROM [dbo].[FieldLookupValue] WHERE FieldTypeID = {fieldType.ID}").FirstOrDefault();
-            if (lookup != null)
+            if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
             {
-                string obj = lookup.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : lookup.LookupObjectType;
+                var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
                 if (obj != "ReferenceItemType")
                     return false;
-                int id = lookup.LookupObjectID;
-                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == id);
+                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
                 if (assettype != null)
                     return CompanyContext.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
             }

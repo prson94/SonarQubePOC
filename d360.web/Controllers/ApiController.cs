@@ -3172,13 +3172,12 @@ order by    Name
         }
         private bool LookupFieldHasColorItem(FieldType f)
         {
-            var lookup = Company.FieldLookupValues.FirstOrDefault(x => x.LookupObjectType == f.LookupObjectType && f.LookupObjectID == x.LookupObjectID && f.ID == x.FieldTypeID);
-            if (lookup != null)
+            if (f.LookupObjectType != null && f.LookupObjectID.HasValue)
             {
-                var obj = lookup.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : lookup.LookupObjectType;
+                var obj = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
                 if (obj != "ReferenceItemType")
                     return false;
-                var assettype = Company.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == lookup.LookupObjectID);
+                var assettype = Company.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == f.LookupObjectID);
                 if (assettype != null)
                     return Company.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
             }

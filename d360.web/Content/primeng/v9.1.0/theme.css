@@ -1658,7 +1658,7 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
 .d3s-color-picker .ui-multiselect .ui-multiselect-header {
     display: flex;
 }
-.d3s-color-picker .ui-multiselect .ui-multiselect-header.ui-chkbox {
+.d3s-color-picker .ui-multiselect .ui-multiselect-header .ui-chkbox {
     display: flex;
     vertical-align: middle;
     cursor: pointer;
