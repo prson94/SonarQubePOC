@@ -1529,11 +1529,13 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
 */
 
 .d3s-color-picker {
-    width: 248px;
+	min-width: 248px;
+	display: inline-flex;
+	
 }
 
-.d3s-color-picker.multi{
-    max-width:unset;
+.d3s-color-picker.multi {
+	max-width: unset;
 }
 
 .d3s-color-picker .ui-dropdown,
@@ -1543,6 +1545,7 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
     height: 32px;
     border-radius: 4px;
 	width: 100%;
+	min-width: 248px;
 }
 
 .d3s-color-picker .ui-dropdown:not(.ui-state-disabled):hover
@@ -1671,6 +1674,8 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
   color: #202020;
   background-color: #ffffff;
   margin: 0;
+  width: 100%;
+  margin-right: 22px;
 }
 .d3s-color-picker .pi {
     font-size: 1.25em;
