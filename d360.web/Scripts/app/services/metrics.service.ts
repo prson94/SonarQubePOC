@@ -29,7 +29,7 @@ export class MetricsService extends BaseObservableService {
 
     public getMetricsByAllocation(allocationUid: string): Observable<MetricAssetViewModel[]> {
         return this.http
-            .get<MetricAssetViewModel[]>(`/api/v2/metrics/structure/${allocationUid}`)
+            .get<MetricAssetViewModel[]>(`/api/v2/scoring/allocations/${allocationUid}/structure`)
             .pipe(catchError(err => this.handleError(err)));
     }
 

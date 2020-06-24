@@ -270,19 +270,6 @@ namespace igx.UnitTests.V2ControllerTests
         }
 
         [Fact]
-        public async void GetMetricStructureByAssetType()
-        {
-            var actionResult = metricsController.GetMetricStructureByAllocation(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
-
-            var str = await actionResult.Content.ReadAsStringAsync();
-            var data = JsonConvert.DeserializeObject<JArray>(str);
-
-            Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data), XMsg.InvalidJSON);
-
-        }
-
-        [Fact]
         public async void GetMetricFieldsByAssetType()
         {
             var actionResult = metricsController.GetMetricFieldsByAssetType(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
