@@ -325,4 +325,46 @@ end
 		</rollback>
 	</changeSet>
 
+	<changeSet author="Pappas" id="Migration.Metrics-Cleanup-v1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+		<![CDATA[
+drop table if exists #cleanup;
+create table #cleanup (AssetVersionUid uniqueidentifier, MaxUid uniqueidentifier, RemoveUid uniqueidentifier);
+insert into #cleanup
+	select	M.*,
+			A.Uid as UidToRemove
+	from	(
+			select	AssetVersionUid,
+					max(Uid) as MaxUid
+			from	metrics.AssetVersionCondition
+			group by AssetVersionUid
+			having count(1) > 1
+			) M
+			inner join	(
+						select		AssetVersionUid,
+									Uid
+						from		metrics.AssetVersionCondition 
+						where		AssetVersionUid in (
+										select	AssetVersionUid
+										from	metrics.AssetVersionCondition
+										group by AssetVersionUid
+										having count(1) > 1
+									)
+						) A on A.AssetVersionUid = M.AssetVersionUid and Uid <> M.MaxUid;
+
+update	T
+set		T.AssetVersionConditionUid = S.MaxUid
+from	metrics.AssetVersionConditionItem T
+		inner join #cleanup S on S.Removeuid = T.AssetVersionConditionUid;
+
+delete	metrics.AssetVersionCondition where Uid in (select RemoveUid from #cleanup);
+		]]>
+		</sql>
+		<rollback>
+		<![CDATA[	
+
+		]]>
+		</rollback>
+	</changeSet>
+
 </databaseChangeLog>
