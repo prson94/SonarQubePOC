@@ -2069,13 +2069,13 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                     var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
                     CompanyContext.ValidateFields(assetType.Object,
                         assetType.ObjectID,
-                        !asset.Uid.HasValue,
+                        true,
                         fieldTypes,
-                        fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(), 
-                        asset.Fields, 
-                        Guid.Empty, 0, 
-                        null, 
-                        out success, 
+                        fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                        asset.Fields,
+                        Guid.Empty, 0,
+                        null,
+                        out success,
                         out error
                         );
                     if (!success)

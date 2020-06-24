@@ -357,14 +357,24 @@ namespace d360.web.Controllers.V2
                 row["Action"] = "Insert";
                 assetTable.Rows.Add(row);
 
-                foreach (var field in item.CustomFields)
+                foreach (var field in item.CustomFields.Where(x=> !string.IsNullOrEmpty(x.Value)))
                 {
                     var fieldRow = fieldTable.NewRow();
                     fieldRow["ExecutionID"] = execution.ExecutionID;
                     fieldRow["ExecutionItemUid"] = item.AssetUid;
                     fieldRow["FieldName"] = field.Key.ToString();
-                    fieldRow["FieldValue"] = field.Value.ToString();
-                    fieldRow["FormattedValue"] = field.Value.ToString();
+                    if (field.Value == null)
+                    {
+                        fieldRow["FieldValue"] = DBNull.Value;
+                        fieldRow["FormattedValue"] = DBNull.Value;
+
+                    }
+                    else
+                    {
+                        fieldRow["FieldValue"] = field.Value.ToString();
+                        fieldRow["FormattedValue"] = field.Value.ToString();
+
+                    }
                     fieldTable.Rows.Add(fieldRow);
                 }
             }
@@ -381,14 +391,24 @@ namespace d360.web.Controllers.V2
                 row["Action"] = "Update";
                 assetTable.Rows.Add(row);
 
-                foreach (var field in item.CustomFields)
+                foreach (var field in item.CustomFields.Where(x => x.Value != null))
                 {
                     var fieldRow = fieldTable.NewRow();
                     fieldRow["ExecutionID"] = execution.ExecutionID;
                     fieldRow["ExecutionItemUid"] = item.AssetUid;
                     fieldRow["FieldName"] = field.Key.ToString();
-                    fieldRow["FieldValue"] = field.Value.ToString();
-                    fieldRow["FormattedValue"] = field.Value.ToString();
+                    if (field.Value == null)
+                    {
+                        fieldRow["FieldValue"] = DBNull.Value;
+                        fieldRow["FormattedValue"] = DBNull.Value;
+
+                    }
+                    else
+                    {
+                        fieldRow["FieldValue"] = field.Value.ToString();
+                        fieldRow["FormattedValue"] = field.Value.ToString();
+
+                    }
                     fieldTable.Rows.Add(fieldRow);
                 }
             }

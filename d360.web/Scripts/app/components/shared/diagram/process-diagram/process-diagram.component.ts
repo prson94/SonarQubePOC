@@ -88,6 +88,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.selectedNodeData = null;
             }
         }
+        this.myDiagram.requestUpdate();
         this.cdRef.detectChanges();
 
     }
@@ -329,7 +330,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
-        if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)){
+        if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
 
@@ -362,13 +363,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
                     if (propertyName != 'key') {
-                        if (formData[propertyName].Value) {
-                            m.set(data, propertyName, formData[propertyName].Value);
-
-                        }
-                        else {
-                            m.set(data, propertyName, formData[propertyName]);
-                        }
+                        m.set(data, propertyName, formData[propertyName]);
                     }
                 }
             }, 'update_model');
