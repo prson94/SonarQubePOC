@@ -72,7 +72,7 @@
                                                 [field]="'Text'"
                                                 [style]="{'width':'100%'}"
                                                 [inputStyle]="{'width':'100%' }"
-                                                [inputId]="field.FieldName + '_input'"
+                                                [inputId]="field.FieldName + '_input_' + component_uid"
                                                 [formControlName]="field.FieldName"
                                                 (onSelect)="onSelect($event)"
                                                 [suggestions]="field.Items"

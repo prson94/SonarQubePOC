@@ -42,8 +42,8 @@ export class ProcessDiagramTemplates {
                             stroke: "black",
                             strokeWidth: 2,
                             geometryString: 'M 230 230 A 45 45, 0, 1, 1, 230,229',
-                            width: this.eventNodeRadius + 8,
-                            height: this.eventNodeRadius + 8
+                            width: this.eventNodeRadius + 6,
+                            height: this.eventNodeRadius + 6
 
                         },
                         new go.Binding('visible', 'isSelected').ofObject(),

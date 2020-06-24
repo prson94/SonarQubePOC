@@ -284,9 +284,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
                 else {
                     var model = res.updatedModel;
-                    this.myDiagram.model = go.Model.fromJson(JSON.stringify(model));
-                    this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
-                    this.diagramStateChanged();
+                    this.load();
                     this.isSaving = false;
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
@@ -335,6 +333,24 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         this.cdRef.detectChanges();
+    }
+
+    private updateKeys(added: any[]) {
+        console.log(added);
+        try {
+            this.myDiagram.model.commit(function (m) {
+                m.nodeDataArray.forEach(data => {
+                    //if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
+                    //    m.set(data, 'hasError', true);
+                    //}
+                    //else {
+                    //    m.set(data, 'hasError', false);
+                    //}
+                });
+            }, 'update_model_keys');
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     private updateValidationData() {

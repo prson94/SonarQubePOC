@@ -67,6 +67,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showActions: boolean = true;
 
     @Input() useModelBinding: boolean = false;
+    @Input() dataModel: any = {};
 
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
@@ -216,7 +217,15 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     }
 
     handleEditor(result: EditorField[]) {
-        console.log("handling editor");
+
+        if (this.dataModel && !this.assetUid) {
+            result.forEach(res => {
+                if (res.Name == 'Name') {
+                    res.Value = this.dataModel['Name'];
+                }
+            });
+        }
+
         if ((result as any).type && (result as any).type == "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
@@ -468,7 +477,6 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
-        console.log("submitting");
         this.savingInProgress = true;
         let action = (this.selection == null ? "new" : "edit");
         let values: any = {};

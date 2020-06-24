@@ -40,33 +40,11 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
 
     private onModelChange($event) {
         $event.key = this.nodeData.key;
-
-        //for (var propertyName in $event) {
-        //    if (propertyName != 'key') {
-        //        if ($event[propertyName]) {
-        //            if ($event[propertyName].Value) {
-        //                var value = $event[propertyName].Value;
-        //                delete $event[propertyName];
-        //                $event[propertyName] = value;
-        //            }
-
-        //            if ($event[propertyName] instanceof Date) {
-        //                console.log("Ima date");
-        //                let date = new Date($event[propertyName]);
-
-        //                date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
-        //                let simpleDate = [this.pad(date.getMonth() + 1), this.pad(date.getDate()), this.pad(date.getFullYear())].join('/');
-        //                this.form.value[p] = simpleDate;
-
-        //                var value = $event[propertyName].value;
-        //                delete $event[propertyName];
-        //                $event[propertyName] = value;
-        //            }
-
-        //        }
-        //    }
-        //}
-
+        for (var prop in $event) {
+            if ($event[prop] == undefined) {
+                delete $event[prop];
+            }
+        }
         this.nodeDataChange.emit($event);
     }
 
