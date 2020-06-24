@@ -186,8 +186,7 @@ namespace d360.core.entities
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
-        public Feature Feature { get; set; }
-        public bool ShouldDisplay { get; set; }
+        public bool ShouldDisplay { get; set; } = true;
         public string Items { get; set; }
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }

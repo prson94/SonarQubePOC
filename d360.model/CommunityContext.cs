@@ -47,8 +47,7 @@ namespace d360.model
 
         public DbSet<Client> Clients { get; set; }
         public DbSet<Company> Companies { get; set; }
-        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
-        public DbSet<CompanyFeature> CompanyFeatures { get; set; }
+        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
         public DbSet<CompanySetting> CompanySettings { get; set; }

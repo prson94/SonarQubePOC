@@ -38,8 +38,7 @@ namespace d360.web.Controllers
             List<TopNavigationItem> nodes = null;
 
             nodes = Company.Query<TopNavigationItem>("GetSiteNavigation @ResourceID", new { ResourceID = Company.CurrentResourceID }).ToList();
-
-            var features = Community.Filter<CompanyFeature>(i => i.CompanyID == Company.CurrentCompanyID).ToList();
+                        
             var isFusionEnabled = Community.IsFusionEnabled();
             if (!isFusionEnabled)
             {
@@ -54,11 +53,10 @@ namespace d360.web.Controllers
 
             if (nodes != null)
                 nodes.ForEach(n =>
-                {
-                    n.ShouldDisplay = features.Any(f => f.Feature == n.Feature);
+                {                    
                     n.NavigationItems = (string.IsNullOrEmpty(n.Items)) ?
                         new List<NavigationItem>() :
-                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)), features);
+                        parseXmlNavigationDocument(XElement.Parse(string.Format("<nav>{0}</nav>", n.Items)));
                 });
 
             return new JsonNetResult
@@ -779,27 +777,18 @@ namespace d360.web.Controllers
         }
         #endregion
 
-        List<NavigationItem> parseXmlNavigationDocument(XElement xml, List<CompanyFeature> features)
+        List<NavigationItem> parseXmlNavigationDocument(XElement xml)
         {
             var items = new List<NavigationItem>();
 
             foreach (var el in xml.Elements("nav"))
             {
-                bool shouldParse = (el.Element("feature").Value == "0");
-                if (!shouldParse)   //further check is required.
+                var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren") };
+                if (el.Element("items") != null)
                 {
-                    var feature = (Feature)System.Enum.Parse(typeof(Feature), el.Element("feature").Value);
-                    shouldParse = features.Any(i => i.Feature == feature);
+                    item.Items = parseXmlNavigationDocument(el.Element("items"));
                 }
-                if (shouldParse)
-                {
-                    var item = new NavigationItem { Name = el.Element("name").Value, Url = el.Element("url").Value, ShowChildren = Community.GetCompanySettingByKey<bool>("ShowNavigationChildren") };
-                    if (el.Element("items") != null)
-                    {
-                        item.Items = parseXmlNavigationDocument(el.Element("items"), features);
-                    }
-                    items.Add(item);
-                }
+                items.Add(item);                
             }
 
             return items;
