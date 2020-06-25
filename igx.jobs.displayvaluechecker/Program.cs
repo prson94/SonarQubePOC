@@ -37,7 +37,7 @@ namespace igx.jobs.displayvaluechecker
 #if DEBUG
         const string timerSettings = "*/10 * * * * *";
 #else
-        const string timerSettings = "0 0 * * * *"; // every hour
+        const string timerSettings = "0 0 */6 * * *"; // every 6 hours
 #endif
 
         public static async Task Run([TimerTrigger(timerSettings)]TimerInfo myTimer, TextWriter log)

@@ -62,11 +62,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// GET a list of predicates.
         /// </summary>
-        /// <param name="PredicateUid">Filter by an predicate's unique identifier.</param>
+        /// <param name="PredicateUid">Filter by a predicate's unique identifier.</param>
         /// <param name="Type">Filter by a predicate's functional type.</param>
-        /// <param name="Name">Filter by an predicate's Name.</param>
-        /// <param name="Inverse">Filter by an predicate's Inverse.</param>
-        /// <param name="IsUsed">Filter by an predicate's usage.</param>
+        /// <param name="Name">Filter by a predicate's Name.</param>
+        /// <param name="Inverse">Filter by a predicate's Inverse.</param>
+        /// <param name="IsUsed">Filter by a predicate's usage.</param>
         /// <returns>A list of predicates contained within your Govern environment.</returns>
         [
             HttpGet,
@@ -379,8 +379,8 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.OK, "A list of relationships.", typeof(GetRelationshipsApiModel)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Object representing one of the query parameter values could not be found.", typeof(ErrorResponse)),
-            SwaggerParameter("RelationshipTypeUid", "Filter by an relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("PredicateUid", "Filter by an predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("RelationshipTypeUid", "Filter by a relationship type's unique identifier. Using this parameter will also provide any field values for the relationships, if applicable.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("PredicateUid", "Filter by a predicate's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("SubjectUid", "Filter by a subject asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("ObjectUid", "Filter by an object asset's unique identifier.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_pageNum", "Allows for changing the current page of results you are requesting.", DataType = "integer", ParameterType = "query", Required = false),
@@ -607,7 +607,7 @@ namespace d360.web.Controllers.V2
         /// Creates relationship types based on the provided subject, object and predicate properties.
         /// </summary>
         /// <remarks>
-        /// You have the option of providing a Uid for each of the new relationship types. This is particularly useful in a migration scenario where you want to migrate an relationship type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
+        /// You have the option of providing a Uid for each of the new relationship types. This is particularly useful in a migration scenario where you want to migrate a relationship type from one environment to another. The default is to not provide one, in which case a Uid will be automatically generated.
         /// </remarks>
         /// <param name="relationshiptypes">A list of relationship types you want to add.</param>
         /// <returns>An HTTP status code and message.</returns>

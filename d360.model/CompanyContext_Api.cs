@@ -7374,10 +7374,6 @@ insert into #Keys
                             {
                                 rowError += ";Definition cannot be empty/null.";
                             }
-                            if (model.Definition.Then == null || model.Definition.Then.Count == 0 || model.Definition.Then.Any(x => x.Conditions == null || x.Conditions.Count == 0))
-                            {
-                                rowError += ";Then conditions in definition cannot be empty.";
-                            }
 
                             if (model.ApplyToType == true && (model.Definition.When != null && model.Definition.When.Count > 0))
                             {
@@ -7584,7 +7580,7 @@ cross apply OPENJSON (Definition, N'$.Then')
     AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
     Conditions nvarchar(max) N'$.Conditions' as Json
   ) AS ThenData
-cross apply OPENJSON(ThenData.Conditions)
+outer apply OPENJSON(ThenData.Conditions)
    with(
 		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
 		AssetUid uniqueidentifier N'$.Relation.AssetUid',
@@ -7665,8 +7661,27 @@ from #parsedData
 where AssigneeUid is not null
 
 update #parsedData
+set Value = LOWER(pd.value)
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+where pd.fieldtypeid is not null and ft.type = 'Boolean'
+
+update #parsedData
+set Value = flv.Value
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+	left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
+where pd.fieldtypeid is not null and ft.type = 'Lookup'
+
+update #parsedData
 set ErrorMessage = 'Invalid Field name.'
 where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+update #parsedData
+set ErrorMessage = 'Invalid Lookup value.'
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+where pd.fieldtypeid is not null and ft.type = 'Lookup' and Value is null
 
 update #parsedData
 set ErrorMessage = 'Invalid AssetUid for condition.'
@@ -7748,18 +7763,18 @@ ConditionsThen.json as [Then],
 ConditionsWhen.json as [When]
  from #parsedData pd
 cross apply (
-	select top 1 Object,ObjectId, Conditions.json as Conditions
+	select top 1 Object,ObjectID, Conditions.json as Conditions
 	from #parsedData
-		cross apply(select
+		outer apply(select
 		 CheckType,
-		 isnull(FieldTypeID,0) as FieldTypeId,
+		 isnull(FieldTypeID,0) as FieldTypeID,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,
 		 TargetObject,
 		 TargetObjectId
 		  from #parsedData
-		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 		 for json path, include_null_values
 		)Conditions(json)
 	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
@@ -7769,7 +7784,7 @@ cross apply (
 cross apply (
 select
 		 CheckType,
-		 isnull(FieldTypeID,0) as FieldTypeId,
+		 isnull(FieldTypeID,0) as FieldTypeID,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,

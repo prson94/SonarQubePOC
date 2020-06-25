@@ -174,7 +174,7 @@ namespace d360.model.DataAccessLayer
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
-                            cross apply (select count(*) from metrics.Asset where State = 1 and AssetTypeUid = AL.AssetTypeUid and ScoreType = AL.ScoreType)Measures(F)
+                            cross apply (select count(*) from metrics.Asset where State = 1 and AllocationUid = AL.Uid) Measures(F)
                             cross apply (select count(*) from FieldType where AssetTypeID = AT.ID and [Type] = 'Score' and ScoreType = AL.ScoreType) Fields(F)
                         {sqlWhere}
                         order by P.[Path]
@@ -222,7 +222,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P
@@ -243,8 +245,6 @@ namespace d360.model.DataAccessLayer
             alloc.UpdatedOn = DateTime.UtcNow;
             companyContext.SaveChanges();
 
-
-
             var dbArgs = new DynamicParameters();
             dbArgs.Add("@uid", alloc.Uid);
 
@@ -255,7 +255,9 @@ namespace d360.model.DataAccessLayer
 	                        P.[Path] as assetTypePath,
 	                        AL.scoreType,
 	                        AL.[state],
-                            AL.isExternallyCalculated
+                            AL.isExternallyCalculated,
+                            AL.lowerThreshold,
+                            AL.upperThreshold
                         from metrics.Allocation AL
 	                        inner join AssetType AT on AT.uid = AL.assettypeuid                                    
 	                        cross apply dbo.GetAssetTypeTextPathById(AT.ID, ' / ') P

@@ -208,7 +208,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
                         if (this.diagram) this.diagram.div = null;
 
-                        if (this.diagramTypeSpecifiedInPath != DiagramType.Process)
+                        if (this.displayConfiguration.DiagramType != DiagramType.Process)
                             this.helper_InitializeDiagram();
 
                     });
@@ -217,7 +217,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewInit() {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType == DiagramType.Process)
             return;
 
         this.helper_ResizeDiagram();
@@ -225,7 +225,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     public ngAfterViewChecked() {
-        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+        if (this.displayConfiguration.DiagramType == DiagramType.Process)
             return;
 
         const panelHeaderElement: HTMLElement = this.myElement.nativeElement.querySelectorAll('.asset-browser-window-header')[0];
@@ -264,6 +264,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     public ngOnDestroy() {
         if (this.diagram)
             this.diagram.div = null;    // Garbage collection.
+        if (this.cdRef)
+            this.cdRef.detach();
     }
 
     //#endregion
@@ -1561,8 +1563,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             });
 
             trans.links.forEach(l => {
+                let fromNodePresent: boolean = (dm.findNodeDataForKey(l.from) !== null);
+                let toNodePresent: boolean = (dm.findNodeDataForKey(l.to) !== null);
+
+                // Add the link to begin with
                 if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
                     dm.addLinkData(l);
+
+                // Then calculate to see if we should add a link to any hidden nodes.
+                if (!fromNodePresent || !toNodePresent) {
+                    let hiddenNodes = dm.nodeDataArray.filter(n => n.template == "HiddenData");
+                    let newLink: AssetBrowserTranslationLink = {
+                        back: l.back,
+                        from: l.from,
+                        fromPort: l.fromPort,
+                        intersectUids: l.intersectUids,
+                        predicateIds: l.predicateIds,
+                        responsibilityTypeId: l.responsibilityTypeId,
+                        text: l.text,
+                        to: l.to,
+                        toPort: l.toPort
+                    };
+                    hiddenNodes.forEach(hn => {
+                        if (hn.subgraph) {
+                            if (!fromNodePresent && hn.subgraph.nodes.findIndex(sn => { return sn.key == l.from }) > -1) {
+                                newLink.from = hn.key;
+                            }
+                            if (!toNodePresent && hn.subgraph.nodes.findIndex(sn => { return sn.key == l.to }) > -1) {
+                                newLink.to = hn.key;
+                            }
+                        }
+                    });
+
+                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null) 
+                        dm.addLinkData(newLink);
+                }
             });
 
         }
@@ -3265,7 +3300,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private viewchange_Apply(e: DiagramType) {
         this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
         this.panelModel.selectedCommand = AssetBrowserPanelCommand.None;
-        this.helper_UpdateDiagramType(e);
         this.saveFilter();
         this.router.navigateByUrl(`${SiteUrlHelpers.SITE_URL_VISUALIZATION_ROOT}/browser/${this.assetUid}/${DiagramType[e]}`);
     }

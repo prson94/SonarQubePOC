@@ -17,6 +17,7 @@ using System.Data;
 using d360.model.DataAccessLayer.repositories;
 using d360.core.queue;
 using DocumentFormat.OpenXml.Office.CustomUI;
+using Microsoft.ApplicationInsights;
 
 namespace d360.model.DataAccessLayer
 {
@@ -114,73 +115,66 @@ namespace d360.model.DataAccessLayer
             var operators = new List<string>() { "eq", "neq", "lt", "lte", "gt", "gte" };
             var operatorErrorMessage = "";
 
-            foreach (var group in model.ConditionGroups)
+            if (!model.IsGroup)
             {
-                foreach (var condition in group.ConditionItems)
-                { 
-                    var fieldType = new FieldType();
-                
-                    if (condition.ConditionFieldTypeID.HasValue)
+                foreach (var group in model.ConditionGroups)
+                {
+                    foreach (var condition in group.ConditionItems)
                     {
-                        fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.ConditionFieldTypeID.Value);
-                    }
-                    //else
-                    //{
-                    //    fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.FieldName.Trim().ToLower() && x.Object == targetAssetType.Object && x.ObjectID == targetAssetType.ObjectID);
+                        var fieldType = new FieldType();
 
-                    //    if (fieldType == null)
-                    //    {
-                    //        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
-                    //    }
-                    //    condition.ConditionFieldTypeID = fieldType.ID;
-                    //}
+                        if (condition.ConditionFieldTypeID.HasValue)
+                        {
+                            fieldType = Company.FieldTypes.FirstOrDefault(x => x.ID == condition.ConditionFieldTypeID.Value);
+                        }
 
-                    if (fieldType == null)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
-                    }  
+                        if (fieldType == null)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "FieldType does not exist!");
+                        }
 
-                    if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
-                    }
+                        if (targetAssetType.Object != fieldType.Object || targetAssetType.ObjectID != fieldType.ObjectID)
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", "Invalid FieldType for this asset!");
+                        }
 
-                    if (!validTypes.Contains(fieldType.Type))
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
-                    }
+                        if (!validTypes.Contains(fieldType.Type))
+                        {
+                            return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"FieldType cannot be type of '{fieldType.Type}'!");
+                        }
 
-                    if (!operators.Contains(condition.Operator))
-                    {
-                        operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
-                    }
+                        if (!operators.Contains(condition.Operator))
+                        {
+                            operatorErrorMessage += $"Invalid operator used: {condition.Operator}; ";
+                        }
 
-                    bool tempBool;
-                    decimal tempDecimal;
-                    DateTime tempDate;
-                    int tempInt;
+                        bool tempBool;
+                        decimal tempDecimal;
+                        DateTime tempDate;
+                        int tempInt;
 
-                    switch (fieldType.Type)
-                    {
-                        case "Boolean":
-                            if (!bool.TryParse(condition.Values[0].Value, out tempBool))
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                            break;
-                        case "Decimal":
-                            if (!decimal.TryParse(condition.Values[0].Value, out tempDecimal))
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                            break;
-                        case "Date":
-                            if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                            condition.Values[0].Value = tempDate.ToShortDateString();
-                            break;
-                        case "Number":
-                            if (!int.TryParse(condition.Values[0].Value, out tempInt))
-                                return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
-                            break;
-                        default:
-                            break;
+                        switch (fieldType.Type)
+                        {
+                            case "Boolean":
+                                if (!bool.TryParse(condition.Values[0].Value, out tempBool))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                break;
+                            case "Decimal":
+                                if (!decimal.TryParse(condition.Values[0].Value, out tempDecimal))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                break;
+                            case "Date":
+                                if (!DateTime.TryParse(condition.Values[0].Value, out tempDate))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                condition.Values[0].Value = tempDate.ToShortDateString();
+                                break;
+                            case "Number":
+                                if (!int.TryParse(condition.Values[0].Value, out tempInt))
+                                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Error updating metric", $"Field '{fieldType.Name}' does not contain valid '{fieldType.Type}' value!");
+                                break;
+                            default:
+                                break;
+                        }
                     }
                 }
             }
@@ -342,6 +336,11 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             #endregion
 
             #region Process conditions for ADDs or UPDATEs
+
+            if (model.IsGroup)
+            {
+                model.ConditionGroups.Clear();
+            }
 
             if (model.ConditionGroups.Count > 0)
             {
@@ -879,7 +878,21 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
 
         public MetricAllocation GetAllocationByMetricModel(MetricAssetViewModel model)
         {
-            return Company.GetByUid<MetricAllocation>(model.AllocationUid);
+            if (model.AllocationUid == Guid.Empty)
+            {
+                if (model.AssetTypeUid.HasValue && model.ScoreType.HasValue)
+                {
+                    return Company.Filter<MetricAllocation>(a => a.AssetTypeUid == model.AssetTypeUid.Value && a.ScoreType == model.ScoreType.Value && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                return Company.GetByUid<MetricAllocation>(model.AllocationUid);
+            }
         }
 
         public List<DataQualityResponseModel> InsertDataQualityResult(List<DataQualityInsertModel> request, ApiExecution execution)

@@ -32,7 +32,7 @@ namespace igx.jobs.fusiondeploymentprocessor
 #if DEBUG
         const string timerSettings = "*/1 * * * * *";
 #else
-        const string timerSettings = "0 0 */6 * * *";
+        const string timerSettings = "0 0 0 * * *";
 #endif
 
         const int ALTER_TRIGGER_TIMEOUT = 90;

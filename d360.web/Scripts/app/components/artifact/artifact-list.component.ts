@@ -54,9 +54,8 @@ export class ArtifactListComponent extends AssetGridBaseComponent implements OnI
             this.logAction('open', 'ArtifactType', artifactTypeId);
             this
                 .artifactTypeService
-                .getArtifactTypeDetails(artifactTypeId)
+                .getArtifactTypeDetails(artifactTypeId, true)
                 .subscribe(artifactType => {
-
                     let folderName: string = '#Business';
                     this.areaLink = `${SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT}/${SiteUrlHelpers.SITE_URL_ASSETS_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_ASSET_BUSINESS}`;
 

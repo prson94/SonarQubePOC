@@ -240,11 +240,11 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
-                if(assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+                if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
                 }
-                
+
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
@@ -605,7 +605,7 @@ namespace d360.web.Controllers.V2
                             IsPartOfKey = false,
                             UpdatedBy = Company.CurrentResourceID,
                             ShowIfEmpty = true
-                        }); 
+                        });
                     }
                 }
 
@@ -1502,7 +1502,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (assetTypeUid == null || assetTypeUid== Guid.Empty)
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"AssetTypeUid is not valid!"));
                 }
@@ -1907,13 +1907,11 @@ namespace d360.web.Controllers.V2
                 }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
-
-                Company.Add(execution);
-                Company.SaveChanges();
                 var deletes = new AssetTypeDeletes();
                 deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
-                var deleteAssetTypesResults = Company.RemoveAssetTypes(execution, deletes, 28800); //dbExecutionTimeout = 8 hours
-                Company.SaveChanges();
+
+                var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
+
 
                 return await Task.FromResult<IHttpActionResult>(
                     ResponseMessage(
@@ -2299,6 +2297,97 @@ namespace d360.web.Controllers.V2
             {
                 var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Value }))));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a list asset uids and paths for the given asset type.
+        /// </summary>
+        /// <returns>Returns a list of asset uids and paths.</returns>
+        [
+            HttpGet,
+            Route("paths/{assetTypeUid}"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 5000.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset uids and paths. This is an admin only endpoint.", typeof(AssetPathResults)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset type for the given uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetUids(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetUids => ";
+            var errorMessage = "";
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            const int maxPageSize = 100000;
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden, $"You do not have permission to do this")));
+
+            var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetType == null)
+                return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset type for this uid not found")));
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    if (res > maxPageSize || res < 1)
+                    {
+                        return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page size must be between 1 and 100,000.")));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page size is not a valid number.")));
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    if (res < 1)
+                    {
+                        return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page num is invalid, must be greater than 0.")));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page num is not a valid number.")));
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Include total is not a valid boolean.")));
+                }
+            }
+
+            try
+            {
+                var results = await AssetRepository.GetAssetPaths(assetType, queryParams);
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
+
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
             }
             catch (Exception ex)
             {

@@ -135,9 +135,6 @@
   <data name="Error_FieldType_Allocations" xml:space="preserve">
     <value>This field type is allocated to one ore more system objects.</value>
   </data>
-  <data name="Error_Item_AttributesReferences" xml:space="preserve">
-    <value>One or more attributes reference this item.</value>
-  </data>
   <data name="Error_Item_FieldReferences" xml:space="preserve">
     <value>One or more fields reference this item.</value>
   </data>
@@ -158,9 +155,6 @@
   </data>
   <data name="Error_ResponsibilityType_ExistingResponsibilities" xml:space="preserve">
     <value>There are existing assignments based on this responsibility type. Please remove those assignments first before continuing.</value>
-  </data>
-  <data name="Error_Taxonomy_AttributeReference" xml:space="preserve">
-    <value>One or more attributes reference this model.</value>
   </data>
   <data name="Error_Taxonomy_ChildModelsExist" xml:space="preserve">
     <value>One or more child models exist. You must first remove the child models before continuing.</value>

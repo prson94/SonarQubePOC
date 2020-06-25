@@ -15,7 +15,7 @@ import { Router } from '@angular/router';
             <tr>
                 <th [pSortableColumn]="'Name'">Name
     <d3s-sortIcon [field]="'Name'"></d3s-sortIcon></th>
-    <th [pSortableColumn]="'CurrentScore'">Current Score
+    <th [pSortableColumn]="'CurrentScore'">Governance Score
     <d3s-sortIcon [field]="'CurrentScore'"></d3s-sortIcon></th>
             </tr>
 		    <tr [hidden]="showSimpleFilter">
@@ -29,7 +29,7 @@ import { Router } from '@angular/router';
                     <d3s-preview-tooltip [objectType]="item.ObjectType" [objectId]="item.ObjectID">{{item.Name}}</d3s-preview-tooltip>
             </td>
             <td>
-                    <div>{{item.CurrentScore | scoreDisplay }}</div>
+                <div>{{item.CurrentScore != null ? (item.CurrentScore | scoreDisplay:1) : "" }}</div>
             </td>
             </tr>
         </ng-template>

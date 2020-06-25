@@ -241,7 +241,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\d360.core\d360.core.csproj">
-      <Project>{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}</Project>
+      <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
