@@ -384,7 +384,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 ignoredFields.Add(DataType.Relationship.ToString());
                 ignoredFields.Add(DataType.FieldFromRelationship.ToString());
                 ignoredFields.Add(DataType.Score.ToString());
-                var useColor = false;
+
                 var sql = $@"
 select	A.TypeName,
 		A.Uid,
