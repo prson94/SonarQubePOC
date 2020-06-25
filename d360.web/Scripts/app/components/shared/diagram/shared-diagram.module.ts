@@ -79,6 +79,7 @@ import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-typ
 import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
+import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 
 
 @NgModule({
@@ -99,6 +100,7 @@ import { DragDropModule } from 'primeng/dragdrop';
         AssetTypeModalEditorModule,
         SiteModalModule,
         ScoreBadgeModule,
+        D3SColorPickerModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
