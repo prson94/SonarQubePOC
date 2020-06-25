@@ -67,7 +67,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showActions: boolean = true;
 
     @Input() useModelBinding: boolean = false;
-    @Input() dataModel: any = {};
+    @Input() dataModel: any = null;
 
     @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
@@ -77,7 +77,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
-    @Input() useNonLegacyData: boolean = true;
+    @Input() useNonLegacyData: boolean = false;
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
     private isInError: boolean = false;
