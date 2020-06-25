@@ -956,6 +956,35 @@ namespace d360.web.Controllers.V2
             return isValid;
         }
 
+        /// <summary>
+        /// Updates a group based on the specified group uid.
+        /// </summary>
+        /// <param name="groups">The groups that need to be updated</param>
+        [
+            HttpPut,
+            Route("groups"),
+            SwaggerRequestExample(typeof(UpdateGroup), typeof(UpdateGroupExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if (groups.Count < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
+
+            var execution = getApiExecution(groups.Count);
+
+            var result = membershipRepository.UpdateGroups(execution, groups);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+        }
+
         private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)
         {
             List<Tuple<string, string, string>> fieldMap = new List<Tuple<string, string, string>>();

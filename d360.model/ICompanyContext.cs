@@ -19,6 +19,7 @@ using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Data.SqlClient;
 using System.Data;
+using d360.core.entities.Membership;
 
 namespace d360.model
 {
@@ -323,5 +324,6 @@ namespace d360.model
 
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
 
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

@@ -737,6 +737,15 @@ namespace d360.web.Models
         public string ErrorMessage { get; set; }
     }
 
+    public class UpdateGroup
+    {
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public Guid PrimaryOwnerUid { get; set; }
+        public Guid SecondaryOwnerUid { get; set; }
+    }
+
     #region Asset Browser
 
     public enum AssetBrowserApiHopDirection

@@ -1046,6 +1046,30 @@ order by	q.SortOrder";
             return asset;
         }
 
+        public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)
+        {
+            List<GroupResponseResult> results = null;
+            try
+            {
+                results = CompanyContext.UpdateGroups(execution, groups);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+
+            return results;
+        }
+
         private AssetType GetAssetTypeFromRoute(string route)
         {
             AssetType assettype = null;
