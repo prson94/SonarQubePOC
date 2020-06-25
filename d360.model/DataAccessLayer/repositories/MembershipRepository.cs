@@ -1046,6 +1046,31 @@ order by	q.SortOrder";
             return asset;
         }
 
+        public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
+        {
+            CompanyContext.Add(execution);
+
+            List<GroupResponseResult> results = null;
+            try
+            {
+                results = CompanyContext.DeleteGroups(execution, groups);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+            return results;
+        }
+
         private AssetType GetAssetTypeFromRoute(string route)
         {
             AssetType assettype = null;

@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -7929,6 +7930,141 @@ WHEN MATCHED
 
                 }
             }
+
+            return results;
+        }
+
+        public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<GroupResponseResult> results = new List<GroupResponseResult>();
+            
+            
+            Add(execution);
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            try
+            {
+
+                #region Build data tables.
+
+                var table = new DataTable();
+
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("GroupUid", typeof(Guid));
+                table.Columns.Add("Name", typeof(string));
+                table.Columns.Add("Description", typeof(string));
+                table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
+                table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
+
+                #region Generate data sets
+
+                foreach (var item in groups)
+                {
+                    var row = table.NewRow();
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = itemNumber;
+                    row["GroupUid"] = item.Uid;
+
+                    table.Rows.Add(row);
+
+                    itemNumber++;
+                }
+
+                #endregion
+
+                if (Database.Connection.State != ConnectionState.Open)
+                    Connection.Open();
+
+                #region Bulk Copy
+
+                var bulkCopy = new SqlBulkCopy(Connection)
+                {
+                    BatchSize = table.Rows.Count,
+                    DestinationTableName = "[api].[ExecutionGroup]",
+                    BulkCopyTimeout = 3600
+                };
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
+
+                bulkCopy.WriteToServer(table);
+
+                bulkCopy = null;
+
+                #endregion
+
+                var checkSQL = $@"using   (
+            select  A.uid
+            from    [Asset] A
+            where   A.Object = 'Group'
+            ) S
+                on      (S.uid != EG.GroupUid and EG.ExecutionID ='00000000-0000-0000-0000-000000000001')
+                when matched then 
+                update 
+                set		EG.Success = 0,
+		        EG.[Message] = coalesce([Message] + '; ', '') + 'Not a valid group';";
+
+                Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                #endregion
+
+                generalChecksCompleted = true;
+            }
+            catch (Exception generalEx)
+            {
+                generalChecksCompleted = false;
+                var msg = generalEx.GetFullExceptionData(false);
+                execution.ErrorMessage = msg;
+                execution.Processed = 0;
+                execution.Error = groups.Count();
+
+                results = new List<GroupResponseResult>();
+                results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+            }
+
+            
+
+            itemNumber = 1;
+            if (generalChecksCompleted)
+            {
+                try
+                {
+                    var deleteSQL = $@"DELETE G
+	                            FROM [Group] G
+	                            inner join(select A.ObjectID from Asset A
+	                            inner join api.ExecutionDeletedGroup EG on EG.GroupUid = A.uid
+	                            where EG.Success is null and EG.ExecutionID = @ExecutionID) S on S.ObjectID = G.ID";
+
+                    Connection.Execute(deleteSQL,
+                            new { execution.ExecutionID}, commandTimeout: timeout);
+
+                    Connection.Execute(
+                                        $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
+                                        new { execution.ExecutionID }, commandTimeout: timeout);
+                }
+                catch (Exception ex)
+                {
+                    var msg = ex.GetFullExceptionData(false);
+                    execution.ErrorMessage = msg;
+                    execution.Processed = 0;
+                    execution.Error = groups.Count();
+
+                    results = new List<GroupResponseResult>();
+                    results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+
+                }
+            }
+            results.AddRange(
+                            Query<GroupResponseResult>(
+                                $"select * from api.ExecutionDeletedGroup where ExecutionID = @ExecutionID",
+                                new { execution.ExecutionID }
+                            )
+                        );
 
             return results;
         }

@@ -1,0 +1,34 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="sdooley" id="Table.api.ExecutionDeletedGroup-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDeletedGroup')
+BEGIN
+		CREATE TABLE [api].[ExecutionDeletedGroup](
+			[ExecutionID] [uniqueidentifier] NOT NULL,
+			[ItemNumber] [int] NOT NULL,
+			[GroupUid] [uniqueidentifier] NOT NULL,
+			[Message] [nvarchar](2500) NULL,
+			[Success] [bit] NULL,
+		CONSTRAINT [PK_ApiExecutionDeletedGroup] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
+	)
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

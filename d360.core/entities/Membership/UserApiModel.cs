@@ -96,4 +96,8 @@ namespace d360.core.entities.Membership
         public string Message { get; set; }
         public bool Success { get; set; }
     }
+    public class DeleteGroupModel
+    {
+        public Guid Uid { get; set; }
+    }
 }
