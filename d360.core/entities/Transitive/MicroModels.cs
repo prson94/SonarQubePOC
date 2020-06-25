@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -187,6 +188,7 @@ namespace d360.core.entities
     {
         public string MenuID { get; set; }
         public bool ShouldDisplay { get; set; } = true;
+        [JsonIgnore]
         public string Items { get; set; }
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }
