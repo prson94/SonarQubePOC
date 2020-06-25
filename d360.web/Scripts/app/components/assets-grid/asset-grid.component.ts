@@ -71,6 +71,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     showArtifactDetails: boolean = false;
     showCertificationStatus: boolean = false;
     certificationStatusIndex: string = null;
+    deleteName: string = 'Artifact';
     previousEvent: LazyLoadEvent;
     totalRecords: number;
 
@@ -508,6 +509,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private onDelete(item) {
+        this.deleteName = item[this.fields[0].apiName];
         this.selected = item;
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();
