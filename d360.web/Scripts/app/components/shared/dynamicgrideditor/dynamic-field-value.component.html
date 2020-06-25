@@ -32,7 +32,7 @@
     <span *ngSwitchCase="'lookup'">
         <d3s-lookup-tooltip [objectType]="item[column.objectfield]"
                             [objectId]="item[column.objectidfield]">
-            <a (click)="navigate(item[column.urlfield])"
+             <a (click)="navigate(item[column.urlfield])"
                [innerText]="fieldValue"></a>
         </d3s-lookup-tooltip>
     </span>
@@ -45,7 +45,7 @@
     </span>
     <span *ngSwitchCase="'path'" innerHtml="{{formatAsPath()}}"></span>
     <span *ngSwitchCase="'score'" innerHtml="{{fieldValue}}"></span>
-    <span *ngSwitchCase="'string'">{{fieldValue}}</span>
+    <span *ngSwitchCase="'string'" innerHtml="{{fieldValue}}"></span>
     <span *ngSwitchCase="'JSON'">
         <span *ngIf="GetJSON(field.Value) == 'Error'; else showJSON">{{field.Value}}</span>
         <ng-template #showJSON>
@@ -58,6 +58,19 @@
     </span>
     <span *ngSwitchCase="'tag'">
         <d3s-tag-view [data]="fieldValue" [assetUID]="item?.AssetUid"></d3s-tag-view>
+    </span>
+    <span *ngSwitchCase="'Color'">
+        <span class="ref-list-color" *ngIf="hasColor">
+            <span class="ig-colorfield-swatch" [ngStyle]="{'background-color': fieldValue}"></span>
+            <span>{{colorText}}</span>
+        </span>
+        <span class="ref-list-color" *ngIf="!hasColor">
+            <span class="ig-colorfield-swatch empty"></span>
+            <span class="color-text">{{colorText}}</span>
+        </span>
+    </span>
+    <span *ngSwitchCase="'ListColor'">
+        <d3s-color-display [colorsJSON]="fieldValue"></d3s-color-display>
     </span>
     <ng-template ngSwitchDefault>
         <span *ngIf="fieldValue != null"

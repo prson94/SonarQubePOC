@@ -693,6 +693,18 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                             }
                         }
                     }
+                    var colorDataString = @"select ACJ.ColorJSON from Asset A cross apply dbo.GetAssetColorJsonById(A.Id) ACJ where ID = @assetID ";
+                    var colorData = Company.Query<string>(colorDataString, new { @assetID = (det != null ? det.AssetID : -1) }).FirstOrDefault();
+                    if(colorData != null)
+                    {
+                        var color = new FieldTooltipValueModel()
+                        {
+                            Name = "Color",
+                            Type = "Color",
+                            Value = colorData
+                        };
+                        res.Add(color);
+                    }
                 }
 
                 return Json(

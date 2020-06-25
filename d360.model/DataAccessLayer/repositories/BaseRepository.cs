@@ -64,7 +64,7 @@ namespace d360.model.DataAccessLayer.repositories
 
         }
         #endregion
-        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]")
+        protected void getFieldSql(List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> fieldJoins, List<string> fieldColumns, string objectSql = "A.[Object]", string objectIdSql = "A.[ObjectId]", bool listColorsAsJSON = false)
         {
             fieldTypes.OrderBy(x=> x.ID).ToList().ForEach(f =>
             {
@@ -76,7 +76,7 @@ namespace d360.model.DataAccessLayer.repositories
                 var fieldDataType = getFieldDataType(f);
 
                 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
-
+                
                 if (f.Type == "JsonElement")
                 {
                     jsonElementDefinition = JsonConvert.DeserializeObject<FieldTypeDefinition_JsonElement>(f.Definition);
@@ -113,7 +113,11 @@ namespace d360.model.DataAccessLayer.repositories
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
                         fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
+                    }
+                    else if (f.Type == "Lookup" && listColorsAsJSON)
+                    {
+                        fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                     }
                     else if (f.Type == "Path")
                     {
@@ -350,12 +354,45 @@ namespace d360.model.DataAccessLayer.repositories
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
+                else if(f.Type =="Lookup" && listColorsAsJSON && LookupFieldHasColorItem(f))
+                {
+                    string emptycolor = "transparent";
+                    if (f.Name.ToLower() == "status")
+                        emptycolor = "calculatebyname";
+                    string sql = $@"outer apply(
+                                select FormattedValue = 
+                                (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
+                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), '{emptycolor}') as color
+                                from Field {tableAlias}
+								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
+								outer apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
+                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value   
+                                cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH) 
+                            ){tableAlias}(FormattedValue) ";
+                    fieldJoins.Add(sql);
+                }
                 else
                 {
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
                 }
             });
         }
+
+        private bool LookupFieldHasColorItem(FieldType fieldType)
+        {
+            if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
+            {
+                var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
+                if (obj != "ReferenceItemType")
+                    return false;
+                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
+                if (assettype != null)
+                    return CompanyContext.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+            }
+            return false;
+        }
+
         protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)
         {
             if (queryParams != null)

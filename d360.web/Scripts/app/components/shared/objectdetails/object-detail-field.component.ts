@@ -1,10 +1,7 @@
-﻿import { Input, Component, OnInit, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
-import { DetailRow, DetailField, DetailModel, DetailFieldType, DetailSubField } from '../../../models/object-detail.model';
+﻿import { Input, Component } from '@angular/core';
+import {  DetailField,  DetailFieldType } from '../../../models/object-detail.model';
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
 import { Router } from '@angular/router';
-import { TagService } from '../../../services/tag.service';
-import { TagType, TagDetail, TagItem } from '../../../models/tag.model';
-import { MessagesObservableService } from '../../../services/messages-observable.service';
 
 @Component({
     selector: 'object-detail-field',

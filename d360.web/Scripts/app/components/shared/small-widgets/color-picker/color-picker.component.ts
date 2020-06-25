@@ -1,5 +1,5 @@
 ﻿
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
@@ -9,14 +9,18 @@ import { AssetService } from '../../../../services/asset.service';
     selector: 'd3s-color-picker',
     template: `
                 <div class="d3s-color-picker">
-                    <p-dropdown [options]="colors" placeholder="Optional" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
+                    <p-dropdown [options]="colors" [ngModel]="selectedColor" (onChange)="itemChanged($event)" placeholder="{{placeholder}}" scrollHeight="320px" showClear="true" filter="true" filterPlaceholder="Search colors">
                         <ng-template let-item pTemplate="selectedItem">
-                            <div class="ig-colorfield-item-selected"><span class="ig-colorfield-swatch" [style.background-color]=item.value></span>
-                                <span class="ig-colorfield-item-label">{{item.label}}</span></div>
+                            <div class="ig-colorfield-item-selected">
+                                <span class="ig-colorfield-swatch" [style.background-color]="item?.title"></span>
+                                <span class="ig-colorfield-item-label">{{item?.label}}</span>
+                            </div>
                         </ng-template>
                         <ng-template let-color pTemplate="item">
-                            <div class="ig-colorfield-item"><span class="ig-colorfield-swatch" [style.background-color]=color.value></span>
-                                <span class="ig-colorfield-item-label">{{color.label}}</span></div>
+                            <div class="ig-colorfield-item">
+                                <span class="ig-colorfield-swatch" [style.background-color]="color.title"></span>
+                                <span class="ig-colorfield-item-label">{{color.label}}</span>
+                            </div>
                         </ng-template>
                     </p-dropdown>
                 </div>
@@ -26,22 +30,32 @@ import { AssetService } from '../../../../services/asset.service';
 
 export class ColorPickerComponent implements OnInit {
 
-    private colors: SelectItem[] = [];
-    private selectedColor: SelectItem;
-    constructor(private router: Router, private assetService: AssetService) {
-    }
+    @Input() colors: SelectItem[] = [];
+    @Input() placeholder: string = 'Optional';
+    @Input() selectedColor: string;
+    @Output() selectedColorChange = new EventEmitter();
 
-    ngOnInit(): void {
-        //get all colors
-        this.colors = [];
+    constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
+    }
+    ngOnInit() {
+        this.colors = []; 
         this.load();
-
     }
+
+    private itemChanged(item: any) {
+        this.selectedColorChange.emit(item.value);
+    }
+
     load(): any {
-        this.assetService.getAllColors().subscribe(res => {
-            if(res)
-                this.colors = res;
-        });
+        if (this.colors.length == 0) {
+            this.assetService.getAllColors().subscribe(res => {
+                if(res)
+                    this.colors = res;
+                if (this.selectedColor && res.length > 0) {
+                    let isCustom = this.colors.filter(x => { return x.label == this.selectedColor }).length == -1;
+                }
+                this.ref.markForCheck();
+            });
+        }
     }
-
 };

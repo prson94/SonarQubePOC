@@ -2,10 +2,10 @@
     <div *ngIf="fieldDataType != 'tag'">
         <div *ngFor="let item of field.Values">
             <d3s-preview-tooltip [objectType]="item.TooltipType" [objectId]="item.TooltipID">
-                <a *ngIf="item.TooltipUrl;else arrayNoUrl" (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
-                <ng-template #arrayNoUrl>
-                    <span [innerHtml]="item.Value"></span>
-                </ng-template>
+                <a *ngIf="item.TooltipUrl && field.DataType != 'color'" (click)="navigate(item.TooltipUrl)" [innerHtml]="item.Value"></a>
+                <span *ngIf="!item.TooltipUrl && field.DataType != 'color'" [innerHtml]="item.Value"></span>
+                <d3s-color-display *ngIf="field.DataType =='color' && item.TooltipUrl" (click)="navigate(item.TooltipUrl)" [colorsJSON]="item.Value"></d3s-color-display>
+                <d3s-color-display *ngIf="field.DataType =='color' && !item.TooltipUrl" [colorsJSON]="item.Value"></d3s-color-display>
             </d3s-preview-tooltip>
         </div>
     </div>
@@ -59,6 +59,7 @@
                 <ng-container *ngSwitchCase="'path'">
                     <div class="FieldDisplayContent" [innerHtml]="field.Value  | safeHtml" [ngStyle]="{'font-weight':(isName ? 'bold':'')}"></div>
                 </ng-container>
+                <d3s-color-display *ngSwitchCase="'color'" [colorsJSON]="item.Value"></d3s-color-display>
                 <ng-container *ngSwitchDefault>
                     <div class="FieldDisplayContent" title="{{field.Value}}" [ngStyle]="{'font-weight':(isName ? 'bold':'')}">{{field.Value}}</div>
                 </ng-container>
@@ -71,14 +72,17 @@
                 </d3s-preview-tooltip>
                 <ng-template #listTooltip>
                     <d3s-lookup-tooltip *ngIf="field.TooltipUrl;else noLinkTooltip" [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                        <a (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>
+                        <a *ngIf="fieldDataType != 'color'" (click)="navigate(field.TooltipUrl)" [innerText]="field.Value"></a>
+                        <d3s-color-display *ngIf="fieldDataType == 'color'" (click)="navigate(field.TooltipUrl)" [colorsJSON]="field.Value"></d3s-color-display>
                     </d3s-lookup-tooltip>
                     <ng-template #noLinkTooltip>
                         <d3s-lookup-tooltip [objectType]="field.TooltipType" [objectId]="field.TooltipID">
-                            <span [innerText]="field.Value"></span>
+                            <span *ngIf="fieldDataType != 'color'" [innerText]="field.Value"></span>
+                            <d3s-color-display *ngIf="fieldDataType == 'color'" [colorsJSON]="field.Value"></d3s-color-display>
                         </d3s-lookup-tooltip>
                     </ng-template>
                 </ng-template>
+                
             </div>
         </ng-container>
     </div>
