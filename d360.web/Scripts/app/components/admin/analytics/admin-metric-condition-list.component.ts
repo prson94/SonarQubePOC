@@ -60,10 +60,10 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.conditions.forEach(c => {
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
 
-            const field = this.metricConditionListFieldTypes.find(f => f.ID === c.ConditionFieldTypeID);
+            const field = this.metricConditionListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
 
-            if (field !== null) {
-                c.FieldTypeName = field.Name; 
+            if (field) {
+                c.FieldTypeName = field.Name;
                 c.FieldType = field;
 
                 switch (field.Type) {
@@ -152,6 +152,5 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.conditions.forEach(c => {
             this.usedFieldTypes.push(c.ConditionFieldTypeID);
         });
-        console.log(this.usedFieldTypes);
     }
 };

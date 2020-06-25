@@ -385,7 +385,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                             Action<MetricAssetVersionConditionItem, List<MetricAssetVersionConditionItemValue>> checkValues = delegate (MetricAssetVersionConditionItem item, List<MetricAssetVersionConditionItemValue> newValues) {
                                 if (item.Values != null)
                                 {
-                                    item.Values.RemoveAll(i => 1 == 1);
+                                    item.Values.Clear();
                                 }
 
                                 newValues.ForEach(nv =>
@@ -475,7 +475,19 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             }
             else 
             {
-                metricAssetVersion.Conditions = null;
+                if (metricAssetVersion.Conditions != null)
+                { 
+                     metricAssetVersion.Conditions.ToList().ForEach(g =>
+                    {
+                        g.Items.ToList().ForEach(i => {
+                            i.Values.ToList().ForEach(v => {
+                                Company.Entry(v).State = System.Data.Entity.EntityState.Deleted;
+                            });
+                            Company.Entry(i).State = System.Data.Entity.EntityState.Deleted;
+                        });
+                        Company.Entry(g).State = System.Data.Entity.EntityState.Deleted;
+                    });               
+                }
             }
 
             #endregion
