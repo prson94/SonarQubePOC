@@ -35,12 +35,14 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
 
+        console.log(this.usedFieldTypes);
         this.usedFieldTypes.forEach(i => {
-            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === i);
+            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
             if (ft) {
                 if (this.condition) {
-                    if (this.condition.ConditionFieldTypeID !== i) {
-                        ft.Disabled = true;
+                    if (this.condition.ConditionFieldTypeID !== +i) {
+                        console.log(ft);
+                        ft.Disabled = true; 
                     }
                 }
                 else {

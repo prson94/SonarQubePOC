@@ -152,5 +152,6 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         this.conditions.forEach(c => {
             this.usedFieldTypes.push(c.ConditionFieldTypeID);
         });
+        console.log(this.usedFieldTypes);
     }
 };

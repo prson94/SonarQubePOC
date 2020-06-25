@@ -46,7 +46,7 @@ namespace d360.core.entities.Metric
         public DateTime? EffectiveEndDate { get; set; }
 
         [DataMember]
-        public State State { get; set; }
+        public State State { get; set; } = State.Active;
 
         [DataMember, ForeignKey("Uid")]
         public virtual MetricAsset Asset { get; set; }
