@@ -2310,7 +2310,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list asset uids and paths for the given asset type.
+        /// Retrieves a list of asset uids and paths for the given asset type.
         /// </summary>
         /// <returns>Returns a list of asset uids and paths.</returns>
         [
