@@ -88,6 +88,7 @@ namespace d360.model
         #region DbSets
 
         public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
+        public DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
@@ -3007,6 +3008,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
                 case SystemObjects.ResourceType:
                     objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
+                    break;
+                case SystemObjects.TaskType:
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
                     break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;

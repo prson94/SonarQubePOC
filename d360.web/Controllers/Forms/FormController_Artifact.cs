@@ -23,6 +23,46 @@ namespace d360.web.Controllers
         #region Artifact
 
         #region Field Generation
+        [Route("Diagram_AddFields"), NonNullableParameters]
+        public JsonResult Diagram_AddFields(int at, int p)
+        {
+            if (!Company.HasAssetTypePermission(SystemObjects.TaskType, at, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Add, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+
+
+            list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.TaskType, at).ToList(), 1);
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
+
+        /// <param name="id">ArtifactID</param>
+        [Route("Diagram_EditFields"), NonNullableParameters]
+        public JsonResult Diagram_EditFields(int id)
+        {
+            if (!Company.HasAssetPermission(SystemObjects.TaskType, id, Permission.ModifyAsset))
+                return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
+
+            var list = new List<EditableField>();
+            var a = Company.Assets.Where(x => x.ObjectID == id && x.Object == "Task").Include(x => x.AssetType).FirstOrDefault();
+
+            list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
+            list.Add(new EditableField { FieldName = "AssetTypeUid", FieldType = DataType.Hidden.ToString(), Value = a.AssetType.uid.ToString() });
+
+            list = (
+                loadDynamicFields(
+                    SystemObjects.Task.ToString(),
+                    id,
+                    list,
+                    Company.GetFieldTypesByObject(SystemObjects.TaskType, a.AssetType.ObjectID).ToList(),
+                    Company.GetFieldRelationsByObject(SystemObjects.Task, id).ToList(),
+                    2
+                )
+            );
+
+            return Json(list, JsonRequestBehavior.AllowGet);
+        }
 
         /// <param name="at">ArtifactTypeID</param>
         /// <param name="p">ParentID</param>

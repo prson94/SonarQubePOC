@@ -37,6 +37,7 @@ namespace d360.model
         DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         DbSet<AssetDetail> AssetDetails { get; set; }
         DbSet<Asset> Assets { get; set; }
+        DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
         DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
         DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }

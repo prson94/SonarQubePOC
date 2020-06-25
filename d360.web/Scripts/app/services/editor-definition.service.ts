@@ -62,4 +62,18 @@ export class EditorDefinitionService extends BaseObservableService {
             );
     }
 
+    public getEditorDefinitionNonLegacy(assetTypeUid: string, assetUid: string): Observable<EditorField[]> {
+
+        if (!assetUid) {
+            return this.getEditorDefinitionUid(assetTypeUid);
+        }
+
+        return this.http
+            .get(`form/dynamiceditor/byUid/${assetTypeUid}/${assetUid}`)
+            .pipe(
+                map(res => <EditorField[]>res),
+                catchError(err => this.handleError(err))
+            );
+    }
+
 }
