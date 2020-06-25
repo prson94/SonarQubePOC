@@ -93,7 +93,7 @@
                                     <d3s-assetbrowser-infopanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-infopanel>
                                 </div>
 
-                                <div #ownerDetailPanel class="fields" *ngIf="panel_TabIndex == 1">
+                                <div #ownerDetailPanel class="scroll-panel" *ngIf="panel_TabIndex == 1">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
                                 </div>
