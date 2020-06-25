@@ -1204,7 +1204,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Link":
-                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
+                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");

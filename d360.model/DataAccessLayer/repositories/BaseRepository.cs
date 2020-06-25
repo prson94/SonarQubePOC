@@ -191,6 +191,10 @@ namespace d360.model.DataAccessLayer.repositories
                         {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
                         }
+                        else if(f.Type == "Link")
+                        {
+                            fieldColumns.Add($"NULLIF({tableAlias}.{valueColumn},'|') as [{columnName}]");
+                        }
                         else
                         {
                             fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
