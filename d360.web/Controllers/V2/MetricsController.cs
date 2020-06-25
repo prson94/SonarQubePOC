@@ -172,6 +172,7 @@ namespace d360.web.Controllers.V2
                 }
             }
 
+            model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
             if (model.IsGroup && model.ConditionGroups.Count > 0)
             {
                 return errorMessageResponse(HttpStatusCode.BadRequest, "Error updating metric", "Groups should not have conditions.");
@@ -362,45 +363,6 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage)));
             }
         }
-
-        /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the allocation Uid provided.
-        /// </summary>
-        /// <param name="allocationUid">The Uid of the score allocation.</param>
-        /// <returns>An HTTP status code and message.</returns>
-        [
-            HttpGet,
-            Route("structure/{allocationUid:Guid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
-        ]
-        public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
-        {
-            if (!Company.CurrentResourceIsAdmin)
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));
-
-            var prefix = "Metrics.GetMetricStructureByAssetType => ";
-            
-            try
-            {
-                List<MetricAssetViewModel> models = null;
-
-                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid);
-
-                models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
-                if (models == null)
-                    models = new List<MetricAssetViewModel>();
-
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
-            }
-            catch (Exception ex)
-            {
-                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
-                Trace.TraceError("{0}{1}", prefix, errorMessage);
-
-                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
-            }
-        }
-
 
         /// <summary>
         /// Gets a administrative hierarchical structure of metrics associated with the asset type Uid provided.

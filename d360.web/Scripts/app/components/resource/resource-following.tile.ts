@@ -10,11 +10,11 @@ declare var CurrentResourceID;
     template: `
                 <header *ngIf="isMe">
                     Items You Follow
-                    <d3s-tile-actions hasExport="true" (exportClick)="export()" hasFilterMode="true" [(filterMode)]="showFilter"></d3s-tile-actions>    
+                    <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>    
                 </header>
                 <header *ngIf="!isMe">
                     Items {{resource?.FirstName}} Follows
-                    <d3s-tile-actions hasExport="true" (exportClick)="export()" hasFilter="true" [(filterMode)]="showFilter"></d3s-tile-actions>      
+                    <d3s-tile-actions hasExport="true" (exportClick)="export()"></d3s-tile-actions>      
                 </header>
                 <d3s-loading [isLoading]="isLoading"></d3s-loading>      
                 <div *ngIf="!isLoading" class="row">

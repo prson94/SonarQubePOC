@@ -1,4 +1,4 @@
-﻿import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
+﻿import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SiteUrlHelpers } from '../../../static/site-url-helpers';
@@ -21,14 +21,15 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
 
     public fieldType: string;
     private fieldValue: any;
-
+    private hasColor: boolean;
+    private colorText: string;
     constructor(private router: Router) {
         super();
     }
 
     ngOnInit() {
         this.fieldType = this.columnDataType(this.column);
-
+        
         if (this.fieldType == 'date' && this.column.cellsformat && this.column.cellsformat == 'MM/dd/yyyy HH:mm:ss') {
             this.fieldType = 'datetime';
         }
@@ -80,6 +81,20 @@ export class DynamicFieldValueComponent extends BaseComponent implements OnInit 
             this.fieldValue = `<div class="score-pill-small score-${this.item[thresholdKey]}"></div><span>${this.fieldValue}</span>`;
         }
 
+        if (this.fieldType == 'Color') {
+            let hasValue = this.item[colKey] ? true : false;
+            if (hasValue) {
+                let parsedJSON = JSON.parse(this.item[colKey]);
+                if (parsedJSON) {
+                    this.hasColor = true;
+                    this.fieldValue = parsedJSON.Value;
+                    this.colorText = parsedJSON.Name;
+                }
+            } else {
+                this.hasColor = false;;
+                this.colorText = 'None';
+            }
+        }
     }
 
     private formatAsNumber(): string {

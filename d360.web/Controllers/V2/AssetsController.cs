@@ -2296,7 +2296,7 @@ namespace d360.web.Controllers.V2
             try
             {
                 var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Value }))));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Name, title = x.Value }))));
             }
             catch (Exception ex)
             {
@@ -2310,7 +2310,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Retrieves a list asset uids and paths for the given asset type.
+        /// Retrieves a list of asset uids and paths for the given asset type.
         /// </summary>
         /// <returns>Returns a list of asset uids and paths.</returns>
         [

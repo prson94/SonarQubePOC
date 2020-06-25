@@ -153,7 +153,7 @@ export class WorkflowConditionEditorComponent extends BaseComponent implements O
             .pipe(
                 map(r => {
                     this.fields = [];
-                    this.fields = r;
+                    this.fields = r.filter(x => x.Type != "JsonElement");//Exclude Json Element Fields;
                 })
             );
     }

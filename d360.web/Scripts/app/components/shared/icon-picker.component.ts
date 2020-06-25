@@ -11,6 +11,7 @@ import { DropdownModule } from 'primeng/dropdown';
     template: `
 <ng-container *ngIf="!isLoading">
     <p-dropdown styleClass="icon-picker"
+                panelStyleClass="icon-panel"
                 [options]="categories" 
                 [group]="true" 
                 [ngModel]="ngModel"
@@ -18,7 +19,9 @@ import { DropdownModule } from 'primeng/dropdown';
                 [filter]="true"
                 [showClear]="true"
                 appendTo="body"
-                [placeholder]="'Optional'">
+                scrollHeight="320px"
+                placeholder="Optional"
+                filterPlaceholder="Type to filter">
         <ng-template let-group pTemplate="group">
             <span>{{group.label}}</span>
         </ng-template>
@@ -60,6 +63,7 @@ import { DropdownModule } from 'primeng/dropdown';
         color: #202020;
         border-radius: 2px;
         margin-right: 5px;
+        font-size: 1em;
     }
 
     .iconfield-item-label {
@@ -70,6 +74,7 @@ import { DropdownModule } from 'primeng/dropdown';
         flex-grow: 1;
         overflow: hidden;
         text-overflow: ellipsis;
+        color: #202020;
     }
 
     .iconfield-item, .iconfield-item-selected {

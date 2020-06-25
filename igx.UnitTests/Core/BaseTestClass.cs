@@ -604,6 +604,15 @@ namespace igx.UnitTests
             return mock.Object;
         }
 
+        public IScoringRepository GetScoringRepository()
+        {
+            var mock = new Mock<IScoringRepository>();
+
+            mock.Setup(x => x.DeleteAllocation(It.IsAny<MetricAllocation>()));
+
+            return mock.Object;
+        }
+
         public IWorkflowApiModelValidator GetWorkflowApiModelValidator()
         {
             return new WorkflowApiModelValidator(GetAssetRepository(), GetIssueRepository(), GetRelationshipRepository(), GetWorkflowRepository());

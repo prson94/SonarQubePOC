@@ -10,10 +10,12 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,17 +40,19 @@ namespace d360.web.Controllers.V2
         #region DI
 
         IAssetRepository AssetRepository;
+        IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
-        public ScoringController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository)
+        public ScoringController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository, IMetricsRepository metricsRepository)
             : base(community, company)
         {
             this.AssetRepository = assetRepository;
+            this.MetricsRepository = metricsRepository;
             this.ScoringRepository = scoringRepository;
         }
 
         #endregion
 
-
+        #region Allocations
 
         /// <summary>
         /// Get a list of allocations.
@@ -58,6 +62,12 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerParameter("assettypeuid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "Guid", ParameterType = "query", Required = false),
+            SwaggerParameter("_state", "Returns allocations whose state is one of two possible values: Active, or Deleted. When using this parameter you must provide one of these two values.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetclassname", "Returns allocations whose asset type class falls within the specified value provided. You must provide the enum Value property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assettypepath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("scoretype", "Returns allocations whose score type is either Governance or DataQuality.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("isexternallycalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
@@ -388,6 +398,47 @@ namespace d360.web.Controllers.V2
 
             return ResponseMessage(result);
         }
+
+        #endregion
+
+        /// <summary>
+        /// Gets a administrative hierarchical structure of metrics associated with the allocation Uid provided.
+        /// </summary>
+        /// <param name="allocationUid">The Uid of the score allocation.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpGet,
+            Route("allocations/{allocationUid:Guid}/structure"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
+        ]
+        public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));
+
+            var prefix = "Metrics.GetMetricStructureByAssetType => ";
+
+            try
+            {
+                List<MetricAssetViewModel> models = null;
+
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid);
+
+                models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
+                if (models == null)
+                    models = new List<MetricAssetViewModel>();
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+        }
+
 
         /// <summary>
         /// Get a list of asset types that have not been allocated to the provided score type.
