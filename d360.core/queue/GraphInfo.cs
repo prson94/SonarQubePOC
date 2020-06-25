@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace d360.core.queue
 {
-    public class GraphInfo : QueueObject
+    public class GraphInfo : QueueObject, IServiceBusMessageType
     {
         public GraphInfoType Type { get; set; }
         public long ID { get; set; }
+        public int MessageType { get { return (int)Type; } }
     }
 
     public enum GraphInfoType
