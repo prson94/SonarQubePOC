@@ -220,7 +220,7 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
-                                    {(Class.HasValue && Class.Value == AssetTypeClass.Diagram ? ",A.FlowObjectType" : "")}
+                                    ,A.FlowObjectType
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -2066,6 +2066,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 	                         when 2 then 'Model'
 	                         when 6 then 'Policy'
 	                         when 7 then 'Rule'
+                             when 15 then 'Diagram'
 	                        end as class,
 	                        at.name,
 	                        at.description,
