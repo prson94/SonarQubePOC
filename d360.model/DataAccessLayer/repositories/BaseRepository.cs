@@ -363,10 +363,10 @@ namespace d360.model.DataAccessLayer.repositories
                                 select FormattedValue = 
                                 (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
                                 COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), '{emptycolor}') as color
-                                from Field {tableAlias} 
-                                inner join FieldType f on f.ID = {tableAlias}.FieldTypeID
-                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = f.LookupObjectType and AC{tableAlias}.ObjectID in (SELECT value  FROM STRING_SPLIT({tableAlias}.Value, ',')  WHERE RTRIM(value) <> '')   
-                                inner join Asset AI on AI.AssetTypeId = @assetTypeID and AI.ObjectID = {tableAlias}.ObjectID 
+                                from Field {tableAlias}
+								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
+								outer apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
+                                inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value   
                                 cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH) 
                             ){tableAlias}(FormattedValue) ";
