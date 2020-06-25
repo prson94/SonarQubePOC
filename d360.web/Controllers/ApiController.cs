@@ -143,19 +143,40 @@ namespace d360.web.Controllers
 
                                     if (lookupItems != null)
                                     {
-
-                                        foreach (var item in lookupItems)
+                                        if (LookupFieldHasColorItem(ft))
                                         {
-                                            var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
-
-                                            ro.Values.Add(new ReadOnlyFieldValue
+                                            foreach (var item in lookupItems)
                                             {
-                                                TooltipContext = "Preview",
-                                                TooltipID = item.Value,
-                                                Value = item.Text,
-                                                TooltipType = ft.LookupObjectType,
-                                                TooltipUrl = (detail == null ? "" : detail.Url)
-                                            });
+                                                ro.DataType = "color";
+                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({(detail != null ? detail.AssetID : 0)}) ").FirstOrDefault();
+                                                var obj = JObject.Parse(colorData ?? "{}");
+
+                                                ro.Values.Add(new ReadOnlyFieldValue
+                                                {
+                                                    TooltipContext = "Preview",
+                                                    TooltipID = item.Value,
+                                                    Value = $"[{{\"name\":\"{item.Text}\", \"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]",
+                                                    TooltipType = ft.LookupObjectType,
+                                                    TooltipUrl = (detail == null ? "" : detail.Url)
+                                                });
+                                                
+                                            }
+                                        }
+                                        else
+                                        {
+                                            foreach (var item in lookupItems)
+                                            {
+                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, item.Value);
+                                                ro.Values.Add(new ReadOnlyFieldValue
+                                                {
+                                                    TooltipContext = "Preview",
+                                                    TooltipID = item.Value,
+                                                    Value = item.Text,
+                                                    TooltipType = ft.LookupObjectType,
+                                                    TooltipUrl = (detail == null ? "" : detail.Url)
+                                                });
+                                            }
                                         }
                                     }
                                 }
@@ -185,6 +206,7 @@ namespace d360.web.Controllers
                                         {
                                             ro.TooltipID = 0;
                                         }
+
                                     }
                                     else
                                     {
@@ -215,10 +237,22 @@ namespace d360.web.Controllers
                                         else if (int.TryParse(value, out int val))
                                         {
                                             var det = Company.GetObjectDetail(k.LookupObjectType, val);
-
                                             if (det != null)
                                             {
                                                 ro.TooltipUrl = det.Url;
+                                            }
+
+                                            if (ft.LookupObjectType == "ReferenceItem")
+                                            {
+                                                var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
+                                                var detail = Company.GetObjectDetail(ft.LookupObjectType, val);
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GEtAssetColorJsonByID({(detail != null ? detail.AssetID : 0)})").FirstOrDefault();
+                                                if (colorData != null)
+                                                {
+                                                    var obj = JObject.Parse(colorData);
+                                                    ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
+                                                    ro.DataType = "color";
+                                                }
                                             }
                                         }
 
@@ -774,6 +808,11 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     case "Score":
                         fieldType = "score";
                         break;
+                    case "Lookup":
+                        var lookupType = item.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : item.LookupObjectType;
+                        var foundColorOnList = Company.Assets.Any(x => x.Color != null && x.AssetType.Object == lookupType && item.LookupObjectID == x.AssetType.ObjectID);
+                        if(foundColorOnList) fieldType = "ListColor";
+                        break;
                 }
             }
 
@@ -999,7 +1038,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     dynamicFieldWidth = calculateDynamicColumnWidth(remainingWidth, items.Count());
 
                     columns.Add(new GridColumn { text = d360.core.resources.Fields.Code_Name, datafield = "Code" });
-
+                    columns.Add(new GridColumn { text = "Color", datafield = "Color" });
                     var parentRefType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
                     var loopCount = 0;
                     //add the parent columns
@@ -1016,6 +1055,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                     fields.Add(new GridField { name = "AssetID", type = "number" });
                     fields.Add(new GridField { name = "ID", type = "number" });
                     fields.Add(new GridField { name = "Code", type = "string" });
+                    fields.Add(new GridField { name = "Color", type = "Color" });
                     fields.Add(new GridField { name = "ReferenceItemType", type = "number" });
                     break;
                 #endregion
@@ -3111,9 +3151,38 @@ order by    Name
             string status = Company.Query<string>(sql, new { obj = new DbString { Value = type.ToString(), IsFixedLength = true, Length = 20, IsAnsi = true }, id = id, fieldId = fieldType.ID }).FirstOrDefault();
             if (string.IsNullOrEmpty(status))
                 status = fieldType.DefaultFormattedValue;
+
+            if (LookupFieldHasColorItem(fieldType)) {
+                string colorAndStatusSql = $@"(SELECT COALESCE(ACf.Code,f.FormattedValue) as name,
+								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
+                                from Field F 
+								inner join FieldType ft on ft.ID = f.FieldTypeID
+								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID in (SELECT value  FROM STRING_SPLIT(f.Value, ',')  WHERE RTRIM(value) <> '')    
+                                inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
+                                cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
+                                where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
+                string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
+                if(!string.IsNullOrEmpty( colorAndStatus))
+                {
+                    return colorAndStatus;
+                }
+            }
+
             return status;
         }
-
+        private bool LookupFieldHasColorItem(FieldType f)
+        {
+            if (f.LookupObjectType != null && f.LookupObjectID.HasValue)
+            {
+                var obj = f.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : f.LookupObjectType;
+                if (obj != "ReferenceItemType")
+                    return false;
+                var assettype = Company.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == f.LookupObjectID);
+                if (assettype != null)
+                    return Company.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+            }
+            return false;
+        }
         [Route("{assetTypeId:int}/style")]
         public AssetTypeStyle GetAssetTypeStyle(int assetTypeId)
         {

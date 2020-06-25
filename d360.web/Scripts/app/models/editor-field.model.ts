@@ -37,6 +37,7 @@ export class EditorField {
     VirtualScroll: boolean;
     ItemSize: number;
     UseNativeLookupControl: boolean;
+    UseColorControl: boolean;
 }
 
 export class EditorCategory {

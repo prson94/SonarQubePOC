@@ -247,6 +247,7 @@ namespace d360.model.DataAccessLayer
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
             string populateRestrictedAssetTableSQL = "";
+            bool listColorsAsJSON = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -270,6 +271,11 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+            }
+
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -286,7 +292,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
@@ -895,6 +901,7 @@ namespace d360.model.DataAccessLayer
             if (assetType.Class == AssetTypeClass.Reference)
             {
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+                fields.Add(new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
                 includeAssetUrl = false;
             }
 
@@ -974,8 +981,18 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                        var val = rowValues[field.Name];
-                        setCellValueFromField(document, rowNumber, index, field, val);
+                       
+                        if(field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
                     }
 
                     index++;
@@ -990,6 +1007,17 @@ namespace d360.model.DataAccessLayer
 
             return document;
         }
+
+        private string extractColorNameFromJSON(string jsonString)
+        {
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                var colorObj = JObject.Parse(jsonString);
+                return (string)colorObj["Name"] ?? "";
+            }
+            return "";
+        }
+
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
         {
             var dbArgs = new DynamicParameters();

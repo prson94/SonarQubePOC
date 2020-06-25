@@ -11,6 +11,7 @@ import { D3SColumnFilterModule } from './turbotable-column-filter.component';
 import { D3SSortIconModule } from './turbotable-sorticon.component';
 import { DirectivesModule } from '../../directives/directives.module';
 import { NgxJsonViewModule } from 'ng-json-view';
+import { PipesModule } from '../../pipes/pipes.module';
 
 @NgModule({
     declarations: [
@@ -34,6 +35,7 @@ import { NgxJsonViewModule } from 'ng-json-view';
         CommonModule,
         RouterModule,
         DirectivesModule,
+        PipesModule,
         //JSON Viewer module
         NgxJsonViewModule,
     ]

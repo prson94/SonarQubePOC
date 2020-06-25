@@ -39,7 +39,7 @@ export class PreviewTooltipComponent {
     private pending: boolean = false;
     public hideDebounce: Subject<any> = new Subject();
     public mouseIn: boolean = false;
-
+    private colorHtml: string = "";
     @Output() click = new EventEmitter();
 
     constructor(
@@ -88,20 +88,25 @@ export class PreviewTooltipComponent {
                             this.showPanel(tip, item);
                             this.ref.markForCheck();
                         }
+                        this.data.FieldValues.filter(x => x.Type == "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter(x => x.Type == "Color")[0].Value) : null;
                     });
             } else {
                 this.toolTipService.getTooltipInfo(this.objectType, this.objectId)
                     .subscribe(res => {
-                    if (!res.ShowTooltip || !this.pending) {
-                        this.active = false;
-                        return;
-                    }
+                        if (!res.ShowTooltip || !this.pending) {
+                            this.active = false;
+                            return;
+                        }
 
-                    this.data = res;
-                    if (tip.innerText != " " && tip.textContent != " ") {
-                        this.showPanel(tip, item);
-                        this.ref.markForCheck();
-                    }
+                        this.data = res;
+                        this.data.FieldValues.filter(x => x.Type == "Color").length > 0 ?
+                            this.setColorHtml(this.data.FieldValues.filter(x => x.Type == "Color")[0].Value) : null;
+
+                        if (tip.innerText != " " && tip.textContent != " ") {
+                            this.showPanel(tip, item);
+                            this.ref.markForCheck();
+                        }
                 });
             }
         } else {
@@ -168,6 +173,16 @@ export class PreviewTooltipComponent {
             return JSON.parse(value);
         } catch (err) {
             return "NULL";
+        }
+    }
+
+    setColorHtml(colorJSON: string) {
+        try {
+            let colorObj = JSON.parse(colorJSON);
+            this.colorHtml = "<div class=\"ig-colorfield-item-selected\"><span class=\"ig-colorfield-swatch tooltip-no-top\" style=\"background-color:" + colorObj.Value + "\"></span><span class=\"ig-colorfield-item-label tooltip-no-top\">" + colorObj.Name + "</span></div>";
+            this.ref.markForCheck();
+        } catch (err) {
+            console.error("err");
         }
     }
 

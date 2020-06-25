@@ -24,6 +24,9 @@ import { FieldsObservableService } from '../../../services/fieldsObservable.serv
 
 import { BaseComponent } from '../base.component';
 import { TagService } from '../../../services/tag.service';
+import { SelectItem } from 'primeng/api/selectitem';
+import { filter } from 'rxjs/operators';
+import { clearLine } from 'readline';
 
 @Component({
     selector: 'd3s-dynamic-field',
@@ -80,7 +83,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     private suggestionResultsArray: any[] = [];
     @Output() autoCompleteSelected = new EventEmitter();
     private doesAssetExists: boolean = false;
-    
+
+    private useColorMultiSelect: boolean = false;
+
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -124,6 +129,42 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             });
     }
 
+    getColorItemsAsSelectItem(items: any[]): SelectItem[] {
+        if (items.length > 0) {
+            return items.filter(x => x.Text != "Choose...").map((x) => {
+                try {
+                    let colorobj = JSON.parse(x.Text);
+                    if (colorobj)
+                        return { label: colorobj.name, value: x.Value, title: colorobj.color };
+                } catch (ex) {
+                }
+            });
+        }
+    }
+
+    getLabelByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.Value == id);
+            if (filterItems.length > 0) {
+                let options = this.getColorItemsAsSelectItem(filterItems);
+                if (options.length > 0)
+                    return options[0].label;
+            }
+        }
+        return "";
+    }
+
+    getColorByID(id) {
+        if (id && this.field.Items.length > 0) {
+            let filterItems = this.field.Items.filter(x => x.Value == id);
+            if (filterItems.length > 0) {
+                let options = this.getColorItemsAsSelectItem(filterItems);
+                if (options.length > 0)
+                    return options[0].title;
+            }
+        }
+        return "";
+    }
     selectTag(event) {
         var obj = this.suggestionResultsArray.filter(x => x.name == event)[0];
         this.autoCompleteSelected.emit(obj);
@@ -644,6 +685,11 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
         //Typeahead is a technically a list field, so we should emit an itemchange
         this.listItemChange.emit({ field: this.field, value: this.field.Value });
+    }
+
+    private onColorSelect(item) {
+        this.form.controls[this.field.FieldName].setValue(item);
+        this.field.Value = item;
     }
 
     private clearTypeahead(e: any) {

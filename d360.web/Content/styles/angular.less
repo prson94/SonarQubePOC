@@ -4668,6 +4668,15 @@ button.tab-scroller {
         padding-right: 16px;
         float: right;
         margin-top: 4px;
+
+        &.no-icon {
+            padding-left: 16px;
+        }
+    }
+
+    &.undefined-color {
+        background-color: transparent !important;
+        border: 1px dashed rgba(0,0,0,0.3);
     }
 }
 
@@ -6740,6 +6749,92 @@ table {
                 top: -34px;
             }
         }
+    }
+}
+.ref-list-color {
+    display: inline-flex;
+
+    &.color-text {
+        margin-top: -4px;
+    }
+}
+.d3s-color-picker.multi{
+    .ui-multiselect-label {
+        height: 32px !important;
+        line-height: 26px !important;
+    }
+}
+.d3s-color-picker.multi .d3s-color-multiSelect {
+    width: auto;
+
+    .ig-colorfield-item-selected:first-child {
+        margin-left: -6px;
+    }
+
+    .ig-colorfield-item-selected:last-child {
+        margin-right: 16px;
+    }
+
+    .ig-colorfield-item-selected {
+        background: #f0f0f0;
+        border-radius: 4px;
+        padding: 4px;
+        margin-left: 4px;
+        height: 26px;
+        margin-top: -1px;
+
+        .ig-colorfield-swatch, .ig-colorfield-item-label {
+            top: 0px
+        }
+    }
+}
+.ig-colorfield-swatch {
+    display: inline-block;
+    position: relative;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    margin-left: 8px;
+}
+.ig-colorfield-item {
+    &.grid {
+        height: 20px;
+    }
+}
+.ig-colorfield-swatch.empty {
+    border: 1px dashed rgba(0,0,0,0.3);
+}
+.ig-colorfield-item, .ig-colorfield-item-selected {
+    display: inline-flex;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    align-items: center;
+    max-width: 100%;
+}
+
+.ig-colorfield-item-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+    top: 1px;
+    padding-right: 20px;
+}
+
+.ig-colorfield-item-selected .ig-colorfield-item-label {
+    top: -4px;
+    &.tooltip-no-top{
+        top:0px;
+    }
+}
+
+.ig-colorfield-item-selected .ig-colorfield-swatch {
+    top: -4px;
+
+    &.tooltip-no-top {
+        top: 0px;
     }
 }
 
