@@ -1,0 +1,38 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Table.api.ExecutionDiagramAsset-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDiagramAsset')
+BEGIN
+	CREATE TABLE [api].[ExecutionDiagramAsset](
+	[ExecutionID] [uniqueidentifier] NOT NULL,
+	[ExecutionItemUid] [uniqueidentifier] NOT NULL,
+	[Uid] [uniqueidentifier] NULL,
+	[AssetTypeUid] [uniqueidentifier] NULL,
+	[Action] [nvarchar](20) NULL,
+     CONSTRAINT [PK_ExecutionDiagramAsset] PRIMARY KEY CLUSTERED 
+    (
+	    [ExecutionID] DESC,
+	    [ExecutionItemUid] ASC
+    )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>
