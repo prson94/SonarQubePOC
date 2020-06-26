@@ -7994,12 +7994,13 @@ WHEN MATCHED
 
                 #endregion
 
-                var checkSQL = $@"using   (
+                var checkSQL = $@"merge into [api].[ExecutionDeletedGroup] EG
+		using   (
             select  A.uid
             from    [Asset] A
             where   A.Object = 'Group'
             ) S
-                on      (S.uid != EG.GroupUid and EG.ExecutionID =@ExecutionID)
+                on      (S.uid != EG.GroupUid and EG.ExecutionID ='00000000-0000-0000-0000-000000000001')
                 when matched then 
                 update 
                 set		EG.Success = 0,
@@ -8028,31 +8029,33 @@ WHEN MATCHED
             itemNumber = 1;
             if (generalChecksCompleted)
             {
-                try
+                using (var trans = Connection.BeginTransaction())
                 {
-                    var deleteSQL = $@"DELETE G
-	                            FROM [Group] G
-	                            inner join(select A.ObjectID from Asset A
-	                            inner join api.ExecutionDeletedGroup EG on EG.GroupUid = A.uid
-	                            where EG.Success is null and EG.ExecutionID = @ExecutionID) S on S.ObjectID = G.ID";
+                    try
+                    {
+                        var deleteSQL = $@"DELETE G
+	                                        FROM [Group] G
+		                                    inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID
+		                                    inner join Asset A on A .uid = EG.GroupUid
+		                                    where A.ObjectID = G.ID";
 
-                    Connection.Execute(deleteSQL,
-                            new { execution.ExecutionID}, commandTimeout: timeout);
+                        Connection.Execute(deleteSQL,
+                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                    Connection.Execute(
-                                        $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
-                                        new { execution.ExecutionID }, commandTimeout: timeout);
-                }
-                catch (Exception ex)
-                {
-                    var msg = ex.GetFullExceptionData(false);
-                    execution.ErrorMessage = msg;
-                    execution.Processed = 0;
-                    execution.Error = groups.Count();
+                        Connection.Execute(
+                                            $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
+                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                    results = new List<GroupResponseResult>();
-                    results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+                        trans.Commit();
+                    }
+                    catch (Exception ex)
+                    {
+                        var msg = ex.GetFullExceptionData(false);
 
+                        results = new List<GroupResponseResult>();
+                        results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+                        trans.Rollback();
+                    }
                 }
             }
             results.AddRange(

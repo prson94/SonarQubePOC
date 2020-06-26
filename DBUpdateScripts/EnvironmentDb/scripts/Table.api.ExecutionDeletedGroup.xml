@@ -11,7 +11,7 @@
             splitStatements="true"
             stripComments="false">
 		<![CDATA[
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDeletedGroup')
+  IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDeletedGroup')
 BEGIN
 		CREATE TABLE [api].[ExecutionDeletedGroup](
 			[ExecutionID] [uniqueidentifier] NOT NULL,
@@ -19,7 +19,7 @@ BEGIN
 			[GroupUid] [uniqueidentifier] NOT NULL,
 			[Message] [nvarchar](2500) NULL,
 			[Success] [bit] NULL,
-		CONSTRAINT [PK_ApiExecutionDeletedGroup] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, [Uid] ASC )
+		CONSTRAINT [PK_ApiExecutionDeletedGroup] PRIMARY KEY CLUSTERED ( [ExecutionID] DESC, ItemNumber ASC )
 	)
 END
 		]]>
