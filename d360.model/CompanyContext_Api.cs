@@ -7997,17 +7997,12 @@ WHEN MATCHED
 
                 #endregion
 
-                var checkSQL = $@"merge into [api].[ExecutionDeletedGroup] EG
-		using   (
-            select  A.uid
-            from    [Asset] A
-            where   A.Object = 'Group'
-            ) S
-                on      (S.uid != EG.GroupUid and EG.ExecutionID =@ExecutionID)
-                when matched then 
-                update 
-                set		EG.Success = 0,
-		        EG.[Message] = coalesce([Message] + '; ', '') + 'Not a valid group';";
+                var checkSQL = $@"update	[api].[ExecutionDeletedGroup]
+                        set		Success = 0,
+	                            [Message] = coalesce([Message] + '; ', '') + 'Not a valid group'
+                        from [api].[ExecutionDeletedGroup] EP
+                        left join Asset A on A.UID = EP.GroupUid and A.Object = 'Group'
+                        where	ExecutionID = @ExecutionID and A.uid is null";
 
                 Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
 
