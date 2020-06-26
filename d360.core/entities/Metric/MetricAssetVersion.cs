@@ -48,7 +48,7 @@ namespace d360.core.entities.Metric
         [DataMember]
         public State State { get; set; } = State.Active;
 
-        [DataMember, ForeignKey("Uid")]
+        [IgnoreDataMember, ForeignKey("Uid")]
         public virtual MetricAsset Asset { get; set; }
 
         [DataMember, ForeignKey("AssetVersionUid")]
