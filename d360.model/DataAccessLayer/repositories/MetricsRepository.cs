@@ -498,12 +498,12 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     insert into #tbl 
                     	select	A.[Uid],
                     			V.Uid,
-                                A.Name,
+                                V.Name,
                     			A.ParentUid,
                     			A.IsGroup,
                     			V.Weight,
                     			V.EffectiveDate,
-                    			A.Description
+                    			V.Description
 
                     	from	metrics.AssetVersion V
                     			inner join (

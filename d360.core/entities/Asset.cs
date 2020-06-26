@@ -90,6 +90,32 @@ namespace d360.core.entities
         public IEnumerable<dynamic> items { get; set; }
     }
 
+    public class AssetAuditApiItemModel
+    {
+        public Guid uid { get; set; }
+        public string name { get; set; }
+        public Guid resourceUid { get; set; }
+        public string resourceName { get; set; }
+        public DateTime date { get; set; }
+        public string action { get; set; }
+        public Guid? actionAssetUid { get; set; }
+        public Guid? actionAssetTypeUid { get; set; }
+        public string actionObjectTypeName { get; set; }
+        public string actionObjectName { get; set; }
+        public string actionDescription { get; set; }
+        public string field { get; set; }
+        public string newValue { get; set; }
+        public int @class { get; set; }
+        public int version { get; set; }
+        public string previousValue { get; set; }
+    }
+
+    public class AssetsAuditApiViewModel : PagedApiBaseViewModel
+    {
+        [DataMember]
+        public IEnumerable<AssetAuditApiItemModel> items { get; set; }
+    }
+
     public class AssetsApiPermissionViewModel
     {
         [DataMember]

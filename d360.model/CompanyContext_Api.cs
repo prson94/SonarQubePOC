@@ -9,7 +9,6 @@ using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -487,6 +486,23 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
 
             Connection.Execute($@"
+                    DELETE Field
+                    FROM Field F
+                    	inner join {tableName} E on E.ExecutionID= @executionID
+                    	inner join api.ExecutionField EF on EF.ExecutionId = E.ExecutionId
+                    	inner join Asset A on A.uid = E.Uid
+                    WHERE E.ExecutionID = @executionID
+                     and EF.ItemNumber between @beginItemNumber and @endItemNumber
+                     and EF.Ignore is null
+                     and EF.FieldTypeID is not null
+                     and F.ObjectID = A.ObjectID
+                     and F.ObjectType = A.Object
+                     and F.FieldTypeID = EF.FieldTypeID
+                     and EF.FieldValue is null 
+                     and EF.LookupValue is null;",
+                     new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
+
+            Connection.Execute($@"
 merge       Field as T
 using       (
             select  distinct 
@@ -507,6 +523,7 @@ using       (
                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
+                    and FieldValue is not null
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
 {(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() " : " ")}
@@ -1187,7 +1204,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Link":
-                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
+                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
@@ -1295,7 +1312,10 @@ where T.ExecutionId = @executionid;
                     fieldRow["ExecutionID"] = executionID;
                     fieldRow["ItemNumber"] = itemNumber;
                     fieldRow["FieldName"] = fieldName;
-                    fieldRow["FieldValue"] = fieldValue;
+                    if (k.Value == null)
+                        fieldRow["FieldValue"] = DBNull.Value;
+                    else
+                        fieldRow["FieldValue"] = fieldValue;
                     if (fieldTypeId.HasValue)
                         fieldRow["FieldTypeID"] = fieldTypeId.Value;
 

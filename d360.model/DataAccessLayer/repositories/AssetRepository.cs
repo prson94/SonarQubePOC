@@ -2124,7 +2124,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             if (dbExecutionItem == null)
             {
-                throw new Exception("Execution unique identifier not found.");
+                throw new ArgumentException("Execution unique identifier not found.");
             }
 
             var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };

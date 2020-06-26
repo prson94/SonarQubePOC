@@ -527,7 +527,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 delete values[link.FieldName + '_Url'];
                 let name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
-                values[link.FieldName] = `${name}|${url}`;
+                //No name and url, use empty string rather than '|'
+                values[link.FieldName] = (name == '' && url == '') ? `` : `${name}|${url}`;
             }
 
         }
