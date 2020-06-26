@@ -148,10 +148,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
                 if (r) {
                     this.isLoading = false;
                     this.showMessageForResult(this.messagesService, r);
-
-                    if (r.isSuccess) {
-                        this.onSave.emit(); 
-                    }
+                    this.onSave.emit(); 
                 }
                 else {
                     this.model.EffectiveDate = prevDate;
