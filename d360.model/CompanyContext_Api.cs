@@ -7951,7 +7951,7 @@ WHEN MATCHED
 
                 #region Build data tables.
 
-                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedPredicate");
+                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "[api].[ExecutionDeletedGroup]");
 
                 var table = new DataTable();
 
