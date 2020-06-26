@@ -7940,8 +7940,9 @@ WHEN MATCHED
             bool generalChecksCompleted = false;
             int itemNumber = 1;
             List<GroupResponseResult> results = new List<GroupResponseResult>();
-            
-            
+            CurrentExecutionLocationModel currentLocation = null;
+
+
             Add(execution);
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
@@ -7949,6 +7950,8 @@ WHEN MATCHED
             {
 
                 #region Build data tables.
+
+                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionDeletedPredicate");
 
                 var table = new DataTable();
 
@@ -8029,32 +8032,59 @@ WHEN MATCHED
             itemNumber = 1;
             if (generalChecksCompleted)
             {
-                using (var trans = Connection.BeginTransaction())
+                int loopSize = 250;
+                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
                 {
-                    try
+                    bool runCompleted = false;
+                    int retryCount = 0;
+
+                    while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
                     {
-                        var deleteSQL = $@"DELETE G
+                        using (var trans = Connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                var deleteSQL = $@"DELETE G
 	                                        FROM [Group] G
 		                                    inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID
 		                                    inner join Asset A on A .uid = EG.GroupUid
 		                                    where A.ObjectID = G.ID";
 
-                        Connection.Execute(deleteSQL,
-                                new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                Connection.Execute(deleteSQL,
+                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                        Connection.Execute(
-                                            $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
-                                            new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                Connection.Execute(
+                                                    $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
+                                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
 
-                        trans.Commit();
-                    }
-                    catch (Exception ex)
-                    {
-                        var msg = ex.GetFullExceptionData(false);
+                                trans.Commit();
+                                runCompleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                try
+                                {
+                                    if (trans != null)
+                                    {
+                                        trans.Rollback();
+                                    }
+                                }
+                                catch
+                                {
+                                }
 
-                        results = new List<GroupResponseResult>();
-                        results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
-                        trans.Rollback();
+                                retryCount++;
+
+                                if (retryCount > API_V2_RETRY_LIMIT)
+                                {
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
+                                }
+                            }
+                        }
                     }
                 }
             }
