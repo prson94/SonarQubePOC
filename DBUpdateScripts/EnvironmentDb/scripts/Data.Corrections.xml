@@ -782,4 +782,28 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+		<![CDATA[
+		UPDATE A
+SET color = 
+	CASE LOWER(Code)
+           WHEN 'draft' THEN '#d1dce4'
+           WHEN 'certified' THEN '#4ecc89'
+           WHEN 'under review' THEN '#e2792a' 
+           ELSE 'hsl(' + CAST(([utility].[JS_Hashcode](LOWER(A.code)) * 2) % 360 as varchar) + ', 70%, 70%)'
+    END
+FROM Asset as A
+inner join AssetType ATT on ATT.ID = A.AssetTypeID
+inner join FieldType F on 
+	F.Name like 'status' 
+	and F.lookupObjectID = ATT.ObjectID 
+	and F.LookupObjectType + 'Type' = ATT.[Object]
+	WHERE A.Color is null
+		]]>
+    </sql>
+	</changeSet>
+
  </databaseChangeLog>
