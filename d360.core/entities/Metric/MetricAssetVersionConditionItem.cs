@@ -27,13 +27,13 @@ namespace d360.core.entities.Metric
         public string Operator { get; set; }
 
         [DataMember, ForeignKey("Uid")]
-        public virtual List<MetricAssetVersionConditionItemValue> Values { get; set; }
+        public virtual ICollection<MetricAssetVersionConditionItemValue> Values { get; set; }
 
         // Used only during the measure update process to tell if this item has been touched. If not, it should be deleted.
         [NotMapped]
         public bool Updated { get; set; }
 
-        //[DataMember, ForeignKey("ConditionUid")]
-        //public virtual MetricAssetVersionCondition Condition { get; set; } 
+        [DataMember, ForeignKey("Uid")]
+        public virtual MetricAssetVersionCondition Condition { get; set; } 
     }
 }
