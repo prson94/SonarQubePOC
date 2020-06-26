@@ -62,12 +62,12 @@ namespace d360.web.Controllers.V2
             HttpGet,
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerParameter("assettypeuid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "Guid", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypeUid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_state", "Returns allocations whose state is one of two possible values: Active, or Deleted. When using this parameter you must provide one of these two values.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("assetclassname", "Returns allocations whose asset type class falls within the specified value provided. You must provide the enum Value property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("assettypepath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("scoretype", "Returns allocations whose score type is either Governance or DataQuality.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("isexternallycalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetClassName", "Returns allocations whose asset type class falls within the specified value provided. You must provide part or all of the Name property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypePath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("scoreType", "Returns allocations whose score type is either Governance or DataQuality.", DataType = "string", Enum = typeof(ScoreType), ParameterType = "query", Required = false),
+            SwaggerParameter("isExternallyCalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
