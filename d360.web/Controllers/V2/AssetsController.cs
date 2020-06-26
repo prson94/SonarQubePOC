@@ -587,7 +587,9 @@ namespace d360.web.Controllers.V2
                             LookupObjectID = refList.ObjectID,
                             LookupObjectType = SystemObjects.ReferenceItem.ToString(),
                             UpdatedBy = Company.CurrentResourceID,
-                            ShowIfEmpty = true
+                            ShowIfEmpty = true,
+                            LookupDisplayFormat = "{Code}",
+                            LookupEditFormat = "{Code}"
                         });
 
                         Company.Add(new FieldType
