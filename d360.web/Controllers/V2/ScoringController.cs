@@ -55,7 +55,7 @@ namespace d360.web.Controllers.V2
         #region Allocations
 
         /// <summary>
-        /// Gets a list of score definitions set up in Administration->Scoring.
+        /// Gets a list of score definitions set up in Administration / Scoring.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
