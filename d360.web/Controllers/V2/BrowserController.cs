@@ -385,7 +385,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 ignoredFields.Add(DataType.FieldFromRelationship.ToString());
                 ignoredFields.Add(DataType.Score.ToString());
 
-                var sql = @"
+                var sql = $@"
 select	A.TypeName,
 		A.Uid,
         A.AssetTypeClass,
@@ -397,11 +397,26 @@ select	A.TypeName,
             from    (
                     select	F.ColumnOrder,
 							F.FriendlyName as Name,
-					        V.FormattedValue as Value,
+					       COALESCE(fv.value,V.FormattedValue) as Value,
                             '[]' as [Values],
-					        F.Type
+					         (CASE
+								WHEN fv.value is not null THEN 'Color'
+								ELSE F.Type 
+							END) as Type
 			        from	utility.FieldValue V
 					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
+                             outer apply(
+							select value = (
+								SELECT 
+								AC.Code as name,
+                                COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '{{emptycolor}}') as color
+								FROM field fi 
+								outer apply STRING_SPLIT(fi.Value, ',') SPFfi
+								inner join Asset AC on AC.Object = F.LookupObjectType and AC.ObjectID like SPFfi.value   
+								cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ 
+								 where FieldTypeID = F.ID 
+								for json path)
+							)FV
 			        where	AssetID = A.ID
 					        and F.IsDisplayable = 1 
                             and (F.ShowIfEmpty = 1 OR (F.ShowIfEmpty = 0 AND V.FormattedValue <> '' and V.FormattedValue IS NOT NULL))
