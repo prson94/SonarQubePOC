@@ -7955,10 +7955,6 @@ WHEN MATCHED
                 table.Columns.Add("ExecutionID", typeof(Guid));
                 table.Columns.Add("ItemNumber", typeof(int));
                 table.Columns.Add("GroupUid", typeof(Guid));
-                table.Columns.Add("Name", typeof(string));
-                table.Columns.Add("Description", typeof(string));
-                table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
-                table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
 
                 #region Generate data sets
 
@@ -7984,7 +7980,7 @@ WHEN MATCHED
                 var bulkCopy = new SqlBulkCopy(Connection)
                 {
                     BatchSize = table.Rows.Count,
-                    DestinationTableName = "[api].[ExecutionGroup]",
+                    DestinationTableName = "[api].[ExecutionDeletedGroup]",
                     BulkCopyTimeout = 3600
                 };
 
@@ -8003,7 +7999,7 @@ WHEN MATCHED
             from    [Asset] A
             where   A.Object = 'Group'
             ) S
-                on      (S.uid != EG.GroupUid and EG.ExecutionID ='00000000-0000-0000-0000-000000000001')
+                on      (S.uid != EG.GroupUid and EG.ExecutionID =@ExecutionID)
                 when matched then 
                 update 
                 set		EG.Success = 0,
