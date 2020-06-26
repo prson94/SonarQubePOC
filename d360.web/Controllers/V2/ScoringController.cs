@@ -55,19 +55,19 @@ namespace d360.web.Controllers.V2
         #region Allocations
 
         /// <summary>
-        /// Get a list of allocations.
+        /// Gets a list of score definitions set up in Administration->Scoring.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
             HttpGet,
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerParameter("assettypeuid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "Guid", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypeUid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerParameter("_state", "Returns allocations whose state is one of two possible values: Active, or Deleted. When using this parameter you must provide one of these two values.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("assetclassname", "Returns allocations whose asset type class falls within the specified value provided. You must provide the enum Value property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("assettypepath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("scoretype", "Returns allocations whose score type is either Governance or DataQuality.", DataType = "string", ParameterType = "query", Required = false),
-            SwaggerParameter("isexternallycalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetClassName", "Returns allocations whose asset type class falls within the specified value provided. You must provide part or all of the Name property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypePath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("scoreType", "Returns allocations whose score type is either Governance or DataQuality.", DataType = "string", Enum = typeof(ScoreType), ParameterType = "query", Required = false),
+            SwaggerParameter("isExternallyCalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
@@ -100,7 +100,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Creates allocation based on provided asset type uid and score type.
+        /// Creates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates an existing allocation.
+        /// Updates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
@@ -279,9 +279,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets allocations.
+        /// Deletes a score definition.
         /// </summary>
-        /// <returns>The metric.</returns>
+        /// <returns>OK status with message.</returns>
         [
             HttpDelete,
             Route("allocations/{allocationUid:Guid}"),
@@ -324,9 +324,9 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// GET a list of relationship types.
+        /// Exports a list of score definitions.
         /// </summary>
-        /// <returns>A excel file containing relationships types.</returns>
+        /// <returns>A excel file containing score definitions.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -402,10 +402,10 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the allocation Uid provided.
+        /// Gets a list of measures for the score definition UID provided.
         /// </summary>
         /// <param name="allocationUid">The Uid of the score allocation.</param>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <returns>An array of measures for the specified score definition.</returns>
         [
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
