@@ -80,6 +80,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { ProcessDiagramAssedEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -101,6 +103,8 @@ import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker
         SiteModalModule,
         ScoreBadgeModule,
         D3SColorPickerModule,
+        SharedDynamicGridEditorModule,
+        SiteModalModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -159,7 +163,8 @@ import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker
         ModelDiagramComponent,
 
         LineageDiagramComponent,
-        ProcessDiagramComponent
+        ProcessDiagramComponent,
+        ProcessDiagramAssedEditorComponent
     ],
     exports: [
         AssetBrowserComponent,

@@ -2177,5 +2177,42 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             return results;
         }
+
+        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model)
+        {
+            List<ValidationError> errors = new List<ValidationError>();
+            foreach (var item in model)
+            {
+                var assetType = GetAssetTypeByUID(item.AssetTypeUid);
+                if (assetType == null)
+                {
+                    errors.Add(new ValidationError() { Error = "Asset Type not found.", AssetTypeUid = item.AssetTypeUid });
+                }
+
+                foreach (var asset in item.Assets)
+                {
+                    bool success = true;
+                    string error = "";
+                    var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+                    CompanyContext.ValidateFields(assetType.Object,
+                        assetType.ObjectID,
+                        true,
+                        fieldTypes,
+                        fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                        asset.Fields,
+                        Guid.Empty, 0,
+                        null,
+                        out success,
+                        out error
+                        );
+                    if (!success)
+                        errors.Add(new ValidationError() { Error = error, AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
+
+                }
+
+            }
+            return errors;
+        }
+
     }
 }
