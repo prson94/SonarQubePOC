@@ -26,7 +26,7 @@
     "@angular/platform-server": "9.1.9",
     "@angular/router": "9.1.9",
     "angular2-highcharts": "0.5.5",
-    "codemirror": "5.30.0",
+    "codemirror": "5.55.0",
     "core-js": "^2.5.7",
     "gojs": "2.0.16",
     "lodash": "^4.17.15",
