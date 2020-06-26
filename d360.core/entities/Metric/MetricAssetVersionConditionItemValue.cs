@@ -14,7 +14,7 @@ namespace d360.core.entities.Metric
         [DataMember, Key, Column(Order = 2)]
         public string Value { get; set; }
 
-        [DataMember, ForeignKey("Uid")]
+        [IgnoreDataMember, ForeignKey("Uid")]
         public virtual MetricAssetVersionConditionItem Item { get; set; }
     }
 }

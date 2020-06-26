@@ -892,8 +892,12 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
         {
             if (model.AllocationUid == Guid.Empty)
             {
-                if (model.AssetTypeUid.HasValue && model.ScoreType.HasValue)
+                if (model.AssetTypeUid.HasValue)
                 {
+                    if (!model.ScoreType.HasValue)
+                    {
+                        model.ScoreType = ScoreType.Governance;
+                    }
                     return Company.Filter<MetricAllocation>(a => a.AssetTypeUid == model.AssetTypeUid.Value && a.ScoreType == model.ScoreType.Value && string.IsNullOrEmpty(a.OverrideName)).FirstOrDefault();
                 }
                 else
