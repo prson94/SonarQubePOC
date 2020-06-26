@@ -498,8 +498,10 @@ namespace d360.web.Controllers
                         try
                         {                         
                            if(!string.IsNullOrEmpty(relayState))
-                            {                                
-                                redirectURL = relayState;
+                            {              
+                                // ignore if relaystate starts with http or https with means it contains ://
+                                if(relayState.IndexOf("//") < 0)
+                                    redirectURL = relayState;
                             }
                         }
                         catch(Exception e)
@@ -514,7 +516,7 @@ namespace d360.web.Controllers
                             redirectURL = "/#";
                         }
 
-                        // Redirect to the originally requested resource URL, if any, or the default page.
+                        // Redirect to the originally requested resource URL, if any, or the default page.                        
                         return Redirect(redirectURL);
                     }
                     else
