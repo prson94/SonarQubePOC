@@ -7977,12 +7977,12 @@ WHEN MATCHED
                     var row = table.NewRow();
                     row["ExecutionID"] = execution.ExecutionID;
                     row["ItemNumber"] = itemNumber;
-                    if (item.Uid != Guid.Empty)
+                    if (item.Uid != null)
                         row["GroupUid"] = item.Uid;
                     row["Name"] = item.Name;
                     row["Description"] = item.Description;
                     row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
-                    if (item.SecondaryOwnerUid != Guid.Empty)
+                    if (item.SecondaryOwnerUid != null)
                         row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
                     table.Rows.Add(row);

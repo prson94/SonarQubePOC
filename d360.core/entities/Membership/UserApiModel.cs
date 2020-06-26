@@ -35,11 +35,11 @@ namespace d360.core.entities.Membership
 
     public class UpdateGroupModel
     {
-        public Guid Uid { get; set; }
+        public Nullable<Guid> Uid { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
-        public Guid SecondaryOwnerUid { get; set; }
+        public Nullable<Guid> SecondaryOwnerUid { get; set; }
     }
 
     public class UserApiInsertModel : IUserApiUpsertModel
