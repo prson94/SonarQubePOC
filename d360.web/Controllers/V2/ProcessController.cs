@@ -357,7 +357,7 @@ namespace d360.web.Controllers.V2
                 row["Action"] = "Insert";
                 assetTable.Rows.Add(row);
 
-                foreach (var field in item.CustomFields.Where(x=> !string.IsNullOrEmpty(x.Value)))
+                foreach (var field in item.CustomFields.Where(x => !string.IsNullOrEmpty(x.Value)))
                 {
                     var fieldRow = fieldTable.NewRow();
                     fieldRow["ExecutionID"] = execution.ExecutionID;
@@ -622,7 +622,13 @@ then update
 	APD.UpdatedOn = getutcdate()
 when		not matched by target then
 insert		(AssetId,Diagram,CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-values		(S.AssetId,S.Diagram, @resourceId, getutcdate(), @resourceId, getutcdate());", new { assetId = targetAssetId, diagram = JsonConvert.SerializeObject(simpleModel), resourceId = Company.CurrentResourceID }, transaction: trans);
+values		(S.AssetId,S.Diagram, @resourceId, getutcdate(), @resourceId, getutcdate());",
+new
+{
+    assetId = targetAssetId,
+    diagram = (simpleModel.nodeDataArray.Count > 0 || simpleModel.linkDataArray.Count > 0) ? JsonConvert.SerializeObject(simpleModel) : null,
+    resourceId = Company.CurrentResourceID
+}, transaction: trans);
 
                     trans.Commit();
 

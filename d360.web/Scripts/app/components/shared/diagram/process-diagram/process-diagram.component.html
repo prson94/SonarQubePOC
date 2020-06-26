@@ -87,7 +87,7 @@
             </p-accordion>
         </div>
         <div #diagram id="process-diagram-placeholder">
-            <div class="empty-overlay">
+            <div class="empty-overlay" *ngIf="isDiagramLoaded">
                 <div class="content" *ngIf="isCanvasEmpty && isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-plus"></i>
