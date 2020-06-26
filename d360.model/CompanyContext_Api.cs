@@ -8000,7 +8000,7 @@ WHEN MATCHED
             from    [Asset] A
             where   A.Object = 'Group'
             ) S
-                on      (S.uid != EG.GroupUid and EG.ExecutionID ='00000000-0000-0000-0000-000000000001')
+                on      (S.uid != EG.GroupUid and EG.ExecutionID =@ExecutionID)
                 when matched then 
                 update 
                 set		EG.Success = 0,
