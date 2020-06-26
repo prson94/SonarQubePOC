@@ -55,7 +55,7 @@ namespace d360.web.Controllers.V2
         #region Allocations
 
         /// <summary>
-        /// Get a list of allocations.
+        /// Gets a list of score definitions set up in Administration->Scoring.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
@@ -100,7 +100,7 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Creates allocation based on provided asset type uid and score type.
+        /// Creates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
@@ -181,7 +181,7 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates an existing allocation.
+        /// Updates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
@@ -279,9 +279,9 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets allocations.
+        /// Deletes a score definition.
         /// </summary>
-        /// <returns>The metric.</returns>
+        /// <returns>OK status with message.</returns>
         [
             HttpDelete,
             Route("allocations/{allocationUid:Guid}"),
@@ -324,9 +324,9 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// GET a list of relationship types.
+        /// Exports a list of score definitions.
         /// </summary>
-        /// <returns>A excel file containing relationships types.</returns>
+        /// <returns>A excel file containing score definitions.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -402,10 +402,10 @@ namespace d360.web.Controllers.V2
         #endregion
 
         /// <summary>
-        /// Gets a administrative hierarchical structure of metrics associated with the allocation Uid provided.
+        /// Gets a list of measures for the score definition UID provided.
         /// </summary>
         /// <param name="allocationUid">The Uid of the score allocation.</param>
-        /// <returns>An HTTP status code and message.</returns>
+        /// <returns>An array of measures for the specified score definition.</returns>
         [
             HttpGet,
             Route("allocations/{allocationUid:Guid}/structure"),
