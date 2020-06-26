@@ -129,7 +129,7 @@ namespace d360.web.Controllers
                                 ro.Values = new List<ReadOnlyFieldValue>();
                                 ro.Value = "values";
 
-                                var items = ((k != null) ? k.Value.Split(',') : new string[] { });
+                                var items = ((!string.IsNullOrEmpty(value)) ? value.Split(',') : new string[] { });
                                 var itemIds = new List<long>();
 
                                 foreach (var item in items)
