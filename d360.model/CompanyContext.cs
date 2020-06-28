@@ -2879,6 +2879,7 @@ select @err";
                                     joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
                                     joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
                                     joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    joins += " ";
                                 }
                             }
                         }
@@ -2928,7 +2929,7 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 else if (f.Type == DataType.Score.ToString())
                 {
                     columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
+                    joins += $@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {
