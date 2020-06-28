@@ -498,9 +498,15 @@ namespace d360.web.Controllers
                         try
                         {                         
                            if(!string.IsNullOrEmpty(relayState))
-                            {              
-                                // ignore if relaystate starts with http or https with means it contains ://
-                                if(relayState.IndexOf("//") < 0)
+                            {
+                                // check for absolute url to prevent open redirect security vulnerability https://cwe.mitre.org/data/definitions/601.html 
+                                // if relaystate contains // which is an absolute url examples:
+                                // https://www.cnn.com
+                                // http://www.foxnews.com
+                                // //stackoverflow.com
+                                // www.cnn.com, /artifact, /artifact/1 will be treated as relative urls and will just get stuck on end of current path
+                                
+                                if (!relayState.Contains("//"))
                                     redirectURL = relayState;
                             }
                         }
