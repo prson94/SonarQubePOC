@@ -1002,11 +1002,13 @@ namespace d360.model.DataAccessLayer
                     document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
-            document.AutoFitColumn(1, fields.Count);
+
+            SetExcelColumnWidths(document, fields);
             #endregion
 
             return document;
         }
+
 
         private string extractColorNameFromJSON(string jsonString)
         {
