@@ -170,6 +170,11 @@ namespace d360.web.Controllers.V2
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
                 }
+
+                if (model.Threshold <= 0 || model.Threshold > 1)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Threshold must be a value between 0 and 1");
+                }
             }
 
             model.ConditionGroups.RemoveAll(g => g.ConditionItems.Count == 0); // Remove empty groups.
