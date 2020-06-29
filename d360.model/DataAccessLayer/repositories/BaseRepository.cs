@@ -74,7 +74,7 @@ namespace d360.model.DataAccessLayer.repositories
                 var columnName = f.Name;
                 var valueColumn = "FormattedValue";
                 var fieldDataType = getFieldDataType(f);
-
+                var hasColor = LookupFieldHasColorItem(f);
                 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
                 
                 if (f.Type == "JsonElement")
@@ -112,8 +112,15 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
-                        fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
+                        if (hasColor)
+                        {
+                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                        }
+                        else
+                        {
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
+                        }
                     }
                     else if (f.Type == "Lookup" && listColorsAsJSON)
                     {
@@ -145,8 +152,15 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Lookup" && f.AllowAllValue)
                         {
-                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
-                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            if (hasColor)
+                            {
+                                fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                            }
+                            else
+                            {
+                                fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+                                dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            }
                         }
                         else if (f.Type == "Path")
                         {
@@ -180,8 +194,15 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Lookup" && f.AllowAllValue)
                         {
-                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            if (hasColor)
+                            {
+                                fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
+                            }
+                            else
+                            {
+                                fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                                dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
+                            }
                         }
                         else if (f.Type == "Path")
                         {
@@ -358,7 +379,7 @@ namespace d360.model.DataAccessLayer.repositories
                             for xml path ('')), 1, 1, '')
                          ){tableAlias}(FormattedValue) ");
                 }
-                else if(f.Type =="Lookup" && listColorsAsJSON && LookupFieldHasColorItem(f))
+                else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
                 {
                     string emptycolor = "transparent";
                     if (f.Name.ToLower() == "status")

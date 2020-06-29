@@ -135,7 +135,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorItemsAsSelectItem(items: any[]): SelectItem[] {
         if (items.length > 0) {
-            return items.filter(x => x.Text != "Choose...").map((x) => {
+            return items.filter(x => x.Text != "Choose..." && x.Text != "any").map((x) => {
                 try {
                     let colorobj = JSON.parse(x.Text);
                     if (colorobj)
