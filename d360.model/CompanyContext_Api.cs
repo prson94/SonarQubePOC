@@ -8030,6 +8030,7 @@ WHEN MATCHED
 		                    [Message] = coalesce([Message], '') + 'Already a group called this name;'
 	                from [api].[ExecutionGroup] EG 
 	                inner join [Group] G on G.[Name] = EG.[Name]
+                    left join [Asset] A on A.uid = EG.[GroupUid] and A.Object = 'Group'
                     where	ExecutionID = @ExecutionID and G.Name is not null;
 
                     update	[api].[ExecutionGroup]
