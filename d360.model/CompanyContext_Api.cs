@@ -8085,7 +8085,7 @@ WHEN MATCHED
             }
             results.AddRange(
                             Query<GroupResponseResult>(
-                                $"select * from api.ExecutionDeletedGroup where ExecutionID = @ExecutionID",
+                                $"select [ItemNumber],[GroupUid] as uid,[ExecutionID] as ExecutionItemUid,[Message],[Success] from api.ExecutionDeletedGroup where ExecutionID = @ExecutionID",
                                 new { execution.ExecutionID }
                             )
                         );
