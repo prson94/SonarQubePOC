@@ -224,12 +224,11 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
                             if (fieldType != null)
                             {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
-{(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))" : "")}
- when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
-{(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))" : "")}
-end = @f{fieldType.ID}Value";
-
+                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + 
+                                $@" case {(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then @F{fieldType.ID}_AllValue " : "")}
+                                    when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
+                                    {(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else @defaultValueF{fieldType.ID} " : "")}
+                                    end = @f{fieldType.ID}Value ";
 
                                 dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
                                 filteringByFields = true;

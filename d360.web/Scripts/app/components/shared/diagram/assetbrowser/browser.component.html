@@ -10,7 +10,7 @@
                     <div class="button-spacer"></div>
                     <div style="display: inline-block">
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
-                        <button type="button" class="gov-button-v2 primary" *ngIf="displayConfiguration.DiagramType == 3" (click)="editProcess();"><i class="fa fa-pencil"></i>Edit</button>
+                        <button *ngIf="canEditProcessDiagram()" type="button" class="gov-button-v2 primary" (click)="editProcess();"><i class="fa fa-pencil"></i>Edit</button>
                     </div>
 
                 </div>
@@ -93,7 +93,7 @@
                                     <d3s-assetbrowser-infopanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-infopanel>
                                 </div>
 
-                                <div #ownerDetailPanel class="fields" *ngIf="panel_TabIndex == 1">
+                                <div #ownerDetailPanel class="scroll-panel" *ngIf="panel_TabIndex == 1">
                                     <d3s-loading [(isLoading)]="panel_Loading"></d3s-loading>
                                     <d3s-assetbrowser-ownerpanel [asset]="selectedDiagramAsset"></d3s-assetbrowser-ownerpanel>
                                 </div>

@@ -12,7 +12,7 @@ namespace d360.web.Models
         //other keys are custom fields
 
         private string[] systemFields = new string[] {
-            "key","assetTypeName", "assetTypeUid","category","icon","key","loc","refItemColor"
+            "key","assetTypeName", "assetTypeUid","category","icon","key","loc","refItemColor","isNew","Uid","AssetTypeUid","hasError"
         };
         public string GetHash()
         {
@@ -60,8 +60,8 @@ namespace d360.web.Models
 
     public class LinkData
     {
-        public string from { get; set; }
-        public string to { get; set; }
+        public Guid from { get; set; }
+        public Guid to { get; set; }
         public IList<double> points { get; set; }
     }
 

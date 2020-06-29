@@ -373,7 +373,6 @@
     <Compile Include="Controllers\V2\PermissionsController.cs" />
     <Compile Include="Controllers\V2\ScoringController.cs" />
     <Compile Include="Controllers\V2\MetricsController.cs" />
-    <Compile Include="Controllers\V2\ProfilesController.cs" />
     <Compile Include="Controllers\V2\RelationshipsController.cs" />
     <Compile Include="Controllers\V2\AssetsController.cs" />
     <Compile Include="Controllers\V2\ResponsibilitiesController.cs" />
@@ -713,7 +712,6 @@
     <Content Include="Scripts\app\components\artifact\artifact-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-details.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute.component.html" />
-    <Content Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-agent-errors.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-agent-history.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-configurations.component.html" />
@@ -753,6 +751,7 @@
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\infopanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\filterpanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\browser.component.html" />
+    <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-editor-preview.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-mapping-rules.component.html" />
@@ -852,10 +851,12 @@
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy.routes.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram-asset-editor.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\process-diagram\process-diagram.templates.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\preview-popup.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\previewpopup\previewpopup.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-display.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\small-widgets\color-picker\color-picker.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\tooltip\info-tooltip.component.ts" />
@@ -1215,7 +1216,6 @@
     <TypeScriptCompile Include="Scripts\app\components\asset\asset.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-data-profile-detail.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
     <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />

@@ -52,6 +52,12 @@ namespace d360.model.helpers
             }
         }
 
+        public void OverrideAllowedDefaultFields(List<DefaultFilter> defaultFilters)
+        {
+            allowedDefaultFields.Clear();
+            allowedDefaultFields.AddRange(defaultFilters);
+        }
+
         public void LoadFieldTypes(List<FieldType> fields, List<string> columns)
         {
             this.fieldTypes = fields;

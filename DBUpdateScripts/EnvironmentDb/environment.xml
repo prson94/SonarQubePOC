@@ -66,6 +66,7 @@
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
+	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.AttributeTypeCategory.xml"/>
@@ -243,7 +244,8 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
@@ -256,6 +258,8 @@
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	
 
   

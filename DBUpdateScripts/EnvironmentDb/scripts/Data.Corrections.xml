@@ -767,4 +767,19 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
+  <changeSet author="TKlok" id="Data.Corrections.GOV-11037">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+		<![CDATA[
+			UPDATE [dbo].[Field]
+			SET Value = ''
+			FROM [dbo].[Field] f
+			INNER JOIN [dbo].[FieldType] ft ON ft.id = f.FieldTypeID
+			WHERE ft.Type = 'Link'
+			AND ft.IsRequired = 0
+			AND f. Value = '|';
+		]]>
+    </sql>
+	</changeSet>
  </databaseChangeLog>

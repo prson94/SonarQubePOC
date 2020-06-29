@@ -940,6 +940,34 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Deletes a group based on the specified group uid.
+        /// </summary>
+        /// <param name="groups">The group(s) that need to be deleted</param>
+        [
+            HttpDelete,
+            Route("groups"),
+            SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if(groups.Count() < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "No Groups provided in request"));
+
+            var execution = getApiExecution(groups.Count);
+
+            var result = membershipRepository.DeleteGroups(execution, groups);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;

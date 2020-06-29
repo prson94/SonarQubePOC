@@ -42,6 +42,9 @@
                 <ng-container *ngSwitchCase="'Tag'">
                     <d3s-tag-view [data]="field.Values" [assetUID]="selectedDiagramAsset?.Uid" [isEditable]="false" [allowAddTag]="false"></d3s-tag-view>
                 </ng-container>
+                <ng-container *ngSwitchCase="'Color'">
+                    <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
+                </ng-container>
                 <ng-container *ngSwitchDefault>
                     <span [innerHtml]="field.Value"></span>
                 </ng-container>

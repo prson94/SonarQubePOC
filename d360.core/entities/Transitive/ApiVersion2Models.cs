@@ -467,25 +467,6 @@ namespace d360.core.entities
         public Guid uid { get; set; }
     }
 
-    public class AssetDataProfileResult
-    {
-        public Guid AssetUid { get; set; }
-        public string Message { get; set; }
-        public bool Success { get; set; }
-    }
-
-    public class AssetDataProfileDeleteResult
-    {
-        public Guid AssetUid { get; set; }
-        public string Message { get; set; }
-        public bool Success { get; set; }
-    }
-
-    public class AssetDataProfileDelete
-    {
-        public Guid AssetUid { get; set; }
-    }
-
     [DataContract]
     public class PredicateApiResult
     {
@@ -796,4 +777,23 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    public class UpsertModel
+    {
+        public Guid AssetTypeUid { get; set; }
+        public List<UpsertAsset> Assets { get; set; }
+    }
+    public class UpsertAsset
+    {
+        public Guid? Uid { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
+        [JsonIgnore]
+        public Guid? ExternalKey { get; set; }
+    }
+
+    public class ValidationError
+    {
+        public Guid AssetTypeUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public string Error { get; set; }
+    }
 }

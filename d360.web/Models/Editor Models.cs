@@ -226,6 +226,8 @@ namespace d360.web.Models
                 return !(VirtualScroll || UseTypeahead);
             }
         }
+        [DataMember]
+        public bool UseColorControl { get; set; }
 
 
     }

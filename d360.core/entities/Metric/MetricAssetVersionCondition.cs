@@ -29,6 +29,9 @@ namespace d360.core.entities.Metric
         [NotMapped]
         public bool Updated { get; set; }
 
+        [IgnoreDataMember, ForeignKey("Uid")]
+        public virtual MetricAssetVersion Version { get; set; }
+
         [DataMember, ForeignKey("AssetVersionConditionUid")]
         public virtual ICollection<MetricAssetVersionConditionItem> Items { get; set; }
     }

@@ -45,6 +45,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() directions: string;
     @Input() objectID: number = 0;
     @Input() objectTypeUid: string;
+    @Input() assetUid: string;
     @Input() parentID: number;
     @Input() objectType: string;
     @Input() createUri: string;
@@ -55,7 +56,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() targetTypeID: number;
     @Input() hasCloseButton = false;
     @Input() newActionName: string = "New";
-    @Input() hasHeader = true;    
+    @Input() hasHeader = true;
     @Input() selectedObject: string;
     @Input() selectedObjectID: any;
     @Input() adding: boolean = false;
@@ -65,6 +66,10 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() useTypeUidForDefinition: boolean = false;
     @Input() showActions: boolean = true;
 
+    @Input() useModelBinding: boolean = false;
+    @Input() dataModel: any = null;
+
+    @Output() modelChanged = new EventEmitter();
     @Output() closeClick = new EventEmitter();
     @Output() saveClick = new EventEmitter();
 
@@ -72,6 +77,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     @Input() showAsModal: boolean = false;
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
+    @Input() useNonLegacyData: boolean = false;
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
     private isInError: boolean = false;
@@ -115,6 +121,16 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 this.load();
             }
         }
+        if (changes['objectTypeUid']) {
+            if (!changes['objectTypeUid'].isFirstChange() && (changes['objectTypeUid'].previousValue != changes['objectTypeUid'].currentValue)) { // object has changed            
+                this.load();
+            }
+        }
+        if (changes['assetUid']) {
+            if (!changes['assetUid'].isFirstChange() && (changes['assetUid'].previousValue != changes['assetUid'].currentValue)) { // object has changed            
+                this.load();
+            }
+        }
         if (changes['isModalVisible']) {
             if (!changes['isModalVisible'].isFirstChange() && (changes['isModalVisible'].previousValue != changes['isModalVisible'].currentValue)) { // visibility has changed            
                 this.savingInProgress = false;
@@ -146,7 +162,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
         this.isInErrorMessage = '';
         this.isInError = false;
         if (this.selection != undefined) {
-            this.editedItem = _.cloneDeep(this.selection);            
+            this.editedItem = _.cloneDeep(this.selection);
         } else {
             this.editedItem = {};
             this.action = this.newActionName;
@@ -176,7 +192,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 .subscribe(result => {
                     this.handleEditor(result);
                 });
-        } else {
+        }
+        else if (this.useNonLegacyData) {
+            this.editorDefinitionService.getEditorDefinitionNonLegacy(this.objectTypeUid, this.assetUid)
+                .subscribe(result => {
+                    this.handleEditor(result);
+                });
+        }
+        else {
             this.editorDefinitionService.getEditorDefinition(
                 id,
                 this.objectID,
@@ -195,6 +218,14 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
     handleEditor(result: EditorField[]) {
 
+        if (this.dataModel && !this.assetUid) {
+            result.forEach(res => {
+                if (res.Name == 'Name') {
+                    res.Value = this.dataModel['Name'];
+                }
+            });
+        }
+
         if ((result as any).type && (result as any).type == "error") {
             this.isInErrorMessage = (result as any).message;
             this.isInError = true;
@@ -212,34 +243,29 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             this.fields = result;
 
             this.fields.forEach(f => {
-                
-                if (f.Category == null)
-                {
+
+                if (f.Category == null) {
                     currentCategory = "";
                 }
-                else
-                {
+                else {
                     currentCategory = f.Category;
                 }
-                
 
-                if (this.categories.findIndex(dc => dc.name == currentCategory) == -1)
-                {
+
+                if (this.categories.findIndex(dc => dc.name == currentCategory) == -1) {
                     let category = new EditorCategory();
                     category.name = currentCategory;
                     category.rows = [];
-                    if (currentCategory == "")
-                    {
+                    if (currentCategory == "") {
                         this.categories.unshift(category);
                     }
-                    else
-                    {
+                    else {
                         this.categories.push(category);
                     }
-                        
+
                 }
 
-               
+
                 if (f.FieldType && f.FieldType.toUpperCase() == 'BOOLEAN') {
                     if (f.Value) {
                         /* checkbox doesnt work binding to a string */
@@ -250,14 +276,12 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     }
                 }
 
-                 let curCategory = this.categories.find(dc => dc.name == currentCategory);
+                let curCategory = this.categories.find(dc => dc.name == currentCategory);
 
                 let r = curCategory.rows.find(r => r.Row == (f.Row || 0));
-                if (r)
-                {
+                if (r) {
                     r.Fields.push(f);
-                } else
-                {
+                } else {
                     let n = new EditorRow();
 
                     n.Row = f.Row;
@@ -275,7 +299,13 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
             }
 
             this.form = this.toFormGroup(this.fields);
+            if (this.useModelBinding) {
+                this.form.valueChanges.subscribe(x => {
+                    this.onSubmit();
+                })
+            }
         }
+
         this.ref.markForCheck();
         setTimeout(() => {
             this.focusToFirst();
@@ -291,7 +321,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 let parts = (field.Value ? field.Value.split("|") : []);
                 let url = "";
                 let name = "";
-                
+
 
                 if (parts.length == 2) {
                     name = parts[0];
@@ -447,10 +477,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
 
     onSubmit() {
-
         this.savingInProgress = true;
         let action = (this.selection == null ? "new" : "edit");
-        let values: any = {};        
+        let values: any = {};
 
         //adjust any dates to utc
         for (var p in this.form.value) {
@@ -461,6 +490,9 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
                         this.form.value[p] = simpleDate;
+                    }
+                    else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
+                        this.form.value[p] = new Date(this.form.value[p]).toISOString();
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
@@ -495,9 +527,17 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                 delete values[link.FieldName + '_Url'];
                 let name = values[link.FieldName + '_Name'];
                 delete values[link.FieldName + '_Name'];
-                values[link.FieldName] = `${name}|${url}`;
+                //No name and url, use empty string rather than '|'
+                values[link.FieldName] = (name == '' && url == '') ? `` : `${name}|${url}`;
             }
 
+        }
+
+
+        //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
+        if (this.useModelBinding) {
+            this.modelChanged.emit(values);
+            return;
         }
 
         if ((this.createUri && action == "new") || (this.editUri && action == "edit")) {
@@ -563,7 +603,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
                 if (res.Success) {
                     let msg = asset.Uid ? 'Successfully updated' : 'Successfully added';
-                    this.showMessageForApiResult(this.messagesService, res, msg); 
+                    this.showMessageForApiResult(this.messagesService, res, msg);
                     if (res.uid) {
                         event.assetUid = res.uid;
                         event.assetTypeUid = this.objectTypeUid;
@@ -571,7 +611,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                     this.saveClick.emit(event);
                 }
                 else {
-                    this.showMessageForApiResult(this.messagesService, res); 
+                    this.showMessageForApiResult(this.messagesService, res);
                     this.isLoading = false;
                     this.saveClick.emit(event);
                 }

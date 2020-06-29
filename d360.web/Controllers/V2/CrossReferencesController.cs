@@ -535,6 +535,10 @@ namespace d360.web.Controllers.V2
                                 )
                              );
             }
+            catch (ArgumentException e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
+            }
             catch (Exception ex)
             {
                 errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");

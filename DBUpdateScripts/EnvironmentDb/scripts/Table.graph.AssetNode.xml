@@ -199,5 +199,35 @@ END
 		]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="Core" id="Table.graph.AssetNode-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Path')
+BEGIN
+	DROP INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Path] ON [graph].[AssetNode]
+END
+
+IF EXISTS (select * from sys.xml_indexes where name = 'IX_XML_GraphAssetNode_ReformattedSegments_Primary')
+BEGIN
+	DROP INDEX [IX_XML_GraphAssetNode_ReformattedSegments_Primary] ON [graph].[AssetNode]
+END
+
+IF EXISTS (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'graph' and TABLE_NAME = 'AssetNode' and COLUMN_NAME = 'ReformattedSegments')
+BEGIN
+	alter table graph.AssetNode drop column ReformattedSegments
+	alter table graph.AssetNode add ReformattedSegments xml null 
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>  
 
 </databaseChangeLog>

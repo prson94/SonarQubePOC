@@ -299,6 +299,18 @@ namespace d360.web.Models
         }
     }
 
+    public class DeleteGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new DeleteGroupModel
+                {
+                    Uid = Guid.Empty
+                };
+        }
+    }
+
     #endregion
 
     #region Responsibilities examples

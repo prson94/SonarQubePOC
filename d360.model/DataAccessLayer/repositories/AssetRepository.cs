@@ -220,7 +220,7 @@ namespace d360.model.DataAccessLayer
 									,A.UseAsTransformation
                                     ,A.CanOwnFusion
                                     ,A.AutoDisplayParent
-                                    {(Class.HasValue && Class.Value == AssetTypeClass.Diagram ? ",A.FlowObjectType" : "")}
+                                    ,A.FlowObjectType
                                     ,P.[Path]
                                     ,AT.IconBackColor as BackColor
                                     ,AT.Icon as Icon
@@ -247,6 +247,7 @@ namespace d360.model.DataAccessLayer
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
             string populateRestrictedAssetTableSQL = "";
+            bool listColorsAsJSON = false;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -270,6 +271,11 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+            }
+
             List<string> fieldColumns = new List<string>();
             List<string> fieldJoins = new List<string>();
             List<string> whereStatements = new List<string>();
@@ -286,7 +292,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@userId", CompanyContext.CurrentResourceID);
             dbArgs.Add("@isAdmin", CompanyContext.CurrentResourceIsAdmin);
 
-            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns, "A.[Object]", "A.[ObjectId]", listColorsAsJSON);
             List<string> countJoins = new List<string>(fieldJoins);
 
             if (includeRelationships)
@@ -895,6 +901,7 @@ namespace d360.model.DataAccessLayer
             if (assetType.Class == AssetTypeClass.Reference)
             {
                 fields.Add(new FieldType { Type = "string", Name = "Code", FriendlyName = "Code" });
+                fields.Add(new FieldType { Type = "string", Name = "Color", FriendlyName = "Color" });
                 includeAssetUrl = false;
             }
 
@@ -974,8 +981,18 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                        var val = rowValues[field.Name];
-                        setCellValueFromField(document, rowNumber, index, field, val);
+                       
+                        if(field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
                     }
 
                     index++;
@@ -985,11 +1002,24 @@ namespace d360.model.DataAccessLayer
                     document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
             }
 
-            document.AutoFitColumn(1, fields.Count);
+
+            SetExcelColumnWidths(document, fields);
             #endregion
 
             return document;
         }
+
+
+        private string extractColorNameFromJSON(string jsonString)
+        {
+            if (!string.IsNullOrEmpty(jsonString))
+            {
+                var colorObj = JObject.Parse(jsonString);
+                return (string)colorObj["Name"] ?? "";
+            }
+            return "";
+        }
+
         public async Task<AssetsByPathApiViewModel> GetAssetsByPath(AssetsByPathApiRequestModel model)
         {
             var dbArgs = new DynamicParameters();
@@ -2066,6 +2096,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 	                         when 2 then 'Model'
 	                         when 6 then 'Policy'
 	                         when 7 then 'Rule'
+                             when 15 then 'Diagram'
 	                        end as class,
 	                        at.name,
 	                        at.description,
@@ -2095,7 +2126,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             if (dbExecutionItem == null)
             {
-                throw new Exception("Execution unique identifier not found.");
+                throw new ArgumentException("Execution unique identifier not found.");
             }
 
             var info = new ApiExecutionInfo { CompanyID = CompanyContext.CurrentCompanyID, ExecutionID = executionUid };
@@ -2148,5 +2179,42 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 
             return results;
         }
+
+        public List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model)
+        {
+            List<ValidationError> errors = new List<ValidationError>();
+            foreach (var item in model)
+            {
+                var assetType = GetAssetTypeByUID(item.AssetTypeUid);
+                if (assetType == null)
+                {
+                    errors.Add(new ValidationError() { Error = "Asset Type not found.", AssetTypeUid = item.AssetTypeUid });
+                }
+
+                foreach (var asset in item.Assets)
+                {
+                    bool success = true;
+                    string error = "";
+                    var fieldTypes = CompanyContext.FieldTypes.Where(x => x.AssetTypeID == assetType.ID).ToList();
+                    CompanyContext.ValidateFields(assetType.Object,
+                        assetType.ObjectID,
+                        true,
+                        fieldTypes,
+                        fieldTypes.Where(x => x.IsRequired == true || x.IsPartOfKey).Select(x => x.Name).ToList(),
+                        asset.Fields,
+                        Guid.Empty, 0,
+                        null,
+                        out success,
+                        out error
+                        );
+                    if (!success)
+                        errors.Add(new ValidationError() { Error = error, AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
+
+                }
+
+            }
+            return errors;
+        }
+
     }
 }

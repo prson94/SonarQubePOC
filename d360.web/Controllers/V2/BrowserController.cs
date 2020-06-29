@@ -385,7 +385,7 @@ order by R.ResourceName", new { assetUids = criteria.Assets.Select(i => i.Uid).T
                 ignoredFields.Add(DataType.FieldFromRelationship.ToString());
                 ignoredFields.Add(DataType.Score.ToString());
 
-                var sql = @"
+                var sql = $@"
 select	A.TypeName,
 		A.Uid,
         A.AssetTypeClass,
@@ -397,11 +397,26 @@ select	A.TypeName,
             from    (
                     select	F.ColumnOrder,
 							F.FriendlyName as Name,
-					        V.FormattedValue as Value,
+					       COALESCE(fv.value,V.FormattedValue) as Value,
                             '[]' as [Values],
-					        F.Type
+					         (CASE
+								WHEN fv.value is not null THEN 'Color'
+								ELSE F.Type 
+							END) as Type
 			        from	utility.FieldValue V
 					        inner join FieldType F on F.ID = V.FieldTypeID and F.[Type] not in @ignoredFields
+                             outer apply(
+							select value = (
+								SELECT 
+								AC.Code as name,
+                                COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '{{emptycolor}}') as color
+								FROM field fi 
+								outer apply STRING_SPLIT(fi.Value, ',') SPFfi
+								inner join Asset AC on AC.Object = F.LookupObjectType and AC.ObjectID like SPFfi.value   
+								cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ 
+								 where FieldTypeID = F.ID 
+								for json path)
+							)FV
 			        where	AssetID = A.ID
 					        and F.IsDisplayable = 1 
                             and (F.ShowIfEmpty = 1 OR (F.ShowIfEmpty = 0 AND V.FormattedValue <> '' and V.FormattedValue IS NOT NULL))
@@ -780,7 +795,16 @@ order by Name";
             var includeImpact = Community.GetCompanySettingByKey<bool>("ShowImpactSidebar");
             var includeLineage = Community.GetCompanySettingByKey<bool>("ShowLineageSidebar") && assetType.Class != AssetTypeClass.ReferenceItemType;
             var anyDiagramRelationTypes = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from IntersectTypeDetail D where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { assetType.uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
-            var anyProcessDiagram = (await Company.QueryAsync<bool>("select case when count(*) > 0 then 1 else 0 end from [Intersect] I inner join IntersectTypeDetail D on D.ID = I.IntersectTypeID where D.PredicateType = @predicateType and D.SubjectUid = @uid ", new { uid, predicateType = (int)PredicateType.Diagram })).SingleOrDefault();
+            bool anyProcessDiagram = false;
+
+            if (anyDiagramRelationTypes)
+            {
+                anyProcessDiagram = (await Company.QueryAsync<bool>(@"select case when count(*) > 0 then 1 else 0 end from 
+                Asset A 
+                left join dbo.AssetProcessDiagram APD ON APD.AssetID = A.ID
+                where A.ID = @assetId and APD.Diagram is not null",
+                   new { assetId = asset.ID })).SingleOrDefault();
+            }
 
             if (includeLineage)
             {
@@ -791,16 +815,18 @@ order by Name";
                 }); ;
             }
 
+            var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
+
             if (anyDiagramRelationTypes)
             {
-                var canEdit = Company.HasAssetPermission(asset.ID, Permission.ModifyAsset);
 
                 if (anyProcessDiagram || canEdit)
                 {
                     items.Add(new
                     {
                         label = "Process Diagram",
-                        value = ((int)AssetBrowserDiagramType.Process)
+                        value = ((int)AssetBrowserDiagramType.Process),
+                        canEdit
                     });
                 }
             }
@@ -816,7 +842,7 @@ order by Name";
 
             if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Model || assetType.Class == AssetTypeClass.Policy)
             {
-                if (anyDiagramRelationTypes || anyProcessDiagram)
+                if (anyDiagramRelationTypes && (anyProcessDiagram || canEdit))
                 {
                     initial = ((int)AssetBrowserDiagramType.Process);
 

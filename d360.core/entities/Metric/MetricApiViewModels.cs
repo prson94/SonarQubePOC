@@ -46,7 +46,7 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember]
-        public float Threshold { get; set; }
+        public float? Threshold { get; set; }
 
         [DataMember]
         public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;

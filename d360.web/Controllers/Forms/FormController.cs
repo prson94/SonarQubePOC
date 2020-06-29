@@ -232,6 +232,17 @@ namespace d360.web.Controllers
         #endregion
 
         #region Dynamic Editor Field Type Information For Angular2
+        [HttpGet, Route("dynamiceditor/byUid/{assetTypeUid}/{assetUid}")]
+        public JsonResult DynamicEditorNewV2(Guid assetTypeUid, Guid assetUid)
+        {
+
+            var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
+            var o = assetType.Object;
+            return this.DynamicEditorEditFields(o, assetUid);
+
+            throw new Exception("Invalid or non implemented editor type");
+        }
+
         [HttpGet, Route("dynamiceditor/edit/{o}/{uid}")]
         public JsonResult DynamicEditorEditFields(string o, Guid? uid)
         {
@@ -317,6 +328,8 @@ namespace d360.web.Controllers
                     return SurveyType_EditFields(oid);
                 case "TAG":
                     return Tag_EditFields(oid);
+                case "TASKTYPE":
+                    return Diagram_EditFields(oid);
                 case "TAXONOMY":
                     return Taxonomy_EditFields(oid);
                 case "VERSION":
@@ -397,6 +410,8 @@ namespace d360.web.Controllers
                     return SurveyType_AddFields();
                 case "TAG":
                     return Tag_AddFields();
+                case "TASK":
+                    return Diagram_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "TAXONOMY":
                     return Taxonomy_AddFields(objectID.GetValueOrDefault(), parentID.GetValueOrDefault());
                 case "VERSION":
@@ -2153,16 +2168,17 @@ order by I.RowIndex asc, C.ColumnIndex asc";
 
             list.Add(new EditableField { FieldName = "ReferenceItemTypeID", FieldType = DataType.Hidden.ToString(), Value = id.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString()});
 
             //if the reference type has a parent we need to add parent field with the values from the parent
 
             var parentType = Company.GetParentType(id, SystemObjects.ReferenceItemType);
-
             if(parentType != null)
             {
                 var sql = "select DisplayValue, uid from assetdetail where [object] = 'Referenceitem' and TypeID = @id";
                 list.Add(new EditableField { Row = row++, Column = 1, FieldName = "ParentUid", Name = parentType.Name, FieldType = DataType.Lookup.ToString(), Required = true, MultiSelect = false, Items = Company.Query<dynamic>(sql, new { id = parentType.ObjectID }).Select(i => new SelectListItem { Text = i.DisplayValue, Value = string.Format("{0}", i.uid) }).ToList() });
             }
+
                         
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ReferenceItemType, id).ToList(), row);
 
@@ -2180,12 +2196,14 @@ order by I.RowIndex asc, C.ColumnIndex asc";
                 return jsonException(FormInfo.Permisions_Error_Edit, HttpStatusCode.Forbidden);
 
             var row = 1;
-
+            //resolve the color correctly from the Id or hex value
+            var color = Company.Query<string>($@"SELECT top 1 COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Name'), '') as Text FROM Asset A cross apply dbo.GetAssetColorJsonById({a.ID}) ACJ  WHERE A.ID = {a.ID}").SingleOrDefault();
             list.Add(new EditableField { FieldName = "Uid", FieldType = DataType.Hidden.ToString(), Value = a.uid.ToString() });
             list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Code", Name = "Code", FieldType = DataType.Text.ToString(), Value = a.Code.ToString(), Validations = checkAndAddValidation("Text", "Code", true, "", 1, 250, "Must be between 1 and 250 alphanumeric characters in length.") });
+            list.Add(new EditableField { Row = row++, Column = 1, FieldName = "Color", Name = "Color", FieldType = DataType.Color.ToString(), Value = color });
 
             //if the reference type has a parent we need to add parent field with the values from the parent
-            
+
             var parentType = Company.GetParentType(a.AssetType.ObjectID, SystemObjects.ReferenceItemType);
 
             if (parentType != null)
