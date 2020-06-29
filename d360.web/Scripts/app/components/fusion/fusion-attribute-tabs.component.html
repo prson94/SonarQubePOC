@@ -11,15 +11,6 @@
                         </div>
                     </ng-template>
                 </p-tabPanel>
-                <p-tabPanel header="Data Profiling">
-                    <ng-template pTemplate="content">
-                        <div class="row">
-                            <div *ngIf="!isLoading">
-                                <d3s-fusion-attribute-summary [hideHeader]="true" [isDataProfile]="true" [showExportOnFilter]="true" [initialFusionAttributeId]="initialFusionAttributeId" [initialFusionQueryAttributeId]="initialFusionQueryAttributeId" [fusionId]="fusionId" [fusionAttributeTypeId]="selectedFusionAttributeTypeId" [fusionQueryAttributeTypeId]="selectedFusionQueryAttributeTypeId" [fusionQueryAttribute]="selectedFusionQueryAttribute" [fusionAttribute]="selectedFusionAttribute" (fusionAttributeChange)="selectedFusionAttribute=$event;" (fusionQueryAttributeChange)="selectedFusionQueryAttribute=$event;"></d3s-fusion-attribute-summary>
-                            </div>
-                        </div>
-                    </ng-template>
-                </p-tabPanel>
             </p-tabView>
         </div>
     </div>
@@ -30,14 +21,5 @@
         <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
             <d3s-object-relationships [objectPermissions]="permissions" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [objectID]="selectedFusionAttribute?.ID" objectName=""></d3s-object-relationships>
         </div>
-    </div>
-    <div class="col s12 m12" *ngIf="tabIsActive('DATAPROFILING')">
-        <div class="tile tile-detail" *ngIf="selectedFusionAttribute">
-            <d3s-object-definition-tile [objectPermissions]="[]" [objectID]="selectedFusionAttribute?.ID" [objectType]="selectedFusionQueryAttributeTypeId ? 'FusionQueryAttribute':'FusionAttribute'" [nymTypes]="selectedFusionAttribute?.NymTypes"></d3s-object-definition-tile>
-        </div>
-        <div class="tile tile-detail" *ngIf="selectedFusionAttribute && selectedFusionAttribute.DataProfileID">
-            <d3s-fusion-data-profile-detail [profileId]="selectedFusionAttribute.DataProfileID"></d3s-fusion-data-profile-detail>
-        </div>
-       
     </div>
 </div>

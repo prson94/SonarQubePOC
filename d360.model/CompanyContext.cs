@@ -88,7 +88,6 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         public DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
