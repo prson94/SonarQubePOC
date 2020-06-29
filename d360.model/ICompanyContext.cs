@@ -35,7 +35,6 @@ namespace d360.model
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }
-        DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         DbSet<AssetDetail> AssetDetails { get; set; }
         DbSet<Asset> Assets { get; set; }
         DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }

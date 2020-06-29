@@ -57,4 +57,26 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Puneet Gupta" id="Table.dbo.AssetDataProfile-v2">
+    <comment>GOV-10731</comment>
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile')
+			BEGIN
+				exec sp_rename 'dbo.AssetDataProfile', 'AssetDataProfile_bak';
+			END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+			IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'AssetDataProfile_bak')
+			BEGIN
+				exec sp_rename 'dbo.AssetDataProfile_bak', 'AssetDataProfile';
+			END
+		]]>
+	</rollback>
+  </changeSet>
 </databaseChangeLog>

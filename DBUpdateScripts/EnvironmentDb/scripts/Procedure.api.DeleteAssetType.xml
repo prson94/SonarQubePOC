@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.api.DeleteAssetType-v5">
+  <changeSet author="Puneet Gupta" id="Procedure.api.DeleteAssetType-v6">
+    <comment>GOV-10731</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -190,10 +191,6 @@ begin
 					inner join Asset A on A.Uid = T.Uid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
-			delete	T
-			from	AssetDataProfile T
-					inner join Asset A on A.ID = T.AssetID
-					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = A.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
 			from	AssetDisplayValue T
@@ -716,9 +713,11 @@ begin
 			from	[metrics].[Score] T
 					inner join Asset O on O.Uid = T.AssetUid
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = O.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
 			delete	T
 			from	[metrics].[Asset] T
-					inner join api.ExecutionDeletedAssetType S on S.Uid = T.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+					inner join [metrics].Allocation A on A.Uid = T.AllocationUid
+					inner join api.ExecutionDeletedAssetType S on S.Uid = A.AssetTypeUid and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
 			delete	T
 			from	[metrics].[Allocation] T
@@ -847,6 +846,13 @@ begin
 			from	AssetType T
 					inner join api.ExecutionDeletedAssetType S on S.Object = 'TaxonomyType' and S.AssetTypeID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
 			
+			update	OrganizationType
+			set		State = 3,
+					UpdatedBy = @resource,
+					UpdatedOn = getutcdate()
+			from	OrganizationType T
+					inner join api.ExecutionDeletedAssetType S on S.Object = 'OrganizationType' and S.ObjectID = T.ID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
+			
 			delete	T
 			from	Asset T
 					inner join api.ExecutionDeletedAssetType S on S.AssetTypeID = T.AssetTypeID and S.ExecutionID = @executionUid and S.ItemNumber = @itemNumber;
@@ -882,5 +888,4 @@ end
 		</sql>
 	</rollback>
   </changeSet>
-
 </databaseChangeLog>

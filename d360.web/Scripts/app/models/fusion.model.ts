@@ -259,27 +259,3 @@ export class AttributeNode {
     parentType: number = 0;
     isLoadingChildren: boolean = false;
 }
-
-    
-
-
-export class AssetDataProfile {
-    DataProfileID: number;
-    AssetID: number;
-    RowCount: number;	
-    Uniqueness: number;	
-    UniqueCount: number;
-    Completeness: number;
-    NullCount: number;
-    BlankCount: number;
-    DataType: string;
-    MinimumValue: string;
-    MaximumValue: string;
-    Precision: number;
-    Scale: number;
-    Average: number;
-    Median: number;
-    StandardDeviation: string;
-    Top10Values: string;
-    ProcessIdentifier: string;
-}
