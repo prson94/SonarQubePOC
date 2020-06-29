@@ -7981,7 +7981,12 @@ WHEN MATCHED
                     row["ItemNumber"] = itemNumber;
                     if (item.Uid != null)
                         row["GroupUid"] = item.Uid;
-                    row["Name"] = item.Name;
+
+                    if(item.Name == null)
+                        row["Name"] = "";
+                    else
+                        row["Name"] = item.Name;
+
                     row["Description"] = item.Description;
                     row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
                     if (item.SecondaryOwnerUid != null)
@@ -8031,7 +8036,7 @@ WHEN MATCHED
 	                from [api].[ExecutionGroup] EG 
 	                inner join [Group] G on G.[Name] = EG.[Name]
                     left join [Asset] A on A.uid = EG.[GroupUid] and A.Object = 'Group'
-                    where	ExecutionID = @ExecutionID and G.Name is not null;
+                    where	ExecutionID = @ExecutionID and A.ObjectID != G.ID and G.Name is not null;
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
@@ -8049,12 +8054,18 @@ WHEN MATCHED
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'No Primary Owner Uid provided;'
+                    from [api].[ExecutionGroup] EG 
+                    where	ExecutionID = @ExecutionID and EG.PrimaryOwnerUid = @emptyUid;
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
 		                    [Message] = coalesce([Message], '') + 'Secondary Owner Uid provided is not a resource uid;'
 	                from [api].[ExecutionGroup] EG 
 	                left join [Asset] A on A.[uid] = EG.[SecondaryOwnerUid] and A.Object = 'Resource'
                     where	ExecutionID = @ExecutionID and A.uid is null and EG.SecondaryOwnerUid is not null;";
 
-                Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+                Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);
 
                 generalChecksCompleted = true;
             }
