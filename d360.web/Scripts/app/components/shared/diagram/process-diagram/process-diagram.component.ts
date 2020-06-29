@@ -9,7 +9,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { CanDeactivate } from '@angular/router';
+import { CanDeactivate, Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -49,12 +49,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private router: Router
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-
+        this.router.events.subscribe(x => {
+            console.log(x);
+        });
     }
 
 
@@ -68,7 +71,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
                 this.isLoaded = true;
                 this.loadDiagram();
-                console.log("Init");
             });
     }
     @ViewChild('diagram', { static: false }) diagramRef;
@@ -96,6 +98,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
+    @HostListener('window:beforeunload', ['$event'])
+    canExitPage($event: any): boolean {
+        return this.isCurrentStateSaved();
+    }
+
     ngAfterViewChecked() {
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
@@ -108,10 +115,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.cdRef.detectChanges();
     }
 
-    @HostListener('window:beforeunload', ['$event'])
-    unloadNotification($event: any) {
-        return !this.isCurrentStateSaved();
-    }
 
     ngOnDestroy() {
         if (this.cdRef)
