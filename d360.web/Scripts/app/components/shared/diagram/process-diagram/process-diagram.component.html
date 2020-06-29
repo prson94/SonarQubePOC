@@ -1,15 +1,6 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
     <div *ngIf="isEditMode" class="top-menu-hider"></div>
 
-    <div class="saving-overlay" *ngIf="isSaving">
-        <div class="loader">
-            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-            <span class="text">
-                Saving changes
-            </span>
-        </div>
-    </div>
-
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
             <button type="button" (click)="switchModes()" title="Exit Designer">
@@ -144,6 +135,36 @@
 
             </div>
         </d3s-modal>
+
+        <d3s-modal [title]="'Save Changes?'" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
+            <div class="content">
+                <div class="row">
+                    Would you like to save your changes to the diagram before leaving the Diagram Designer?
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="isSavingChangesModalOpened=false">Cancel</button>
+                <button class="button" (click)="discardChanged()">Discard Changes</button>
+                <div class="grow"></div>
+                <button class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>
+
+            </div>
+        </d3s-modal>
+
+        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving">
+            <div class="content">
+                <div class="row">
+                        <div class="loader">
+                            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+                            <span class="text">
+                                Saving changes
+                            </span>
+                        </div>
+                </div>
+            </div>
+        </d3s-modal>
+
+
     </div>
 
 

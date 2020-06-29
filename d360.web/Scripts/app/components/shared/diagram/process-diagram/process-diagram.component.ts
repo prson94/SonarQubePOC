@@ -9,6 +9,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
+import { CanDeactivate } from '@angular/router';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -16,7 +17,7 @@ import { DiagramNodeBase } from '../../../../models/process.model';
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy{
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
     @Input() assetUid: string = '';
@@ -41,6 +42,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private loadedEditors: any[] = [];
 
     private isErrorModalOpened: boolean = false;
+    private isSavingChangesModalOpened: boolean = false;
 
     private isInfoPanelOpened: boolean = false;
     constructor(
@@ -94,7 +96,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
-
     ngAfterViewChecked() {
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
@@ -132,7 +133,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
-    switchModes() {
+    private discardChanged() {
+        this.isSavingChangesModalOpened = false;
+        this.isErrorModalOpened = false;
+        this.load();
+        this.switchModes(false);
+    }
+
+    switchModes(checkState: boolean = true) {
+
+        if (checkState && this.isEditMode && !this.isCurrentStateSaved()) {
+            this.isSavingChangesModalOpened = true;
+            return;
+        }
+
         this.isEditMode = !this.isEditMode;
         this.applyEditMode(this.isEditMode);
 
@@ -279,7 +293,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private validationErrors: any = {};
-    private save() {
+    private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
@@ -291,12 +305,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                 }
                 else {
-                    var model = res.updatedModel;
                     this.load();
                     this.isSaving = false;
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
                     this.cdRef.detectChanges();
+
+                    if (closeEditorAfterSave) {
+                        window.setTimeout(() => {
+                            this.switchModes(false);
+                        }, 100)
+                    }
                 }
             },
                 err => {
