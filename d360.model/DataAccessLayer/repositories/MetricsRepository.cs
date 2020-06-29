@@ -64,6 +64,51 @@ namespace d360.model.DataAccessLayer
             Company.SaveChanges();
         }
 
+        public MetricAssetViewModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
+        {
+            var model = (
+                        from a in Company.MetricAssets.Include("Allocation").Include("Versions.Conditions.Items.Values")
+                        from v in a.Versions
+                        where a.Uid == uid
+                        where (
+                                (!effectiveDate.HasValue && v.EffectiveEndDate == null) ||
+                                (effectiveDate.HasValue && v.EffectiveDate <= effectiveDate.Value && v.EffectiveEndDate >= effectiveDate.Value)
+                              )
+                        select new MetricAssetViewModel
+                        {
+                            AllocationUid = a.AllocationUid,
+                            ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
+                                ConditionItems = g.Items.Select(i => new MetricAssetVersionConditionItemViewModel {
+                                    ConditionFieldTypeID = i.ConditionFieldTypeID,
+                                    ConditionIntersectTypeID = i.ConditionIntersectTypeID,
+                                    ConditionType = i.ConditionType,
+                                    Operator = i.Operator,
+                                    Uid = i.Uid,
+                                    Values = i.Values.ToList()
+                                }).ToList(),
+                                MatchType = g.MatchType, 
+                                Position = g.Position, 
+                                Threshold = g.Threshold, 
+                                Uid = g.Uid, 
+                                Weight = g.Weight 
+                            }).ToList(),
+                            AssetTypeUid = a.Allocation.AssetTypeUid,
+                            MatchConditionsOnly = v.MatchConditionsOnly,
+                            Description = v.Description,
+                            EffectiveDate = v.EffectiveDate,
+                            IsGroup = a.IsGroup,
+                            Name = v.Name,
+                            ParentUid = a.ParentUid,
+                            ScoreType = a.Allocation.ScoreType,
+                            Threshold = v.Threshold,
+                            Uid = a.Uid,
+                            UpdateFrequency = v.UpdateFrequency,
+                            Weight = v.Weight
+                        }).FirstOrDefault();
+            
+            return model;
+        }
+
         public MetricAsset GetMetricByUid(Guid uid)
         {
             return Company.GetByUid<MetricAsset>(uid, i => i.Children);

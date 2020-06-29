@@ -15,6 +15,7 @@ namespace d360.model.DataAccessLayer
         void DeleteMetric(MetricAsset model);
         MetricAsset GetActiveMetric(Guid uid);
         MetricAsset GetMetricByUid(Guid uid);
+        MetricAssetViewModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate);
         MetricAssetTypeHierarchyModels GetMetricDefinitionHierarchyByAssetType(Guid assetTypeUid, DateTime? effectiveDate);
         List<string> GetMetricFieldFragments(Guid assetTypeUid);
         MetricAssetHierarchyModels GetMetricHierarchyByAsset(Guid assetUid, DateTime? effectiveDate, ScoreType scoreType);
