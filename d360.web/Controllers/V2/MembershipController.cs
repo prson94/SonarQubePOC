@@ -73,6 +73,11 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+
+                var settings = Community.GetCompanySettings();
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
                 string finalSql = "";
                 string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
                 string whereSql = "";
