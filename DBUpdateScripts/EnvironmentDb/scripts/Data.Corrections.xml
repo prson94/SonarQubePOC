@@ -782,6 +782,17 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
+
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11339">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+				update fieldtype set MinimumLength = null where [type] = 'html';
+			]]>
+    </sql>
+  </changeSet>
+
   <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-1">
     <sql dbms="mssql"
 			splitStatements="false"
