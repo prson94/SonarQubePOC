@@ -782,7 +782,7 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750">
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-1">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -798,7 +798,7 @@ SET color =
 FROM Asset as A
 inner join AssetType ATT on ATT.ID = A.AssetTypeID
 inner join FieldType F on 
-	F.Name like 'status' 
+	F.Name = 'status' 
 	and F.lookupObjectID = ATT.ObjectID 
 	and F.LookupObjectType + 'Type' = ATT.[Object]
 	WHERE A.Color is null
