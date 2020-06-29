@@ -7942,8 +7942,6 @@ WHEN MATCHED
             List<GroupResponseResult> results = new List<GroupResponseResult>();
             CurrentExecutionLocationModel currentLocation = null;
 
-
-
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             try
