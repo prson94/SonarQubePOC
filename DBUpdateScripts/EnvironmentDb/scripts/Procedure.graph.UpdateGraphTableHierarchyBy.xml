@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v7">
+  <changeSet author="Pappas" id="Procedure.graph.UpdateGraphTableHierarchyBy-v8">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -243,12 +243,12 @@ begin
 
 		--Update the graph table.
 		update	T
-		set		T.[Path] =	(
-								select	top 100 percent
-										string_agg('[' + coalesce(FormattedValue, '') + ']', '.')
-								from	#tbl
-								where	GroupID = S.GroupID
-							),	
+		set		--T.[Path] =	(
+				--				select	top 100 percent
+				--						string_agg('[' + coalesce(FormattedValue, '') + ']', '.')
+				--				from	#tbl
+				--				where	GroupID = S.GroupID
+				--			),	
 				T.Segments =	
 				(
 								select	[Level] as '@level',
@@ -264,10 +264,10 @@ begin
 		from	graph.AssetNode T
 				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 
-		update	T
-		set		T.ReformattedSegments = graph.ReformatSegments(T.Segments)	
-		from	graph.AssetNode T
-				inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
+		--update	T
+		--set		T.ReformattedSegments = graph.ReformatSegments(T.Segments)	
+		--from	graph.AssetNode T
+		--		inner join #ids S on S.ID = T.ID and S.GroupID = S.ID;
 	end
 end
 		]]>
@@ -352,6 +352,29 @@ begin
 
 	if exists (select top 1 * from #incoming)
 	begin
+		with descendants as (
+			select	I.Subject,
+					I.SubjectID,
+					I.Object,
+					I.ObjectID,
+					C.ID
+			from	#incoming O
+					inner join Asset A on O.ID = A.ID
+					inner join PredicateIntersect I on I.PredicateType in (3,4) and I.Subject = A.Object and I.SubjectID = A.ObjectID
+					inner join Asset C on C.Object = I.Object and C.ObjectID = I.ObjectID
+			union all
+			select	I.Subject,
+					I.SubjectID,
+					I.Object,
+					I.ObjectID,
+					A.ID
+			from	descendants c
+					inner join PredicateIntersect I on  I.PredicateType in (3,4) and I.Subject = c.Object and I.SubjectID = c.ObjectID
+					inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+		)
+		insert into #incoming
+			select ID from descendants;
+
 		select top 1 @assetId = ID from #incoming
 
 		declare @class int

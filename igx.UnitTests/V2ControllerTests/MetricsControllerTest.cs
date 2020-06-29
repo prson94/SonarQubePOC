@@ -34,21 +34,18 @@ namespace igx.UnitTests.V2ControllerTests
         [Fact]
         public async void GetAssetByUid()
         {
-
             var actionResult = metricsController.GetAssetById(Guid.Parse(DataConstants.ValidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
-
+            
             var str = await actionResult.Content.ReadAsStringAsync();
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAsset), data), XMsg.InvalidJSON);
-
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data), XMsg.InvalidJSON);
         }
 
         [Fact]
         public async void Err_GetAssetByUid_InvalidUid()
         {
-
             var actionResult = metricsController.GetAssetById(Guid.Parse(DataConstants.InvalidGUID)).ExecuteAsync(new System.Threading.CancellationToken()).Result;
 
             var str = await actionResult.Content.ReadAsStringAsync();
@@ -56,7 +53,6 @@ namespace igx.UnitTests.V2ControllerTests
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.NotFound, XMsg.BadResponseCode);
             Assert.True(Helpers.IsTypeOf(typeof(ErrorResponse), data), XMsg.InvalidJSON);
-
         }
 
         [Fact]

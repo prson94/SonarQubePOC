@@ -76,14 +76,14 @@ namespace d360.web.Controllers.V2
         {
             try
             {
-                MetricAsset metricAsset = MetricsRepository.GetMetricByUid(uid);
+                var model = MetricsRepository.GetMetricViewModelByUid(uid, null);
 
-                if (metricAsset == null)
+                if (model == null)
                 {
-                    return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid.ToString()} not found.");
+                    return errorMessageResponse(HttpStatusCode.NotFound, "Error locating metric", $"Metric with Uid of {uid} not found.");
                 }
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, metricAsset));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
             }
             catch
             {

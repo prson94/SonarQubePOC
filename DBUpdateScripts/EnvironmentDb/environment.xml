@@ -256,6 +256,8 @@
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	
 
   

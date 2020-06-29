@@ -1,0 +1,43 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Table.api.ExecutionDiagramAssetField-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'api' AND TABLE_NAME = 'ExecutionDiagramAssetField')
+BEGIN
+	CREATE TABLE [api].[ExecutionDiagramAssetField](
+		[ExecutionID] [uniqueidentifier] NOT NULL,
+		[ExecutionItemUid] [uniqueidentifier] NOT NULL,
+		[FieldName] [nvarchar](250) NOT NULL,
+		[FieldValue] [nvarchar](max) NULL,
+		[FormattedValue] [nvarchar](max) NULL,
+		[FieldTypeID] [int] NULL,
+		[LookupValue] [nvarchar](max) NULL,
+		[Object] [nvarchar](50) NULL,
+		[ObjectId] [int] NULL,
+	 CONSTRAINT [PK_ExecutionDiagramAssetField] PRIMARY KEY CLUSTERED 
+	(
+		[ExecutionItemUid] DESC,
+		[ExecutionID] DESC,
+		[FieldName] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+	) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -254,14 +254,16 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
 
     private buildScoreAllocationThresholds() {
         if (this.scoreAllocations && this.scoreAllocations.length > 0) {
-            this.hierarchy.forEach(i => {
-                this.scoreAllocations.forEach(s => {
-                    var field = this.fields.find(f => f.apiName == s.Name);
-                    if (field) {
-                        i[field.name + '_threshold'] = this.getThreshold(i[field.name], s.LowerThreshold, s.UpperThreshold);
-                    }
+            if (this.hierarchy) {
+                this.hierarchy.forEach(i => {
+                    this.scoreAllocations.forEach(s => {
+                        var field = this.fields.find(f => f.apiName == s.Name);
+                        if (field) {
+                            i[field.name + '_threshold'] = this.getThreshold(i[field.name], s.LowerThreshold, s.UpperThreshold);
+                        }
+                    });
                 });
-            });
+            }
         }
     }
 

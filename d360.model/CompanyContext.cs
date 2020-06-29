@@ -26,6 +26,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using d360.core.entities.Metric;
 
 namespace d360.model
 {
@@ -1985,6 +1986,10 @@ where	I.ID is null";
 
             modelBuilder.Entity<AssetTypeStyle>().HasRequired(t => t.AssetType).WithOptional(t => t.AssetTypeStyle).WillCascadeOnDelete(true);
 
+            modelBuilder.Entity<MetricAssetVersionConditionItemValue>().HasRequired(t => t.Item).WithMany(t => t.Values).WillCascadeOnDelete(true);
+            modelBuilder.Entity<MetricAssetVersionConditionItem>().HasRequired(t => t.Condition).WithMany(t => t.Items).WillCascadeOnDelete(true);
+            modelBuilder.Entity<MetricAssetVersionCondition>().HasRequired(t => t.Version).WithMany(t => t.Conditions).WillCascadeOnDelete(true);
+
             modelBuilder.Entity<FieldType>().Property(x => x.MinimumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldType>().Property(x => x.MaximumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldType>().Property(x => x.Increment).HasPrecision(38, 18);
@@ -2874,6 +2879,7 @@ select @err";
                                     joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
                                     joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
                                     joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    joins += " ";
                                 }
                             }
                         }
@@ -2923,7 +2929,7 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 else if (f.Type == DataType.Score.ToString())
                 {
                     columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
+                    joins += $@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {

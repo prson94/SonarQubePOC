@@ -32,6 +32,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
     private isLoaded = false;
+    private isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
@@ -339,6 +340,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
+                this.isDiagramLoaded = true;
                 this.cdRef.detectChanges();
             });
     }
