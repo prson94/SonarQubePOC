@@ -7943,7 +7943,7 @@ WHEN MATCHED
             CurrentExecutionLocationModel currentLocation = null;
 
 
-            Add(execution);
+
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             try
