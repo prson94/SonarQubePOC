@@ -17,7 +17,7 @@ import { CanDeactivate } from '@angular/router';
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy{
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy {
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
     @Input() assetUid: string = '';
@@ -68,7 +68,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
                 this.isLoaded = true;
                 this.loadDiagram();
-
+                console.log("Init");
             });
     }
     @ViewChild('diagram', { static: false }) diagramRef;
@@ -106,6 +106,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         this.cdRef.detectChanges();
+    }
+
+    @HostListener('window:beforeunload', ['$event'])
+    unloadNotification($event: any) {
+        return !this.isCurrentStateSaved();
     }
 
     ngOnDestroy() {

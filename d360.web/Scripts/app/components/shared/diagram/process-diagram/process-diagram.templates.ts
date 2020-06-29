@@ -13,6 +13,9 @@ export class ProcessDiagramTemplates {
     public static eventTemplate(component: any) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
@@ -176,6 +179,9 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
@@ -225,6 +231,9 @@ export class ProcessDiagramTemplates {
     public static gatewayTemplate(component: any) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
