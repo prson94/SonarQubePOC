@@ -328,6 +328,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     CreatedOn = DateTime.UtcNow,
                     MatchConditionsOnly = model.MatchConditionsOnly,
                     EffectiveDate = effectiveDate,
+                    Threshold = model.Threshold,
                     Weight = model.Weight,
                     State = metricAsset.State,
                     EffectiveEndDate = null
@@ -375,6 +376,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 metricAssetVersion.Name = model.Name;
                 metricAssetVersion.Description = model.Description;
                 metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
+                metricAssetVersion.Threshold = model.Threshold;
                 metricAssetVersion.Weight = model.Weight;
             }
 
