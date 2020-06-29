@@ -227,89 +227,99 @@ namespace d360.web.Controllers.V2
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Nodes withing same Task Type cannot have same name."));
             }
-
-            List<NodeData> toAdd = new List<NodeData>();
-            List<NodeData> toUpdate = new List<NodeData>();
-            List<NodeData> toDelete = new List<NodeData>();
-
-            foreach (var exNode in existingProcess.nodeDataArray)
+            try
             {
-                if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid))
-                {
-                    toDelete.Add(exNode);
-                }
-            }
 
-            foreach (var node in model.nodeDataArray)
-            {
-                var uid = node["key"];
-                var existsingNode = existingProcess.nodeDataArray.FirstOrDefault(x => x.AssetUid == node.AssetUid);
-                if (existsingNode == null)
+                List<NodeData> toAdd = new List<NodeData>();
+                List<NodeData> toUpdate = new List<NodeData>();
+                List<NodeData> toDelete = new List<NodeData>();
+
+                foreach (var exNode in existingProcess.nodeDataArray)
                 {
-                    toAdd.Add(node);
-                }
-                else
-                {
-                    if (existsingNode.GetHash() != node.GetHash())
+                    if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid))
                     {
-                        toUpdate.Add(node);
+                        toDelete.Add(exNode);
                     }
                 }
-            }
 
-            List<UpsertModel> upsertModels = new List<UpsertModel>();
-            foreach (var item in toAdd.GroupBy(x => x.AssetTypeUid))
-            {
-                var umItem = new UpsertModel();
-                umItem.AssetTypeUid = item.Key;
-                umItem.Assets = new List<UpsertAsset>();
-                foreach (var a in item.Select(x => x))
+                foreach (var node in model.nodeDataArray)
                 {
-                    umItem.Assets.Add(new UpsertAsset()
+                    var uid = node["key"];
+                    var existsingNode = existingProcess.nodeDataArray.FirstOrDefault(x => x.AssetUid == node.AssetUid);
+                    if (existsingNode == null)
                     {
-                        ExternalKey = a.AssetUid,
-                        Uid = null,
-                        Fields = a.CustomFields
-                    });
+                        toAdd.Add(node);
+                    }
+                    else
+                    {
+                        if (existsingNode.GetHash() != node.GetHash())
+                        {
+                            toUpdate.Add(node);
+                        }
+                    }
                 }
-                upsertModels.Add(umItem);
-            }
-            foreach (var item in toUpdate.GroupBy(x => x.AssetTypeUid))
-            {
-                var umItem = new UpsertModel();
-                umItem.AssetTypeUid = item.Key;
-                umItem.Assets = new List<UpsertAsset>();
-                foreach (var a in item.Select(x => x))
+
+                List<UpsertModel> upsertModels = new List<UpsertModel>();
+                foreach (var item in toAdd.GroupBy(x => x.AssetTypeUid))
                 {
-                    umItem.Assets.Add(new UpsertAsset()
+                    var umItem = new UpsertModel();
+                    umItem.AssetTypeUid = item.Key;
+                    umItem.Assets = new List<UpsertAsset>();
+                    foreach (var a in item.Select(x => x))
                     {
-                        ExternalKey = a.AssetUid,
-                        Uid = a.AssetUid,
-                        Fields = a.CustomFields
-                    });
+                        umItem.Assets.Add(new UpsertAsset()
+                        {
+                            ExternalKey = a.AssetUid,
+                            Uid = null,
+                            Fields = a.CustomFields
+                        });
+                    }
+                    upsertModels.Add(umItem);
                 }
-                upsertModels.Add(umItem);
+                foreach (var item in toUpdate.GroupBy(x => x.AssetTypeUid))
+                {
+                    var umItem = new UpsertModel();
+                    umItem.AssetTypeUid = item.Key;
+                    umItem.Assets = new List<UpsertAsset>();
+                    foreach (var a in item.Select(x => x))
+                    {
+                        umItem.Assets.Add(new UpsertAsset()
+                        {
+                            ExternalKey = a.AssetUid,
+                            Uid = a.AssetUid,
+                            Fields = a.CustomFields
+                        });
+                    }
+                    upsertModels.Add(umItem);
+
+                }
+
+                var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels);
+                if (validationRes.Count > 0)
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
+                }
+
+                validationRes = UpdateProcessDiagram(model, toAdd, toUpdate, toDelete, targetAsset.ID);
+
+                if (validationRes.Count > 0)
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
+                }
+
+
+
+                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, updatedModel = model };
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 
             }
-
-            var validationRes = AssetRepository.ValidateAssetUpsertModel(upsertModels);
-            if (validationRes.Count > 0)
+            catch (Exception ex)
             {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
+                var err = new List<ValidationError>();
+                err.Add(new ValidationError() { Error = ex.Message });
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
             }
 
-            validationRes = UpdateProcessDiagram(model, toAdd, toUpdate, toDelete, targetAsset.ID);
-
-            if (validationRes.Count > 0)
-            {
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
-            }
-
-
-
-            var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, updatedModel = model };
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
         private List<ValidationError> UpdateProcessDiagram(ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId)
@@ -457,7 +467,6 @@ namespace d360.web.Controllers.V2
             inner join api.executiondiagramasset S on S.Action = 'Delete'
             inner join asset a on s.uid = a.uid
     where s.executionid = @ExecutionID and T.object = a.object and T.objectid = a.objectid
-
 delete	T
     from	[Intersect] T
             inner join api.executiondiagramasset S on S.Action = 'Delete'
