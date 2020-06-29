@@ -8161,7 +8161,7 @@ WHEN MATCHED
 
                                 if (retryCount > API_V2_RETRY_LIMIT)
                                 {
-                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionGroup", ex.GetFullExceptionData(false), timeout);
                                 }
                             }
                         }
