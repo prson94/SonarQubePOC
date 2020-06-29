@@ -1627,9 +1627,8 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
   padding-right: 100px;
 }
 
-.d3s-color-picker .ui-dropdown .ui-dropdown-label.ui-placeholder,
-.d3s-color-picker .ui-multiselect .ui-multiselect-label.ui-placeholder{
-  color: #6f7482;
+body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeholder {
+	color: #6f7482 !important;
 }
 
 .d3s-color-picker .ui-dropdown-panel, 
@@ -1692,13 +1691,15 @@ p-radiobutton .ui-radiobutton-label.ui-label-disabled {
     width: 100%;
     padding-right: 32px;
     border-radius: 4px;
+	height: 32px;
+    padding-left: 8px;
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-filter-container .ui-dropdown-filter-icon,
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-filter-container .ui-multiselect-filter-icon{
   width: 24px;
   height: 24px;
-  line-height: 24px;
+  line-height: 28px;
   text-align: center;
   color: #202020;
   top: 6px;
@@ -1731,6 +1732,7 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group.ui-state-highlight{
   color: #202020;
   background-color: #c0e7ef;
+  border-radius: 0px;
 }
 
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item.ui-state-highlight{
@@ -1749,6 +1751,7 @@ d3s-color-picker .ui-multiselect-panel .ui-multiselect-items{
 .d3s-color-picker .ui-multiselect-panel .ui-multiselect-items .ui-multiselect-item-group:not(.ui-state-highlight):not(.ui-state-disabled):hover {
     color: #202020;
     background-color: #e4f5f8;
+    border-radius: 0px;
 }
 
 .ui-dropdown-empty-message, .ui-multiselect-empty-message {

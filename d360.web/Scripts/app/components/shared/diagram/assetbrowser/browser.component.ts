@@ -190,12 +190,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.browserService.getDiagramTypes(this.originalAssetUid)
                     .subscribe(res => {
                         this.diagramTypes = res;
-
+                        
                         if (params['diagramType']) {
                             let diagramTypeParameterValue: string = params['diagramType'];
 
                             this.isDiagramTypeSpecifiedInPath = (diagramTypeParameterValue in DiagramType);
-                            if (!this.isDiagramTypeSpecifiedInPath) {
+                            if (!this.isDiagramTypeSpecifiedInPath || !this.diagramTypes.items.some(x => x.value == DiagramType[diagramTypeParameterValue])) {
                                 diagramTypeParameterValue = DiagramType[this.diagramTypes.initial];
                             }
 
@@ -266,6 +266,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.diagram.div = null;    // Garbage collection.
         if (this.cdRef)
             this.cdRef.detach();
+    }
+
+    public canEditProcessDiagram() {
+        return this.displayConfiguration.DiagramType == DiagramType.Process
+            && (this.diagramTypes && this.diagramTypes.items && this.diagramTypes.items.some(x => x.value == DiagramType.Process && x.canEdit));
     }
 
     //#endregion

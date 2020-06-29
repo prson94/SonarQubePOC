@@ -771,5 +771,31 @@ namespace d360.model.DataAccessLayer.repositories
             return null;
         }
 
-    }
+        protected void SetExcelColumnWidths(SLDocument document, List<FieldType> fields)
+        {
+            int index = 1;
+            foreach (var field in fields)
+            {
+                try
+                {
+                    if (field.ColumnWidth.HasValue)
+                    {
+                        int width = field.ColumnWidth.Value > 0 ? field.ColumnWidth.Value / 10 : 0;
+                        document.SetColumnWidth(index, width);
+                    }
+                    else
+                    {
+                        document.AutoFitColumn(index);
+                    }
+                    index++;
+                }
+                catch
+                {
+                    document.SetColumnWidth(index, 10);
+                    index++;
+                }
+            }
+        }
+
+    }    
 }

@@ -86,6 +86,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private useColorMultiSelect: boolean = false;
 
+
+    private component_uid: string = '';
+    
     constructor(
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
@@ -93,6 +96,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         private tagService: TagService
     ) {
         super();
+        this.component_uid = Math.random().toString(36).substring(2);
     }
 
     searchTags(q: any) {
@@ -372,7 +376,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         if (this.loadTypeAheadValue) {
             this.loadTypeAheadValue = false;
             if (this.field.UseTypeahead) {
-                let el: any = document.getElementById(this.field.FieldName + '_input');
+                let el: any = document.getElementById(this.field.FieldName + '_input_' + this.component_uid);
                 if (el != null && this.typeAheadValue != null)
                     el.value = this.typeAheadValue.Text;
             }

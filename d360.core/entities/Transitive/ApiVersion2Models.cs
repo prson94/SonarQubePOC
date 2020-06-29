@@ -796,4 +796,23 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    public class UpsertModel
+    {
+        public Guid AssetTypeUid { get; set; }
+        public List<UpsertAsset> Assets { get; set; }
+    }
+    public class UpsertAsset
+    {
+        public Guid? Uid { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
+        [JsonIgnore]
+        public Guid? ExternalKey { get; set; }
+    }
+
+    public class ValidationError
+    {
+        public Guid AssetTypeUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public string Error { get; set; }
+    }
 }

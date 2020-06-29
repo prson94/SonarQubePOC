@@ -1,8 +1,16 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
-
     <div *ngIf="isEditMode" class="top-menu-hider"></div>
 
-    <div class="menu" *ngIf="isEditMode">
+    <div class="saving-overlay" *ngIf="isSaving">
+        <div class="loader">
+            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+            <span class="text">
+                Saving changes
+            </span>
+        </div>
+    </div>
+
+    <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
             <button type="button" (click)="switchModes()" title="Exit Designer">
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
@@ -11,15 +19,13 @@
             <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
                 <i class="fa fa-save"></i>
             </button>
-            <!--<button type="button" class="icon mr8" (click)="clear()" title="Temp: Clear Diagram">
-                <i class="fa fa-refresh"></i>
-            </button>
-            <button type="button" class="icon mr8" (click)="load()" title="Temp: Load from storage">
-                <i class="fa fa-upload"></i>
-            </button>-->
-            <!--<button type="button" class="icon mr8" (click)="disableDrag()" title="Temp: Selection tool">
-                <i class="fa fa-mouse-pointer"></i>
-            </button>-->
+        </div>
+        <div class="controls-right">
+            <div class="asset-browser-button-group">
+                <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
+                    <i class="fa fa-info-circle"></i>
+                </button>
+            </div>
         </div>
     </div>
     <div class="diagram-content">
@@ -27,50 +33,61 @@
             <p-accordion [multiple]="true">
                 <p-accordionTab header="Events" [selected]="true">
                     <div class="row">
-                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-event" *ngFor="let item of events">
-                            <div class="icon-holder">
-                                <div class="rounder">
-                                    <i class="fa {{item.Icon}}"></i>
+                        <div class="col s6 process-item process-item-event" *ngFor="let item of events">
+                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
+                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
+                                <div class="icon-holder">
+                                    <div class="rounder">
+                                        <i class="fa {{item.Icon}}"></i>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="item-name">
-                                {{item.Name}}
+                                <div class="item-name">
+                                    {{item.Name}}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </p-accordionTab>
                 <p-accordionTab header="Activities">
                     <div class="row">
-                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-activity" *ngFor="let item of activities">
-                            <div class="icon-holder">
-                                <div class="rectangler">
-                                    <i class="fa {{item.Icon}}"></i>
+                        <div class="col s6 process-item process-item-event" *ngFor="let item of activities">
+                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
+                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
+                                <div class="icon-holder">
+                                    <div class="rectangler">
+                                        <i class="fa {{item.Icon}}"></i>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="item-name">
-                                {{item.Name}}
+                                <div class="item-name">
+                                    {{item.Name}}
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </p-accordionTab>
                 <p-accordionTab header="Gateways">
                     <div class="row">
-                        <div pDraggable="dd" (onDragEnd)="dragEnd(item)" class="col s6 process-item process-item-gateway" *ngFor="let item of gateways">
-                            <div class="icon-holder">
-                                <div class="diamonder">
-                                    <i class="fa {{item.Icon}}"></i>
+                        <div class="col s6 process-item process-item-event" *ngFor="let item of gateways">
+                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
+                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
+                                <div class="icon-holder">
+                                    <div class="diamonder">
+                                        <i class="fa {{item.Icon}}"></i>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="item-name">
-                                {{item.Name}}
+                                <div class="item-name">
+                                    {{item.Name}}
+                                </div>
                             </div>
                         </div>
                     </div>
+
                 </p-accordionTab>
             </p-accordion>
         </div>
         <div #diagram id="process-diagram-placeholder">
-            <div class="empty-overlay">
+            <div class="empty-overlay" *ngIf="isDiagramLoaded">
                 <div class="content" *ngIf="isCanvasEmpty && isEditMode">
                     <div class="icon-holder">
                         <i class="fa fa-plus"></i>
@@ -86,5 +103,48 @@
             </div>
             <div id="diagram"></div>
         </div>
+
+        <div class="editors {{(isInfoPanelOpened && isEditMode  ? 'display' : 'hide')}}">
+            <div class="asset-editor">
+
+                <div *ngIf="!selectedNodeData">
+                    <div class="empty-overlay">
+                        <div class="content">
+                            <div class="icon-holder">
+                                <i class="fa fa-info-circle"></i>
+                            </div>
+                            <span>Drag and drop flow objects to start building your diagram</span>
+                        </div>
+                    </div>
+                </div>
+                <div *ngFor="let item of loadedEditors">
+                    <div class="{{(selectedNodeData && item.key == selectedNodeData.key ? 'display' : 'hide')}}">
+                        <d3s-process-diagram-asset-editor [nodeData]="item"
+                                                          (nodeDataChange)="updateNodeFromForm($event)">
+                        </d3s-process-diagram-asset-editor>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="isErrorModalOpened=false" [isVisible]="isErrorModalOpened">
+            <div class="content">
+                <div class="row">
+                    Sorry, we cannot save your changes to the diagram until the following issues are resolved:
+                    <br />
+                    <br />
+                    <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
+                        <div class="validation-error" *ngFor="let item of validationErrors.errors">
+                            {{item.Error}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="isErrorModalOpened=false">Close</button>
+
+            </div>
+        </d3s-modal>
     </div>
+
+
 </div>
