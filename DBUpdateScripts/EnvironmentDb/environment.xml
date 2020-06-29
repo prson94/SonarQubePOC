@@ -48,9 +48,9 @@
 	<include file="scripts/Function.utility.GetHash.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
-  
+	<include file="scripts/Function.utility.JS_Hashcode.xml"/>
 
-	<!-- Tables (object-based naming) -->
+  <!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
 	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
 	<include file="scripts/Table.analytics.Host.xml"/>

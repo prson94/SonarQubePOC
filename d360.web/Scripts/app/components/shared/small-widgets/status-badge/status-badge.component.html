@@ -1,5 +1,5 @@
 ﻿<div *ngIf="useDefinedColor && !singleUndefinedColor" class="d3s-status-badge" [ngStyle]="{'background':getBackgroundGradient()}" [style.color]="getForegroundColor()">
-    <div class="text no-icon">{{formattedStatus}}</div>
+    <div class="icon-container"><i class="fa" [ngClass]="getStatusIcon()"></i></div><div class="text">{{formattedStatus}}</div>
 </div>
 
 <div *ngIf="useDefinedColor && singleUndefinedColor" class="d3s-status-badge undefined-color" [style.color]="getForegroundColor()">

@@ -128,6 +128,7 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
             }
             return "hsl(" +h + "%" + ","+s + "%" + ","+l + "%" + ")";
         }
+        return hex;
     }
     private hslStringIsLight(color: string, lumaLimit: number = 128): boolean {
         if (color == null) {
@@ -145,6 +146,18 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
         var dark = '#515667';
         var light = '#ffffff';
         if (this.useDefinedColor) {
+            let name = this.colorObjects[0].name;
+            let color = this.getBackgroundColor();
+            switch (name.toLowerCase().trim()) {
+                case 'draft':
+                    return dark;
+                case 'certified':
+                case 'under review':
+                    return light;
+                default:
+                    return this.hslStringIsLight(color, 170) ? dark : light;
+            }
+        } else {
             switch (this.status.toLowerCase().trim()) {
                 case 'draft':
                     return dark;
@@ -154,7 +167,7 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
                 default:
                     return this.hslStringIsLight(this.getBackgroundColor(), 170) ? dark : light;
             }
-        } 
+        }
     }
 
     getStatusIcon() {
