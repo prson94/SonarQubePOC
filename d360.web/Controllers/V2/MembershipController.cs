@@ -958,6 +958,9 @@ namespace d360.web.Controllers.V2
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
 
+            if(groups.Count() < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "No Groups provided in request"));
+
             var execution = getApiExecution(groups.Count);
 
             var result = membershipRepository.DeleteGroups(execution, groups);

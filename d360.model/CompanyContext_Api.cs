@@ -8043,12 +8043,12 @@ WHEN MATCHED
                             {
                                 var deleteSQL = $@"DELETE G
 	                                        FROM [Group] G
-		                                    inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID
+		                                    inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
 		                                    inner join Asset A on A .uid = EG.GroupUid
 		                                    where A.ObjectID = G.ID";
 
                                 Connection.Execute(deleteSQL,
-                                        new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                 Connection.Execute(
                                                     $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
@@ -8074,7 +8074,7 @@ WHEN MATCHED
 
                                 if (retryCount > API_V2_RETRY_LIMIT)
                                 {
-                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedPredicate", ex.GetFullExceptionData(false), timeout);
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedGroup", ex.GetFullExceptionData(false), timeout);
                                 }
                             }
                         }
