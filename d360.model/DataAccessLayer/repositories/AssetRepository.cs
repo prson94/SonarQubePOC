@@ -2005,7 +2005,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var sql = $@"
                 select
 	                A.[UID] as [uid],
-                    COALESCE(AC.ColorJSON, f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
 	                KP.KeyPath as Path
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
