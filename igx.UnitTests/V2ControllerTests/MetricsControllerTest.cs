@@ -40,7 +40,7 @@ namespace igx.UnitTests.V2ControllerTests
             var data = JsonConvert.DeserializeObject<JObject>(str);
 
             Assert.True(actionResult.StatusCode == System.Net.HttpStatusCode.OK, XMsg.BadResponseCode);
-            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewModel), data), XMsg.InvalidJSON);
+            Assert.True(Helpers.IsTypeOf(typeof(MetricAssetViewDetailModel), data), XMsg.InvalidJSON);
         }
 
         [Fact]
