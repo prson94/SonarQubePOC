@@ -38,6 +38,16 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
+    public getProcessDiagramColors(): Observable<any> {
+        return this
+            .http
+            .get(`/api/v2/process/governanceRoleColors`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
+
     public putProcessDiagram(uid: string, model: any): Observable<any> {
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');

@@ -32,6 +32,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private events: DiagramNodeBase[] = [];
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
+    private colors: any[] = [];
+
     private isLoaded = false;
     private isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
@@ -62,6 +64,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
+        this.processService.getProcessDiagramColors()
+            .subscribe(colors => {
+                this.colors = colors;
+            });
         this.processService.getAvailableNodes(this.assetUid)
             .subscribe(res => {
                 this.assetTypeNodes = res;
@@ -270,8 +276,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             };
 
             this.myDiagram.model.addNodeData(data);
-
+            this.myDiagram.clearSelection();
+            this.myDiagram.select(this.myDiagram.findNodeForKey(data.key));
             this.myDiagram.commitTransaction("make new node");
+
             this.myDiagram.redraw();
         }, 100);
 
@@ -378,6 +386,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 if (res && res.nodeDataArray && res.nodeDataArray.length > 0) {
                     res.nodeDataArray.forEach(x => {
                         x.icon = FontAwesomeHelper.GetHtmlCode(x.icon);
+                        x.refItemColor = this.getNodeColor(x);
                     });
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
@@ -399,6 +408,19 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         });
     }
 
+    private getNodeColor(data: any) {
+        console.log(data);
+        try {
+            var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
+            if (item)
+                return item.Value;
+        }
+        catch{
+            return this.defaultStrokeColor;
+        }
+        return this.defaultStrokeColor;
+    }
+
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
@@ -407,24 +429,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         this.cdRef.detectChanges();
-    }
-
-    private updateKeys(added: any[]) {
-        console.log(added);
-        try {
-            this.myDiagram.model.commit(function (m) {
-                m.nodeDataArray.forEach(data => {
-                    //if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
-                    //    m.set(data, 'hasError', true);
-                    //}
-                    //else {
-                    //    m.set(data, 'hasError', false);
-                    //}
-                });
-            }, 'update_model_keys');
-        } catch (e) {
-            console.log(e);
-        }
     }
 
     private updateValidationData() {
@@ -449,6 +453,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private updateNodeFromForm(formData) {
         try {
+            var self = this;
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
@@ -456,6 +461,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                         m.set(data, propertyName, formData[propertyName]);
                     }
                 }
+                m.set(data, 'refItemColor', self.getNodeColor(data));
+
+
             }, 'update_model');
         } catch (e) {
             console.log(e);

@@ -44,6 +44,33 @@ namespace d360.web.Controllers.V2
         {
             this.AssetRepository = assetRepository;
         }
+
+        /// <summary>
+        /// Returns a list of available colors for Governance Roles
+        /// </summary>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("governanceRoleColors"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes()
+        {
+            var governanceRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+            var results = await Company.QueryAsync<dynamic>($@"select a.ObjectID, a.Object, c.Value from assettype at
+	                inner join asset a on a.AssetTypeID = at.ID
+	                inner join Color c on c.ID = a.Color
+                where at.uid = @governanceRoleUid and a.Color is not null", new { governanceRoleUid });
+
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
+        }
+
         /// <summary>
         /// Returns a list of available process diagram nodes for the current asset
         /// </summary>

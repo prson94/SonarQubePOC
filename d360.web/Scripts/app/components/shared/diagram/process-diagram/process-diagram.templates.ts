@@ -74,7 +74,8 @@ export class ProcessDiagramTemplates {
                                 font: '32px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
-                            new go.Binding("text", "icon").makeTwoWay())
+                            new go.Binding("text", "icon").makeTwoWay(),
+                            new go.Binding("stroke", "refItemColor").makeTwoWay())
                     ),
                     this.makePort("T", go.Spot.Top, false, true),
                     this.makePort("L", go.Spot.Left, true, true),
@@ -287,11 +288,11 @@ export class ProcessDiagramTemplates {
                         {
                             alignment: go.Spot.Center,
                             margin: new go.Margin(5, 0, 0, 0),
-                            stroke: '#708EA6',
                             textAlign: "center",
                             font: '24px FontAwesome'
                         },
-                        new go.Binding("text", "icon").makeTwoWay()),
+                        new go.Binding("text", "icon").makeTwoWay(),
+                        new go.Binding("stroke", "refItemColor").makeTwoWay()),
                     this.makePort("T", go.Spot.Top, false, true),
                     this.makePort("L", go.Spot.Left, true, true),
                     this.makePort("R", go.Spot.Right, true, true),
