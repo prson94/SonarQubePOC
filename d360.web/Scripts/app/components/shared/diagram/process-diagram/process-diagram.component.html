@@ -14,7 +14,7 @@
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
-                <button  class="icon mr8 {{(!selectedNodeData ? 'disabled' : '')}}" [disabled]="!selectedNodeData" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                <button  class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
                     <i class="fa fa-sitemap"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
@@ -182,7 +182,7 @@
             </div>
         </d3s-modal>
 
-        <d3s-relationships-modal *ngIf="selectedNodeData"
+        <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
                                  (onClose)="isRelatedAssetsVisible = false"
                                  [isModalVisible]="isRelatedAssetsVisible"
                                  [objectID]="selectedNodeData.objectId"
