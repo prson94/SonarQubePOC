@@ -226,24 +226,30 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
         );
 
     }
-
     moveUp(field) {
-        this.isLoading = true;
 
         this.fieldsService.moveUp(this.currentUid, field.Name).subscribe(
             r => {
-                this.load();
-                this.onFieldsChanged.emit();
+                let items = this.fieldDisplayModel.filter(x => x.Name == field.Name);
+                if (items.length == 1) {
+                    let index = this.fieldDisplayModel.indexOf(items[0]);
+                    if (index > 0 && index < this.fieldDisplayModel.length)
+                        [this.fieldDisplayModel[index], this.fieldDisplayModel[index - 1]] = [this.fieldDisplayModel[index - 1], this.fieldDisplayModel[index]]
+                }
             }
         );
     }
 
     moveDown(field) {
-        this.isLoading = true;
+
         this.fieldsService.moveDown(this.currentUid, field.Name).subscribe(
             r => {
-                this.load();
-                this.onFieldsChanged.emit();
+                let items = this.fieldDisplayModel.filter(x => x.Name == field.Name);
+                if (items.length == 1) {
+                    let index = this.fieldDisplayModel.indexOf(items[0]);
+                    if (index >= 0 && index < this.fieldDisplayModel.length - 1)
+                        [this.fieldDisplayModel[index], this.fieldDisplayModel[index + 1]] = [this.fieldDisplayModel[index + 1], this.fieldDisplayModel[index]];
+                }                
             }
         );
     }
