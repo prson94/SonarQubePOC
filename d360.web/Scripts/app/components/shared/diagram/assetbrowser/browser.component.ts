@@ -56,6 +56,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() readonly = true;
     @Input() assetUid: string;
 
+    @Output() saveStateChanged: EventEmitter<any> = new EventEmitter<any>();
+
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
     @ViewChild('alertPanel', { static: false }) alertPanelRef;
     @ViewChild('infoDetailPanel', { static: false }) infoDetailPanelRef;
@@ -190,7 +192,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.browserService.getDiagramTypes(this.originalAssetUid)
                     .subscribe(res => {
                         this.diagramTypes = res;
-                        
+
                         if (params['diagramType']) {
                             let diagramTypeParameterValue: string = params['diagramType'];
 
@@ -1611,7 +1613,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     });
 
-                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null) 
+                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null)
                         dm.addLinkData(newLink);
                 }
             });
@@ -3333,4 +3335,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isFullScreen = false;
         this.isProcessDiagramInEditMode = true;
     }
+
+    processDiagramSavedState($event) {
+        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+            this.saveStateChanged.emit($event);
+        else this.saveStateChanged.emit(null);
+    }
+
+
 } 

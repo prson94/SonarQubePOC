@@ -82,6 +82,7 @@ import { DragDropModule } from 'primeng/dragdrop';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
 import { ProcessDiagramAssedEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
 
 
 @NgModule({
@@ -105,6 +106,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         D3SColorPickerModule,
         SharedDynamicGridEditorModule,
         SiteModalModule,
+        SharedRelationshipModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

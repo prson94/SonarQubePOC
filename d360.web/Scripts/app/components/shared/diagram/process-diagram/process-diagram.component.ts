@@ -9,7 +9,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { CanDeactivate } from '@angular/router';
+import { CanDeactivate, Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -17,12 +17,13 @@ import { CanDeactivate } from '@angular/router';
     providers: [ProcessService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy{
+export class ProcessDiagramComponent extends DiagramBaseComponent implements OnInit, AfterViewChecked, OnDestroy {
     @Input() isEditMode: boolean = false;
     @Input() isFullScreen: boolean = false;
     @Input() assetUid: string = '';
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
 
@@ -31,6 +32,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private events: DiagramNodeBase[] = [];
     private activities: DiagramNodeBase[] = [];
     private gateways: DiagramNodeBase[] = [];
+    private colors: any[] = [];
+
     private isLoaded = false;
     private isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
@@ -43,23 +46,30 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private isErrorModalOpened: boolean = false;
     private isSavingChangesModalOpened: boolean = false;
+    private promptDeleteOpened: boolean = false;
+    private isRelatedAssetsVisible: boolean = false;
+
 
     private isInfoPanelOpened: boolean = false;
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private router: Router
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-
     }
 
 
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
+        this.processService.getProcessDiagramColors()
+            .subscribe(colors => {
+                this.colors = colors;
+            });
         this.processService.getAvailableNodes(this.assetUid)
             .subscribe(res => {
                 this.assetTypeNodes = res;
@@ -68,7 +78,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
                 this.isLoaded = true;
                 this.loadDiagram();
-
             });
     }
     @ViewChild('diagram', { static: false }) diagramRef;
@@ -96,6 +105,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     }
 
+    @HostListener('window:beforeunload', ['$event'])
+    canExitPage($event: any): boolean {
+        return this.isCurrentStateSaved();
+    }
     ngAfterViewChecked() {
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
@@ -103,10 +116,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (this.myDiagram.selection.count == 0) {
                 this.selectedNodeData = null;
             }
+            this.saveState.emit(this.isCurrentStateSaved());
         }
-
         this.cdRef.detectChanges();
     }
+
 
     ngOnDestroy() {
         if (this.cdRef)
@@ -161,6 +175,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.toolManager.panningTool.isEnabled = !this.myDiagram.toolManager.panningTool.isEnabled;
     }
 
+    deleteSelectedNode() {
+        if (this.isEditMode) {
+            this.myDiagram.selection;
+            this.myDiagram.selection.each(x => {
+                this.myDiagram.remove(x);
+            })
+        }
+    }
+
     loadDiagram() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
@@ -186,6 +209,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                 });
 
+        this.myDiagram.commandHandler.canDeleteSelection = () => {
+            try {
+                if (this.isEditMode) {
+                    if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
+                        this.promptDeleteOpened = true;
+                        this.cdRef.detectChanges();
+                        return false;
+                    }
+                }
+                return this.isEditMode;
+            }
+            catch (ex) {
+                return this.isEditMode;
+            }
+        };
 
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;
@@ -240,8 +278,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             };
 
             this.myDiagram.model.addNodeData(data);
-
+            this.myDiagram.clearSelection();
+            this.myDiagram.select(this.myDiagram.findNodeForKey(data.key));
             this.myDiagram.commitTransaction("make new node");
+
             this.myDiagram.redraw();
         }, 100);
 
@@ -289,7 +329,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private isCurrentStateSaved() {
-        return JSON.stringify(this.myDiagram.model) == JSON.stringify(this.savedState);
+        if (!this.savedState)
+            return false;
+
+        return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
+    }
+
+    private getSignature(model: go.Model) {
+        if (!model)
+            return '';
+        var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
+        return JSON.stringify(m);
     }
 
     private validationErrors: any = {};
@@ -330,17 +380,24 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load() {
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(res => {
+                if (!this.myDiagram) {
+                    console.warn("Diagram placeholder not loaded.");
+                    return;
+                }
+
                 if (res && res.nodeDataArray && res.nodeDataArray.length > 0) {
                     res.nodeDataArray.forEach(x => {
                         x.icon = FontAwesomeHelper.GetHtmlCode(x.icon);
+                        x.refItemColor = this.getNodeColor(x);
                     });
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
-                this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
+                this.savedState = go.Model.fromJson(JSON.stringify(res));
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
                 this.isDiagramLoaded = true;
+                this.saveState.emit(this.isCurrentStateSaved());
                 this.cdRef.detectChanges();
             });
     }
@@ -353,6 +410,19 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         });
     }
 
+    private getNodeColor(data: any) {
+        console.log(data);
+        try {
+            var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
+            if (item)
+                return item.Value;
+        }
+        catch{
+            return this.defaultStrokeColor;
+        }
+        return this.defaultStrokeColor;
+    }
+
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
@@ -361,24 +431,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
 
         this.cdRef.detectChanges();
-    }
-
-    private updateKeys(added: any[]) {
-        console.log(added);
-        try {
-            this.myDiagram.model.commit(function (m) {
-                m.nodeDataArray.forEach(data => {
-                    //if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
-                    //    m.set(data, 'hasError', true);
-                    //}
-                    //else {
-                    //    m.set(data, 'hasError', false);
-                    //}
-                });
-            }, 'update_model_keys');
-        } catch (e) {
-            console.log(e);
-        }
     }
 
     private updateValidationData() {
@@ -403,6 +455,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private updateNodeFromForm(formData) {
         try {
+            var self = this;
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
@@ -410,6 +463,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                         m.set(data, propertyName, formData[propertyName]);
                     }
                 }
+                m.set(data, 'refItemColor', self.getNodeColor(data));
+
+
             }, 'update_model');
         } catch (e) {
             console.log(e);

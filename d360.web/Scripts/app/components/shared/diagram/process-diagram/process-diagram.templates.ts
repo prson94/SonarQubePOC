@@ -13,6 +13,9 @@ export class ProcessDiagramTemplates {
     public static eventTemplate(component: any) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
@@ -71,7 +74,8 @@ export class ProcessDiagramTemplates {
                                 font: '32px FontAwesome',
                                 margin: new go.Margin(4, 0, 0, 0)
                             },
-                            new go.Binding("text", "icon").makeTwoWay())
+                            new go.Binding("text", "icon").makeTwoWay(),
+                            new go.Binding("stroke", "refItemColor").makeTwoWay())
                     ),
                     this.makePort("T", go.Spot.Top, false, true),
                     this.makePort("L", go.Spot.Left, true, true),
@@ -176,6 +180,9 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
@@ -225,6 +232,9 @@ export class ProcessDiagramTemplates {
     public static gatewayTemplate(component: any) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
             node.ports.each(function (port) {
                 if (port.portId !== "") {  // don't change the default port, which is the big shape
                     port.fill = show ? 'white' : null;
@@ -278,11 +288,11 @@ export class ProcessDiagramTemplates {
                         {
                             alignment: go.Spot.Center,
                             margin: new go.Margin(5, 0, 0, 0),
-                            stroke: '#708EA6',
                             textAlign: "center",
                             font: '24px FontAwesome'
                         },
-                        new go.Binding("text", "icon").makeTwoWay()),
+                        new go.Binding("text", "icon").makeTwoWay(),
+                        new go.Binding("stroke", "refItemColor").makeTwoWay()),
                     this.makePort("T", go.Spot.Top, false, true),
                     this.makePort("L", go.Spot.Left, true, true),
                     this.makePort("R", go.Spot.Right, true, true),

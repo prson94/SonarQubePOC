@@ -115,7 +115,7 @@
 
             <div class="row" style="position: relative" *ngIf="displayConfiguration.DiagramType == 3">
                 <div class="col s12" style="padding: 0">
-                    <d3s-process-diagram [assetUid]="originalAssetUid" (editModeClosed)="isProcessDiagramInEditMode = false" [isFullScreen]="isFullScreen" [isEditMode]="isProcessDiagramInEditMode"></d3s-process-diagram>
+                    <d3s-process-diagram (saveState)="processDiagramSavedState($event)" [assetUid]="originalAssetUid" (editModeClosed)="isProcessDiagramInEditMode = false" [isFullScreen]="isFullScreen" [isEditMode]="isProcessDiagramInEditMode"></d3s-process-diagram>
                 </div>
             </div>
         </div>
