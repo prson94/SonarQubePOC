@@ -324,5 +324,7 @@ namespace d360.model
 
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
+
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

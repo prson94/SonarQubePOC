@@ -18,5 +18,6 @@ namespace d360.model.DataAccessLayer
         WorkHttpStatus DeleteFavorites(int resourceID);
         Task<FavoriteApiViewModel> GetHomePage(int resourceID);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }
