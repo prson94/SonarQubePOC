@@ -1858,3 +1858,35 @@ body .ui-toast .ui-toast-message.ui-toast-message-error .ui-toast-close-icon {
 	vertical-align: middle;
 	min-width: 12.5em;
 }
+
+.modal-overlay .modal-dialog.full-window-dialog {
+	width: calc(100% - 80px);
+	height: calc(100%);
+}
+
+.modal-overlay .modal-dialog .modal-title-bar h2 {
+	color: #d3d3d3;
+	font-size: 14px;
+	font-weight: 600;
+	width: 100%;
+	line-height: 16px;
+	display: inline-flex;
+	margin-right: 30px;
+	margin-left: 0px;
+	margin-bottom: 0px;
+	margin-top: 0px;
+}
+.modal-overlay .modal-dialog .modal-content {
+	height: 100%;
+	width: 100%;
+	padding-top: 60px;
+	padding-bottom: 24px;
+	padding-left: 24px;
+	padding-right: 24px;
+	position: absolute;
+}
+.modal-overlay .modal-dialog .modal-content .modal-button-position {
+	position: absolute;
+	bottom: 24px;
+	right: 24px;
+}

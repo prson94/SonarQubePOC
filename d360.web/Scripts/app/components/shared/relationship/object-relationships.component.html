@@ -1,5 +1,5 @@
 ﻿<header>
-    Relationships
+    <div *ngIf="!isModal">Relationships</div>
     <d3s-tile-actions [hasAdd]="hasAdd" [hasExport]="enableExport()" (exportClick)="export()" (addClick)="showAddRelationship = true;" [hasFilterMode]="hasFilterMode" [(filterMode)]="showSimpleFilter"></d3s-tile-actions>
 </header>
 <d3s-loading [isLoading]="isLoading"></d3s-loading>
