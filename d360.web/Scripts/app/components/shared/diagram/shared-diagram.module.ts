@@ -39,8 +39,6 @@ import { LineageResponsibilitiesComponent } from './lineage/lineage-responsibili
 import { LineageSourceRuleEditorComponent } from './lineage/lineage-source-rule-editor.component';
 import { LineageSourceRulesComponent } from './lineage/lineage-source-rules.component';
 import { LineageTechnicalRelationshipsComponent } from './lineage/lineage-technical-relationships.component';
-import { LineageInfoComponent } from './lineage/lineage-info.component';
-import { LineageEditorComponent } from './lineage/lineage-editor.component';
 
 import { AssetBrowserAddPanelComponent } from './assetbrowser/panels/addpanel.component';
 import { AssetBrowserAlertPanelComponent } from './assetbrowser/panels/alertpanel.component';
@@ -56,8 +54,6 @@ import { AssetBrowserViewChangeComponent } from './assetbrowser/tools/viewchange
 import { AssetBrowserZoomComponent } from './assetbrowser/tools/zoom.component';
 
 import { AssetBrowserComponent } from './assetbrowser/browser.component';
-
-import { LineageDiagramComponent } from './lineage/lineage-diagram.component';
 
 import { ModelDiagramComponent } from './model-diagram.component';
 import { D3SOverlayWindowModule } from '../overlay-window.component';
@@ -158,11 +154,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         LineageSourceRuleEditorComponent,
         LineageSourceRulesComponent,
         LineageTechnicalRelationshipsComponent,
-        LineageInfoComponent,
-        LineageEditorComponent,
         ModelDiagramComponent,
-
-        LineageDiagramComponent,
         ProcessDiagramComponent,
         ProcessDiagramAssedEditorComponent
     ],
@@ -171,8 +163,6 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         LineageComponent,
         ImpactComponent,  
         ModelDiagramComponent,  
-
-        LineageDiagramComponent,
     ],
     providers: [
         {

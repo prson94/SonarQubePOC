@@ -9,10 +9,7 @@ declare var CompanySettings: any;
 @Component({
     selector: 'd3s-lineage-wrapper',
     template: `
-        <ng-container *ngIf="lineageVersion == 2">
-            <d3s-lineage-diagram [objectID]="objectID" [objectType]="objectType" [readonly]="true"></d3s-lineage-diagram>
-        </ng-container>
-        <ng-container *ngIf="lineageVersion == 1">
+        <ng-container>
             <d3s-lineage [objectID]="objectID" [objectType]="objectType" [readonly]="true" [usageOnly]="usageOnly"></d3s-lineage>
         </ng-container>
         `
@@ -21,7 +18,6 @@ declare var CompanySettings: any;
 export class LineageComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
     private usageOnly: boolean = false;
-    private lineageVersion: number = 1;
 
     constructor(
         private route: ActivatedRoute,
@@ -35,9 +31,6 @@ export class LineageComponent extends BaseComponent implements OnInit, OnDestroy
     }
 
     ngOnInit() {
-        if (CompanySettings != null && CompanySettings.LineageVersion != null) {
-            this.lineageVersion = CompanySettings.LineageVersion;
-        }
         this.sub = this.route.params.subscribe(params => {
             this.objectID = +params['objectId']; // (+) converts string 'id' to a number
             this.objectType = params['objectType'];
