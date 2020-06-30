@@ -3157,7 +3157,8 @@ order by    Name
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
-								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID in (SELECT value  FROM STRING_SPLIT(f.Value, ',')  WHERE RTRIM(value) <> '')    
+                                outer apply STRING_SPLIT(F.Value, ',') SPF
+								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
