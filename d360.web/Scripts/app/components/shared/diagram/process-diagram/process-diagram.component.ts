@@ -47,6 +47,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isErrorModalOpened: boolean = false;
     private isSavingChangesModalOpened: boolean = false;
     private promptDeleteOpened: boolean = false;
+    private isRelatedAssetsVisible: boolean = false;
+
 
     private isInfoPanelOpened: boolean = false;
     constructor(

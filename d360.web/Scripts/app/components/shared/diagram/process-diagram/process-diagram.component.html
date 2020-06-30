@@ -10,9 +10,13 @@
             <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
                 <i class="fa fa-save"></i>
             </button>
+
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
+                <button  class="icon mr8 {{(!selectedNodeData ? 'disabled' : '')}}" [disabled]="!selectedNodeData" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                    <i class="fa fa-sitemap"></i>
+                </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
                     <i class="fa fa-info-circle"></i>
                 </button>
@@ -177,6 +181,13 @@
 
             </div>
         </d3s-modal>
+
+        <d3s-relationships-modal *ngIf="selectedNodeData"
+                                 (onClose)="isRelatedAssetsVisible = false"
+                                 [isModalVisible]="isRelatedAssetsVisible"
+                                 [objectID]="selectedNodeData.objectId"
+                                 [objectType]="'Task'">
+        </d3s-relationships-modal>
 
     </div>
 

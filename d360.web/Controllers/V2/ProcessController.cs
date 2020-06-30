@@ -176,6 +176,7 @@ namespace d360.web.Controllers.V2
             var nodesExpandedData = Company.Query<dynamic>(@"select 
                     a.uid,
                     ATS.Icon as icon,
+                    a.objectId,
                     case at.FlowObjectType
 	                    when 1 then 'event'
 	                    when 2 then 'activity'
@@ -205,6 +206,7 @@ namespace d360.web.Controllers.V2
                 node["refItemColor"] = dictionary["refItemColor"];
                 node["assetTypeUid"] = dictionary["assetTypeUid"];
                 node["assetTypeName"] = dictionary["assetTypeName"];
+                node["objectId"] = dictionary["objectId"];
 
                 if (dictionary["fields"] != null)
                 {
@@ -589,6 +591,31 @@ merge Field as T
 	when		not matched by target then
 	insert		(AssetId,FieldTypeID, ObjectType, ObjectID, Value, FormattedValue, UpdatedBy, UpdatedOn)
 	values		(S.AssetId,S.FieldTypeID, S.Object, S.ObjectID, S.FieldValue, S.FormattedValue, @resourceId, getutcdate());
+
+merge       AssetDisplayValue as T
+using       (
+                select  A.Id as ID,
+                        ADV.DisplayValue,
+                        CONVERT(NVARCHAR(32), HashBytes('SHA1', ADV.DisplayValue), 2) as DisplayValueHash,
+                        SUBSTRING(ADV.DisplayValue, 1, 250) as DisplayValuePrefix
+                from    api.ExecutionDiagramAsset EDA
+						inner join Asset A on a.uid = EDA.uid
+                        cross apply GetAssetDisplayValueByID(A.Id) ADV
+                where   EDA.ExecutionID = @executionID 
+						and EDA.uid is not null
+                        and ADV.DisplayValue is not null
+            ) as S 
+on          ( T.AssetID = S.ID )
+when		matched then
+update		set
+				T.DisplayValue = S.DisplayValue,
+                T.DisplayValueHash = S.DisplayValueHash,
+                T.[DisplayValuePrefix] = S.DisplayValuePrefix,
+                T.UpdatedOn = getutcdate()
+when		not matched by target then
+insert		(AssetID, DisplayValue, DisplayValueHash, DisplayValuePrefix, UpdatedOn)
+values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcdate());
+
 ", new { executionId = execution.ExecutionID, resourceId = Company.CurrentResourceID }, transaction: trans);
 
 
