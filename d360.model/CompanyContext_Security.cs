@@ -199,7 +199,7 @@ order by RT.Name", new { id }).AsQueryable();
 
         private bool HasPermission(long assetId, int assetTypeId, Permission permission)
         {
-            return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t)
+            return Database.Connection.QuerySingle<bool>($@"if exists(select 1 from UserAssetPermissions(@r,@t) ua where ua.PermissionsBitMask & {(int)permission} = {(int)permission} and ua.AssetTypeID = @t and ua.AssetId = 0)
                                                                                         begin
                                                                                             select 1;
                                                                                             end
