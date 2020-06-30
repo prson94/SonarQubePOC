@@ -2013,7 +2013,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
-                outer apply STRING_SPLIT(F.Value, ',') SPFF
+                cross apply STRING_SPLIT(F.Value, ',') SPFF
                 inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPFF.value   
                 cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
 				outer apply(
