@@ -46,7 +46,7 @@ namespace d360.core.entities.Metric
         public decimal Weight { get; set; }
 
         [DataMember]
-        public float? Threshold { get; set; }
+        public double? Threshold { get; set; }
 
         [DataMember]
         public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
@@ -59,6 +59,47 @@ namespace d360.core.entities.Metric
     }
 
     [DataContract]
+    public class MetricAssetViewDetailModel : MetricAssetViewModel
+    {
+        [DataMember]
+        public List<MetricAssetVersionViewModel> Versions { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetVersionViewModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public DateTime EffectiveDate { get; set; }
+
+        [DataMember]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public double? Threshold { get; set; }
+
+        [DataMember]
+        public decimal Weight { get; set; }
+
+        [DataMember]
+        public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
+
+        [DataMember]
+        public bool MatchConditionsOnly { get; set; } = false;
+
+        [DataMember, StringLength(1)]
+        public string ConditionAndOr { get; set; }
+
+        [DataMember]
+        public DateTime? EffectiveEndDate { get; set; }
+    }
+
+    [DataContract]
     public class MetricAssetVersionConditionViewModel
     {
         [DataMember]
@@ -68,7 +109,7 @@ namespace d360.core.entities.Metric
         public int Position { get; set; } = 1;
 
         [DataMember]
-        public float? Threshold { get; set; }
+        public double? Threshold { get; set; }
 
         [DataMember]
         public decimal? Weight { get; set; }

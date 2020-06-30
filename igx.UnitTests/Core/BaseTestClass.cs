@@ -554,7 +554,7 @@ namespace igx.UnitTests
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
 
             mock.Setup(x => x.GetMetricViewModelByUid(It.IsAny<Guid>(), null))
-                .Returns((Guid uid, DateTime? effectiveDate) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAssetViewModel() : null);
+                .Returns((Guid uid, DateTime? effectiveDate) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAssetViewDetailModel() : null);
 
             mock.Setup(x => x.GetMetricByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
