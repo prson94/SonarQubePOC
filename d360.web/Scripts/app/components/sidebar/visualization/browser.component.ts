@@ -8,11 +8,11 @@ import { HeaderBreadcrumbService } from '../../../services/header-breadcrumb.ser
     selector: 'd3s-browser',
     template: `
         <ng-container>
-            <d3s-assetbrowser [assetUid]="uid" [readonly]="true"></d3s-assetbrowser>
+            <d3s-assetbrowser (saveStateChanged)="saveStateChanged($event)" [assetUid]="uid" [readonly]="true"></d3s-assetbrowser>
         </ng-container>
         `
 })
-     
+
 export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy {
     private sub: any;
 
@@ -20,7 +20,7 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         private route: ActivatedRoute,
         private router: Router,
         secondaryNavService: SecondaryNavService,
-        headerbreadcrumbService : HeaderBreadcrumbService
+        headerbreadcrumbService: HeaderBreadcrumbService
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -39,5 +39,11 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
         if (this.sub) {
             this.sub.unsubscribe();
         }
+    }
+
+    public isSaved: boolean = null;
+    saveStateChanged($event) {
+        this.isSaved = $event;
+        console.log(this.isSaved);
     }
 }

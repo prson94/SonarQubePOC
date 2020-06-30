@@ -23,6 +23,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Input() assetUid: string = '';
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
+    @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
 
@@ -55,9 +56,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         super();
         this.secondaryNavService = secondaryNavService;
         this.breadcrumbsService = breadcrumbService;
-        this.router.events.subscribe(x => {
-            console.log(x);
-        });
     }
 
 
@@ -110,8 +108,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (this.myDiagram.selection.count == 0) {
                 this.selectedNodeData = null;
             }
+            this.saveState.emit(this.isCurrentStateSaved());
         }
-
         this.cdRef.detectChanges();
     }
 
@@ -297,7 +295,24 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private isCurrentStateSaved() {
-        return JSON.stringify(this.myDiagram.model) == JSON.stringify(this.savedState);
+        if (!this.savedState)
+            return false;
+
+        return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
+    }
+
+    private getSignature(model: go.Model) {
+        var m = { nodes: model['nodeDataArray'], links: model['linkDataArray'] };
+        m.nodes.forEach(x => {
+            delete x['__gohashid'];
+        });
+
+        m.links.forEach(x => {
+            delete x['__gohashid'];
+        });
+
+        console.log(JSON.stringify(m));
+        return JSON.stringify(m);
     }
 
     private validationErrors: any = {};
@@ -344,7 +359,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     });
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
-                this.savedState = JSON.parse(JSON.stringify(this.myDiagram.model));
+                this.savedState = go.Model.fromJson(JSON.stringify(res));
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];

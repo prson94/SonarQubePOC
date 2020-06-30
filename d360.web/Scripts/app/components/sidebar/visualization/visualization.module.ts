@@ -17,6 +17,7 @@ import { BrowserComponent } from './browser.component';
 import { LineageComponent } from './lineage.component';
 import { ImpactComponent } from './impact.component';
 import { DiagramComponent } from './diagram.component';
+import { DeactivateGuard } from '../../../guards/deactivate.guard';
 
 @NgModule({
     imports: [
@@ -46,7 +47,9 @@ import { DiagramComponent } from './diagram.component';
         {
             provide: HTTP_INTERCEPTORS,
             useClass: GovernRequestInterceptor,
-            multi: true },
+            multi: true
+        },
+        DeactivateGuard
     ]
 })
 export class VisualizationModule { }
