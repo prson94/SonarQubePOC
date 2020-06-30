@@ -259,29 +259,6 @@ namespace d360.web.Controllers
                 Formatting = Newtonsoft.Json.Formatting.None
             };
         }
-
-        [HttpGet, Route("{type}/{id:int}/lineagenode")]
-        public JsonNetResult GetLineageNodeDataForObject(string type, int id)
-        {
-            var sql = @"select 
-	DisplayValue as [name],
-	ForeColor as foreColor,
-	BackColor as backColor,
-	[object],
-	objectId,
-	Type as objectType,
-	TypeID as objectTypeId,
-	TypeName as objectTypeName
-from AssetDetail
-where [object] = @type and objectid = @id";
-
-            return new JsonNetResult
-            {
-                Data = Company.Query<dynamic>(sql, new { type, id }).FirstOrDefault(),
-                Formatting = Formatting.None
-            };
-        }
-
         #endregion
     }
 }

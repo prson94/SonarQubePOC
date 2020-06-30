@@ -368,7 +368,6 @@
     <Compile Include="Controllers\V2\ActionsController.cs" />
     <Compile Include="Controllers\V2\BrowserController.cs" />
     <Compile Include="Controllers\V2\HealthController.cs" />
-    <Compile Include="Controllers\V2\LineageController.cs" />
     <Compile Include="Controllers\V2\MembershipController.cs" />
     <Compile Include="Controllers\V2\PermissionsController.cs" />
     <Compile Include="Controllers\V2\ScoringController.cs" />
@@ -818,7 +817,6 @@
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow-editor.component.html" />
     <Content Include="Scripts\app\components\admin\workflow\admin-workflow.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-business-editor.component.html" />
-    <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\lineage\lineage-technical-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-condition-editor.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\workflow\workflow-diagram.component.html" />
@@ -1312,9 +1310,6 @@
     <TypeScriptCompile Include="Scripts\app\components\resource\resource-password.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\shared-asset-type-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\diagram-base.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-diagram.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-editor.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\diagram\lineage\lineage-info.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-step-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-help.component.ts" />
@@ -1781,7 +1776,6 @@
     <TypeScriptCompile Include="Scripts\app\services\icon.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\levels.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\browser.service.ts" />
-    <TypeScriptCompile Include="Scripts\app\services\lineage.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\load.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\messages-observable.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\allocations.service.ts" />
