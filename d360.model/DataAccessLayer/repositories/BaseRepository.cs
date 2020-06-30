@@ -112,15 +112,8 @@ namespace d360.model.DataAccessLayer.repositories
                     }
                     else if (f.Type == "Lookup" && f.AllowAllValue)
                     {
-                        if (hasColor)
-                        {
-                            fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                        }
-                        else
-                        {
-                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
-                        }
+                        fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                        dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);   
                     }
                     else if (f.Type == "Lookup" && listColorsAsJSON)
                     {
@@ -152,15 +145,9 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Lookup" && f.AllowAllValue)
                         {
-                            if (hasColor)
-                            {
-                                fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                            }
-                            else
-                            {
-                                fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
-                                dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
-                            }
+                           
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else coalesce({tableAlias}.{valueColumn}, @defaultValue{tableAlias}) end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
                         else if (f.Type == "Path")
                         {
@@ -194,15 +181,8 @@ namespace d360.model.DataAccessLayer.repositories
                         }
                         else if (f.Type == "Lookup" && f.AllowAllValue)
                         {
-                            if (hasColor)
-                            {
-                                fieldColumns.Add($"{tableAlias}.{valueColumn} as [{columnName}]");
-                            }
-                            else
-                            {
-                                fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
-                                dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
-                            }
+                            fieldColumns.Add($"case when {tableAlias}.[Value] = '0' then @F{f.ID}_AllValue else {tableAlias}.{valueColumn} end as [{columnName}]");
+                            dbArgs.Add($"@F{f.ID}_AllValue", f.AllowAllLabel);
                         }
                         else if (f.Type == "Path")
                         {
@@ -393,8 +373,11 @@ namespace d360.model.DataAccessLayer.repositories
 								outer apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
                                 inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value   
                                 cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
-                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH) 
-                            ){tableAlias}(FormattedValue) ";
+                                where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH),
+                                [Value] = 
+									(SELECT [Value] from Field {tableAlias}
+									 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql})                                
+                            ){tableAlias}(FormattedValue, [Value]) ";
                     fieldJoins.Add(sql);
                 }
                 else
