@@ -481,7 +481,7 @@ from	AssetDetail A
 where	A.Uid = @uid
 for json path, WITHOUT_ARRAY_WRAPPER";
 
-                var reader = await Company.QueryAsync<string>(sql, new { uid, ignoredFields }, timeout: 10);
+                var reader = await Company.QueryAsync<string>(sql, new { uid, ignoredFields }, timeout: 90);
                 var json = string.Join("", reader);
 
                 var model = JsonConvert.DeserializeObject<AssetBrowserDiagramAsset>(json);
