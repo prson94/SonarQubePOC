@@ -302,16 +302,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private getSignature(model: go.Model) {
-        var m = { nodes: model['nodeDataArray'], links: model['linkDataArray'] };
-        m.nodes.forEach(x => {
-            delete x['__gohashid'];
-        });
-
-        m.links.forEach(x => {
-            delete x['__gohashid'];
-        });
-
-        console.log(JSON.stringify(m));
+        if (!model)
+            return '';
+        var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
         return JSON.stringify(m);
     }
 
@@ -353,6 +346,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load() {
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(res => {
+                if (!this.myDiagram) {
+                    console.warn("Diagram placeholder not loaded.");
+                    return;
+                }
+
                 if (res && res.nodeDataArray && res.nodeDataArray.length > 0) {
                     res.nodeDataArray.forEach(x => {
                         x.icon = FontAwesomeHelper.GetHtmlCode(x.icon);
@@ -364,6 +362,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
                 this.isDiagramLoaded = true;
+                this.saveState.emit(this.isCurrentStateSaved());
                 this.cdRef.detectChanges();
             });
     }

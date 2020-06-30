@@ -44,6 +44,5 @@ export class BrowserComponent extends BaseComponent implements OnInit, OnDestroy
     public isSaved: boolean = null;
     saveStateChanged($event) {
         this.isSaved = $event;
-        console.log(this.isSaved);
     }
 }
