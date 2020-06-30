@@ -44,6 +44,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private isErrorModalOpened: boolean = false;
     private isSavingChangesModalOpened: boolean = false;
+    private promptDeleteOpened: boolean = false;
 
     private isInfoPanelOpened: boolean = false;
     constructor(
@@ -100,7 +101,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     canExitPage($event: any): boolean {
         return this.isCurrentStateSaved();
     }
-
     ngAfterViewChecked() {
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
@@ -167,6 +167,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.toolManager.panningTool.isEnabled = !this.myDiagram.toolManager.panningTool.isEnabled;
     }
 
+    deleteSelectedNode() {
+        if (this.isEditMode) {
+            this.myDiagram.selection;
+            this.myDiagram.selection.each(x => {
+                this.myDiagram.remove(x);
+            })
+        }
+    }
+
     loadDiagram() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
@@ -192,6 +201,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                 });
 
+        this.myDiagram.commandHandler.canDeleteSelection = () => {
+            try {
+                if (this.isEditMode) {
+                    if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
+                        this.promptDeleteOpened = true;
+                        this.cdRef.detectChanges();
+                        return false;
+                    }
+                }
+                return this.isEditMode;
+            }
+            catch (ex) {
+                return this.isEditMode;
+            }
+        };
 
         this.myDiagram.grid.gridCellSize = new go.Size(24, 24);
         this.myDiagram.toolManager.draggingTool.isGridSnapEnabled = true;

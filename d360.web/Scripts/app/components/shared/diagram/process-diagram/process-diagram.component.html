@@ -154,16 +154,29 @@
         <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving">
             <div class="content">
                 <div class="row">
-                        <div class="loader">
-                            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                            <span class="text">
-                                Saving changes
-                            </span>
-                        </div>
+                    <div class="loader">
+                        <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+                        <span class="text">
+                            Saving changes
+                        </span>
+                    </div>
                 </div>
             </div>
         </d3s-modal>
 
+        <d3s-modal [title]="'Delete Selected Item'" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
+            <div class="content">
+                <div class="row">
+                    Please confirm that you wish to delete the selected item, as this operation cannot be undone.
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="promptDeleteOpened=false">Cancel</button>
+                <div class="grow"></div>
+                <button class="button primary" (click)="promptDeleteOpened=false;deleteSelectedNode();">Delete</button>
+
+            </div>
+        </d3s-modal>
 
     </div>
 
