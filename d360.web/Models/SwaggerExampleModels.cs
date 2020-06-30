@@ -90,6 +90,22 @@ namespace d360.web.Models
         }
     }
 
+    public class UpdateGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new UpdateGroup
+                {
+                    Uid = Guid.Empty,
+                    Name = "Name",
+                    Description = "Description",
+                    PrimaryOwnerUid = Guid.Empty,
+                    SecondaryOwnerUid = Guid.Empty
+                };
+        }
+    }
+
     public class InsertUserToGroupExample : IExamplesProvider
     {
         public object GetExamples()
@@ -280,6 +296,18 @@ namespace d360.web.Models
                     { "MyApiFieldName2", "My Field value" }
                 }
             };
+        }
+    }
+
+    public class DeleteGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new DeleteGroupModel
+                {
+                    Uid = Guid.Empty
+                };
         }
     }
 

@@ -33,7 +33,6 @@ export class FusionAttributeTabsComponent extends BaseComponent  implements OnCh
 
     tabs: any[] = [
         { key: 'ASSETS', loaded: false },
-        { key: 'DATAPROFILING', loaded: false },
     ];
 
     activeTab:any = this.tabs[this.activeIndex];

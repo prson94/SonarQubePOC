@@ -2005,7 +2005,7 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             var sql = $@"
                 select
 	                A.[UID] as [uid],
-                    COALESCE(f.FormattedValue, ft.DefaultFormattedValue) as Status,
+                    COALESCE(StatusColor.FormattedValue, f.FormattedValue, ft.DefaultFormattedValue) as Status,
 	                KP.KeyPath as Path
                 from Asset A
                 inner join AssetType AT on AT.ID = A.AssetTypeID and AT.UID = @typeUid
@@ -2013,6 +2013,14 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
+                cross apply STRING_SPLIT(F.Value, ',') SPFF
+                inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPFF.value   
+                cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
+				outer apply(
+                                select FormattedValue = 
+                                (SELECT COALESCE(ACF.Code,F.FormattedValue) as name,
+                                COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
+                            )StatusColor(FormattedValue)
                 WHERE A.ID = @id
             ";
             var res = new

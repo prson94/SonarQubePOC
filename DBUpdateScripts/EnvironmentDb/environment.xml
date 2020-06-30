@@ -48,9 +48,9 @@
 	<include file="scripts/Function.utility.GetHash.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
-  
+	<include file="scripts/Function.utility.JS_Hashcode.xml"/>
 
-	<!-- Tables (object-based naming) -->
+  <!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
 	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
 	<include file="scripts/Table.analytics.Host.xml"/>
@@ -244,11 +244,13 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
-	<include file="scripts/Table.api.ExecutionMetric.xml"/>
+  <include file="scripts/Table.api.ExecutionGroup.xml"/>
+  <include file="scripts/Table.api.ExecutionMetric.xml"/>
 	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
