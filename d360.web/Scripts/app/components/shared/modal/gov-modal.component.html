@@ -1,7 +1,10 @@
 ﻿<div #popupBox class="modal-overlay" tabindex=-1 (keydown)="checkKey($event)">
     <div class="modal-dialog {{additionalClasses}}">
         <div *ngIf="showTitle" class="modal-title-bar">
-            <h1>{{title}}</h1>
+            <div style="display:block">
+                <h1>{{title}}</h1>
+                <h2 *ngIf="subtitle">{{subtitle}}</h2>
+            </div>
             <span class="grow"></span>
         </div>
         <ng-content></ng-content>
