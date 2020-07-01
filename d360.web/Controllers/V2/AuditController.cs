@@ -565,7 +565,7 @@ namespace d360.web.Controllers.V2
             inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
             left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
-            left join AssetType ActionAT on ActionAT.Name = ga.ActionObjectTypeName
+            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
             inner join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID and AD.uid = @uid";
 
             return querySql;
@@ -615,7 +615,7 @@ namespace d360.web.Controllers.V2
             inner join [reporting].[Global_Resource] R on R.ResourceID = ga.ResourceID
             inner join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID and at.uid = @uid
             left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
-            left join AssetType ActionAT on ActionAT.Name = ga.ActionObjectTypeName";
+            left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID";
 
             if(includeReferenceItem)
             {
@@ -666,7 +666,7 @@ namespace d360.web.Controllers.V2
                         where att.uid = @uid)
                 left join AssetType AT on AT.Object = ga.Object and AT.ObjectID = ga.ObjectID
                 left join Asset ActionA on ActionA.Object = ga.ActionObject and ActionA.ObjectID = ga.ActionObjectID
-                left join AssetType ActionAT on ActionAT.Name = ga.ActionObjectTypeName
+                left join AssetType ActionAT on ActionA.AssetTypeID = ActionAT.ID
                 left join AssetDetail AD on AD.Object = ga.Object and AD.ObjectID = ga.ObjectID";
             }
 
