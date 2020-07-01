@@ -492,7 +492,8 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
                         this.form.value[p] = simpleDate;
                     }
                     else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
-                        this.form.value[p] = new Date(this.form.value[p]).toISOString();
+                        if (this.form.value[p] != 'Invalid Date')
+                            this.form.value[p] = new Date(this.form.value[p]).toISOString();
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);
@@ -536,7 +537,7 @@ export class DynamicEditorComponent extends BaseComponent implements OnChanges, 
 
         //when using model binding onSubmit() is called on every change, but just emit form values, do not call save api (used on Process Designer)
         if (this.useModelBinding) {
-            this.modelChanged.emit(values);
+            this.modelChanged.emit({ values: values, fields: this.fields });
             return;
         }
 

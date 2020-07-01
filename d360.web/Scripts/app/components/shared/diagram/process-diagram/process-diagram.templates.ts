@@ -90,7 +90,7 @@ export class ProcessDiagramTemplates {
                         textAlign: "center",
                         spacingBelow: 3,
                         maxSize: new go.Size(120, NaN),
-                        wrap: go.TextBlock.WrapBreakAll,
+                        wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black'
                     }
@@ -127,7 +127,7 @@ export class ProcessDiagramTemplates {
                     isMultiline: true,
                     spacingBelow: 3,
                     maxSize: new go.Size(180, NaN),
-                    wrap: go.TextBlock.WrapBreakAll,
+                    wrap: go.TextBlock.WrapDesiredSize,
                 },
                 new go.Binding("text", "Name").makeTwoWay()
             )
@@ -167,11 +167,10 @@ export class ProcessDiagramTemplates {
                     stroke: "white",
                     textAlign: "center",
                     font: this.textFont,
-                    margin: new go.Margin(6, 0, 0, 40),
+                    margin: new go.Margin(14, 0, 0, 30),
                     minSize: new go.Size(NaN, 24),
-                    visible: false
                 }
-                , new go.Binding("text", "assetTypeName").makeTwoWay()
+                , new go.Binding("text", "governanceDisplayValue").makeTwoWay()
             )
         );
     }
@@ -289,7 +288,8 @@ export class ProcessDiagramTemplates {
                             alignment: go.Spot.Center,
                             margin: new go.Margin(5, 0, 0, 0),
                             textAlign: "center",
-                            font: '24px FontAwesome'
+                            font: '24px FontAwesome',
+                            minSize: new go.Size(24, 24)
                         },
                         new go.Binding("text", "icon").makeTwoWay(),
                         new go.Binding("stroke", "refItemColor").makeTwoWay()),
@@ -305,7 +305,7 @@ export class ProcessDiagramTemplates {
                         textAlign: "center",
                         spacingBelow: 3,
                         maxSize: new go.Size(120, NaN),
-                        wrap: go.TextBlock.WrapBreakAll,
+                        wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
                         stroke: 'black'
                     }

@@ -12,7 +12,10 @@ namespace d360.web.Models
         //other keys are custom fields
 
         private string[] systemFields = new string[] {
-            "key","assetTypeName", "assetTypeUid","category","icon","key","loc","refItemColor","isNew","Uid","AssetTypeUid","hasError","objectId"
+            "key","assetTypeName", "assetTypeUid","category",
+            "icon","key","loc","refItemColor",
+            "isNew","Uid","AssetTypeUid",
+            "hasError","objectId","governanceDisplayValue"
         };
         public string GetHash()
         {
