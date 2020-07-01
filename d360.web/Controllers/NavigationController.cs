@@ -924,11 +924,20 @@ namespace d360.web.Controllers
                     responseModel.MainTabTitle = "Tags";
                     responseModel.Items.HasAudit = true;
                 }
+                if (model.ObjectType == SystemObjects.RuleType.ToString())
+                {
+                    execProcedure = false;
+                    responseModel.Object = responseModel.ObjectType = SystemObjects.RuleType.ToString();
+                    responseModel.ObjectID = model.ObjectId ?? 0;
+                    responseModel.DisplayValue = "Rules";
+                    responseModel.MainTabTitle = "Rules";
+                    responseModel.Items.HasAudit = true;
+                }
 
             }
 
 
-            if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
+                if (model.AssetUid != null && model.ObjectType == SystemObjects.Tag.ToString())
             {
                 execProcedure = false;
                 var tag = Company.Tags.FirstOrDefault(x => x.uid == model.AssetUid);
