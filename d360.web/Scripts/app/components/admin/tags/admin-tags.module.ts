@@ -18,7 +18,7 @@ import { D3SCheckboxModule } from '../../shared/controls/gov-checkbox';
 
 import { AdminTagsRoutingModule } from './admin-tags.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';

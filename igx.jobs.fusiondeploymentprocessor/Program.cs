@@ -3,7 +3,6 @@ using d360.core.entities.Plugins;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Data.SqlClient;
 using System.IO;
@@ -33,7 +32,7 @@ namespace igx.jobs.fusiondeploymentprocessor
 #if DEBUG
         const string timerSettings = "*/1 * * * * *";
 #else
-        const string timerSettings = "0 0 */6 * * *";
+        const string timerSettings = "0 0 0 * * *";
 #endif
 
         const int ALTER_TRIGGER_TIMEOUT = 90;
@@ -43,7 +42,7 @@ namespace igx.jobs.fusiondeploymentprocessor
             try
             {
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                community.Open();
 
                 var clientFusionTypes = community.Query<ClientFusionType>("select * from plugin.ClientFusionType");
                 var fusionTypes = community.Query<FusionType>("select * from plugin.FusionType");
@@ -256,7 +255,7 @@ from	plugin.FusionAttributeType A
 
                         using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
                         {
-                            company.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            company.Open();
 
                             using (var trans = company.BeginTransaction())
                             {

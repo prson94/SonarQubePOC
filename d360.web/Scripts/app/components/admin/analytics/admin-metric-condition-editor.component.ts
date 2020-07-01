@@ -1,6 +1,6 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { Condition, ConditionForm, MetricAssetVersionConditionViewModel, MetricFieldTypeViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -11,8 +11,8 @@ import { FormHelpers } from '../../../static/form-helpers';
     providers: [MetricsService]
 })
 
-export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit, OnChanges {
-    @Input() condition: MetricAssetVersionConditionViewModel = null;
+export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit {
+    @Input() condition: MetricAssetVersionConditionItemViewModel = null;
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
     @Input() usedFieldTypes: number[] = [];
@@ -36,11 +36,11 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
 
         this.usedFieldTypes.forEach(i => {
-            let ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID == i);
+            const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
             if (ft) {
                 if (this.condition) {
-                    if (this.condition.FieldTypeID != i) {
-                        ft.Disabled = true;
+                    if (this.condition.ConditionFieldTypeID !== +i) {
+                        ft.Disabled = true; 
                     }
                 }
                 else {
@@ -52,17 +52,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.load();
     }
 
-    ngOnChanges() {
-
-    }
-
-    getLookupValues(fieldTypeID: number) {
-        return this.metricConditionEditorFieldTypes.find(i => i.ID == fieldTypeID).Values;
+    getLookupValues() {
+        return this.metricConditionEditorFieldTypes.find(i => i.ID === +this.condition.ConditionFieldTypeID).Values;
     }
 
     load() {
         if (this.condition) {
-            if (this.condition.FieldTypeID) {
+            if (this.condition.ConditionFieldTypeID) {
                 this.selectFieldType();
             }
         }
@@ -72,7 +68,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     valid() {
         let valid = true;
 
-        if (this.condition == null) {
+        if (this.condition === null) {
             valid = false;
         }
 
@@ -84,13 +80,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         if (this.condition.FieldType) {
             switch (this.condition.FieldType.Type) {
                 case "Boolean":
-                    this.condition.ValuesText = this.condition.Values.toString();
+                    this.condition.ValuesText = this.condition.SingleValue;
                     break;
                 case "Lookup":
-                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value == +this.condition.Values).Text;
+                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value === +this.condition.SingleValue).Text; 
                     break;
                 default:
-                    this.condition.ValuesText = this.condition.Values;
+                    this.condition.ValuesText = this.condition.SingleValue;
                     break;
             }
         }
@@ -101,32 +97,39 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.onCancel.emit();
     }
 
-    changeFieldType(e: any) {
-        this.condition.FieldTypeID = +e;
+    changeFieldType(e: number) {
+        this.condition.ConditionFieldTypeID = e;
         this.selectFieldType();
     }
 
     selectFieldType() {
-        if (this.condition.FieldTypeID) {
-            let field = this.metricConditionEditorFieldTypes.find(f => f.ID == this.condition.FieldTypeID);
-            if (field != null) {
+        if (this.condition.ConditionFieldTypeID) {
+            const field = this.metricConditionEditorFieldTypes.find(f => f.ID === +this.condition.ConditionFieldTypeID); 
+            if (field) {
                 this.condition.FieldTypeName = field.Name;
                 this.condition.FieldType = field;
                 if (!this.condition.Values) {
-                    this.condition.Values = "";
+                    this.condition.Values = [];
                 }
 
-                switch (field.Type) {
-                    case "Boolean":
-                        this.condition.Values = (this.condition.Values == 'true') || (this.condition.Values == true);
-                        break;
-                    case "Date":
-                    case "DateTime":
-                        this.condition['Type'] = 'Date';
-                        if (this.condition.Values) {
-                            this.condition.Values = new Date(<string>this.condition.Values);
-                        }
-                        break;
+                if (this.condition.Values.length > 0) {
+                    switch (field.Type) {
+                        case "Boolean":
+                            this.condition.SingleValue = (this.condition.Values[0].Value === 'true');
+                            break;
+                        case "Lookup":
+                            this.condition.SingleValue = (this.condition.Values[0].Value);
+                            break;
+                        case "Date":
+                        case "DateTime":
+                            if (this.condition.Values) {
+                                this.condition.SingleValue = new Date(this.condition.Values[0].Value as string);
+                            }
+                            break;
+                        default:
+                            this.condition.SingleValue = this.condition.Values[0].Value;
+                            break;
+                    }
                 }
             }
         }

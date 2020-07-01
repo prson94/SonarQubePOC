@@ -11,7 +11,7 @@ import { ObjectDetailComponent } from './object-detail.component';
 import { ObjectDetailFieldComponent } from './object-detail-field.component';
 import { PipesModule } from '../../../pipes/pipes.module';
 import { RouterModule } from '@angular/router';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { SharedGridPagingInfoModule } from '../grid-paging-info.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { SimpleAccordionModule } from '../simple-accordion.part';
@@ -19,6 +19,8 @@ import { TableModule } from 'primeng/table';
 import { TagViewModule } from '../tags/d3s-tag-view.module';
 import { TilesModule } from '../tiles/tiles.module';
 import { TooltipModule } from 'primeng/tooltip';
+import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+
 
 @NgModule({
     imports: [
@@ -37,11 +39,13 @@ import { TooltipModule } from 'primeng/tooltip';
         TableModule,
         TagViewModule,
         TilesModule,
-        TooltipModule
+        TooltipModule,
+        D3SColorPickerModule,
+        
     ],
     declarations: [
         DynamicLookupGridComponent,
-        ObjectDetailComponent,
+        ObjectDetailComponent, 
         ObjectDetailFieldComponent,
     ],
     exports: [

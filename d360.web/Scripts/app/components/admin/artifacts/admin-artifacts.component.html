@@ -5,14 +5,13 @@
                 {{tabTitle}}
                 <d3s-tile-actions [hasAdd]="true" (addClick)="add(0)"></d3s-tile-actions>
             </header>
-            <input type="text"
-                   pInputText
-                   [(ngModel)]="searchValue"
-                   (keyup)="filter($event)"
-                   placeholder="Search"
-                   style="width: 100%;margin-bottom:10px;">
-
-            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3">
+            
+            <p-treeTable #dt [value]="artifactTypes" #assetTypeTree selectionMode="single" filterMode="strict" (onNodeSelect)="selectedItemChange()" [globalFilterFields]="['name']" [(selection)]="selectedRow" metaKeySelection="true" [paginator]="true" [rows]="defaultInitialItemsPerPage" [pageLinks]="3" (onFilter)="expandNodes()">
+                <ng-template pTemplate="caption">
+                    <div>
+                        <input type="text" pInputText placeholder="Search" (input)="dt.filterGlobal($event.target.value, 'contains')" style="width: 100%;margin-bottom:10px;">
+                    </div>
+                </ng-template>
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 60%">Name</th>
@@ -76,7 +75,7 @@
     </div>
     <div *ngIf="isDeleting" class="col s12 m7 l8">
         <div class="tile tile-detail">
-            <d3s-artifact-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count"></d3s-artifact-type-delete>
+            <d3s-asset-type-delete (onCancel)="cancel()" [callback]="theDeleteCallback" [artifactTypeId]="selectedRow.data.ID" [assetTypeId]="selectedRow.data.AssetTypeID" [count]="selectedRow.data.count" [assetTypeName]="this.selectedRow.data.name"></d3s-asset-type-delete>
         </div>
     </div>
     <div *ngIf="!isEditing && !isAdding && !isDeleting && (selectedRow?.data?.ID && selectedRow?.data?.AssetTypeID)" class="col s12 m7 l8">

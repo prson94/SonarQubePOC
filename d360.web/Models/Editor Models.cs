@@ -226,6 +226,8 @@ namespace d360.web.Models
                 return !(VirtualScroll || UseTypeahead);
             }
         }
+        [DataMember]
+        public bool UseColorControl { get; set; }
 
 
     }
@@ -737,6 +739,15 @@ namespace d360.web.Models
         public string ErrorMessage { get; set; }
     }
 
+    public class UpdateGroup
+    {
+        public Guid Uid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public Guid PrimaryOwnerUid { get; set; }
+        public Guid SecondaryOwnerUid { get; set; }
+    }
+
     #region Asset Browser
 
     public enum AssetBrowserApiHopDirection
@@ -756,7 +767,8 @@ namespace d360.web.Models
     public enum AssetBrowserDiagramType
     {
         Lineage = 1,
-        Impact = 2
+        Impact = 2,
+        Process = 3
     }
 
     [DataContract]

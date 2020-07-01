@@ -96,6 +96,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     public simpleSearch = new Subject<any>();
     private assetSearchSub: Subscription;
+    statusHasColor: boolean;
 
     get globalFilterFields(): string[] {
         return this.columns.map(c => c.datafield);
@@ -234,6 +235,7 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
         params._loadPermissionDetails = true;
         params._pageSize = this.rowsPerPage;
         params._pageNum = this.stateService.artifactTypeFilters.currentPageNumber + 1;
+        params._listColorsAsJSON = true; 
 
         if (this.stateService.artifactTypeFilters.sortField) {
             params._order = this.getFieldAPINameByOldName(this.stateService.artifactTypeFilters.sortField);
@@ -326,6 +328,22 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
                     });
                 }
 
+                this.statusHasColor = this.items.filter(x => {
+                    let foundColorToken = false;
+                    for (var prop in x) { 
+                        if (Object.prototype.hasOwnProperty.call(x, prop) && prop.toLowerCase() == "status") {
+                            if ((x[prop] + "").indexOf('"name":') > -1 && (x[prop] + "").indexOf(',"color":') > -1) {
+
+                                foundColorToken = true;
+                            }
+
+                        }
+                        
+                    }
+                    return foundColorToken;
+                }).length > 0;
+
+
                 this.totalRecords = res.total;
                 if (this.items && this.items.length > 0) this.selected = this.items[0];
                 this.isLoading = false;
@@ -343,22 +361,23 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
 
     getCertificationStatusColor(status: string) {
         status = status.toLowerCase().trim();
-
-        switch (status) {
-            case 'draft':
-                return '#BBBBBB';
-            case 'certified':
-                return '#3f9d40';
-            case 'under review':
-                return '#e2792a';
-            default:
-                //custom status, we need to generate a color
-                let hash = 0;
-                for (let i = 0; i < status.length; i++) {
-                    hash = status.charCodeAt(i) + ((hash << 5) - hash);
-                    hash = hash & hash;
-                }
-                return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+        if (this.statusHasColor != true) {
+            switch (status) {
+                case 'draft':
+                    return '#BBBBBB';
+                case 'certified':
+                    return '#3f9d40';
+                case 'under review':
+                    return '#e2792a';
+                default:
+                    //custom status, we need to generate a color
+                    let hash = 0;
+                    for (let i = 0; i < status.length; i++) {
+                        hash = status.charCodeAt(i) + ((hash << 5) - hash);
+                        hash = hash & hash;
+                    }
+                    return `hsl(${(hash * 2) % 360}, 70%, 70%)`;
+            }
         }
     }
 

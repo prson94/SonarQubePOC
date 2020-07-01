@@ -1,4 +1,5 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -186,8 +187,8 @@ namespace d360.core.entities
     public class TopNavigationItem
     {
         public string MenuID { get; set; }
-        public Feature Feature { get; set; }
-        public bool ShouldDisplay { get; set; }
+        public bool ShouldDisplay { get; set; } = true;
+        [JsonIgnore]
         public string Items { get; set; }
         public List<NavigationItem> NavigationItems { get; set; }
         public int SortOrder { get; set; }
@@ -451,6 +452,7 @@ namespace d360.core.entities
         public bool HasField { get; set; }
         public bool HasChild { get; set; }
         public bool HasRuleResult { get; set; }
+        public bool HasGovernanceRoleUidSet { get; set; }
     }
 
 }

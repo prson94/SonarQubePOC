@@ -5,7 +5,6 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
 using Dapper;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -28,6 +27,10 @@ namespace d360.model
         public DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
 
         public DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+
+        public DbSet<MetricAssetVersionConditionItem> MetricAssetVersionConditionItems { get; set; }
+
+        public DbSet<MetricAssetVersionConditionItemValue> MetricAssetVersionConditionItemValues { get; set; }
 
         public DbSet<Score> Scores { get; set; }
 
@@ -104,7 +107,7 @@ namespace d360.model
                 #endregion
 
                 if (Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
 
@@ -140,7 +143,7 @@ namespace d360.model
                 Connection.Execute(@"update T set T.IsValidMetricDate = IIF(M_M.EffectiveDate is not null, 1, 0) from api.ExecutionMetric T 
                 left join metrics.[Asset] A on A.[Uid] = T.MetricAssetUid and A.[State] = 1
                 outer apply (
-                            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
+                            select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [AssetUid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate]
                             ) M_M
                 where T.ExecutionID = @ExecutionID", new { execution.ExecutionID });
 
@@ -383,7 +386,7 @@ when not matched by target then
             #endregion
 
             if (Connection.State != ConnectionState.Open)
-                Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                Connection.Open();
 
             #region Bulk Copy
 
@@ -425,36 +428,44 @@ when not matched by target then
             #region Validation
 
             // Resolve Metric Group/Item Effective Date
-            Connection.Execute(@"update T set T.IsValidMetricDate = 1 from api.ExecutionMetric T 
-            inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID
-            inner join metrics.[Asset] A on A.[Uid] = M.MeasureUid and A.[State] = 1 and A.ScoreType = @scoreType
-            cross apply (
-                        select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where [Uid] = A.[Uid] and EffectiveDate <= T.[EffectiveDate] and [State] = 1
-                        ) M_M
-            where T.ExecutionID = @ExecutionID
+            Connection.Execute(@"update T 
+set     T.IsValidMetricDate = 1 
+from    api.ExecutionMetric T 
+        inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID
+        inner join metrics.[Asset] A on A.[Uid] = M.MeasureUid and A.[State] = 1
+        inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.ScoreType = @scoreType
+        cross apply (
+                    select max(EffectiveDate) as EffectiveDate from metrics.AssetVersion where AssetUid = A.[Uid] and EffectiveDate <= T.[EffectiveDate] and [State] = 1
+                    ) M_M
+where   T.ExecutionID = @ExecutionID 
+        and M_M.EffectiveDate is not null 
 
-            update T set T.IsValidMetricDate = 1
-            from api.ExecutionMetric T 
-            where T.IsValidMetricDate is null 
-            and not exists (select 1 from api.ExecutionMetricMeasure M where M.ExecutionID = @executionID and M.ItemNumber = T.ItemNumber)
+update  T 
+set     T.IsValidMetricDate = 1 
+from    api.ExecutionMetric T 
+where   T.IsValidMetricDate is null 
+        and not exists (select 1 from api.ExecutionMetricMeasure M where M.ExecutionID = @executionID and M.ItemNumber = T.ItemNumber) 
 
-            update T set T.IsValidMetricDate = 0 from api.ExecutionMetric T 
-            where T.ExecutionID = @ExecutionID and coalesce(T.IsValidMetricDate, 0) <> 1
-"
+update  T 
+set     T.IsValidMetricDate = 0 
+from    api.ExecutionMetric T 
+where   T.ExecutionID = @ExecutionID 
+        and coalesce(T.IsValidMetricDate, 0) <> 1"
             , new { execution.ExecutionID, scoreType = (int)scoreType }
             , commandTimeout: timeout);
 
 
             //resolve allocation
-            Connection.Execute(@"update T set T.IsValidAsset = 1
-            from api.ExecutionMetric T 
-            inner join Asset S on S.[uid] = T.AssetUid 
-            where T.ExecutionID = @executionID
+            Connection.Execute(@"update T 
+set     T.IsValidAsset = 1 
+from    api.ExecutionMetric T 
+        inner join Asset S on S.[Uid] = T.AssetUid 
+where   T.ExecutionID = @executionID
 
-            update T set T.IsValidAsset = 0
-            from api.ExecutionMetric T 
-            where T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1
-"
+update  T 
+set     T.IsValidAsset = 0 
+from    api.ExecutionMetric T 
+where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
             , new { execution.ExecutionID, scoreType = (int)scoreType }
             , commandTimeout: timeout);
 
@@ -497,7 +508,8 @@ when not matched by target then
             from api.ExecutionMetric T
             left join Asset S on S.[uid] = T.AssetUid 
             left join AssetType AT on AT.ID = S.AssetTypeId
-            inner join metrics.Asset A on A.assetTypeUid = AT.uid and A.[State] = 1 and scoreType = @scoreType
+            inner join metrics.Allocation Al on Al.AssetTypeUid = AT.Uid and Al.ScoreType = @scoreType
+            inner join metrics.Asset A on A.AllocationUid = Al.Uid and A.[State] = 1 
             where T.ExecutionID = @executionID 
             and T.IsValidAsset = 1
             and A.uid not in (select measureuid from api.ExecutionMetricMeasure where ExecutionID = @executionID and ItemNumber = T.ItemNumber)"
@@ -511,7 +523,7 @@ when not matched by target then
             inner join api.ExecutionMetricMeasure M on M.ExecutionID = @executionID and M.ItemNUmber = T.ItemNumber
             where T.ExecutionID = @executionID 
             and T.IsValidAsset = 1
-            and M.MeasureUid not in (select uid from metrics.Asset where AssetTypeUid = At.uid and [State] = 1 and scoreType = @scoreType)"
+            and M.MeasureUid not in (select IA.Uid from metrics.Asset IA inner join metrics.Allocation IAL on IA.AllocationUid = IAL.Uid and IAL.AssetTypeUid = At.Uid and IA.[State] = 1 and IAL.ScoreType = @scoreType)"
             , new { execution.ExecutionID, scoreType = (int)scoreType }
             , commandTimeout: timeout);
 
@@ -557,15 +569,12 @@ when not matched by target then
             update  api.ExecutionMetric
             set     Success = 1
             where   ExecutionID = @ExecutionID
-                    and Success is null;
-
-            "
+                    and Success is null;"
             , new { execution.ExecutionID }
             , commandTimeout: timeout);
 
 
             #endregion
-
 
             #region Load Data
 
@@ -722,6 +731,7 @@ when not matched by target then
             }
 
             #endregion
+            
             try
             {
 

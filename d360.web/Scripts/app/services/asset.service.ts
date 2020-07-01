@@ -12,6 +12,7 @@ import { AssetEditorModel, AssetTypeClass, AssetCount } from '../models/asset.mo
 import { CommonComponentAssetResult, AssetSearchFilter, AssetSearchApiResponse } from '../models/asset-search.model';
 import { URLSearchParams } from 'url';
 import { FormResponseType } from '../models/workflow.model';
+import { SelectItem } from 'primeng/api';
 
 @Injectable()
 export class AssetService extends BaseObservableService {
@@ -112,6 +113,27 @@ export class AssetService extends BaseObservableService {
         return this.http.get(`/api/v2/assets/counts/byAssetType?class=${cs.toString()}`)
             .pipe(map(res => { return <AssetCount[]>res }),
                 catchError(err => this.handleError(err, true)));
+    }
+
+    public getAllColors(): Observable<SelectItem[]> {
+        return this.http.get(`/api/v2/assets/colors`)
+            .pipe(map(res => { return <SelectItem[]>res }),
+                catchError(err => this.handleError(err, true)));
+    }
+
+    public deleteAssetType(uid: string): Observable<any> {
+        const httpOptions = {
+            headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
+            body: { Uid: uid, Cascade: true }
+        };
+
+        return this
+            .http
+            .delete(`api/v2/assets/single`, httpOptions)
+            .pipe(
+                map(res => <JsonResult>res),
+                catchError(err => this.handleError(err))
+            );
     }
 
     public getAssetTypeLegacyData(uid: string): Observable<any> {

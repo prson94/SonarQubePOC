@@ -10,10 +10,12 @@ using d360.web.Models;
 using d360.web.Models.Attributes;
 using Dapper;
 using Microsoft.Web.Http;
+using Newtonsoft.Json;
 using SpreadsheetLight;
 using Swashbuckle.Swagger.Annotations;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -38,27 +40,34 @@ namespace d360.web.Controllers.V2
         #region DI
 
         IAssetRepository AssetRepository;
+        IMetricsRepository MetricsRepository;
         IScoringRepository ScoringRepository;
-        public ScoringController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository)
+        public ScoringController(ICommunityContext community, ICompanyContext company, IQueueSource queueSource, IScoringRepository scoringRepository, IAssetRepository assetRepository, IMetricsRepository metricsRepository)
             : base(community, company)
         {
             this.AssetRepository = assetRepository;
+            this.MetricsRepository = metricsRepository;
             this.ScoringRepository = scoringRepository;
         }
 
         #endregion
 
-
+        #region Allocations
 
         /// <summary>
-        /// Get a list of allocations.
+        /// Gets a list of score definitions set up in Administration / Scoring.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
             HttpGet,
-            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerParameter("assetTypeUid", "Returns allocations whose asset type's uid meets the value provided.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("_state", "Returns allocations whose state is one of two possible values: Active, or Deleted. When using this parameter you must provide one of these two values.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetClassName", "Returns allocations whose asset type class falls within the specified value provided. You must provide part or all of the Name property from the api/v2/assets/classes endpoint.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("assetTypePath", "Returns allocations whose asset type's path contains the value provided.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("scoreType", "Returns allocations whose score type is either Governance or Data Quality.", DataType = "string", ParameterType = "query", Required = false),
+            SwaggerParameter("isExternallyCalculated", "Returns allocations whose scores are externally calculated. When providing this parameter use one of the following values: external; internal.", DataType = "string", ParameterType = "query", Required = false),
             SwaggerResponse(HttpStatusCode.OK, "Returns the list of allocations.", typeof(List<AllocationApiGetModel>)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "You are not authorized to perform this action.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
@@ -91,12 +100,11 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// Creates allocation based on provided asset type uid and score type.
+        /// Creates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
             HttpPost,
-            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.Created, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -173,12 +181,11 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Updates an existing allocation.
+        /// Updates a score definition.
         /// </summary>
         /// <returns>The allocation.</returns>
         [
             HttpPut,
-            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding allocation.", typeof(AllocationApiGetModel)),
@@ -272,12 +279,11 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
-        /// Gets allocations.
+        /// Deletes a score definition.
         /// </summary>
-        /// <returns>The metric.</returns>
+        /// <returns>OK status with message.</returns>
         [
             HttpDelete,
-            ApiExplorerSettings(IgnoreApi = true),
             Route("allocations/{allocationUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(ConfirmResponse)),
@@ -318,9 +324,9 @@ namespace d360.web.Controllers.V2
 
 
         /// <summary>
-        /// GET a list of relationship types.
+        /// Exports a list of score definitions.
         /// </summary>
-        /// <returns>A excel file containing relationships types.</returns>
+        /// <returns>A excel file containing score definitions.</returns>
         [
             HttpGet,
             MapToApiVersion("2.0"),
@@ -393,6 +399,47 @@ namespace d360.web.Controllers.V2
             return ResponseMessage(result);
         }
 
+        #endregion
+
+        /// <summary>
+        /// Gets a list of measures for the score definition UID provided.
+        /// </summary>
+        /// <param name="allocationUid">The Uid of the score allocation.</param>
+        /// <returns>An array of measures for the specified score definition.</returns>
+        [
+            HttpGet,
+            Route("allocations/{allocationUid:Guid}/structure"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json")
+        ]
+        public IHttpActionResult GetMetricStructureByAllocation(Guid allocationUid)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "You are not allowed to retrieve the metric heirarchy for this asset type."));
+
+            var prefix = "Metrics.GetMetricStructureByAssetType => ";
+
+            try
+            {
+                List<MetricAssetViewModel> models = null;
+
+                List<string> fragments = MetricsRepository.GetMetricStructureFragments(allocationUid);
+
+                models = JsonConvert.DeserializeObject<List<MetricAssetViewModel>>(string.Join("", fragments));
+                if (models == null)
+                    models = new List<MetricAssetViewModel>();
+
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, models));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                Trace.TraceError("{0}{1}", prefix, errorMessage);
+
+                return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.InternalServerError, errorMessage));
+            }
+        }
+
+
         /// <summary>
         /// Get a list of asset types that have not been allocated to the provided score type.
         /// </summary>
@@ -432,8 +479,14 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Post externally calculated scores and measure results.
         /// </summary>
+        /// <remarks>
+        /// Valid values for scoreType are: 
+        /// - [1] Governance 
+        /// - [2] DataQuality
+        /// Either the numerical value or string value can be supplied.
+        /// </remarks>
         /// <param name="model">The externally calculated score results to load.</param>
-        /// <param name="scoreType">The score type of the score results. Valid values for scoreType are 1) DataQuality and 2) Governance. Either the numerical value or string value can be supplied</param>
+        /// <param name="scoreType"> The score type of the score results. </param>
         /// <returns>List of results.</returns>
         [
             HttpPost,

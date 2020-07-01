@@ -435,7 +435,8 @@ export class SourceRuleSource {
 
 export enum DiagramType {
     Lineage = 1,
-    Impact = 2
+    Impact = 2,
+    Process = 3
 }
 
 export class AssetBrowserModel {
@@ -447,6 +448,11 @@ export class AssetBrowserModel {
         this.assets = new AssetBrowserAssetsModel();
         this.owners = new AssetBrowserOwnersModel();
     }
+}
+
+export class DiagramTypesModel {
+    initial: number;
+    items: any[] = [];
 }
 
 // #region Asset Browser : Translation

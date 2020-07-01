@@ -498,8 +498,16 @@ namespace d360.web.Controllers
                         try
                         {                         
                            if(!string.IsNullOrEmpty(relayState))
-                            {                                
-                                redirectURL = relayState;
+                            {
+                                // check for absolute url to prevent open redirect security vulnerability https://cwe.mitre.org/data/definitions/601.html 
+                                // if relaystate contains // which is an absolute url examples:
+                                // https://www.cnn.com
+                                // http://www.foxnews.com
+                                // //stackoverflow.com
+                                // www.cnn.com, /artifact, /artifact/1 will be treated as relative urls and will just get stuck on end of current path
+                                
+                                if (!relayState.Contains("//"))
+                                    redirectURL = relayState;
                             }
                         }
                         catch(Exception e)
@@ -514,7 +522,7 @@ namespace d360.web.Controllers
                             redirectURL = "/#";
                         }
 
-                        // Redirect to the originally requested resource URL, if any, or the default page.
+                        // Redirect to the originally requested resource URL, if any, or the default page.                        
                         return Redirect(redirectURL);
                     }
                     else

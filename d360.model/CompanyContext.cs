@@ -26,6 +26,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using d360.core.entities.Metric;
 
 namespace d360.model
 {
@@ -87,7 +88,7 @@ namespace d360.model
 
         #region DbSets
 
-        public DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
+        public DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
 
         public DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
 
@@ -1404,8 +1405,17 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                     classLimitSql = " and T.[Class] in (" + string.Join(",", limitToClasses.Select(i => (int)i)) + ")";
                 }
             }
-
+            var predicate = Predicates.FirstOrDefault(x => x.ID == predicateID);
             string excludeClassInStatement = string.Join(",", excludedClasses.Select(x => "'" + x + "'"));
+            string whereStatement = "";
+
+            if (predicate != null && predicate.Type == PredicateType.DiagramReference)
+            {
+                whereStatement = $@" and exists(select top 1 it.id from intersecttype it
+				 inner join Predicate p on it.PredicateID = p.ID and p.Type = {(int)PredicateType.Diagram}
+				 where it.subject = T.object and it.subjectid = T.objectid
+				)";
+            }
 
             if (subject.HasValue && subjectID.HasValue && limitToClasses != null)
             {
@@ -1440,7 +1450,7 @@ where   [ObjectID] = @id and [Object] = @type", new { id = objectId, type = obje
                         left join FusionAttributeType FAT on T.Object = 'FusionAttributeType' and FAT.ID = T.ObjectID 
                         left join FusionType FT on FT.ID = FAT.FusionTypeID 
                 where	T.Object not in ({excludeClassInStatement}){classLimitSql}
-			 	{noClassLimitSql}
+			 	{noClassLimitSql}{whereStatement}
                 ) I";
 
             if (subject.HasValue && subjectID.HasValue)
@@ -1974,6 +1984,10 @@ where	I.ID is null";
             modelBuilder.Entity<FieldTypeLookup>().HasRequired(t => t.FieldType).WithOptional(t => t.FieldTypeLookup).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<AssetTypeStyle>().HasRequired(t => t.AssetType).WithOptional(t => t.AssetTypeStyle).WillCascadeOnDelete(true);
+
+            modelBuilder.Entity<MetricAssetVersionConditionItemValue>().HasRequired(t => t.Item).WithMany(t => t.Values).WillCascadeOnDelete(true);
+            modelBuilder.Entity<MetricAssetVersionConditionItem>().HasRequired(t => t.Condition).WithMany(t => t.Items).WillCascadeOnDelete(true);
+            modelBuilder.Entity<MetricAssetVersionCondition>().HasRequired(t => t.Version).WithMany(t => t.Conditions).WillCascadeOnDelete(true);
 
             modelBuilder.Entity<FieldType>().Property(x => x.MinimumLength).HasPrecision(38, 18);
             modelBuilder.Entity<FieldType>().Property(x => x.MaximumLength).HasPrecision(38, 18);
@@ -2864,6 +2878,7 @@ select @err";
                                     joins += $" left join [Field] {name}_OT on {name}_OT.FieldTypeID = {relationshipLookupFieldType.ID}";
                                     joins += $" and {name}_OT.ObjectType = {name}_T." + (relationFieldInfo.IsSubject ? "Object" : "Subject");
                                     joins += $" and {name}_OT.ObjectID = {name}_T." + (relationFieldInfo.IsSubject ? "ObjectID" : "SubjectID");
+                                    joins += " ";
                                 }
                             }
                         }
@@ -2913,7 +2928,7 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                 else if (f.Type == DataType.Score.ToString())
                 {
                     columns += $@"{name}_SC.FormattedValue as [{(useFriendlyName ? friendlyName : name)}], ";
-                    joins += $@"outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
+                    joins += $@" outer apply dbo.GetAssetScoreById(A.ID, {f.ScoreType}) {name}_SC ";
                 }
                 else if (f.Type == DataType.Tag.ToString())
                 {
@@ -2998,6 +3013,9 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
                     break;
                 case SystemObjects.ResourceType:
                     objectId = Community.Resources.FirstOrDefault(x => x.Uid == objectUid).ID;
+                    break;
+                case SystemObjects.TaskType:
+                    objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == "Task").ObjectID;
                     break;
                 default:
                     objectId = Assets.FirstOrDefault(x => x.uid == objectUid && x.Object == objectType.ToString())?.ObjectID ?? 0;

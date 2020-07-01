@@ -65,10 +65,10 @@ import { AllocationService } from '../../../services/allocations.service';
                         </p-treeTable>
                     </div>
                     <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [scoreType]="scoreType" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [assetTypeUid]="assetType?.Uid" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                     </div>
                     <div *ngSwitchCase="FormMode.Deleting">
                         <header>
@@ -92,7 +92,7 @@ import { AllocationService } from '../../../services/allocations.service';
 
 export class AdminMetricListComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() assetType: AssetTypeMetricModel;
-    @Input() scoreType: ScoreType;
+    @Input() allocationUid: string;
     @Output() selectionChange = new EventEmitter();
 
     private metrics: MetricAssetViewModel[] = [];
@@ -112,11 +112,11 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     ngOnInit() {
-        //this.load(); 
+        this.load();
     }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-        if (changes['assetType'] && this.assetType) {
+        if (changes['allocationUid'] && this.allocationUid) {
             this.formMode = FormMode.Default;
             this.load();
         }
@@ -126,8 +126,8 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         this.isLoading = true;
         this.metrics = [];
         this.metricTree = [];
-        if (this.assetType) {
-            this.metricsService.getMetricsByAssetType(this.assetType.Uid, this.scoreType)
+        if (this.allocationUid) {
+            this.metricsService.getMetricsByAllocation(this.allocationUid)
                 .subscribe(r => {
 
                     this.metrics = r;
@@ -138,10 +138,12 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                                 children: [],
                                 expanded: true
                             }
-                            this.metricTree.push(n);
-                            this.addChildren(n);
+                            if (this.metricTree.findIndex(o => o.data.Uid === g.Uid) == -1) {
+                                this.metricTree.push(n);
+                                this.addChildren(n);
+                            }
                         });
-                        if (this.metricTree != null && this.metricTree.length > 0) {
+                        if (this.metricTree !== null && this.metricTree.length > 0) {
                             this.selection = this.metricTree[0].data;
                             this.selectionChange.emit(this.selection);
                         }
@@ -150,10 +152,9 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                     this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
                         .subscribe(f => {
                             this.metricListFieldTypes = f;
-
                             this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
                                 this.isLoading = false;
-                                this.isExternallyCalculated = res.find(x => x.scoreType == this.scoreType).isExternallyCalculated;
+                                this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
                             })
                         });
                 });
@@ -165,7 +166,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     addChildren(node: TreeNode) {
-        let children = this.metrics.filter(g => g.ParentUid == node.data.Uid);
+        let children = this.metrics.filter(g => g.ParentUid === node.data.Uid);
         if (children.length > 0) {
             children.forEach(c => {
                 let n = {
@@ -181,7 +182,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
 
     selectNode(e: any) {
         this.selectedNode = e;
-        this.selection = e == null ? null : e.data;
+        this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
     }
 

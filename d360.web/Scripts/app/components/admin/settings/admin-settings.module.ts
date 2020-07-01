@@ -21,7 +21,7 @@ import { AdminHomeComponent } from './admin-home.component';
 import { AdminSettingsRoutingModule } from './admin-settings.routes';
 import { D3SSharedModule } from '../../shared/shared.module';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { DropdownModule } from 'primeng/dropdown';

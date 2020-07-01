@@ -3,7 +3,6 @@ using d360.core.entities.Community.Templates;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -1345,7 +1344,7 @@ update  set
             try
             {
                 var community = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION);
-                community.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                community.Open();
 
                 var environment = CoreFunction.GetConfigValueByKey("Environment");
                 
@@ -1427,7 +1426,7 @@ update  set
                         {
                             try
                             {
-                                conn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                                conn.Open();
                                 var processor = new CompanyProcessor(conn);
 
                                 processor.SynchronizePredicates(clientPredicates);
@@ -1457,7 +1456,7 @@ update  set
                 {
                     using (var communityConn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                     {
-                        communityConn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        communityConn.Open();
                         communityConn.Execute("insert into community.PackageDeploymentHistory (ChangeOn) values (@Now)", new { Now });
                         communityConn.Close();
                     }

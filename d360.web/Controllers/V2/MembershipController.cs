@@ -73,6 +73,11 @@ namespace d360.web.Controllers.V2
         {
             try
             {
+
+                var settings = Community.GetCompanySettings();
+                if (!Company.CurrentResourceIsAdmin && (settings["ShowResources"] ?? "").ToUpper() != "TRUE")
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.Forbidden, "Forbidden", $"Access denied"));
+
                 string finalSql = "";
                 string joinsSql = " left join Asset A on A.Object = 'Resource' and A.ObjectID = gr.ResourceID ";
                 string whereSql = "";
@@ -904,15 +909,21 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (string.IsNullOrEmpty(favorite.Name.Trim()))
+                if (string.IsNullOrWhiteSpace(favorite.Name))
                 {
                     string message = "Name is required.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Name.", message));
+                } else
+                {
+                    favorite.Name = favorite.Name.Trim();
                 }
-                if (favorite.Type == FavoriteType.Page && string.IsNullOrEmpty(favorite.Route.Trim()))
+                if (favorite.Type == FavoriteType.Page && string.IsNullOrWhiteSpace(favorite.Route))
                 {
                     string message = "Favorites of type Page cannot have an empty route.";
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid Type and Route.", message));
+                } else
+                {
+                    favorite.Route = favorite.Route.Trim();
                 }
                 bool result = await membershipRepository.ToggleFavorite(_company.CurrentResourceID, favorite, isHomepage);
                 if (result)
@@ -934,6 +945,34 @@ namespace d360.web.Controllers.V2
             }
         }
 
+        /// <summary>
+        /// Deletes a group based on the specified group uid.
+        /// </summary>
+        /// <param name="groups">The group(s) that need to be deleted</param>
+        [
+            HttpDelete,
+            Route("groups"),
+            SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> DeleteGroup(List<DeleteGroupModel> groups)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if(groups.Count() < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "No Groups provided in request"));
+
+            var execution = getApiExecution(groups.Count);
+
+            var result = membershipRepository.DeleteGroups(execution, groups);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+        }
+
         private bool IsValidGuid(IEnumerable<KeyValuePair<string, string>> queryParams, string paramName)
         {
             bool isValid = true;
@@ -948,6 +987,35 @@ namespace d360.web.Controllers.V2
 
             }
             return isValid;
+        }
+
+        /// <summary>
+        /// Updates a group based on the specified group uid.
+        /// </summary>
+        /// <param name="groups">The groups that need to be updated</param>
+        [
+            HttpPut,
+            Route("groups"),
+            SwaggerRequestExample(typeof(UpdateGroup), typeof(UpdateGroupExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> UpdateGroup(List<UpdateGroupModel> groups)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+            if (groups.Count < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
+
+            var execution = getApiExecution(groups.Count);
+
+            var result = membershipRepository.UpdateGroups(execution, groups);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
         private byte[] GetUsersExcelFromResults(IEnumerable<dynamic> results, List<FieldType> fieldTypes)

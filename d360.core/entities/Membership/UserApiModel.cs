@@ -33,6 +33,15 @@ namespace d360.core.entities.Membership
 
     }
 
+    public class UpdateGroupModel
+    {
+        public Nullable<Guid> Uid { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public Guid PrimaryOwnerUid { get; set; }
+        public Nullable<Guid> SecondaryOwnerUid { get; set; }
+    }
+
     public class UserApiInsertModel : IUserApiUpsertModel
     {
         public Guid? uid { get; set; }
@@ -95,5 +104,9 @@ namespace d360.core.entities.Membership
         public Guid? ExecutionItemUid { get; set; }
         public string Message { get; set; }
         public bool Success { get; set; }
+    }
+    public class DeleteGroupModel
+    {
+        public Guid Uid { get; set; }
     }
 }

@@ -553,6 +553,9 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetActiveMetric(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
 
+            mock.Setup(x => x.GetMetricViewModelByUid(It.IsAny<Guid>(), null))
+                .Returns((Guid uid, DateTime? effectiveDate) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAssetViewModel() : null);
+
             mock.Setup(x => x.GetMetricByUid(It.IsAny<Guid>()))
                 .Returns((Guid uid) => uid == Guid.Parse(DataConstants.ValidGUID) ? new MetricAsset() : null);
 
@@ -568,7 +571,7 @@ namespace igx.UnitTests
             mock.Setup(x => x.GetMetricHierarchyByAsset(It.IsAny<Guid>(), It.IsAny<DateTime?>(), It.IsAny<ScoreType>()))
                 .Returns(new MetricAssetHierarchyModels());
 
-            mock.Setup(x => x.GetMetricStructureFragments(It.IsAny<Guid>(), It.IsAny<ScoreType>()))
+            mock.Setup(x => x.GetMetricStructureFragments(It.IsAny<Guid>()))
                 .Returns(new List<string>() {
                     @"[{""ID"":420,""Name"":""Name"",""Type"":""Text""},{""ID"":421,""Name"":""AssetDate"",""Type"":""Date""}]"
                 });
@@ -600,6 +603,15 @@ namespace igx.UnitTests
 
             mock.Setup(x => x.GetResponsibilityTypesByAssetUid(It.IsAny<Guid>()))
                 .Returns(Task.FromResult(new List<ResponsibilityTypeViewModel>() { new ResponsibilityTypeViewModel(), new ResponsibilityTypeViewModel() }.AsEnumerable()));
+
+            return mock.Object;
+        }
+
+        public IScoringRepository GetScoringRepository()
+        {
+            var mock = new Mock<IScoringRepository>();
+
+            mock.Setup(x => x.DeleteAllocation(It.IsAny<MetricAllocation>()));
 
             return mock.Object;
         }

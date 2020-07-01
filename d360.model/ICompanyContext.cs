@@ -19,6 +19,7 @@ using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Data.SqlClient;
 using System.Data;
+using d360.core.entities.Membership;
 
 namespace d360.model
 {
@@ -34,9 +35,9 @@ namespace d360.model
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }
-        DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         DbSet<AssetDetail> AssetDetails { get; set; }
         DbSet<Asset> Assets { get; set; }
+        DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
         DbSet<AssetTypeExportTemplate> AssetTypeExportTemplates { get; set; }
         DbSet<AssetTypeExportTemplateStyle> AssetTypeExportTemplateStyles { get; set; }
         DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
@@ -105,8 +106,10 @@ namespace d360.model
         DbSet<MapTypeTemplateItem> MapTypeTemplateItems { get; set; }
         DbSet<MapTypeTemplate> MapTypeTemplates { get; set; }
         DbSet<MetricAsset> MetricAssets { get; set; }
-        DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
         DbSet<MetricAssetVersion> MetricAssetVersions { get; set; }
+        DbSet<MetricAssetVersionCondition> MetricAssetVersionConditions { get; set; }
+        DbSet<MetricAssetVersionConditionItem> MetricAssetVersionConditionItems { get; set; }
+        DbSet<MetricAssetVersionConditionItemValue> MetricAssetVersionConditionItemValues { get; set; }
         DbSet<NymRelation> NymRelations { get; set; }
         DbSet<Nym> Nyms { get; set; }
         DbSet<OrganizationDetail> OrganizationDetails { get; set; }
@@ -319,5 +322,9 @@ namespace d360.model
         List<DataRow> ValidateFields(string ot, int otid, bool isInsert, List<FieldType> fieldTypes, List<string> requiredFieldTypeNames, Dictionary<string, string> fields, Guid executionID, int itemNumber, DataTable fieldTable, out bool success, out string errorMessage);
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
 
+        List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
+        List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
+
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

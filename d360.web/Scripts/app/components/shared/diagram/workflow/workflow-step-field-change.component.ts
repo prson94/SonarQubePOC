@@ -72,7 +72,7 @@ export class WorkflowStepFieldChangeComponent extends BaseComponent implements O
         this.workflowService.getWorkflowFieldTypes(this.objectId, this.objectType, true, this.issueObject)
             .pipe(
                 map(r => {
-                    this.fields = r;
+                    this.fields = r.filter(x => x.Type != "JsonElement");//Exclude Json Element Fields
                 }),
                 map(() => {
 

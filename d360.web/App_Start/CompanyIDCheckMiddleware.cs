@@ -8,7 +8,6 @@ using Dapper;
 using System.Linq;
 using d360.extensions.caching;
 using System.Diagnostics;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 
 namespace d360.web
 {
@@ -36,7 +35,7 @@ namespace d360.web
             {
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
                     dict = (await cnn.QueryAsync<cd>("select CompanyID, UrlPrefix from CompanyDomainSetting")).ToDictionary(k => k.UrlPrefix, v => v.CompanyID);                                        
                 }
                 cache.SetItem(key, dict, true, 5);
@@ -58,7 +57,8 @@ namespace d360.web
                 }
                 if (searchHeaders || !dict.ContainsKey(host))
                 {
-                    host = context.Request.Headers["CompanyID"].ToLower();
+                    if (!string.IsNullOrEmpty(context.Request.Headers["CompanyID"]))
+                        host = context.Request.Headers["CompanyID"].ToLower();
                 }
                 
                 if (dict.ContainsKey(host))

@@ -15,7 +15,7 @@ import { SharedGridPagingInfoModule } from '../shared/grid-paging-info.component
 import { SharedDeleteFormModule } from '../shared/delete.form';
 import { SharedAssetTypeEditorModule } from '../shared/assettypeeditor/shared-asset-type-editor.module';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';

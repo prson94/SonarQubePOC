@@ -1,4 +1,4 @@
-﻿import { Input, Component, EventEmitter, Output } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, ChangeDetectorRef } from '@angular/core';
 import { SelectItem } from 'primeng/api';
 import { RelationshipsService } from '../../../services/relationships.service';
 import { RelationshipDetail, PredicateDropdown } from '../../../models/relationship.model';
@@ -32,12 +32,12 @@ import { ViewEncapsulation } from '@angular/core';
                         <div class="row">
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Subject Cardinality</div>
-                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown panelStyleClass="dropdown-z-correction" filter="true" name="subjectCardinality" #subjectCardinality="ngModel" [options]="subjectCardinalityOptions" [(ngModel)]="editedRelationship.SubjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                             <div class="col l4 m4 s12" style="text-align: center">&nbsp;<br/>to</div>
                             <div class="col l4 m4 s12">
                                 <div class="FieldName">Object Cardinality</div>
-                                <p-dropdown filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="cardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
+                                <p-dropdown filter="true" name="objectCardinality" #objectCardinality="ngModel" [options]="objectCardinalityOptions" [(ngModel)]="editedRelationship.ObjectCardinality" required [style]="{ 'width': '100%' }"></p-dropdown>
                             </div>
                         </div>
 
@@ -82,6 +82,8 @@ export class AdminRelationshipsEditor {
     error: any;
     editedRelationship: RelationshipDetail;
     cardinalityOptions: SelectItem[] = [];
+    subjectCardinalityOptions: SelectItem[] = [];
+    objectCardinalityOptions: SelectItem[] = [];
     subjectOptions: SelectItem[] = [];
     objectOptions: SelectItem[] = [];
     predicates: PredicateDropdown[] = [];
@@ -90,10 +92,11 @@ export class AdminRelationshipsEditor {
     isLoadingItem: boolean = false;
     canChangePredicate: boolean = true;
     canChangeObject: boolean = true;
+    selectedPredicate: any;
 
-    constructor(private relationshipsService: RelationshipsService) { }
+    constructor(private relationshipsService: RelationshipsService, private cdRef: ChangeDetectorRef) { }
 
-    ngOnInit() {        
+    ngOnInit() {
         this.loadSubjectOptions();
         this.loadCardinalityOptions();
         if (this.relationshipID > 0) {
@@ -105,8 +108,8 @@ export class AdminRelationshipsEditor {
         }
     }
 
-    private loadItem(id: number) { 
-        this.isLoadingItem = true;       
+    private loadItem(id: number) {
+        this.isLoadingItem = true;
         this.relationshipsService.getRelation(id).subscribe(result => {
             this.editedRelationship = result;
             this.isLoadingItem = false;
@@ -129,7 +132,7 @@ export class AdminRelationshipsEditor {
         });
     }
 
-    private subjectChanged(value) {        
+    private subjectChanged(value) {
         if (!value) return;
         let info = value.split('|');
         if (info.length < 2) return;
@@ -143,6 +146,8 @@ export class AdminRelationshipsEditor {
         if (!value) return;
         let predicateId = Number(value);
         let predicate = this.predicates.find(p => p.value == value);
+        this.selectedPredicate = predicate;
+        this.loadCardinalityOptions();
 
         if (predicate != null && predicate.isSemantic == true) {
             this.canChangeObject = false;
@@ -158,32 +163,34 @@ export class AdminRelationshipsEditor {
             this.editedRelationship.Object = null;
             this.loadObjectOptions(subject[0], Number(subject[1]), null, null, predicateId);
         }
+
     }
 
     private loadPredicates(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.relationshipsService.getRelationshipPredicates(subject, subjectId, object, objectId, predicateId)
             .subscribe(result => {
                 this.predicates = [];
-                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false });
+                this.predicates.push({ label: 'Select A Predicate', value: null, isSemantic: false, type: 'none' });
                 for (let item of result) {
                     this.predicates.push({
                         label: item.label,
                         value: item.value,
-                        isSemantic: item.isSemantic
+                        isSemantic: item.isSemantic,
+                        type: item.type
                     });
-                }                
+                }
             });
     }
 
     private loadSubjectOptions() {
         this.isLoading = true;
-        this.relationshipsService.getSubjectOptions().subscribe(result => {            
+        this.relationshipsService.getSubjectOptions().subscribe(result => {
             this.subjectOptions = [];
             this.subjectOptions.push({ label: 'Select Subject', value: null });
             for (let item of result) {
                 this.subjectOptions.push({
-                    value:item.value,
-                    label:item.title
+                    value: item.value,
+                    label: item.title
                 });
             }
             this.isLoading = false;
@@ -193,16 +200,16 @@ export class AdminRelationshipsEditor {
     private loadObjectOptions(subject: string, subjectId: number, object?: string, objectId?: number, predicateId?: number) {
         this.isLoadingObject = true;
         this.relationshipsService.getObjectOptions(subjectId, subject, objectId, object, predicateId).subscribe(result => {
-            this.objectOptions = [];   
-            this.objectOptions.push({ label: 'Select Object', value: null });     
+            this.objectOptions = [];
+            this.objectOptions.push({ label: 'Select Object', value: null });
             for (let item of result) {
                 this.objectOptions.push({
                     value: item.value,
                     label: item.title
                 });
-            }    
+            }
             this.isLoadingObject = false;
-        }); 
+        });
     }
 
     private loadCardinalityOptions() {
@@ -216,11 +223,18 @@ export class AdminRelationshipsEditor {
                     label: item.title
                 });
             }
+            this.subjectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
+            this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.cardinalityOptions));
+
+            if (this.selectedPredicate && this.selectedPredicate.type == 'DiagramReference') {
+                this.objectCardinalityOptions = JSON.parse(JSON.stringify(this.objectCardinalityOptions.filter(x => x.label != 'Many')));
+
+            }
             this.isLoading = false;
         });
     }
 
-    onSubmit() {        
+    onSubmit() {
         //save the item back to the save or edit url        
         this.saveClick.emit({ relationship: this.editedRelationship, action: this.relationshipID > 0 ? "new" : "edit" });
     }

@@ -4,21 +4,36 @@ import { State, AssetTypeClass } from "./asset.model";
 export class MetricAssetViewModel {
     Uid: string;
     ParentUid: string;
+    AllocationUid: string;
     AssetTypeUid: string;
     IsGroup: boolean;
     Name: string;
     Description: string;
     EffectiveDate: string | Date;
     Weight: number;
-    ConditionAndOr: string;
-    ScoreType: ScoreType;
-    Conditions: MetricAssetVersionConditionViewModel[] = [];
+    Threshold: number;
+    UpdateFrequency: MetricUpdateFrequency;
+    MatchConditionsOnly: boolean;
+    ConditionGroups: MetricAssetVersionConditionViewModel[] = [];
 }
 
 export class MetricAssetVersionConditionViewModel {
-    FieldTypeID: number;
+    Uid: string;
+    Position: number;
+    Threshold: number;
+    Weight: number;
+    MatchType: MetricMatchType;
+
+    ConditionItems: MetricAssetVersionConditionItemViewModel[] = [];
+}
+
+export class MetricAssetVersionConditionItemViewModel {
+    Uid: string;
+    ConditionType: MetricConditionType;
+    ConditionFieldTypeID: number;
+    ConditionIntersectTypeID: number;
     Operator: string;
-    Values: any;//[] = [];
+    Values: MetricAssetVersionConditionItemValueViewModel[] = [];
 
     // Transitive values used for UI logic only.
     FieldType: MetricFieldTypeViewModel;
@@ -26,16 +41,22 @@ export class MetricAssetVersionConditionViewModel {
     ValuesText: string;
     OperatorText: string;
     IsEditMode: boolean;
+
+    SingleValue: any; //For non-list fields
 }
 
 export class MetricFieldTypeViewModel {
     ID: number;
     Name: string;
     Type: string;
-    Disabled: boolean = false;
-    Values: MetricFieldTypeValueViewModel[] = [];
+    Disabled = false;
+    Values: MetricAssetVersionConditionItemFieldValueViewModel[] = [];
 }
-export class MetricFieldTypeValueViewModel {
+export class MetricAssetVersionConditionItemValueViewModel {
+    Value: string; 
+}
+
+export class MetricAssetVersionConditionItemFieldValueViewModel {
     Value: number;
     Text: string;
 }
@@ -60,7 +81,7 @@ export class GroupForm {
 }
 
 export class MapForm {
-    Map: Map;
+    Map: MetricMap;
     Items: Item[] = [];
     ObjectTypes: any[] = [];
     Conditions: Condition[] = [];
@@ -83,7 +104,7 @@ export class Item {
     SourceID: string;
 }
 
-export class Map {
+export class MetricMap {
     ID: number;
     GroupID: number;
     ItemID: number;
@@ -125,6 +146,8 @@ export class ScoreTypeAllocation {
     isExternallyCalculated: boolean;
     lowerThreshold: number;
     upperThreshold: number;
+
+    icon: string; // Loaded via admin page, not from API.
 }
 
 export class ScoreTypeAllocationFormatted {
@@ -146,4 +169,30 @@ export enum ScoreType {
     Governance = 1,
     DataQuality = 2,
     Perceptional = 3
+}
+
+export const ScoreTypeInfo = new Map<string, string>([
+    ["Governance", "Governance Score"],
+    ["DataQuality", "Data Quality Score"],
+    ["Perceptional", "Perception Score"]
+]);
+
+export enum MetricUpdateFrequency {
+    None = 0,
+    Hourly = 1,
+    Daily = 2,
+    Weekly = 3,
+    Monthly = 4,
+    Quarterly = 5,
+    Annually = 6
+}
+
+export enum MetricMatchType {
+    Any = 1,
+    All = 2
+}
+
+export enum MetricConditionType {
+    And = 1,
+    Or = 2
 }

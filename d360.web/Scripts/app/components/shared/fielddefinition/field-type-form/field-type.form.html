@@ -46,6 +46,7 @@
                                         [style]="{'width':'98%', 'display' : 'block'}"
                                         (onChange)="loadDataType($event.value)"
                                         #dataType="ngModel"
+                                        [disabled]="disableFieldTypeSelection"
                                         ngDefaultControl></p-dropdown>
                             <div [hidden]="dataType.valid || dataType.pristine">Field data type is required</div>
                         </div>
@@ -185,6 +186,7 @@
                                 [(ngModel)]="model.FieldType.Type[currentType].List.Uid"
                                 (ngModelChange)="model.FieldType.Type[currentType].List.Uid=$event;lookupTypeSelected($event,true).subscribe();"
                                 [style]="{ 'width': '98%' }"
+                                [disabled]="disableFieldTypeSelection"
                                 ngDefaultControl></p-dropdown>
                 </div>
                 <div class="col s3">
@@ -510,15 +512,18 @@
                      *ngIf="currentType == 'Lookup'">
                     <p-checkbox binary="true"
                                 [(ngModel)]="model.FieldType.Type[currentType].AllowAllValue"
+                                (click)="validate('AllowAll')"
                                 [ngModelOptions]="{standalone: true}"></p-checkbox>
                 </div>
                 <div class="col l5 m5 s12"
                      *ngIf="currentType == 'Lookup'">
-                    <input pInputText
+                    <input required
+                           pInputText
                            type="text"
                            [(ngModel)]="model.FieldType.Type[currentType].AllowAllLabel"
                            [ngModelOptions]="{standalone: true}"
                            style="width: 100%"
+                           (keyup)="validate('AllowAll')"
                            [disabled]="!model.FieldType.Type[currentType].AllowAllValue" />
                 </div>
                 <div class="col l5 m5 s12"

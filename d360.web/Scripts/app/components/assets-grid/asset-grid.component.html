@@ -151,7 +151,8 @@
               class="RowTools"
               *ngIf="
                 item[certificationStatusIndex] != null &&
-                item[certificationStatusIndex] != ''
+                item[certificationStatusIndex] != '' &&
+                 !statusHasColor
               "
             >
               <i
@@ -208,7 +209,7 @@
   *ngIf="showEditor"
   [objectID]="selected ? selected?.ObjectID : gridObject?.ID"
   [objectType]="gridObject.Object"
-  [title]="gridObject?.Name + ' Item'"
+  [title]="selected?.Name ? selected?.Name : gridObject?.Name + ' Item'"
   [selection]="selected"
   [rowID]="rowID"
   [objectTypeUid]="gridObject?.AssetTypeUID"

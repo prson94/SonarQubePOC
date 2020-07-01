@@ -6,7 +6,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 
 import { RouterModule } from '@angular/router';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 
 import { CoreModule } from '../../shared/core.module';

@@ -13,7 +13,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { ButtonModule } from 'primeng/button';
 import { ContextMenuModule } from 'primeng/contextmenu';
 import { InputTextareaModule } from 'primeng/inputtextarea';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 import { EditorModule } from 'primeng/editor';
 import { ListboxModule } from 'primeng/listbox';
@@ -24,6 +24,7 @@ import { ScrollPanelModule } from 'primeng/scrollpanel';
 import { TabViewModule } from 'primeng/tabview';
 import { TreeModule } from 'primeng/tree';
 import { ScoreBadgeModule } from '../small-widgets/score-badge/score-badge.module';
+import { AccordionModule } from 'primeng/accordion';
 
 import { ImpactComponent } from './impact.component';
 import { LineageComponent } from './lineage/lineage.component';
@@ -76,6 +77,11 @@ import { SiteModalModule } from '../modal/gov-modal.module';
 import { AssetSearchModule } from '../search/generic-asset-search/generic-asset-search.module';
 import { SharedAssetTypeEditorModule } from '../assettypeeditor/shared-asset-type-editor.module';
 import { PipesModule } from '../../../pipes/pipes.module';
+import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
+import { DragDropModule } from 'primeng/dragdrop';
+import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
+import { ProcessDiagramAssedEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
+import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 
 
 @NgModule({
@@ -96,6 +102,9 @@ import { PipesModule } from '../../../pipes/pipes.module';
         AssetTypeModalEditorModule,
         SiteModalModule,
         ScoreBadgeModule,
+        D3SColorPickerModule,
+        SharedDynamicGridEditorModule,
+        SiteModalModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,
@@ -113,6 +122,8 @@ import { PipesModule } from '../../../pipes/pipes.module';
         TableModule,
         TabViewModule,
         TreeModule,
+        DragDropModule,
+        AccordionModule,
         //JSON Viewer module
         NgxJsonViewModule,
         AssetSearchModule,
@@ -151,7 +162,9 @@ import { PipesModule } from '../../../pipes/pipes.module';
         LineageEditorComponent,
         ModelDiagramComponent,
 
-        LineageDiagramComponent
+        LineageDiagramComponent,
+        ProcessDiagramComponent,
+        ProcessDiagramAssedEditorComponent
     ],
     exports: [
         AssetBrowserComponent,

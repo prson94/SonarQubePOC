@@ -4,6 +4,7 @@ using d360.core.enums;
 using d360.core.exceptions;
 using d360.extensions;
 using Dapper;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -46,8 +47,7 @@ namespace d360.model
 
         public DbSet<Client> Clients { get; set; }
         public DbSet<Company> Companies { get; set; }
-        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
-        public DbSet<CompanyFeature> CompanyFeatures { get; set; }
+        public DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         public DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         public DbSet<CompanyResource> CompanyResources { get; set; }
         public DbSet<CompanySetting> CompanySettings { get; set; }
@@ -160,6 +160,11 @@ namespace d360.model
         public IEnumerable<T> Query<T>(string sql, object param = null)
         {
             return Database.Connection.Query<T>(sql, param);
+        }
+
+        public async Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null)
+        {
+            return await (Database.Connection.QueryFirstOrDefaultAsync<T>(sql, param));
         }
 
         public override int SaveChanges()
@@ -359,17 +364,13 @@ namespace d360.model
                 return cs;
             }
             else
-            {
-                var c = Filter<Company>(i => i.ID == CurrentCompanyID, i => i.DatabaseServer).Single();
-                cs = string.Format(
-                    "server={0};Database=D3S_{1};User ID={2};Password={3};MultipleActiveResultSets=True;",
-                    c.DatabaseServer.Server,
-                    c.ID,
-                    c.DatabaseServer.Username,
-                    c.DatabaseServer.Password
-                );
-                c = null;
+            {                
+                var res = Database.Connection.QuerySingle(@"select s.Server, s.Username, s.Password from Company c
+                                inner join DatabaseServer s on s.ID = c.DatabaseServerID 
+                                where c.ID = @companyId", new { companyId = CurrentCompanyID });
 
+                cs = CompanyConnectionStringHelper.ConnectionString(CurrentCompanyID, res.Server, res.Username, res.Password);
+                
                 if (!skipCacheCheck)
                 {
                     Caching.SetItemInListByID<string, int>(CACHE_KEY_CONNECTION_STRINGS, CurrentCompanyID, cs);
@@ -519,6 +520,13 @@ namespace d360.model
                 var value = settings[key];
                 try
                 {
+                    T checkType = default(T);
+                    if (checkType is Guid)
+                    {
+                        var guid = Guid.Parse(value);
+                        return (T)(Convert.ChangeType(guid, typeof(T)));
+                    }
+
                     return (T)(Convert.ChangeType(value, typeof(T)));
                 }
                 catch (Exception ex)

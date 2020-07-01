@@ -240,6 +240,11 @@ namespace d360.web.Controllers.V2
                 if (assetType == null)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, AssetTypeErrors.InvalidRequestHttpErrorTitle, AssetTypeErrors.NotFoundBasedOnUid));
 
+                if (assetType.Class == AssetTypeClass.Group || assetType.Class == AssetTypeClass.User)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"The correct endpoint for {assetType.Class.ToString()}s is {Request.RequestUri.Scheme}://{Request.RequestUri.Host}{(assetType.Class == AssetTypeClass.Group ? AssetTypeErrors.GroupEndPoint : AssetTypeErrors.UserEndPoint)}"));
+                }
+
                 if (!validator.IsValidOrderByFieldForGetAssets(assetTypeUid, queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid order passed in the request"));
 
@@ -492,7 +497,7 @@ namespace d360.web.Controllers.V2
                     model.Class = AssetTypeClass.BusinessAsset;
                 }
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
 
                 AssetType parentAssetType = null;
                 if (model.ParentUid.HasValue && model.ParentUid != Guid.Empty)
@@ -535,7 +540,7 @@ namespace d360.web.Controllers.V2
                 {
                     if (model.Class != AssetTypeClass.FusionAttribute && model.Class != AssetTypeClass.Reference)
                     {
-                        Company.Add(new FieldType
+                        var nameFieldType = new FieldType
                         {
                             ObjectID = model.ObjectID,
                             Object = model.Object,
@@ -549,7 +554,59 @@ namespace d360.web.Controllers.V2
                             SortOrder = 1,
                             Type = DataType.Text.ToString(),
                             IsDisplayable = true,
-                            IsPartOfKey = isNamePartOfKey
+                            IsPartOfKey = isNamePartOfKey,
+                            UpdatedBy = Company.CurrentResourceID
+                        };
+
+                        if (model.Class == AssetTypeClass.Diagram)
+                        {
+                            nameFieldType.ColumnOrder = 2;
+                            nameFieldType.ShowIfEmpty = true;
+                        }
+
+                        Company.Add(nameFieldType);
+                    }
+
+                    if (model.Class == AssetTypeClass.Diagram)
+                    {
+                        var refListUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
+                        var refList = Company.AssetTypes.FirstOrDefault(x => x.uid == refListUid);
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "Governance Role",
+                            Name = "GovernanceRole",
+                            ColumnOrder = 3,
+                            Type = DataType.Lookup.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false,
+                            LookupObjectID = refList.ObjectID,
+                            LookupObjectType = SystemObjects.ReferenceItem.ToString(),
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true,
+                            LookupDisplayFormat = "{Code}",
+                            LookupEditFormat = "{Code}"
+                        });
+
+                        Company.Add(new FieldType
+                        {
+                            ObjectID = model.ObjectID,
+                            Object = model.Object,
+                            IsListable = true,
+                            IsRequired = true,
+                            IsEditable = true,
+                            FriendlyName = "Step No",
+                            Name = "StepNo",
+                            ColumnOrder = 1,
+                            Type = DataType.Decimal.ToString(),
+                            IsDisplayable = true,
+                            IsPartOfKey = false,
+                            UpdatedBy = Company.CurrentResourceID,
+                            ShowIfEmpty = true
                         });
                     }
                 }
@@ -646,7 +703,7 @@ namespace d360.web.Controllers.V2
                 if (!Company.CurrentResourceIsAdmin)
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, ApiMessages.EndpointNotAuthorizedMessage));
 
-                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"));
+                var validator = new AssetTypeValidator(this.Company, Community.GetCompanySettingByKey<int>("LineageVersion"), Community.GetCompanySettingByKey<bool>("FusionEnabled"), Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid"));
 
                 if (model.Class == AssetTypeClass.Glossary)
                 {
@@ -1028,7 +1085,9 @@ namespace d360.web.Controllers.V2
                     AssetTypeClass.TechnicalAsset,
                     AssetTypeClass.Model,
                     AssetTypeClass.Policy,
-                    AssetTypeClass.Rule };
+                    AssetTypeClass.Rule,
+                AssetTypeClass.Diagram
+                };
 
                 List<AssetTypeClass> allowedClasses = classFilters.Select(x => x).ToList();
 
@@ -1445,7 +1504,7 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                if (assetTypeUid == null || assetTypeUid== Guid.Empty)
+                if (assetTypeUid == null || assetTypeUid == Guid.Empty)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", $"AssetTypeUid is not valid!"));
                 }
@@ -1804,6 +1863,80 @@ namespace d360.web.Controllers.V2
         }
 
         /// <summary>
+        /// Removes a single asset type
+        /// </summary>
+        /// <param name="assetType">The payload of your request.</param>
+        /// <returns>An HTTP status code and message.</returns>
+        [
+            HttpDelete,
+            Route("single"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "A response that provides the execution's unique identifier to use, in order to check on the status of your request.", typeof(ApiExecutionRecievedResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "You are not allowed to remove asset types.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> DeleteSingleAssetTypesAsync(AssetTypeSingleDelete assetType)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.Unauthorized, ApiMessages.EndpointNotAuthorizedHeading, "You are not allowed to remove asset types."));
+
+            var prefix = "Assets.DeleteBulkAssetTypesAsync => ";
+            var errorMessage = "";
+
+            try
+            {
+                var governanceRole = Community.GetCompanySettingByKey<string>("GovernanceRoleReferenceListUid");
+
+                if (governanceRole == assetType.Uid.ToString())
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"UID {assetType.Uid} is a reference list and is configured as the Governance Role and cannot be deleted."));
+
+                if (assetType == null)
+                    assetType = readRequestJsonContent<AssetTypeSingleDelete>(Request).Result;
+
+                if (assetType == null)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "You have not provided a valid JSON structure for this request."));
+
+                var type = AssetRepository.GetAssetTypeByUID(assetType.Uid);
+                if (type == null)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Asset Type with UID {assetType.Uid} does not exist."));
+                }
+                if (type.Class != AssetTypeClass.Diagram)
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Only Diagram Asset Types are allowed here."));
+
+                }
+
+                var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
+                var deletes = new AssetTypeDeletes();
+                deletes.Add(new AssetTypeDelete() { Cascade = assetType.Cascade, ExecutionItemUid = Guid.NewGuid(), Uid = assetType.Uid });
+
+                var deleteAssetTypesResults = AssetRepository.DeleteSingleAssetType(deletes, type, execution);
+
+
+                return await Task.FromResult<IHttpActionResult>(
+                    ResponseMessage(
+                        Request.CreateResponse(
+                            HttpStatusCode.OK,
+                           deleteAssetTypesResults
+                        )
+                    )
+                );
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix },
+                    { "AssetTypeCount", $"{((assetType != null) ? 1 : 0)}" }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Unknown error", errorMessage));
+            }
+        }
+
+        /// <summary>
         /// GETs the status of an execution record, including the results for the execution.
         /// </summary>
         /// <param name="executionUid">The execution's unique identifier to retrieve status for.</param>
@@ -1834,6 +1967,10 @@ namespace d360.web.Controllers.V2
                         )
                     )
                 );
+            }
+            catch (ArgumentException e)
+            {
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
             }
             catch (Exception ex)
             {
@@ -2145,5 +2282,128 @@ namespace d360.web.Controllers.V2
             return document;
         }
 
+
+        /// <summary>
+        /// Retrieves a list of all pre defined colors.
+        /// </summary>
+        /// <returns>Returns a list colors.</returns>
+        [
+            HttpGet,
+            Route("colors"),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of all pre defined colors.", typeof(List<dynamic>)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetColors()
+        {
+            var prefix = "Assets.GetPossibleOwnersByAssetTypeUid => ";
+            var errorMessage = "";
+            try
+            {
+                var results = await Company.QueryAsync<dynamic>(@"SELECT * FROM dbo.Color");
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results.Select(x => new { label = x.Name, value = x.Name, title = x.Value }))));
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a list of asset uids and paths for the given asset type.
+        /// </summary>
+        /// <returns>Returns a list of asset uids and paths.</returns>
+        [
+            HttpGet,
+            Route("paths/{assetTypeUid}"),
+            SwaggerParameter("_pageSize", "The number of results to return per page. The default value is 5000.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_pageNum", "The page number to return results for. The default value is 1.", DataType = "integer", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Whether or not to include the total count in the results, the default is true.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerConsumes("application/json", "application/xml"),
+            SwaggerResponse(HttpStatusCode.OK, "A list of asset uids and paths. This is an admin only endpoint.", typeof(AssetPathResults)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset type for the given uid was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error indicating the request is invalid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+        ]
+        public async Task<IHttpActionResult> GetAssetUids(Guid assetTypeUid)
+        {
+            var prefix = "Assets.GetAssetUids => ";
+            var errorMessage = "";
+            var queryParams = Request.GetQueryNameValuePairs();
+
+            const int maxPageSize = 100000;
+
+            if (!Company.CurrentResourceIsAdmin)
+                return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.Forbidden, $"You do not have permission to do this")));
+
+            var assetType = AssetRepository.GetAssetTypeByUID(assetTypeUid);
+
+            if (assetType == null)
+                return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset type for this uid not found")));
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagesize"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagesize").Value, out int res))
+                {
+                    if (res > maxPageSize || res < 1)
+                    {
+                        return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page size must be between 1 and 100,000.")));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page size is not a valid number.")));
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_pagenum"))
+            {
+                if (int.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_pagenum").Value, out int res))
+                {
+                    if (res < 1)
+                    {
+                        return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page num is invalid, must be greater than 0.")));
+                    }
+                }
+                else
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Page num is not a valid number.")));
+                }
+            }
+
+            if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includetotal"))
+            {
+                if (!bool.TryParse(queryParams.FirstOrDefault(x => x.Key.ToLower() == "_includetotal").Value, out bool res))
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, $"Include total is not a valid boolean.")));
+                }
+            }
+
+            try
+            {
+                var results = await AssetRepository.GetAssetPaths(assetType, queryParams);
+                HttpResponseMessage response = Request.CreateResponse(HttpStatusCode.OK, results as object);
+
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+        }
     }
 }

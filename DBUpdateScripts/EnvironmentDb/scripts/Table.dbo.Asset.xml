@@ -128,7 +128,54 @@ end
 ]]>
 	</rollback>
   </changeSet>
+  
+  <changeSet author="TDuric" id="Table.dbo.Asset-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
 
+IF  EXISTS(SELECT 1 FROM sys.columns 
+          WHERE Name = N'Diagram'
+          AND Object_ID = Object_ID(N'dbo.Asset'))
+BEGIN
+	ALTER TABLE dbo.Asset
+	DROP COLUMN Diagram 
+END
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+
+
+]]>
+	</rollback>
+  </changeSet>
+
+    <changeSet author="Bhoward" id="Table.dbo.Asset-v5">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(19)
+end
+
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+		alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(7)
+end
+]]>
+	</rollback>
+  </changeSet>
+  
   <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

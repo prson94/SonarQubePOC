@@ -22,9 +22,8 @@ import {AdminArtifactsComponent} from './admin-artifacts.component';
 import {AdminArtifactsRoutingModule} from './admin-artifacts.routes';
 
 import {SimpleAccordionModule} from '../../shared/simple-accordion.part';
-import {ArtifactTypeDeleteComponent} from './artifact-type-delete.component';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
@@ -35,7 +34,8 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { TreeTableModule } from 'primeng/treetable';
 import { EditorModule } from 'primeng/editor';
 
-import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibilities.module';
+import { AdminResponsibilitiesModule } from '../responsibilities/admin-responsibilities.module';
+import { AssetTypeDeleteModule } from '../asset-type-delete/asset-type-delete.module';
 
 
 @NgModule({
@@ -69,7 +69,7 @@ import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibil
         SharedGridPagingInfoModule,
         SharedDeleteFormModule,
         SharedAssetTypeEditorModule,
-
+        AssetTypeDeleteModule,
         AdminResponsibilitiesModule,
 
         SharedObjectDetailsModule,
@@ -79,7 +79,6 @@ import {AdminResponsibilitiesModule} from '../responsibilities/admin-responsibil
     ],
     declarations: [
         AdminArtifactsComponent,
-        ArtifactTypeDeleteComponent,
     ],
     providers: [
         {

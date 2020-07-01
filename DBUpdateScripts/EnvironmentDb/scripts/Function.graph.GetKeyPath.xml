@@ -4,33 +4,25 @@
     xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+	
+	<changeSet author="Pappas" id="Function.graph.GetKeyPath-DependencyDrop-v1.1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<comment>Have to drop this first as it is schema-bound and depends on function below. </comment>
+			<![CDATA[
+			drop view if exists graph.AssetNodeKeyPath;
+			]]>
+		</sql>
+		<rollback>
+			<![CDATA[	
 
-  <changeSet author="Pappas" id="Function.graph.GetKeyPath-DependencyDrop-v1">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<comment>
-			Have to drop this first as it is schema-bound and depends on function below. 
-		</comment>
-		<![CDATA[
-drop view if exists graph.AssetNodeKeyPath;
-		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+			]]>
+		</rollback>
+	</changeSet>
 
-		]]>
-	</rollback>
-  </changeSet>
-
-  <changeSet author="Pappas" id="Function.graph.GetKeyPath-v2">
-    <sql dbms="mssql"
-            endDelimiter="\nGO"
-            splitStatements="true"
-            stripComments="false">
-		<comment>Any time you update this function, you must also increment version of dependent item(s) listed in changeset above, and update the version of the above changeset.</comment>
-		<![CDATA[
+	<changeSet author="Pappas" id="Function.graph.GetKeyPath-v2.1">
+		<sql dbms="mssql" endDelimiter="\nGO" splitStatements="true" stripComments="false">
+			<comment>Any time you update this function, you must also increment version of dependent item(s) listed in changeset above, and update the version of the above changeset.</comment>
+			<![CDATA[
 create or alter function [graph].[GetKeyPath] 
 (
 	@segments xml
@@ -42,7 +34,7 @@ begin
 
 	select	@path = '[' + V + ']'
 	from	(
-			select	string_agg(Val, '].[') within group(order by P) as  V
+			select	string_agg(Val, '].[') within group(order by L, P) as  V
 			from	(
 					select	X.p.value('./@level', 'int') as L,
 							X.p.value('./@position', 'int') as P,
@@ -59,9 +51,9 @@ begin
 	return @path
 end
 		]]>
-    </sql>
-	<rollback>
-		<![CDATA[	
+		</sql>
+		<rollback>
+			<![CDATA[	
 create or alter function [graph].[GetKeyPath] 
 (
 	@segments xml
@@ -89,8 +81,8 @@ begin
 	end
 	return @path
 end
-		]]>
-	</rollback>
-  </changeSet>
+			]]>
+		</rollback>
+	</changeSet>
 
 </databaseChangeLog>

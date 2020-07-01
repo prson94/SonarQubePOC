@@ -26,13 +26,13 @@
                             <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" name="effectiveDate"></p-calendar>
                         </div>
                     </div>
-                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
+                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated"> 
                         <div class="FieldNameRequired">
                             Weight
                         </div>
                         <div class="directions">Weight must be a value between 0 and 1</div>
                         <div>
-                            <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="model.Weight = clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner>
+                            <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner> 
                         </div>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
     <div class="row" *ngIf="!isLoading && !isExternallyCalculated">
         <div class="col s12">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
-                <div class="row">
+                <div class="row" *ngFor="let g of model.ConditionGroups">
                     <div class="col l3 m12 s12">
                         <div class="FieldName">
                             Condition Type
@@ -60,13 +60,14 @@
                         <div class="directions">
                             Choose which type of operator you want to use between each condition. The AND operator will ensure that all conditions are met. The OR operator ensures that at least one of the conditions applies.
                         </div>
-                        <div><p-radioButton name="grpConditionAndOr" value="a" label="And" [(ngModel)]="model.ConditionAndOr"></p-radioButton></div>
-                        <div><p-radioButton name="grpConditionAndOr" value="o" label="Or" [(ngModel)]="model.ConditionAndOr"></p-radioButton></div>
+                        <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
+                        <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
                     </div>
                     <div class="col l9 m12 s12">
-                        <d3s-admin-metric-condition-list [(conditions)]="model.Conditions"
+                        <d3s-admin-metric-condition-list [(conditions)]="g.ConditionItems"
                                                          [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
-                                                         [metricUid]="model?.Uid"
+                                                         [conditionUid]="g?.Uid"
+                                                         [position]="g?.Position"
                                                          [assetTypeUid]="model?.AssetTypeUid"
                                                          (formModeChange)="conditionFormMode = $event">
                         </d3s-admin-metric-condition-list>

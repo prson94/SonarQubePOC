@@ -19,7 +19,7 @@ import { AdminRelationshipsComponent } from './admin-relationships.component';
 
 import { AdminRelationshipsRoutingModule } from './admin-relationships.routes';
 
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { TableModule } from 'primeng/table';
 
 @NgModule({

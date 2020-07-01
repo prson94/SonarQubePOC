@@ -50,8 +50,7 @@ export class FormHelpers {
         if (val > max) newVal = max;
 
         if (precision > 0 && newVal != null && newVal != 0) {
-            let mod = Math.pow(10, precision);
-            newVal = Math.round(newVal * mod) / mod;
+            newVal = Math.round((newVal + Number.EPSILON) * 100) / 100;
         }
 
         return newVal;

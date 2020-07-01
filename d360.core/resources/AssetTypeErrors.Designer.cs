@@ -19,7 +19,7 @@ namespace d360.core.resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AssetTypeErrors {
@@ -133,6 +133,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Cannot add Asset Type of class Diagram. Governance Role Reference UID is not set..
+        /// </summary>
+        public static string GovernanceRoleNotSet {
+            get {
+                return ResourceManager.GetString("GovernanceRoleNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /api/v2/membership/groups.
+        /// </summary>
+        public static string GroupEndPoint {
+            get {
+                return ResourceManager.GetString("GroupEndPoint", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You have not provided a proper predicate based on its asset type class..
         /// </summary>
         public static string ImproperPredicate {
@@ -232,6 +250,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to FlowObjectType is required field for Asset Type with class Diagram..
+        /// </summary>
+        public static string MissingFlowObjectType {
+            get {
+                return ResourceManager.GetString("MissingFlowObjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Asset Type not found based on Class provided..
         /// </summary>
         public static string NotFoundBasedOnClass {
@@ -291,6 +318,24 @@ namespace d360.core.resources {
         public static string UnsupportedAssetClass {
             get {
                 return ResourceManager.GetString("UnsupportedAssetClass", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FlowObjectType is not support for class {0}..
+        /// </summary>
+        public static string UnsupportedFlowObjectType {
+            get {
+                return ResourceManager.GetString("UnsupportedFlowObjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /api/v2/membership/users.
+        /// </summary>
+        public static string UserEndPoint {
+            get {
+                return ResourceManager.GetString("UserEndPoint", resourceCulture);
             }
         }
     }

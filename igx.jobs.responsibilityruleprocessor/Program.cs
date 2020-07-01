@@ -4,7 +4,6 @@ using d360.model;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -50,7 +49,7 @@ namespace igx.jobs.responsibilityruleprocessor
                     {
                         var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
 
-                        company.OpenWithRetry(RetryPolicy.DefaultFixed);
+                        company.Open();
 
                         CoreFunction.AITrackEvent(functionName, "ResponsibilityRuleProcessor Job Starting", new Dictionary<string, string> { { "CompanyID", c.CompanyID.ToString() } });
 

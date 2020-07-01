@@ -4,7 +4,7 @@ import { Router }       from '@angular/router';
 import { Breadcrumb } from '../../../models/breadcrumb.model';
 import { TypeaheadSearchService } from '../../../services/typeahead-search.service';
 import { SearchResult } from '../../../models/search-result.model';
-import { TreeNode } from 'primeng/components/common/api';
+import { TreeNode } from 'primeng/api';
 import { SubscriptionLike as ISubscription } from 'rxjs';
 
 @Component({

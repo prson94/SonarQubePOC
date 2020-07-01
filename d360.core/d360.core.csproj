@@ -1,492 +1,113 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{9341CCA8-D3F2-467A-AE9C-0581054B8DE2}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>d360.core</RootNamespace>
-    <AssemblyName>d360.core</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <TargetFrameworkProfile />
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
+    <TargetFrameworks>netstandard2.1;net47</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>bin\Debug\</OutputPath>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="HtmlAgilityPack, Version=1.11.23.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
-      <HintPath>..\packages\HtmlAgilityPack.1.11.23\lib\Net45\HtmlAgilityPack.dll</HintPath>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.configuration" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Compile Remove="entities\reference\**" />
+    <EmbeddedResource Remove="entities\reference\**" />
+    <None Remove="entities\reference\**" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="attributes\Attributes.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="constants.cs" />
-    <Compile Include="entities\Abstract\BaseObject.cs" />
-    <Compile Include="entities\Abstract\PagedApiBaseViewModel.cs" />
-    <Compile Include="entities\Api\ApiExecution.cs" />
-    <Compile Include="entities\Api\ApiEntityFieldTypeMultiSelectField.cs" />
-    <Compile Include="entities\Api\ApiEntityUri.cs" />
-    <Compile Include="entities\Api\ApiEntityFieldType.cs" />
-    <Compile Include="entities\Api\ApiEntity.cs" />
-    <Compile Include="entities\Api\ApiEndpointVersion.cs" />
-    <Compile Include="entities\Api\ApiEndpoint.cs" />
-    <Compile Include="entities\Api\ApiNamespace.cs" />
-    <Compile Include="entities\Api\ApiService.cs" />
-    <Compile Include="entities\Asset.cs" />
-    <Compile Include="entities\AssetCrossReference.cs" />
-    <Compile Include="entities\AssetType.cs" />
-    <Compile Include="entities\AssetTypeExportTemplate.cs" />
-    <Compile Include="entities\AssetTypeExportTemplateStyle.cs" />
-    <Compile Include="entities\AssetTypeLevel.cs" />
-    <Compile Include="entities\AssetTypeStyle.cs" />
-    <Compile Include="entities\Community\Client.cs" />
-    <Compile Include="entities\Community\CompanyRebuildJobStatus.cs" />
-    <Compile Include="entities\Community\CompanyHelpResource.cs" />
-    <Compile Include="entities\Community\GenericCommand.cs" />
-    <Compile Include="entities\Community\HelpResource.cs" />
-    <Compile Include="entities\Community\Plugins\ClientFusionType.cs" />
-    <Compile Include="entities\Community\Templates\Intersect.cs" />
-    <Compile Include="entities\Community\Templates\IntersectType.cs" />
-    <Compile Include="entities\Community\Templates\JsonModels.cs" />
-    <Compile Include="entities\Community\Templates\PackageDeploymentHistory.cs" />
-    <Compile Include="entities\Community\Templates\Predicate.cs" />
-    <Compile Include="entities\Community\Templates\Asset.cs" />
-    <Compile Include="entities\Community\Templates\AssetTypeVersion.cs" />
-    <Compile Include="entities\Community\Templates\AssetType.cs" />
-    <Compile Include="entities\Community\Templates\Allocation.cs" />
-    <Compile Include="entities\Community\Templates\PackageClient.cs" />
-    <Compile Include="entities\Community\Templates\PackageVersion.cs" />
-    <Compile Include="entities\Community\Templates\Package.cs" />
-    <Compile Include="entities\Contracts\ICreatedMetadata.cs" />
-    <Compile Include="entities\Contracts\IEventTrackedEntity.cs" />
-    <Compile Include="entities\Contracts\IUIDMetadata.cs" />
-    <Compile Include="entities\FieldJsonProperty.cs" />
-    <Compile Include="entities\FieldValue.cs" />
-    <Compile Include="entities\Fusion\FusionMarkitLineageData.cs" />
-    <Compile Include="entities\Fusion\FusionMarkitLineageMapToBusinessItems.cs" />
-    <Compile Include="entities\Fusion\FusionQueryAttribute.cs" />
-    <Compile Include="entities\Fusion\FusionQueryAttributeType.cs" />
-    <Compile Include="entities\Fusion\FusionAttributeTypeCustomQuery.cs" />
-    <Compile Include="entities\Graph\GraphFilter.cs" />
-    <Compile Include="entities\Integration\IntegrationAssetTypeRelationItemTarget.cs" />
-    <Compile Include="entities\Integration\IntegrationAssetTypeRoleItem.cs" />
-    <Compile Include="entities\Integration\IntegrationAssetTypeRelationItem.cs" />
-    <Compile Include="entities\Integration\IntegrationAssetTypeFieldItem.cs" />
-    <Compile Include="entities\Integration\IntegrationAssetType.cs" />
-    <Compile Include="entities\Integration\IntegrationUnresolvedRelationItem.cs" />
-    <Compile Include="entities\Integration\IntegrationExecutionAssetType.cs" />
-    <Compile Include="entities\Integration\IntegrationSetting.cs" />
-    <Compile Include="entities\Integration\QueryModels.cs" />
-    <Compile Include="entities\Issue\Issue.cs" />
-    <Compile Include="entities\Issue\IssueType.cs" />
-    <Compile Include="entities\Issue\IssueTypeApiModel.cs" />
-    <Compile Include="entities\Issue\IssueTypeRelation.cs" />
-    <Compile Include="entities\Membership\FavoriteApiModel.cs" />
-    <Compile Include="entities\Membership\GroupApiModel.cs" />
-    <Compile Include="entities\Membership\UserApiModel.cs" />
-    <Compile Include="entities\Metric\DataQualityResponseModels.cs" />
-    <Compile Include="entities\Metric\DataQualityUpsertModels.cs" />
-    <Compile Include="entities\Metric\MetricAllocation.cs" />
-    <Compile Include="entities\Metric\MetricApiViewModels.cs" />
-    <Compile Include="entities\Metric\MetricAsset.cs" />
-    <Compile Include="entities\Metric\MetricAssetVersion.cs" />
-    <Compile Include="entities\Metric\MetricAssetVersionCondition.cs" />
-    <Compile Include="entities\AssetDataProfile.cs" />
-    <Compile Include="entities\Metric\MetricScoreApiModel.cs" />
-    <Compile Include="entities\Metric\Score.cs" />
-    <Compile Include="entities\Organization\ContractAcceptance.cs" />
-    <Compile Include="entities\Organization\OrganizationType.cs" />
-    <Compile Include="entities\Organization\OrganizationRegistration.cs" />
-    <Compile Include="entities\Organization\OrganizationInvitation.cs" />
-    <Compile Include="entities\Organization\OrganizationResource.cs" />
-    <Compile Include="entities\Organization\OrganizationDomain.cs" />
-    <Compile Include="entities\Organization\Contract.cs" />
-    <Compile Include="entities\Organization\Organization.cs" />
-    <Compile Include="entities\Permissions\PermissionsResponseModel.cs" />
-    <Compile Include="entities\Quality\RuleType.cs" />
-    <Compile Include="entities\Relation\MapGroup.cs" />
-    <Compile Include="entities\Relation\MapGroupItem.cs" />
-    <Compile Include="entities\Relation\MapType.cs" />
-    <Compile Include="entities\Relation\MapTypeOrder.cs" />
-    <Compile Include="entities\Relation\MapTypeTemplate.cs" />
-    <Compile Include="entities\Relation\MapTypeTemplateItem.cs" />
-    <Compile Include="entities\Relation\RelationshipApiModels.cs" />
-    <Compile Include="entities\ReportResponsibility.cs" />
-    <Compile Include="entities\ResourcePasswordReset.cs" />
-    <Compile Include="entities\Security\AssetResponsibilitiesModel.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeAllocationViewModel.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeRelationOverrideItem.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeRelationRule.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeRuleStatsViewModel.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeRuleViewModel.cs" />
-    <Compile Include="entities\ShoppingCart.cs" />
-    <Compile Include="entities\ShoppingCartItem.cs" />
-    <Compile Include="entities\ShoppingCartType.cs" />
-    <Compile Include="entities\Shortcut.cs" />
-    <Compile Include="entities\Social\Favorite.cs" />
-    <Compile Include="entities\FieldTypeLookup.cs" />
-    <Compile Include="entities\Relation\MapRuleItemMapItem.cs" />
-    <Compile Include="entities\Relation\MapRule.cs" />
-    <Compile Include="entities\Relation\MapRuleItem.cs" />
-    <Compile Include="entities\Relation\MapItem.cs" />
-    <Compile Include="entities\Relation\MapSequenceContext.cs" />
-    <Compile Include="entities\Relation\MapSequence.cs" />
-    <Compile Include="entities\Relation\Map.cs" />
-    <Compile Include="entities\Community\Plugins\FusionTypeField.cs" />
-    <Compile Include="entities\Community\Plugins\FusionAttributeTypeField.cs" />
-    <Compile Include="entities\Fusion\FusionAgentError.cs" />
-    <Compile Include="entities\Fusion\FusionAgentErrorItem.cs" />
-    <Compile Include="entities\Relation\Predicate.cs" />
-    <Compile Include="entities\Social\CommentVote.cs" />
-    <Compile Include="entities\Social\CommentCount.cs" />
-    <Compile Include="entities\Audit.cs" />
-    <Compile Include="entities\AuditField.cs" />
-    <Compile Include="entities\Community\CompanySetting.cs" />
-    <Compile Include="entities\Contracts\ISearchable.cs" />
-    <Compile Include="entities\Contracts\IUpdatedMetadata.cs" />
-    <Compile Include="entities\Community\Setting.cs" />
-    <Compile Include="entities\Fusion\FusionExecution.cs" />
-    <Compile Include="entities\Quality\Rule.cs" />
-    <Compile Include="entities\SiteNav.cs" />
-    <Compile Include="entities\Nym.cs" />
-    <Compile Include="entities\NymRelation.cs" />
-    <Compile Include="entities\Survey\SurveyApiViewModels.cs" />
-    <Compile Include="entities\Tagging\AssetTag.cs" />
-    <Compile Include="entities\Tagging\Tag.cs" />
-    <Compile Include="entities\Tagging\TagApiModel.cs" />
-    <Compile Include="entities\Tagging\TagApiModelWrapper.cs" />
-    <Compile Include="entities\Transitive\ApiVersion2Models.cs" />
-    <Compile Include="entities\Transitive\AzureGraphModels.cs" />
-    <Compile Include="entities\Transitive\AssetWithoutReadPermission.cs" />
-    <Compile Include="entities\Transitive\BulkOwnerImport.cs" />
-    <Compile Include="entities\Transitive\BulkMetricImport.cs" />
-    <Compile Include="entities\Transitive\BulkLoadGetLoadColumnsModel.cs" />
-    <Compile Include="entities\Transitive\AssetDetail.cs" />
-    <Compile Include="entities\Transitive\FusionAttributeTypeWithQuery.cs" />
-    <Compile Include="entities\Transitive\FieldFilterModel.cs" />
-    <Compile Include="entities\Transitive\FusionProcessingData.cs" />
-    <Compile Include="entities\Transitive\PredicateIntersect.cs" />
-    <Compile Include="entities\Transitive\UiRequestFilterValue.cs" />
-    <Compile Include="entities\Views\FieldDetail.cs" />
-    <Compile Include="entities\Views\MapRuleItemDetail.cs" />
-    <Compile Include="entities\Views\FusionExecutionResultDetail.cs" />
-    <Compile Include="entities\Community\CompanyDomainSetting.cs" />
-    <Compile Include="entities\Community\DomainSetting.cs" />
-    <Compile Include="entities\Community\DomainCertificate.cs" />
-    <Compile Include="entities\Contracts\IGuidObject.cs" />
-    <Compile Include="entities\Community\DatabaseServer.cs" />
-    <Compile Include="entities\Community\CompanyFeature.cs" />
-    <Compile Include="entities\Fusion\FusionStatusLog.cs" />
-    <Compile Include="entities\LoadColumn.cs" />
-    <Compile Include="entities\LoadItemColumn.cs" />
-    <Compile Include="entities\LoadItem.cs" />
-    <Compile Include="entities\Load.cs" />
-    <Compile Include="entities\Community\Plugins\Package.cs" />
-    <Compile Include="entities\Community\Plugins\EventType.cs" />
-    <Compile Include="entities\Community\Plugins\FieldType.cs" />
-    <Compile Include="entities\Community\Plugins\FusionAttributeType.cs" />
-    <Compile Include="entities\Community\Plugins\FusionIntersectType.cs" />
-    <Compile Include="entities\Community\Plugins\FusionType.cs" />
-    <Compile Include="entities\Community\Plugins\PackageContent.cs" />
-    <Compile Include="entities\Community\CompanyResource.cs" />
-    <Compile Include="entities\Security\ResponsibilityTypeRelation.cs" />
-    <Compile Include="entities\Contracts\ICreatedObject.cs" />
-    <Compile Include="entities\Contracts\IUpdatedObject.cs" />
-    <Compile Include="entities\Transitive\FusionConfigurationScheduleRequestModel.cs" />
-    <Compile Include="entities\Views\IntersectDetail.cs" />
-    <Compile Include="entities\Views\IntersectTypeDetail.cs" />
-    <Compile Include="entities\Report.cs" />
-    <Compile Include="entities\Security\ResponsibilityType.cs" />
-    <Compile Include="entities\Social\Comment.cs" />
-    <Compile Include="entities\Community\Company.cs" />
-    <Compile Include="entities\Social\CommentRelation.cs" />
-    <Compile Include="entities\Contracts\IIntObject.cs" />
-    <Compile Include="entities\Contracts\IFieldsObject.cs" />
-    <Compile Include="entities\Survey\QuestionType.cs" />
-    <Compile Include="entities\Survey\Question.cs" />
-    <Compile Include="entities\Survey\QuestionTypeOption.cs" />
-    <Compile Include="entities\Survey\SurveyType.cs" />
-    <Compile Include="entities\Survey\Survey.cs" />
-    <Compile Include="entities\Fusion\Fusion.cs" />
-    <Compile Include="entities\Field.cs" />
-    <Compile Include="entities\FieldType.cs" />
-    <Compile Include="entities\Security\ResourceGroup.cs" />
-    <Compile Include="entities\Security\ResourceType.cs" />
-    <Compile Include="entities\Social\Follow.cs" />
-    <Compile Include="entities\Fusion\FusionAttributeType.cs" />
-    <Compile Include="entities\Fusion\FusionAttribute.cs" />
-    <Compile Include="entities\Fusion\FusionType.cs" />
-    <Compile Include="entities\Security\Group.cs" />
-    <Compile Include="entities\Relation\Intersect.cs" />
-    <Compile Include="entities\Relation\IntersectType.cs" />
-    <Compile Include="entities\Community\Resource.cs" />
-    <Compile Include="entities\Transitive\AllowedIntersectionType.cs" />
-    <Compile Include="entities\Transitive\FusionOwnerOption.cs" />
-    <Compile Include="entities\Transitive\FusionAttributeItem.cs" />
-    <Compile Include="entities\Transitive\BulkFusionImport.cs" />
-    <Compile Include="entities\Transitive\CommentDetail.cs" />
-    <Compile Include="entities\Transitive\FusionPromotionOption.cs" />
-    <Compile Include="entities\Transitive\GroupResourceInfo.cs" />
-    <Compile Include="entities\Transitive\MicroModels.cs" />
-    <Compile Include="entities\Transitive\RenderTemplateModel.cs" />
-    <Compile Include="entities\Views\ResponsibilityDetail.cs" />
-    <Compile Include="entities\Views\FieldLookupValue.cs" />
-    <Compile Include="entities\Views\FieldWithRelation.cs" />
-    <Compile Include="entities\Views\FieldTypeWithRelation.cs" />
-    <Compile Include="entities\Transitive\ObjectDetail.cs" />
-    <Compile Include="entities\Workflow\DiagramModels.cs" />
-    <Compile Include="entities\Workflow\Models.cs" />
-    <Compile Include="entities\Workflow\WorkflowItemAssignment.cs" />
-    <Compile Include="entities\Workflow\WorkflowTaskProcedure.cs" />
-    <Compile Include="enums\ApiUriType.cs" />
-    <Compile Include="enums\CalculationMethod.cs" />
-    <Compile Include="enums\CompanyRebuildJobToken.cs" />
-    <Compile Include="enums\CompanyRebuildJobStatusState.cs" />
-    <Compile Include="enums\ResultRelationClass.cs" />
-    <Compile Include="enums\SettingType.cs" />
-    <Compile Include="enums\SplitFilterCriteriaRelationship.cs" />
-    <Compile Include="enums\BulkRelationshipOperation.cs" />
-    <Compile Include="enums\IntegrationErrorCode.cs" />
-    <Compile Include="enums\Permission.cs" />
-    <Compile Include="enums\EnvironmentLevel.cs" />
-    <Compile Include="enums\HelpResourceType.cs" />
-    <Compile Include="enums\ExportView.cs" />
-    <Compile Include="enums\AssetTypeClass.cs" />
-    <Compile Include="enums\IntegrationSystem.cs" />
-    <Compile Include="enums\LinkTarget.cs" />
-    <Compile Include="enums\RegisterStep.cs" />
-    <Compile Include="enums\Cardinality.cs" />
-    <Compile Include="enums\ClientState.cs" />
-    <Compile Include="enums\CompanyResourceState.cs" />
-    <Compile Include="enums\IntegrationResolutionType.cs" />
-    <Compile Include="enums\ScoreType.cs" />
-    <Compile Include="enums\State.cs" />
-    <Compile Include="enums\ContractType.cs" />
-    <Compile Include="enums\TypeIdentifierInfoModelType.cs" />
-    <Compile Include="enums\Workflow\ActivityType.cs" />
-    <Compile Include="enums\Workflow\CriteriaConnector.cs" />
-    <Compile Include="enums\Workflow\CriteriaValueDataType.cs" />
-    <Compile Include="enums\Workflow\ChangeType.cs" />
-    <Compile Include="enums\Workflow\EmailTaskRecipientType.cs" />
-    <Compile Include="enums\Workflow\FormResponseType.cs" />
-    <Compile Include="enums\Workflow\TransitionType.cs" />
-    <Compile Include="enums\Workflow\StepType.cs" />
-    <Compile Include="entities\Workflow\WorkflowItem.cs" />
-    <Compile Include="entities\Workflow\WorkflowItemStep.cs" />
-    <Compile Include="entities\Workflow\WorkflowItemStepTransition.cs" />
-    <Compile Include="entities\Workflow\WorkflowEventRegistration.cs" />
-    <Compile Include="entities\Workflow\WorkflowVersionStepTransition.cs" />
-    <Compile Include="entities\Workflow\WorkflowVersionStep.cs" />
-    <Compile Include="entities\Workflow\WorkflowVersion.cs" />
-    <Compile Include="entities\Workflow\WorkflowType.cs" />
-    <Compile Include="enums\AuthenticationType.cs" />
-    <Compile Include="enums\CommentVisibility.cs" />
-    <Compile Include="enums\ComplexLookupRelationType.cs" />
-    <Compile Include="enums\QuestionDisplayStyle.cs" />
-    <Compile Include="enums\FollowType.cs" />
-    <Compile Include="enums\PredicateType.cs" />
-    <Compile Include="enums\HashAlgorithmType.cs" />
-    <Compile Include="enums\Feature.cs" />
-    <Compile Include="enums\Claim.cs" />
-    <Compile Include="enums\ClaimObject.cs" />
-    <Compile Include="enums\CommentType.cs" />
-    <Compile Include="enums\DataType.cs" />
-    <Compile Include="entities\Views\FollowDetail.cs" />
-    <Compile Include="enums\JobIntervalType.cs" />
-    <Compile Include="enums\RuleStatus.cs" />
-    <Compile Include="enums\QueueType.cs" />
-    <Compile Include="enums\ReportTileType.cs" />
-    <Compile Include="enums\StatisticCheckType.cs" />
-    <Compile Include="enums\SystemObjects.cs" />
-    <Compile Include="enums\TemplateAction.cs" />
-    <Compile Include="enums\Workflow\CriteriaOperator.cs" />
-    <Compile Include="exceptions\BaseException.cs" />
-    <Compile Include="exceptions\ClientSideException.cs" />
-    <Compile Include="exceptions\ConflictException.cs" />
-    <Compile Include="exceptions\GenericException.cs" />
-    <Compile Include="exceptions\InvalidFieldException.cs" />
-    <Compile Include="exceptions\NoFormDataException.cs" />
-    <Compile Include="exceptions\DuplicateObjectException.cs" />
-    <Compile Include="exceptions\MissingPropertiesException.cs" />
-    <Compile Include="exceptions\NotFoundException.cs" />
-    <Compile Include="exceptions\UnauthorizedException.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="helpers\HtmlHelper.cs" />
-    <Compile Include="helpers\PluralServiceHelper.cs" />
-    <Compile Include="helpers\DataTypeHelper.cs" />
-    <Compile Include="helpers\SystemObjectHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="queue\ApiExecutionInfo.cs" />
-    <Compile Include="queue\DisplayUpdateInfo.cs" />
-    <Compile Include="queue\GraphInfo.cs" />
-    <Compile Include="queue\IntegrationQueueModel.cs" />
-    <Compile Include="queue\EventInfo.cs" />
-    <Compile Include="queue\BulkLoadInfo.cs" />
-    <Compile Include="queue\IndexObjectModel.cs" />
-    <Compile Include="queue\QueueAction.cs" />
-    <Compile Include="queue\QueueObject.cs" />
-    <Compile Include="resources\AssetTypeErrors.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.24" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.ComponentModel" Version="4.3.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="resources\AssetTypeErrors.Designer.cs">
       <DependentUpon>AssetTypeErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\CommonNames.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\CommonNames.Designer.cs">
       <DependentUpon>CommonNames.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\DataQualityErrors.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\DataQualityErrors.Designer.cs">
       <DependentUpon>DataQualityErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\FieldErrors.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\FieldErrors.Designer.cs">
       <DependentUpon>FieldErrors.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\Fields.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\Fields.Designer.cs">
       <DependentUpon>Fields.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\Messages.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\Messages.Designer.cs">
       <DependentUpon>Messages.resx</DependentUpon>
-    </Compile>
-    <Compile Include="resources\Permissions.Designer.cs">
-      <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Permissions.resx</DependentUpon>
+      <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="resources\Types.Designer.cs">
+    <Compile Update="resources\Permissions.Designer.cs">
+      <DependentUpon>Permissions.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Update="resources\Types.Designer.cs">
       <DependentUpon>Types.resx</DependentUpon>
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="resources\Values.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
+    <Compile Update="resources\Values.Designer.cs">
       <DependentUpon>Values.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
     </Compile>
   </ItemGroup>
+
   <ItemGroup>
-    <EmbeddedResource Include="resources\AssetTypeErrors.resx">
-      <Generator>PublicResXFileCodeGenerator</Generator>
+    <EmbeddedResource Update="resources\AssetTypeErrors.resx">
       <LastGenOutput>AssetTypeErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\CommonNames.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\CommonNames.resx">
       <LastGenOutput>CommonNames.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\DataQualityErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\DataQualityErrors.resx">
       <LastGenOutput>DataQualityErrors.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\FieldErrors.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\FieldErrors.resx">
+      <SubType>Designer</SubType>
       <LastGenOutput>FieldErrors.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\Fields.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Fields.resx">
+      <SubType>Designer</SubType>
       <LastGenOutput>Fields.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\Messages.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Messages.resx">
+      <SubType>Designer</SubType>
       <LastGenOutput>Messages.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\Permissions.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Permissions.resx">
       <LastGenOutput>Permissions.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
-    <EmbeddedResource Include="resources\Types.resx">
+    <EmbeddedResource Update="resources\Types.resx">
       <SubType>Designer</SubType>
-      <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Types.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
-    <EmbeddedResource Include="resources\Values.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="resources\Values.resx">
       <LastGenOutput>Values.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
-      <Visible>False</Visible>
-      <ProductName>Windows Installer 3.1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="entities\Reference\" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

@@ -90,6 +90,8 @@ namespace d360.core.entities
         public int? FusionID { get; set; }
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+        [DataMember]
+        public FlowObjectType? FlowObjectType { get; set; }
     }
 
     public class AssetTypeSuccess
@@ -153,6 +155,19 @@ namespace d360.core.entities
         public Dictionary<string, string> Fields { get; set; } = new Dictionary<string, string>();
     }
 
+    public class AssetPathResult
+    {
+        public string path { get; set; }
+        public Guid uid { get; set; }
+    }
+
+    public class AssetPathResults
+    {
+        public IEnumerable<AssetPathResult> items { get; set; }
+        public int? total { get; set; }
+    }
+
+
     [JsonArray]
     [DataContract(Name = "assets")]
     public class AssetDeletes : List<AssetDelete>
@@ -191,6 +206,16 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid? ExecutionItemUid { get; set; }
+    }
+
+    [DataContract]
+    public class AssetTypeSingleDelete
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+
+        [DataMember]
+        public bool Cascade { get; set; }
     }
 
     public class AssetImportResult
@@ -332,6 +357,25 @@ namespace d360.core.entities
     }
 
 
+    public class RelationshipUidResultItem
+    {
+        [DataMember]
+        public Guid RelationshipUid { get; set; }
+        [DataMember]
+        public Guid? SubjectUid { get; set; }
+
+        [DataMember]
+        public Guid? ObjectUid { get; set; }        
+    }
+
+    public class RelationshipUidResult
+    {
+        [DataMember]
+        public IEnumerable<RelationshipUidResultItem> Results { get; set; }
+        [DataMember]
+        public int? Total { get; set; }
+    }
+
     public class RelationshipTypeInsert
     {
         [DataMember]
@@ -421,25 +465,6 @@ namespace d360.core.entities
 
         [DataMember]
         public Guid uid { get; set; }
-    }
-
-    public class AssetDataProfileResult
-    {
-        public Guid AssetUid { get; set; }
-        public string Message { get; set; }
-        public bool Success { get; set; }
-    }
-
-    public class AssetDataProfileDeleteResult
-    {
-        public Guid AssetUid { get; set; }
-        public string Message { get; set; }
-        public bool Success { get; set; }
-    }
-
-    public class AssetDataProfileDelete
-    {
-        public Guid AssetUid { get; set; }
     }
 
     [DataContract]
@@ -752,4 +777,23 @@ namespace d360.core.entities
         public bool Success { get; set; }
     }
 
+    public class UpsertModel
+    {
+        public Guid AssetTypeUid { get; set; }
+        public List<UpsertAsset> Assets { get; set; }
+    }
+    public class UpsertAsset
+    {
+        public Guid? Uid { get; set; }
+        public Dictionary<string, string> Fields { get; set; }
+        [JsonIgnore]
+        public Guid? ExternalKey { get; set; }
+    }
+
+    public class ValidationError
+    {
+        public Guid AssetTypeUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public string Error { get; set; }
+    }
 }

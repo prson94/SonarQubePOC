@@ -21,6 +21,7 @@ using d360.web.Models.Attributes;
 using d360.web.Filters;
 using Dapper;
 using Resources;
+using System.Threading.Tasks;
 
 namespace d360.web.Models
 {
@@ -58,14 +59,19 @@ namespace d360.web.Controllers
         #region Actions
 
         [HttpGet, ValidateContracts(Ignore = true), Route("image/{id:int}")]
-        public ActionResult MyImage(int id, int size = 150)
+        public async Task<ActionResult> MyImage(int id, int size = 150)
         {
-            var resource = Community.GetById<Resource>(id);
+            var email = await Community.QueryFirstOrDefaultAsync<string>("select email from [resource] where id = @id", new { id });
 
+            if (string.IsNullOrEmpty(email)) throw new NotFoundException("Cannot find email address associated with specified Govern user.");
+            
             MD5 md5Hasher = MD5.Create();
 
-            // Convert the input string to a byte array and compute the hash.  
-            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes(resource.Email));
+            // Convert the input string to a byte array and compute the hash. 
+            // 1.  Trim leading and trailing whitespace from an email address
+            // 2.  Force all characters to lower-case
+            // 3.  md5 hash the final string
+            byte[] data = md5Hasher.ComputeHash(Encoding.Default.GetBytes((email ??"").Trim().ToLower()));
 
             // Create a new Stringbuilder to collect the bytes  
             // and create a string.  
@@ -686,6 +692,18 @@ where	RT.[Object] = @type and RT.ObjectID = @typeID and RT.[Type] = 'Score'
                                 res[idx] = tagTooltip;
                             }
                         }
+                    }
+                    var colorDataString = @"select ACJ.ColorJSON from Asset A cross apply dbo.GetAssetColorJsonById(A.Id) ACJ where ID = @assetID ";
+                    var colorData = Company.Query<string>(colorDataString, new { @assetID = (det != null ? det.AssetID : -1) }).FirstOrDefault();
+                    if(colorData != null)
+                    {
+                        var color = new FieldTooltipValueModel()
+                        {
+                            Name = "Color",
+                            Type = "Color",
+                            Value = colorData
+                        };
+                        res.Add(color);
                     }
                 }
 

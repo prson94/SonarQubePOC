@@ -1,4 +1,6 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -24,6 +26,9 @@ namespace d360.core.entities
 
         [DataMember]
         public string DisplayFormat { get; set; }
+
+        [DataMember]
+        public FlowObjectType? FlowObjectType { get; set; }
 
         [DataMember]
         public State State { get; set; }
@@ -70,6 +75,7 @@ namespace d360.core.entities
         
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+
     }
 
     public class AssetTypeBrowserApiViewModel
@@ -137,5 +143,8 @@ namespace d360.core.entities
         public IconStyleInsert IconStyle { get; set; }
         [DataMember]
         public bool? AutoDisplayParent { get; set; }
+        [DataMember]
+        [JsonConverter(typeof(StringEnumConverter))]
+        public FlowObjectType? FlowObjectType { get; set; }
     }
 }

@@ -9,7 +9,7 @@ import { ColorPickerModule } from 'primeng/colorpicker';
 import { SpinnerModule } from 'primeng/spinner';
 import { ButtonModule } from 'primeng/button';
 import { DropdownModule } from 'primeng/dropdown';
-import { SharedModule } from 'primeng/shared';
+import { SharedModule } from 'primeng/api';
 import { InputTextModule } from 'primeng/inputtext';
 import { EditorModule } from 'primeng/editor';
 
@@ -21,6 +21,7 @@ import { SimpleAccordionModule } from '../simple-accordion.part';
 import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
 import { IconPickerModule } from '../icon-picker.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
+import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 
 @NgModule({
     imports: [CommonModule,
@@ -34,6 +35,7 @@ import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynam
         TilesModule,
         SimpleAccordionModule,        
         IconPickerModule,
+        InfoTooltipModule,
         //prime        
         ButtonModule,
         ColorPickerModule,

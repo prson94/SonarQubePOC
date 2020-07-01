@@ -10,14 +10,34 @@ namespace d360.core.entities.Metric
     [DataContract(Namespace = NAMESPACE), Table("AssetVersion", Schema = "metrics")]
     public class MetricAssetVersion : BaseCreatedObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember, Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Guid Uid { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public DateTime EffectiveDate { get; set; }
 
         [DataMember]
+        public Guid AssetUid { get; set; }
+
+        [DataMember]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "You have provided an invalid Name.")]
+        [MaxLength(250, ErrorMessage = "Name cannot exceed 250 characters.")]
+        public string Name { get; set; }
+
+        [DataMember]
+        public string Description { get; set; }
+
+        [DataMember]
+        public float? Threshold { get; set; }
+
+        [DataMember]
         public decimal Weight { get; set; }
+
+        [DataMember]
+        public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
+
+        [DataMember]
+        public bool MatchConditionsOnly { get; set; } = false;
 
         [DataMember, StringLength(1)]
         public string ConditionAndOr { get; set; }
@@ -26,12 +46,12 @@ namespace d360.core.entities.Metric
         public DateTime? EffectiveEndDate { get; set; }
 
         [DataMember]
-        public State State { get; set; }
+        public State State { get; set; } = State.Active;
 
-        [DataMember, ForeignKey("Uid")]
+        [IgnoreDataMember, ForeignKey("Uid")]
         public virtual MetricAsset Asset { get; set; }
 
-        [DataMember, ForeignKey("Uid, EffectiveDate")]
+        [DataMember, ForeignKey("AssetVersionUid")]
         public virtual ICollection<MetricAssetVersionCondition> Conditions { get; set; }
     }
 }

@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
 	<!-- Core Objects -->
+	<include file="scripts/DatabaseSettings.xml"/>
 	<include file="scripts/Schemas.xml"/>
 	<include file="scripts/Sequences.xml"/>
 	<include file="scripts/FullTextCatalog.xml"/>
@@ -47,9 +48,9 @@
 	<include file="scripts/Function.utility.GetHash.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValue.xml"/>
 	<include file="scripts/Function.utility.GetObjectDisplayValueWrapper.xml"/>
-  
+	<include file="scripts/Function.utility.JS_Hashcode.xml"/>
 
-	<!-- Tables (object-based naming) -->
+  <!-- Tables (object-based naming) -->
 	<include file="scripts/Table.analytics.Action.xml"/>
 	<include file="scripts/Table.analytics.BrowserLanguage.xml"/>
 	<include file="scripts/Table.analytics.Host.xml"/>
@@ -65,6 +66,7 @@
 	<include file="scripts/Table.dbo.Asset.xml"/>
 	<include file="scripts/Table.dbo.AssetCrossReference.xml"/>
 	<include file="scripts/Table.dbo.AssetDataProfile.xml"/>
+	<include file="scripts/Table.dbo.AssetProcessDiagram.xml"/>
 	<include file="scripts/Table.dbo.AssetDisplayValue.xml"/>
 	<include file="scripts/Table.dbo.AssetResult.xml"/>
 	<include file="scripts/Table.dbo.AttributeTypeCategory.xml"/>
@@ -124,6 +126,7 @@
 	<include file="scripts/Table.dbo.OrganizationInvitation.xml"/>
 	<include file="scripts/Table.dbo.OrganizationRegistration.xml"/>
 	<include file="scripts/Table.dbo.OrganizationResource.xml"/>
+	<include file="scripts/Table.dbo.Color.xml"/>
 	<include file="scripts/Table.dbo.Contract.xml"/>
 	<include file="scripts/Table.dbo.ContractAcceptance.xml"/>
 	<include file="scripts/Table.dbo.Report.xml"/>
@@ -200,6 +203,8 @@
 	<include file="scripts/Table.metrics.Asset.xml"/>
 	<include file="scripts/Table.metrics.AssetVersion.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionCondition.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionConditionItem.xml"/>
+	<include file="scripts/Table.metrics.AssetVersionConditionItemValue.xml"/>
 	<include file="scripts/Table.metrics.AssetVersionParameter.xml"/>
 	<include file="scripts/Table.metrics.RuleParameter.xml"/>
 	<include file="scripts/Table.metrics.Rule.xml"/>
@@ -239,11 +244,13 @@
 	<include file="scripts/Table.api.ExecutionDeleteAssetResult.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedAssetType.xml"/>
-	<include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedGroup.xml"/>
+  <include file="scripts/Table.api.ExecutionDeletedPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationship.xml"/>
 	<include file="scripts/Table.api.ExecutionDeletedRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionField.xml"/>
-	<include file="scripts/Table.api.ExecutionMetric.xml"/>
+  <include file="scripts/Table.api.ExecutionGroup.xml"/>
+  <include file="scripts/Table.api.ExecutionMetric.xml"/>
 	<include file="scripts/Table.api.ExecutionMetricMeasure.xml"/>
 	<include file="scripts/Table.api.ExecutionPredicate.xml"/>
 	<include file="scripts/Table.api.ExecutionRelationship.xml"/>
@@ -251,6 +258,8 @@
 	<include file="scripts/Table.api.ExecutionRelationshipType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityType.xml"/>
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
+	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
 	
 
   
@@ -318,7 +327,6 @@
 	<include file="scripts/View.reporting.Integration_ExecutionErrors.xml"/>
 	<include file="scripts/View.reporting.Integration_Mappings.xml"/>
 	<include file="scripts/View.reporting.Issue_All.xml"/>
-	<include file="scripts/View.reporting.Metric_All.xml"/>
 	<include file="scripts/View.reporting.Model_All.xml"/>
 	<include file="scripts/View.reporting.Model_Fields.xml"/>
 	<include file="scripts/View.reporting.Policy_All.xml"/>
@@ -339,6 +347,10 @@
 	<include file="scripts/View.reporting.Workflows.xml"/>
 	<include file="scripts/View.reporting.WorkflowSteps.xml"/>
 
+	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
+	<include file="scripts/Migration.Metrics.xml"/>
+	<include file="scripts/View.reporting.Metric_All.xml"/> 		<!--temporary location. would normally be above in reporting views section.-->
+	
 	<!-- Functions (object-based naming) -->
 	<include file="scripts/Function.api.ShouldAllowNewBatchCall.xml"/>
 	<include file="scripts/Function.dbo.ArtifactNgSiteNavigation.xml"/>
@@ -354,6 +366,7 @@
 	<include file="scripts/Function.dbo.GetArtifactChildByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactDisplayValue.xml"/>
 	<include file="scripts/Function.dbo.GetArtifactKeyHashByIdWithParent.xml"/>
+	<include file="scripts/Function.dbo.GetAssetColorJsonById.xml"/>	
 	<include file="scripts/Function.dbo.GetAssetFieldHash.xml"/>
 	<include file="scripts/Function.dbo.GetAssetHasChildrenByAssetID.xml"/>
 	<include file="scripts/Function.dbo.GetAssetKeyHash.xml"/>
@@ -374,7 +387,6 @@
 	<include file="scripts/Function.dbo.UserAssetPermissions.xml"/>
 	<include file="scripts/Function.graph.CheckCircularRelationshipCollision.xml"/>
 	<include file="scripts/Function.graph.Hop_GenerateSalt.xml"/>
-	<include file="scripts/Function.metrics.CompareConditionValueToFieldValue.xml"/>
 	<include file="scripts/Function.utility.FieldDetails.xml"/>
 	<include file="scripts/Function.utility.GenerateFormattedMultipleValue.xml"/>
 	<include file="scripts/Function.utility.GetAssetBusinessKey.xml"/>
@@ -411,7 +423,7 @@
 	<include file="scripts/Procedure.dbo.GetCommentDetailByID.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByFollower.xml"/>
 	<include file="scripts/Procedure.dbo.GetCommentDetailsByType.xml"/>
-  <include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
+	<include file="scripts/Procedure.dbo.GetComplexLookupByAsset.xml"/>
 	<include file="scripts/Procedure.dbo.GetDynamicAssets.xml"/>
 	<include file="scripts/Procedure.dbo.GetLineage.xml"/>
 	<include file="scripts/Procedure.dbo.GetObjectStatistics.xml"/>
@@ -460,7 +472,7 @@
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
-  <!-- Data Changes -->
+	<!-- Data Changes -->
 	<include file="scripts/Data.Initial.xml"/>
 	<include file="scripts/Data.Corrections.xml"/>
 </databaseChangeLog>

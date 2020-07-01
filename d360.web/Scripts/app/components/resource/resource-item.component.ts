@@ -112,6 +112,7 @@ export class ResourceItemComponent extends BaseComponent implements OnInit, OnDe
                         false, false, false,
                         false, false
                     );
+                    this.clearSidebar();
                     this.secondaryNavService.showHeader(true);
                     this.secondaryNavService.setCurrentArea(this.resource.FirstName + " " + this.resource.LastName, 'fa-cog', 'Profile');
                    

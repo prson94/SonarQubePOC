@@ -5,6 +5,7 @@ import { AssetTypeClass } from './asset.model';
 export class TooltipFieldValue {
     Name: string;
     Value: string;
+    Type: string;
 }
 
 export class TooltipFieldLevelPath {

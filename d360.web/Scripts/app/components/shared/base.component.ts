@@ -16,7 +16,7 @@ import { HeaderBreadcrumbService } from '../../services/header-breadcrumb.servic
 import { AssetTypeClass } from '../../models/asset.model';
 import { Breadcrumb } from '../../models/breadcrumb.model';
 import { SiteUrlHelpers } from '../../static/site-url-helpers';
-import { ScoreType } from '../../models/metrics.model';
+import { ScoreType, ScoreTypeAllocation, ScoreTypeInfo } from '../../models/metrics.model';
 
 declare var CompanySettings;
 
@@ -56,9 +56,9 @@ export class BaseComponent {
     actionsSidebar: SecondaryNavItem;
     ruleResultSidebar: SecondaryNavItem;
 
+    governanceRolesSidebar: SecondaryNavItem;
+    connectorLabels: SecondaryNavItem;
 
-    scoringDataQualitySidebar: SecondaryNavItem;
-    scoringGovernanceSidebar: SecondaryNavItem;
     // tabs
 
     lineageShowUsageOnly = false;
@@ -197,37 +197,25 @@ export class BaseComponent {
             this.breadcrumbsService.buildFromStorage();
     }
 
-    setScoringSecondaryNavTabs(assetTypeUid: string, hasGovernance: boolean, hasDataQuality: boolean, currentType: ScoreType) {
+    setScoringSecondaryNavTabs(assetTypeUid: string, selectedAllocationUid: string, allocations: ScoreTypeAllocation[]) {
         var baseUrl = `${SiteUrlHelpers.SITE_URL_ADMIN_ROOT}/${SiteUrlHelpers.SITE_URL_ADMIN_SCORING}/${assetTypeUid}/`;
 
         if (this.secondaryNavService) {
             this.clearSidebar();
 
-            if (hasGovernance) {
-                this.scoringGovernanceSidebar = new SecondaryNavItem(
-                    'Governance Score',
-                    'Governance Score',
-                    ['fa-drivers-license-o'],
-                    `/${baseUrl}Governance`, null, 10
+            let priority = 10;
+
+            allocations.forEach(allocation => {
+                const navItem = new SecondaryNavItem(
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
+                    ScoreTypeInfo.get(allocation.scoreType.toString()),
+                    [allocation.icon],
+                    `/${baseUrl}${allocation.uid}`, null, priority
                 );
-                this.secondaryNavService.showItem(this.scoringGovernanceSidebar);
-            }
-
-            if (hasDataQuality) {
-                this.scoringDataQualitySidebar = new SecondaryNavItem(
-                    'Data Quality Score',
-                    'Data Quality Score',
-                    ['fa-drivers-license-o'],
-                    `/${baseUrl}DataQuality`, null, 20
-                );
-                this.secondaryNavService.showItem(this.scoringDataQualitySidebar);
-            }
-
-            if (currentType.toString() == 'Governance')
-                this.scoringGovernanceSidebar.active = true;
-
-            if (currentType.toString() == 'DataQuality')
-                this.scoringDataQualitySidebar.active = true;
+                navItem.active = (selectedAllocationUid === allocation.uid);
+                this.secondaryNavService.showItem(navItem);
+                priority += 10;
+            });
         }
     }
 
@@ -242,7 +230,8 @@ export class BaseComponent {
         hasMonitor?: boolean,
         hasField?: boolean,
         hasChild?: boolean,
-        hasRuleResult?:boolean
+        hasRuleResult?: boolean,
+        hasGovernanceRoleSet?: boolean
     ) {
         if (this.secondaryNavService && this.objectType) {
             this.clearSidebar();
@@ -272,7 +261,7 @@ export class BaseComponent {
                     let isVisualizationDisabled = this.objectType.toLowerCase() == 'fusionattribute';
                     if (!isVisualizationDisabled) {
                         this.lineageSidebar = new SecondaryNavItem(
-                            'Visualization',
+                            'Diagrams',
                             'lineage',
                             ['fa-random'],
                             `/sidebar/visualization/browser${this.uidContextUrl()}`, null, 15
@@ -280,6 +269,7 @@ export class BaseComponent {
 
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Lineage`);
                         this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Impact`);
+                        this.lineageSidebar.subTabsUrl.push(`/sidebar/visualization/browser${this.uidContextUrl()}/Process`);
 
                         this.secondaryNavService.showItem(this.lineageSidebar);
                     }
@@ -379,13 +369,13 @@ export class BaseComponent {
 
                 this.secondaryNavService.showItem(this.childSidebar);
             }
-            if (hasRuleResult) {                
+            if (hasRuleResult) {
                 this.ruleResultSidebar = new SecondaryNavItem(
                     'Rule Results',
                     'Rule Results',
                     ['fa-sitemap'],
                     `/sidebar/ruleResults/${this.objectID}/${this.uid}`
-                    ,null,1);
+                    , null, 1);
                 this.secondaryNavService.showItem(this.ruleResultSidebar);
             }
 
@@ -411,6 +401,23 @@ export class BaseComponent {
                     `/sidebar/actions/${this.objectType}/${this.objectID}`, null, 27
                 );
                 this.secondaryNavService.showItem(this.actionsSidebar);
+            }
+
+            if (this.objectType == 'TaskType') {
+                this.governanceRolesSidebar = new SecondaryNavItem(
+                    'Governance Roles', 'GovernanceRoles', null,
+                    '/sidebar/governanceRoles', null, 3);
+                if (!hasGovernanceRoleSet) {
+                    this.governanceRolesSidebar.warningMessage = 'GovRoleWarning';
+                }
+                this.secondaryNavService.showItem(this.governanceRolesSidebar);
+
+                this.connectorLabels = new SecondaryNavItem(
+                    'Connector Labels', 'ConnectorLabels', null,
+                    '/sidebar/connectorLabels', null, 4);
+                this.secondaryNavService.showItem(this.connectorLabels);
+
+
             }
 
             this.sidebarSubscription = this.secondaryNavService.rightSidebarClicked$.subscribe(
@@ -663,25 +670,6 @@ export class BaseComponent {
         return FormHelpers.getLocaleDateString();
     }
 
-    public filterTreeTable(originalArray: TreeNode[], search: string, tree: any) {
-        var arrDeepCopy = originalArray.map(x => Object.assign({}, x));
-        if (search.length == 0) {
-            tree.value = arrDeepCopy;
-            return;
-        }
-        else {
-            let temp: TreeNode[] = [];
-            arrDeepCopy.forEach(n => {
-                if (this.doesNodeContainsValue(n, search)) {
-                    temp.push(n);
-                    this.expandTreeNode(n);
-                }
-            });
-
-            tree.value = temp;
-        }
-    }
-
     expandTreeNode(node: TreeNode) {
         node.expanded = true;
         if (node.children) {
@@ -797,7 +785,7 @@ export class BaseComponent {
             this.uid = r.Uid;
             this.objectType = r.Object;
             this.objectID = r.ObjectID;
-            
+
             var _key = JSON.stringify({ AssetId: r.AssetId, AssetTypeIdb: r.AssetTypeId, Uid: r.Uid, Object: r.Object, ObjectId: r.ObjectID });
             this.secondaryNavService.setLoadedKey(_key);
 
@@ -814,7 +802,7 @@ export class BaseComponent {
             }
             var area = "";
 
-            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows']
+            area = ['Business Assets', 'Technical Assets', 'Artifacts', 'Lookups', 'Models', 'Policies', 'Predicates', 'Relationships', 'Rules', 'Surveys', 'Workflow Actions', 'Workflows', 'Diagram Assets']
                 .indexOf(areaName) !== -1 ? 'Configuration' : "Administration";
 
             if (this.objectType == 'Tag' && this.uid && this.uid != '00000000-0000-0000-0000-000000000000') {
@@ -858,7 +846,7 @@ export class BaseComponent {
             if (r.Object == 'Tag')
                 areaIcon = 'fa-tag';
             this.secondaryNavService.setCurrentArea(areaName, areaIcon, mainTabTitle);
-            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule');
+            this.setCommonSecondaryNavTabs(r.Items.HasAudit, r.Items.HasOwnership, r.Items.HasDashboard, r.Items.HasLineage, r.Items.HasImpact, r.Items.HasRelationship, r.Items.HasFollowers, r.Items.HasWorkflow, r.Items.HasField, r.Items.HasChild, this.objectType == 'Rule', r.Items.HasGovernanceRoleUidSet);
             var isType = this.IsType(r.Object);
             this.secondaryNavService.setCurrentObject(new SecondaryNavCurrentObject(r.ObjectType, r.ObjectTypeId, this.objectType, this.objectID, isType, r.Items.HasWorkflow, this.uid));
             this.secondaryNavService.showHeader(true);
@@ -914,6 +902,7 @@ export class BaseComponent {
         components.push(this.childSidebar);
         components.push(this.fieldNav);
         components.push(this.ruleResultSidebar);
+        components.push(this.governanceRolesSidebar);
 
         components.forEach(cmp => {
             if (cmp && cmp.url == currentComponentUrl) {
@@ -1112,7 +1101,7 @@ export class BaseComponent {
 
                     });
 
-                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue,null,
+                    this.breadcrumbsService.showBreadcrumb(new Breadcrumb(data.DisplayValue, null,
                         true,
                         'Rule',
                         data.ObjectId));

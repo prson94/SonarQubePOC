@@ -95,7 +95,7 @@ select  at.Name,
         at.id as Id								
 from    Asset a
         inner join AssetType at on a.assettypeid = at.id and at.Object = 'ArtifactType'                       
-group by at.name,at.objectid order by at.name";
+group by at.name,at.id order by at.name";
 
         public static string ObjectNymTypes = @"
                                 select 
@@ -1301,10 +1301,11 @@ where 	(SI.Subject = @source and SI.SubjectID = @sourceID)
 			            'Shopping Cart'
 		            else
 			            ''
-		            end + ' :: ' + [name] as label, 
+		            end + ' :: ' + coalesce(P.[Path], T.[Name]) as label, 
 		            assetCount.[count]
 	            from 
 		            AssetType T
+					cross apply dbo.GetAssetTypeTextPathById(T.ID, ' / ') P
 		            cross apply 
 		            (
 				            select count(*) as [count] from Asset A

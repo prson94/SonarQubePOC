@@ -51,19 +51,26 @@ export enum AssetTypeClass {
     Fusion = 3,
     FusionAttribute = 4,
     FusionQuery = 4,
-    AttributeGroup = 5,
     Policy = 6,
     Rule = 7,
     TechnicalAsset = 8,
     Reference = 9,
     Organization = 10,
-    ReferenceItemType = 14
+    ReferenceItemType = 14,
+    DiagramAsset = 15
+}
+
+export enum FlowObjectType {
+    Event = 1,
+    Activity = 2,
+    Gateway = 3
 }
 
 export class AssetType {
     Uid: string;
     Name: string;
     Class: AssetTypeClass;
+    FlowObjectType: FlowObjectType;
     Description: string;
     AutoDisplayDescription: boolean;
     DisplayFormat: string;
@@ -98,6 +105,7 @@ export class AssetTypeApiModel {
     CanOwnFusion: boolean;
     Hierarchical: boolean;
     HierarchyMaximumDepth: number;
+    FlowObjectType: FlowObjectType;
 }
 
 export class IconStyle {

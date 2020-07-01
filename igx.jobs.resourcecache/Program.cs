@@ -3,7 +3,6 @@ using d360.core.entities;
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using System;
 using System.Data;
 using System.Data.SqlClient;
@@ -50,14 +49,14 @@ namespace igx.jobs.resourcecache
 
                 using (var cnn = new SqlConnection(constants.COMMUNITY_DATABASE_CONNECTION))
                 {
-                    cnn.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    cnn.Open();
 
                     foreach (var c in companies)
                     {
                         try
                         {
                             var companyConnection = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password);
-                            companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            companyConnection.Open();
 
                             #region Get updated resources
 

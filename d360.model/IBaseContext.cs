@@ -39,6 +39,7 @@ namespace d360.model
         T GetById<T>(int id, params Expression<Func<T, object>>[] includes) where T : BaseIntObject;
         T GetById<T>(long id) where T : BaseLongObject;
         T GetById<T>(long id, params Expression<Func<T, object>>[] includes) where T : BaseLongObject;
+        T GetByUid<T>(Guid uid, params Expression<Func<T, object>>[] includes) where T : BaseUidObject;
         IQueryable<T> GetWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject;
         IEnumerable<object[]> Read(DbDataReader reader);
         DbDataReader Read(string sql);

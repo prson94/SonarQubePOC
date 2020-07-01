@@ -130,7 +130,7 @@
     <value>Rule</value>
   </data>
   <data name="AssetTypeClass_Task" xml:space="preserve">
-    <value>Task</value>
+    <value>Diagram</value>
   </data>
   <data name="AssetTypeClass_Technical" xml:space="preserve">
     <value>Technical Asset</value>

@@ -224,11 +224,12 @@ left join AssetType OT2 on O.ID is null and OT2.Object = I.Object and OT2.Object
                             var fieldType = fieldTypes.FirstOrDefault(i => i.Name.ToLower() == qp.Key.ToLower());
                             if (fieldType != null)
                             {
-                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + $@" case 
- when FT{fieldType.ID}.AllowAllValue = 1 and F{fieldType.ID}.Value = '0' then cast(FT{fieldType.ID}.AllowAllLabel as nvarchar(max))
- when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
- when FT{fieldType.ID}.DefaultFormattedValue is not null then cast(FT{fieldType.ID}.DefaultFormattedValue as nvarchar(max))
-end = @f{fieldType.ID}Value";
+                                whereClause += (string.IsNullOrEmpty(whereClause) ? " where" : " and") + 
+                                $@" case {(fieldType.AllowAllValue == true ? $"when F{fieldType.ID}.Value = '0' then @F{fieldType.ID}_AllValue " : "")}
+                                    when F{fieldType.ID}.FormattedValue is not null then F{fieldType.ID}.FormattedValue
+                                    {(!string.IsNullOrEmpty(fieldType.DefaultFormattedValue) ? $"else @defaultValueF{fieldType.ID} " : "")}
+                                    end = @f{fieldType.ID}Value ";
+
                                 dbArgs.Add($"@f{fieldType.ID}Value", qp.Value);
                                 filteringByFields = true;
                             }
@@ -815,6 +816,81 @@ from	IntersectType I
                 @"select distinct  f.Name   as Name,f.FriendlyName as FriendlyName from fieldtype f  
 				inner join IntersectType i on i.uid = @uid
 				 where f.[object] = 'IntersectType' and f.objectid = i.ID ", new { uid = intersectUid });
+        }
+
+        public async Task<RelationshipUidResult> GetRelationshipsUids(int intersectTypeID, long pageSize, long pageNum, bool includeTotal)
+        {
+            int? total = null;
+
+            if (includeTotal)
+            {
+                var cntsql = @"select
+	                        count(1)
+                        from
+	                        [intersect] i	                        
+                        where 
+	                        i.IntersectTypeID = @intersectTypeID";
+
+                total = await companyContext.QueryFirstOrDefaultAsync<int>(cntsql, new { intersectTypeID });
+            }
+
+            var sql = @"
+                        begin                         
+                         -- create temp table
+                         drop table if exists #TempIntersectInfo
+                         create table #TempIntersectInfo
+                        (
+                            IntersectUid UniqueIdentifier not null, 
+                            SubjectUid UniqueIdentifier null,
+	                        ObjectUid UniqueIdentifier null,
+	                        [Object] varchar(20) not null,
+	                        [ObjectID] int not null,
+	                        [Subject] varchar(20) not null,
+	                        [SubjectID] int not null
+                        )
+
+                        create nonclustered index temp_intersectInfo_idx on #TempIntersectInfo ([Object],[ObjectID],[Subject],[SubjectID])
+
+                         -- add intersect info into temp table
+
+                         insert into #TempIntersectInfo
+	                        (IntersectUid, [Object],[ObjectID], [Subject], [SubjectID])
+                           select 
+	                        I.[UID],
+	                        I.[Object],
+	                        I.[ObjectID],
+	                        I.[Subject],
+	                        I.[SubjectID]
+                           from [intersect] I 
+                           where I.IntersectTypeID = @intersectTypeID
+                            Order by I.ID OFFSET @offset ROWS 
+                                FETCH NEXT @rows ROWS ONLY
+
+
+	                        UPDATE
+		                        #TempIntersectInfo
+	                        SET
+		                        #TempIntersectInfo.SubjectUID =  a.[uid]
+	                        FROM 
+		                        asset a
+		                        INNER JOIN #TempIntersectInfo t ON a.[object] = t.[subject] and a.[objectid] = t.[subjectid];
+
+	                        UPDATE
+		                        #TempIntersectInfo
+	                        SET
+		                        #TempIntersectInfo.ObjectUID =  a.[uid]
+	                        FROM 
+		                        asset a
+		                        INNER JOIN #TempIntersectInfo t ON a.[object] = t.[object] and a.[objectid] = t.[objectid];
+
+	                        select IntersectUid as RelationshipUid,ObjectUid,SubjectUid from #TempIntersectInfo
+
+
+                        end";
+
+            var results = await companyContext.QueryAsync<RelationshipUidResultItem>(sql, new { intersectTypeID, offset = ((pageNum - 1) * (pageSize)), rows = pageSize } );
+
+            return new RelationshipUidResult { Total = total, Results = results };
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using d360.core;
 using d360.core.entities;
+using d360.core.entities.Membership;
 using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.enums.Workflow;
@@ -8,9 +9,7 @@ using d360.core.queue;
 using d360.core.resources;
 using Dapper;
 using Microsoft.ApplicationInsights;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -238,6 +237,33 @@ set		Success = 0,
 where	ExecutionID = @executionID
         and AssetID is null
 		and Uid is not null;",
+            new { executionID }, commandTimeout: timeout);
+        }
+
+        private void LogNullIsRequiredFields(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+            drop table if exists #tempreqfield;
+            
+            select A.executionid,a.itemnumber,STRING_AGG(FT.NAME,',') WITHIN GROUP (ORDER BY ft.columnorder) stringfield,count(1) cnt
+            into #tempreqfield
+            from api.ExecutionAsset A
+            inner join dbo.FieldType FT on FT.object = A.objecttype and FT.ObjectID = A.objecttypeid and FT.IsRequired = 1
+            left join Field EF on EF.FieldTypeID = FT.ID and EF.AssetID = A.AssetID
+            left join [api].[ExecutionField] F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber and F.FieldTypeID = FT.ID
+            where A.executionid = @executionID 
+            and (trim(EF.Value) is null or EF.Value = char(0))
+            and (trim(F.FieldValue) is null or trim(F.FieldValue) = char(0))
+            group by A.executionid,a.itemnumber;
+
+            create index idx_tempreqfield on #tempreqfield(itemnumber,executionid);
+
+            update	A
+            set		Success = 0,
+		            [Message] = coalesce([Message] + '; ', '') + f.stringfield + case when f.cnt = 1 then ' is a ' else ' are ' end + 'required field' + case when f.cnt = 1 then '' else 's' end 
+            from api.ExecutionAsset A
+            inner join #tempreqfield F on F.ExecutionID = A.ExecutionID and F.ItemNumber = A.ItemNumber
+            where A.executionid = @executionID;",
             new { executionID }, commandTimeout: timeout);
         }
 
@@ -483,9 +509,26 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, @dt);",
                     where EA.ExecutionID = @executionID and EA.IsNew <> 1 {(shouldCheckExistingFieldValues ? "and F.Value <> EF.FieldValue" : "")} and @sendWorkflowEvents = 1 and EA.ItemNumber between @beginItemNumber and @endItemNumber"
                     , new { executionID, sendWorkflowEvents, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout).ToList();
             }
-            
+
             // if we already have the asset id then insert it
             bool hasAssetID = ((tableName ?? "").ToUpper() == "API.EXECUTIONASSET");
+
+            Connection.Execute($@"
+                    DELETE Field
+                    FROM Field F
+                    	inner join {tableName} E on E.ExecutionID= @executionID
+                    	inner join api.ExecutionField EF on EF.ExecutionId = E.ExecutionId
+                    	inner join Asset A on A.uid = E.Uid
+                    WHERE E.ExecutionID = @executionID
+                     and EF.ItemNumber between @beginItemNumber and @endItemNumber
+                     and EF.Ignore is null
+                     and EF.FieldTypeID is not null
+                     and F.ObjectID = A.ObjectID
+                     and F.ObjectType = A.Object
+                     and F.FieldTypeID = EF.FieldTypeID
+                     and EF.FieldValue is null 
+                     and EF.LookupValue is null;",
+                     new { executionID, beginItemNumber, endItemNumber, resourceId = CurrentResourceID }, transaction: trans, commandTimeout: timeout);
 
             Connection.Execute($@"
 merge       Field as T
@@ -508,6 +551,7 @@ using       (
                     and A.ItemNumber between @beginItemNumber and @endItemNumber 
                     and (F.Ignore = 0 or F.Ignore is null)
                     and FT.Type != 'Relationship'
+                    and FieldValue is not null
             ) as S 
 on          ( T.FieldTypeID = S.FieldTypeID and T.ObjectType = S.Object and T.ObjectID = S.ObjectID )
 {(shouldCheckExistingFieldValues ? " when matched and T.Value <> S.Value COLLATE SQL_Latin1_General_CP1_CS_AS OR T.FormattedValue <> S.FormattedValue COLLATE SQL_Latin1_General_CP1_CS_AS then update set T.Value = S.Value,T.FormattedValue = S.FormattedValue, T.UpdatedBy = @resourceId, T.UpdatedOn = getutcdate() " : " ")}
@@ -891,6 +935,35 @@ where T.ExecutionId = @executionid;
                         ", new { executionID }, commandTimeout: timeout);
         }
 
+        private void ResolveColorValues(Guid executionID, int timeout = 3600)
+        {
+            Connection.Execute(@"
+
+                        update  F
+                        set     F.LookupValue = C.Id
+                        from    api.ExecutionField F
+                                left join Color C on C.Name = F.FieldValue
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) <> '#'
+
+                        update  F
+                        set     F.LookupValue = F.FieldValue
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and SUBSTRING(F.FieldValue,1,1) = '#'
+
+                        update  F
+                        set     F.LookupValue = null
+                        from    api.ExecutionField F
+                        where   F.ExecutionID = @executionID and F.FieldName = 'Color' and coalesce(F.FieldValue, '') = ''
+                        
+                        update  T 
+                        set     T.Success = 0,
+                                T.Message = coalesce(T.Message, '') + 'Color value is not a valid Govern color; '
+                        from    api.ExecutionAsset T
+                                inner join api.ExecutionField S on S.ExecutionID = T.ExecutionID and T.ExecutionID = @executionID and S.ItemNumber = T.ItemNumber and S.FieldName = 'Color' 
+                        where   S.LookupValue is null and coalesce(S.FieldValue, '') <> ''
+                        ", new { executionID }, commandTimeout: timeout);
+        }
+
         private void SendWorkflowEvents(string objectType, int objectTypeID, IEnumerable<IWorkflowEnabledAsset> results, ChangeType? changeTypeOverride = null, List<AssetFieldTypeUpdate> fieldUpdates = null)
         {
             try
@@ -1040,9 +1113,21 @@ where T.ExecutionId = @executionid;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
                 if (fieldType == null)
                 {
-                    if (ot == "FusionAttributeType" && (fieldName == "FusionID" || fieldName == "Name" || fieldName == "SourceID"))
+                    if (fieldName.ToLower() == "color")
                     {
-                        success = true;
+                        if (fieldValue.StartsWith("#") && fieldValue.Length != 7)
+                        {
+                            errorMessages.Add($"The Color field must be a seven character RGB code or the name of a Govern color");
+                            success = false;
+                        }
+                    }
+                    else if (ot == "FusionAttributeType")
+                    {
+                        if (fieldName != "FusionID" && fieldName != "Name" && fieldName != "SourceID")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else if (ot == "ReferenceItemType")
                     {
@@ -1055,13 +1140,6 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
-                            case "color":
-                                if ((fieldValue ?? "").Length > 7)
-                                {
-                                    errorMessages.Add($"The Color field must be a seven character RGB code");
-                                    success = false;
-                                }
-                                break;
                             case "icon":
                                 if ((fieldValue ?? "").Length > 50 || !fieldValue.StartsWith("fa-"))
                                 {
@@ -1069,11 +1147,21 @@ where T.ExecutionId = @executionid;
                                     success = false;
                                 }
                                 break;
+                            case "referenceitemtypeid":
+                                break;
+                            default:
+                                success = false;
+                                errorMessages.Add($"{fieldName} is not a valid field");
+                                break;
                         }
                     }
-                    else if (ot == "RuleType" && (fieldName == "Threshold" || fieldName == "Status" || fieldName == "Dimension"))
+                    else if (ot == "RuleType")
                     {
-                        success = true;
+                        if (fieldName != "Threshold" && fieldName != "Status" && fieldName != "Dimension")
+                        {
+                            success = false;
+                            errorMessages.Add($"{fieldName} is not a valid field");
+                        }
                     }
                     else
                     {
@@ -1144,7 +1232,7 @@ where T.ExecutionId = @executionid;
                                     }
                                     break;
                                 case "Link":
-                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue))
+                                    if (fieldValue.Count(c => c == '|') != 1 && !string.IsNullOrEmpty(fieldValue) && !fieldValue.Equals('|'))
                                     {
                                         success = false;
                                         errorMessages.Add($"{fieldName} must be a valid link, using the format name|url");
@@ -1252,7 +1340,10 @@ where T.ExecutionId = @executionid;
                     fieldRow["ExecutionID"] = executionID;
                     fieldRow["ItemNumber"] = itemNumber;
                     fieldRow["FieldName"] = fieldName;
-                    fieldRow["FieldValue"] = fieldValue;
+                    if (k.Value == null)
+                        fieldRow["FieldValue"] = DBNull.Value;
+                    else
+                        fieldRow["FieldValue"] = fieldValue;
                     if (fieldTypeId.HasValue)
                         fieldRow["FieldTypeID"] = fieldTypeId.Value;
 
@@ -1461,7 +1552,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -1658,16 +1749,6 @@ from	IntersectType I
                                         else
                                         {
                                             #region Cascade Behaviour
-
-                                            //AssetDataProfile
-                                            Connection.Execute($@"             
-			update  S 
-            set     S.Success = 0 ,
-			        [Message] ='You have not enabled Cascade, yet there are profiling data for this asset.'
-			from    api.ExecutionDeletedAsset S 
-			        inner join AssetDataProfile ADP on ADP.AssetID = S.AssetID
-			where	S.[ExecutionId] = @ExecutionID and S.[AssetId] is not null and S.[Cascade] = 0",
-            new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
 
                                             // Parent/Child Relationships
                                             if (predicateType.HasValue)
@@ -2217,7 +2298,7 @@ from	IntersectType I
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -2296,6 +2377,19 @@ from	IntersectType I
     where	T.ExecutionID = @ExecutionID
             and T.Object not in ('PolicyType', 'TaxonomyType')
             and T.[Cascade] = 0
+            and A.ChildCount > 0;
+
+    update	T
+    set		T.Success = 0,
+		    T.[Message] = coalesce([Message] + '; ', '') + 'There are ' + cast(A.ChildCount as nvarchar) + ' Organizations defined for this OrganizationType.'
+    from    api.ExecutionDeletedAssetType T
+            cross apply (
+                select  count(1) as ChildCount
+                from	Organization O
+		        where O.OrganizationTypeID = T.ObjectID
+            ) A 
+    where	T.ExecutionID = @ExecutionID
+            and T.Object = 'OrganizationType'
             and A.ChildCount > 0;
 
     --Check if asset Results exist 
@@ -2436,7 +2530,7 @@ from	IntersectType I
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -2573,7 +2667,7 @@ where   ExecutionID = @ExecutionID
                     try
                     {
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
                         var bulkCopy = new SqlBulkCopy(Connection)
@@ -2677,7 +2771,7 @@ where   ExecutionID = @ExecutionID
                 try
                 {
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     var bulkCopy = new SqlBulkCopy(Connection)
@@ -3043,7 +3137,7 @@ where   ExecutionID = @ExecutionID
                         }
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -3106,6 +3200,11 @@ where   ExecutionID = @ExecutionID
                         sw.Restart();
                         #endregion
 
+
+                        ResolveColorValues(execution.ExecutionID, timeout);
+                        this.AITrackTrace(client, execution, METHOD_NAME, "ResolveColorValues", sw.ElapsedMilliseconds, isLog);
+                        sw.Restart();
+
                         if (hasLookupFieldTypes)
                         {
                             if (lookupFieldsPassedByValue)
@@ -3143,6 +3242,7 @@ where   ExecutionID = @ExecutionID
                         {
                             LogAssetErrors(execution.ExecutionID, timeout);             // If you cannot find asset based on Uids provided.
                             LoadMissingKeyFields(execution.ExecutionID, at, timeout);   // Get missing key fields if this is an update.
+                            LogNullIsRequiredFields(execution.ExecutionID, timeout);    // Get IsRequired Field having Null value if this is an update.
                         }
 
                         this.AITrackTrace(client, execution, METHOD_NAME, "Log Errors", sw.ElapsedMilliseconds, isLog);
@@ -3254,16 +3354,18 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
                                                         merge   [Asset] as T
                                                         using   (
-                                                                select  ItemNumber
-                                                                from    api.ExecutionAsset
-                                                                where   ExecutionID = @ExecutionID
-                                                                        and Success is null
-                                                                        and ItemNumber between @beginItemNumber and @endItemNumber
+                                                                select  A.ItemNumber,
+                                                                        CR.LookupValue as Color
+                                                                from    api.ExecutionAsset A
+                                                                        left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+                                                                where   A.ExecutionID = @ExecutionID
+                                                                        and A.Success is null
+                                                                        and A.ItemNumber between @beginItemNumber and @endItemNumber
                                                                 ) S
                                                         on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
                                                         when    not matched then
-                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D)
+                                                        insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+                                                        values  (@AssetTypeID,1,'Taxonomy', @R, @D, @R, @D, S.Color)
                                                         output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
                                                         update  T
@@ -3283,9 +3385,12 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
                                                         update	T
                                                         set		T.UpdatedBy = @R,
-                                                        T.UpdatedOn = @D
+                                                                T.UpdatedOn = @D,
+                                                                T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
                                                         from	[Asset] T
-                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql};
+                                                        inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = 'Taxonomy' and {executionAssetWhereSql}
+                                                        left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+
 
                                                         update	api.ExecutionAsset
                                                         set		IsNew = 0
@@ -3385,10 +3490,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                             case AssetTypeClass.Policy:
                                             case AssetTypeClass.BusinessAsset:
                                             case AssetTypeClass.TechnicalAsset:
+                                            case AssetTypeClass.Diagram:
                                                 #region
                                                 string @object = "Artifact";
                                                 if (at.Class == AssetTypeClass.Policy)
                                                     @object = "Policy";
+                                                if (at.Class == AssetTypeClass.Diagram)
+                                                    @object = "Task";
 
                                                 sw.Restart();
                                                 if (isInsert)
@@ -3399,16 +3507,18 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
 
     merge   [Asset] as T
     using   (
-            select  ItemNumber
-            from    api.ExecutionAsset
-            where   ExecutionID = @ExecutionID
-                    and Success is null
-                    and ItemNumber between @beginItemNumber and @endItemNumber
+            select  A.ItemNumber,
+                    CR.LookupValue as Color
+            from    api.ExecutionAsset A
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
+            where   A.ExecutionID = @ExecutionID
+                    and A.Success is null
+                    and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.AssetTypeID = @AssetTypeID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D)
+    insert  (AssetTypeID,State,[Object], CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@AssetTypeID,1,@Object, @R, @D, @R, @D, S.Color)
     output  inserted.ObjectID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3429,9 +3539,12 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
     update	T
     set		T.UpdatedBy = @R,
-		    T.UpdatedOn = @D
+		    T.UpdatedOn = @D,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end
     from	[Asset] T
-		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql};
+		    inner join api.ExecutionAsset S on S.ObjectID = T.ObjectID and T.[Object] = @Object and {executionAssetWhereSql}
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
+
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3453,17 +3566,19 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     merge   [Rule] as T
     using   (
             select  A.ItemNumber,
-                    T.FieldValue as Threshold
+                    T.FieldValue as Threshold,
+                    CR.LookupValue as Color
             from    api.ExecutionAsset A
                     inner join api.ExecutionField T on T.ExecutionID = A.ExecutionID and T.ItemNumber = A.ItemNumber and T.FieldName = 'Threshold'
+                    left join api.ExecutionField CR on CR.ExecutionID = A.ExecutionID and CR.ItemNumber = A.ItemNumber and CR.FieldName = 'Color' 
             where   A.ExecutionID = @ExecutionID
                     and A.Success is null
                     and A.ItemNumber between @beginItemNumber and @endItemNumber
             ) S
     on      (T.RuleTypeID = @ObjectID and T.SourceID = @NonExistentUid)
     when    not matched then
-    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn)
-    values  (@ObjectID, S.Threshold, @R, @D, @R, @D)
+    insert  (RuleTypeID, Threshold, CreatedBy, CreatedOn, UpdatedBy, UpdatedOn, Color)
+    values  (@ObjectID, S.Threshold, @R, @D, @R, @D, S.Color)
     output  inserted.ID, S.ItemNumber, $action into #ObjectMergeTableResult;
 
     update  T
@@ -3487,11 +3602,13 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
     update	T
     set		
             T.Threshold = case when FD.FieldValue is not null then FD.FieldValue else T.Threshold end,
+            T.Color = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
             T.UpdatedBy = @R,
 		    T.UpdatedOn = @D
     from	[Rule] T
 		    inner join api.ExecutionAsset S on S.ObjectID = T.ID and {executionAssetWhereSql}
-            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold';
+            left join api.ExecutionField FD on FD.ExecutionID = S.ExecutionID and FD.ItemNumber = S.ItemNumber and FD.FieldName = 'Threshold'
+            left join api.ExecutionField CR on CR.ExecutionID = S.ExecutionID and CR.ItemNumber = S.ItemNumber and CR.FieldName = 'Color' 
 
     update	api.ExecutionAsset
     set		IsNew = 0
@@ -3514,7 +3631,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                         using   (
                                                                 select  A.ItemNumber,
                                                                         C.FieldValue as [Code],
-                                                                        CR.FieldValue as [Color],
+                                                                        CR.LookupValue as [Color],
                                                                         I.FieldValue as [Icon]
                                                                 from    api.ExecutionAsset A
                                                                         inner join api.ExecutionField C on C.ExecutionID = A.ExecutionID and C.ItemNumber = A.ItemNumber and C.FieldName = 'Code' 
@@ -3546,7 +3663,7 @@ insert into graph.AssetNode (ID, [Uid], AssetTypeID, AssetTypeUid, [State], Upda
                                                     Connection.Execute($@"
                                                         update	T
                                                         set		T.[Code] = C.FieldValue,
-                                                                T.[Color] = CR.FieldValue,
+                                                                T.[Color] = case when CR.ExecutionID is not null then CR.LookupValue else T.Color end,
                                                                 T.[Icon] = I.FieldValue,
                                                                 T.UpdatedBy = @R,
                                                                 T.UpdatedOn = @D
@@ -3902,7 +4019,7 @@ select [uid] from #ParentChildRelationships",
                     }
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
                     sw.Restart();
@@ -4434,7 +4551,7 @@ end",
                 #endregion
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
 
@@ -5126,7 +5243,7 @@ where   ER.ExecutionID = @ExecutionID
 
 
                 if (Database.Connection.State != ConnectionState.Open)
-                    Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                    Connection.Open();
 
                 #region Bulk Copy
                 var bulkCopy = new SqlBulkCopy(Connection)
@@ -5251,7 +5368,7 @@ where   ER.ExecutionID = @ExecutionID
                         #endregion
 
                         if (Database.Connection.State != ConnectionState.Open)
-                            Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                            Connection.Open();
 
                         #region Bulk Copy
 
@@ -5487,7 +5604,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -5803,7 +5920,7 @@ where   ER.ExecutionID = @ExecutionID
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6350,7 +6467,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -6882,7 +6999,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -7296,10 +7413,6 @@ insert into #Keys
                             {
                                 rowError += ";Definition cannot be empty/null.";
                             }
-                            if (model.Definition.Then == null || model.Definition.Then.Count == 0 || model.Definition.Then.Any(x => x.Conditions == null || x.Conditions.Count == 0))
-                            {
-                                rowError += ";Then conditions in definition cannot be empty.";
-                            }
 
                             if (model.ApplyToType == true && (model.Definition.When != null && model.Definition.When.Count > 0))
                             {
@@ -7316,7 +7429,7 @@ insert into #Keys
                                 {
                                     if (cond.Assignee == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Asignee values set.";
+                                        rowError += ";Then condition should have either Field or Assignee values set.";
                                     }
 
                                     if (cond.Assignee != null && cond.Field != null)
@@ -7355,7 +7468,7 @@ insert into #Keys
                                 {
                                     if (cond.Relation == null && cond.Field == null)
                                     {
-                                        rowError += ";Then condition should have either Field and Relation values set.";
+                                        rowError += ";Then condition should have either Field or Relation value set.";
                                     }
                                     if (cond.Relation != null && cond.Field != null)
                                     {
@@ -7401,7 +7514,7 @@ insert into #Keys
                     #endregion
 
                     if (Database.Connection.State != ConnectionState.Open)
-                        Connection.OpenWithRetry(RetryPolicy.DefaultProgressive);
+                        Connection.Open();
 
                     #region Bulk Copy
 
@@ -7506,7 +7619,7 @@ cross apply OPENJSON (Definition, N'$.Then')
     AssigneeTypeUid uniqueidentifier N'$.AssigneeTypeUid',
     Conditions nvarchar(max) N'$.Conditions' as Json
   ) AS ThenData
-cross apply OPENJSON(ThenData.Conditions)
+outer apply OPENJSON(ThenData.Conditions)
    with(
 		IntersectTypeUid uniqueidentifier N'$.Relation.IntersectTypeUid',
 		AssetUid uniqueidentifier N'$.Relation.AssetUid',
@@ -7587,8 +7700,27 @@ from #parsedData
 where AssigneeUid is not null
 
 update #parsedData
+set Value = LOWER(pd.value)
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+where pd.fieldtypeid is not null and ft.type = 'Boolean'
+
+update #parsedData
+set Value = flv.Value
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+	left join FieldLookupValue FLV on FLV.FieldTypeID = ft.ID  and TRIM(pd.value) = FLV.Text
+where pd.fieldtypeid is not null and ft.type = 'Lookup'
+
+update #parsedData
 set ErrorMessage = 'Invalid Field name.'
 where isnull(fieldtypeid,0) = 0 and fieldtypename <> '' and AssigneeUid is null
+
+update #parsedData
+set ErrorMessage = 'Invalid Lookup value.'
+from #parsedData pd
+	inner join fieldtype ft on pd.fieldtypeid = ft.id
+where pd.fieldtypeid is not null and ft.type = 'Lookup' and Value is null
 
 update #parsedData
 set ErrorMessage = 'Invalid AssetUid for condition.'
@@ -7670,18 +7802,18 @@ ConditionsThen.json as [Then],
 ConditionsWhen.json as [When]
  from #parsedData pd
 cross apply (
-	select top 1 Object,ObjectId, Conditions.json as Conditions
+	select top 1 Object,ObjectID, Conditions.json as Conditions
 	from #parsedData
-		cross apply(select
+		outer apply(select
 		 CheckType,
-		 isnull(FieldTypeID,0) as FieldTypeId,
+		 isnull(FieldTypeID,0) as FieldTypeID,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,
 		 TargetObject,
 		 TargetObjectId
 		  from #parsedData
-		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
+		 where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object  and ((FieldTypeName is not null and FieldTypeID <> 0 or AssigneeUid is not null))
 		 for json path, include_null_values
 		)Conditions(json)
 	where ItemNumber =pd.ItemNumber and ExecutionId = pd.ExecutionId and Object= pd.Object
@@ -7691,7 +7823,7 @@ cross apply (
 cross apply (
 select
 		 CheckType,
-		 isnull(FieldTypeID,0) as FieldTypeId,
+		 isnull(FieldTypeID,0) as FieldTypeID,
 		 FieldTypeName,
 		 Value,
 		 isnull(IntersectTypeID,0) as IntersectTypeID,
@@ -7849,6 +7981,399 @@ WHEN MATCHED
 
                 }
             }
+
+            return results;
+        }
+
+        public List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<GroupResponseResult> results = new List<GroupResponseResult>();
+            CurrentExecutionLocationModel currentLocation = null;
+
+            Add(execution);
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            try
+            {
+                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "api.ExecutionGroup");
+
+                var table = new DataTable();
+
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("GroupUid", typeof(Guid));
+                table.Columns.Add("Name", typeof(string));
+                table.Columns.Add("Description", typeof(string));
+                table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
+                table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
+
+                #region Generate data sets
+
+                foreach (var item in groups)
+                {
+                    var row = table.NewRow();
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = itemNumber;
+                    if (item.Uid != null)
+                        row["GroupUid"] = item.Uid;
+
+                    if(item.Name == null)
+                        row["Name"] = "";
+                    else
+                        row["Name"] = item.Name;
+
+                    row["Description"] = item.Description;
+                    row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
+                    if (item.SecondaryOwnerUid != null)
+                        row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
+
+                    table.Rows.Add(row);
+
+                    itemNumber++;
+                }
+
+                #endregion
+
+                if (Database.Connection.State != ConnectionState.Open)
+                    Connection.Open();
+
+                #region Bulk Copy
+
+                var bulkCopy = new SqlBulkCopy(Connection)
+                {
+                    BatchSize = table.Rows.Count,
+                    DestinationTableName = "[api].[ExecutionGroup]",
+                    BulkCopyTimeout = 3600
+                };
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
+                bulkCopy.ColumnMappings.Add("Name", "Name");
+                bulkCopy.ColumnMappings.Add("Description", "Description");
+                bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
+                bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
+
+                bulkCopy.WriteToServer(table);
+
+                bulkCopy = null;
+
+                #endregion
+
+                var checkSQL = $@"update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'Name field cannot be empty;'
+                    where	ExecutionID = @ExecutionID and (Name is null or TRIM(Name) = '');
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'Already a group called this name;'
+	                from [api].[ExecutionGroup] EG 
+	                inner join [Group] G on G.[Name] = EG.[Name]
+                    left join [Asset] A on A.uid = EG.[GroupUid] and A.Object = 'Group'
+                    where	ExecutionID = @ExecutionID and A.ObjectID != G.ID and G.Name is not null;
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'Uid provided is not a group uid;'
+	                from [api].[ExecutionGroup] EG 
+	                left join [Asset] A on A.[uid] = EG.[GroupUid] and A.Object = 'Group'
+                    where	ExecutionID = @ExecutionID and A.uid is null;
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'Primary Owner Uid provided is not a resource uid;'
+                    from [api].[ExecutionGroup] EG 
+                    left join [Asset] A on A.[uid] = EG.[PrimaryOwnerUid] and A.Object = 'Resource'
+                    where	ExecutionID = @ExecutionID and A.uid is null;
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'No Primary Owner Uid provided;'
+                    from [api].[ExecutionGroup] EG 
+                    where	ExecutionID = @ExecutionID and EG.PrimaryOwnerUid = @emptyUid;
+
+                    update	[api].[ExecutionGroup]
+                    set		Success = 0,
+		                    [Message] = coalesce([Message], '') + 'Secondary Owner Uid provided is not a resource uid;'
+	                from [api].[ExecutionGroup] EG 
+	                left join [Asset] A on A.[uid] = EG.[SecondaryOwnerUid] and A.Object = 'Resource'
+                    where	ExecutionID = @ExecutionID and A.uid is null and EG.SecondaryOwnerUid is not null;";
+
+                Connection.Execute(checkSQL, new { execution.ExecutionID, emptyUid = Guid.Empty }, commandTimeout: timeout);
+
+                generalChecksCompleted = true;
+            }
+            catch (Exception generalEx)
+            {
+                generalChecksCompleted = false;
+                var msg = generalEx.GetFullExceptionData(false);
+                execution.ErrorMessage = msg;
+                execution.Processed = 0;
+                execution.Error = groups.Count();
+
+                results = new List<GroupResponseResult>();
+                results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+            }
+
+            if (generalChecksCompleted)
+            {
+                int loopSize = 250;
+                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                {
+                    bool runCompleted = false;
+                    int retryCount = 0;
+
+                    while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                    {
+                        var querySuffix = $"P.Success is null and P.ExecutionID = @ExecutionID and P.ItemNumber between @beginItemNumber and @endItemNumber";
+                        using (var trans = Connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                var insertSQL = $@"
+                                            					drop table if exists #mergeResultTable
+                create table #mergeResultTable (GroupID int, ExecutionItemUid uniqueidentifier) 
+                                            
+                merge into [Group] G
+                using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
+	                    from api.ExecutionGroup EG
+						left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
+						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
+						left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
+		                where EG.ExecutionID = @ExecutionID
+                                and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                                and EG.GroupUid is not null
+                                and EG.Success is null
+	                    ) S
+                on (G.ID = GroupID)
+				when matched then
+					update  
+						set G.Name = S.Name,
+						G.Description = S.Description,
+						G.PrimaryOwnerResourceID = PrimaryID,
+						G.SecondaryOwnerResourceID = SecondaryID
+                    when not matched then
+	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID)
+	                    values (S.Name,S.Description, S.PrimaryID, S.SecondaryID)
+	                output S.GroupID, @ExecutionID into #mergeResultTable;
+
+                    update EG
+                    set EG.GroupUid = A.uid
+                    from api.ExecutionGroup EG
+                    inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionID
+		            inner join Asset A on A.ObjectID = Res.GroupID and A.Object ='Group'
+                    where EG.ExecutionID = @ExecutionID and EG.Success is null";
+
+                                Connection.Execute(insertSQL,
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                Connection.Execute(
+                                                    $"update [api].[ExecutionGroup] set Success = 1, Message = 'Success' where	Success is null and ExecutionID = @ExecutionID;",
+                                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                trans.Commit();
+                                runCompleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                try
+                                {
+                                    if (trans != null)
+                                    {
+                                        trans.Rollback();
+                                    }
+                                }
+                                catch
+                                {
+                                }
+
+                                retryCount++;
+
+                                if (retryCount > API_V2_RETRY_LIMIT)
+                                {
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionGroup", ex.GetFullExceptionData(false), timeout);
+                                }
+                            }
+                        }
+                    }
+                    results.AddRange(
+                            Query<GroupResponseResult>(
+                                $"select [ItemNumber],[GroupUid] as uid,[ExecutionID] as ExecutionItemUid,[Message],[Success] from api.ExecutionGroup where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                new { execution.ExecutionID, beginItemNumber, endItemNumber }
+                            )
+                        );
+
+                    beginItemNumber += loopSize;
+                    endItemNumber += loopSize;
+                }
+                Connection.Close();
+            }
+
+            return results;
+        }
+
+        public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
+        {
+            DynamicParameters dbArgs = new DynamicParameters();
+            bool generalChecksCompleted = false;
+            int itemNumber = 1;
+            List<GroupResponseResult> results = new List<GroupResponseResult>();
+            CurrentExecutionLocationModel currentLocation = null;
+
+            SetApiExecutionProcessingStartTime(execution.ExecutionID);
+
+            try
+            {
+
+                #region Build data tables.
+
+                currentLocation = GetCurrentExecutionLocation(execution.ExecutionID, "[api].[ExecutionDeletedGroup]");
+
+                var table = new DataTable();
+
+                table.Columns.Add("ExecutionID", typeof(Guid));
+                table.Columns.Add("ItemNumber", typeof(int));
+                table.Columns.Add("GroupUid", typeof(Guid));
+
+                #region Generate data sets
+
+                foreach (var item in groups)
+                {
+                    var row = table.NewRow();
+                    row["ExecutionID"] = execution.ExecutionID;
+                    row["ItemNumber"] = itemNumber;
+                    row["GroupUid"] = item.Uid;
+
+                    table.Rows.Add(row);
+
+                    itemNumber++;
+                }
+
+                #endregion
+
+                if (Database.Connection.State != ConnectionState.Open)
+                    Connection.Open();
+
+                #region Bulk Copy
+
+                var bulkCopy = new SqlBulkCopy(Connection)
+                {
+                    BatchSize = table.Rows.Count,
+                    DestinationTableName = "[api].[ExecutionDeletedGroup]",
+                    BulkCopyTimeout = 3600
+                };
+
+                bulkCopy.ColumnMappings.Add("ExecutionID", "ExecutionID");
+                bulkCopy.ColumnMappings.Add("ItemNumber", "ItemNumber");
+                bulkCopy.ColumnMappings.Add("GroupUid", "GroupUid");
+
+                bulkCopy.WriteToServer(table);
+
+                bulkCopy = null;
+
+                #endregion
+
+                var checkSQL = $@"update	[api].[ExecutionDeletedGroup]
+                        set		Success = 0,
+	                            [Message] = coalesce([Message] + '; ', '') + 'Not a valid group'
+                        from [api].[ExecutionDeletedGroup] EP
+                        left join Asset A on A.UID = EP.GroupUid and A.Object = 'Group'
+                        where	ExecutionID = @ExecutionID and A.uid is null";
+
+                Connection.Execute(checkSQL, new { execution.ExecutionID }, commandTimeout: timeout);
+
+                #endregion
+
+                generalChecksCompleted = true;
+            }
+            catch (Exception generalEx)
+            {
+                generalChecksCompleted = false;
+                var msg = generalEx.GetFullExceptionData(false);
+                execution.ErrorMessage = msg;
+                execution.Processed = 0;
+                execution.Error = groups.Count();
+
+                results = new List<GroupResponseResult>();
+                results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
+            }
+
+            
+
+            itemNumber = 1;
+            if (generalChecksCompleted)
+            {
+                int loopSize = 250;
+                int numberOfLoops = (int)Math.Ceiling((decimal)(execution.Total - currentLocation.HighestItemNumberProcessed) / loopSize);
+                int beginItemNumber = currentLocation.HighestItemNumberProcessed + 1;
+                int endItemNumber = currentLocation.HighestItemNumberProcessed + loopSize;
+
+                for (int currentLoop = 1; currentLoop <= numberOfLoops; currentLoop++)
+                {
+                    bool runCompleted = false;
+                    int retryCount = 0;
+
+                    while (!runCompleted && retryCount <= API_V2_RETRY_LIMIT)
+                    {
+                        using (var trans = Connection.BeginTransaction())
+                        {
+                            try
+                            {
+                                var deleteSQL = $@"DELETE G
+	                                        FROM [Group] G
+		                                    inner join api.ExecutionDeletedGroup EG on EG.Success is null and EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber
+		                                    inner join Asset A on A .uid = EG.GroupUid
+		                                    where A.ObjectID = G.ID";
+
+                                Connection.Execute(deleteSQL,
+                                        new { execution.ExecutionID, beginItemNumber, endItemNumber }, transaction: trans, commandTimeout: timeout);
+
+                                Connection.Execute(
+                                                    $"update EG set EG.Success = 1, EG.Message = 'Deleted Successfully' from api.ExecutionDeletedGroup EG where EG.Success is null and EG.ExecutionID = @ExecutionID;",
+                                                    new { execution.ExecutionID }, transaction: trans, commandTimeout: timeout);
+
+                                trans.Commit();
+                                runCompleted = true;
+                            }
+                            catch (Exception ex)
+                            {
+                                try
+                                {
+                                    if (trans != null)
+                                    {
+                                        trans.Rollback();
+                                    }
+                                }
+                                catch
+                                {
+                                }
+
+                                retryCount++;
+
+                                if (retryCount > API_V2_RETRY_LIMIT)
+                                {
+                                    LogLoopExecutionError(execution.ExecutionID, beginItemNumber, endItemNumber, "api.ExecutionDeletedGroup", ex.GetFullExceptionData(false), timeout);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            results.AddRange(
+                            Query<GroupResponseResult>(
+                                $"select [ItemNumber],[GroupUid] as uid,[ExecutionID] as ExecutionItemUid,[Message],[Success] from api.ExecutionDeletedGroup where ExecutionID = @ExecutionID",
+                                new { execution.ExecutionID }
+                            )
+                        );
 
             return results;
         }

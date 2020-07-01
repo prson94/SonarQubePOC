@@ -1,5 +1,5 @@
 ﻿import { Injectable } from '@angular/core';
-import { TreeNode } from 'primeng/components/common/api';
+import { TreeNode } from 'primeng/api';
 import {
     AssetTypeClass
 } from '../models/asset.model';
@@ -13,13 +13,15 @@ import { JsonResult } from '../models/jsonresult.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
+import { Router } from '@angular/router';
 
 @Injectable()
 export class ArtifactTypeService extends BaseObservableService {
 
     constructor(
         private http: HttpClient,
-        messagesService: MessagesObservableService
+        messagesService: MessagesObservableService,
+        private router: Router
     ) {
         super(messagesService);
     }
@@ -38,13 +40,13 @@ export class ArtifactTypeService extends BaseObservableService {
             ;
     }
 
-    getArtifactTypeDetails(id: number): Observable<ArtifactType> {
+    getArtifactTypeDetails(id: number, redirectToHome: boolean = false): Observable<ArtifactType> {
         return this
             .http
             .get(`api/artifacts/${id}`)
             .pipe(
                 map(response => <ArtifactType>response),
-                catchError(err => this.handleError(err))
+                catchError(err => this.handleError(err, false, redirectToHome ? this.router : null))
             )
             ;
     }
@@ -63,7 +65,21 @@ export class ArtifactTypeService extends BaseObservableService {
         }
         return null;
     }
-
+    findArtifactTypeById(
+        tree: TreeNode[],
+        id: number
+    ): TreeNode {
+        for (var i = 0; i < tree.length; i++) {
+            var n;
+            if (tree[i].data.ID == id)
+                return tree[i];
+            if (tree[i].children && tree[i].children.length > 0) {
+                n = this.findArtifactTypeById(tree[i].children, id);
+            }
+            if (n) return n;
+        }
+        return null;
+    }
     private formTree(data): TreeNode[] {
         var tree = new Array<TreeNode>();
 
@@ -91,6 +107,10 @@ export class ArtifactTypeService extends BaseObservableService {
 
     public deleteArtifactType(id: number): Observable<JsonResult> {
         return this.deleteDynamicWithResult(this.http, 'artifacttype', id);
+    }
+
+    public deleteDiagramType(id: number): Observable<JsonResult> {
+        return this.deleteDynamicWithResult(this.http, 'diagram', id);
     }
 
     public getFilterListItems(

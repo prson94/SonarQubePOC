@@ -600,13 +600,21 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         AssetTypeClass.FusionAttribute, 
                         AssetTypeClass.FusionQuery, 
                         AssetTypeClass.User, 
-                        AssetTypeClass.ReferenceItemType, 
-                        AssetTypeClass.AttributeGroup,
+                        AssetTypeClass.ReferenceItemType
                     };
 
                     if (disallowedClasses.Contains(assetType.Class))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Score type on an asset of type {assetType.Class.ToString()} for field {f.Name}.");
+                    }
+
+                    var types = Company.Query<int>(
+                   "select distinct ScoreType from metrics.Allocation where AssetTypeUid = @uid and [State] = 1"
+                   , new { assetType.uid }).ToList();
+
+                    if (!types.Contains((int)f.Type.Score.ScoreType))
+                    {
+                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"Score type {f.Type.Score.ScoreType.ToString()} cannot be allocated to this asset type for field {f.Name}.");
                     }
 
                     newFieldType.Type = DataType.Score.ToString();
@@ -1392,6 +1400,7 @@ from	IntersectType I
                     currentFieldType.ColumnOrder = newFieldType.ColumnOrder;
                     currentFieldType.ColumnWidth = newFieldType.ColumnWidth;
                     currentFieldType.DefaultValue = newFieldType.DefaultValue;
+                    currentFieldType.DefaultFormattedValue = newFieldType.DefaultFormattedValue;
                     currentFieldType.DisplayDescription = newFieldType.DisplayDescription;
                     if (currentFieldType.FieldTypeLookup != null)
                     {

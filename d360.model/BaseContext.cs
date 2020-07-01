@@ -46,6 +46,8 @@ namespace d360.model
 
         T GetById<T>(int id, params Expression<Func<T, object>>[] includes) where T : BaseIntObject;
 
+        T GetByUid<T>(Guid uid, params Expression<Func<T, object>>[] includes) where T : BaseUidObject;
+
         IQueryable<T> GetWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject;
 
         IQueryable<T> Filter<T>(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includes) where T : BaseObject;
@@ -192,6 +194,11 @@ namespace d360.model
         public T GetById<T>(long id, params Expression<Func<T, object>>[] includes) where T : BaseLongObject
         {
             return getWithIncludes<T>(includes).Where(i => i.ID == id).SingleOrDefault();
+        }
+
+        public T GetByUid<T>(Guid uid, params Expression<Func<T, object>>[] includes) where T : BaseUidObject
+        {
+            return Set<T>().SingleOrDefault(i => i.Uid == uid) as T;
         }
 
         internal IQueryable<T> getWithIncludes<T>(params Expression<Func<T, object>>[] includes) where T : BaseObject

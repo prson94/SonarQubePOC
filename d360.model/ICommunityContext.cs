@@ -13,8 +13,7 @@ namespace d360.model
     {
         DbSet<Client> Clients { get; set; }
         DbSet<Company> Companies { get; set; }
-        DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }
-        DbSet<CompanyFeature> CompanyFeatures { get; set; }
+        DbSet<CompanyDomainSetting> CompanyDomainSettings { get; set; }        
         DbSet<CompanyRebuildJobStatus> CompanyRebuildJobStatuses { get; set; }
         DbSet<CompanyHelpResource> CompanyHelpResources { get; set; }
         DbSet<CompanyResource> CompanyResources { get; set; }
@@ -49,6 +48,7 @@ namespace d360.model
         Task<WorkHttpStatus> UpdateRebuildJobStatus(CompanyRebuildJobToken jobToken, CompanyRebuildJobStatusState state);
         string HashPassword(string value);
         IEnumerable<T> Query<T>(string sql, object param = null);
+        Task<T> QueryFirstOrDefaultAsync<T>(string sql, object param = null);
         int SaveChanges();
         new bool Update<T>(T item) where T : BaseObject;
         Resource ValidateResource(string username, string password);

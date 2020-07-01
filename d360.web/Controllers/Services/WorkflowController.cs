@@ -1378,6 +1378,8 @@ order by wi.StartedOn desc";
             if (!allowHtml)
                 excludedTypes.Add("Html");
 
+            excludedTypes.Remove(DataType.JsonElement.ToString());
+
             fields = fields.Where(f => !excludedTypes.Contains(f.Type)).ToList();
 
             if (type == "IssueType" && !string.IsNullOrEmpty(additionalFields) && additionalFields.Contains("|"))
@@ -2070,7 +2072,7 @@ order by wi.StartedOn desc";
                 {
                     var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = "[FIELD" + x.ID + "]";
+                    var t = (x.Type==DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                     desc = desc.Replace(f, t);
                 });
                 fields.form["@description"] = desc;
@@ -2089,7 +2091,7 @@ order by wi.StartedOn desc";
                 {
                     var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                     var f = "[" + fieldType + " :: " + x.Name + "]";
-                    var t = "[FIELD" + x.ID + "]";
+                    var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                     desc = desc.Replace(t, f);
                 });
                 fields.form["@description"] = desc;
@@ -2110,7 +2112,7 @@ order by wi.StartedOn desc";
                     {
                         var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                         var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = "[FIELD" + x.ID + "]";
+                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                         msg = msg.Replace(f, t);
                     });
                     settings.MessageBodyTemplate = msg;
@@ -2122,7 +2124,7 @@ order by wi.StartedOn desc";
                     {
                         var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                         var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = "[FIELD" + x.ID + "]";
+                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                         msg = msg.Replace(f, t);
                     });
                     settings.MessageSubjectTemplate = msg;
@@ -2144,7 +2146,7 @@ order by wi.StartedOn desc";
                     {
                         var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                         var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = "[FIELD" + x.ID + "]";
+                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                         msg = msg.Replace(t, f);
                     });
                     settings.MessageBodyTemplate = msg;
@@ -2157,7 +2159,7 @@ order by wi.StartedOn desc";
                     {
                         var fieldType = x.Object == "IssueType" ? "Action Field" : "Asset Field";
                         var f = "[" + fieldType + " :: " + x.Name + "]";
-                        var t = "[FIELD" + x.ID + "]";
+                        var t = (x.Type == DataType.JsonElement.ToString() ? "[JSON" : "[FIELD") + x.ID + "]";
                         msg = msg.Replace(t, f);
                     });
                     settings.MessageSubjectTemplate = msg;

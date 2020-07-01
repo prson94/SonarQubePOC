@@ -2,7 +2,6 @@
 using d360.utils.company;
 using Dapper;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Practices.EnterpriseLibrary.TransientFaultHandling;
 using Microsoft.ServiceBus.Messaging;
 using System;
 using System.Collections.Generic;
@@ -33,8 +32,8 @@ namespace igx.jobs.assetgraphprocessor
             {
                 try
                 {
-                    companyConnection.OpenWithRetry(RetryPolicy.DefaultProgressive);
-                    
+                    companyConnection.Open();
+
                     bool updatePath = false;
 
                     if (info.ChangedFieldNames?.Any() ?? false)

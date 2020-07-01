@@ -1,62 +1,106 @@
 ﻿using d360.core.enums;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace d360.core.entities.Metric
 {
+    [DataContract]
     public class MetricAssetViewModel
     {
-        #region From metric asset itself
-
+        [DataMember]
         public Guid Uid { get; set; }
 
+        [DataMember]
         public Guid? ParentUid { get; set; }
 
-        public Guid AssetTypeUid { get; set; }
+        [DataMember]
+        public Guid AllocationUid { get; set; }
 
+        [DataMember]
+        public Guid? AssetTypeUid { get; set; }
+
+        [DataMember]
+        public ScoreType? ScoreType { get; set; }
+
+        [DataMember]
         public bool IsGroup { get; set; }
 
+        [DataMember]
         [Required(AllowEmptyStrings = false, ErrorMessage = "You have provided an invalid name.")]
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string Name { get; set; }
 
+        [DataMember]
         public string Description { get; set; }
 
-        public ScoreType? ScoreType { get; set; }
-
-        #endregion
-
-        #region From metric asset version
-
+        [DataMember]
         public DateTime EffectiveDate { get; set; }
 
+        [DataMember]
         public decimal Weight { get; set; }
 
-        [StringLength(1)]
-        public string ConditionAndOr { get; set; }
+        [DataMember]
+        public float? Threshold { get; set; }
 
-        #endregion
+        [DataMember]
+        public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
 
-        #region From metric asset version condition
+        [DataMember]
+        public bool MatchConditionsOnly { get; set; } = false;
 
-        public List<MetricAssetVersionConditionViewModel> Conditions { get; set; } = new List<MetricAssetVersionConditionViewModel>();
-
-        #endregion
+        [DataMember]
+        public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
     }
 
+    [DataContract]
     public class MetricAssetVersionConditionViewModel
     {
-        public int? FieldTypeID { get; set; }
-        public string FieldName { get; set; }
+        [DataMember]
+        public Guid Uid { get; set; }
 
-        [StringLength(10)]
+        [DataMember]
+        public int Position { get; set; } = 1;
+
+        [DataMember]
+        public float? Threshold { get; set; }
+
+        [DataMember]
+        public decimal? Weight { get; set; }
+
+        [DataMember]
+        public MetricMatchType MatchType { get; set; }
+
+        [DataMember]
+        public List<MetricAssetVersionConditionItemViewModel> ConditionItems { get; set; }
+    }
+
+    [DataContract]
+    public class MetricAssetVersionConditionItemViewModel
+    {
+        [DataMember]
+        public Guid Uid { get; set; }
+        
+        [DataMember]
+        public MetricConditionType ConditionType { get; set; }
+        
+        [DataMember]
+        public int? ConditionFieldTypeID{ get; set; }
+        
+        [DataMember]
+        public int? ConditionIntersectTypeID { get; set; }
+
+        [DataMember, StringLength(10)]
         public string Operator { get; set; }
 
-        public string Values { get; set; }
+        [DataMember]
+        public List<MetricAssetVersionConditionItemValue> Values { get; set; }
+
     }
 
     public class MetricFieldTypeViewModel

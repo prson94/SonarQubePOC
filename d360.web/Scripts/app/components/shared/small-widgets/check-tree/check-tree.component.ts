@@ -4,10 +4,10 @@
 } from '@angular/core';
 import { Optional } from '@angular/core';
 import { CheckTreeNode } from './checktreenode';
-import { PrimeTemplate } from 'primeng/components/common/shared';
-import { TreeDragDropService } from 'primeng/components/common/treedragdropservice';
-import { BlockableUI } from 'primeng/components/common/blockableui';
-import { ObjectUtils } from 'primeng/components/utils/objectutils';
+import { PrimeTemplate } from 'primeng/api';
+import { TreeDragDropService } from 'primeng/api';
+import { BlockableUI } from 'primeng/api/blockableui';
+import { ObjectUtils } from 'primeng/utils';
 
 @Component({
     selector: 'd3s-check-tree',

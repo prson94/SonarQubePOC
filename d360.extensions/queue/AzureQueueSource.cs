@@ -285,6 +285,11 @@ namespace d360.extensions.queue
                 
                 var bm = new BrokeredMessage(e);
 
+                if (e is IServiceBusMessageType)
+                {
+                    bm.Properties.Add("MessageType", (e as IServiceBusMessageType).MessageType);
+                }
+
                 bm.Properties["topic"] = topicName;
 
                 if(scheduledEnqueueTime.HasValue)
