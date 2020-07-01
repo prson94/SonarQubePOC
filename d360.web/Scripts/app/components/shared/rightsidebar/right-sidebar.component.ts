@@ -296,7 +296,15 @@ export class RightSidebarComponent implements OnChanges, OnDestroy, AfterViewIni
                     if (!draftValues) {
                         draftValues = "DRAFT";
                     }
-                    this.showCertify = this.status && (draftValues.toUpperCase().split(',').indexOf(this.status.toUpperCase()) > -1) && hasWorkFlow;
+                    let statusHeading = "";
+                    try {
+                        let colorObj = JSON.parse(this.status);
+                        if (colorObj.length && colorObj.length > 0)
+                            statusHeading = colorObj[0].name;
+                    } catch (e) {
+                        statusHeading = status;
+                    }
+                    this.showCertify = statusHeading && (draftValues.toUpperCase().split(',').indexOf(statusHeading.toUpperCase()) > -1) && hasWorkFlow;
 
                     this.showStatus = true;
                     this.ref.markForCheck();
