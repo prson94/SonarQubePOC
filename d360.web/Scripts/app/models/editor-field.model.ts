@@ -9,6 +9,7 @@ export class EditorDropDownItem {
     Text: any;
     Value: any;
     Disabled: boolean;
+    Color: string;
 }
 
 export class EditorField {
