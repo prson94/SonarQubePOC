@@ -63,8 +63,11 @@ namespace d360.web.Controllers.V2
         public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes()
         {
             var governanceRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
-            var results = await Company.QueryAsync<dynamic>($@"select a.ObjectID, a.Object, c.Value from assettype at
+            var results = await Company.QueryAsync<dynamic>($@"
+                select a.ObjectID, a.Object, c.Value, ad.DisplayValue 
+                    from assettype at
 	                inner join asset a on a.AssetTypeID = at.ID
+					inner join assetdetail ad on ad.uid = a.uid
 	                inner join Color c on c.ID = a.Color
                 where at.uid = @governanceRoleUid and a.Color is not null", new { governanceRoleUid });
 

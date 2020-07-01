@@ -4,6 +4,7 @@ import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { AssetTypeService } from '../../../../services/asset-type.service';
+import { EditorField } from '../../../../models/editor-field.model';
 @Component({
     selector: 'd3s-process-diagram-asset-editor',
     templateUrl: './process-diagram-asset-editor.component.html',
@@ -38,14 +39,25 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
         this.cdRef.markForCheck();
     }
 
+
+    //process dynamiceditor onSubmit() form data
+    //check for missing fields and set value to ''
     private onModelChange($event) {
-        $event.key = this.nodeData.key;
-        for (var prop in $event) {
-            if ($event[prop] == undefined) {
-                delete $event[prop];
+        var data = $event['values'];
+        data.key = this.nodeData.key;
+        for (var prop in data) {
+            if (data[prop] == undefined) {
+                delete data[prop];
             }
         }
-        this.nodeDataChange.emit($event);
+        var fields = $event['fields'] as EditorField[];
+        fields.filter(x => x.FieldTypeID).forEach(f => {
+            if (data[f.FieldName] == undefined) {
+                data[f.FieldName] = '';
+            }
+        });
+
+        this.nodeDataChange.emit(data);
     }
 
     public pad(s): string { return (s < 10) ? '0' + s : s; }
