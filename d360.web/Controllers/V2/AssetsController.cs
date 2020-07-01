@@ -1518,13 +1518,12 @@ namespace d360.web.Controllers.V2
 
                 var sql = $@"
             ; with owners as (select distinct
-
                     responsibilityTypeId,
 		            securityAssetid,
 	                '[' + ResponsibilityTypeName + '] - ' + SecurityAssetName as 'Name', 
-	                case 
-                        when SecurityAsset = 'R' or SecurityAsset = 'O' then 'Resource'
-
+                    case 
+                        when SecurityAsset = 'R' then 'Resource'
+						when SecurityAsset = 'O' then 'Organization'
                         when SecurityAsset = 'G' then 'Group'
                         else [Type]
                     end as [Type]
