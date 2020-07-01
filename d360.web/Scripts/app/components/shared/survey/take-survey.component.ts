@@ -48,9 +48,6 @@ export class TakeSurveyComponent extends BaseComponent implements OnChanges {
     }
 
     private load() {
-        if (!this.assetUid) {
-            console.error("No Asset Uid provided.")
-        }
         this.isLoading = true;
         this.submitting = false;
         this.surveyDetails = null;
