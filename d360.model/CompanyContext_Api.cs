@@ -8149,7 +8149,7 @@ WHEN MATCHED
 						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
 						left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
 		                where EG.ExecutionID = @ExecutionID
-                                and EG.ItemNumber between 1 and 4
+                                and EG.ItemNumber between @beginItemNumber and @endItemNumber
                                 and EG.Success is null
 	                    ) S
                 on (G.ID = GroupID)
@@ -8163,6 +8163,26 @@ WHEN MATCHED
 	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID)
 	                    values (S.Name,S.Description, S.PrimaryID, S.SecondaryID)
 	                output S.Name, @ExecutionID into #mergeResultTable;
+
+
+                    INSERT INTO [ResourceGroup](GroupID,[ResourceID])
+                    SELECT G.ID, G.PrimaryOwnerResourceID
+                    FROM [Group] G
+                    inner join api.ExecutionGroup EG on EG.Name = G.Name
+                    where EG.ExecutionID = @ExecutionID 
+                    and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                    and EG.Success is null
+                    and EG.GroupUid is null;
+
+	                INSERT INTO [ResourceGroup](GroupID,[ResourceID])
+                    SELECT G.ID, G.SecondaryOwnerResourceID
+                    FROM [Group] G
+                    inner join api.ExecutionGroup EG on EG.Name = G.Name
+                    where EG.ExecutionID = @ExecutionID 
+                    and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                    and EG.Success is null
+                    and EG.GroupUid is null
+					and G.SecondaryOwnerResourceID is not null;
 
                     update EG
                     set EG.GroupUid = A.uid
