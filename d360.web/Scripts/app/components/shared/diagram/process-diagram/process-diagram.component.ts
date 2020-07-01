@@ -389,6 +389,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     res.nodeDataArray.forEach(x => {
                         x.icon = FontAwesomeHelper.GetHtmlCode(x.icon);
                         x.refItemColor = this.getNodeColor(x);
+                        x.governanceDisplayValue = this.getNodeRoleName(x);
                     });
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
@@ -402,6 +403,24 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
     }
 
+    private updateNodeFromForm(formData) {
+        try {
+            var self = this;
+            this.myDiagram.model.commit(function (m) {
+                var data = m.findNodeDataForKey(formData.key);
+                for (var propertyName in formData) {
+                    if (propertyName != 'key') {
+                        m.set(data, propertyName, formData[propertyName]);
+                    }
+                }
+                m.set(data, 'refItemColor', self.getNodeColor(data));
+                m.set(data, 'governanceDisplayValue', self.getNodeRoleName(data));
+            }, 'update_model');
+        } catch (e) {
+            console.log(e);
+        }
+    }
+
     private newGuid() {
         return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0,
@@ -411,7 +430,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private getNodeColor(data: any) {
-        console.log(data);
         try {
             var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
             if (item)
@@ -421,6 +439,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             return this.defaultStrokeColor;
         }
         return this.defaultStrokeColor;
+    }
+
+    private getNodeRoleName(data: any) {
+        try {
+            var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
+            if (item)
+                return item.DisplayValue;
+        }
+        catch{
+            return '';
+        }
+        return '';
     }
 
     private onSelectionChanged(node) {
@@ -453,22 +483,5 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
-    private updateNodeFromForm(formData) {
-        try {
-            var self = this;
-            this.myDiagram.model.commit(function (m) {
-                var data = m.findNodeDataForKey(formData.key);
-                for (var propertyName in formData) {
-                    if (propertyName != 'key') {
-                        m.set(data, propertyName, formData[propertyName]);
-                    }
-                }
-                m.set(data, 'refItemColor', self.getNodeColor(data));
-
-
-            }, 'update_model');
-        } catch (e) {
-            console.log(e);
-        }
-    }
+    
 }

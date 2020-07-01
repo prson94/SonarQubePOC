@@ -16,7 +16,7 @@
                 </div>
                 <div class="controls-right">
                     <d3s-assetbrowser-panels (click)="panels_Click($event)"
-                                             [diagramType]="diagramTypeSpecifiedInPath"
+                                             [diagramType]="displayConfiguration.DiagramType"
                                              [enableAdd]="helper_LineageDiagramApplies()" [enableInformation]="!panel_InformationDisabled" [isFullScreen]="isFullScreen" [totalAlertCount]="totalAlertCount"
                                              [addSelected]="panelModel.AddVisible" [alertsSelected]="panelModel.AlertVisible" [filtersSelected]="panelModel.FiltersVisible" [informationSelected]="panelModel.InformationVisible" [settingsSelected]="panelModel.SettingsVisible"></d3s-assetbrowser-panels>
                 </div>
