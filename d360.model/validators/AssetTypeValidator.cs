@@ -307,7 +307,7 @@ namespace d360.core.validators
                 {
                     if (!Guid.TryParse(owner, out Guid ownerguid))
                         return false;
-                    if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString())))
+                    if (!CompanyContext.Assets.Any(a => a.uid == ownerguid && (a.Object == SystemObjects.Group.ToString() || a.Object == SystemObjects.Resource.ToString() || a.Object == SystemObjects.Organization.ToString())))
                         return false;
                 }
             }
