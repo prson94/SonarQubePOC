@@ -106,6 +106,22 @@ namespace d360.web.Models
         }
     }
 
+
+    public class AddGroupExample : IExamplesProvider
+    {
+        public object GetExamples()
+        {
+            return
+                new UpdateGroup
+                {
+                    Name = "Name",
+                    Description = "Description",
+                    PrimaryOwnerUid = Guid.Empty,
+                    SecondaryOwnerUid = Guid.Empty
+                };
+        }
+    }
+
     public class InsertUserToGroupExample : IExamplesProvider
     {
         public object GetExamples()

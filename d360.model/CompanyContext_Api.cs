@@ -8081,7 +8081,7 @@ WHEN MATCHED
 		                    [Message] = coalesce([Message], '') + 'Uid provided is not a group uid;'
 	                from [api].[ExecutionGroup] EG 
 	                left join [Asset] A on A.[uid] = EG.[GroupUid] and A.Object = 'Group'
-                    where	ExecutionID = @ExecutionID and A.uid is null;
+                    where	ExecutionID = @ExecutionID and A.uid is null and EG.[GroupUid] is not null;
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
@@ -8140,7 +8140,7 @@ WHEN MATCHED
                             {
                                 var insertSQL = $@"
                                             					drop table if exists #mergeResultTable
-                create table #mergeResultTable (GroupID int, ExecutionItemUid uniqueidentifier) 
+                create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
                                             
                 merge into [Group] G
                 using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
@@ -8149,8 +8149,7 @@ WHEN MATCHED
 						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
 						left join Asset SO on SO.uid = EG.SecondaryOwnerUid and SO.Object = 'Resource'
 		                where EG.ExecutionID = @ExecutionID
-                                and EG.ItemNumber between @beginItemNumber and @endItemNumber
-                                and EG.GroupUid is not null
+                                and EG.ItemNumber between 1 and 4
                                 and EG.Success is null
 	                    ) S
                 on (G.ID = GroupID)
@@ -8163,13 +8162,14 @@ WHEN MATCHED
                     when not matched then
 	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID)
 	                    values (S.Name,S.Description, S.PrimaryID, S.SecondaryID)
-	                output S.GroupID, @ExecutionID into #mergeResultTable;
+	                output S.Name, @ExecutionID into #mergeResultTable;
 
                     update EG
                     set EG.GroupUid = A.uid
                     from api.ExecutionGroup EG
                     inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionID
-		            inner join Asset A on A.ObjectID = Res.GroupID and A.Object ='Group'
+					inner join [Group] G on G.Name = Res.GroupName
+		            inner join Asset A on A.ObjectID = G.ID and A.Object ='Group'
                     where EG.ExecutionID = @ExecutionID and EG.Success is null";
 
                                 Connection.Execute(insertSQL,
