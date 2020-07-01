@@ -8184,6 +8184,42 @@ WHEN MATCHED
                     and EG.GroupUid is null
 					and G.SecondaryOwnerResourceID is not null;
 
+                    IF NOT EXISTS    
+                    (
+                    SELECT 1    
+                    FROM [ResourceGroup] RG
+	                inner join api.ExecutionGroup EG on EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null
+	                inner join [Group] G on G.Name = EG.Name     
+                    WHERE ResourceID = G.PrimaryOwnerResourceID and [GroupID] = G.ID 
+                    )    
+                    BEGIN
+                        INSERT INTO [ResourceGroup](GroupID,[ResourceID])
+                                    SELECT G.ID, G.PrimaryOwnerResourceID
+                                    FROM [Group] G
+                                    inner join api.ExecutionGroup EG on EG.Name = G.Name
+                                    where EG.ExecutionID = @ExecutionID 
+                                    and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                                    and EG.Success is null
+                    END
+
+                    IF NOT EXISTS    
+                    (
+                    SELECT 1    
+                    FROM [ResourceGroup] RG
+	                inner join api.ExecutionGroup EG on EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null
+	                inner join [Group] G on G.Name = EG.Name     
+                    WHERE ResourceID = G.SecondaryOwnerResourceID and [GroupID] = G.ID 
+                    )    
+                    BEGIN
+                        INSERT INTO [ResourceGroup](GroupID,[ResourceID])
+                                    SELECT G.ID, G.SecondaryOwnerResourceID
+                                    FROM [Group] G
+                                    inner join api.ExecutionGroup EG on EG.Name = G.Name
+                                    where EG.ExecutionID = @ExecutionID 
+                                    and EG.ItemNumber between @beginItemNumber and @endItemNumber
+                                    and EG.Success is null
+                    END
+
                     update EG
                     set EG.GroupUid = A.uid
                     from api.ExecutionGroup EG
