@@ -58,12 +58,14 @@ export class TagView extends BaseComponent implements OnInit {
 
     ngOnInit() {
         this.theDeleteCallback = this.deleteTags.bind(this);
-        try {
-            if (this.data && (typeof this.data == 'string'))
+        try {            
+            if (this.data && (typeof this.data == 'string')) {                
                 this.tags = JSON.parse(this.data);
-            else this.tags = this.data;
+                if (typeof this.tags !== 'object') throw new TypeError("not an array");                
+            }
+            else this.tags = this.data;            
         }
-        catch (err) {
+        catch (err) {            
             if (this.data && (typeof this.data == 'string')) {
                 this.tags = [];
                 this.data.split('|').forEach(t => {
