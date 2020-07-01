@@ -56,6 +56,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @Input() readonly = true;
     @Input() assetUid: string;
 
+    @Output() saveStateChanged: EventEmitter<any> = new EventEmitter<any>();
+
     @ViewChild('addLineagePanel', { static: false }) addLineagePanelRef;
     @ViewChild('alertPanel', { static: false }) alertPanelRef;
     @ViewChild('infoDetailPanel', { static: false }) infoDetailPanelRef;
@@ -190,7 +192,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.browserService.getDiagramTypes(this.originalAssetUid)
                     .subscribe(res => {
                         this.diagramTypes = res;
-                        
+
                         if (params['diagramType']) {
                             let diagramTypeParameterValue: string = params['diagramType'];
 
@@ -1210,11 +1212,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         //#region Hide Node
 
+        let processedKeys: string[] = []; // To prevent infinite looping.
         this.diagram.links.each(link => {
             let linkData: AssetBrowserTranslationLink = link.data as AssetBrowserTranslationLink;
             if (linkData.predicateIds) {
                 let g: any = this.diagram.findNodeForKey(linkData.to);
-                if (g) {
+                let alreadyChecked: boolean = (processedKeys.findIndex(k => { return k == linkData.to; }) > -1);
+                if (g && !alreadyChecked) {
+
+                    processedKeys.push(linkData.to); // Add to loop check collection. 
+
                     if (linkData.predicateIds.filter(l => {
                         return this.displayConfiguration.SelectedPredicates.findIndex(v => { return v == l; }) > -1
                     }).length > 0) {
@@ -1312,10 +1319,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         hideNode.subgraph.nodes.push(node); //add this node to the subgraph so we can unhide it later
 
         try {
-            let children = group.findSubGraphParts();
-            children.each(c => {
-                hideNode.subgraph.nodes.push(c.data);
-            });
+            if (group) {
+                if (group.data.template !== "HiddenData") {
+                    let children = group.findSubGraphParts();
+                    children.each(c => {
+                        if (c.data) {
+                            hideNode.subgraph.nodes.push(c.data);
+                        }
+                    });
+                }
+            }
         } catch (e) {
             console.log(group);
         }
@@ -1600,7 +1613,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         }
                     });
 
-                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null) 
+                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null)
                         dm.addLinkData(newLink);
                 }
             });
@@ -3322,4 +3335,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         this.isFullScreen = false;
         this.isProcessDiagramInEditMode = true;
     }
+
+    processDiagramSavedState($event) {
+        if (this.diagramTypeSpecifiedInPath == DiagramType.Process)
+            this.saveStateChanged.emit($event);
+        else this.saveStateChanged.emit(null);
+    }
+
+
 } 

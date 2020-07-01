@@ -1847,144 +1847,6 @@ order by    rnk, [Name]";
 
             return Request.CreateResponse(HttpStatusCode.OK, list);
         }
-
-        [Route("lineage/objectTypes"), HttpGet]
-        public HttpResponseMessage GetLineageObjectTypes()
-        {
-            var sql = @"
-                select 
-	                coalesce(FAT.TextPath, A.[Name]) as label,
-	                A.ID as [value],
-	                R.[object], 
-	                R.objectId 
-                from
-                (
-	                select 
-		                [Subject] as [Object], 
-		                SubjectID as ObjectID
-	                from 
-		                IntersectType T
-		                inner join [Predicate] P on T.PredicateID = P.ID and P.[Type] = 1
-	                where 
-		                T.[State] = 1
-
-	                union
-
-	                select 
-		                [Object] as [Object], 
-		                ObjectID as ObjectID
-	                from 
-		                IntersectType T
-		                inner join [Predicate] P on T.PredicateID = P.ID and P.[Type] = 1
-	                where 
-		                T.[State] = 1
-                ) R
-                inner join AssetType A on A.[Object] = R.[Object] and A.ObjectID = R.ObjectID
-				left join FusionAttributeType FAT on A.[Object] = 'FusionAttributeType' and FAT.ID = A.ObjectID
-				order by label asc";
-
-            var list = Company.Query<dynamic>(sql);
-
-            return Request.CreateResponse(HttpStatusCode.OK, list);
-        }
-
-        [HttpGet, Route("lineage/intersectTypes")]
-        public HttpResponseMessage GetLineageIntersectTypes()
-        {
-            var sql = @"
-                   select
-						T.ID as intersectTypeId,
-						T.[subject],
-						T.[subjectId],
-						ATS.ID as subjectAssetTypeId,
-						T.[object],
-						T.[objectId],
-						ATO.ID as objectAssetTypeId,
-						P.ID as predicateId,
-						P.[Name] as predicateName,
-						P.Inverse as predicateInverse
-					from 
-						IntersectType T
-					inner join [Predicate] P on P.ID = T.PredicateID
-					inner join AssetType ATS on ATS.[Object] = T.[Subject] and ATS.ObjectID = T.SubjectID
-					inner join AssetType ATO on ATO.[Object] = T.[Object] and ATO.ObjectID = T.ObjectID
-					where 
-						P.[Type] = 1 and T.[State] = 1";
-
-            var results = Company.Query<dynamic>(sql).ToList();
-
-            return Request.CreateResponse(HttpStatusCode.OK, results);
-        }
-
-        [Route("lineage/objects/{assetTypeId:int}"), HttpGet]
-        public HttpResponseMessage GetLineageObjects(int assetTypeId, int offset = 0, int rows = 100000, string query = null)
-        {
-            query = sanitizeQueryString(query);
-            if (string.IsNullOrWhiteSpace(query))
-                query = null;
-            int count = 0;
-
-            var assetType = Company.GetById<AssetType>(assetTypeId);
-            bool isFusionAttributeType = assetType?.Object == SystemObjects.FusionAttributeType.ToString();
-
-
-            #region Sql
-
-            string countSql = @"select 
-                    count(*)
-                from 
-                    asset a
-                inner join assettype t on t.id = a.assettypeid
-				{0}
-                where  
-                    t.id = @id and (@query is null or {1} like '%' + @query + '%')";
-            string sql = @"select 
-                    a.ID as assetId,
-                    {0} as [name],
-                    t.[Name] as typeName,
-					coalesce(s.IconBackColor, '#000') as backColor,
-					coalesce(s.IconForeColor, '#fff') as foreColor,
-                    a.[object],
-                    a.objectId,
-                    t.id as assetTypeId
-                from 
-                    asset a
-                inner join assettype t on t.id = a.assettypeid
-                left join AssetTypeStyle S on S.ID = T.ID
-                {1}
-                where  
-                    t.id = @id and (@query is null or {2} like '%' + @query + '%')
-					order by {3}
-					OFFSET  @offset ROWS FETCH NEXT @rows ROWS ONLY";
-
-            #endregion
-            string fieldName, join;
-
-            if (isFusionAttributeType)
-            {
-                fieldName = "fa.TextPath";
-                join = "inner join FusionAttribute fa on fa.ID = A.ObjectID";
-            }
-            else
-            {
-                fieldName = "d.TextPath";
-                join = "cross apply dbo.GetAssetTextPathById(a.id, '/') d";
-            }
-
-            countSql = string.Format(countSql, join, fieldName);
-            sql = string.Format(sql, fieldName, join, fieldName, fieldName);
-
-            if (offset == 0 || query != null)
-                count = Company.Query<int>(countSql, new { id = assetTypeId, query = new Dapper.DbString { Value = query, IsAnsi = true } }).FirstOrDefault();
-
-            var results = Company.Query<dynamic>(sql, new { id = assetTypeId, offset = offset, rows = rows, query = new Dapper.DbString { Value = query, IsAnsi = true } }).ToList();
-
-            return Request.CreateResponse(HttpStatusCode.OK, new
-            {
-                count = count,
-                results = results
-            });
-        }
         #endregion
 
         #region Complex Lookup Fields
@@ -3157,7 +3019,8 @@ order by    Name
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
-								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID in (SELECT value  FROM STRING_SPLIT(f.Value, ',')  WHERE RTRIM(value) <> '')    
+                                outer apply STRING_SPLIT(F.Value, ',') SPF
+								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";

@@ -64,7 +64,7 @@ namespace d360.model.DataAccessLayer
             Company.SaveChanges();
         }
 
-        public MetricAssetViewModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
+        public MetricAssetViewDetailModel GetMetricViewModelByUid(Guid uid, DateTime? effectiveDate)
         {
             var model = (
                         from a in Company.MetricAssets.Include("Allocation").Include("Versions.Conditions.Items.Values")
@@ -74,7 +74,7 @@ namespace d360.model.DataAccessLayer
                                 (!effectiveDate.HasValue && v.EffectiveEndDate == null) ||
                                 (effectiveDate.HasValue && v.EffectiveDate <= effectiveDate.Value && v.EffectiveEndDate >= effectiveDate.Value)
                               )
-                        select new MetricAssetViewModel
+                        select new MetricAssetViewDetailModel
                         {
                             AllocationUid = a.AllocationUid,
                             ConditionGroups = v.Conditions.Select(g => new MetricAssetVersionConditionViewModel { 
@@ -91,6 +91,18 @@ namespace d360.model.DataAccessLayer
                                 Threshold = g.Threshold, 
                                 Uid = g.Uid, 
                                 Weight = g.Weight 
+                            }).ToList(),
+                            Versions = a.Versions.Select(v => new MetricAssetVersionViewModel {
+                              ConditionAndOr = v.ConditionAndOr,
+                              Description = v.Description,
+                              EffectiveDate = v.EffectiveDate,
+                              EffectiveEndDate = v.EffectiveEndDate,
+                              MatchConditionsOnly = v.MatchConditionsOnly,
+                              Name = v.Name,
+                              Threshold = v.Threshold,
+                              Uid = v.Uid,
+                              UpdateFrequency = v.UpdateFrequency,
+                              Weight = v.Weight
                             }).ToList(),
                             AssetTypeUid = a.Allocation.AssetTypeUid,
                             MatchConditionsOnly = v.MatchConditionsOnly,
@@ -328,6 +340,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     CreatedOn = DateTime.UtcNow,
                     MatchConditionsOnly = model.MatchConditionsOnly,
                     EffectiveDate = effectiveDate,
+                    Threshold = model.Threshold,
                     Weight = model.Weight,
                     State = metricAsset.State,
                     EffectiveEndDate = null
@@ -375,6 +388,7 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                 metricAssetVersion.Name = model.Name;
                 metricAssetVersion.Description = model.Description;
                 metricAssetVersion.MatchConditionsOnly = model.MatchConditionsOnly;
+                metricAssetVersion.Threshold = model.Threshold;
                 metricAssetVersion.Weight = model.Weight;
             }
 

@@ -1,0 +1,98 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="BHoward" id="Function.dbo.JS_Hashcode-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+CREATE or ALTER FUNCTION [utility].[JS_Hashcode]
+	(@Input_String_List VARCHAR(MAX)) -- This is a CSV of any number of strings
+RETURNS BIGINT
+AS
+BEGIN
+	DECLARE @Input_Strings TABLE
+		(Input_String VARCHAR(MAX));
+
+	INSERT INTO @Input_Strings
+		(Input_String)
+	SELECT
+		*
+	FROM STRING_SPLIT(@Input_String_List, ',');
+
+	DECLARE @JS_Hashcode_Output BIGINT;
+	DECLARE @JS_Hashcode_Output_Total BIGINT = 0;
+	DECLARE @Character_Counter BIGINT;
+	DECLARE @Input_String_Length BIGINT;
+	DECLARE @Current_Character VARCHAR(1);
+	DECLARE @Current_Character_Ascii_Value SMALLINT;
+	DECLARE @Prime_Number BIGINT = 31;
+	DECLARE @Current_String VARCHAR(MAX);
+
+	DECLARE String_Cursor CURSOR FOR
+		SELECT Input_String FROM @Input_Strings;
+	OPEN String_Cursor;
+	FETCH NEXT FROM String_Cursor INTO @Current_String;
+
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		SELECT @Input_String_Length = LEN(@Current_String);
+		SELECT @Character_Counter = 1
+		SELECT @JS_Hashcode_Output = 0;
+
+		WHILE @Character_Counter <= @Input_String_Length
+		BEGIN
+			SELECT @Current_Character = SUBSTRING(@Current_String, @Character_Counter, 1);
+			SELECT @Current_Character_Ascii_Value = ASCII(@Current_Character);
+
+			SELECT @JS_Hashcode_Output = (@JS_Hashcode_Output * @Prime_Number + @Current_Character_Ascii_Value) % POWER(CAST(2 AS BIGINT), 32);
+
+			SELECT @Character_Counter = @Character_Counter + 1;
+		END
+
+		IF @JS_Hashcode_Output >= POWER(CAST(2 AS BIGINT), 31)
+		BEGIN
+			SELECT @JS_Hashcode_Output = @JS_Hashcode_Output - POWER(CAST(2 AS BIGINT), 32)
+		END
+		ELSE
+		IF @JS_Hashcode_Output <= -1 * POWER(CAST(2 AS BIGINT), 31)
+		BEGIN
+			SELECT @JS_Hashcode_Output = @JS_Hashcode_Output + POWER(CAST(2 AS BIGINT), 32)
+		END
+
+		SELECT @JS_Hashcode_Output_Total = @JS_Hashcode_Output_Total + @JS_Hashcode_Output;
+		
+		IF @JS_Hashcode_Output_Total >= POWER(CAST(2 AS BIGINT), 31)
+		BEGIN
+			SELECT @JS_Hashcode_Output_Total = @JS_Hashcode_Output_Total - POWER(CAST(2 AS BIGINT), 32)
+		END
+		ELSE
+		IF @JS_Hashcode_Output_Total <= -1 * POWER(CAST(2 AS BIGINT), 31)
+		BEGIN
+			SELECT @JS_Hashcode_Output_Total = @JS_Hashcode_Output_Total + POWER(CAST(2 AS BIGINT), 32)
+		END
+
+		FETCH NEXT FROM String_Cursor INTO @Current_String;
+	END
+
+	CLOSE String_Cursor;
+	DEALLOCATE String_Cursor;
+
+	RETURN @JS_Hashcode_Output_Total;
+END
+GO
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

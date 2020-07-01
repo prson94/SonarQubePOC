@@ -16,18 +16,5 @@
                     *ngIf="(formMode == FormMode.Default) && (dataProfileId==-1) " 
                     label="Close"></button>
         </div>
-        <div class="tile tile-detail" *ngIf="(formMode == FormMode.Default) && (dataProfileId !=-1)">
-            <d3s-fusion-data-profile-detail
-                                            [profileId]="dataProfileId">
-
-            </d3s-fusion-data-profile-detail>
-            <button 
-                    pButton 
-                    type="button" 
-                    (click)="close()" 
-                    label="Close">
-
-            </button>
-        </div>
     </div>
 </div>

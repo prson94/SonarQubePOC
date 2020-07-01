@@ -19,6 +19,7 @@ using Dapper;
 using Newtonsoft.Json.Linq;
 using System.Data.SqlClient;
 using System.Data;
+using d360.core.entities.Membership;
 
 namespace d360.model
 {
@@ -34,7 +35,6 @@ namespace d360.model
         DbSet<ApiNamespace> ApiNamespaces { get; set; }
         DbSet<ApiService> ApiServices { get; set; }
         DbSet<AssetApiModel> AssetApiModels { get; set; }
-        DbSet<AssetDataProfile> AssetDataProfiles { get; set; }
         DbSet<AssetDetail> AssetDetails { get; set; }
         DbSet<Asset> Assets { get; set; }
         DbSet<AssetProcessDiagram> AssetProcessDiagrams { get; set; }
@@ -323,6 +323,8 @@ namespace d360.model
         List<ResponsibilityRuleUpsertResponseModel> UpsertResponsibilityRules(ApiExecution execution, Guid responsibilityTypeUid, List<ResponsibilityRuleUpsertModel> import, int timeout = 3600);
 
         List<DatabaseBulkAssetTypeResult> RemoveAssetTypes(ApiExecution execution, AssetTypeDeletes import, int timeout = 7200);
+        List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
 
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

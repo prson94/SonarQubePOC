@@ -153,6 +153,29 @@ END
 	</rollback>
   </changeSet>
 
+    <changeSet author="Bhoward" id="Table.dbo.Asset-v5">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+	alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(19)
+end
+
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Asset' and COLUMN_NAME = 'Color')
+begin
+		alter table [dbo].[Asset] ALTER COLUMN [Color] varchar(7)
+end
+]]>
+	</rollback>
+  </changeSet>
+  
   <changeSet author="Core" id="Table.dbo.Asset-Asset_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"

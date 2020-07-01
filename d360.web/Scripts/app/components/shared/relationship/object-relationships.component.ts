@@ -16,6 +16,7 @@ export class ObjectRelationshipsComponent extends BaseComponent implements OnCha
     @Input() objectID: number;
     @Input() objectName: string;
     @Input() objectPermissions: ResponsibilityTypeRelationPermission[] = [];
+    @Input() isModal: boolean = false;
 
     relationshipItems: ObjectRelationshipCount[] = [];
     selected: ObjectRelationshipCount;

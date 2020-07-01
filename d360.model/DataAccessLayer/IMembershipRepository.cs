@@ -17,5 +17,7 @@ namespace d360.model.DataAccessLayer
         Task<bool> ToggleFavorite(int resourceID, FavoriteApiModel favorite, bool isHomepage = false);
         WorkHttpStatus DeleteFavorites(int resourceID);
         Task<FavoriteApiViewModel> GetHomePage(int resourceID);
+        List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
+        List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

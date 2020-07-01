@@ -66,8 +66,8 @@ namespace d360.web.Controllers.V2
         [
             HttpGet,
             Route("{uid}"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAsset)),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerResponse(HttpStatusCode.OK, "Returns the corresponding metric.", typeof(MetricAssetViewDetailModel)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that your metric was not found.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that your request to retrieve this metric is invalid, possibly due to an incorrectly formatted identifier (Uid).", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred.", typeof(ErrorResponse))
@@ -169,6 +169,11 @@ namespace d360.web.Controllers.V2
                 else if (decimal.Round(model.Weight, 2) != model.Weight)
                 {
                     return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Weight can have a maximum of 2 decimal places.");
+                }
+
+                if (model.Threshold <= 0 || model.Threshold > 1)
+                {
+                    return errorMessageResponse(HttpStatusCode.BadRequest, $"Error updating metric", "Threshold must be a value between 0 and 1");
                 }
             }
 

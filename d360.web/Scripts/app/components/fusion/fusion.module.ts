@@ -45,8 +45,6 @@ import { FusionQueryAttributeEditorComponent } from './fusion-query-attribute-ed
 import { FusionHistoryComponent } from './fusion-history.component'
 import { FusionAttributeTabsComponent } from './fusion-attribute-tabs.component';
 import { FusionAttributeComponent } from './fusion-attribute.component';
-import { FusionDataProfileDetailComponent } from './fusion-data-profile-detail.component';
-
 
 import { TabViewModule } from 'primeng/tabview';
 import { ButtonModule } from 'primeng/button';
@@ -146,8 +144,7 @@ export function highchartsFactory() {
         FusionQueryListComponent,
         FusionQueryAttributeEditorComponent,  
         FusionAttributeTabsComponent,
-        FusionAttributeComponent,
-        FusionDataProfileDetailComponent
+        FusionAttributeComponent
     ],
     providers: [
         {

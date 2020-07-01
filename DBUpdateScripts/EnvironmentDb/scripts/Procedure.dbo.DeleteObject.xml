@@ -5,7 +5,8 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.dbo.DeleteObject-v9">
+  <changeSet author="Puneet Gupta" id="Procedure.dbo.DeleteObject-v10">
+    <comment>GOV-10731</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -515,10 +516,6 @@
 						  inner join Asset A on A.Uid = O.uid
 						  inner join #items I on I.ID = A.ID;
 
-				  delete	O
-				  from	AssetDataProfile O 
-						  inner join #items I on I.ID = O.AssetID;
-  
 				  delete	O
 				  from	graph.AssetNode O
 						  inner join #items I on I.ID = O.ID;
@@ -1176,7 +1173,8 @@
 
 				  delete	O
 				  from	[metrics].[Asset] O
-						  inner join AssetType A on A.Object = @Object and A.Uid = O.AssetTypeUid
+							inner join metrics.Allocation Al on Al.Uid = O.AllocationUid
+							inner join AssetType A on A.Object = @Object and A.Uid = Al.AssetTypeUid
 						  inner join #types I on I.ObjectID = A.ObjectID;
 
 				  delete	O

@@ -1,15 +1,6 @@
 ﻿<div id="process-diagram" class="{{isEditMode ? 'fullscreen' : ''}}">
     <div *ngIf="isEditMode" class="top-menu-hider"></div>
 
-    <div class="saving-overlay" *ngIf="isSaving">
-        <div class="loader">
-            <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-            <span class="text">
-                Saving changes
-            </span>
-        </div>
-    </div>
-
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
             <button type="button" (click)="switchModes()" title="Exit Designer">
@@ -19,9 +10,13 @@
             <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
                 <i class="fa fa-save"></i>
             </button>
+
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
+                <button  class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                    <i class="fa fa-sitemap"></i>
+                </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
                     <i class="fa fa-info-circle"></i>
                 </button>
@@ -113,7 +108,7 @@
                             <div class="icon-holder">
                                 <i class="fa fa-info-circle"></i>
                             </div>
-                            <span>Drag and drop flow objects to start building your diagram</span>
+                            <span>Select a single item from the diagram to view its properties</span>
                         </div>
                     </div>
                 </div>
@@ -144,6 +139,56 @@
 
             </div>
         </d3s-modal>
+
+        <d3s-modal [title]="'Save Changes?'" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
+            <div class="content">
+                <div class="row">
+                    Would you like to save your changes to the diagram before leaving the Diagram Designer?
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="isSavingChangesModalOpened=false">Cancel</button>
+                <button class="button" (click)="discardChanged()">Discard Changes</button>
+                <div class="grow"></div>
+                <button class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>
+
+            </div>
+        </d3s-modal>
+
+        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving">
+            <div class="content">
+                <div class="row">
+                    <div class="loader">
+                        <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
+                        <span class="text">
+                            Saving changes
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </d3s-modal>
+
+        <d3s-modal [title]="'Delete Selected Item'" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
+            <div class="content">
+                <div class="row">
+                    Please confirm that you wish to delete the selected item, as this operation cannot be undone.
+                </div>
+            </div>
+            <div class="action-bar">
+                <button class="button" (click)="promptDeleteOpened=false">Cancel</button>
+                <div class="grow"></div>
+                <button class="button primary" (click)="promptDeleteOpened=false;deleteSelectedNode();">Delete</button>
+
+            </div>
+        </d3s-modal>
+
+        <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
+                                 (onClose)="isRelatedAssetsVisible = false"
+                                 [isModalVisible]="isRelatedAssetsVisible"
+                                 [objectID]="selectedNodeData.objectId"
+                                 [objectType]="'Task'">
+        </d3s-relationships-modal>
+
     </div>
 
 
