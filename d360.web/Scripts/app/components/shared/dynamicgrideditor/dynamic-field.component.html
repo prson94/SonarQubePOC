@@ -55,7 +55,7 @@
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
-                        <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="getColorItemsAsSelectItem(field.Items)" ngDefaultControl [defaultLabel]="multiselectLabel()">
+                        <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items" ngDefaultControl [defaultLabel]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
                                 <div class="d3s-color-multiSelect">
                                     <div *ngFor="let item of items" class="ig-colorfield-item-selected">
@@ -82,7 +82,7 @@
                                 </ng-template>
                                 <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
                             </select>
-                            <d3s-color-picker *ngIf="field.UseColorControl" [colors]="getColorItemsAsSelectItem(field.Items)" [placeholder]="multiselectLabel()" (selectedColorChange)="onColorSelect($event)" [selectedColor]="field.Value"></d3s-color-picker>
+                            <d3s-color-picker *ngIf="field.UseColorControl" [colors]="field.Items" [placeholder]="multiselectLabel()" (selectedColorChange)="onColorSelect($event)" [selectedColor]="field.Value"></d3s-color-picker>
                         </ng-container>
                         <ng-container *ngIf="!field.UseNativeLookupControl">
                             <ng-container *ngIf="field.UseTypeahead">

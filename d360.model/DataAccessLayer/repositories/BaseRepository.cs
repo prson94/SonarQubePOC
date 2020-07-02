@@ -361,18 +361,16 @@ namespace d360.model.DataAccessLayer.repositories
                 }
                 else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
                 {
-                    string emptycolor = "transparent";
-                    if (f.Name.ToLower() == "status")
-                        emptycolor = "calculatebyname";
                     string sql = $@"outer apply(
                                 select FormattedValue = 
-                                (SELECT COALESCE(AC{tableAlias}.Code,{tableAlias}.FormattedValue) as name,
-                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), '{emptycolor}') as color
+                                (SELECT COALESCE(ADV{tableAlias}.DisplayValue, AC{tableAlias}.Code) as name,
+                                COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
-								outer apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
+								cross apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias}
                                 inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value   
                                 cross apply dbo.GetAssetColorJsonById(AC{tableAlias}.Id) ACJ{tableAlias}
+                                cross apply GetAssetDisplayValueByID(AC{tableAlias}.ID) ADV{tableAlias}
                                 where {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql} FOR JSON PATH),
                                 [Value] = 
 									(SELECT [Value] from Field {tableAlias}

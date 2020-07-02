@@ -2016,9 +2016,10 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 cross apply STRING_SPLIT(F.Value, ',') SPFF
                 inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPFF.value   
                 cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
+                cross apply GetAssetDisplayValueByID(ACF.ID) ADV
 				outer apply(
                                 select FormattedValue = 
-                                (SELECT COALESCE(ACF.Code,F.FormattedValue) as name,
+                                (SELECT F.FormattedValue as name,
                                 COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
                             )StatusColor(FormattedValue)
                 WHERE A.ID = @id

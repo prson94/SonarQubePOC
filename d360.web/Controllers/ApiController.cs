@@ -3015,14 +3015,15 @@ order by    Name
                 status = fieldType.DefaultFormattedValue;
 
             if (LookupFieldHasColorItem(fieldType)) {
-                string colorAndStatusSql = $@"(SELECT COALESCE(ACf.Code,f.FormattedValue) as name,
+                string colorAndStatusSql = $@"(SELECT ADV.DisplayValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
-                                outer apply STRING_SPLIT(F.Value, ',') SPF
+                                cross apply STRING_SPLIT(F.Value, ',') SPF
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
+                                inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
                 if(!string.IsNullOrEmpty( colorAndStatus))
