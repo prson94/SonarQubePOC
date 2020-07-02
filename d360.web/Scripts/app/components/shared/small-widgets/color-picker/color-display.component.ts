@@ -34,7 +34,7 @@ export class ColorDisplayComponent implements OnInit {
                     this.colorsObject[0].color = this.getColorFromName(this.colorsObject[0].name);
                 }
             } catch{
-                console.log("invalid color JSON string. " + this.colorsJSON);
+                this.colorsObject = { name: this.colorsJSON, color: 'transparent' };
             }
         }
     }
