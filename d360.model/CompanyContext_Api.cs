@@ -8208,7 +8208,7 @@ WHEN MATCHED
                     FROM [ResourceGroup] RG
 	                inner join api.ExecutionGroup EG on EG.ExecutionID = @ExecutionID and EG.ItemNumber between @beginItemNumber and @endItemNumber and EG.Success is null
 	                inner join [Group] G on G.Name = EG.Name     
-                    WHERE ResourceID = G.SecondaryOwnerResourceID and [GroupID] = G.ID 
+                    WHERE ResourceID = G.SecondaryOwnerResourceID and [GroupID] = G.ID and G.SecondaryOwnerResourceID is not null
                     )    
                     BEGIN
                         INSERT INTO [ResourceGroup](GroupID,[ResourceID])
@@ -8218,6 +8218,7 @@ WHEN MATCHED
                                     where EG.ExecutionID = @ExecutionID 
                                     and EG.ItemNumber between @beginItemNumber and @endItemNumber
                                     and EG.Success is null
+                                    and G.SecondaryOwnerResourceID is not null
                     END
 
                     update EG
