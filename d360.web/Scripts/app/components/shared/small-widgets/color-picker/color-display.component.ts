@@ -30,9 +30,6 @@ export class ColorDisplayComponent implements OnInit {
         if (this.colorsJSON) {
             try {
                 this.colorsObject = JSON.parse(this.colorsJSON);
-                if (this.colorsObject.length == 1 && this.colorsObject[0].color == 'calculatebyname') {
-                    this.colorsObject[0].color = this.getColorFromName(this.colorsObject[0].name);
-                }
             } catch{
                 console.log("invalid color JSON string. " + this.colorsJSON);
             }
