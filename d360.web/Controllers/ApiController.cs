@@ -3023,7 +3023,7 @@ order by    Name
 								inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPF.value     
                                 inner join Asset AI on AI.AssetTypeId = {objectDetail.AssetTypeID} and AI.ObjectID = f.ObjectID 
                                 cross apply dbo.GetAssetColorJsonById(ACf.Id) ACJ
-                                inner join AssetDisplayValue ADV on ADV.AssetID = A.ID
+                                cross apply GetAssetDisplayValueByID(ACF.ID) ADV 
                                 where f.FieldTypeID = {fieldType.ID} and f.[ObjectType] = '{type.ToString()}' and f.[ObjectID] = {id}) FOR JSON PATH";
                 string colorAndStatus = Company.Query<string>(colorAndStatusSql).FirstOrDefault();
                 if(!string.IsNullOrEmpty( colorAndStatus))
