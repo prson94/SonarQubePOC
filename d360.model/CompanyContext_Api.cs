@@ -8073,8 +8073,8 @@ WHEN MATCHED
 		                    [Message] = coalesce([Message], '') + 'Already a group called this name;'
 	                from [api].[ExecutionGroup] EG 
 	                inner join [Group] G on G.[Name] = EG.[Name]
-                    left join [Asset] A on A.uid = EG.[GroupUid] and A.Object = 'Group'
-                    where	ExecutionID = @ExecutionID and A.ObjectID != G.ID and G.Name is not null;
+                    left join [Asset] A on A.ObjectID = G.[ID] and A.Object = 'Group' and A.uid = EG.[GroupUid]
+                    where	ExecutionID = @ExecutionID and A.uid is null and G.Name is not null;
 
                     update	[api].[ExecutionGroup]
                     set		Success = 0,
