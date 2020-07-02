@@ -1025,6 +1025,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPost,
             Route("groups"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(AddGroup), typeof(AddGroupExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
