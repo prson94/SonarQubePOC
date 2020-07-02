@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v10">
+  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v11">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -155,18 +155,18 @@ begin
 							from		#assets A 
 										inner join dbo.FieldType FT on FT.Object = A.[Type] and FT.ObjectID = A.TypeID and FT.[Type] in ('Boolean', 'Date', 'DateTime', 'Decimal', 'Html', 'Link', 'Lookup', 'Number', 'Percentage', 'Text')
 										left join dbo.Field F on F.FieldTypeID = FT.ID and F.ObjectType = A.Object and F.ObjectID = A.ObjectID
-										inner join metrics.Allocation Al on Al.Uid = A.AssetTypeUid and Al.ScoreType = A.ScoreType
+										inner join metrics.Allocation Al on Al.AssetTypeUid = A.AssetTypeUid and Al.ScoreType = A.ScoreType
 										inner join metrics.Asset M on M.AllocationUid = Al.Uid and M.IsGroup = 0 and M.State = 1
 										inner join #maxEffectiveMetrics MaxE on MaxE.MetricAssetUid = M.Uid
 										inner join metrics.AssetVersion MV on MV.AssetUid = M.[Uid] and MV.EffectiveDate = MaxE.EffectiveDate
-										inner join metrics.AssetVersionCondition C on C.AssetVersionUid = M.[Uid] 
+										inner join metrics.AssetVersionCondition C on C.AssetVersionUid = MV.[Uid] 
 										left join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid and CI.ConditionFieldTypeID = FT.ID
 										left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid
 							where		metrics.CompareConditionValueToFieldValue(FT.[Type], CI.Operator, CIV.[Value], coalesce(F.Value, FT.DefaultValue)) = 0
 							group by	A.AssetUid,
 										M.Uid,
 										MV.EffectiveDate				
-						) B on B.AssetUid = A.AssetUid and B.MetricAssetUid = MV.Uid and B.EffectiveDate = MV.EffectiveDate
+						) B on B.AssetUid = A.AssetUid and B.MetricAssetUid = M.Uid and B.EffectiveDate = MV.EffectiveDate
 			where		(
 							(
 							C.Uid is not null and 
