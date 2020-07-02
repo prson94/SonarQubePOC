@@ -88,7 +88,7 @@ namespace d360.core.resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Auto Display Parent can be set only asset types that are a Business or Technical class..
+        ///   Looks up a localized string similar to Auto Display Parent can be set only asset types that are a Business or Technical class and are the child of another asset type..
         /// </summary>
         public static string AutoDisplayParentRestriction {
             get {

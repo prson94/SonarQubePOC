@@ -13,55 +13,55 @@ namespace d360.core.entities.Metric
     [DataContract]
     public class MetricAssetViewModel
     {
-        [DataMember]
+        [DataMember, JsonProperty(Order = 1)]
         public Guid Uid { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 2)]
         public Guid? ParentUid { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 3)]
         public Guid AllocationUid { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 4)]
         public Guid? AssetTypeUid { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 5)]
         public ScoreType? ScoreType { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 6)]
         public bool IsGroup { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 7)]
         [Required(AllowEmptyStrings = false, ErrorMessage = "You have provided an invalid name.")]
         [MaxLength(250, ErrorMessage = "{0} cannot exceed {1} characters.")]
         public string Name { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 8)]
         public string Description { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 9)]
         public DateTime EffectiveDate { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 10)]
         public decimal Weight { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 11)]
         public double? Threshold { get; set; }
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 12)]
         public MetricUpdateFrequency UpdateFrequency { get; set; } = MetricUpdateFrequency.None;
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 13)]
         public bool MatchConditionsOnly { get; set; } = false;
 
-        [DataMember]
+        [DataMember, JsonProperty(Order = 20)]
         public List<MetricAssetVersionConditionViewModel> ConditionGroups { get; set; } = new List<MetricAssetVersionConditionViewModel>();
     }
 
     [DataContract]
     public class MetricAssetViewDetailModel : MetricAssetViewModel
     {
-        [DataMember]
+        [DataMember, JsonProperty(Order = 100)]
         public List<MetricAssetVersionViewModel> Versions { get; set; }
     }
 

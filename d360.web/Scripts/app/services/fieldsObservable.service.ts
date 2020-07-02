@@ -426,12 +426,12 @@ export class FieldsObservableService extends BaseObservableService implements IF
         );
     }
 
-    getTypeaheadItems(e: Observable<any>): Observable<EditorDropDownItem[]> {
+    getTypeaheadItems(e: Observable<any>, useColor: boolean = false): Observable<EditorDropDownItem[]> {
         return e.pipe(
             distinctUntilChanged(),
             switchMap(
                 e => {
-                    let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}`;
+                    let uri = `form/FieldType_TypeAheadLookup?fieldTypeId=${e.fieldTypeID}&query=${e.event.query}&useColor=${useColor}`;
 
                     if (e.value != null) {
                         uri += `&value=${e.value}`;

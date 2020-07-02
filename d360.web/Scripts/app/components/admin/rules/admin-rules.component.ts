@@ -9,6 +9,7 @@ import { Title } from '@angular/platform-browser';
 import { SecondaryNavItem } from '../../../models/secondaryNav.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { AssetTypeClass } from '../../../models/asset.model';
+import { StringConstants } from '../../../static/string-constants';
 
 @Component({
     selector: 'd3s-admin-rules-component',
@@ -24,7 +25,7 @@ import { AssetTypeClass } from '../../../models/asset.model';
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <span *ngIf="!isLoading && !showDelete">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="ruleTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected">
+                <p-table #dt [value]="ruleTypes" selectionMode="single" [metaKeySelection]="true" [globalFilterFields]="['Name']" sortField="Name" [sortOrder]="1" [pageLinks]="3" [paginator]="true" [rows]="20" [(selection)]="selected" (onRowSelect)="selectedItemChange(selected?.ID)">
                     <ng-template pTemplate="header">
                         <tr>
                             <th [pSortableColumn]="'Name'">
@@ -140,7 +141,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
 
     ngOnInit() {
         this.assetTypeClass = AssetTypeClass.Rule;
-        this.getRuleTypes();
+        this.getRuleTypes();        
     }
 
     ngOnDestroy() {
@@ -153,7 +154,11 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
             .subscribe(result => {
                 this.ruleTypes = result;
                 this.isLoading = false;
-                if (this.ruleTypes.length > 0) this.selected = this.ruleTypes[0];
+                if (this.ruleTypes.length > 0) {
+                    this.selected = this.ruleTypes[0];
+                    this.selectedItemChange(this.selected.ID);
+                }
+                
             });
     }
 
@@ -191,4 +196,7 @@ export class AdminRulesComponent extends AdminBaseComponent implements OnInit, O
         if (activatedItem.tag == 'dimensions') this.isDimensionsVisible = !this.isDimensionsVisible;
     }
 
+    selectedItemChange(objectId: number) {        
+            this.buildSecondaryNavigationForObject(objectId ? objectId : 0, StringConstants.ObjectRuleType, null, this.assetTypeClass);
+    }
 }

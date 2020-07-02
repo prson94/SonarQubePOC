@@ -145,6 +145,9 @@ export class SiteUrlHelpers {
         if (objectType.toLowerCase() == "tag" && !objectId) {
             return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_TAGS}`;
         }
+        if (objectType.toLowerCase() == "ruletype") {
+            return `admin/${SiteUrlHelpers.SITE_URL_ADMIN_RULES}`;
+        }
 
         return SiteUrlHelpers.getObjectUrl(objectType, objectId, parentId);
     }

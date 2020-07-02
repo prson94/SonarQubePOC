@@ -148,6 +148,21 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
         }
     }
 
+    getColorItemsAsEditorItem(items: any[]): EditorDropDownItem[] {
+        if (items.length > 0) {
+            let its = items.filter(x => x.Text != "Choose...").map((x) => {
+                try {
+                    let colorobj = JSON.parse(x.Text);
+                    if (colorobj)
+                        return { Text: colorobj.name, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group: x.Group, Color: colorobj.color };
+                } catch (ex) {
+                    return { Text: x.Text, Value: x.Value, Selected: x.Selected, Disabled: x.Disabled, Group : x.Group, Color: 'transparent'};
+                }
+            });
+            return its;
+        }
+    }
+
     getLabelByID(id) {
         if (id && this.field.Items.length > 0) {
             let filterItems = this.field.Items.filter(x => x.value == id);
@@ -277,9 +292,12 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                     this.field.Items = <any[]>res;
                     this.ref.markForCheck();
                 })
-            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$)
+            : this.fieldsService.getTypeaheadItems(this.typeAheadSource$, this.field.UseColorControl)
                 .subscribe(res => {
-                    this.field.Items = <EditorDropDownItem[]>res;
+                    if (this.field.UseColorControl)
+                        this.field.Items = this.getColorItemsAsEditorItem(res);
+                    else
+                        this.field.Items = <EditorDropDownItem[]>res;
                     this.ref.markForCheck();
                 });
 
@@ -351,7 +369,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.loadTypeAheadValue = true;
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
-
             }
         }
         if (this.field.UseColorControl) {
@@ -682,6 +699,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onSelect(e: EditorDropDownItem) {
+        console.log(e);
         if (e != null) {
             this.field.Value = e.Value;
         } else {

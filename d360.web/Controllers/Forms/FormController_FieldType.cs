@@ -320,7 +320,7 @@ namespace d360.web.Controllers
 
  
         [Route("FieldType_TypeAheadLookup"), NonNullableParameters]
-        public JsonNetResult FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "")
+        public JsonNetResult FieldType_TypeAheadLookup(int fieldTypeId, string value = "", string query = "", bool useColor = false)
         {
             var selectList = new List<SelectListItem>();
             var ft = Company.GetById<FieldType>(fieldTypeId);
@@ -335,10 +335,18 @@ namespace d360.web.Controllers
                 V.LookupObjectType,
                 V.LookupObjectID,
                 V.Value,
-                V.Text";
+                {(useColor ? "colorJson.FV AS Text" : "V.Text")}";
+
+            var colorjoin = $@"
+                                        outer apply(SELECT FV = (SELECT V.Text as name, COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color 
+                                                    from Asset A 
+                                                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+													where A.Object = v.LookupObjectType and A.ObjectID = V.Value FOR JSON PATH, WITHOUT_ARRAY_WRAPPER) 
+                                        )colorJSON ";
 
             var selectedSql = $@"select {columns} 
                 from FieldLookupValue V 
+                {(useColor ? colorjoin : "")}
                 where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId and V.Value = @selectedValue 
                 union
                 ";
@@ -352,6 +360,7 @@ namespace d360.web.Controllers
                 select top {maxItems} {columns}
                 from FieldLookupValue V
                 {(HideData3SixtyUsers() && ft.LookupObjectType == "Resource" ? resourceJoin : "")}
+                {(useColor ? colorjoin : "")}
                 where V.FieldTypeID = @fieldTypeId and V.LookupObjectType = @lookupObjectType and V.lookupObjectID = @lookupObjectId {(string.IsNullOrWhiteSpace(query) ? "" : " and V.Text like '%' + @query + '%' ")}
                 ";
 
