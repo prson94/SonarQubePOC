@@ -952,6 +952,7 @@ namespace d360.web.Controllers.V2
         [
             HttpDelete,
             Route("groups"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(DeleteGroupModel), typeof(DeleteGroupExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
@@ -996,6 +997,7 @@ namespace d360.web.Controllers.V2
         [
             HttpPut,
             Route("groups"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
             SwaggerRequestExample(typeof(UpdateGroup), typeof(UpdateGroupExample)),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
