@@ -146,6 +146,7 @@
     <Compile Include="DataAccessLayer\IMetricsRepository.cs" />
     <Compile Include="DataAccessLayer\IScoringRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\GraphFilterRepository.cs" />
+    <Compile Include="DataAccessLayer\IProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\IssueRepository.cs" />
     <Compile Include="DataAccessLayer\ITagRepository.cs" />
     <Compile Include="DataAccessLayer\IWorkflowRepository.cs" />
@@ -156,6 +157,7 @@
     <Compile Include="DataAccessLayer\ISurveyRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MembershipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\MetricsRepository.cs" />
+    <Compile Include="DataAccessLayer\repositories\ProcessRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\RelationshipRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResourceRepository.cs" />
     <Compile Include="DataAccessLayer\repositories\ResponsibilityRepository.cs" />

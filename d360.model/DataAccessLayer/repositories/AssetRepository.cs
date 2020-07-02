@@ -22,6 +22,7 @@ using System.IO;
 using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
+using d360.core.entities.Process;
 
 namespace d360.model.DataAccessLayer
 {

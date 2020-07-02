@@ -56,6 +56,7 @@ namespace d360.web
             builder.RegisterType<MembershipRepository>().As<IMembershipRepository>().InstancePerRequest();
             builder.RegisterType<ScoringRepository>().As<IScoringRepository>().InstancePerRequest();
             builder.RegisterType<GraphFilterRepository>().As<IGraphFilterRepository>().InstancePerRequest();
+            builder.RegisterType<ProcessRepository>().As<IProcessRepository>().InstancePerRequest();
 
 
             builder.RegisterType<d360.extensions.info.UriSecurityContextProvider>().As<ISecurityContextProvider>()

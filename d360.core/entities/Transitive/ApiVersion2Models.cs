@@ -790,10 +790,4 @@ namespace d360.core.entities
         public Guid? ExternalKey { get; set; }
     }
 
-    public class ValidationError
-    {
-        public Guid AssetTypeUid { get; set; }
-        public Guid AssetUid { get; set; }
-        public string Error { get; set; }
-    }
 }
