@@ -1011,6 +1011,11 @@ namespace d360.web.Controllers.V2
             if (groups.Count < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
 
+            var isValid = groups.All(x => x.Uid.HasValue);
+
+            if (!isValid)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Uid must be provided in all requests"));
+
             var execution = getApiExecution(groups.Count);
 
             var result = membershipRepository.UpdateGroups(execution, groups);
