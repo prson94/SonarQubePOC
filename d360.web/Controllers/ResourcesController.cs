@@ -556,7 +556,7 @@ inner join fieldType FT on FT.ID = F.FieldTypeID
 outer apply(
         select value = (
              SELECT
-			ADV.DisplayValue as name,
+			 COALESCE(ADV.DisplayValue, AC.Code) as name,
              COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
              FROM field fi
              cross apply STRING_SPLIT(F.Value, ',') SPFfi
