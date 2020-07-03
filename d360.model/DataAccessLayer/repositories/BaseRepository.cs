@@ -436,6 +436,10 @@ namespace d360.model.DataAccessLayer.repositories
                                 {
                                     orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"A.Code {orderDirection} ";
                                 }
+                                else if (assetType.Object == "ReferenceItemType" && q.Value.ToLower() == "color")
+                                {
+                                    orderBySql += (string.IsNullOrEmpty(orderBySql) ? "order by " : ", ") + $"ACJ.ColorJson {orderDirection} ";
+                                }
                                 else
                                 {
                                     var field = fieldTypes.FirstOrDefault(f => f.Name.ToLower() == q.Value.ToLower());

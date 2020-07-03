@@ -655,6 +655,7 @@ namespace d360.model.DataAccessLayer
                     if (assetType.Class == AssetTypeClass.Reference)
                     {
                         simpleFilters.Add($"A.Code like @simpleFilter");
+                        simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.ID)), '$.Name') like @simpleFilter");
                     }
 
                     whereStatements.Add($"({string.Join(" or ", simpleFilters)})");
@@ -730,6 +731,7 @@ namespace d360.model.DataAccessLayer
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                left join Color AC on AC.Id = A.Color
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
