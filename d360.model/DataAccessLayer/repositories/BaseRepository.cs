@@ -74,7 +74,7 @@ namespace d360.model.DataAccessLayer.repositories
                 var columnName = f.Name;
                 var valueColumn = "FormattedValue";
                 var fieldDataType = getFieldDataType(f);
-                var hasColor = LookupFieldHasColorItem(f);
+                var hasColor = CompanyContext.LookupFieldHasColorItem(f);
                 FieldTypeDefinition_JsonElement jsonElementDefinition = null;
                 
                 if (f.Type == "JsonElement")
@@ -385,20 +385,6 @@ namespace d360.model.DataAccessLayer.repositories
                     fieldJoins.Add($"{joinPrefix} join Field {tableAlias} on {tableAlias}.FieldTypeID = {f.ID} and {tableAlias}.[ObjectType] = {objectSql} and {tableAlias}.[ObjectID] = {objectIdSql}");
                 }
             });
-        }
-
-        private bool LookupFieldHasColorItem(FieldType fieldType)
-        {
-            if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
-            {
-                var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
-                if (obj != "ReferenceItemType")
-                    return false;
-                var assettype = CompanyContext.AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
-                if (assettype != null)
-                    return CompanyContext.Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
-            }
-            return false;
         }
 
         protected void getQueryParamsSql(AssetsApiViewModel model, AssetType assetType, List<FieldType> fieldTypes, DynamicParameters dbArgs, List<string> whereStatements, List<string> pagingSql, IEnumerable<KeyValuePair<string, string>> queryParams)

@@ -2941,6 +2941,24 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
+                else if (f.Type == DataType.Lookup.ToString()  && LookupFieldHasColorItem(f))
+                {
+                    columns += $"{name}_T.value as [{name}],";
+                    joins += $@" outer apply(
+
+                            select value = (
+                                SELECT
+								ADV.DisplayValue as name,
+                                COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
+                                FROM field fi
+                                cross apply STRING_SPLIT(fi.Value, ',') SPFfi
+                                inner join Asset AC on AC.Object = '{f.LookupObjectType}' and AC.ObjectID = try_cast(SPFfi.value as int)
+                                cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+                                cross apply GetAssetDisplayValueByID(AC.ID) ADV
+                                where FieldTypeID = {f.ID} and fi.AssetID = A.Id and '{f.Type}' = 'Lookup'
+								for json path)
+							){name}_T(value)";
+                }
                 else
                 {
                     if (includeIdColumn) columns += $"{name}_T.Value as [{name}ID], ";
@@ -2958,7 +2976,19 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
             fields = null;
         }
-
+        public bool LookupFieldHasColorItem(FieldType fieldType)
+        {
+            if (fieldType.LookupObjectType != null && fieldType.LookupObjectID.HasValue)
+            {
+                var obj = fieldType.LookupObjectType == "ReferenceItem" ? "ReferenceItemType" : fieldType.LookupObjectType;
+                if (obj != "ReferenceItemType")
+                    return false;
+                var assettype = AssetTypes.FirstOrDefault(x => x.Object == obj && x.ObjectID == fieldType.LookupObjectID);
+                if (assettype != null)
+                    return Assets.Any(x => x.AssetTypeID == assettype.ID && x.Color != null);
+            }
+            return false;
+        }
 
 
         public List<RelationshipDirectionFieldInfo> getRelationFieldData(string type, int typeID, List<FieldType> fields)
