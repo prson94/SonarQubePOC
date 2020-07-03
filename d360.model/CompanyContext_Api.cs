@@ -4936,7 +4936,7 @@ from    [Intersect] T
             //check for lookups
             Connection.Execute(@"
                                 update	T
-                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship lookups associated with it.',
+                                set		T.Message = coalesce(T.Message + '; ', '') + 'You have not enabled Cascade and there are ' + cast(S.[Count] as nvarchar) + ' relationship lookups associated with this relationship.',
 	                                    T.Success = 0
                                 from	api.ExecutionDeletedRelationshipType T
                                         inner join
