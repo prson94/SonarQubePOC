@@ -38,7 +38,9 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
         try {
             this.colorObjects = JSON.parse(this.status);
             this.useDefinedColor = true;
-            this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == 'transparent'; 
+            this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == 'transparent';
+            if (this.singleUndefinedColor)
+                this.formattedStatus = this.colorObjects[0].name;
         } catch{
             this.useDefinedColor = false;
             this.singleUndefinedColor = false;
@@ -145,6 +147,8 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     getForegroundColor() {
         var dark = '#515667';
         var light = '#ffffff';
+        if (this.singleUndefinedColor)
+            return dark;
         if (this.useDefinedColor) {
             let name = this.colorObjects[0].name;
             let color = this.getBackgroundColor();
