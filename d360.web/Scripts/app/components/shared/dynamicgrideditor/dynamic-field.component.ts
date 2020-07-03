@@ -165,11 +165,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getLabelByID(id) {
         if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.Value == id);
+            let filterItems = this.field.Items.filter(x => x.value == id);
             if (filterItems.length > 0) {
-                let options = this.getColorItemsAsSelectItem(filterItems);
-                if (options.length > 0)
-                    return options[0].label;
+                return filterItems[0].label;
             }
         }
         return "";
@@ -177,11 +175,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     getColorByID(id) {
         if (id && this.field.Items.length > 0) {
-            let filterItems = this.field.Items.filter(x => x.Value == id);
+            let filterItems = this.field.Items.filter(x => x.value == id);
             if (filterItems.length > 0) {
-                let options = this.getColorItemsAsSelectItem(filterItems);
-                if (options.length > 0)
-                    return options[0].title;
+                return filterItems[0].title;
             }
         }
         return "";
@@ -374,6 +370,9 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
                 this.typeAheadValue = sel;
                 this.onSelect(sel);
             }
+        }
+        if (this.field.UseColorControl) {
+            this.field.Items = this.getColorItemsAsSelectItem(this.field.Items);
         }
 
     }

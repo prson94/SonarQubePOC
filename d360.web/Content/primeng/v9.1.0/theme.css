@@ -1706,6 +1706,7 @@ body .ui-dropdown .ui-dropdown-label.ui-placeholder, body .ui-inputtext::placeho
   right: 9px;
   color: #202020;
   border-radius: 4px;
+  margin-left: auto;
 }
 
 .d3s-color-picker .ui-dropdown-panel .ui-dropdown-items,

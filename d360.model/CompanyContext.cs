@@ -2948,7 +2948,7 @@ left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID
 
                             select value = (
                                 SELECT
-								ADV.DisplayValue as name,
+                                COALESCE(ADV.DisplayValue, AC.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
                                 FROM field fi
                                 cross apply STRING_SPLIT(fi.Value, ',') SPFfi

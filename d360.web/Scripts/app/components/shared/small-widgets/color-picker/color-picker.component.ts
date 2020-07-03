@@ -1,5 +1,5 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, AfterViewInit, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
@@ -33,12 +33,12 @@ export class ColorPickerComponent implements OnInit {
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = 'Optional';
     @Input() selectedColor: string;
+    @Input() loadDefaultColors: boolean = false;
     @Output() selectedColorChange = new EventEmitter();
 
     constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
     }
     ngOnInit() {
-        this.colors = []; 
         this.load();
     }
 
@@ -47,12 +47,16 @@ export class ColorPickerComponent implements OnInit {
     }
 
     load(): any {
-        if (this.colors.length == 0) {
+        if (this.loadDefaultColors) {
             this.assetService.getAllColors().subscribe(res => {
                 if(res)
                     this.colors = res;
                 if (this.selectedColor && res.length > 0) {
                     let isCustom = this.colors.filter(x => { return x.label == this.selectedColor }).length == -1;
+                    if (isCustom)
+                        this.selectedColor = null;
+                } else {
+                    this.selectedColor = null;
                 }
                 this.ref.markForCheck();
             });
