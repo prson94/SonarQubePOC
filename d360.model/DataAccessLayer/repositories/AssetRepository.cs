@@ -731,7 +731,6 @@ namespace d360.model.DataAccessLayer
                 left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
                 left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
                 cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
-                left join Color AC on AC.Id = A.Color
                 {(includePermissionDetails ? permissionDetailSQL : "")}
                 {(includeParent ? parentApplySQL : "")}
                 {whereSql}
