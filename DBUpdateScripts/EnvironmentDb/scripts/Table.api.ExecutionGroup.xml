@@ -40,17 +40,17 @@ BEGIN
             splitStatements="true"
             stripComments="false">
 <![CDATA[
-if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionUid')
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
 begin
-	alter table api.ExecutionGroup add [ExecutionUid] uniqueidentifier
+	alter table api.ExecutionGroup add [ExecutionItemUid] uniqueidentifier
 end
 ]]>
     </sql>
 	<rollback>
 <![CDATA[
-if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionUid')
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
 begin
-	alter table api.ExecutionGroup drop column [ExecutionUid]
+	alter table api.ExecutionGroup drop column [ExecutionItemUid]
 end
 
 ]]>

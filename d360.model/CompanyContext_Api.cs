@@ -8020,7 +8020,7 @@ WHEN MATCHED
                     table.Columns.Add("Description", typeof(string));
                     table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
                     table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
-                    table.Columns.Add("ExecutionUid", typeof(Guid));
+                    table.Columns.Add("ExecutionItemUid", typeof(Guid));
 
                     #region Generate data sets
 
@@ -8042,7 +8042,7 @@ WHEN MATCHED
                         if (item.SecondaryOwnerUid != null)
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
-                        row["ExecutionUid"] = Guid.NewGuid(); 
+                        row["ExecutionItemUid"] = Guid.NewGuid(); 
 
                         table.Rows.Add(row);
 
@@ -8070,7 +8070,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("Description", "Description");
                     bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
-                    bulkCopy.ColumnMappings.Add("ExecutionUid", "ExecutionUid");
+                    bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                     
 
                     bulkCopy.WriteToServer(table);
@@ -8159,7 +8159,7 @@ WHEN MATCHED
                 create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
                                             
                 merge into [Group] G
-                using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, EG.ExecutionUid, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
+                using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, EG.ExecutionItemUid, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
 	                    from api.ExecutionGroup EG
 						left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
 						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
@@ -8178,7 +8178,7 @@ WHEN MATCHED
                     when not matched then
 	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,UpdatedOn,UpdatedBy)
 	                    values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,GETDATE(),@currentUser)
-	                output TRIM(S.Name), S.ExecutionUid into #mergeResultTable;
+	                output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 
                     INSERT INTO [ResourceGroup](GroupID,[ResourceID])
@@ -8241,7 +8241,7 @@ WHEN MATCHED
                     update EG
                     set EG.GroupUid = A.uid
                     from api.ExecutionGroup EG
-                    inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionUid
+                    inner join #mergeResultTable Res on Res.ExecutionItemUid = EG.ExecutionItemUid
 					inner join [Group] G on G.Name = Res.GroupName
 		            inner join Asset A on A.ObjectID = G.ID and A.Object ='Group'
                     where EG.ExecutionID = @ExecutionID and EG.Success is null";
@@ -8280,7 +8280,7 @@ WHEN MATCHED
                         }
                         results.AddRange(
                                 Query<GroupResponseResult>(
-                                    $"select [ItemNumber],[GroupUid] as uid,[ExecutionUid] as ExecutionItemUid,[Message],[Success] from api.ExecutionGroup where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
+                                    $"select [ItemNumber],[GroupUid] as uid,[ExecutionItemUid],[Message],[Success] from api.ExecutionGroup where ExecutionID = @ExecutionID and ItemNumber between @beginItemNumber and @endItemNumber",
                                     new { execution.ExecutionID, beginItemNumber, endItemNumber }
                                 )
                             );
