@@ -1,5 +1,5 @@
 ﻿
-import { Component, OnInit, EventEmitter, Output, Input, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, EventEmitter, Output, Input, AfterViewInit, ChangeDetectorRef, OnChanges } from '@angular/core';
 import { Router } from '@angular/router';
 import * as _ from 'lodash';
 import { SelectItem } from 'primeng/api';
@@ -39,7 +39,6 @@ export class ColorPickerComponent implements OnInit {
     constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
     }
     ngOnInit() {
-        this.colors = []; 
         this.load();
     }
 
