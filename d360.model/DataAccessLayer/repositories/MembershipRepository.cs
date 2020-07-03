@@ -1070,6 +1070,43 @@ order by	q.SortOrder";
             return results;
         }
 
+        public List<GroupResponseResult> AddGroups(ApiExecution execution, List<AddGroupModel> groups)
+        {
+            List<UpdateGroupModel> models = new List<UpdateGroupModel>();
+            List<GroupResponseResult> results = null;
+
+            foreach(var i in groups)
+            {
+                models.Add(new UpdateGroupModel
+                {
+                    Description = i.Description,
+                    Name = i.Name,
+                    PrimaryOwnerUid = i.PrimaryOwnerUid,
+                    SecondaryOwnerUid = i.SecondaryOwnerUid
+                });       
+            }
+
+            try
+            {
+                results = CompanyContext.UpdateGroups(execution, models);
+
+                // Close execution record.
+                execution.Processed = results.Count;
+                execution.Error = results.Count(i => !i.Success);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+            catch (Exception ex)
+            {
+                execution.ErrorMessage = ex.GetFullExceptionData(false);
+                execution.CompletedOn = DateTime.UtcNow;
+                CompanyContext.Update(execution);
+            }
+
+
+            return results;
+        }
+
         public List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups)
         {
             CompanyContext.Add(execution);

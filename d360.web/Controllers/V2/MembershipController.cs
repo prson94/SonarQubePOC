@@ -1013,9 +1013,44 @@ namespace d360.web.Controllers.V2
             if (groups.Count < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
 
+            var isValid = groups.All(x => x.Uid.HasValue);
+
+            if (!isValid)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Uid must be provided in all requests"));
+
             var execution = getApiExecution(groups.Count);
 
             var result = membershipRepository.UpdateGroups(execution, groups);
+
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
+        }
+
+        /// <summary>
+        /// Add a group based on the data provided in request.
+        /// </summary>
+        /// <param name="groups">The groups that will be added</param>
+        [
+            HttpPost,
+            Route("groups"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"),
+            SwaggerRequestExample(typeof(AddGroup), typeof(AddGroupExample)),
+            SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "There are no groups in this request.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Forbidden, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+
+        ]
+        public async Task<IHttpActionResult> AddGroup(List<AddGroupModel> groups)
+        {
+            if (!Company.CurrentResourceIsAdmin)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
+
+            if (groups.Count < 1)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
+
+            var execution = getApiExecution(groups.Count);
+
+            var result = membershipRepository.AddGroups(execution, groups);
 
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }

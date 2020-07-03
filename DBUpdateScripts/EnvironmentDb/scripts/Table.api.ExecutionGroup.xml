@@ -34,5 +34,27 @@ BEGIN
 		]]>
     </rollback>
   </changeSet>
+    <changeSet author="sdooley" id="Table.api.ExecutionGroup-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
+begin
+	alter table api.ExecutionGroup add [ExecutionItemUid] uniqueidentifier
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'ExecutionItemUid')
+begin
+	alter table api.ExecutionGroup drop column [ExecutionItemUid]
+end
+
+]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>
