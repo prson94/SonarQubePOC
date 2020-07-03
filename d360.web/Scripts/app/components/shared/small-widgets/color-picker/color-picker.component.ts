@@ -33,6 +33,7 @@ export class ColorPickerComponent implements OnInit {
     @Input() colors: SelectItem[] = [];
     @Input() placeholder: string = 'Optional';
     @Input() selectedColor: string;
+    @Input() loadDefaultColors: boolean = false;
     @Output() selectedColorChange = new EventEmitter();
 
     constructor(private router: Router, private ref: ChangeDetectorRef, private assetService: AssetService) {
@@ -47,7 +48,7 @@ export class ColorPickerComponent implements OnInit {
     }
 
     load(): any {
-        if (this.colors.length == 0) {
+        if (this.loadDefaultColors) {
             this.assetService.getAllColors().subscribe(res => {
                 if(res)
                     this.colors = res;
