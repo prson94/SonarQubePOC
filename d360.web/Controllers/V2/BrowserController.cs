@@ -409,13 +409,13 @@ select	A.TypeName,
 							select value = (
 								SELECT 
 								ADV.DisplayValue as name,
-                                COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), '{{emptycolor}}') as color
+                                JSON_VALUE(ACJ.ColorJSON,'$.Value') as color
 								FROM field fi 
 								cross apply STRING_SPLIT(fi.Value, ',') SPFfi
 								inner join Asset AC on AC.Object = F.LookupObjectType and AC.ObjectID = try_cast(SPFfi.value as int)
 								cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
                                 cross apply GetAssetDisplayValueByID(AC.ID) ADV
-								 where FieldTypeID = F.ID and fi.AssetID = V.AssetID and F.[Type] = 'Lookup'
+								 where FieldTypeID = F.ID and fi.AssetID = V.AssetID and F.[Type] = 'Lookup' and Color is not null
 								for json path)
 							)FV
 			        where	AssetID = A.ID
