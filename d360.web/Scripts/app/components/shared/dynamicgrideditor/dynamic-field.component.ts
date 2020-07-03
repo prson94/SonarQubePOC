@@ -699,7 +699,6 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
     }
 
     private onSelect(e: EditorDropDownItem) {
-        console.log(e);
         if (e != null) {
             this.field.Value = e.Value;
         } else {

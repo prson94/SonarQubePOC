@@ -9,7 +9,7 @@ import { AssetService } from '../../../../services/asset.service';
     template: `
                 <div *ngIf="colorsObject && colorsObject.length > 0">
                     <span *ngFor="let item of colorsObject">
-                        <span class="ig-colorfield-item grid">
+                        <span class="ig-colorfield-item grid" style="display: inline-flex !important;">
                             <span class="ig-colorfield-swatch" [ngClass]="{'empty': (item.color == 'transparent' || item.color == null)}" [ngStyle]="{'background-color': item.color}"></span>
                             <span class="ig-colorfield-item-label">{{item.name}}</span>
                         </span>
@@ -31,7 +31,7 @@ export class ColorDisplayComponent implements OnInit {
             try {
                 this.colorsObject = JSON.parse(this.colorsJSON);
             } catch{
-                console.log("invalid color JSON string. " + this.colorsJSON);
+                this.colorsObject = { name: this.colorsJSON, color: 'transparent' };
             }
         }
     }

@@ -25,21 +25,24 @@ export class StatusBadgeComponent implements OnInit, OnChanges {
     }
 
     ngOnInit(): void {
+        this.load();
+        this.ref.markForCheck();
+    }
 
+    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
+        this.load();
+        this.ref.markForCheck();
+    }
+
+    load() {
         try {
             this.colorObjects = JSON.parse(this.status);
             this.useDefinedColor = true;
             this.singleUndefinedColor = this.colorObjects.length == 1 && this.colorObjects[0].color == 'transparent'; 
         } catch{
             this.useDefinedColor = false;
-            this.singleUndefinedColor = false;       
+            this.singleUndefinedColor = false;
         }
-
-        
-    }
-
-    ngOnChanges(changes: { [propName: string]: SimpleChange }) {
-
     }
     getBackgroundColor(name: string = "") {
         status = this.status.toLowerCase().trim();

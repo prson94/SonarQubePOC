@@ -545,11 +545,28 @@ from	FollowDetail F
                     else if (det != null)
                     {
                         var sql = @"
-select  ISNULL(FormattedValue,' ') as Value,
-	    FriendlyName as Name,
-        [Type]
-from    FieldDetail 
-where   [Object]= @o and ObjectID = @oid and [Name] != 'Description' and [Type] not in ('JsonElement', 'Score')
+select  COALESCE(Color.value,FormattedValue,' ') as Value,
+	    F.FriendlyName as Name,
+        case 
+		    when Color.value is not null then 'Color' 
+		    else F.[Type] 
+		end as 'Type'
+from    FieldDetail  F
+inner join fieldType FT on FT.ID = F.FieldTypeID
+outer apply(
+        select value = (
+             SELECT
+			ADV.DisplayValue as name,
+             COALESCE(JSON_VALUE(ACJ.ColorJSON, '$.Value'), '{{emptycolor}}') as color
+             FROM field fi
+             cross apply STRING_SPLIT(F.Value, ',') SPFfi
+             inner join Asset AC on AC.Object = FT.LookupObjectType and AC.ObjectID = try_cast(SPFfi.value as int)
+             cross apply dbo.GetAssetColorJsonById(AC.Id) ACJ
+             cross apply GetAssetDisplayValueByID(AC.ID) ADV
+             where FieldTypeID = F.fieldTypeID and fi.AssetID = F.AssetID and FT.Type = 'Lookup'
+			for json path)
+		)Color(value)
+where   F.[Object]= @o and F.ObjectID = @oid and F.[Name] != 'Description' and F.[Type] not in ('JsonElement', 'Score')
 union
 select	p.[Value],
 		RT.FriendlyName as [Name],
