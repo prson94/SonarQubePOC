@@ -793,7 +793,7 @@ DEALLOCATE cursorDelete;
     </sql>
   </changeSet>
   
- <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-2">
+ <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-5">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -802,7 +802,7 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-3">
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-4">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -813,7 +813,7 @@ SET color =
            WHEN 'draft' THEN '#d1dce4'
            WHEN 'certified' THEN '#4ecc89'
            WHEN 'under review' THEN '#e2792a' 
-           ELSE 'hsl(' + CAST(([utility].[JS_Hashcode](LOWER(ADV.DisplayValue)) * 2) % 360 as varchar) + ', 70%, 70%)'
+           ELSE 'hsl(' + CAST(([utility].[JS_Hashcode](LOWER(COALESCE(ADV.DisplayValue,A.Code))) * 2) % 360 as varchar) + ', 70%, 70%)'
     END
 FROM Asset as A
 inner join AssetType ATT on ATT.ID = A.AssetTypeID
