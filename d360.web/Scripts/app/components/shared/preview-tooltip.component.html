@@ -42,11 +42,11 @@
         <div *ngIf="data?.WorkflowVersionUID">
             <b>Version UID</b>: <span [innerHtml]="data.WorkflowVersionUID"></span>
         </div>
-        <div *ngFor="let field of data?.FieldValues">
+        <div *ngFor="let field of data?.FieldValues" [ngStyle]="{ display: field.Type == 'Color' ? 'inline-flex' : 'block' }">
             <ng-container *ngIf="field.Value">
-                <b>{{ field.Name }}</b>:
+                <b>{{ field.Name }}</b><span style="padding-right:4px;">:</span>
                 <span *ngIf="field.Type == 'Html' || field.Type == 'Link'" [innerHtml]="field.Value"></span>
-                <span *ngIf="field.Type == 'Color'" [innerHtml]="colorHtml | safeHtml"></span>
+                <d3s-color-display  *ngIf="field.Type == 'Color'" [colorsJSON]="field.Value"></d3s-color-display>
                 <ng-container *ngIf="field.Type == 'JSON'">
                     <span (click)="$event.stopPropagation()">
                         <ngx-json-view [data]="GetJSON(field.Value)"></ngx-json-view>
