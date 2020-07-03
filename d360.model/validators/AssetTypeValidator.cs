@@ -162,7 +162,7 @@ namespace d360.core.validators
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.MissingFlowObjectType}");
             }
 
-            if(model.Class == AssetTypeClass.Diagram && (_governanceRoleUid == null || _governanceRoleUid == Guid.Empty))
+            if (model.Class == AssetTypeClass.Diagram && (_governanceRoleUid == null || _governanceRoleUid == Guid.Empty))
             {
                 return new WorkHttpStatus(HttpStatusCode.BadRequest, AssetTypeErrors.InvalidRequestHttpErrorTitle, $"{AssetTypeErrors.GovernanceRoleNotSet}");
             }
@@ -266,7 +266,10 @@ namespace d360.core.validators
             List<string> defaultAssetFields = new List<string>() { "createdon", "updatedon", "assetid" };
 
             if (assetType.Object == SystemObjects.ReferenceItemType.ToString())
+            {
                 defaultAssetFields.Add("code");
+                defaultAssetFields.Add("color");
+            }
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_includeparent"))
             {

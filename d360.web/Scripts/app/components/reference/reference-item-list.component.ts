@@ -119,6 +119,9 @@ export class ReferenceItemGridComponent extends BaseComponent implements OnChang
             if (field)
                 sort = field.apiName;
 
+            if (event.sortField == 'Color')
+                sort = 'Color';
+
             if (event.globalFilter && event.globalFilter.length > 0) {
                 this.loadParams['_simpleFilter'] = event.globalFilter;
             }
