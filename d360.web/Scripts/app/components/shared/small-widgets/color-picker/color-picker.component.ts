@@ -54,6 +54,10 @@ export class ColorPickerComponent implements OnInit {
                     this.colors = res;
                 if (this.selectedColor && res.length > 0) {
                     let isCustom = this.colors.filter(x => { return x.label == this.selectedColor }).length == -1;
+                    if (isCustom)
+                        this.selectedColor = null;
+                } else {
+                    this.selectedColor = null;
                 }
                 this.ref.markForCheck();
             });
