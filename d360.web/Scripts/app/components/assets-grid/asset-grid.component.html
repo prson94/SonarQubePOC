@@ -221,7 +221,7 @@
     *ngIf="showDelete"
     [uid]="selected?.AssetUid"
     [assetTypeUid]="gridObject?.AssetTypeUID"
-    [displayValue]="(selected?.DisplayValue ? selected?.DisplayValue : 'Artifact')"
+    [displayValue]="(deleteName ? deleteName : 'Artifact')"
     (onCancel)="showDelete = false"
     (onDeleted)="onDeleted()">
 </d3s-asset-delete-editor>
