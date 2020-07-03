@@ -7994,14 +7994,14 @@ WHEN MATCHED
             CurrentExecutionLocationModel currentLocation = null;
             var currentUser = CurrentCompanyID;
 
-            var dups = groups.GroupBy(x => x.Name).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
+            var dups = groups.GroupBy(x => x.Name.Trim()).Where(x => x.Count() > 1).Select(x => new { x.Key, Items = x.ToList() }).ToList();
 
             Add(execution);
             SetApiExecutionProcessingStartTime(execution.ExecutionID);
 
             if (dups.Any())
             {
-                execution.ErrorMessage = $"Duplicate Names: {string.Join(", ", dups.Select(i => i.Items.First().Name))}. Name must be unique within a batch.";
+                execution.ErrorMessage = $"Duplicate Names: {string.Join(", ", dups.Select(i => i.Items.First().Name.Trim()))}. Name must be unique within a batch.";
                 results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = execution.ErrorMessage, Success = false }));
             }
             else
@@ -8035,7 +8035,7 @@ WHEN MATCHED
                         if (item.Name == null)
                             row["Name"] = "";
                         else
-                            row["Name"] = item.Name;
+                            row["Name"] = item.Name.Trim();
 
                         row["Description"] = item.Description;
                         row["PrimaryOwnerUid"] = item.PrimaryOwnerUid;
