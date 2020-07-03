@@ -509,10 +509,8 @@ export class AssetGridComponent extends BaseComponent implements OnChanges, OnDe
     }
 
     private onDelete(item) {
-        var path = item['Path'].split('.');
-        var name = path[path.length - 1].replace('[', '');
-        name = name.replace(']', '');
-        this.deleteName = name;
+        var path = item['Path'].split('].[');
+        this.deleteName = path[path.length - 1].replace('[', '').replace(']', '');
         this.selected = item;
         this.showDelete = true;
         this.changeDetectorRef.markForCheck();
