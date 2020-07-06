@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v11">
+  <changeSet author="Pappas" id="Procedure.metrics.LoadFromStaging-v12">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -160,8 +160,8 @@ begin
 										inner join #maxEffectiveMetrics MaxE on MaxE.MetricAssetUid = M.Uid
 										inner join metrics.AssetVersion MV on MV.AssetUid = M.[Uid] and MV.EffectiveDate = MaxE.EffectiveDate
 										inner join metrics.AssetVersionCondition C on C.AssetVersionUid = MV.[Uid] 
-										left join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid and CI.ConditionFieldTypeID = FT.ID
-										left join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid
+										inner join metrics.AssetVersionConditionItem CI on CI.AssetVersionConditionUid = C.Uid and CI.ConditionFieldTypeID = FT.ID
+										inner join metrics.AssetVersionConditionItemValue CIV on CIV.Uid = CI.Uid
 							where		metrics.CompareConditionValueToFieldValue(FT.[Type], CI.Operator, CIV.[Value], coalesce(F.Value, FT.DefaultValue)) = 0
 							group by	A.AssetUid,
 										M.Uid,
