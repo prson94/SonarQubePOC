@@ -438,7 +438,6 @@
     <Compile Include="Models\Editor Models.cs" />
     <Compile Include="Models\Formatters\GuidConverter.cs" />
     <Compile Include="Models\MimeTypeExtensionsMap.cs" />
-    <Compile Include="Models\ProcessDiagramModels.cs" />
     <Compile Include="Models\RestApiException.cs" />
     <Compile Include="Models\SwaggerExampleModels.cs" />
     <Compile Include="Models\SwaggerExampleModelLogic.cs" />

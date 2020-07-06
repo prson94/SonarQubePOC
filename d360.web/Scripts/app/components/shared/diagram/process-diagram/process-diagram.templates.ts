@@ -277,12 +277,12 @@ export class ProcessDiagramTemplates {
                             fromLinkable: true,
                             toLinkable: true,
                             cursor: "pointer",
-                            stroke: "#708EA6",
                             fill: 'white',
                             strokeWidth: 2
                         },
                         new go.Binding("figure"),
-                        new go.Binding("fill")),
+                        new go.Binding("fill"),
+                        new go.Binding("stroke", "refItemColor").makeTwoWay()),
                     $(go.TextBlock,
                         {
                             alignment: go.Spot.Center,

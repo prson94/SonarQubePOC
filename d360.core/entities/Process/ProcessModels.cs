@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace d360.web.Models
+namespace d360.core.entities.Process
 {
 
     public class NodeData : Dictionary<string, string>
@@ -74,5 +74,10 @@ namespace d360.web.Models
         public IList<NodeData> nodeDataArray { get; set; }
         public IList<LinkData> linkDataArray { get; set; }
     }
-
+    public class ValidationError
+    {
+        public Guid AssetTypeUid { get; set; }
+        public Guid AssetUid { get; set; }
+        public string Error { get; set; }
+    }
 }

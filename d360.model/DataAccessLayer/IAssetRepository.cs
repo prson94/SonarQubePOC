@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using d360.core.entities;
+using d360.core.entities.Process;
 using d360.core.enums;
 using d360.core.queue;
 using SpreadsheetLight;
