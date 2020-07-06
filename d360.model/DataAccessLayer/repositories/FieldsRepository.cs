@@ -722,7 +722,6 @@ from	IntersectType I
                     newFieldType.IsEditable = false;
                     newFieldType.IsListable = f.Type.ComputedRelationshipField.IsListable;
                     newFieldType.IsPartOfKey = false;
-                    newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
                 }
@@ -1330,6 +1329,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Relationship.IsListable;
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
+                    newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
                 }
                 else if (f.Type.Text != null)
                 {

@@ -291,7 +291,7 @@ namespace d360.core.entities
         [DataMember]
         public bool IsListable { get; set; }
         [DataMember]
-        public bool ShowIfEmpty { get; set; }
+        public bool ShowIfEmpty { get; set; }        
     }
 
     public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel
@@ -548,6 +548,8 @@ namespace d360.core.entities
         public bool IsListable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
     }
 
     public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
