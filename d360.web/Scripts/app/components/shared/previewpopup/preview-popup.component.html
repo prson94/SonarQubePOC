@@ -52,7 +52,10 @@
                                     <span>{{i != 0 ? ',' : ''}}<a style="margin:0px;" href="tag/{{tag.uid}}">{{tag.Value}}</a></span>
                                 </ng-container>
                             </ng-container>
-                            <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag'" [innerText]="field.Value"></span>
+                            <ng-container *ngIf="field.Type == 'Color'" >
+                                <d3s-color-display [colorsJSON]="field.Value"></d3s-color-display>
+                            </ng-container>
+                            <span *ngIf="field.Type != 'Html' && field.Type !='Link' && field.Type != 'JSON' && field.Type != 'Tag' && field.Type != 'Color'" [innerText]="field.Value"></span>
                         </ng-container>
                     </td>
                 </tr>
