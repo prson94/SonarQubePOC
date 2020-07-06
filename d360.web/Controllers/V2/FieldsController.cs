@@ -644,6 +644,11 @@ namespace d360.web.Controllers.V2
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Score").ToList();
                 }
 
+                if (AssetTypeUid != null && @class == AssetTypeClass.User)
+                {
+                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "ComplexRelationLookup").ToList();
+                }
+
                 var jsonFieldType = new Dictionary<string, string>() {
                     { "Boolean", "bit" },
                     { "Date", "date" },
