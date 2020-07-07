@@ -793,7 +793,7 @@ DEALLOCATE cursorDelete;
     </sql>
   </changeSet>
   
- <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-5">
+ <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-7">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -802,14 +802,14 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-4">
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-6">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
 		<![CDATA[
 	UPDATE A
 SET color = 
-	CASE LOWER(Code)
+	CASE LOWER(COALESCE(ADV.DisplayValue,A.Code))
            WHEN 'draft' THEN '#d1dce4'
            WHEN 'certified' THEN '#4ecc89'
            WHEN 'under review' THEN '#e2792a' 
