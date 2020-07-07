@@ -27,6 +27,7 @@ using System.Web.Http.Description;
 using System.Xml.Linq;
 using d360.core.resources;
 using d360.model.DataAccessLayer;
+using DocumentFormat.OpenXml.Office2010.Excel;
 
 namespace d360.web.Controllers
 {
@@ -246,11 +247,20 @@ namespace d360.web.Controllers
                                             {
                                                 var lookupID = ft.LookupObjectID.HasValue ? ft.LookupObjectID : 0;
                                                 var detail = Company.GetObjectDetail(ft.LookupObjectType, val);
-                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GEtAssetColorJsonByID({(detail != null ? detail.AssetID : 0)})").FirstOrDefault();
-                                                if (colorData != null)
+                                                var otherAssetsHaveColor = Company.Assets.Any(x => x.AssetTypeID == detail.AssetTypeID && x.Color != null);
+                                                var colorData = Company.Query<string>($@"SELECT colorJSON from dbo.GetAssetColorJsonByID({(detail != null ? detail.AssetID : 0)})").FirstOrDefault();
+                                                if (colorData != null || otherAssetsHaveColor)
                                                 {
-                                                    var obj = JObject.Parse(colorData);
-                                                    ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
+                                                    JObject obj = null;
+                                                    if(colorData != null)
+                                                    {
+                                                        obj = JObject.Parse(colorData);
+                                                        ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"{(string)obj["Value"] ?? "transparent"}\"}}]";
+                                                    }
+                                                    else
+                                                    {
+                                                        ro.Value = $"[{{\"name\":\"{formattedValue}\",\"color\":\"transparent\"}}]";
+                                                    }
                                                     ro.DataType = "color";
                                                 }
                                             }
