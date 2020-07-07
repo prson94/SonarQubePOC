@@ -782,13 +782,12 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-
-  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11339">
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11339-b">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
       <![CDATA[
-				update fieldtype set MinimumLength = null where [type] = 'html';
+				update fieldtype set MinimumLength = null, UpdatedBy = 0 where [type] = 'html' and MinimumLength is not null;
 			]]>
     </sql>
   </changeSet>
