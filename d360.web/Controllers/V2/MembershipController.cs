@@ -1052,6 +1052,8 @@ namespace d360.web.Controllers.V2
 
             var result = membershipRepository.AddGroups(execution, groups);
 
+            Company.CreateOrUpdateTypeDisplayValuesAsync(1, core.SystemObjects.GroupType.ToString());
+
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
         }
 
