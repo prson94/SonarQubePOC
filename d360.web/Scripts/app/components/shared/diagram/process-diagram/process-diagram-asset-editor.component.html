@@ -3,7 +3,7 @@
             <span class="asset-name">{{nodeData.Name}}</span>
             <span class="asset-type-name">{{nodeData.assetTypeName}}</span>
         </div>
-        <d3s-dynamic-editor [title]="Name"
+        <d3s-dynamic-editor-v2 [title]="Name"
                             [selectedObject]="'TaskType'"
                             [objectTypeUid]="nodeData.assetTypeUid"
                             [assetUid]="nodeData.isNew ? null : nodeData.key"
@@ -12,5 +12,5 @@
                             [useModelBinding]="true"
                             [hasHeader]="false"
                             [dataModel]="nodeData"
-                            (modelChanged)="onModelChange($event)"></d3s-dynamic-editor>
+                            (modelChanged)="onModelChange($event)"></d3s-dynamic-editor-v2>
     </div>

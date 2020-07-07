@@ -432,7 +432,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private getNodeColor(data: any) {
         try {
             var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
-            if (item)
+            if (item && item.Value)
                 return item.Value;
         }
         catch{
