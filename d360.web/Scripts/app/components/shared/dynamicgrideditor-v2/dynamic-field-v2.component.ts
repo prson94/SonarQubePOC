@@ -214,6 +214,8 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     }
 
     ngOnInit() {
+
+        console.log(this.field);
         if (this.field.FieldType != 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
                 this.onFieldChanges(data);
@@ -362,7 +364,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
 
             window.setTimeout(() => {
-                
+
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                 this.ref.detectChanges();
             }, 250);
@@ -777,6 +779,16 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
             this.ref.markForCheck();
         }
+    }
+
+    private isRequired() {
+        return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
+    }
+
+    private getPlaceholder() {
+        if (this.isRequired())
+            return 'Value required';
+        else return 'Optional';
     }
 
 }

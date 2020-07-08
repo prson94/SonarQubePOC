@@ -26,6 +26,8 @@ using System.Data;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using d360.core.entities.Process;
+using SpreadsheetLight;
+using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -246,7 +248,7 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
                 }
-                
+
                 var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
                 var execution = getApiExecution(totalCount);
 
@@ -271,6 +273,38 @@ namespace d360.web.Controllers.V2
             }
 
         }
+        /// <summary>
+        /// Retrieves a process diagram for specific asset
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("export/{assetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramExport(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+
+            byte[] bytes = await ProcessRepository.GetDiagramExcel(asset);
+
+            var response = createFileResponseMessage(HttpStatusCode.OK, $"Filename {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+        }
+
 
     }
 }

@@ -113,7 +113,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
         if (this.myDiagram) {
-            if (this.myDiagram.selection.count == 0) {
+            if (this.myDiagram.selection.count == 0 || this.myDiagram.selection.count > 1) {
                 this.selectedNodeData = null;
             }
             this.saveState.emit(this.isCurrentStateSaved());
@@ -190,14 +190,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram =
             $(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
                 {
-                    //"draggingTool.dragsLink": true,
-                    //"draggingTool.isGridSnapEnabled": true,
-                    //"linkingTool.portGravity": 20,
-                    //"relinkingTool.portGravity": 20,
-                    //"rotatingTool.handleAngle": 270,
-                    //"rotatingTool.handleDistance": 30,
-                    //"rotatingTool.snapAngleMultiple": 15,
-                    //"rotatingTool.snapAngleEpsilon": 15,
                     "undoManager.isEnabled": true,
                     "textEditingTool.doActivate": function () {
                         go.TextEditingTool.prototype.doActivate.call(this);
@@ -232,9 +224,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramStateChanged();
         })
 
-        var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate(this);
-        var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
-        var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate(this);
+        var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate();
+        var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate();
+        var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate();
+
+        activityNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+        eventNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+        gatewayNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
 
         var templmap = new go.Map<string, go.Node>();
         templmap.add("activity", activityNodeTemplate);
@@ -466,11 +462,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private updateValidationData() {
         if (this.validationErrors && this.validationErrors.errors) {
             var errors = this.validationErrors.errors as any[];
+            let selectedKey: string = '';
+
             try {
                 this.myDiagram.model.commit(function (m) {
                     m.nodeDataArray.forEach(data => {
                         if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
                             m.set(data, 'hasError', true);
+                            if (!selectedKey) {
+                                selectedKey = data.key;
+                            }
                         }
                         else {
                             m.set(data, 'hasError', false);
@@ -480,8 +481,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             } catch (e) {
                 console.log(e);
             }
+
+            if (selectedKey) {
+                this.isInfoPanelOpened = true;
+                this.myDiagram.clearSelection();
+                this.myDiagram.select(this.myDiagram.findPartForKey(selectedKey));
+            }
         }
     }
 
-    
+
 }

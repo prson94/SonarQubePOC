@@ -10,7 +10,7 @@ export class ProcessDiagramTemplates {
     //gateway
     private static sideLength = 42;
 
-    public static eventTemplate(component: any) {
+    public static eventTemplate() {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
             if (!(node as go.Node).isEnabled) {
@@ -27,10 +27,7 @@ export class ProcessDiagramTemplates {
             {
                 locationSpot: go.Spot.Center,
                 selectable: true,
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
-                selectionChanged: (node) => {
-                    component.onSelectionChanged(node)
-                }
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
             },
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
@@ -175,7 +172,7 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    public static activityTemplate(component: any) {
+    public static activityTemplate() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
@@ -195,9 +192,7 @@ export class ProcessDiagramTemplates {
             {
                 selectable: true,
                 locationSpot: go.Spot.Center,
-                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
-                selectionChanged: (node) => { component.onSelectionChanged(node) }
-
+                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle")
             },
             $(go.Panel, 'Auto',
                 $(go.Shape, "RoundedRectangle",
@@ -228,7 +223,7 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    public static gatewayTemplate(component: any) {
+    public static gatewayTemplate() {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
             if (!(node as go.Node).isEnabled) {
@@ -245,10 +240,7 @@ export class ProcessDiagramTemplates {
             { locationSpot: go.Spot.Center },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
-                selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
-                selectionChanged: (node) => {
-                    component.onSelectionChanged(node)
-                }
+                selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
             },
             new go.Binding("angle").makeTwoWay(),
             $(go.Panel, "Vertical",
