@@ -326,5 +326,17 @@ namespace d360.core.validators
             }
             return true;
         }
+
+        public bool IsValidIncludeTotalFlag(IEnumerable<KeyValuePair<string, string>> queryParams)
+        {
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                var val = queryParams.ToList().First(k => k.Key.ToLower() == "_includetotal");
+
+                if (!bool.TryParse(val.Value, out _))
+                    return false;
+            }
+            return true;
+        }
     }
 }
