@@ -831,6 +831,16 @@ inner join FieldType F on
 		]]>
     </sql>
 	</changeSet>
+
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11456">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Status' and DisplayFormat = '{Name}'
+		]]>
+    </sql>
+  </changeSet>
   
 
 
