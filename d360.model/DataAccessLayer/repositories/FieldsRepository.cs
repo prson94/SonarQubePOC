@@ -705,6 +705,7 @@ from	IntersectType I
                     newFieldType.IsEditable = false;
                     newFieldType.IsListable = f.Type.ComputedRelationshipField.IsListable;
                     newFieldType.IsPartOfKey = false;
+		    newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
                 }
