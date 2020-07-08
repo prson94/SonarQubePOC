@@ -1015,7 +1015,7 @@ namespace d360.web.Controllers.V2
 
                 if (securityAssets.Any(x => x.Exists != true))
                 {
-                    var badAsset = securityAssets.First(x => x.Exists == true);
+                    var badAsset = securityAssets.First(x => x.Exists != true);
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad request", $"Responsibility override for '{badAsset.uid}' does not exist."));
                 }
 
