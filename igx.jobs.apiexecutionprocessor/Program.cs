@@ -86,6 +86,9 @@ namespace igx.jobs.apiexecutionprocessor
 
         public async Task Run(ApiExecutionInfo info, TextWriter log)
         {
+            CoreFunction.AITrackJobStart(functionName);
+            CoreFunction.AITrackEvent(functionName, $"Starting Batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
+
             Info = info;
 
             #region Create EF connection
@@ -398,6 +401,13 @@ namespace igx.jobs.apiexecutionprocessor
                     }
                     dbExecutionItem.CompletedOn = DateTime.UtcNow;
                     company.Update(dbExecutionItem);
+
+                    CoreFunction.AITrackJobCompletedNoErrors(functionName);
+                }
+                else
+                {
+                    // this is the case where the batch job has been started however no record can be found in the api execution table for the execution id.  Log it
+                    CoreFunction.AITrackEvent(functionName, $"Cannot find [api].[execution] record for batch ExecutionID:{(info != null ? info.ExecutionID.ToString() : "unknown execution id")}");
                 }
             }
             catch (Exception ex)
