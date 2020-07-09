@@ -648,6 +648,10 @@ namespace d360.model.DataAccessLayer
                         {
                             simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
                         }
+                        else if (ft.Type == DataType.Lookup.ToString() && CompanyContext.LookupFieldHasColorItem(ft))
+                        {
+                            simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
+                        }
                         else
                         {
                             simpleFilters.Add($"F{ft.ID}.FormattedValue like @simpleFilter");
