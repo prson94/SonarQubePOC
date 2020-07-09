@@ -792,7 +792,17 @@ DEALLOCATE cursorDelete;
     </sql>
   </changeSet>
   
- <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-9">
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11456-b">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Status' and DisplayFormat = '{Name}'
+		]]>
+    </sql>
+  </changeSet>
+  
+ <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-10">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -805,7 +815,7 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-8">
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-11">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -832,15 +842,7 @@ inner join FieldType F on
     </sql>
 	</changeSet>
 
-  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11456">
-    <sql dbms="mssql"
-			splitStatements="false"
-            stripComments="false">
-      <![CDATA[
-		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Status' and DisplayFormat = '{Name}'
-		]]>
-    </sql>
-  </changeSet>
+  
   
 
 
