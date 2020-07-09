@@ -56,5 +56,27 @@ end
 ]]>
 	</rollback>
   </changeSet>
+      <changeSet author="MDonato" id="Table.api.ExecutionGroup-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'IsActiveDirectoryGroup')
+begin
+	alter table api.ExecutionGroup add [IsActiveDirectoryGroup] bit
+end
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'api' and TABLE_NAME = 'ExecutionGroup' and COLUMN_NAME = 'IsActiveDirectoryGroup')
+begin
+	alter table api.ExecutionGroup drop column [IsActiveDirectoryGroup]
+end
+
+]]>
+	</rollback>
+  </changeSet>
 
 </databaseChangeLog>

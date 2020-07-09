@@ -314,6 +314,9 @@ namespace d360.web.Controllers.V2
             if (isValidGroup.Total == 0)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.NotFound, "Group UID provided is not a valid group UID. Group does not exist."));
 
+            if (isValidGroup.items?.First()?.IsActiveDirectoryGroup == true)
+                throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Group UID provided is an active directory group and cannot be managed manually."));
+
             var duplicatedUsers = from u in users group u by u.Uid into user where user.Count() > 1 select user.Key;
 
             if (duplicatedUsers.Count() != 0)
@@ -559,6 +562,7 @@ namespace d360.web.Controllers.V2
             Route("groups/{groupUid:Guid}/{resourceUid:Guid}"),
             SwaggerResponse(HttpStatusCode.OK, "Success", typeof(ConfirmResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "Not found - Resource / Group doesn't exist.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "Bad Request - Provided group could not be updated", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.Unauthorized, "Access denied / you are not an admin and dont have access to perform this operation.", typeof(ErrorResponse)),
             SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
 
@@ -571,6 +575,14 @@ namespace d360.web.Controllers.V2
             {
                 if (!Company.CurrentResourceIsAdmin)
                     throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Unauthorized, "Access Denied"));
+
+                var group = (await Company.QueryAsync<Group>(@"
+select G.* from [Group] G 
+inner join Asset a on A.Object = 'Group' and A.ObjectID = G.ID 
+where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
+
+                if (group?.IsActiveDirectoryGroup == true)
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Bad Request", "Group for provided UID is an active directory group and cannot be manually managed."));
 
                 var res = await Company.Database.Connection.ExecuteAsync("delete rg from [dbo].[ResourceGroup] rg inner join[reporting].[Global_Resource] gr on gr.uid = @resource inner join[dbo].[Asset] a on a.uid = @group and a.object = 'Group' inner join[dbo].[Group] g on g.ID = a.ObjectID where rg.ResourceID = gr.ResourceID and rg.GroupID = g.ID", new { resource = resourceUid, group = groupUid });
 

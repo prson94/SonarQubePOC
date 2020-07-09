@@ -8020,6 +8020,7 @@ WHEN MATCHED
                     table.Columns.Add("Description", typeof(string));
                     table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
                     table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
+                    table.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
 
                     #region Generate data sets
@@ -8042,6 +8043,7 @@ WHEN MATCHED
                         if (item.SecondaryOwnerUid != null)
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
+                        row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
                         row["ExecutionItemUid"] = Guid.NewGuid(); 
 
                         table.Rows.Add(row);
@@ -8070,6 +8072,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("Description", "Description");
                     bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
+                    bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                     
 
@@ -8159,7 +8162,13 @@ WHEN MATCHED
                 create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
                                             
                 merge into [Group] G
-                using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, EG.ExecutionItemUid, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
+                using ( 
+select A.ObjectID as GroupID ,
+EG.Name,EG.Description,
+EG.ExecutionItemUid,
+EG.IsActiveDirectoryGroup,
+PO.ObjectID as PrimaryID,
+SO.ObjectID as SecondaryID
 	                    from api.ExecutionGroup EG
 						left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
 						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
@@ -8174,10 +8183,11 @@ WHEN MATCHED
 						set G.Name = TRIM(S.Name),
 						G.Description = S.Description,
 						G.PrimaryOwnerResourceID = PrimaryID,
-						G.SecondaryOwnerResourceID = SecondaryID
+						G.SecondaryOwnerResourceID = SecondaryID,
+                        G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                     when not matched then
-	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,UpdatedOn,UpdatedBy)
-	                    values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,GETDATE(),@currentUser)
+	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+	                    values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
 	                output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 
