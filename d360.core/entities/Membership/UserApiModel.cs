@@ -39,6 +39,7 @@ namespace d360.core.entities.Membership
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Nullable<Guid> SecondaryOwnerUid { get; set; }
+        public bool IsActiveDirectoryGroup { get; set; } = false;
     }
 
     public class UpdateGroupModel
@@ -48,6 +49,7 @@ namespace d360.core.entities.Membership
         public string Description { get; set; }
         public Guid PrimaryOwnerUid { get; set; }
         public Nullable<Guid> SecondaryOwnerUid { get; set; }
+        public bool IsActiveDirectoryGroup { get; set; } = false;
     }
 
     public class UserApiInsertModel : IUserApiUpsertModel

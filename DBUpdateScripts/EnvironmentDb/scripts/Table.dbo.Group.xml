@@ -33,7 +33,30 @@ END
 		]]>
 	</rollback>
   </changeSet>
+ <changeSet author="MDonato" id="Table.dbo.Group-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+<![CDATA[
+if not exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Group' and COLUMN_NAME = 'IsActiveDirectoryGroup')
+begin
+	alter table [Group] add IsActiveDirectoryGroup bit not null constraint DF_Group_IsActiveDirectoryGroup default 0;
+end
 
+]]>
+    </sql>
+	<rollback>
+<![CDATA[
+if exists (select * from [INFORMATION_SCHEMA].[COLUMNS] where TABLE_SCHEMA = 'dbo' and TABLE_NAME = 'Group' and COLUMN_NAME = 'IsActiveDirectoryGroup')
+begin
+	alter table [Group] drop constraint DF_Group_IsActiveDirectoryGroup;
+	alter table [Group] drop column IsActiveDirectoryGroup;
+end
+
+]]>
+	</rollback>
+  </changeSet>
   <changeSet author="Core" id="Table.dbo.Group-Group_AfterDelete-v1">
     <sql dbms="mssql"
             endDelimiter="\nGO"
