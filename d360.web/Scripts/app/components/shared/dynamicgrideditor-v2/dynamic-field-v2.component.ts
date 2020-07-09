@@ -214,8 +214,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     }
 
     ngOnInit() {
-
-        console.log(this.field);
         if (this.field.FieldType != 'Link') {
             this.fieldChangeSub = this.form.controls[this.field.FieldName].valueChanges.subscribe(data => {
                 this.onFieldChanges(data);

@@ -177,6 +177,33 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.switchModes(false);
     }
 
+    private isDeleteEnabled() {
+        if (this.myDiagram && this.myDiagram.selection.count > 0) {
+            return this.myDiagram.selection.any(x => x.data.Name);
+        }
+        else return false;
+    }
+
+    private isRelatedAssetsEnabled() {
+        if (!this.selectedNodeData)
+            return false;
+
+        if (this.selectedNodeData.isNew)
+            return false;
+        return true;
+    }
+
+    private getSelectedNodeCount() {
+        if (!this.myDiagram)
+            return 0;
+
+        return this.myDiagram.selection.filter(x => x.data.Name).count;
+    }
+
+    private get deleteModelTitle(): string {
+        return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
+    }
+
     switchModes(checkState: boolean = true) {
 
         if (checkState && this.isEditMode && !this.isCurrentStateSaved()) {
@@ -262,140 +289,28 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.nodeTemplateMap = templmap;
 
         this.myDiagram.linkTemplate = ProcessDiagramTemplates.linkTemplate;
+        var self = this;
+
+        this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
+            // stop any ongoing text editing
+
+            e.diagram.selection.each(data => {
+                try {
+                    var nodeData = data.data;
+                    e.diagram.model.commit(function (m) {
+                        var data = m.findNodeDataForKey(nodeData.key);
+                        m.set(data, 'Name', self.getNewNodeName(nodeData));
+                        m.set(data, 'key', self.newGuid());
+                    }, 'update__new_model');
+                } catch (e) {
+                    console.log(e);
+                }
+
+            })
+        });
 
         //load current asset diagram
         this.load();
-    }
-
-    private loadPallete() {
-        var $ = go.GraphObject.make;  // for conciseness in defining templates
-        this.myEventPalette =
-            $(go.Palette, "event-pallete",
-                {
-                    layout:
-                        $(go.GridLayout,
-                            {
-                                wrappingColumn: 2
-                            }
-                        ),
-
-                });
-
-        var eventArr = [];
-        // now add the initial contents of the Palette
-        this.events.forEach(ev => {
-            eventArr.push({
-                category: 'event',
-                refItemColor: this.defaultStrokeColor,
-                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
-                Name: ev.Name
-            });
-        })
-
-        this.myEventPalette.model.nodeDataArray = eventArr;
-
-        var templmap = new go.Map<string, go.Node>();
-        templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
-        this.myEventPalette.nodeTemplateMap = templmap;
-
-
-        this.myActivityPallete =
-            $(go.Palette, "activity-pallete",
-                {
-                    layout:
-                        $(go.GridLayout,
-                            {
-                                wrappingColumn: 2
-                            }
-                        ),
-
-                });
-
-        var eventArr = [];
-        // now add the initial contents of the Palette
-        this.activities.forEach(ev => {
-            eventArr.push({
-                category: 'activity',
-                refItemColor: this.defaultStrokeColor,
-                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
-                Name: ev.Name
-            });
-        })
-
-        this.myActivityPallete.model.nodeDataArray = eventArr;
-
-        var templmap = new go.Map<string, go.Node>();
-        templmap.add("activity", ProcessDiagramTemplates.activityTemplate_pallete());
-        this.myActivityPallete.nodeTemplateMap = templmap;
-
-
-        this.myGatewayPallete =
-            $(go.Palette, "gateway-pallete",
-                {
-                    layout:
-                        $(go.GridLayout,
-                            {
-                                wrappingColumn: 2
-                            }
-                        ),
-
-                });
-
-        var eventArr = [];
-        // now add the initial contents of the Palette
-        this.gateways.forEach(ev => {
-            eventArr.push({
-                category: 'gateway',
-                refItemColor: this.defaultStrokeColor,
-                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
-                Name: ev.Name
-            });
-        })
-
-        this.myGatewayPallete.model.nodeDataArray = eventArr;
-
-        var templmap = new go.Map<string, go.Node>();
-        templmap.add("gateway", ProcessDiagramTemplates.gatewayTemplate_pallete());
-        this.myGatewayPallete.nodeTemplateMap = templmap;
-
-        this.isPalleteLoaded = true;
-    }
-
-    private dragEnd($event: DiagramNodeBase) {
-        var nodeCategory: string = '';
-
-        switch ($event.FlowObjectType) {
-            case FlowObjectType.Activity: nodeCategory = 'activity'; break;
-            case FlowObjectType.Event: nodeCategory = 'event'; break;
-            case FlowObjectType.Gateway: nodeCategory = 'gateway'; break;
-        }
-        var icon = FontAwesomeHelper.GetHtmlCode($event.Icon);
-
-        setTimeout(() => {
-            this.myDiagram.startTransaction("make new node");
-            var point = go.Point.stringify(this.myDiagram.lastInput.documentPoint);
-
-            var data = {
-                key: this.newGuid(),
-                icon: icon,
-                category: nodeCategory,
-                loc: point,
-                refItemColor: this.defaultStrokeColor,
-                isNew: true,
-                //asset data
-                Name: this.getNewNodeName($event),
-                assetTypeName: $event.Name,
-                assetTypeUid: $event.uid,
-            };
-
-            this.myDiagram.model.addNodeData(data);
-            this.myDiagram.clearSelection();
-            this.myDiagram.select(this.myDiagram.findNodeForKey(data.key));
-            this.myDiagram.commitTransaction("make new node");
-
-            this.myDiagram.redraw();
-        }, 100);
-
     }
 
     private getNewNodeName(at: DiagramNodeBase) {
@@ -623,5 +538,111 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         } else {
             this.renderer.addClass(element, cs);
         }
+    }
+
+    private loadPallete() {
+        var $ = go.GraphObject.make;  // for conciseness in defining templates
+        this.myEventPalette =
+            $(go.Palette, "event-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.events.forEach(ev => {
+            eventArr.push({
+                category: 'event',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true
+            });
+        })
+
+        this.myEventPalette.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
+        this.myEventPalette.nodeTemplateMap = templmap;
+
+
+        this.myActivityPallete =
+            $(go.Palette, "activity-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.activities.forEach(ev => {
+            eventArr.push({
+                category: 'activity',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true
+            });
+        })
+
+        this.myActivityPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("activity", ProcessDiagramTemplates.activityTemplate_pallete());
+        this.myActivityPallete.nodeTemplateMap = templmap;
+
+
+        this.myGatewayPallete =
+            $(go.Palette, "gateway-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.gateways.forEach(ev => {
+            eventArr.push({
+                category: 'gateway',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true
+            });
+        })
+
+        this.myGatewayPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("gateway", ProcessDiagramTemplates.gatewayTemplate_pallete());
+        this.myGatewayPallete.nodeTemplateMap = templmap;
+
+        this.isPalleteLoaded = true;
     }
 }

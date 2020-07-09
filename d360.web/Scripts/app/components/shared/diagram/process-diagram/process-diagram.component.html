@@ -7,14 +7,17 @@
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
             </button>
             <div class="button-spacer"></div>
-            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save (DEV: saving to local storage)">
+            <button type="button" class="icon mr8 {{isSaveDisabled ? 'disabled' : ''}}" (click)="save()" [disabled]="isSaveDisabled" title="Save changes">
                 <i class="fa fa-save"></i>
             </button>
-
+            <div class="button-spacer"></div>
+            <button type="button" class="icon mr8 {{(!isDeleteEnabled() ? 'disabled' : '')}}" [disabled]="!isDeleteEnabled()" (click)="promptDeleteOpened = true" title="Delete selected item">
+                <i class="fa fa-trash"></i>
+            </button>
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
-                <button class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
                     <i class="fa fa-sitemap"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
@@ -151,10 +154,13 @@
             </div>
         </d3s-modal>
 
-        <d3s-modal [title]="'Delete Selected Item'" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
+        <d3s-modal [title]="deleteModelTitle" additionalClasses="medium-dialog" (onClose)="promptDeleteOpened=false" [isVisible]="promptDeleteOpened">
             <div class="content">
-                <div class="row">
+                <div class="row" *ngIf="getSelectedNodeCount() <= 1">
                     Please confirm that you wish to delete the selected item, as this operation cannot be undone.
+                </div>
+                <div class="row" *ngIf="getSelectedNodeCount() > 1">
+                    Please confirm that you wish to delete the {{getSelectedNodeCount()}} selected items, as this operation cannot be undone.
                 </div>
             </div>
             <div class="action-bar">
