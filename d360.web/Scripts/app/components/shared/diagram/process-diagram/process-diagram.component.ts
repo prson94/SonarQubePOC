@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2 } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -26,7 +26,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
+    isPalleteLoaded: boolean = false;
 
+    eventPalleteHeight: number = 300;
+    myEventPalette: go.Diagram;
+
+    activityPalleteHeight: number = 300;
+    myActivityPallete: go.Diagram;
+
+    gatewayPalleteHeight: number = 300;
+    myGatewayPallete: go.Diagram;
 
     private assetTypeNodes: DiagramNodeBase[] = [];
     private events: DiagramNodeBase[] = [];
@@ -56,7 +65,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
         private cdRef: ChangeDetectorRef,
-        private router: Router
+        private router: Router,
+        private renderer: Renderer2
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -76,6 +86,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
+
+                var nodeHeight = 150;
+                var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
+                this.eventPalleteHeight = numberOfEventRows * nodeHeight;
+
+                var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
+                this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
+
+                var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
+                this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
+
                 this.isLoaded = true;
                 this.loadDiagram();
             });
@@ -144,7 +165,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             }
         });
         this.myDiagram.isModelReadOnly = !state;
-
+        if (this.isEditMode && !this.isPalleteLoaded) {
+            this.loadPallete();
+        }
     }
 
     private discardChanged() {
@@ -167,7 +190,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.isEditMode) {
             this.editModeClosed.emit();
         }
-
         this.cdRef.detectChanges();
     }
 
@@ -241,9 +263,102 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.linkTemplate = ProcessDiagramTemplates.linkTemplate;
 
-
         //load current asset diagram
         this.load();
+    }
+
+    private loadPallete() {
+        var $ = go.GraphObject.make;  // for conciseness in defining templates
+        this.myEventPalette =
+            $(go.Palette, "event-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.events.forEach(ev => {
+            eventArr.push({
+                category: 'event',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name
+            });
+        })
+
+        this.myEventPalette.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
+        this.myEventPalette.nodeTemplateMap = templmap;
+
+
+        this.myActivityPallete =
+            $(go.Palette, "activity-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.activities.forEach(ev => {
+            eventArr.push({
+                category: 'activity',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name
+            });
+        })
+
+        this.myActivityPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("activity", ProcessDiagramTemplates.activityTemplate_pallete());
+        this.myActivityPallete.nodeTemplateMap = templmap;
+
+
+        this.myGatewayPallete =
+            $(go.Palette, "gateway-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.gateways.forEach(ev => {
+            eventArr.push({
+                category: 'gateway',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name
+            });
+        })
+
+        this.myGatewayPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("gateway", ProcessDiagramTemplates.gatewayTemplate_pallete());
+        this.myGatewayPallete.nodeTemplateMap = templmap;
+
+        this.isPalleteLoaded = true;
     }
 
     private dragEnd($event: DiagramNodeBase) {
@@ -490,5 +605,23 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
     }
 
+    private toggleClass(event: any, cs: string) {
+        var element = event.target;
+        if (!element.classList.contains('gov-accordion-item')) {
+            if (element.parentElement.classList.contains('gov-accordion-item')) {
+                element = element.parentElement;
+            }
+            else {
+                element = element.parentElement.parentElement;
+            }
+        }
 
+        const hasClass = element.classList.contains(cs);
+
+        if (hasClass) {
+            this.renderer.removeClass(element, cs);
+        } else {
+            this.renderer.addClass(element, cs);
+        }
+    }
 }

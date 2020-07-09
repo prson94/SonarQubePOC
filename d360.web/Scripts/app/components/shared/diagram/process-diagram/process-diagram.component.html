@@ -14,7 +14,7 @@
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
-                <button  class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                <button class="icon mr8 {{(!selectedNodeData  && !selectedNodeData?.objectId ? 'disabled' : '')}}" [disabled]="!selectedNodeData && !selectedNodeData?.objectId" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
                     <i class="fa fa-sitemap"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
@@ -23,63 +23,46 @@
             </div>
         </div>
     </div>
+
+
     <div class="diagram-content">
-        <div id="myPaletteDiv" *ngIf="isLoaded && isEditMode">
-            <p-accordion [multiple]="true">
-                <p-accordionTab header="Events" [selected]="true">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of events">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="rounder">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </p-accordionTab>
-                <p-accordionTab header="Activities">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of activities">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="rectangler">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
 
-                </p-accordionTab>
-                <p-accordionTab header="Gateways">
-                    <div class="row">
-                        <div class="col s6 process-item process-item-event" *ngFor="let item of gateways">
-                            <div *ngIf="item.Description" class="tooltip-content" [innerHtml]="item.Description"></div>
-                            <div class="draggable" pDraggable="dd" (onDragEnd)="dragEnd(item)">
-                                <div class="icon-holder">
-                                    <div class="diamonder">
-                                        <i class="fa {{item.Icon}}"></i>
-                                    </div>
-                                </div>
-                                <div class="item-name">
-                                    {{item.Name}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="gov-accordion">
+                <div class="gov-accordion-item opened" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
 
-                </p-accordionTab>
-            </p-accordion>
+                        <span>Events</span>
+                    </div>
+                    <div class="content">
+                        <div id="event-pallete" [style.height.px]="eventPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+
+                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
+                        <span>Activities</span>
+                    </div>
+                    <div class="content">
+                        <div id="activity-pallete" [style.height.px]="activityPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+
+                <div class="gov-accordion-item" (click)="toggleClass($event,'opened')">
+                    <div class="title">
+                        <i class="fa fa-chevron-down"></i>
+                        <i class="fa fa-chevron-right"></i>
+                        <span>Gateways</span>
+                    </div>
+                    <div class="content">
+                        <div id="gateway-pallete" [style.height.px]="gatewayPalleteHeight" style="background-color: white;width:230px;"></div>
+                    </div>
+                </div>
+            </div>
         </div>
         <div #diagram id="process-diagram-placeholder">
             <div class="empty-overlay" *ngIf="isDiagramLoaded">

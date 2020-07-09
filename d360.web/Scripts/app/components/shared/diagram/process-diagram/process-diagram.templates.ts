@@ -97,7 +97,6 @@ export class ProcessDiagramTemplates {
 
     }
 
-
     static get activity_BodyPanel() {
         var $ = go.GraphObject.make;
 
@@ -395,5 +394,179 @@ export class ProcessDiagramTemplates {
 
 
 
+    public static eventTemplate_pallete() {
+        var $ = go.GraphObject.make;
 
+        return $(go.Node, "Spot",
+            {
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+            },
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape, 'Rectangle',
+                        {
+                            fill: "#eff2f6",
+                            strokeWidth: 0,
+                            width: 100,
+                            height: 100
+                        }
+                    ),
+                    $(go.Panel, 'Auto',
+                        $(go.Shape, "Circle",
+                            {
+                                portId: "",
+                                fromLinkable: true,
+                                toLinkable: true,
+                                cursor: "pointer",
+                                fill: 'white',
+                                stroke: '#597897',
+                                strokeWidth: 2,
+                                width: this.eventNodeRadius,
+                                height: this.eventNodeRadius,
+                                margin: new go.Margin(2, 2, 2, 2)
+                            }
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.Center,
+                                stroke: '#597897',
+                                textAlign: "center",
+                                font: '32px FontAwesome',
+                                margin: new go.Margin(4, 0, 0, 0)
+                            },
+                            new go.Binding("text", "icon").makeTwoWay())
+                    )
+                )
+                ,
+                $(go.TextBlock,
+                    {
+                        font: this.textFont,
+                        margin: new go.Margin(8, 4, 4, 4),
+                        textAlign: "center",
+                        spacingBelow: 3,
+                        maxSize: new go.Size(90, NaN),
+                        maxLines: 2,
+                        wrap: go.TextBlock.WrapDesiredSize,
+                        editable: true,
+                        stroke: '#646464'
+                    }
+                    , new go.Binding("text", "Name").makeTwoWay())
+            )
+        );
+
+    }
+
+    public static activityTemplate_pallete() {
+        var $ = go.GraphObject.make;
+
+        return $(go.Node, "Spot",
+            {
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+            },
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape, 'Rectangle',
+                        {
+                            fill: "#eff2f6",
+                            strokeWidth: 0,
+                            width: 100,
+                            height: 100
+                        }
+                    ),
+                    $(go.Panel, 'Auto',
+                        $(go.Shape, "RoundedRectangle",
+                            {
+                                fill: "#597897",
+                                strokeWidth: 0,
+                                width: 66,
+                                height: 60
+                            }
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.Center,
+                                stroke: 'white',
+                                textAlign: "center",
+                                font: '32px FontAwesome',
+                                margin: new go.Margin(4, 0, 0, 0)
+                            },
+                            new go.Binding("text", "icon").makeTwoWay())
+                    )
+                )
+                ,
+                $(go.TextBlock,
+                    {
+                        font: this.textFont,
+                        margin: new go.Margin(8, 4, 4, 4),
+                        textAlign: "center",
+                        spacingBelow: 3,
+                        maxSize: new go.Size(90, NaN),
+                        maxLines: 2,
+                        wrap: go.TextBlock.WrapDesiredSize,
+                        editable: true,
+                        stroke: '#646464'
+                    }
+                    , new go.Binding("text", "Name").makeTwoWay())
+            )
+        );
+
+    }
+
+    public static gatewayTemplate_pallete() {
+        var $ = go.GraphObject.make;
+
+        return $(go.Node, "Spot",
+            {
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+            },
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape, 'Rectangle',
+                        {
+                            fill: "#eff2f6",
+                            strokeWidth: 0,
+                            width: 100,
+                            height: 100
+                        }
+                    ),
+                    $(go.Panel, 'Auto',
+                        $(go.Shape, "Rectangle",
+                            {
+                                stroke: "#597897",
+                                strokeWidth: 2,
+                                fill: 'white',
+                                width: 50,
+                                height: 50,
+                                angle: 45
+                            }
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.Center,
+                                stroke: '#597897',
+                                textAlign: "center",
+                                font: '32px FontAwesome',
+                                margin: new go.Margin(4, 0, 0, 0)
+                            },
+                            new go.Binding("text", "icon").makeTwoWay())
+                    )
+                )
+                ,
+                $(go.TextBlock,
+                    {
+                        font: this.textFont,
+                        margin: new go.Margin(8, 4, 4, 4),
+                        textAlign: "center",
+                        spacingBelow: 3,
+                        maxSize: new go.Size(90, NaN),
+                        maxLines: 2,
+                        wrap: go.TextBlock.WrapDesiredSize,
+                        editable: true,
+                        stroke: '#646464'
+                    }
+                    , new go.Binding("text", "Name").makeTwoWay())
+            )
+        );
+
+    }
 }
