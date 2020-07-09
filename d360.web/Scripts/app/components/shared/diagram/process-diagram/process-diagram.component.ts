@@ -37,6 +37,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     gatewayPalleteHeight: number = 300;
     myGatewayPallete: go.Diagram;
 
+    processDiagramBase64: string = '';
+
     private assetTypeNodes: DiagramNodeBase[] = [];
     private events: DiagramNodeBase[] = [];
     private activities: DiagramNodeBase[] = [];
@@ -48,6 +50,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
+    private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
 
     private selectedNodeData: any;
@@ -104,8 +107,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('diagram', { static: false }) diagramRef;
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
+        if (!this.diagramRef) return;
         let height = window.innerHeight;
-
         if (this.isEditMode)
             this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
         else if (this.isFullScreen)
@@ -171,10 +174,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private discardChanged() {
-        this.isSavingChangesModalOpened = false;
-        this.isErrorModalOpened = false;
         this.load();
-        this.switchModes(false);
+        if (this.actionAfterSaved) {
+            this.actionAfterSaved();
+            this.isSavingChangesModalOpened = false;
+            this.isErrorModalOpened = false;
+            this.actionAfterSaved = null;
+        }
     }
 
     private isDeleteEnabled() {
@@ -204,12 +210,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
     }
 
-    switchModes(checkState: boolean = true) {
-
-        if (checkState && this.isEditMode && !this.isCurrentStateSaved()) {
-            this.isSavingChangesModalOpened = true;
-            return;
-        }
+    switchModes() {
 
         this.isEditMode = !this.isEditMode;
         this.applyEditMode(this.isEditMode);
@@ -371,6 +372,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private validationErrors: any = {};
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
+
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
                 if (res.hasError) {
@@ -381,15 +383,19 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                 }
                 else {
-                    this.load();
                     this.isSaving = false;
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
                     this.cdRef.detectChanges();
+                    this.processDiagramBase64 = this.myDiagram.makeImageData({
+                        scale: 1
+                    }).toString();
 
-                    if (closeEditorAfterSave) {
+                    if (this.actionAfterSaved) {
                         window.setTimeout(() => {
-                            this.switchModes(false);
+                            this.actionAfterSaved();
+                            this.actionAfterSaved = null;
+                            this.isSavingChangesModalOpened = false;
                         }, 100)
                     }
                 }
@@ -426,6 +432,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isDiagramLoaded = true;
                 this.saveState.emit(this.isCurrentStateSaved());
                 this.cdRef.detectChanges();
+                this.processDiagramBase64 = this.myDiagram.makeImageData({
+                    scale: 1
+                }).toString();
             });
     }
 
@@ -644,5 +653,66 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myGatewayPallete.nodeTemplateMap = templmap;
 
         this.isPalleteLoaded = true;
+    }
+
+    private downloadProcessDiagram() {
+        var fileName = 'Filename';
+        this.isExporting = true;
+        this.processService.downloadProcessExcel(this.assetUid, this.processDiagramBase64)
+            .subscribe(data => {
+                this.isExporting = false;
+                this.processService.downloadFile(data, fileName);
+            });
+    }
+
+    private actionAfterSaved: Function;
+    private actionMessage: string = '';
+    private showDiscardChanges: boolean = false;
+    private doControlledAction(actionName: string) {
+
+        if (this.isEditMode && !this.isCurrentStateSaved()) {
+            this.isSavingChangesModalOpened = true;
+            switch (actionName) {
+                case 'switchModes':
+                    this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
+                    this.actionAfterSaved = this.switchModes;
+                    this.showDiscardChanges = true;
+                    break;
+                case 'open-related-assets':
+                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
+                    this.showDiscardChanges = false;
+                    var self = this;
+                    this.actionAfterSaved = () => {
+                        console.log("here");
+                        self.isRelatedAssetsVisible = !self.isRelatedAssetsVisible;
+                    }
+                    break;
+                case 'export':
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.actionAfterSaved = this.downloadProcessDiagram;
+                    this.showDiscardChanges = false;
+                    break;
+            }
+
+            return;
+        }
+        else {
+            this.actionAfterSaved = null;
+            this.isSavingChangesModalOpened = false;
+            switch (actionName) {
+                case 'switchModes':
+                    this.switchModes();
+                    break;
+                case 'open-related-assets':
+                    this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                    break;
+                case 'export':
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.downloadProcessDiagram();
+                    break;
+            }
+        }
+
+
     }
 }

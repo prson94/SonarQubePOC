@@ -11,6 +11,6 @@ namespace d360.model.DataAccessLayer
         ProcessDiagramModel GetAssetsProcessDiagram(Guid assetUid);
         Task<IEnumerable<dynamic>> GetAvailableDiagramNodesForAsset(Guid assetUid);
         List<ValidationError> UpdateProcessDiagram(ApiExecution execution, ProcessDiagramModel model, List<NodeData> toAdd, List<NodeData> toUpdate, List<NodeData> toDelete, long targetAssetId);
-        Task<byte[]> GetDiagramExcel(Asset asset);
+        Task<byte[]> GetDiagramExcel(Asset asset, byte[] image);
     }
 }

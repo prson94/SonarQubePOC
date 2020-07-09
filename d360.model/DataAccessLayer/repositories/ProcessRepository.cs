@@ -1,12 +1,15 @@
-﻿using d360.core;
+﻿using AngleSharp.Io;
+using d360.core;
 using d360.core.entities;
 using d360.core.entities.Process;
 using d360.core.enums;
+using d360.extensions;
 using d360.model.DataAccessLayer.repositories;
 using Dapper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SpreadsheetLight;
+using SpreadsheetLight.Drawing;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -22,11 +25,13 @@ namespace d360.model.DataAccessLayer
     {
         internal ICompanyContext Company;
         internal IAssetRepository AssetRepository;
+        internal IStorageProvider StorageProvider;
 
-        public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository) : base(context)
+        public ProcessRepository(ICompanyContext context, IAssetRepository assetRepository, IStorageProvider storage) : base(context)
         {
             this.Company = context;
             this.AssetRepository = assetRepository;
+            this.StorageProvider = storage;
         }
 
         public async Task<IEnumerable<dynamic>> GetAvailableDiagramNodesForAsset(Guid assetUid)
@@ -497,7 +502,7 @@ new
             return validationRes;
         }
 
-        public async Task<byte[]> GetDiagramExcel(Asset asset)
+        public async Task<byte[]> GetDiagramExcel(Asset asset, byte[] image)
         {
             var document = new SLDocument();
             document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Process");
@@ -507,40 +512,20 @@ new
             await AssetRepository.PopulateSheetForAssetTypeAndAssets(document, assetType, new List<Guid>() { asset.uid });
             await GetDiagramWorkflowSheet(asset, document);
             await GetSheetsForDiagramTypes(asset, document);
+            await GetSheetsForRelatedAssets(asset, document);
 
-            var relModels = await Company.QueryAsync<DiagramAssetRelationshipModel>(@"declare @diagram nvarchar(max) = (
-                select apd.Diagram  as json from asset a 
-	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
-                where a.uid = @assetUid)
+            document.AddWorksheet("Diagram");
+            document.SelectWorksheet("Diagram");
 
-                ;with links as (
-                SELECT  
-                    JSON_VALUE(nda.value, '$.key') AS [AssetUid]
-                FROM OPENJSON(@diagram, '$.nodeDataArray') as nda)
-                select a.uid as DiagramAssetUid, FD.FormattedValue AS 'Step No', FD2.FormattedValue AS 'Diagram AssetName', o.uid as AssetUid,AT.uid AS AssetTypeUid, AT.Name as AssetTypeName, p.UID as PredicateUid  from links
-                inner join Asset A on a.uid = links.AssetUid
-                left join FieldDetail FD ON FD.AssetId = A.Id and FD.Name = 'StepNo'
-                left join FieldDetail FD2 ON FD2.AssetId = A.Id and FD2.Name = 'Name'
-                inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
-                inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
-                inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
-                inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
-                inner join AssetType AT on AT.Id = O.AssetTypeID
-                ", new { assetUid = asset.uid });
-
-            foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
-            {
-                var relatedSheetName = assetTypeGroup.First().AssetTypeName;
-                string detailSheetName = "Related" + relatedSheetName;
-                document.AddWorksheet(relatedSheetName);
-                document.SelectWorksheet(relatedSheetName);
-            }
+            var picture = new SLPicture(image, DocumentFormat.OpenXml.Packaging.ImagePartType.Png);
+            document.InsertPicture(picture);
 
             var stream = new MemoryStream();
             document.SaveAs(stream);
             byte[] bytes = stream.ToArray();
             return bytes;
         }
+
 
         private class DiagramAssetRelationshipModel
         {
@@ -556,8 +541,157 @@ new
             [JsonProperty("AssetTypeName")]
             public string AssetTypeName { get; set; }
 
+            [JsonProperty("StepNo")]
+            public string StepNo { get; set; }
+
+            [JsonProperty("DiagramAssetName")]
+            public string DiagramAssetName { get; set; }
+
+
+            [JsonProperty("DiagramAssetId")]
+            public int DiagramAssetId { get; set; }
+
             [JsonProperty("PredicateUid")]
             public Guid PredicateUid { get; set; }
+        }
+
+        private async Task GetSheetsForRelatedAssets(Asset asset, SLDocument document)
+        {
+            var relModels = await Company.QueryAsync<DiagramAssetRelationshipModel>(@"declare @diagram nvarchar(max) = (
+                select apd.Diagram  as json from asset a 
+	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+                where a.uid = @assetUid)
+
+                ;with links as (
+                SELECT  
+                    JSON_VALUE(nda.value, '$.key') AS [AssetUid]
+                FROM OPENJSON(@diagram, '$.nodeDataArray') as nda)
+                select a.id as DiagramAssetId, a.uid as DiagramAssetUid, FD.FormattedValue AS 'StepNo', FD2.FormattedValue AS 'DiagramAssetName', o.uid as AssetUid,AT.uid AS AssetTypeUid, AT.Name as AssetTypeName, p.UID as PredicateUid  from links
+                inner join Asset A on a.uid = links.AssetUid
+                left join FieldDetail FD ON FD.AssetId = A.Id and FD.Name = 'StepNo'
+                left join FieldDetail FD2 ON FD2.AssetId = A.Id and FD2.Name = 'Name'
+                inner join [Intersect] I on I.Subject = A.Object and I.SubjectID = A.ObjectID
+                inner join [IntersectType] IT on IT.ID = I.IntersectTypeID
+                inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
+                inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
+                inner join AssetType AT on AT.Id = O.AssetTypeID
+                ", new { assetUid = asset.uid });
+
+            foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
+            {
+                var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeGroup.Key);
+                var relatedSheetName = assetTypeGroup.First().AssetTypeName;
+                relatedSheetName = "Related " + relatedSheetName;
+                document.AddWorksheet(relatedSheetName);
+                document.SelectWorksheet(relatedSheetName);
+
+                var par = new List<KeyValuePair<string, string>>();
+                par.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetTypeGroup.Select(x => x.AssetUid).Distinct().Select(x => x.ToString()))));
+                par.Add(new KeyValuePair<string, string>("includeParent", "true"));
+                var assets = await AssetRepository.GetAssets(assetTypeGroup.Key, par);
+
+                var hierarchy = Company.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+
+                bool includeParent = true;
+                if (hierarchy == null)
+                {
+                    includeParent = false;
+                }
+                var typesToAvoid = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.OwnershipLookup.ToString()
+                    };
+
+                List<FieldType> fields = new List<FieldType>();
+
+                var guid = Guid.NewGuid().ToString().Replace("-", "");
+                fields.Add(new FieldType { Type = "string", Name = guid + "StepNo", FriendlyName = "Step No" });
+                fields.Add(new FieldType { Type = "string", Name = guid + "DiagramAssetName", FriendlyName = "Diagram Asset Name" });
+
+                if (includeParent)
+                {
+                    fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+                }
+
+                fields.AddRange(Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+
+                fields.Add(new FieldType { Type = "string", Name = guid + "UID", FriendlyName = "Diagram Asset UID" });
+                fields.Add(new FieldType { Type = "string", Name = guid + "ID", FriendlyName = "Diagram Asset ID" });
+                fields.Add(new FieldType { Type = "string", Name = guid + "URL", FriendlyName = "Diagram URL" });
+
+                int index = 1;
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+                    document.SetCellValue(1, index++, (string)field.FriendlyName);
+                }
+
+                document.SetCellValue(1, index++, "Url");
+                var rowData = assets.items.ToList();
+
+                var data = new List<IDictionary<string, object>>();
+                foreach (var diaAsset in assetTypeGroup)
+                {
+                    var exportItem = new Dictionary<string, object>();
+                    var relatedAsset = rowData.FirstOrDefault(x => x.AssetUid == diaAsset.AssetUid);
+                    exportItem.Add(guid + "StepNo", diaAsset.StepNo);
+                    exportItem.Add(guid + "DiagramAssetName", diaAsset.DiagramAssetName);
+                    exportItem.Add(guid + "UID", diaAsset.DiagramAssetUid);
+                    exportItem.Add(guid + "ID", diaAsset.DiagramAssetId);
+                    exportItem.Add(guid + "URL", $"asset/{asset.uid}/Process");
+
+                    if (relatedAsset != null)
+                    {
+                        var values = (relatedAsset as IDictionary<string, object>);
+                        foreach (var item in values)
+                            exportItem.Add(item.Key, item.Value);
+                    }
+                    data.Add(exportItem);
+                }
+
+
+                int rowNumber = 1;
+                foreach (var row in data)
+                {
+                    index = 1;
+                    rowNumber++;
+                    var rowValues = (row as IDictionary<string, object>);
+
+                    foreach (var field in fields)
+                    {
+                        if (typesToAvoid.Contains(field.Type))
+                            continue;
+
+                        if (rowValues.ContainsKey(field.Name))
+                        {
+
+                            if (field.Name == "Color")
+                            {
+                                string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            }
+                            else
+                            {
+                                var val = rowValues[field.Name];
+                                setCellValueFromField(document, rowNumber, index, field, val);
+                            }
+
+                        }
+
+                        index++;
+                    }
+                    document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+                }
+                SetExcelColumnWidths(document, fields);
+
+            }
         }
 
         private async Task GetSheetsForDiagramTypes(Asset asset, SLDocument document)

@@ -3,7 +3,7 @@
 
     <div class="menu asset-browser-header" *ngIf="isEditMode">
         <div class="asset-browser-button-group">
-            <button type="button" (click)="switchModes()" title="Exit Designer">
+            <button type="button" (click)="doControlledAction('switchModes')" title="Exit Designer">
                 <i class="fa fa-chevron-circle-left"></i> Exit Designer
             </button>
             <div class="button-spacer"></div>
@@ -17,8 +17,11 @@
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
-                <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Exit Designer" (click)="isRelatedAssetsVisible = !isRelatedAssetsVisible">
+                <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Exit Designer" (click)="doControlledAction('open-related-assets')">
                     <i class="fa fa-sitemap"></i>
+                </button>
+                <button aria-label="Export to Excel" (click)="doControlledAction('export')" title="Export to Excel" type="button" class="icon mr8">
+                    <i class="fa fa-download"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
                     <i class="fa fa-info-circle"></i>
@@ -129,25 +132,28 @@
         <d3s-modal [title]="'Save Changes?'" additionalClasses="medium-dialog" (onClose)="isSavingChangesModalOpened=false" [isVisible]="isSavingChangesModalOpened">
             <div class="content">
                 <div class="row">
-                    Would you like to save your changes to the diagram before leaving the Diagram Designer?
+                    {{actionMessage}}
                 </div>
             </div>
             <div class="action-bar">
                 <button class="button" (click)="isSavingChangesModalOpened=false">Cancel</button>
-                <button class="button" (click)="discardChanged()">Discard Changes</button>
+                <button *ngIf="showDiscardChanges" class="button" (click)="discardChanged()">Discard Changes</button>
                 <div class="grow"></div>
                 <button class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>
 
             </div>
         </d3s-modal>
 
-        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving">
+        <d3s-modal additionalClasses="mini-dialog-no-action" [isVisible]="isSaving || isExporting">
             <div class="content">
                 <div class="row">
                     <div class="loader">
                         <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                        <span class="text">
+                        <span class="text" *ngIf="isSaving">
                             Saving changes
+                        </span>
+                        <span class="text" *ngIf="isExporting">
+                            Exporting diagram
                         </span>
                     </div>
                 </div>

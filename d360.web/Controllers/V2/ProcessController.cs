@@ -159,26 +159,26 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model)
         {
-            var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
-            ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 
-
-            foreach (var item in model.linkDataArray)
-            {
-                if (item.from == Guid.Empty || item.to == Guid.Empty)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Link without from and to node detected."));
-                }
-            }
-
-
-            if (model.nodeDataArray.GroupBy(x => x.AssetTypeUid.ToString().ToLower() + x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Nodes withing same Task Type cannot have same name."));
-            }
             try
             {
+                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 
+
+                foreach (var item in model.linkDataArray)
+                {
+                    if (item.from == Guid.Empty || item.to == Guid.Empty)
+                    {
+                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Link without from and to node detected."));
+                    }
+                }
+
+
+                if (model.nodeDataArray.GroupBy(x => x.AssetTypeUid.ToString().ToLower() + x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                {
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Nodes withing same Task Type cannot have same name."));
+                }
                 List<NodeData> toAdd = new List<NodeData>();
                 List<NodeData> toUpdate = new List<NodeData>();
                 List<NodeData> toDelete = new List<NodeData>();
@@ -279,7 +279,7 @@ namespace d360.web.Controllers.V2
         /// <param name="assetUid">The asset uid</param>
         /// <returns></returns>
         [
-            HttpGet,
+            HttpPost,
             Route("export/{assetUid:Guid}"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
@@ -297,8 +297,14 @@ namespace d360.web.Controllers.V2
             var asset = AssetRepository.GetAssetByUID(assetUid);
             if (asset == null)
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+            string result = await Request.Content.ReadAsStringAsync();
 
-            byte[] bytes = await ProcessRepository.GetDiagramExcel(asset);
+            result = result.Replace("data:image/png;base64,", "");
+            byte[] image = Convert.FromBase64String(result);
+
+            byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
+
+
 
             var response = createFileResponseMessage(HttpStatusCode.OK, $"Filename {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));

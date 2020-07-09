@@ -424,7 +424,7 @@ namespace d360.model.DataAccessLayer
 
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-           
+
             var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
@@ -841,7 +841,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@assetTypeUid", assetType.uid);
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
-            
+
             var countSql = $@"select count(*) 
                 from	graph.AssetNodeKeyPath P
 		                inner join Asset A on A.ID = P.ID
@@ -983,8 +983,8 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                       
-                        if(field.Name == "Color")
+
+                        if (field.Name == "Color")
                         {
                             string val = extractColorNameFromJSON((string)rowValues[field.Name]);
                             setCellValueFromField(document, rowNumber, index, field, val);
@@ -2250,6 +2250,8 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                 DataType.DataTableSelect.ToString(),
                 DataType.OwnershipLookup.ToString()
             };
+
+
 
             if (includeParent)
             {
