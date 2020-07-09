@@ -22,6 +22,9 @@ namespace d360.core.entities.Membership
 
         [DataMember]
         public Guid SecondaryOwnerUid { get; set; }
+
+        [DataMember]
+        public bool IsActiveDirectoryGroup { get; set; } = false;
     }
 
 
