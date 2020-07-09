@@ -50,6 +50,7 @@ export class Group {
     SecondaryOwnerResourceID: number;
     PrimaryOwnerName: string;
     SecondaryOwnerName: string;
+    IsActiveDirectoryGroup: boolean;
     UpdatedOn: string;
     UpdatedBy: string;
 }

@@ -30,7 +30,7 @@ namespace d360.core.entities
         public int? SecondaryOwnerResourceID { get; set; }
 
         [DataMember]
-        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupIsActiveDirectoryGroup_Name", Description = "GroupIsActiveDirectoryGroup_Description")]
+        [Display(ResourceType = typeof(d360.core.resources.Fields), Name = "GroupIsActiveDirectory_Name", Description = "GroupIsActiveDirectory_Description")] 
         public bool IsActiveDirectoryGroup { get; set; } = false;
 
         [DataMember, NotMapped]
