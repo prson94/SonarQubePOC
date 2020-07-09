@@ -57,6 +57,12 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
         this.refreshSelectedFieldTypeIds();
 
+        this.formatConditions();
+        this.isLoading = false;
+
+        return Promise.resolve();
+    }
+    formatConditions() {
         this.conditions.forEach(c => {
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
 
@@ -86,7 +92,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                     default:
                         if (c.Values) {
                             if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value; 
+                                c.SingleValue = c.Values[0].Value;
                                 c.ValuesText = c.Values[0].Value;
                             }
                         }
@@ -94,11 +100,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                 }
             }
         });
-        this.isLoading = false;
-
-        return Promise.resolve();
     }
-
     add() {
         this.selection = new MetricAssetVersionConditionItemViewModel();
         this.selection.IsEditMode = false;

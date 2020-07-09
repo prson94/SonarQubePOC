@@ -12,10 +12,6 @@ import { AllocationService } from '../../../services/allocations.service';
 @Component({
     selector: 'd3s-admin-metric-list',
     template: ` 
-               <header *ngIf="formMode == FormMode.Default">
-                    Measures
-                    <d3s-tile-actions hasAdd="true" (addClick)="selectNode(null); add()"></d3s-tile-actions>
-                </header>
                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                <div *ngIf="!isLoading">
                 <div [ngSwitch]="formMode">
@@ -100,7 +96,7 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     private selectedNode: TreeNode;
     private selection: MetricAssetViewModel;
 
-    private metricListFieldTypes: MetricFieldTypeViewModel[] = [];
+    @Input() metricListFieldTypes: MetricFieldTypeViewModel[] = [];
 
     private formMode = FormMode.Default;
     FormMode = FormMode;
@@ -146,17 +142,14 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
                         if (this.metricTree !== null && this.metricTree.length > 0) {
                             this.selection = this.metricTree[0].data;
                             this.selectionChange.emit(this.selection);
+                            this.selectedNode = this.metricTree[0];
                         }
                     }
 
-                    this.metricsService.getFieldTypeViewModelsByAssetType(this.assetType.Uid)
-                        .subscribe(f => {
-                            this.metricListFieldTypes = f;
-                            this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
-                                this.isLoading = false;
-                                this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
-                            })
-                        });
+                    this.allocationService.getAllocationsByAssetTypeUid(this.assetType.Uid).subscribe(res => {
+                        this.isLoading = false;
+                        this.isExternallyCalculated = res.find(x => x.uid === this.allocationUid).isExternallyCalculated;
+                    })
                 });
         }
         else {
@@ -180,22 +173,27 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
         }
     }
 
-    selectNode(e: any) {
+    public selectNode(e: any) {
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
     }
 
-    add() {
+    public add(asChild: boolean = false) {
+        if (!asChild)
+            this.selectedNode = null;
         this.formMode = FormMode.Adding;
     }
 
-    edit() {
+    public edit() {
         this.formMode = FormMode.Editing;
     }
 
-    delete() {
+    public delete() {
         this.formMode = FormMode.Deleting;
+    }
+    public close() {
+        this.formMode = FormMode.Default;
     }
 
 };
