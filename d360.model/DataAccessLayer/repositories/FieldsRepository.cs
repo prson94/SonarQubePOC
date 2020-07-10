@@ -776,7 +776,7 @@ from	IntersectType I
                         int relationIntersectId = relationInfo.IntersectTypeID;
 
                         relation.Direction = i.Direction ?? FieldTypeComplexLookupRelationDirection.Forward;
-                        relation.RelationType = i.RelationType ?? ComplexLookupRelationType.StandardRelationhip;
+                        relation.RelationType = i.RelationType ?? ComplexLookupRelationType.StandardRelationship;
                         relation.AssetTypeUid = i.AssetTypeUid;
                         relation.IntersectTypeUid = i.IntersectTypeUid;
 

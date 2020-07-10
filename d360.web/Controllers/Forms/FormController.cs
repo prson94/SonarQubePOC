@@ -1733,7 +1733,14 @@ order by Sort, title";
                                     }
                                     else
                                     {
-                                        load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
+                                        if (load.LoadColumns.Any(l => l.Name == columnName))
+                                        {
+                                            errorMessages.Add($"Duplicate column found [{columnName}]");
+                                        }
+                                        else
+                                        {
+                                            load.LoadColumns.Add(new LoadColumn { ColumnIndex = i, Name = columnName });
+                                        }
                                     }
                                 }
                                 #endregion

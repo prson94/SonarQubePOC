@@ -1,5 +1,5 @@
-﻿import {SelectItem} from 'primeng/api';
-import {Observable} from "rxjs";
+﻿import { SelectItem } from 'primeng/api';
+import { Observable } from "rxjs";
 import { FieldTypeAPIModelField } from './fieldtype-api.model';
 
 export interface IFieldsService {    
@@ -198,7 +198,7 @@ export class LookupItem {
 }
 
 export enum ComplexLookupRelationType {
-    StandardRelationhip = 1,
+    StandardRelationship = 1,
     ChildRelationship = 2,
     ChildItem = 3,
     ParentItem = 4

@@ -41,7 +41,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });//@"^([A-Za-z0-9_\.-]+)@([\dA-Za-z\.-]+)\.([A-Za-z\.]{2,6})$", null, null, "be an email address") });
             list.Add(new EditableField { Row = 2, Column = 2, Required = true, FieldName = "Password", Name = "Password", FieldType = DataType.Password.ToString(), Validations = checkAndAddValidation("Text", "Password", true, passwordRegex, null, null, passwordRegexMessage) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Active?", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)CompanyResourceState.Active).ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Status", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)CompanyResourceState.Active).ToString() });
 
             list = loadDynamicFields(list, Company.GetFieldTypesByObject(SystemObjects.ResourceType, id).ToList(), 5);
 
@@ -66,7 +66,7 @@ namespace d360.web.Controllers
             list.Add(new EditableField { Row = 1, Column = 2, Required = true, FieldName = "LastName", Name = "Last Name", FieldType = DataType.Text.ToString(), Value = a.LastName, Validations = checkAndAddValidation("Text", "Last Name", true, "", 1, 250) });
             list.Add(new EditableField { Row = 2, Column = 1, Required = true, FieldName = "Email", Name = "Email/Username", FieldType = DataType.Text.ToString(), Value = a.Email, Validations = checkAndAddValidation("Text", "Email", true, "", 1, 500) });
             list.Add(new EditableField { Row = 3, Column = 1, Required = true, FieldName = "IsAdministrator", Name = "Administrator?", FieldType = DataType.Boolean.ToString(), Value = cr.IsAdministrator.ToString() });
-            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Active?", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)cr.State).ToString() });
+            list.Add(new EditableField { Row = 3, Column = 2, Required = true, FieldName = "State", Name = "Status", FieldType = DataType.Lookup.ToString(), Items = stateList, Value = ((int)cr.State).ToString() });
 
             list = (
                 loadDynamicFields(
@@ -622,6 +622,7 @@ namespace d360.web.Controllers
                 existing.Description = model.Description;
                 existing.PrimaryOwnerResourceID = model.PrimaryOwnerResourceID;
                 existing.SecondaryOwnerResourceID = model.SecondaryOwnerResourceID;
+                existing.IsActiveDirectoryGroup = model.IsActiveDirectoryGroup;
 
                 Company.Update(existing);
 

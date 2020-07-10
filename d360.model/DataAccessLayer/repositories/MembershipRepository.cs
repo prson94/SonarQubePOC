@@ -62,7 +62,7 @@ namespace d360.model.DataAccessLayer
             }
 
             var whereStatements = condition.Count != 0 ? $" where  {string.Join(" and ", condition)}" : "";
-            ; var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid from [Group] G
+            ; var sql = $@"Select A.Uid,G.Name,G.Description,gr1.uid as PrimaryOwnerUid,gr2.uid as SecondaryOwnerUid, G.IsActiveDirectoryGroup from [Group] G
             inner join Asset A on A.[Object]='Group' and A.ObjectID = G.ID
             left join [reporting].[Global_Resource] gr1 on gr1.ResourceID = G.PrimaryOwnerResourceID
             left join [reporting].[Global_Resource] gr2 on gr2.ResourceID = G.SecondaryOwnerResourceID
@@ -1082,7 +1082,8 @@ order by	q.SortOrder";
                     Description = i.Description,
                     Name = i.Name,
                     PrimaryOwnerUid = i.PrimaryOwnerUid,
-                    SecondaryOwnerUid = i.SecondaryOwnerUid
+                    SecondaryOwnerUid = i.SecondaryOwnerUid,
+                    IsActiveDirectoryGroup = i.IsActiveDirectoryGroup
                 });       
             }
 
