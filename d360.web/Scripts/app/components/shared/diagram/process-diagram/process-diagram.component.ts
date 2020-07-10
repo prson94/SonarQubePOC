@@ -177,6 +177,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (n instanceof go.Link) {
                 n.isEnabled = state;
                 n.movable = state;
+                n.reshapable = state;
             }
         });
         this.myDiagram.isModelReadOnly = !state;
@@ -267,9 +268,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     "textEditingTool.doDeactivate": function () {
                         if (this.textBlock) this.textBlock.opacity = 1.0;
                         go.TextEditingTool.prototype.doDeactivate.call(this);
-                    }
+                    },
+                    allowClipboard: false,
+                    allowCopy: false,
+                    allowUndo: false
                 });
 
+        this.myDiagram.commandHandler.editTextBlock = () => { return false; };
         this.myDiagram.commandHandler.canDeleteSelection = () => {
             try {
                 if (this.isEditMode) {
@@ -418,7 +423,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                             this.isSavingChangesModalOpened = false;
                             this.load(true);
                             this.cdRef.detectChanges();
-                            
+
                         }, 100)
                     } else {
                         this.load(true);
