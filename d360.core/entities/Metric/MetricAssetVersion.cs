@@ -25,6 +25,9 @@ namespace d360.core.entities.Metric
         public string Name { get; set; }
 
         [DataMember]
+        public string Definition { get; set; } = "{}";
+
+        [DataMember]
         public string Description { get; set; }
 
         [DataMember]
