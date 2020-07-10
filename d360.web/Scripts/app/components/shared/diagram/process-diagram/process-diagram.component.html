@@ -136,7 +136,7 @@
                 </div>
             </div>
             <div class="action-bar">
-                <button class="button" (click)="isSavingChangesModalOpened=false">Cancel</button>
+                <button class="button" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;">Cancel</button>
                 <button *ngIf="showDiscardChanges" class="button" (click)="discardChanged()">Discard Changes</button>
                 <div class="grow"></div>
                 <button class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>

@@ -10,6 +10,7 @@ import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
 import { CanDeactivate, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -61,6 +62,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private promptDeleteOpened: boolean = false;
     private isRelatedAssetsVisible: boolean = false;
 
+    private newInstancesMap: any[] = [];
 
     private isInfoPanelOpened: boolean = false;
     constructor(
@@ -141,6 +143,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.selectedNodeData = null;
             }
             this.saveState.emit(this.isCurrentStateSaved());
+        }
+
+        if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
+            var newUid = this.newInstancesMap.find(x => x.oldKey == this.selectedNodeData.key).newKey;
+            this.newInstancesMap = [];
+            var part = this.myDiagram.findPartForKey(newUid);
+            if (part) {
+                this.myDiagram.clearSelection();
+                this.myDiagram.select(part);
+            }
         }
         this.cdRef.detectChanges();
     }
@@ -301,22 +313,27 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
             // stop any ongoing text editing
-
             e.diagram.selection.each(data => {
                 try {
                     var nodeData = data.data;
+                    var newGuid = self.newGuid();
+
+                    //keep track of relations between new instances and existing to avoid updating template data 
+                    self.newInstancesMap.push({
+                        oldKey: nodeData.key,
+                        newKey: newGuid
+                    });
+
                     e.diagram.model.commit(function (m) {
                         var data = m.findNodeDataForKey(nodeData.key);
                         m.set(data, 'Name', self.getNewNodeName(nodeData));
-                        m.set(data, 'key', self.newGuid());
+                        m.set(data, 'key', newGuid);
                     }, 'update__new_model');
                 } catch (e) {
                     console.log(e);
                 }
 
             })
-            e.diagram.select(e.diagram.findPartForKey(self.newGuid()));
-
         });
 
         //load current asset diagram
@@ -393,22 +410,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 else {
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
-                    this.myDiagram.model = go.Model.fromJson(JSON.stringify(res.updatedModel));
-                    this.savedState = go.Model.fromJson(JSON.stringify(res.updatedModel));
 
-                    this.processDiagramBase64 = this.myDiagram.makeImageData({
-                        scale: 1
-                    }).toString();
                     if (this.actionAfterSaved) {
                         window.setTimeout(() => {
                             this.actionAfterSaved();
                             this.actionAfterSaved = null;
                             this.isSavingChangesModalOpened = false;
-                            this.isSaving = false;
+                            this.load(true);
                             this.cdRef.detectChanges();
+                            
                         }, 100)
                     } else {
-                        this.isSaving = false;
+                        this.load(true);
                         this.cdRef.detectChanges();
 
                     }
@@ -423,7 +436,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.clear();
         this.diagramStateChanged();
     }
-    private load() {
+    private load(isFromSave: boolean = false) {
+
+        var selectedItem = this.selectedNodeData;
+
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(res => {
                 if (!this.myDiagram) {
@@ -445,11 +461,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
                 this.isDiagramLoaded = true;
+                this.isSaving = false;
                 this.saveState.emit(this.isCurrentStateSaved());
-                this.cdRef.detectChanges();
                 this.processDiagramBase64 = this.myDiagram.makeImageData({
                     scale: 1
                 }).toString();
+
+                if (selectedItem) {
+                    var name = this.selectedNodeData['Name'];
+                    var selectedNode = this.myDiagram.nodes.filter(x => x.data['Name'] == name).first();
+                    if (selectedNode) {
+                        this.myDiagram.select(selectedNode);
+                    }
+                }
+                this.cdRef.detectChanges();
+
             });
     }
 
@@ -506,10 +532,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
+
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
-
         this.cdRef.detectChanges();
     }
 

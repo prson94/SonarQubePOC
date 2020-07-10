@@ -162,10 +162,10 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);                
+                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 
-                
+
 
 
                 foreach (var item in model.linkDataArray)
@@ -176,9 +176,9 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                foreach(var node in model.nodeDataArray)
+                foreach (var node in model.nodeDataArray)
                 {
-                    if(!model.linkDataArray.Any(x=> x.from == node.AssetUid || x.to == node.AssetUid))
+                    if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
                     {
                         throw new Exception("All nodes must be linked.");
                     }
@@ -269,8 +269,7 @@ namespace d360.web.Controllers.V2
                 }
 
 
-
-                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, updatedModel = model };
+                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count };
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 
             }
@@ -278,7 +277,11 @@ namespace d360.web.Controllers.V2
             {
                 var err = new List<ValidationError>();
                 err.Add(new ValidationError() { Error = ex.Message });
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    hasError = true,
+                    errors = err
+                })));
             }
 
         }
