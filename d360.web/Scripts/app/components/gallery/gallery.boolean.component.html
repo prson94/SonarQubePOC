@@ -1,0 +1,55 @@
+﻿<div class="tile tile-detail">
+    <header>Boolean Edit control</header>
+    <p>Two state input that allows selecting true or false.</p>
+</div>
+
+<div class="tile tile-detail">
+    <header>Examples:</header><br />
+    <h5>Basic</h5>
+    <span>&lt;d3s-checkbox&gt;&lt;/d3s-checkbox&gt;</span>
+    <d3s-checkbox></d3s-checkbox>
+    <br /><br />
+    <h5>With label property</h5>
+    <d3s-checkbox [label]="'Is this PII?'"></d3s-checkbox>
+    <br /><br />
+</div>
+
+<div class="tile tile-detail">
+    <header>Properties:</header>
+    <p-table [value]="properties">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Default</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-property>
+            <tr>
+                <td>{{property.Name}}</td>
+                <td>{{property.Type}}</td>
+                <td>{{property.Default}}</td>
+                <td>{{property.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+
+<div class="tile tile-detail">    
+    <header>Events:</header>
+    <p-table [value]="events">
+        <ng-template pTemplate="header">
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-event>
+            <tr>
+                <td>{{event.Name}}</td>
+                <td>{{event.Description}}</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
