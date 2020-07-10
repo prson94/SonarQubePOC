@@ -1,5 +1,5 @@
 ﻿import {Input, Output, Component, OnChanges, SimpleChange} from '@angular/core';
-import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo, AddUserToGroup } from '../../models/group.model';
+import { GroupResourceInfo, IGroupService, GroupSearchResultModel, ResourceGroup, ResourceGroupInfo, AddUserToGroup, GroupApiModel } from '../../models/group.model';
 import {GroupService} from '../../services/group.service';
 import {FormMode, FormHelper, SelectItem} from '../../models/form.model';
 import {BaseComponent} from '../shared/base.component';
@@ -19,6 +19,7 @@ export class GroupMembersComponent extends BaseComponent implements OnChanges {
     @Input() groupName: string;
     @Input() title: string = 'Members';
     @Input() groupUid: string;
+    @Input() groupIsActiveDirectory: boolean = false;
     field: EditorField;
     private groupItems = new Array<GroupResourceInfo>();
     private selectedRow = new GroupResourceInfo();

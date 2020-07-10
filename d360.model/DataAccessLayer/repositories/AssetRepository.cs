@@ -249,6 +249,7 @@ namespace d360.model.DataAccessLayer
             bool includeOnlyListableFields = false;
             string populateRestrictedAssetTableSQL = "";
             bool listColorsAsJSON = false;
+            var includeTotal = true;
 
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
@@ -275,6 +276,11 @@ namespace d360.model.DataAccessLayer
             if (queryParams.ToList().Any(k => k.Key.ToLower() == "_listcolorsasjson"))
             {
                 bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_listcolorsasjson").Value, out listColorsAsJSON);
+            }
+
+            if (queryParams.ToList().Any(k => k.Key.ToLower() == "_includetotal"))
+            {
+                bool.TryParse(queryParams.FirstOrDefault(k => k.Key.ToLower() == "_includetotal").Value, out includeTotal);
             }
 
             List<string> fieldColumns = new List<string>();
@@ -738,8 +744,12 @@ namespace d360.model.DataAccessLayer
                 {string.Join("\n", pagingSql)}
             ";
 
-            var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
-            int count = countResults.First();
+            int? count = null;
+            if (includeTotal)
+            {
+                var countResults = await CompanyContext.QueryAsync<int>(countSql, dbArgs);
+                count = countResults.First();
+            }
 
             var results = await CompanyContext.QueryAsync<dynamic>(sql, dbArgs);
 
@@ -944,7 +954,7 @@ namespace d360.model.DataAccessLayer
             document.SetCellValue(2, 1, "pageNum");
             document.SetCellValue(2, 2, results.pageNum);
             document.SetCellValue(3, 1, "total");
-            document.SetCellValue(3, 2, results.total);
+            document.SetCellValue(3, 2, (int)results.total);
 
 
             document.SelectWorksheet(assetSheetName);

@@ -57,7 +57,12 @@
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
                         <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items" ngDefaultControl [defaultLabel]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
-                                <div class="d3s-color-multiSelect">
+                                <div *ngIf="items?.length > 3" class="d3s-color-multiSelect">
+                                    <div class="ig-colorfield-item-selected">
+                                        <span class="ig-colorfield-item-label">{{items.length}} items selected.</span>
+                                    </div>
+                                </div>
+                                <div *ngIf="items?.length <= 3" class="d3s-color-multiSelect">
                                     <div *ngFor="let item of items" class="ig-colorfield-item-selected">
                                         <span class="ig-colorfield-swatch" [style.background-color]="getColorByID(item)"></span>
                                         <span class="ig-colorfield-item-label">{{getLabelByID(item)}}</span>

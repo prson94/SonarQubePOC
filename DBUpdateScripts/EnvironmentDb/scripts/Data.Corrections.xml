@@ -782,27 +782,50 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
 	</changeSet>
-
-  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11339">
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11339-b">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
       <![CDATA[
-				update fieldtype set MinimumLength = null where [type] = 'html';
+				update fieldtype set MinimumLength = null, UpdatedBy = 0 where [type] = 'html' and MinimumLength is not null;
 			]]>
     </sql>
   </changeSet>
   
- <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-7">
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11456-b">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Status' and DisplayFormat = '{Name}'
+		]]>
+    </sql>
+  </changeSet>
+
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11479">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Dimension' and DisplayFormat = '{Name}'
+		]]>
+    </sql>
+  </changeSet>
+  
+ <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-10">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
 		<![CDATA[
-		UPDATE dbo.Asset SET COLOR = null WHERE Color like 'HSL(%' or color in ('#d1dce4','#4ecc89','#e2792a')
+		UPDATE dbo.Asset 
+    SET COLOR = null, 
+    UpdatedBy = 0,
+    UpdatedOn = GETDATE()
+    WHERE Color like 'HSL(%' or color in ('#d1dce4','#4ecc89','#e2792a')
 		]]>
     </sql>
 	</changeSet>
-  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-6">
+  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-11">
     <sql dbms="mssql"
 			splitStatements="false"
             stripComments="false">
@@ -814,7 +837,9 @@ SET color =
            WHEN 'certified' THEN '#4ecc89'
            WHEN 'under review' THEN '#e2792a' 
            ELSE 'hsl(' + CAST(([utility].[JS_Hashcode](LOWER(COALESCE(ADV.DisplayValue,A.Code))) * 2) % 360 as varchar) + ', 70%, 70%)'
-    END
+    END,
+    A.UpdatedBy = 0,
+    A.UpdatedOn = GETDATE()
 FROM Asset as A
 inner join AssetType ATT on ATT.ID = A.AssetTypeID
 cross apply GetAssetDisplayValueByID(A.ID) ADV
@@ -826,6 +851,8 @@ inner join FieldType F on
 		]]>
     </sql>
 	</changeSet>
+
+  
   
 
 

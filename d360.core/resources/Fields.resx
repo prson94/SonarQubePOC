@@ -1146,4 +1146,10 @@
   <data name="SourceNotes_Name" xml:space="preserve">
     <value>Source Notes</value>
   </data>
+  <data name="GroupIsActiveDirectory_Description" xml:space="preserve">
+    <value>Whether or not this group should be managed automatically through SAML Group claims</value>
+  </data>
+  <data name="GroupIsActiveDirectory_Name" xml:space="preserve">
+    <value>Is Active Directory</value>
+  </data>
 </root>

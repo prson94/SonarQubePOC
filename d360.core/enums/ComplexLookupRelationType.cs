@@ -8,7 +8,7 @@ namespace d360.core
     public enum ComplexLookupRelationType
     {
         [Description("Standard Relationship")]
-        StandardRelationhip = 1,
+        StandardRelationship = 1,
         [Description("Child Relationship")]
         ChildRelationship = 2,
         [Description("Child Item")]
