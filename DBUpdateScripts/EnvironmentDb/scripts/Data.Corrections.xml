@@ -801,6 +801,16 @@ DEALLOCATE cursorDelete;
 		]]>
     </sql>
   </changeSet>
+
+  <changeSet author="kmcnamee" id="Data.Corrections.GOV-11479">
+    <sql dbms="mssql"
+			splitStatements="false"
+            stripComments="false">
+      <![CDATA[
+		update assettype set DisplayFormat = '{Code}', UpdatedBy = 0, UpdatedOn = GETUTCDATE() where [object] = 'ReferenceItemType' and [name] = 'Rule Dimension' and DisplayFormat = '{Name}'
+		]]>
+    </sql>
+  </changeSet>
   
  <changeSet author="Bhoward" id="Data.Corrections.GOV-10750-10">
     <sql dbms="mssql"
