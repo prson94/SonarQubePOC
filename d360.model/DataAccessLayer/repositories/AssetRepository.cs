@@ -646,7 +646,12 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {
-                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else F{ft.ID}.FormattedValue end as value) like @simpleFilter");
+                            string ftformatted = CompanyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
+                            simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
+                        }
+                        else if (ft.Type == DataType.Lookup.ToString() && CompanyContext.LookupFieldHasColorItem(ft))
+                        {
+                            simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
                         }
                         else
                         {
@@ -660,7 +665,7 @@ namespace d360.model.DataAccessLayer
                     }
 
                     if (assetType.Class == AssetTypeClass.Reference)
-                    {
+                    {   
                         simpleFilters.Add($"A.Code like @simpleFilter");
                         simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.ID)), '$.Name') like @simpleFilter");
                     }
