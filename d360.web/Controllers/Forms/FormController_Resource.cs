@@ -622,6 +622,7 @@ namespace d360.web.Controllers
                 existing.Description = model.Description;
                 existing.PrimaryOwnerResourceID = model.PrimaryOwnerResourceID;
                 existing.SecondaryOwnerResourceID = model.SecondaryOwnerResourceID;
+                existing.IsActiveDirectoryGroup = model.IsActiveDirectoryGroup;
 
                 Company.Update(existing);
 
