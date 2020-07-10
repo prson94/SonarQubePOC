@@ -119,4 +119,28 @@ END
 	</rollback>
   </changeSet> 
 
+  <changeSet author="Pappas" id="Table.metrics.AssetVersion-v4">
+    <comment>GOV-10877</comment>
+	<sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'Definition')
+BEGIN
+	alter table metrics.AssetVersion add [Definition] nvarchar(4000) constraint DF_MetricAssetVersion_Definition default('{}') not null
+END
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'AssetVersion' AND COLUMN_NAME = 'Definition')
+BEGIN
+	ALTER TABLE [metrics].[AssetVersion] DROP CONSTRAINT DF_MetricAssetVersion_Definition
+	ALTER TABLE [metrics].[AssetVersion] DROP COLUMN [Definition]
+END
+		]]>
+	</rollback>
+  </changeSet> 
+
 </databaseChangeLog>
