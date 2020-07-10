@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges, SimpleChange, ChangeDetectionStrategy, ChangeDetectorRef  } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, ScoreType, ScoreTypeAllocation } from '../../../models/metrics.model';
-import { TreeNode } from 'primeng/api';
+import { TreeNode, MenuItem } from 'primeng/api';
 import { BaseComponent } from '../../shared/base.component';
 import { FormMode } from '../../../models/form.model';
 import { AssetTypeMetricModel } from '../../../models/asset.model';
@@ -20,10 +20,8 @@ import { AllocationService } from '../../../services/allocations.service';
                             <ng-template pTemplate="header">
                                 <tr> 
                                     <th>Name</th>
-                                    <th *ngIf="!isExternallyCalculated">Weight</th>
-                                    <th>Effective Date</th>
-                                    <th style="width: 40px"></th>
-                                    <th style="width: 40px"></th>
+                                    <th style="width: 120px" *ngIf="!isExternallyCalculated">Weight</th>
+                                    <th style="width: 120px">Effective Date</th>
                                     <th style="width: 40px"></th>
                                     <th style="width: 40px"></th>
                                 </tr>
@@ -34,26 +32,17 @@ import { AllocationService } from '../../../services/allocations.service';
                                         <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
                                         {{item.Name}}
                                     </td>
-                                    <td *ngIf="!isExternallyCalculated">{{item.Weight}}</td>
+                                    <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
                                     <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
                                     <td>
-                                        <div class="RowTools" *ngIf="rowNode.node.data.Uid">                                
-                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node);"><i [copy-clipboard]="rowNode.node.data.Uid" [pTooltip]="'UID: \n' + rowNode.node.data.Uid + '\n\n (click to copy)\n'" tooltipPosition="top" class="fa fa-info"></i></a>                                      
+                                        <div class="RowTools" *ngIf="item.IsGroup">             
+                                            <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add()" tooltip="Add measure to group"></button>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="RowTools" *ngIf="item.IsGroup">                                
-                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); add()"><i class="fa fa-plus"></i></a>                                      
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); edit()"><i class="fa fa-pencil"></i></a>                                    
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools">                                
-                                            <a style="cursor:pointer;" (click)="selectNode(rowNode.node); delete()"><i class="fa fa-trash-o"></i></a>                                    
+                                        <div class="RowTools">  
+                                            <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
+                                            <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="Measure Actions"></button>                                
                                         </div>
                                     </td>
                                 </tr>
@@ -195,5 +184,35 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     public close() {
         this.formMode = FormMode.Default;
     }
-
+    getAsPrecentage(val: number) {
+        if (val == 0)
+            return '0%';
+        if (!val)
+            return;
+        if (val == 1)
+            return '100%'
+        let s = val + '0000';
+        s = s.replace('0.', '');
+        if (s.length > 6)
+            s = (s.substr(0, 2)) + '.' + s[2] + "%";
+        else
+            s = (s.substr(0, 2)) + "%";
+        if (s.startsWith('0'))
+            s = s.substr(1, s.length);
+        return s;
+    }
+    private getCardMenuItems(): MenuItem[] {
+        var menu: MenuItem[] = [
+            { label: 'Edit', command: (event) => { this.edit() } },
+        ];
+        menu.push({
+            label: 'Disable',
+            command: (event) => { this.delete(); }
+        });
+        menu.push({
+            label: 'Version History',
+            command: (event) => { console.log("not yet implemented"); }
+        });
+        return menu;
+    }
 };

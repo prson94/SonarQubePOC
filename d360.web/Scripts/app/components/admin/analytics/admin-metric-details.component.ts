@@ -104,11 +104,12 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                       </div>
                                       <div *ngIf="hasConditions(selectedMetric)" class="measure-details-item">
                                           <div class="details-header">Asset Conditions</div>
-                                          <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups; index as g">
+                                          <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
                                               <div class="condition-content">
-                                                  <div class="right-space">Match {{conditionGroup.MatchType == conditionGroup.Any ? 'any:' : 'all:'}} </div>
-                                                  <div *ngFor="let condition of conditionGroup.ConditionItems; index as i" class="right-space">
-                                                    {{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}<span *ngIf="i != conditionGroup.ConditionItems.length -1">,</span>
+                                                  <div class="condition-items">
+                                                      <div *ngFor="let condition of conditionGroup.ConditionItems" class="right-space">
+                                                        {{condition.FieldTypeName}} {{condition.OperatorText}} {{condition.ValuesText}}
+                                                      </div>
                                                   </div>
                                               </div>
                                           </div>
@@ -228,9 +229,9 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
 
     formatConditions() {
         this.conditions.forEach(c => {
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-
             const field = this.metricListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
+            c.OperatorText = this.parseOperator(field, c.OperatorText);
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -304,5 +305,63 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             s = s.substr(1, s.length);
         return s;
     }
-
+    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
+        console.log(field.Type);
+        console.log(OperatorText);
+        switch (field.Type) {
+            case 'Date':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Text':
+            case 'Lookup':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    default:
+                        return OperatorText;
+                }
+            case 'Decimal':
+            case 'Number':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Boolean':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    default:
+                        return OperatorText;
+                }
+        }
+        return '';
+    }
 }

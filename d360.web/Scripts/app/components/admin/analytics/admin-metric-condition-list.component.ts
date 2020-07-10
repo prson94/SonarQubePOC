@@ -64,9 +64,9 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     }
     formatConditions() {
         this.conditions.forEach(c => {
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-
             const field = this.metricConditionListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
+            c.OperatorText = this.parseOperator(field, c.OperatorText);
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -101,6 +101,67 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
             }
         });
     }
+
+    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
+        console.log(field.Type);
+        console.log(OperatorText);
+        switch (field.Type) {
+            case 'Date':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Text':
+            case 'Lookup':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    default:
+                        return OperatorText;
+                }
+            case 'Decimal':
+            case'Number':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Boolean':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    default:
+                        return OperatorText;
+                }
+        }
+        return '';
+    }
+
     add() {
         this.selection = new MetricAssetVersionConditionItemViewModel();
         this.selection.IsEditMode = false;

@@ -4618,6 +4618,16 @@ button.tab-scroller {
     }
 }
 
+.kebabmenu.yellow-items li.ui-menuitem {
+    &:hover {
+        background-color: #fff8d0;
+    }
+
+    &:active {
+        background-color: #ffef99;
+    }
+}
+
 ///
 
 ///Popup preview panel
@@ -7372,9 +7382,12 @@ d3s-icon-picker {
             .condition-content {
                 display: inline-flex;
 
-                .right-space {
+                .condition-items {
                     padding-right: 4px;
+                    flex-direction:column;
+
                 }
+
             }
 
             .details-header {
@@ -7389,5 +7402,13 @@ d3s-icon-picker {
                 }
             }
         }
+    }
+}
+.rowtool-button-top {
+    top: -4px;
+    background: transparent;
+
+    &:hover {
+        background: rgba(0, 0, 0, .05) !important;
     }
 }
