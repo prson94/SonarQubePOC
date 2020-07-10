@@ -162,22 +162,31 @@ namespace d360.web.Controllers.V2
 
             try
             {
-                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);                
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+
+                
 
 
                 foreach (var item in model.linkDataArray)
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)
                     {
-                        return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Link without from and to node detected."));
+                        throw new Exception("Link without from and to node detected.");
                     }
                 }
 
-
-                if (model.nodeDataArray.GroupBy(x => x.AssetTypeUid.ToString().ToLower() + x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                foreach(var node in model.nodeDataArray)
                 {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Nodes withing same Task Type cannot have same name."));
+                    if(!model.linkDataArray.Any(x=> x.from == node.AssetUid || x.to == node.AssetUid))
+                    {
+                        throw new Exception("All nodes must be linked.");
+                    }
+                }
+
+                if (model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                {
+                    throw new Exception("Nodes withing same Task Type cannot have same name.");
                 }
                 List<NodeData> toAdd = new List<NodeData>();
                 List<NodeData> toUpdate = new List<NodeData>();

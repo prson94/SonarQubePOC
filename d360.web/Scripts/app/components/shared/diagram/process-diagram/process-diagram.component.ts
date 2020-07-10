@@ -199,6 +199,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         return true;
     }
 
+    private isExportEnabled() {
+        if (!this.myDiagram)
+            return false;
+
+        return this.myDiagram.nodes.count > 0;
+    }
+
     private getSelectedNodeCount() {
         if (!this.myDiagram)
             return 0;
@@ -308,6 +315,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
 
             })
+            e.diagram.select(e.diagram.findPartForKey(self.newGuid()));
+
         });
 
         //load current asset diagram
@@ -372,7 +381,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private validationErrors: any = {};
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
-
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
                 if (res.hasError) {
@@ -383,25 +391,31 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                 }
                 else {
-                    this.isSaving = false;
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
-                    this.cdRef.detectChanges();
+                    this.myDiagram.model = go.Model.fromJson(JSON.stringify(res.updatedModel));
+                    this.savedState = go.Model.fromJson(JSON.stringify(res.updatedModel));
+
                     this.processDiagramBase64 = this.myDiagram.makeImageData({
                         scale: 1
                     }).toString();
-
                     if (this.actionAfterSaved) {
                         window.setTimeout(() => {
                             this.actionAfterSaved();
                             this.actionAfterSaved = null;
                             this.isSavingChangesModalOpened = false;
+                            this.isSaving = false;
+                            this.cdRef.detectChanges();
                         }, 100)
+                    } else {
+                        this.isSaving = false;
+                        this.cdRef.detectChanges();
+
                     }
                 }
             },
                 err => {
-
+                    console.log(err);
 
                 });
     }
@@ -426,6 +440,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
                 this.savedState = go.Model.fromJson(JSON.stringify(res));
+
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
@@ -445,7 +460,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
                     if (propertyName != 'key') {
-                        m.set(data, propertyName, formData[propertyName]);
+                        m.set(data, propertyName, formData[propertyName].toString());
                     }
                 }
                 m.set(data, 'refItemColor', self.getNodeColor(data));
@@ -658,10 +673,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private downloadProcessDiagram() {
         var fileName = 'Filename';
         this.isExporting = true;
+        this.cdRef.detectChanges();
         this.processService.downloadProcessExcel(this.assetUid, this.processDiagramBase64)
             .subscribe(data => {
                 this.isExporting = false;
                 this.processService.downloadFile(data, fileName);
+                this.cdRef.detectChanges();
             });
     }
 
@@ -675,21 +692,27 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             switch (actionName) {
                 case 'switchModes':
                     this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
-                    this.actionAfterSaved = this.switchModes;
+                    this.actionAfterSaved = () => {
+                        this.switchModes();
+                        this.actionAfterSaved = null;
+                    }
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':
                     this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
                     this.showDiscardChanges = false;
-                    var self = this;
                     this.actionAfterSaved = () => {
-                        console.log("here");
-                        self.isRelatedAssetsVisible = !self.isRelatedAssetsVisible;
+                        this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                        this.actionAfterSaved = null;
                     }
                     break;
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
-                    this.actionAfterSaved = this.downloadProcessDiagram;
+
+                    this.actionAfterSaved = () => {
+                        this.downloadProcessDiagram();
+                        this.actionAfterSaved = null;
+                    }
                     this.showDiscardChanges = false;
                     break;
             }

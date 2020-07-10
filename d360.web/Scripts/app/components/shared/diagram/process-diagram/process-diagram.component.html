@@ -20,7 +20,7 @@
                 <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Exit Designer" (click)="doControlledAction('open-related-assets')">
                     <i class="fa fa-sitemap"></i>
                 </button>
-                <button aria-label="Export to Excel" (click)="doControlledAction('export')" title="Export to Excel" type="button" class="icon mr8">
+                <button  class="icon mr8 {{(!isExportEnabled() ? 'disabled' : '')}}" aria-label="Export to Excel" (click)="doControlledAction('export')" [disabled]="!isExportEnabled()" title="Export to Excel" type="button">
                     <i class="fa fa-download"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
