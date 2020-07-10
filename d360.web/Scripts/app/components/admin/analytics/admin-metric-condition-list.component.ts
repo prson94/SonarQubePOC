@@ -102,7 +102,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
         });
     }
 
-    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string 
+    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
         switch (field.Type) {
             case 'Date':
                 switch (OperatorText) {
