@@ -17,7 +17,7 @@
         </div>
         <div class="controls-right">
             <div class="asset-browser-button-group">
-                <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Exit Designer" (click)="doControlledAction('open-related-assets')">
+                <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Open Related Assets" (click)="doControlledAction('open-related-assets')">
                     <i class="fa fa-sitemap"></i>
                 </button>
                 <button  class="icon mr8 {{(!isExportEnabled() ? 'disabled' : '')}}" aria-label="Export to Excel" (click)="doControlledAction('export')" [disabled]="!isExportEnabled()" title="Export to Excel" type="button">
@@ -149,7 +149,7 @@
                 <div class="row">
                     <div class="loader">
                         <i class="fa fa-circle-o-notch fa-spin" style="font-size:24px"></i>
-                        <span class="text" *ngIf="isSaving">
+                        <span class="text" *ngIf="isSaving && !isExporting">
                             Saving changes
                         </span>
                         <span class="text" *ngIf="isExporting">
@@ -178,7 +178,7 @@
         </d3s-modal>
 
         <d3s-relationships-modal *ngIf="selectedNodeData && selectedNodeData.objectId"
-                                 (onClose)="isRelatedAssetsVisible = false"
+                                 (onClose)="closeRelationshipModel()"
                                  [isModalVisible]="isRelatedAssetsVisible"
                                  [objectID]="selectedNodeData.objectId"
                                  [objectType]="'Task'">

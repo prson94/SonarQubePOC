@@ -286,7 +286,7 @@ namespace d360.web.Controllers.V2
 
         }
         /// <summary>
-        /// Retrieves a process diagram for specific asset
+        /// Retrieves an excel export of diagram for specific asset
         /// </summary>
         /// <param name="assetUid">The asset uid</param>
         /// <returns></returns>
@@ -320,6 +320,37 @@ namespace d360.web.Controllers.V2
 
             var response = createFileResponseMessage(HttpStatusCode.OK, $"Filename {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+        }
+
+        /// <summary>
+        /// Retrieves an badges for process diagram
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/badges"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+
+            IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
+
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
 

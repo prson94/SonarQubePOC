@@ -112,11 +112,24 @@ namespace d360.model.DataAccessLayer
 	                    )field(json)
                     where A.uid in @assetUids", new { assetUids }).ToList();
 
+            var badges = GetDiagramAssetBadges(assetUid);
+
             foreach (var item in nodesExpandedData)
             {
                 var json = JsonConvert.SerializeObject(item);
                 var dictionary = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
                 var node = model.nodeDataArray.FirstOrDefault(x => x.AssetUid == Guid.Parse(dictionary["uid"]));
+
+                var badge = badges.FirstOrDefault(x => x.AssetUid == node.AssetUid);
+                if (badge != null)
+                {
+                    node["relCount"] = badge.RelationshipCount.ToString();
+                }
+                else
+                {
+                    node["relCount"] = "0";
+                }
+
                 node["icon"] = dictionary["icon"];
                 node["category"] = dictionary["category"];
                 node["refItemColor"] = dictionary["refItemColor"];
@@ -500,6 +513,28 @@ new
 
 
             return validationRes;
+        }
+
+        public IEnumerable<ProcessDiagramBadge> GetDiagramAssetBadges(Guid assetUid)
+        {
+            var badgesSql = $@"
+                declare @diagram nvarchar(max) = (
+                select apd.Diagram  as json from asset a 
+	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+                where a.uid = @assetUid)
+
+                ;with links as (
+                SELECT  
+                    JSON_VALUE(nda.value, '$.key') AS [AssetUid]
+                FROM OPENJSON(@diagram, '$.nodeDataArray') as nda)
+                select a.uid as AssetUid, count(*) as RelationshipCount from links
+                inner join Asset A on a.uid = links.AssetUid
+				inner join [Intersect] I on (A.Object = I.Object and A.ObjectID = I.ObjectID )
+					or (A.ObjectID = I.SubjectID AND a.Object = i.Subject)
+					group by a.uid";
+
+            var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid });
+            return response;
         }
 
         public async Task<byte[]> GetDiagramExcel(Asset asset, byte[] image)

@@ -298,9 +298,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramStateChanged();
         })
 
-        var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate();
-        var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate();
-        var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate();
+        var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate(this);
+        var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
+        var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate(this);
 
         activityNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
         eventNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
@@ -403,6 +403,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private validationErrors: any = {};
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
+        this.processDiagramBase64 = this.myDiagram.makeImageData({
+            scale: 1
+        }).toString();
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
                 if (res.hasError) {
@@ -620,7 +623,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
-                isNew: true
+                isNew: true,
+                relCount: 0
             });
         })
 
@@ -654,7 +658,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
-                isNew: true
+                isNew: true,
+                relCount: 0
             });
         })
 
@@ -688,7 +693,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
-                isNew: true
+                isNew: true,
+                relCount: 0
             });
         })
 
@@ -716,8 +722,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private actionAfterSaved: Function;
     private actionMessage: string = '';
     private showDiscardChanges: boolean = false;
-    private doControlledAction(actionName: string) {
-
+    public doControlledAction(actionName: string) {
+        if (!this.isEditMode) {
+            return;
+        }
         if (this.isEditMode && !this.isCurrentStateSaved()) {
             this.isSavingChangesModalOpened = true;
             switch (actionName) {
@@ -769,4 +777,24 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
 
     }
+
+    closeRelationshipModel() {
+        this.processService.getProcessDiagramBadges(this.assetUid)
+            .subscribe(badges => {
+                this.isRelatedAssetsVisible = false;
+
+                try {
+                    this.myDiagram.model.commit(function (m) {
+
+                        badges.forEach(asset => {
+                            var data = m.findNodeDataForKey(asset.AssetUid);
+                            m.set(data, 'relCount', asset.RelationshipCount);
+                        })
+                    }, 'update_model_badge_data');
+                } catch (e) {
+                    console.log(e);
+                }
+            })
+    }
+
 }

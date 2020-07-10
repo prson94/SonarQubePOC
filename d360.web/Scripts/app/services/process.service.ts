@@ -48,6 +48,16 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
+    public getProcessDiagramBadges(uid: string): Observable<any[]> {
+        return this
+            .http
+            .get(`/api/v2/process/${uid}/badges`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
+
     public putProcessDiagram(uid: string, model: any): Observable<any> {
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
@@ -62,7 +72,7 @@ export class ProcessService extends BaseObservableService {
     public downloadProcessExcel(assetUid: string, imageData: string): Observable<any> {
         return this.
             http
-            .post(`/api/v2/process/export/${assetUid}`, imageData , { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
+            .post(`/api/v2/process/export/${assetUid}`, imageData, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
     }
 
     public downloadFile(data: Blob, name: string) {

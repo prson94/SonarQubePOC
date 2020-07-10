@@ -1,8 +1,10 @@
 ﻿import * as go from 'gojs';
+import { ProcessDiagramComponent } from './process-diagram.component';
 
 export class ProcessDiagramTemplates {
     private static fontColor: string = '#202020';
     private static textFont: string = `14px 'Source Sans Pro',sans-serif`;
+    private static textFont12: string = `13px 'Source Sans Pro',sans-serif`;
 
     //event
     private static eventNodeRadius = 56;
@@ -10,7 +12,7 @@ export class ProcessDiagramTemplates {
     //gateway
     private static sideLength = 42;
 
-    public static eventTemplate() {
+    public static eventTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
             if (!(node as go.Node).isEnabled) {
@@ -92,7 +94,8 @@ export class ProcessDiagramTemplates {
                         stroke: 'black'
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
-            )
+            ),
+            this.getRelBadge('event', component)
         );
 
     }
@@ -130,7 +133,7 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    static get activity_HeaderPanel() {
+    static activity_HeaderPanel(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         return $(go.Panel, 'Auto',
             {
@@ -163,15 +166,66 @@ export class ProcessDiagramTemplates {
                     stroke: "white",
                     textAlign: "center",
                     font: this.textFont,
-                    margin: new go.Margin(14, 0, 0, 30),
+                    margin: new go.Margin(12, 0, 0, 34),
                     minSize: new go.Size(NaN, 24),
                 }
                 , new go.Binding("text", "governanceDisplayValue").makeTwoWay()
+            ),
+            this.getRelBadge('activity', component)
+        );
+    }
+
+    private static getRelBadge(type: string, component: ProcessDiagramComponent): go.Panel {
+        var $ = go.GraphObject.make;
+        var margin = new go.Margin(5, 5, 0, 0);
+        if (type == 'gateway') {
+            var margin = new go.Margin(28, 28, 0, 0);
+        }
+        if (type == 'event') {
+            var margin = new go.Margin(24, 28, 0, 0);
+        }
+
+        return $(go.Panel, 'Spot',
+            {
+                alignment: go.Spot.TopRight,
+                cursor: 'pointer',
+                click: (node) => {
+                    component.doControlledAction('open-related-assets');
+                }
+            },
+            $(go.Shape, "Rectangle",
+                {
+                    maxSize: new go.Size(NaN, 22),
+                    margin: margin,
+                    fill: '#006fba',
+                    strokeWidth: 1,
+                    stroke: "white"
+                },
+                new go.Binding("maxSize", "relCount", function (v) {
+                    var defaultWidth = 28;
+                    return new go.Size(defaultWidth, 22);
+                }),
+                new go.Binding("visible", "relCount", function (v) {
+                    if (v > 0) return true;
+                    return false;
+                })
+            ),
+            $(go.TextBlock,
+                {
+                    font: this.textFont12,
+                    textAlign: "center",
+                    stroke: 'white'
+                },
+                new go.Binding("text", "relCount").makeTwoWay(),
+                new go.Binding("visible", "relCount", function (v) {
+                    if (v > 0) return true;
+                    return false;
+                })
             )
         );
     }
 
-    public static activityTemplate() {
+    public static activityTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
@@ -207,7 +261,7 @@ export class ProcessDiagramTemplates {
                     new go.Binding('fill', 'refItemColor').makeTwoWay()
                 ),
                 $(go.Panel, 'Vertical',
-                    $(go.Panel, this.activity_HeaderPanel),
+                    $(go.Panel, this.activity_HeaderPanel(component)),
                     $(go.Panel, this.activity_BodyPanel)
                 )
             ),
@@ -222,7 +276,7 @@ export class ProcessDiagramTemplates {
         );
     }
 
-    public static gatewayTemplate() {
+    public static gatewayTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
             if (!(node as go.Node).isEnabled) {
@@ -303,7 +357,8 @@ export class ProcessDiagramTemplates {
                     , new go.Binding("text", "Name").makeTwoWay())
             )
             ,
-
+            this.getRelBadge('gateway', component)
+            ,
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
                 mouseLeave: function (e, node) { showSmallPorts(node, false); }
