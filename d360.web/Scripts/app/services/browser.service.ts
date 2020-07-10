@@ -26,7 +26,9 @@ import {
     AssetBrowserAssetRelationModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
-    DiagramTypesModel
+    DiagramTypesModel,
+    AssetBrowserResponseModel,
+    AssetBrowserApiHopAssetRequestModel
 } from '../models/lineage.model';
 
 import { MessagesObservableService } from './messages-observable.service';
@@ -50,6 +52,134 @@ export class BrowserService extends BaseObservableService {
             this.iconProperties = data;
         });
     }
+
+
+    //#region Pappas new stuff
+
+    private processResponse(response: AssetBrowserResponseModel) {
+        response.nodes.forEach(n => {
+
+            //#region Select template
+
+            let templateName = "";
+            if (!n.group) {
+                n.group = "";
+            }
+            if (n.group !== "") {
+                if (!n.leaf) {
+                    templateName = "Group";
+                }
+            }
+            else {
+                templateName = n.focal ? "FocalPortGroup" : "PortGroup";
+            }
+            n.template = templateName;
+
+            //#endregion
+
+            n.class = AssetTypeClass[n.class] as any;
+            n.icon = this.getIconUnicode(n.icon, n.class);
+            n.isGroup = !n.leaf;
+        });
+
+        //#region Load root data from hierarchy array
+
+        response.hierarchy.forEach(h => {
+            try {
+                let rootNode = response.nodes.find(n => { return n.hierarchyKey === h.hierarchyKey && !n.group; });
+                if (rootNode) {
+                    rootNode.owners = h.owners;
+                    rootNode.relations = h.relations;
+                    if (h.backwardReveal !== AssetBrowserApiHopDirection.None) {
+                        rootNode.showReveal = AssetBrowserApiHopDirection[h.backwardReveal] as any;
+                    }
+                    else {
+                        rootNode.showReveal = AssetBrowserApiHopDirection[h.forwardReveal] as any;
+                    }
+                }
+            } catch (e) {
+                console.log(e);
+            }
+        });
+
+        //#endregion
+    }
+
+    public getInitialLineage(ancestry: FilterAncestryMode, uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/lineage/initial`;
+        if (numberOfHops <= 0 || numberOfHops > 5)
+            numberOfHops = 3;
+
+        return this.http.post(url, { ancestry: +ancestry, uid: uid, hopCount: numberOfHops }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getInitialImpact(uid: string, numberOfHops: number): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/initial`;
+        if (numberOfHops <= 0 || numberOfHops > 5)
+            numberOfHops = 3;
+
+        return this.http.post(url, { uid: uid, hopCount: numberOfHops }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getImpactHop(ancestry: FilterAncestryMode, hierarchyKey: string, predicateUid: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/impact/hop`;
+         
+        return this.http.post(url, {
+            ancestry: ancestry,
+            hierarchyKey: hierarchyKey,
+            assets: assets,
+            preloadedIntersects: preloadedIntersects,
+            predicateUid: predicateUid,
+            direction: direction
+        }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getLineageHop(hierarchyKey: string, direction: AssetBrowserApiHopDirection, assets: AssetBrowserApiHopAssetRequestModel[], preloadedIntersects: number[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/lineage/hop`;
+
+        return this.http.post(url, { hierarchyKey: hierarchyKey, assets: assets, preloadedIntersects: preloadedIntersects, direction: direction }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    public getOwnerHop(hierarchyKey: string, assets: AssetBrowserApiHopAssetRequestModel[]): Observable<AssetBrowserResponseModel> {
+        const url = `api/v2/browser/owner/hop`;
+
+        return this.http.post(url, { hierarchyKey: hierarchyKey, assets: assets }).pipe(
+            map((response: AssetBrowserResponseModel) => {
+                this.processResponse(response);
+                return response;
+            }),
+            catchError(err => this.handleError(err))
+        );
+    }
+
+    //#endregion
+
+
+
 
     /**
     * Retrieve results from the Govern API for lineage regarding a specific asset.
@@ -357,9 +487,7 @@ export class BrowserService extends BaseObservableService {
             // from/to must stay as is, because there is other code that depends on this ordering.
             link.back = "#cccccc";
             link.from = model.fromKey;
-            link.fromPort = "R";
             link.to = baseKey;
-            link.toPort = "L;"
 
             translationModel.links = new Array();
             translationModel.links.push(link);
@@ -419,9 +547,9 @@ export class BrowserService extends BaseObservableService {
 
             fl.back = "#cccccc";
             fl.from = forward ? rootKey : currentKey;
-            fl.fromPort = "R";
+            //fl.fromPort = "R";
             fl.to = forward ? currentKey : rootKey;
-            fl.toPort = "L;"
+            //fl.toPort = "L;"
 
             let linkText: string = "";
             relevantIntersects.forEach(intersect => {
@@ -432,11 +560,6 @@ export class BrowserService extends BaseObservableService {
                     fl.predicateIds = [];
                 }
                 fl.predicateIds.push(intersect.predicateId);
-
-                if (!fl.intersectUids) {
-                    fl.intersectUids = [];
-                }
-                fl.intersectUids.push({ intersectUid: intersect.intersectUid, predicateId: intersect.predicateId });
             });
             fl.text = linkText;
 

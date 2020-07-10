@@ -1,6 +1,7 @@
 ﻿import { AssetTypeClass } from "./asset.model";
 import { SelectItem, TreeNode } from "primeng/api";
 import { ScoreType } from "./metrics.model";
+import { PredicateType } from "./predicate.model";
 
 //#region Enumerations
 
@@ -353,6 +354,21 @@ export class DiagramTypesModel {
 
 // #region Asset Browser : Translation
 
+export class AssetBrowserResponseModel {
+    nodes: AssetBrowserTranslationNode[];
+    links: AssetBrowserTranslationLink[];
+    hierarchy: AssetBrowserTranslationHierarchy[];
+    reveals: AssetBrowserRevealNode[];
+}
+
+
+export class AssetBrowserRevealNode {
+    hierarchyKey: string;
+    from: string;
+    to: string;
+    direction: AssetBrowserApiHopDirection
+}
+
 export class AssetBrowserTranslationOwnerCount {
     key: string;
     responsibilityType: string;
@@ -373,16 +389,36 @@ export class AssetBrowserTranslationRelationCount {
     disabled: boolean = false; //Used by the AB to determine whether to disable the badge while loading data. Prevents double-click issue.
 }
 
+export class AssetBrowserTranslationHierarchy {
+    hierarchyKey: string;
+    backwardReveal: AssetBrowserApiHopDirection;
+    forwardReveal: AssetBrowserApiHopDirection;
+    owners: AssetBrowserTranslationOwnerCount[] = [];
+    relations: AssetBrowserTranslationRelationCount[] = [];
+}
+
+export class AssetBrowserTranslationChildLink {
+    id: number;
+    from: string;
+    to: string;
+}
+
 export class AssetBrowserTranslationLink {
     from: string;
-    fromPort: string;
+    //fromPort: string;
     to: string;
-    toPort: string;
+    //toPort: string;
     text: string;
     back: string;
     predicateIds: number[];
     responsibilityTypeId: number;
-    intersectUids: AssetBrowserTranslationLinkIdentifier[] = [];
+    predicateId: number;
+    predicateUid: string;
+    predicateType: PredicateType
+
+    links: AssetBrowserTranslationChildLink[] = [];
+
+    badgeIdentifier: string; 
 }
 
 export class AssetBrowserTranslationLinkIdentifier {
@@ -391,6 +427,7 @@ export class AssetBrowserTranslationLinkIdentifier {
 }
 
 export class AssetBrowserTranslationNode {
+    hierarchyKey: string;
     hop: number;
     assetUid: string;
     assetTypeId: number;
@@ -411,8 +448,11 @@ export class AssetBrowserTranslationNode {
     showIcon: boolean;
     showReveal: AssetBrowserApiHopDirection;
     actionCount: number;
-    owners: AssetBrowserTranslationOwnerCount[] = new Array();
-    relations: AssetBrowserTranslationRelationCount[] = new Array();
+    owners: AssetBrowserTranslationOwnerCount[] = [];
+    relations: AssetBrowserTranslationRelationCount[] = [];
+
+    leaf: boolean;
+    focal: boolean;
 }
 
 export class AssetBrowserTranslation {

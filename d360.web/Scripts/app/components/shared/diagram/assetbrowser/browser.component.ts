@@ -27,7 +27,9 @@ import {
     AssetBrowserPanelCommand,
     AssetBrowserPanelModel,
     AssetBrowserApiHopIgnoreRequestModel,
-    DiagramTypesModel
+    DiagramTypesModel,
+    FilterAncestryMode,
+    AssetBrowserResponseModel 
 } from '../../../../models/lineage.model';
 
 import { BrowserService } from '../../../../services/browser.service';
@@ -43,6 +45,7 @@ import { SecondaryNavService } from '../../../../services/right-sidebar.service'
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
+import { Predicate, PredicateType } from '../../../../models/predicate.model';
 
 declare var window: any;
 
@@ -64,6 +67,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('ownerDetailPanel', { static: false }) ownerDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
+
+    private diagramData: AssetBrowserResponseModel;
 
     private requestModel: AssetBrowserApiHopRequestModel;
     private responseModel: AssetBrowserModel = new AssetBrowserModel();
@@ -371,113 +376,103 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     }
 
     private badge_ClickImpact(e, obj) {
-        if (obj != null && obj.part != null && obj.part.data != null) {
+        if (obj !== null && obj.part !== null && obj.part.data !== null) {
             let ix = obj.itemIndex;
             let node: AssetBrowserTranslationNode = obj.part.data;
             let relation: AssetBrowserTranslationRelationCount = node.relations[ix];
+            let badgeIdentifier: string = node.hierarchyKey + "|" + ix;
+
             if (!relation.disabled) {
+                this.diagram.startTransaction("impactBadge");
                 relation.disabled = true;
 
                 if (relation.expanded) {
-                    this.helper_CollapseBadgeRelationDependentNodesAndLinks(node.key, relation.predicateId, relation.predicate, relation.direction.toString());
+                    //this.helper_CollapseBadgeRelationDependentNodesAndLinks(node.key, relation.predicateId, relation.predicate, relation.direction.toString());
                     relation.expanded = false;
+
+                    let links = this.diagramModelAsGraph().linkDataArray;
+                    let badgeLink = links.find(l => { return l.badgeIdentifier === badgeIdentifier; });
+                    if (badgeLink) {
+                        let impactNodeKey = relation.direction == AssetBrowserApiHopDirection.Backward ? badgeLink.from : badgeLink.to;
+                        let impactNode = this.diagram.findNodeForKey(impactNodeKey);
+                        if (impactNode) {
+                            let impactData = impactNode.data as AssetBrowserTranslationNode;
+                            if (impactData) {
+                                let ixToDelete = this.diagramData.hierarchy.findIndex(o => { return o.hierarchyKey === impactNodeKey; });
+                                if (ixToDelete > -1) {
+                                    this.diagramData.hierarchy.splice(1, ixToDelete);
+                                    ixToDelete = -1;
+                                }
+                                let nodesToDelete = this.diagramData.nodes.filter(o => { return o.hierarchyKey === impactNodeKey; });
+                                nodesToDelete.forEach(nodeToDelete => {
+                                    ixToDelete = this.diagramData.nodes.findIndex(o => { return o.key === nodeToDelete.key; });
+                                    if (ixToDelete > -1) {
+                                        this.diagramData.nodes.splice(1, ixToDelete);
+                                        ixToDelete = -1;
+                                        this.diagramModelAsGraph().removeNodeData(nodeToDelete);
+                                    }
+                                });
+                            }
+                        }
+                        this.diagramModelAsGraph().removeLinkData(badgeLink); 
+                    }
+
                     this.diagram.model.removeArrayItem(node.relations, ix);
                     this.diagram.model.insertArrayItem(node.relations, ix, relation);
                     this.helper_CalculateAlertCount();
                     this.cdRef.markForCheck();
-                    relation.disabled = false;
                 }
                 else {
-                    let requestModel: AssetBrowserApiHopRequestModel = new AssetBrowserApiHopRequestModel();
+                    var assets: AssetBrowserApiHopAssetRequestModel[] = [];
+                    var hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === node.hierarchyKey; });
 
-                    requestModel.Initial = false;
-                    requestModel.Assets = [];
-                    requestModel.PredicateUid = relation.predicateUid;
-                    requestModel.Direction = relation.direction;
-                    requestModel.HopType = AssetBrowserApiHopType.Impact;
-                    requestModel.Hops = 1;
-                    requestModel.LeafOnly = !this.displayConfiguration.IncludeNonLeaf;
-
-                    let n = node;
-                    if (n.isGroup) {
-                        // Add the root node's asset information.
-                        if (this.displayConfiguration.IncludeNonLeaf && node.assetUid !== this.emptyUid) {
-                            requestModel.Assets.push({ Uid: node.assetUid, Key: node.key });
-                        }
-                        (this.diagram.findNodeForData(n) as go.Group).findSubGraphParts().each(g => {
-                            let shouldInclude: boolean = this.displayConfiguration.IncludeNonLeaf ? true : (g.data.isGroup == undefined || g.data.isGroup == false);
-                            if (shouldInclude && g.data.assetUid !== this.emptyUid) {
-                                let asset = new AssetBrowserApiHopAssetRequestModel();
-                                asset.Uid = g.data.assetUid;
-                                asset.Key = g.data.key
-                                requestModel.Assets.push(asset);
-                            }
-                        })
-                    }
-
-                    // Get relations to ignore.
-                    requestModel.RelationsToIgnore = this.helper_GetRelationsToIgnore(relation.predicateId);
-
-                    let subscriber = (response: AssetBrowserAssetsModel) => {
-                        response.assets.forEach(a => {
-                            this.responseModel.assets.assets.push(a);
-                        });
-                        response.assetRelations.forEach(i => {
-                            this.responseModel.assets.assetRelations.push(i);
-                        });
-
-                        let nodeToPull = this.helper_FindInApiModel(node.key, this.responseModel.assets);
-                        if (nodeToPull) {
-                            response.assets.push(nodeToPull);
-                        }
-
-                        response = this.browserService.convertResponseModel(response, this.displayConfiguration.AncestryMode);
-
-                        let keysToBeConcernedWith: string[] = [];
-                        let nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, response.assets);
-                        nodes.forEach(n => {
-                            keysToBeConcernedWith.push(n.key);
-                        });
-
-                        let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                        trans.nodes = nodes;
-                        trans.links = this.browserService.translateAssetLinks(this.helper_GetFullResponseModelAsTranslationNodes(), response.assetRelations);
-
-                        // Now track which asset Uids should be ignored for badge expansion, so we do not duplicate nodes (GOV-10039).
-                        requestModel.Assets.forEach(reqAsset => {
-                            response.assetRelations.forEach(r => {
-                                let idxToUpdate: number = -1;
-                                if (r.subjectKey == reqAsset.Key) {
-                                    idxToUpdate = trans.nodes.findIndex(s => { return s.key == r.objectKey });
-                                }
-                                else if (r.objectKey == reqAsset.Key) {
-                                    idxToUpdate = trans.nodes.findIndex(o => { return o.key == r.subjectKey });
-                                }
+                    hierarchyNodes.forEach(n => {
+                        if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) {
+                            assets.push({
+                                Uid: n.assetUid,
+                                Key: n.key
                             });
+                        }
+                    });
+
+                    let preloadedIntersects = this.helper_GetDiagramIntersectIds();
+                    let direction = relation.direction;
+
+                    this.browserService.getImpactHop(this.displayConfiguration.AncestryMode, node.hierarchyKey, relation.predicateUid, direction, assets, preloadedIntersects) 
+                        .subscribe((response: AssetBrowserResponseModel) => {
+
+                            // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
+                            response.hierarchy.forEach(o => {
+                                this.diagramData.hierarchy.push(o);
+                            });
+                            response.links.forEach(o => {
+                                this.diagramData.links.push(o);
+                            });
+                            response.nodes.forEach(o => {
+                                this.diagramData.nodes.push(o);
+                            });
+                            if (response.reveals) {
+                                response.reveals.forEach(o => {
+                                    this.diagramData.reveals.push(o);
+                                });
+                            }
+
+                            this.helper_ParseTranslatedData(response, true, badgeIdentifier);
+
+                            relation.expanded = true;
+                            relation.disabled = false;
+
+                            this.helper_SetFilterWindow();
+
+                            this.helper_HideDeselectedAssetTypes(undefined);
+                            this.helper_HideDeselectedPredicates(undefined);
+                            this.helper_HideDeselectedResponsibilityTypes(undefined);
+
                         });
-
-                        relation.expanded = true;
-                        this.helper_ParseTranslatedData(trans, true);
-
-                        this.helper_SetFilterWindow();
-
-                        this.helper_HideDeselectedAssetTypes(keysToBeConcernedWith);
-                        this.helper_HideDeselectedPredicates(keysToBeConcernedWith);
-                        this.helper_HideDeselectedResponsibilityTypes(keysToBeConcernedWith);
-
-                        relation.disabled = false;
-                    };
-
-                    if (this.helper_LineageDiagramApplies()) {
-                        this.requestModel.DiagramType = DiagramType.Lineage;
-                        this.browserService.getAssetBrowserHop(requestModel).subscribe(subscriber);
-                    }
-                    else {
-                        this.requestModel.DiagramType = DiagramType.Impact;
-                        this.browserService.getImpactBrowserHop(requestModel).subscribe(subscriber);
-                    }
                 }
 
+                relation.disabled = false;
+                this.diagram.commitTransaction("impactBadge");
             }
         }
     }
@@ -489,7 +484,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             let owner: AssetBrowserTranslationOwnerCount = node.owners[ix];
 
             if (owner.expanded) {
-                this.helper_CollapseBadgeOwnerDependentNodesAndLinks(node.key, owner.responsibilityTypeId);
+                //this.helper_CollapseBadgeOwnerDependentNodesAndLinks(node.key, owner.responsibilityTypeId);
                 owner.expanded = false;
                 this.diagram.model.removeArrayItem(node.owners, ix);
                 this.diagram.model.insertArrayItem(node.owners, ix, owner);
@@ -542,7 +537,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                         });
                         owner.expanded = true;
 
-                        this.helper_ParseTranslatedData(trans, true);
+                        //this.helper_ParseTranslatedData(trans, true);
 
                         this.helper_SetFilterWindow();
                     });
@@ -738,84 +733,6 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         //if (this.panelModel.selectedCommand != AssetBrowserPanelCommand.Alerts) {
         //    this.showAlertsByDisplayedAssets();
         //}
-    }
-
-    private helper_CollapseBadgeOwnerDependentNodesAndLinks(nodeKey: string, responsibilityTypeId: number) {
-        this.diagram.startTransaction("collapseOwnerBadge");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        let links: go.Iterator<go.Link>;
-
-        links = this.diagram.links.filter(l => l.fromNode.key == nodeKey && l.data.responsibilityTypeId == responsibilityTypeId);
-        this.helper_CollapseNodesAndLinks(dm, nodeKey, nodeKey, links);
-
-        this.diagram.commitTransaction("collapseOwnerBadge");
-    }
-
-    private helper_CollapseBadgeRelationDependentNodesAndLinks(nodeKey: string, predicateId: number, predicateName: string, direction: string) {
-        this.diagram.startTransaction("collapseRelationBadge");
-        let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
-        let links: go.Iterator<go.Link>;
-        switch (AssetBrowserApiHopDirection[direction]) {
-            case AssetBrowserApiHopDirection.Backward:
-                if (this.displayConfiguration.DiagramType == DiagramType.Impact) {
-                    // Impact diagram always points forward. So disregard the direciton sent in be predicate badge.
-                    links = this.diagram.links.filter(l =>
-                        l.data.text == predicateName &&
-                        (l.fromNode.key == nodeKey) && l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
-                    );
-                }
-                else {
-                    links = this.diagram.links.filter(l =>
-                        l.data.text == predicateName &&
-                        (l.toNode.key == nodeKey) &&
-                        l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
-                    );
-                }
-                break;
-            case AssetBrowserApiHopDirection.Forward:
-                links = this.diagram.links.filter(l =>
-                    l.data.text == predicateName &&
-                    (l.fromNode.key == nodeKey) && l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
-                );
-                break;
-            default:
-                links = this.diagram.links.filter(l =>
-                    l.data.text == predicateName &&
-                    (l.fromNode.key == nodeKey || l.toNode.key == nodeKey) &&
-                    l.data.predicateIds.findIndex(pr => { return pr == predicateId; }) > -1
-                );
-                break;
-        }
-
-        this.helper_CollapseNodesAndLinks(dm, nodeKey, nodeKey, links);
-
-        this.diagram.commitTransaction("collapseRelationBadge");
-    }
-
-    private helper_CollapseNodesAndLinks(dm: go.GraphLinksModel, initialKey: string, key: string, links: go.Iterator<go.Link>) {
-        if (links) {
-            let lnks: any[] = [];
-            links.iterator.each(link => {
-                lnks.push({ link: link, node: (link.toNode.key == key) ? link.fromNode : link.toNode });
-            });
-            lnks.forEach(lnk => {
-                if (lnk.node) {
-                    if (lnk.node.key != initialKey) {
-                        let backLinks: go.Iterator<go.Link> = lnk.node.findLinksInto().filter(b => { return (b.fromNode.key !== key); });
-                        this.helper_CollapseNodesAndLinks(dm, initialKey, lnk.node.key, backLinks);
-
-                        let forwardLinks: go.Iterator<go.Link> = lnk.node.findLinksOutOf().filter(b => { return (b.toNode.key !== key); });
-                        this.helper_CollapseNodesAndLinks(dm, initialKey, lnk.node.key, forwardLinks);
-
-                        // Remove immediate child.
-                        this.diagram.remove(lnk.node);
-                        dm.removeNodeData(dm.findNodeDataForKey(lnk.node.key));
-                    }
-                }
-
-                this.diagram.remove(lnk.link);
-            });
-        }
     }
 
     private helper_DetermineLoadedFilterOptions(): LoadedFilterTypesModel {
@@ -1108,6 +1025,20 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return foundRootAsset;
     }
 
+    private helper_GetDiagramIntersectIds(): number[] {
+        let preloadedIntersects: number[] = [];
+        if (this.diagramData.links) {
+            this.diagramData.links.forEach(i => {
+                if (i.links) {
+                    i.links.forEach(c => {
+                        preloadedIntersects.push(c.id)
+                    });
+                }
+            });
+        }
+        return preloadedIntersects;
+    }
+
     /**
     * Convert the stored raw data set from the API while taking into account the ancestry setting.
     * @returns A collection of translated nodes.
@@ -1363,8 +1294,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         if (allRelations === undefined) {
             allRelations = new Array<AssetBrowserGenericRelationModel>();
 
-            this.responseModel.assets.assetRelations.forEach(l => {
-                allRelations.push({ from: l.subjectKey, to: l.objectKey });
+            this.diagramData.links.forEach(l => {
+                l.links.forEach(cl => {
+                    allRelations.push({ from: cl.from, to: cl.to });
+                });
             });
             this.responseModel.owners.ownerRelations.forEach(l => {
                 allRelations.push({ from: l.ownerKey, to: l.assetKey });
@@ -1546,7 +1479,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         return isLineage ? this.displayConfiguration.NumberOfLineageHops : this.displayConfiguration.NumberOfImpactHops
     }
 
-    private helper_ParseTranslatedData(trans: AssetBrowserTranslation, append: boolean = false) {
+    private helper_ParseTranslatedData(trans: AssetBrowserResponseModel, append: boolean = false, badgeIdentifier: string = null) {//(trans: AssetBrowserTranslation, append: boolean = false) {
         this.diagram.startTransaction("load_all_data");
         let dm: go.GraphLinksModel = <go.GraphLinksModel>this.diagram.model;
 
@@ -1557,71 +1490,38 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         });
 
         if (append) {
-
             trans.nodes.forEach(n => {
-                n.showIcon = this.displayConfiguration.DisplayIcons;
-                let x = dm.findNodeDataForKey(n.key);
-                if (x == null) {
-                    //handle case where appended lineage reveals that a leaf node is
-                    //now a parent of another node deeper in the hierarchy
-                    if (n.group != null) {
-                        let r = dm.findNodeDataForKey(n.group);
-                        if (r != null) {
-                            if (r.isGroup != true) {
-                                dm.removeNodeData(r);
-                                r.isGroup = true;
-                                r.template = "Group"
-                                dm.addNodeData(r);
-                            }
-                        }
-                    }
-
-                    dm.addNodeData(n);
-                }
+                dm.addNodeData(n);
             });
-
             trans.links.forEach(l => {
-                let fromNodePresent: boolean = (dm.findNodeDataForKey(l.from) !== null);
-                let toNodePresent: boolean = (dm.findNodeDataForKey(l.to) !== null);
-
-                // Add the link to begin with
-                if (dm.linkDataArray.find(i => i.to == l.to && i.from == l.from) == null)
-                    dm.addLinkData(l);
-
-                // Then calculate to see if we should add a link to any hidden nodes.
-                if (!fromNodePresent || !toNodePresent) {
-                    let hiddenNodes = dm.nodeDataArray.filter(n => n.template == "HiddenData");
-                    let newLink: AssetBrowserTranslationLink = {
-                        back: l.back,
-                        from: l.from,
-                        fromPort: l.fromPort,
-                        intersectUids: l.intersectUids,
-                        predicateIds: l.predicateIds,
-                        responsibilityTypeId: l.responsibilityTypeId,
-                        text: l.text,
-                        to: l.to,
-                        toPort: l.toPort
-                    };
-                    hiddenNodes.forEach(hn => {
-                        if (hn.subgraph) {
-                            if (!fromNodePresent && hn.subgraph.nodes.findIndex(sn => { return sn.key == l.from }) > -1) {
-                                newLink.from = hn.key;
-                            }
-                            if (!toNodePresent && hn.subgraph.nodes.findIndex(sn => { return sn.key == l.to }) > -1) {
-                                newLink.to = hn.key;
-                            }
-                        }
-                    });
-
-                    if (dm.linkDataArray.find(i => i.to == newLink.to && i.from == newLink.from) == null)
-                        dm.addLinkData(newLink);
-                }
+                l.badgeIdentifier = badgeIdentifier;
+                dm.addLinkData(l);
             });
-
         }
         else {
             dm.nodeDataArray = trans.nodes;
             dm.linkDataArray = trans.links;
+        }
+
+        if (trans.reveals) {
+            trans.reveals.forEach(reveal => {
+
+                let linkedHeirarchyNode = dm.findNodeDataForKey(reveal.hierarchyKey);
+
+                dm.addNodeData({
+                    template: 'MoreData',
+                    hierarchyKey: reveal.hierarchyKey,
+                    key: reveal.hierarchyKey + '_Reveal',
+                    back: (linkedHeirarchyNode) ? linkedHeirarchyNode.back : "#cccccc", 
+                    direction: reveal.direction,
+                });
+
+                dm.addLinkData({
+                    from: reveal.from,
+                    to: reveal.to,
+                    badgeIdentifier: badgeIdentifier
+                });
+            });
         }
 
         //#endregion
@@ -1634,11 +1534,11 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         this.diagram.findTopLevelGroups().each(g => {
             let children = g.findSubGraphParts();
-            let childAssets: AssetBrowserApiHopAssetRequestModel[] = [];
+            //let childAssets: AssetBrowserApiHopAssetRequestModel[] = [];
             let childOwners = [];
             let childRelations = [];
-            let backReveal: boolean = false;
-            let forwardReveal: boolean = false;
+            //let backReveal: boolean = false;
+            //let forwardReveal: boolean = false;
 
 
             children.each(c => {
@@ -1673,16 +1573,16 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                     data.relations = [];
                 }
 
-                if (+data.showReveal !== +AssetBrowserApiHopDirection.None) {
-                    if (+data.showReveal == +AssetBrowserApiHopDirection.Backward) {
-                        backReveal = true;
-                        childAssets.push({ Uid: data.assetUid, Key: data.key });
-                    }
-                    if (+data.showReveal == +AssetBrowserApiHopDirection.Forward) {
-                        forwardReveal = true;
-                        childAssets.push({ Uid: data.assetUid, Key: data.key });
-                    }
-                }
+                //if (+data.showReveal !== +AssetBrowserApiHopDirection.None) {
+                //    if (+data.showReveal == +AssetBrowserApiHopDirection.Backward) {
+                //        backReveal = true;
+                //        childAssets.push({ Uid: data.assetUid, Key: data.key });
+                //    }
+                //    if (+data.showReveal == +AssetBrowserApiHopDirection.Forward) {
+                //        forwardReveal = true;
+                //        childAssets.push({ Uid: data.assetUid, Key: data.key });
+                //    }
+                //}
 
             });
 
@@ -1693,41 +1593,41 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.diagram.model.setDataProperty(g.data, "relations", g.data.relations.slice());
             this.diagram.model.setDataProperty(g.data, "showBadges", this.displayConfiguration.DisplayBadges);
 
-            if (backReveal) {
-                if (dm.findNodeDataForKey(g.data.key + '_Backward') == null) {
-                    dm.addNodeData({
-                        template: 'MoreData',
-                        key: g.data.key + '_Backward',
-                        back: g.data.back,
-                        showReveal: AssetBrowserApiHopDirection.Backward,
-                        assetUid: g.data.assetUid,
-                        assetUids: childAssets
-                    });
+            //if (backReveal) {
+            //    if (dm.findNodeDataForKey(g.data.key + '_Backward') == null) {
+            //        dm.addNodeData({
+            //            template: 'MoreData',
+            //            key: g.data.key + '_Backward',
+            //            back: g.data.back,
+            //            showReveal: AssetBrowserApiHopDirection.Backward,
+            //            assetUid: g.data.assetUid,
+            //            assetUids: childAssets
+            //        });
 
-                    dm.addLinkData({
-                        from: g.data.key + '_Backward',
-                        to: g.data.key
-                    });
-                }
-            }
+            //        dm.addLinkData({
+            //            from: g.data.key + '_Backward',
+            //            to: g.data.key
+            //        });
+            //    }
+            //}
 
-            if (forwardReveal) {
-                if (dm.findNodeDataForKey(g.data.key + '_Forward') == null) {
-                    dm.addNodeData({
-                        template: 'MoreData',
-                        key: g.data.key + '_Forward',
-                        back: g.data.back,
-                        showReveal: AssetBrowserApiHopDirection.Forward,
-                        assetUid: g.data.assetUid,
-                        assetUids: childAssets
-                    });
+            //if (forwardReveal) {
+            //    if (dm.findNodeDataForKey(g.data.key + '_Forward') == null) {
+            //        dm.addNodeData({
+            //            template: 'MoreData',
+            //            key: g.data.key + '_Forward',
+            //            back: g.data.back,
+            //            showReveal: AssetBrowserApiHopDirection.Forward,
+            //            assetUid: g.data.assetUid,
+            //            assetUids: childAssets
+            //        });
 
-                    dm.addLinkData({
-                        from: g.data.key,
-                        to: g.data.key + '_Forward'
-                    });
-                }
-            }
+            //        dm.addLinkData({
+            //            from: g.data.key,
+            //            to: g.data.key + '_Forward'
+            //        });
+            //    }
+            //}
         });
 
         //#endregion
@@ -1749,30 +1649,18 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
             this.responseModel.clear();
             this.revealedKeys = [];
 
-            this.requestModel = new AssetBrowserApiHopRequestModel();
-            this.requestModel.Initial = true;
-            this.requestModel.Assets = new Array();
-            this.requestModel.RelationsToIgnore = [];
+            this.diagramData = new AssetBrowserResponseModel();
+            this.diagramData.hierarchy = [];
+            this.diagramData.links = [];
+            this.diagramData.nodes = [];
+            this.diagramData.reveals = [];
 
-            let assetRequestModel: AssetBrowserApiHopAssetRequestModel = new AssetBrowserApiHopAssetRequestModel();
-            assetRequestModel.Uid = this.assetUid;
-            this.requestModel.Assets.push(assetRequestModel);
-
-            this.requestModel.Direction = AssetBrowserApiHopDirection.Both;
-            this.requestModel.Hops = this.helper_NumberOfHops();
-            this.requestModel.LeafOnly = !this.displayConfiguration.IncludeNonLeaf;
-
-            let subscriber = (data: AssetBrowserAssetsModel) => {
-                this.responseModel.assets.assets = data.assets;
-                this.responseModel.assets.assetRelations = data.assetRelations;
+            let subscriber = (data: AssetBrowserResponseModel) => {
+                this.diagramData = data;
                 this.loadingText = "Determining links and meaning...";
-                data = this.browserService.convertResponseModel(data, this.displayConfiguration.AncestryMode);
 
-                let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, data.assets);
-                trans.links = this.browserService.translateAssetLinks(trans.nodes, data.assetRelations);
+                this.helper_ParseTranslatedData(data);
 
-                this.helper_ParseTranslatedData(trans);
                 this.helper_ResizeDiagram();
                 this.helper_ScaleDiagram(1);
                 this.diagram.alignDocument(go.Spot.Center, go.Spot.Center);
@@ -1785,15 +1673,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 obs.complete();
             };
 
+            //!this.displayConfiguration.IncludeNonLeaf;
             if (isLineage) {
-                this.requestModel.DiagramType = DiagramType.Lineage;
-                this.requestModel.HopType = AssetBrowserApiHopType.Lineage;
-                this.browserService.getAssetBrowserHop(this.requestModel).subscribe(subscriber);
+                this.browserService.getInitialLineage(this.displayConfiguration.AncestryMode, this.assetUid, this.helper_NumberOfHops()).subscribe(subscriber);
             }
             else {
-                this.requestModel.DiagramType = DiagramType.Impact;
-                this.requestModel.HopType = AssetBrowserApiHopType.Impact;
-                this.browserService.getImpactBrowserHop(this.requestModel).subscribe(subscriber);
+                this.browserService.getInitialImpact(this.assetUid, this.helper_NumberOfHops()).subscribe(subscriber);
             }
         });
 
@@ -1853,81 +1738,60 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     private helper_RevealLineageHop(e: go.InputEvent, obj: go.GraphObject) {
         if (obj != null && obj.part != null && obj.part.data != null) {
             let data = obj.part.data;
-            let model = new AssetBrowserApiHopRequestModel();
 
-            // This may be a top ancestor key OR a direct parent key.
-            let currentTopGroupKey: string = data.key;
-            if (currentTopGroupKey.endsWith("_Backward")) {
-                currentTopGroupKey = currentTopGroupKey.replace("_Backward", "");
-                model.Direction = AssetBrowserApiHopDirection.Backward;
-            }
-            else if (currentTopGroupKey.endsWith("_Forward")) {
-                currentTopGroupKey = currentTopGroupKey.replace("_Forward", "");
-                model.Direction = AssetBrowserApiHopDirection.Forward;
-            }
-            this.revealedKeys.push(currentTopGroupKey);
+            //// Get relations to ignore.
+            var assets: AssetBrowserApiHopAssetRequestModel[] = [];
+            var hierarchyNodes = this.diagramData.nodes.filter(n => { return n.hierarchyKey === data.hierarchyKey; });
 
-            // Now we need to find the real root asset for this current key.
-            let realRootAsset = this.helper_FindTrueRootAssetInCollection(currentTopGroupKey, undefined, undefined);
+            hierarchyNodes.forEach(n => {
+                if (!n.key.endsWith("_Reveal") && n.assetUid !== this.emptyUid && assets.findIndex(a => { return a.Uid === n.assetUid; }) === -1) { 
+                    assets.push({
+                        Uid: n.assetUid,
+                        Key: n.key
+                    });
+                }
+            });
 
-            model.Initial = false;
-            model.Hops = 1;
-            model.LeafOnly = !this.displayConfiguration.IncludeNonLeaf;
-            model.DiagramType = DiagramType.Lineage;
-            model.HopType = AssetBrowserApiHopType.Lineage;
-            model.Assets = data.assetUids;
+            let preloadedIntersects = this.helper_GetDiagramIntersectIds();
+            let direction: AssetBrowserApiHopDirection = data.direction as AssetBrowserApiHopDirection;
 
-            // Get relations to ignore.
-            model.RelationsToIgnore = this.helper_GetRelationsToIgnore(undefined);
-
-            this.browserService.getAssetBrowserHop(model)
-                .subscribe(response => {
+            this.browserService.getLineageHop(data.hierarchyKey, direction, assets, preloadedIntersects)
+                .subscribe((response: AssetBrowserResponseModel) => {
 
                     // Save a copy of the original return models so we can re-parse of filters or ancestry view changes.
-                    response.assets.forEach(a => {
-                        if (this.responseModel.assets.assets.find(r => r.key == a.key) == null) {
-                            this.responseModel.assets.assets.push(a);
-                        }
+                    response.hierarchy.forEach(o => {
+                        this.diagramData.hierarchy.push(o);
                     });
-
-                    response.assetRelations.forEach(i => {
-                        if (this.responseModel.assets.assetRelations.find(r => r.subjectKey == i.subjectKey && r.objectKey == i.objectKey) == null) {
-                            this.responseModel.assets.assetRelations.push(i);
-                        }
+                    response.links.forEach(o => {
+                        this.diagramData.links.push(o);
                     });
+                    response.nodes.forEach(o => {
+                        this.diagramData.nodes.push(o);
+                    });
+                    if (response.reveals) {
+                        response.reveals.forEach(o => {
+                            this.diagramData.reveals.push(o);
+                        });
+                    }
 
-                    response = this.browserService.convertResponseModel(response, this.displayConfiguration.AncestryMode);
-
-                    let trans: AssetBrowserTranslation = new AssetBrowserTranslation();
-                    trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, response.assets);
-                    trans.links = this.browserService.translateAssetLinks(this.helper_GetFullResponseModelAsTranslationNodes(), response.assetRelations);
-
-                    let modelsToSetReveal: AssetBrowserAssetModel[] = [];
-                    modelsToSetReveal.push(realRootAsset);
-                    this.helper_SetRevealKeyInHierarchy(modelsToSetReveal);
-
-                    this.helper_ParseTranslatedData(trans, true);
+                    this.helper_ParseTranslatedData(response, true);
 
                     // #region Remove the reveal node
 
                     this.diagram.startTransaction('reveal');
-
-                    this.diagram.findTopLevelGroups().each(g => {
-                        if (this.revealedKeys.findIndex(rk => { return g.key == rk; }) > -1) {
-
-                            // Set the reveal value to None in the diagram's existing data model.
-                            let children = g.findSubGraphParts();
-                            children.each(c => {
-                                this.diagram.model.setDataProperty(c.data, "showReveal", AssetBrowserApiHopDirection.None);
-                            });
-
-                        }
-                    });
-
-                    // Remove the link we just clicked on from the reveal node.
                     this.diagramModelAsGraph().removeNodeData(data);
-                    let l = this.diagramModelAsGraph().linkDataArray.filter(l => l.to == data.key || l.from == data.key);
-                    this.diagramModelAsGraph().removeLinkDataCollection(l);
+
+
+                    let l: go.ObjectData;
+                    if (direction == AssetBrowserApiHopDirection.Backward) {
+                        l = this.diagramModelAsGraph().linkDataArray.find(l => l.to == data.hierarchyKey && l.from == data.key);
+                    }
+                    else {
+                        l = this.diagramModelAsGraph().linkDataArray.find(l => l.to == data.key && l.from == data.hierarchyKey);
+                    }
+                    if (l) {
+                        this.diagramModelAsGraph().removeLinkData(l);
+                    }
 
                     this.diagram.commitTransaction('reveal');
 
@@ -2119,7 +1983,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         trans.nodes = this.browserService.translateAssetNodes(this.displayConfiguration.IncludeNonLeaf, assetData.assets);
         trans.links = this.browserService.translateAssetLinks(trans.nodes, assetData.assetRelations);
 
-        this.helper_ParseTranslatedData(trans);
+        //this.helper_ParseTranslatedData(trans);
 
         this.helper_ResizeDiagram();
         this.diagram.zoomToFit();
@@ -2374,6 +2238,13 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         }
     }
 
+    private template_GetContrast(back: string, backAmount: number): string {
+        let brush = new go.Brush();
+        brush.color = back;
+        brush.lightenBy(backAmount);
+        return brush.isDark() ? '#ffffff' : '#000000';
+    }
+
     private template_AncestorNode(): go.Group {
 
         return this.g(
@@ -2432,7 +2303,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             editable: false,
                             font: this.fontLabelIcon
                         },
-                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "icon"),
                         new go.Binding("visible", "showIcon")
                     ),
@@ -2448,7 +2319,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                             overflow: this.textOverflowStyle,
                             toolTip: this.template_Tooltip()
                         },
-                        new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                        new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                         new go.Binding("text", "text").makeTwoWay()
                     )
                 ),  // end Horizontal Panel
@@ -3264,7 +3135,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 editable: false,
                                 font: this.fontLabelIcon
                             },
-                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
+                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
                             new go.Binding("text", "icon"),
                             new go.Binding("visible", "showIcon")
                         ),
@@ -3280,8 +3151,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                                 overflow: this.textOverflowStyle,
                                 toolTip: this.template_Tooltip()
                             },
-                            new go.Binding("stroke", "", (v) => go.Brush.mix(v.fore, this.darkenBoxColor, v.foreAmount)),
-                            new go.Binding("text", "text").makeTwoWay()
+                            new go.Binding("stroke", "", (v) => this.template_GetContrast(v.back, v.backAmount)),
+                            new go.Binding("text", "text").makeTwoWay() 
                         )
                     ),  // end Horizontal Panel
                     this.g(
