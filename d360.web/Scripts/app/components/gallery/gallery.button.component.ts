@@ -8,6 +8,7 @@
 })
 
 export class GalleryButtonComponent implements OnInit {
+    protected sampleUsage: string = '<button igButton icon="fa-ellipsis-v" tooltip="More..."></button>';
     ngOnInit(): void {
     }
 }

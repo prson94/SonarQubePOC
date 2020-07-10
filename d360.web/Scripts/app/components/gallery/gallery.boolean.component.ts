@@ -10,6 +10,7 @@
 export class GalleryBooleanComponent implements OnInit {
     protected properties: Array<any>;    
     protected events: Array<any>;
+    protected sampleUsage: string ='<d3s-checkbox></d3s-checkbox>';
 
     ngOnInit(): void {
         this.properties = new Array();
