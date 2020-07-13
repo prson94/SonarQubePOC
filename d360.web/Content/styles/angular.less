@@ -4618,6 +4618,16 @@ button.tab-scroller {
     }
 }
 
+.kebabmenu.yellow-items li.ui-menuitem {
+    &:hover {
+        background-color: #fff8d0;
+    }
+
+    &:active {
+        background-color: #ffef99;
+    }
+}
+
 ///
 
 ///Popup preview panel
@@ -4752,19 +4762,6 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
             }
         }
 
-        .score-ranges {
-            padding: 5px 0px;
-
-            .score-range {
-                .score-box {
-                    width: 24px;
-                    height: 10px;
-                    border-radius: 8px;
-                    margin-right: 4px;
-                    display: inline-block;
-                }
-            }
-        }
     }
 
     .d3s-score-badge-inline {
@@ -4775,7 +4772,19 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
     }
 }
 
+.score-ranges {
+    padding: 5px 0px;
 
+    .score-range {
+        .score-box {
+            width: 24px;
+            height: 10px;
+            border-radius: 8px;
+            margin-right: 4px;
+            display: inline-block;
+        }
+    }
+}
 .d3s-score-container {
     display: flex;
 }
@@ -7253,6 +7262,80 @@ d3s-icon-picker {
             right: 9px;
             font-size: 1.25em;
         }
+    }
+}
+.measures {
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+
+    .measure-heading {
+        display: inline-flex;
+        flex-direction: row;
+        padding: 8px;
+        width: 100%;
+
+        .title {
+            font-size: large;
+            font-weight: bold;
+        }
+
+        .actions {
+            margin-left: auto;
+        }
+    }
+
+    .measure-details {
+        padding: 16px;
+        margin-left: -.75rem;
+
+        .measure-details-panel {
+            padding: 8px;
+            border: @ig-field-border;
+            border-radius: 4px;
+
+            .panel-heading {
+                color: @ig-midblue-t2;
+                font-size: large;
+                font-weight: bold;
+                margin-bottom: 16px;
+            }
+        }
+
+        .measure-details-item {
+            margin-bottom: 8px;
+
+            .condition-content {
+                display: inline-flex;
+
+                .condition-items {
+                    padding-right: 4px;
+                    flex-direction:column;
+
+                }
+
+            }
+
+            .details-header {
+                font-weight: bold;
+            }
+
+            .score-ranges {
+                display: inline-flex;
+
+                .score-range {
+                    padding-right: 16px;
+                }
+            }
+        }
+    }
+}
+.rowtool-button-top {
+    top: -4px;
+    background: transparent;
+
+    &:hover {
+        background: rgba(0, 0, 0, .05) !important;
     }
 }
 
