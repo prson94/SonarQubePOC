@@ -735,8 +735,17 @@ namespace d360.web.Controllers
                         }
 
                         if (f.Type == DataType.Relationship.ToString() && !string.IsNullOrEmpty(f.LookupObjectType))
-                        {
-                            var intersectType = Company.GetById<IntersectType>(f.LookupObjectID.Value);
+                        {                            
+                            var sql = @"select
+                                            [ID],
+                                            [Subject],
+                                            [SubjectID],
+                                            [SubjectCardinality],
+                                            [Object],
+                                            [ObjectID],
+                                            [ObjectCardinality],
+                                            [PredicateID] from [dbo].[intersecttype] where ID = @ID";
+                            var intersectType = Company.Database.Connection.QueryFirstOrDefault<IntersectType>(sql,new { ID = f.LookupObjectID.Value });
                             if (intersectType != null)
                             {
                                 bool isSubject = (intersectType.Subject == f.Object && intersectType.SubjectID == f.ObjectID);
