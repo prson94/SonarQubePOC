@@ -1114,45 +1114,5 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
             var result = stream.ToArray();
             return result;
         }
-
-        private void SetCellValue(SLDocument document, int rowIndex, int colIndex, string dataType, object value)
-        {
-            var valueString = value?.ToString() ?? "";
-            switch (dataType.ToUpper())
-            {
-                case "DECIMAL":
-                    double dVal = 0;
-                    if (double.TryParse(valueString, out dVal))
-                        document.SetCellValue(rowIndex, colIndex, dVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "NUMBER":
-                    int intVal = 0;
-                    if (int.TryParse(valueString, out intVal))
-                        document.SetCellValue(rowIndex, colIndex, intVal);
-                    else
-                        document.SetCellValue(rowIndex, colIndex, valueString);
-                    break;
-                case "DATE":
-                    if (DateTime.TryParse((value ?? "").ToString(), out DateTime dateVal))
-                    {
-                        document.SetCellValue(rowIndex, colIndex, dateVal);
-
-                        SLStyle style = document.CreateStyle();
-                        style.FormatCode = "m/d/yyyy";
-                        document.SetCellStyle(rowIndex, colIndex, style);
-                    }
-                    break;
-                default:
-                    var doc = new HtmlAgilityPack.HtmlDocument();
-                    doc.LoadHtml(value + "");
-                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
-                    if (txt.StartsWith("="))
-                        txt = "'" + txt;
-                    document.SetCellValue(rowIndex, colIndex, txt);
-                    break;
-            }
-        }
     }
 }
