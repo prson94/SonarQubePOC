@@ -56,7 +56,6 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
                 data[f.FieldName] = '';
             }
         });
-
         this.nodeDataChange.emit(data);
     }
 

@@ -29,13 +29,13 @@ import { filter } from 'rxjs/operators';
 import { clearLine } from 'readline';
 
 @Component({
-    selector: 'd3s-dynamic-field',
-    templateUrl: './dynamic-field.component.html',
+    selector: 'd3s-dynamic-field-v2',
+    templateUrl: './dynamic-field-v2.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [FieldsObservableService, TagService]
 })
 
-export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
+export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, OnDestroy, OnChanges, AfterViewChecked {
     @Input() field: EditorField;
     @Input() form: FormGroup;
     @Input() object: string;
@@ -362,7 +362,7 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
 
             window.setTimeout(() => {
-                
+
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                 this.ref.detectChanges();
             }, 250);
@@ -777,6 +777,16 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
             }
             this.ref.markForCheck();
         }
+    }
+
+    private isRequired() {
+        return this.field.Validations && this.field.Validations.some(x => x.rule == 'required') == true;
+    }
+
+    private getPlaceholder() {
+        if (this.isRequired())
+            return 'Value required';
+        else return 'Optional';
     }
 
 }
