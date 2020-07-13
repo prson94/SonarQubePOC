@@ -269,7 +269,7 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowEditFromRelationshipEditor(false),
             SubjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Rule, AssetTypeClass.Policy, AssetTypeClass.Model),
             ObjectAssetClassesSupported(AssetTypeClass.Diagram),
             AllowIntersectTypeAsSubject(false)
@@ -303,7 +303,7 @@ namespace d360.core.enums
             AllowDifferentSubjectObject(true),
             ForceDifferentSubjectObject(true),
             AllowEditFromPredicateEditor(true),
-            AllowEditFromRelationshipEditor(true),
+            AllowEditFromRelationshipEditor(false),
             SubjectAssetClassesSupported(AssetTypeClass.Diagram),
             ObjectAssetClassesSupported(AssetTypeClass.BusinessAsset, AssetTypeClass.TechnicalAsset, AssetTypeClass.Rule, AssetTypeClass.Policy, AssetTypeClass.Model),
             AllowIntersectTypeAsSubject(false)

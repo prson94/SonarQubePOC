@@ -4733,6 +4733,8 @@ where v.id = {0}", id)).FirstOrDefault();
             if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
+            var excludedPredicateTypes = new[] { (int)PredicateType.Diagram, (int)PredicateType.DiagramReference };
+
             var sql = "";
 
             if (obj == SystemObjects.FusionAttribute)
@@ -4742,7 +4744,7 @@ where v.id = {0}", id)).FirstOrDefault();
             else if (obj == SystemObjects.ReferenceItemType)
                 sql = string.Format(QueryConstants.ReferenceListTypeRelationshipsAllCountsWithZero, disallowEditFilter);
             else
-                sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter);
+                sql = string.Format(QueryConstants.ObjectRelationshipAllCountsWithZero, disallowEditFilter, string.Join(",", excludedPredicateTypes));
 
             var data = Company.Query<dynamic>(sql, new { obj = new DbString { IsAnsi = true, Value = obj.ToString(), IsFixedLength = true, Length = 50 }, objid });
 
