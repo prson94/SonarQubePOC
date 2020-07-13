@@ -717,6 +717,9 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.boolean.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
@@ -842,6 +845,11 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.boolean.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.button.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-list.component.ts" />
@@ -1556,6 +1564,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\deactivate.guard.ts" />
+    <TypeScriptCompile Include="Scripts\app\guards\gallery.guard.ts" />
     <TypeScriptCompile Include="Scripts\app\http-interceptors\govern-request.interceptor.ts" />
     <TypeScriptCompile Include="Scripts\app\models\apiresult.model.ts" />
     <TypeScriptCompile Include="Scripts\app\models\asset-search.model.ts" />
