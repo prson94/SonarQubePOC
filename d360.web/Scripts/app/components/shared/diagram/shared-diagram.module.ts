@@ -76,9 +76,10 @@ import { PipesModule } from '../../../pipes/pipes.module';
 import { ProcessDiagramComponent } from './process-diagram/process-diagram.component';
 import { DragDropModule } from 'primeng/dragdrop';
 import { D3SColorPickerModule } from '../small-widgets/color-picker/color-picker.module';
-import { ProcessDiagramAssedEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
+import { ProcessDiagramAssetEditorComponent } from './process-diagram/process-diagram-asset-editor.component';
 import { SharedRelationshipModule } from '../relationship/shared-relationship.module';
 import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-dynamic-grid-editor-v2.module';
+import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-diagram-label-editor.component';
 
 
 @NgModule({
@@ -158,7 +159,8 @@ import { SharedDynamicGridEditorModuleV2 } from '../dynamicgrideditor-v2/shared-
         LineageTechnicalRelationshipsComponent,
         ModelDiagramComponent,
         ProcessDiagramComponent,
-        ProcessDiagramAssedEditorComponent
+        ProcessDiagramAssetEditorComponent,
+        ProcessDiagramLabelEditorComponent
     ],
     exports: [
         AssetBrowserComponent,

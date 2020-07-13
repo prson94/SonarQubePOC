@@ -65,6 +65,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private newInstancesMap: any[] = [];
 
     private isInfoPanelOpened: boolean = false;
+
+    private selectedLinkData: any;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -139,8 +142,21 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
         if (this.myDiagram) {
-            if (this.myDiagram.selection.count == 0 || this.myDiagram.selection.count > 1) {
+            if (this.getSelectedNodeCount() != 1) {
                 this.selectedNodeData = null;
+            }
+
+            if (this.myDiagram.selection.count == 1) {
+                var link = this.myDiagram.selection.toArray()[0];
+                if (link.data && link.data.from && link.data.to) {
+                    this.selectedLinkData = link.data;
+                }
+                else {
+                    this.selectedLinkData = null;
+                }
+            }
+            else {
+                this.selectedLinkData = null;
             }
             this.saveState.emit(this.isCurrentStateSaved());
         }
@@ -156,7 +172,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         }
         this.cdRef.detectChanges();
     }
-
 
     ngOnDestroy() {
         if (this.cdRef)
@@ -313,7 +328,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         templmap.add("", activityNodeTemplate);
         this.myDiagram.nodeTemplateMap = templmap;
 
-        this.myDiagram.linkTemplate = ProcessDiagramTemplates.linkTemplate;
+        var linkTemplate = ProcessDiagramTemplates.linkTemplate;
+        linkTemplate.category = 'link';
+        this.myDiagram.linkTemplate = linkTemplate;
+
         var self = this;
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {

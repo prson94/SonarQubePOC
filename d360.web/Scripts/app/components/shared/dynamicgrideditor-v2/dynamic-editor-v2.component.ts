@@ -489,11 +489,16 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
                 if (this.form.value[p] instanceof Date) {
                     if (field != null && field.FieldType == 'Date' && this.isV2API) {
                         let simpleDate = [this.pad(this.form.value[p].getMonth() + 1), this.pad(this.form.value[p].getDate()), this.pad(this.form.value[p].getFullYear())].join('/');
+                        if (simpleDate.indexOf('NaN') != -1) {
+                            simpleDate = '';
+                        }
                         this.form.value[p] = simpleDate;
                     }
                     else if (field != null && field.FieldType == 'DateTime' && this.isV2API) {
                         if (this.form.value[p] != 'Invalid Date')
                             this.form.value[p] = new Date(this.form.value[p]).toISOString();
+                        else
+                            this.form.value[p] = '';
                     }
                     else {
                         this.form.value[p] = this.getUTCDate(this.form.value[p]);

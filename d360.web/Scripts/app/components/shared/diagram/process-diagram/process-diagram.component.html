@@ -20,7 +20,7 @@
                 <button class="icon mr8 {{(!isRelatedAssetsEnabled() ? 'disabled' : '')}}" [disabled]="!isRelatedAssetsEnabled()" type="button" title="Open Related Assets" (click)="doControlledAction('open-related-assets')">
                     <i class="fa fa-sitemap"></i>
                 </button>
-                <button  class="icon mr8 {{(!isExportEnabled() ? 'disabled' : '')}}" aria-label="Export to Excel" (click)="doControlledAction('export')" [disabled]="!isExportEnabled()" title="Export to Excel" type="button">
+                <button class="icon mr8 {{(!isExportEnabled() ? 'disabled' : '')}}" aria-label="Export to Excel" (click)="doControlledAction('export')" [disabled]="!isExportEnabled()" title="Export to Excel" type="button">
                     <i class="fa fa-download"></i>
                 </button>
                 <button aria-label="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened" title="Information Panel" type="button" class="{{isInfoPanelOpened ? 'selected' : ''}} icon mr8">
@@ -91,7 +91,7 @@
         <div class="editors {{(isInfoPanelOpened && isEditMode  ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
-                <div *ngIf="!selectedNodeData">
+                <div *ngIf="!selectedNodeData && !selectedLinkData">
                     <div class="empty-overlay">
                         <div class="content">
                             <div class="icon-holder">
@@ -107,6 +107,11 @@
                                                           (nodeDataChange)="updateNodeFromForm($event)">
                         </d3s-process-diagram-asset-editor>
                     </div>
+                </div>
+                <div class="{{(selectedLinkData ? 'display' : 'hide')}}">
+                    <d3s-process-diagram-label-editor [linkData]="selectedLinkData"
+                                                      (linkDataChange)="console.log($event)">
+                    </d3s-process-diagram-label-editor>
                 </div>
             </div>
         </div>
