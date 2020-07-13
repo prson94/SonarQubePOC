@@ -7,7 +7,7 @@ import { GovernRequestInterceptor } from "../../../http-interceptors/govern-requ
 import { CoreModule } from '../../shared/core.module';
 import { TilesModule } from '../../shared/tiles/tiles.module';
 import { AdminTagsActionComponent } from './admin-tags-action.component';
-import { D3SCheckboxModule } from '../../shared/controls/gov-checkbox';
+import { D3SCheckboxModule } from '../../shared/controls/boolean/boolean';
 
 import { SiteModalModule } from '../../shared/modal/gov-modal.module';
 import { TagUsageInfoModule } from './tags-usage-info.module';

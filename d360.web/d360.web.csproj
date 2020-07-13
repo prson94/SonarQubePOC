@@ -738,6 +738,7 @@
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
+    <Content Include="Scripts\app\components\shared\controls\boolean\boolean.css" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.html" />
@@ -1214,7 +1215,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
-    <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <Content Include="Scripts\app\components\shared\controls\boolean\boolean.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
@@ -1225,7 +1226,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\boolean\boolean.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.ts" />
