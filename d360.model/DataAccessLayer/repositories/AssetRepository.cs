@@ -430,7 +430,7 @@ namespace d360.model.DataAccessLayer
 
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-           
+
             var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
@@ -856,7 +856,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@assetTypeUid", assetType.uid);
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
-            
+
             var countSql = $@"select count(*) 
                 from	graph.AssetNodeKeyPath P
 		                inner join Asset A on A.ID = P.ID
@@ -998,8 +998,8 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                       
-                        if(field.Name == "Color")
+
+                        if (field.Name == "Color")
                         {
                             string val = extractColorNameFromJSON((string)rowValues[field.Name]);
                             setCellValueFromField(document, rowNumber, index, field, val);
@@ -2242,5 +2242,88 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
             return errors;
         }
 
+
+        public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
+        {
+            var fields = new List<FieldType>();
+
+            var qp = new List<KeyValuePair<string, string>>();
+            qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetUids.Select(x => x.ToString()))));
+            qp.Add(new KeyValuePair<string, string>("includeParent", "true"));
+            var results = await GetAssets(assetType.uid, qp);
+
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+
+            bool includeParent = true;
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
+            var typesToAvoid = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+
+
+
+            if (includeParent)
+            {
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+            }
+
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+
+
+            int index = 1;
+
+            foreach (var field in fields)
+            {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            document.SetCellValue(1, index++, "Url");
+            var rowData = results.items.ToList();
+
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+
+                        if (field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
+                    }
+
+                    index++;
+                }
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+            }
+            SetExcelColumnWidths(document, fields);
+        }
     }
 }

@@ -48,6 +48,16 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
+    public getProcessDiagramBadges(uid: string): Observable<any[]> {
+        return this
+            .http
+            .get(`/api/v2/process/${uid}/badges`)
+            .pipe(
+                map(response => response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
+
     public putProcessDiagram(uid: string, model: any): Observable<any> {
         var headers = new HttpHeaders();
         headers.append('Content-Type', 'application/json');
@@ -57,5 +67,27 @@ export class ProcessService extends BaseObservableService {
             .pipe(
                 map(response => <any>response)
             );
+    }
+
+    public downloadProcessExcel(assetUid: string, imageData: string): Observable<any> {
+        return this.
+            http
+            .post(`/api/v2/process/export/${assetUid}`, imageData, { headers: new HttpHeaders({ 'Accept': 'application/octet-stream' }), responseType: 'blob' });
+    }
+
+    public downloadFile(data: Blob, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
     }
 }

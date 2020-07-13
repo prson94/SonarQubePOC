@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2 } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -10,6 +10,7 @@ import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
 import { CanDeactivate, Router } from '@angular/router';
+import { map } from 'rxjs/operators';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -26,7 +27,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
     myDiagram: go.Diagram;
 
+    isPalleteLoaded: boolean = false;
 
+    eventPalleteHeight: number = 300;
+    myEventPalette: go.Diagram;
+
+    activityPalleteHeight: number = 300;
+    myActivityPallete: go.Diagram;
+
+    gatewayPalleteHeight: number = 300;
+    myGatewayPallete: go.Diagram;
+
+    processDiagramBase64: string = '';
 
     private assetTypeNodes: DiagramNodeBase[] = [];
     private events: DiagramNodeBase[] = [];
@@ -39,6 +51,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
+    private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
 
     private selectedNodeData: any;
@@ -49,6 +62,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private promptDeleteOpened: boolean = false;
     private isRelatedAssetsVisible: boolean = false;
 
+    private newInstancesMap: any[] = [];
 
     private isInfoPanelOpened: boolean = false;
     constructor(
@@ -56,7 +70,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
         private cdRef: ChangeDetectorRef,
-        private router: Router
+        private router: Router,
+        private renderer: Renderer2
     ) {
         super();
         this.secondaryNavService = secondaryNavService;
@@ -76,6 +91,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.events = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Event);
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
+
+                var nodeHeight = 150;
+                var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
+                this.eventPalleteHeight = numberOfEventRows * nodeHeight;
+
+                var numberOfActivityRows = this.activities.length % 2 == 0 ? this.activities.length / 2 : (this.activities.length + 1) / 2;
+                this.activityPalleteHeight = numberOfActivityRows * nodeHeight;
+
+                var numberOfGatewatRows = this.gateways.length % 2 == 0 ? this.gateways.length / 2 : (this.gateways.length + 1) / 2;
+                this.gatewayPalleteHeight = numberOfGatewatRows * nodeHeight;
+
                 this.isLoaded = true;
                 this.loadDiagram();
             });
@@ -83,8 +109,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('diagram', { static: false }) diagramRef;
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
+        if (!this.diagramRef) return;
         let height = window.innerHeight;
-
         if (this.isEditMode)
             this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
         else if (this.isFullScreen)
@@ -113,10 +139,20 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.onResize(null);
         this.applyEditMode(this.isEditMode);
         if (this.myDiagram) {
-            if (this.myDiagram.selection.count == 0) {
+            if (this.myDiagram.selection.count == 0 || this.myDiagram.selection.count > 1) {
                 this.selectedNodeData = null;
             }
             this.saveState.emit(this.isCurrentStateSaved());
+        }
+
+        if (this.selectedNodeData && this.selectedNodeData.key.indexOf('new_instance_') > -1) {
+            var newUid = this.newInstancesMap.find(x => x.oldKey == this.selectedNodeData.key).newKey;
+            this.newInstancesMap = [];
+            var part = this.myDiagram.findPartForKey(newUid);
+            if (part) {
+                this.myDiagram.clearSelection();
+                this.myDiagram.select(part);
+            }
         }
         this.cdRef.detectChanges();
     }
@@ -141,25 +177,60 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (n instanceof go.Link) {
                 n.isEnabled = state;
                 n.movable = state;
+                n.reshapable = state;
             }
         });
         this.myDiagram.isModelReadOnly = !state;
-
+        if (this.isEditMode && !this.isPalleteLoaded) {
+            this.loadPallete();
+        }
     }
 
     private discardChanged() {
-        this.isSavingChangesModalOpened = false;
-        this.isErrorModalOpened = false;
         this.load();
-        this.switchModes(false);
+        if (this.actionAfterSaved) {
+            this.actionAfterSaved();
+            this.isSavingChangesModalOpened = false;
+            this.isErrorModalOpened = false;
+            this.actionAfterSaved = null;
+        }
     }
 
-    switchModes(checkState: boolean = true) {
-
-        if (checkState && this.isEditMode && !this.isCurrentStateSaved()) {
-            this.isSavingChangesModalOpened = true;
-            return;
+    private isDeleteEnabled() {
+        if (this.myDiagram && this.myDiagram.selection.count > 0) {
+            return this.myDiagram.selection.any(x => x.data.Name);
         }
+        else return false;
+    }
+
+    private isRelatedAssetsEnabled() {
+        if (!this.selectedNodeData)
+            return false;
+
+        if (this.selectedNodeData.isNew)
+            return false;
+        return true;
+    }
+
+    private isExportEnabled() {
+        if (!this.myDiagram)
+            return false;
+
+        return this.myDiagram.nodes.count > 0;
+    }
+
+    private getSelectedNodeCount() {
+        if (!this.myDiagram)
+            return 0;
+
+        return this.myDiagram.selection.filter(x => x.data.Name).count;
+    }
+
+    private get deleteModelTitle(): string {
+        return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
+    }
+
+    switchModes() {
 
         this.isEditMode = !this.isEditMode;
         this.applyEditMode(this.isEditMode);
@@ -167,7 +238,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.isEditMode) {
             this.editModeClosed.emit();
         }
-
         this.cdRef.detectChanges();
     }
 
@@ -190,14 +260,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram =
             $(go.Diagram, "diagram",  // must name or refer to the DIV HTML element
                 {
-                    //"draggingTool.dragsLink": true,
-                    //"draggingTool.isGridSnapEnabled": true,
-                    //"linkingTool.portGravity": 20,
-                    //"relinkingTool.portGravity": 20,
-                    //"rotatingTool.handleAngle": 270,
-                    //"rotatingTool.handleDistance": 30,
-                    //"rotatingTool.snapAngleMultiple": 15,
-                    //"rotatingTool.snapAngleEpsilon": 15,
                     "undoManager.isEnabled": true,
                     "textEditingTool.doActivate": function () {
                         go.TextEditingTool.prototype.doActivate.call(this);
@@ -206,9 +268,13 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     "textEditingTool.doDeactivate": function () {
                         if (this.textBlock) this.textBlock.opacity = 1.0;
                         go.TextEditingTool.prototype.doDeactivate.call(this);
-                    }
+                    },
+                    allowClipboard: false,
+                    allowCopy: false,
+                    allowUndo: false
                 });
 
+        this.myDiagram.commandHandler.editTextBlock = () => { return false; };
         this.myDiagram.commandHandler.canDeleteSelection = () => {
             try {
                 if (this.isEditMode) {
@@ -236,6 +302,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
         var gatewayNodeTemplate = ProcessDiagramTemplates.gatewayTemplate(this);
 
+        activityNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+        eventNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+        gatewayNodeTemplate.selectionChanged = (node) => { this.onSelectionChanged(node); }
+
         var templmap = new go.Map<string, go.Node>();
         templmap.add("activity", activityNodeTemplate);
         templmap.add("event", eventNodeTemplate);
@@ -244,47 +314,35 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.nodeTemplateMap = templmap;
 
         this.myDiagram.linkTemplate = ProcessDiagramTemplates.linkTemplate;
+        var self = this;
 
+        this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
+            // stop any ongoing text editing
+            e.diagram.selection.each(data => {
+                try {
+                    var nodeData = data.data;
+                    var newGuid = self.newGuid();
+
+                    //keep track of relations between new instances and existing to avoid updating template data 
+                    self.newInstancesMap.push({
+                        oldKey: nodeData.key,
+                        newKey: newGuid
+                    });
+
+                    e.diagram.model.commit(function (m) {
+                        var data = m.findNodeDataForKey(nodeData.key);
+                        m.set(data, 'Name', self.getNewNodeName(nodeData));
+                        m.set(data, 'key', newGuid);
+                    }, 'update__new_model');
+                } catch (e) {
+                    console.log(e);
+                }
+
+            })
+        });
 
         //load current asset diagram
         this.load();
-    }
-
-    private dragEnd($event: DiagramNodeBase) {
-        var nodeCategory: string = '';
-
-        switch ($event.FlowObjectType) {
-            case FlowObjectType.Activity: nodeCategory = 'activity'; break;
-            case FlowObjectType.Event: nodeCategory = 'event'; break;
-            case FlowObjectType.Gateway: nodeCategory = 'gateway'; break;
-        }
-        var icon = FontAwesomeHelper.GetHtmlCode($event.Icon);
-
-        setTimeout(() => {
-            this.myDiagram.startTransaction("make new node");
-            var point = go.Point.stringify(this.myDiagram.lastInput.documentPoint);
-
-            var data = {
-                key: this.newGuid(),
-                icon: icon,
-                category: nodeCategory,
-                loc: point,
-                refItemColor: this.defaultStrokeColor,
-                isNew: true,
-                //asset data
-                Name: this.getNewNodeName($event),
-                assetTypeName: $event.Name,
-                assetTypeUid: $event.uid,
-            };
-
-            this.myDiagram.model.addNodeData(data);
-            this.myDiagram.clearSelection();
-            this.myDiagram.select(this.myDiagram.findNodeForKey(data.key));
-            this.myDiagram.commitTransaction("make new node");
-
-            this.myDiagram.redraw();
-        }, 100);
-
     }
 
     private getNewNodeName(at: DiagramNodeBase) {
@@ -345,6 +403,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private validationErrors: any = {};
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
+        this.processDiagramBase64 = this.myDiagram.makeImageData({
+            scale: 1
+        }).toString();
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
                 if (res.hasError) {
@@ -355,21 +416,27 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                 }
                 else {
-                    this.load();
-                    this.isSaving = false;
                     this.isErrorModalOpened = false;
                     this.validationErrors = [];
-                    this.cdRef.detectChanges();
 
-                    if (closeEditorAfterSave) {
+                    if (this.actionAfterSaved) {
                         window.setTimeout(() => {
-                            this.switchModes(false);
+                            this.actionAfterSaved();
+                            this.actionAfterSaved = null;
+                            this.isSavingChangesModalOpened = false;
+                            this.load(true);
+                            this.cdRef.detectChanges();
+
                         }, 100)
+                    } else {
+                        this.load(true);
+                        this.cdRef.detectChanges();
+
                     }
                 }
             },
                 err => {
-
+                    console.log(err);
 
                 });
     }
@@ -377,7 +444,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.clear();
         this.diagramStateChanged();
     }
-    private load() {
+    private load(isFromSave: boolean = false) {
+
+        var selectedItem = this.selectedNodeData;
+
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(res => {
                 if (!this.myDiagram) {
@@ -394,12 +464,26 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
                 this.savedState = go.Model.fromJson(JSON.stringify(res));
+
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
                 this.isDiagramLoaded = true;
+                this.isSaving = false;
                 this.saveState.emit(this.isCurrentStateSaved());
+                this.processDiagramBase64 = this.myDiagram.makeImageData({
+                    scale: 1
+                }).toString();
+
+                if (selectedItem) {
+                    var name = this.selectedNodeData['Name'];
+                    var selectedNode = this.myDiagram.nodes.filter(x => x.data['Name'] == name).first();
+                    if (selectedNode) {
+                        this.myDiagram.select(selectedNode);
+                    }
+                }
                 this.cdRef.detectChanges();
+
             });
     }
 
@@ -410,7 +494,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
                     if (propertyName != 'key') {
-                        m.set(data, propertyName, formData[propertyName]);
+                        m.set(data, propertyName, formData[propertyName].toString());
                     }
                 }
                 m.set(data, 'refItemColor', self.getNodeColor(data));
@@ -432,7 +516,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private getNodeColor(data: any) {
         try {
             var item = this.colors.find(x => +x.ObjectID == +data.GovernanceRole);
-            if (item)
+            if (item && item.Value)
                 return item.Value;
         }
         catch{
@@ -456,21 +540,26 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private onSelectionChanged(node) {
         if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
+
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
             this.loadedEditors.push(this.selectedNodeData);
         }
-
         this.cdRef.detectChanges();
     }
 
     private updateValidationData() {
         if (this.validationErrors && this.validationErrors.errors) {
             var errors = this.validationErrors.errors as any[];
+            let selectedKey: string = '';
+
             try {
                 this.myDiagram.model.commit(function (m) {
                     m.nodeDataArray.forEach(data => {
                         if (errors.map(x => x.AssetUid).some(x => x == data.key)) {
                             m.set(data, 'hasError', true);
+                            if (!selectedKey) {
+                                selectedKey = data.key;
+                            }
                         }
                         else {
                             m.set(data, 'hasError', false);
@@ -480,8 +569,232 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             } catch (e) {
                 console.log(e);
             }
+
+            if (selectedKey) {
+                this.isInfoPanelOpened = true;
+                this.myDiagram.clearSelection();
+                this.myDiagram.select(this.myDiagram.findPartForKey(selectedKey));
+            }
         }
     }
 
-    
+    private toggleClass(event: any, cs: string) {
+        var element = event.target;
+        if (!element.classList.contains('gov-accordion-item')) {
+            if (element.parentElement.classList.contains('gov-accordion-item')) {
+                element = element.parentElement;
+            }
+            else {
+                element = element.parentElement.parentElement;
+            }
+        }
+
+        const hasClass = element.classList.contains(cs);
+
+        if (hasClass) {
+            this.renderer.removeClass(element, cs);
+        } else {
+            this.renderer.addClass(element, cs);
+        }
+    }
+
+    private loadPallete() {
+        var $ = go.GraphObject.make;  // for conciseness in defining templates
+        this.myEventPalette =
+            $(go.Palette, "event-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.events.forEach(ev => {
+            eventArr.push({
+                category: 'event',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true,
+                relCount: 0
+            });
+        })
+
+        this.myEventPalette.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
+        this.myEventPalette.nodeTemplateMap = templmap;
+
+
+        this.myActivityPallete =
+            $(go.Palette, "activity-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.activities.forEach(ev => {
+            eventArr.push({
+                category: 'activity',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true,
+                relCount: 0
+            });
+        })
+
+        this.myActivityPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("activity", ProcessDiagramTemplates.activityTemplate_pallete());
+        this.myActivityPallete.nodeTemplateMap = templmap;
+
+
+        this.myGatewayPallete =
+            $(go.Palette, "gateway-pallete",
+                {
+                    layout:
+                        $(go.GridLayout,
+                            {
+                                wrappingColumn: 2
+                            }
+                        ),
+
+                });
+
+        var eventArr = [];
+        // now add the initial contents of the Palette
+        this.gateways.forEach(ev => {
+            eventArr.push({
+                category: 'gateway',
+                refItemColor: this.defaultStrokeColor,
+                icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
+                Name: ev.Name,
+                key: 'new_instance_' + this.newGuid(),
+                assetTypeName: ev.Name,
+                assetTypeUid: ev.uid,
+                isNew: true,
+                relCount: 0
+            });
+        })
+
+        this.myGatewayPallete.model.nodeDataArray = eventArr;
+
+        var templmap = new go.Map<string, go.Node>();
+        templmap.add("gateway", ProcessDiagramTemplates.gatewayTemplate_pallete());
+        this.myGatewayPallete.nodeTemplateMap = templmap;
+
+        this.isPalleteLoaded = true;
+    }
+
+    private downloadProcessDiagram() {
+        var fileName = 'Filename';
+        this.isExporting = true;
+        this.cdRef.detectChanges();
+        this.processService.downloadProcessExcel(this.assetUid, this.processDiagramBase64)
+            .subscribe(data => {
+                this.isExporting = false;
+                this.processService.downloadFile(data, fileName);
+                this.cdRef.detectChanges();
+            });
+    }
+
+    private actionAfterSaved: Function;
+    private actionMessage: string = '';
+    private showDiscardChanges: boolean = false;
+    public doControlledAction(actionName: string) {
+        if (!this.isEditMode) {
+            return;
+        }
+        if (this.isEditMode && !this.isCurrentStateSaved()) {
+            this.isSavingChangesModalOpened = true;
+            switch (actionName) {
+                case 'switchModes':
+                    this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
+                    this.actionAfterSaved = () => {
+                        this.switchModes();
+                        this.actionAfterSaved = null;
+                    }
+                    this.showDiscardChanges = true;
+                    break;
+                case 'open-related-assets':
+                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
+                    this.showDiscardChanges = false;
+                    this.actionAfterSaved = () => {
+                        this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                        this.actionAfterSaved = null;
+                    }
+                    break;
+                case 'export':
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+
+                    this.actionAfterSaved = () => {
+                        this.downloadProcessDiagram();
+                        this.actionAfterSaved = null;
+                    }
+                    this.showDiscardChanges = false;
+                    break;
+            }
+
+            return;
+        }
+        else {
+            this.actionAfterSaved = null;
+            this.isSavingChangesModalOpened = false;
+            switch (actionName) {
+                case 'switchModes':
+                    this.switchModes();
+                    break;
+                case 'open-related-assets':
+                    this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                    break;
+                case 'export':
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.downloadProcessDiagram();
+                    break;
+            }
+        }
+
+
+    }
+
+    closeRelationshipModel() {
+        this.processService.getProcessDiagramBadges(this.assetUid)
+            .subscribe(badges => {
+                this.isRelatedAssetsVisible = false;
+
+                try {
+                    this.myDiagram.model.commit(function (m) {
+
+                        badges.forEach(asset => {
+                            var data = m.findNodeDataForKey(asset.AssetUid);
+                            m.set(data, 'relCount', asset.RelationshipCount);
+                        })
+                    }, 'update_model_badge_data');
+                } catch (e) {
+                    console.log(e);
+                }
+            })
+    }
+
 }
