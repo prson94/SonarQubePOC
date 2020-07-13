@@ -2242,5 +2242,60 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
             return errors;
         }
 
+        public async Task<dynamic> GetAssetSingle(Guid assetUid)
+        {
+
+            var asset = GetAssetByUID(assetUid);
+            var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
+
+            if (!canRead)
+                return null;
+
+            
+            var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
+            var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
+            var fieldJoins = new List<string>();
+            var fieldColumns = new List<string>();
+            DynamicParameters dbArgs = new DynamicParameters();
+            dbArgs.Add("@assetUid", assetUid);
+            
+            getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
+
+
+            var sql = $@"
+select  A.ID as AssetId,
+        A.[uid] as AssetUid,
+        A.AssetTypeId,
+        A.AssetTypeUid,
+        P.[uid] as ParentAssetUid,
+        P.DisplayValue as ParentDisplayName,
+        A.CreatedOn,
+        A.UpdatedOn,
+        ACJ.ColorJson as Color,
+        {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+        KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
+        {string.Join(",\n", fieldColumns)}
+from    AssetDetail A
+        left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
+        left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+        cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
+        outer apply (
+            select  T.[uid]
+            from    graph.AssetNode S,
+                    graph.AssetEdge E,
+                    graph.assetNode T
+            where   match (T-(E)->S)
+                    and E.PredicateType in (3,4)
+                    and S.[uid] = A.[uid]
+        ) Parent
+        left join AssetDetail P on P.uid = Parent.uid
+        {string.Join("\n", fieldJoins)}
+where   A.[uid] = @assetUid";
+
+
+            return (await CompanyContext.QueryAsync<dynamic>(sql, new  { assetUid })).FirstOrDefault();
+        }
+
+
     }
 }

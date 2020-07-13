@@ -51,6 +51,6 @@ namespace d360.model.DataAccessLayer
         dynamic GetExecutionStatusModel(Guid executionUid);
         List<DatabaseBulkAssetTypeResult> DeleteSingleAssetType(AssetTypeDeletes assetTypes, AssetType assetType, ApiExecution execution);
         List<ValidationError> ValidateAssetUpsertModel(List<UpsertModel> model);
-
+        Task<dynamic> GetAssetSingle(Guid assetUid);
     }
 }
