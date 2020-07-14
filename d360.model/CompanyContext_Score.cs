@@ -4,6 +4,7 @@ using d360.core.entities.Metric;
 using d360.core.enums;
 using d360.core.exceptions;
 using d360.core.helpers;
+using d360.core.queue;
 using Dapper;
 using Newtonsoft.Json;
 using System;
@@ -229,9 +230,11 @@ namespace d360.model
                         {
                             try
                             {
-                                #region Load valid items into staging table
+                                if (Config.GetValue<bool>("UseLegacyScoring"))
+                                {
+                                    #region Load valid items into staging table
 
-                                Connection.Execute($@"
+                                    Connection.Execute($@"
 merge into  [metrics].StagingScoreItem T
 using       (
             select      *
@@ -252,10 +255,11 @@ when matched and T.Result <> S.Result then
 when not matched by target then
     insert  (AssetUid, MetricAssetUid, EffectiveDate, Result, Processing, Archived, ScoreType)
     values  (S.AssetUid, S.MetricAssetUid, S.EffectiveDate, S.Result, 0, 0, @scoreType);",
-                                new { execution.ExecutionID, scoreType },
-                                transaction: trans);
+                                    new { execution.ExecutionID, scoreType },
+                                    transaction: trans);
 
-                                #endregion
+                                    #endregion      
+                                }
 
                                 results.AddRange(
                                     Connection.Query<BulkMetricTemporaryTableModel>(
@@ -295,6 +299,27 @@ when not matched by target then
 
                     // Cleanup
                     Connection.Execute($"delete api.ExecutionMetric where ExecutionID = @ExecutionID", new { execution.ExecutionID });
+
+                    if (!Config.GetValue<bool>("UseLegacyScoring"))
+                    {
+                        var queueResults = results.Where(r => r.IsSuccess).Select(r => new ExternalMeasureResultsCreatedModel { 
+                            AssetUid = r.AssetUid, 
+                            EffectiveDate = r.EffectiveDate, 
+                            MetricAssetUid = r.MetricAssetUid, 
+                            Result = r.Result 
+                        }).ToList();
+
+                        var info = new ScoreQueueInfo
+                        {
+                            CompanyID = CurrentCompanyID,
+                            ChangeType = ScoreQueueChangeType.ExternalMeasureResultsCreated,
+                            ExecutionUid = execution.ExecutionID,
+                            Location = ScoreQueueExecutionDataLocation.File
+                        };
+                        Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(queueResults));
+                        QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+
+                    }
                 }
                 catch (Exception ex)
                 {

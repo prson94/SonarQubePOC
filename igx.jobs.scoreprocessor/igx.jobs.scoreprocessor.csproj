@@ -197,6 +197,19 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ChangeTypes\ExternalMeasureResultsCreatedProcess.cs" />
+    <Compile Include="ChangeTypes\ExternalScoresCreatedProcess.cs" />
+    <Compile Include="ChangeTypes\IScoreProcess.cs" />
+    <Compile Include="ChangeTypes\MeasureCreatedProcess.cs" />
+    <Compile Include="ChangeTypes\MeasureChangedProcess.cs" />
+    <Compile Include="ChangeTypes\MeasureRemovedProcess.cs" />
+    <Compile Include="ChangeTypes\RuleResultsCreatedProcess.cs" />
+    <Compile Include="ChangeTypes\RuleResultsChangedProcess.cs" />
+    <Compile Include="ChangeTypes\RuleResultsRemovedProcess.cs" />
+    <Compile Include="ChangeTypes\WorkflowCheckProcess.cs" />
+    <Compile Include="ChangeTypes\ProcessBase.cs" />
+    <Compile Include="ChangeTypes\AssetMeasuresProcess.cs" />
+    <Compile Include="ScoringQueueProcessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -218,6 +231,10 @@
     <ProjectReference Include="..\d360.core\d360.core.csproj">
       <Project>{779b4b57-42b9-4478-9464-2a4880abf27b}</Project>
       <Name>d360.core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\d360.extensions\d360.extensions.csproj">
+      <Project>{2D52A6C1-A7F3-42F3-90D2-0A0ECB871483}</Project>
+      <Name>d360.extensions</Name>
     </ProjectReference>
     <ProjectReference Include="..\d360.utils.company\d360.utils.company.csproj">
       <Project>{88BBA351-DA2A-4551-AF28-5F1568952F7E}</Project>

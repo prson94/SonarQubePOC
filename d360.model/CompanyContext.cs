@@ -53,6 +53,7 @@ namespace d360.model
         #endregion
 
         internal IQueueSource QueueSource;
+        internal IStorageProvider Storage;
 
         CommunityContext Community;
 
@@ -60,7 +61,7 @@ namespace d360.model
 
         #region Ctors
 
-        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, bool skipCacheCheck = false)
+        public CompanyContext(ICommunityContext community, ICachingProvider caching, IQueueSource queueSource, ISecurityContextProvider context, IStorageProvider storage, bool skipCacheCheck = false)
             : base(community.GetCompanyConnectionString(skipCacheCheck))
         {
             Database.SetInitializer<CompanyContext>(null); //dont create any tables if they dont exist.
@@ -68,6 +69,7 @@ namespace d360.model
             Community = (CommunityContext)community;
             Caching = caching;
             QueueSource = queueSource;
+            Storage = storage;
 
             CurrentCompanyID = context.CompanyID;
             CurrentResourceID = context.ResourceID;
