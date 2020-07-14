@@ -87,6 +87,7 @@ export class D3SModal implements OnChanges {
         }
     }
     private isDescendant(parent, child) {
+        if (!node || !child) return false;
         var node = child.parentNode;
         while (node != null) {
             if (node == parent) {
