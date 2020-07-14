@@ -7364,7 +7364,7 @@ d3s-icon-picker {
         margin-left: -.75rem;
 
         .measure-details-panel {
-            padding: 8px;
+            padding: 16px;
             border: @ig-field-border;
             border-radius: 4px;
 
@@ -7376,6 +7376,17 @@ d3s-icon-picker {
             }
         }
 
+        .empty-metric-message {
+            background: @ig-grey-t5;
+            padding: 8px;
+            border-radius: 4px;
+            margin: 0px 0px 8px 0px;
+
+            .fa {
+                margin-right: 8px;
+            }
+        }
+
         .measure-details-item {
             margin-bottom: 8px;
 
@@ -7384,10 +7395,8 @@ d3s-icon-picker {
 
                 .condition-items {
                     padding-right: 4px;
-                    flex-direction:column;
-
+                    flex-direction: column;
                 }
-
             }
 
             .details-header {

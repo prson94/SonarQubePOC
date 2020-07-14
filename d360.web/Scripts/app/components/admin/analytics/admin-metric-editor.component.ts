@@ -1,4 +1,4 @@
-import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Input, Component, EventEmitter, Output, OnInit, ViewChild, ElementRef, OnChanges, SimpleChanges } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricAssetViewModel, MetricFieldTypeViewModel, MetricMatchType, MetricAssetVersionConditionViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
@@ -13,7 +13,7 @@ import { MessagesObservableService } from '../../../services/messages-observable
     providers: [MetricsService]
 })
 
-export class AdminMetricEditorComponent extends BaseComponent implements OnInit {
+export class AdminMetricEditorComponent extends BaseComponent implements OnInit, OnChanges {
     @Input() model: MetricAssetViewModel = null;
     @Input() allocationUid: string;
     @Input() uid: string;
@@ -39,29 +39,37 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit 
         super();
     }
 
+    ngOnChanges(changes: SimpleChanges): void {
+        this.isLoading = true;
+        this.load();
+    }
+
     ngOnInit() {
         this.load();
     }
 
     load() {
+        if (!this.model)
+            this.model = new MetricAssetViewModel();
+        this.child = "";
+        this.model.ParentUid = null;
         if (this.uid) {
             this.verb = "Edit"
-            this.isLoading = false;
-
             if (this.model.EffectiveDate !== null) {
                 this.model.EffectiveDate = new Date(this.model.EffectiveDate as string);
                 this.model.EffectiveDate.setMinutes(this.model.EffectiveDate.getMinutes() + this.model.EffectiveDate.getTimezoneOffset());
             }
+            this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
             this.verb = "Add";
-            this.isLoading = false;
             if (this.parentUid) {
                 this.child = "Child";
                 this.model.ParentUid = this.parentUid;
             }
             this.model.EffectiveDate = new Date();
             this.model.AllocationUid = this.allocationUid;
+            this.isLoading = false;
         }
 
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 

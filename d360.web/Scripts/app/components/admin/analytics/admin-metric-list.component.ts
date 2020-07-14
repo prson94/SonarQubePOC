@@ -14,62 +14,60 @@ import { AllocationService } from '../../../services/allocations.service';
     template: ` 
                <d3s-loading [isLoading]="isLoading"></d3s-loading>
                <div *ngIf="!isLoading">
-                <div [ngSwitch]="formMode">
-                    <div *ngSwitchCase="FormMode.Default">
-                        <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
-                            <ng-template pTemplate="header">
-                                <tr> 
-                                    <th>Name</th>
-                                    <th style="width: 120px" *ngIf="!isExternallyCalculated">Weight</th>
-                                    <th style="width: 120px">Effective Date</th>
-                                    <th style="width: 40px"></th>
-                                    <th style="width: 40px"></th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-rowNode let-item="rowData">
-                                <tr [ttSelectableRow]="rowNode">
-                                    <td>
-                                        <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
-                                        {{item.Name}}
-                                    </td>
-                                    <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
-                                    <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
-                                    <td>
-                                        <div class="RowTools" *ngIf="item.IsGroup">             
-                                            <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add()" tooltip="Add measure to group"></button>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="RowTools">  
-                                            <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
-                                            <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="cardmenu.toggle($event)" tooltip="Measure Actions"></button>                                
-                                        </div>
-                                    </td>
-                                </tr>
-                            </ng-template>
-                        </p-treeTable>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Adding">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Editing">
-                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
-                    </div>
-                    <div *ngSwitchCase="FormMode.Deleting">
-                        <header>
-                            Delete Group
-                        </header>
-                        <d3s-delete-form
-                            [uri]="'api/v2/metrics/' + selection?.Uid"
-                            [method]="'delete'"
-                            [prompt]="'Are you sure you want to delete the metric group [' + [selection?.Name] + ']?'"                                         
-                            (onCancel)="formMode = FormMode.Default"
-                            (onDeleteSuccess)="formMode = FormMode.Default; load();"
-                            (onDeleteFail)="formMode = FormMode.Default">
-                        </d3s-delete-form> 
-                    </div>
-                </div>
-
+                    <div *ngIf="metricTree.length == 0" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
+                   <div>
+                       <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
+                           <ng-template pTemplate="header">
+                               <tr> 
+                                   <th>Name</th>
+                                   <th style="width: 120px" *ngIf="!isExternallyCalculated">Weight</th>
+                                   <th style="width: 120px">Effective Date</th>
+                                   <th style="width: 40px"></th>
+                                   <th style="width: 40px"></th>
+                               </tr>
+                           </ng-template>
+                           <ng-template pTemplate="body" let-rowNode let-item="rowData">
+                               <tr [ttSelectableRow]="rowNode">
+                                   <td>
+                                       <d3s-treeTableToggler [rowNode]="rowNode"></d3s-treeTableToggler>
+                                       {{item.Name}}
+                                   </td>
+                                   <td *ngIf="!isExternallyCalculated">{{getAsPrecentage(item.Weight)}}</td>
+                                   <td>{{item.EffectiveDate | utcDate | date:'shortDate'}}</td>
+                                   <td>
+                                       <div class="RowTools" *ngIf="item.IsGroup">             
+                                           <button class="rowtool-button-top" igButton icon="fa-plus" (click)="selectNode(rowNode.node); add(true)" tooltip="Add measure to group"></button>
+                                       </div>
+                                   </td>
+                                   <td>
+                                       <div class="RowTools">  
+                                           <p-menu #cardmenu [popup]="true" [model]="getCardMenuItems()" appendTo="body" styleClass="kebabmenu yellow-items"></p-menu>
+                                           <button class="rowtool-button-top" igButton icon="fa-ellipsis-v" (click)="selectNode(rowNode.node);cardmenu.toggle($event);" tooltip="Measure Actions"></button>                                
+                                       </div>
+                                   </td>
+                               </tr>
+                           </ng-template>
+                       </p-treeTable>
+                   </div>
+                   <d3s-modal [title]="'Add Measure'" additionalClasses="medium-dialog" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Adding">
+                       <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                   </d3s-modal>
+                   <d3s-modal [title]="'Edit Measure'" additionalClasses="medium-dialog" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">
+                       <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [(model)]="selection" [metricEditorFieldTypes]="metricListFieldTypes" [uid]="selection?.Uid" (onCancel)="formMode = FormMode.Default; load();" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
+                   </d3s-modal>
+                   <div *ngIf="formmode == FormMode.Deleting">
+                       <header>
+                           Delete Group
+                       </header>
+                       <d3s-delete-form
+                           [uri]="'api/v2/metrics/' + selection?.Uid"
+                           [method]="'delete'"
+                           [prompt]="'Are you sure you want to delete the metric group [' + [selection?.Name] + ']?'"                                         
+                           (onCancel)="formMode = FormMode.Default"
+                           (onDeleteSuccess)="formMode = FormMode.Default; load();"
+                           (onDeleteFail)="formMode = FormMode.Default">
+                       </d3s-delete-form> 
+                   </div>
                 </div>
                 `,
     providers: [MetricsService, AllocationService]
@@ -163,14 +161,19 @@ export class AdminMetricListComponent extends BaseComponent implements OnInit, O
     }
 
     public selectNode(e: any) {
+        if (e == null)
+            return;
         this.selectedNode = e;
         this.selection = e === null ? null : e.data;
         this.selectionChange.emit(this.selection);
     }
 
     public add(asChild: boolean = false) {
-        if (!asChild)
+        if (!asChild) {
+            this.selection = null;
             this.selectedNode = null;
+            this.selectionChange.emit(this.selection);
+        }
         this.formMode = FormMode.Adding;
     }
 
