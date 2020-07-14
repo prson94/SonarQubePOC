@@ -311,9 +311,11 @@ namespace d360.model.DataAccessLayer
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
+                var IntersectTypeIDField = "";
                 var reverseIntersectJoin = "";
                 var relatedAssetSql = " 1=1 ";
                 bool includeBoth = false;
+                var addtop1hint = "";
 
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
@@ -324,7 +326,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
 
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
@@ -341,26 +343,36 @@ namespace d360.model.DataAccessLayer
                 {
                     //subject and object not specified
                     includeBoth = true;
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
-                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    IntersectTypeIDField = ", I.IntersectTypeID ";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
+                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
 
                 var innerSql = $@"
                             select 
-                                B.[UID] as AssetUid, 
-                                BD.DisplayValue,
-                                TB.[Name] as TypeName,
-                                P.[UID] as PredicateUid
+                                B.[UID] as AssetUid 
+                                ,BD.DisplayValue
+                                ,TB.[Name] as TypeName
+                                ,@predicateUid as PredicateUid
+                                {IntersectTypeIDField}
                             from Asset B
                             inner join AssetType TB on TB.ID = B.AssetTypeID
                             cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-                            inner join [Intersect] I on {intersectJoin}
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-                            where {relatedAssetSql}";
+                            inner join [Intersect] I on {intersectJoin}";
 
-                var innerCountSql = $@"
-						select B.ID as Relationships  from Asset B
+                if (includeBoth == false)
+                {
+                    addtop1hint = " top 1 ";
+
+                    innerSql = innerSql + $@"
+                    where { relatedAssetSql }
+                    and exists (select 1 from IntersectType IT 
+	                inner join [Predicate] P on P.ID = IT.PredicateID 
+	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
+                }
+
+    var innerCountSql = $@"
+						select {addtop1hint} B.ID as Relationships  from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
 						and exists (select 1 from [Intersect] I
@@ -373,16 +385,15 @@ namespace d360.model.DataAccessLayer
                 {
                     var reverseInnerSql = $@"
                             select 
-                                B.[UID] as AssetUid, 
-                                BD.DisplayValue,
-                                TB.[Name] as TypeName,
-                                P.[UID] as PredicateUid
+                                B.[UID] as AssetUid 
+                                ,BD.DisplayValue
+                                ,TB.[Name] as TypeName
+                                ,@predicateUid as PredicateUid
+                                {IntersectTypeIDField}
                             from Asset B
                             inner join AssetType TB on TB.ID = B.AssetTypeID
                             cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-                            inner join [Intersect] I on {reverseIntersectJoin}
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid";
+                            inner join [Intersect] I on {reverseIntersectJoin}";
 
                     var reverseInnerCountSql = $@"
 						select B.ID as Relationships from Asset B
@@ -393,13 +404,21 @@ namespace d360.model.DataAccessLayer
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
 							where {reverseIntersectJoin})";
 
-                    innerSql = $@"select * from (
+                    innerSql = $@"select AssetUid
+                            ,DisplayValue 
+                            ,TypeName 
+                            ,PredicateUid
+                    from (
                         {innerSql}
                         union all
-                        {reverseInnerSql}) RI";
+                        {reverseInnerSql}
+                        ) RI
+                        where exists (select 1 from IntersectType IT 
+						inner join [Predicate] P on P.ID = IT.PredicateID 
+						where IT.ID = RI.IntersectTypeID and P.[UID] = @predicateUid)";
 
                     innerCountSql = $@"
-                        select * from (
+                        select top 1 * from (
                         {innerCountSql}
                         union all
                         {reverseInnerCountSql}) RI
