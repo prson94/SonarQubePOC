@@ -1,0 +1,15 @@
+﻿<h3>Controls</h3><h5>Examples of common Govern controls.  Documentation of their usage and properties.</h5>
+<br />
+
+<div class="row">
+    <div class="col s2">         
+        <div class="collection">
+            <a (click)="activeControl='boolean';" [class]="(activeControl=='boolean'?'collection-item active':'collection-item')">Boolean Input</a>
+            <a (click)="activeControl='button';" [class]="(activeControl=='button'?'collection-item active':'collection-item')">Button Directive</a>
+        </div>        
+    </div>
+    <div class="col s10">        
+        <gallery-boolean *ngIf="(activeControl=='boolean')"></gallery-boolean>
+        <gallery-button *ngIf="(activeControl=='button')"></gallery-button>
+    </div>
+</div>
