@@ -17,7 +17,7 @@ export class D3SModal implements OnChanges {
     @Output() onClose = new EventEmitter();
     @Output() onConfirm = new EventEmitter();
 
-    @ViewChild('popupBox', { static: false }) modalDiv: ElementRef; 
+    @ViewChild('popupBox', { static: false }) modalDiv: ElementRef;
 
     private display: boolean = false;
 
@@ -81,5 +81,20 @@ export class D3SModal implements OnChanges {
         this.closePopUp();
     }
 
+    onBlur($event) {
+        if (!this.isDescendant(this.modalDiv.nativeElement, $event.relatedTarget)) {
+            setTimeout(() => this.modalDiv.nativeElement.focus(), 100);
+        }
+    }
+    private isDescendant(parent, child) {
+        var node = child.parentNode;
+        while (node != null) {
+            if (node == parent) {
+                return true;
+            }
+            node = node.parentNode;
+        }
+        return false;
+    }
 }
 

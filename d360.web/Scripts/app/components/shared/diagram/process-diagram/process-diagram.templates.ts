@@ -100,7 +100,7 @@ export class ProcessDiagramTemplates {
             var margin = new go.Margin(28, 28, 0, 0);
         }
         if (type == 'event') {
-            var margin = new go.Margin(24, 28, 0, 0);
+            var margin = new go.Margin(24, 38, 0, 0);
         }
 
         return $(go.Panel, 'Spot',
@@ -208,10 +208,10 @@ export class ProcessDiagramTemplates {
                             new go.Binding("text", "icon").makeTwoWay(),
                             new go.Binding("stroke", "refItemColor").makeTwoWay())
                     ),
-                    this.makePort("T", go.Spot.Top, false, true),
-                    this.makePort("L", go.Spot.Left, true, true),
-                    this.makePort("R", go.Spot.Right, true, true),
-                    this.makePort("B", go.Spot.Bottom, true, false),
+                    this.makePort("T", go.Spot.Top),
+                    this.makePort("L", go.Spot.Left),
+                    this.makePort("R", go.Spot.Right),
+                    this.makePort("B", go.Spot.Bottom),
                 )
                 ,
                 $(go.TextBlock,
@@ -271,10 +271,10 @@ export class ProcessDiagramTemplates {
                     $(go.Panel, this.activity_BodyPanel)
                 )
             ),
-            this.makePort("T", go.Spot.Top, true, true),
-            this.makePort("L", go.Spot.Left, true, true),
-            this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, true),
+            this.makePort("T", go.Spot.Top),
+            this.makePort("L", go.Spot.Left),
+            this.makePort("R", go.Spot.Right),
+            this.makePort("B", go.Spot.Bottom),
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
                 mouseLeave: function (e, node) { showSmallPorts(node, false); }
@@ -346,10 +346,11 @@ export class ProcessDiagramTemplates {
                         },
                         new go.Binding("text", "icon").makeTwoWay(),
                         new go.Binding("stroke", "refItemColor").makeTwoWay()),
-                    this.makePort("T", go.Spot.Top, false, true),
-                    this.makePort("L", go.Spot.Left, true, true),
-                    this.makePort("R", go.Spot.Right, true, true),
-                    this.makePort("B", go.Spot.Bottom, true, false),
+                    this.makePort("T", go.Spot.Top),
+                    this.makePort("L", go.Spot.Left),
+                    this.makePort("R", go.Spot.Right),
+                    this.makePort("B", go.Spot.BottomCenter),
+
                 ),
                 $(go.TextBlock,
                     {
@@ -363,8 +364,8 @@ export class ProcessDiagramTemplates {
                         stroke: 'black'
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
-            )
-            ,
+
+            ),
             this.getRelBadge('gateway', component)
             ,
             {
@@ -383,52 +384,19 @@ export class ProcessDiagramTemplates {
                         isPanelMain: true,
                         fill: null,
                         stroke: "#0b6ca9",
-                        strokeWidth: 3
+                        strokeWidth: 3,
+
                     })
             );
 
-        return $(go.Link,  // the whole link panel
-            {
-                selectable: true,
-                selectionAdornmentTemplate: linkSelectionAdornmentTemplate
-            },
-            {
-                relinkableFrom: true,
-                relinkableTo: true
-            },
-            {
-                routing: go.Link.AvoidsNodes,
-                curve: go.Link.JumpOver,
-                corner: 0
-            },
-            $(go.Shape,  // the arrowhead
-                {
-                    toArrow: "Triangle",
-                },
-                new go.Binding('stroke', 'isSelected', function (v) {
-                    console.log(v);
-                    return v ? '#0b6ca9' : 'black';
-                })
-            ),
-            $(go.Panel, "Auto",
-                {
-                    visible: false
-                },
-                $(go.Shape, "Rectangle",
-                    {
-                        fill: "#0b6ca9",
-                        stroke: null,
-
-                    }),
-                $(go.TextBlock,
-                    {
-                        textAlign: "center",
-                        font: this.textFont,
-                        stroke: "white",
-                        margin: 2,
-                        text: 'label'
-                    })
-            )
+        return $(go.Link, {
+            routing: go.Link.AvoidsNodes,
+            curve: go.Link.JumpOver,
+            corner: 0
+        },
+            $(go.Shape),  // the link shape
+            $(go.Shape,   // the arrowhead
+                { toArrow: "Triangle", fill: 'black' })
         );
     }
 
@@ -451,7 +419,7 @@ export class ProcessDiagramTemplates {
     }
 
 
-    private static makePort(name, spot: go.Spot, output, input, node = null) {
+    private static makePort(name, spot: go.Spot) {
         var $ = go.GraphObject.make;
         // the port is basically just a small transparent square
         return $(go.Shape, "Circle",
@@ -468,7 +436,8 @@ export class ProcessDiagramTemplates {
                 fromLinkable: true,
                 toLinkable: true,  // declare whether the user may draw links to/from here
                 cursor: "pointer"  // show a different cursor to indicate potential link point
-            });
+            }
+        );
     }
 
 
@@ -478,7 +447,9 @@ export class ProcessDiagramTemplates {
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -487,7 +458,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -534,13 +506,15 @@ export class ProcessDiagramTemplates {
         );
 
     }
-
+   
     public static activityTemplate_pallete() {
         var $ = go.GraphObject.make;
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -549,7 +523,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -596,7 +571,10 @@ export class ProcessDiagramTemplates {
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
+
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -605,7 +583,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -647,5 +626,45 @@ export class ProcessDiagramTemplates {
             )
         );
 
+    }
+    private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
+        var category = obj['data'].category;
+        var toolTipDIV = document.getElementById('toolTipDIV-' + category);
+        var pt = diagram.lastInput.viewPoint;
+
+        var scroll = +document.getElementById('myPaletteDiv').scrollTop;
+
+        toolTipDIV.style.marginLeft = (obj.part.location.x + 10) + "px";
+        toolTipDIV.style.marginTop = (obj.part.location.y + 48 - scroll) + "px";
+        document.getElementById('toolTipParagraph-' + category).innerHTML = obj['data'].Description;
+        console.log(obj['data'].Description);
+        if (obj['data'].Description)
+            toolTipDIV.style.display = "block";
+    }
+
+    private static hideToolTip(diagram, tool) {
+        var toolTipDIV = document.getElementById('toolTipDIV-activity');
+        var toolTipDIV2 = document.getElementById('toolTipDIV-gateway');
+        var toolTipDIV3 = document.getElementById('toolTipDIV-event');
+        toolTipDIV.style.display = "none";
+        toolTipDIV2.style.display = "none";
+        toolTipDIV3.style.display = "none";
+    }
+
+    private static GetTooltip() {
+        var $ = go.GraphObject.make;
+
+        return $(go.HTMLInfo, {
+            show: this.showToolTip,
+            hide: this.hideToolTip
+        });
+    }
+
+    private static newGuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }

@@ -1,6 +1,6 @@
 import * as go from 'gojs';
 import * as _ from 'lodash';
-import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2 } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewChecked, Output, EventEmitter, HostListener, ViewChild, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
@@ -11,6 +11,7 @@ import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
 import { CanDeactivate, Router } from '@angular/router';
 import { map } from 'rxjs/operators';
+import { forEach } from 'core-js/fn/array';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -68,6 +69,9 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private selectedLinkData: any;
 
+    @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
+    @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
+
     constructor(
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
@@ -95,7 +99,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.activities = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Activity);
                 this.gateways = this.assetTypeNodes.filter(x => x.FlowObjectType == FlowObjectType.Gateway);
 
-                var nodeHeight = 150;
+                var nodeHeight = 160;
                 var numberOfEventRows = this.events.length % 2 == 0 ? this.events.length / 2 : (this.events.length + 1) / 2;
                 this.eventPalleteHeight = numberOfEventRows * nodeHeight;
 
@@ -243,6 +247,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private get deleteModelTitle(): string {
         return this.getSelectedNodeCount() > 1 ? 'Delete Selected Items' : 'Delete Selected Item';
+    }
+
+    onDeleteClick() {
+        this.promptDeleteOpened = true;
+        setTimeout(() => this.deleteCancelButton.nativeElement.focus(), 100);
+
     }
 
     switchModes() {
@@ -624,10 +634,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     layout:
                         $(go.GridLayout,
                             {
-                                wrappingColumn: 2
+                                wrappingColumn: 2,
+                                arrangement: go.GridLayout.LeftToRight,
+
                             }
                         ),
-
+                    'toolManager.hoverDelay': 100
                 });
 
         var eventArr = [];
@@ -638,6 +650,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
+                Description: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
@@ -652,7 +665,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         templmap.add("event", ProcessDiagramTemplates.eventTemplate_pallete());
         this.myEventPalette.nodeTemplateMap = templmap;
 
-
         this.myActivityPallete =
             $(go.Palette, "activity-pallete",
                 {
@@ -662,7 +674,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                                 wrappingColumn: 2
                             }
                         ),
-
+                    'toolManager.hoverDelay': 100
                 });
 
         var eventArr = [];
@@ -673,6 +685,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
+                Description: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
@@ -694,10 +707,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     layout:
                         $(go.GridLayout,
                             {
-                                wrappingColumn: 2
+                                wrappingColumn: 2,
                             }
                         ),
-
+                    'toolManager.hoverDelay': 100
                 });
 
         var eventArr = [];
@@ -708,6 +721,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
+                Description: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
@@ -749,6 +763,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             switch (actionName) {
                 case 'switchModes':
                     this.actionMessage = 'Would you like to save your changes to the diagram before leaving the Diagram Designer?';
+                    setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
                         this.switchModes();
                         this.actionAfterSaved = null;
@@ -758,6 +773,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 case 'open-related-assets':
                     this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
                     this.showDiscardChanges = false;
+                    setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
                         this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
                         this.actionAfterSaved = null;
