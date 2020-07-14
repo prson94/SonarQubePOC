@@ -529,14 +529,19 @@ namespace d360.web.Controllers.V2
 
                 var allRelationships = queryAllRelationships.ToList();
 
+                var excludedFieldRelationshipPredicates = new List<PredicateType> { PredicateType.Diagram, PredicateType.DiagramUse, PredicateType.DiagramReference };
+
                 var cardinalRelationships = allRelationships.Where(i =>
                     (i.Subject == sType && i.SubjectID == id && i.SubjectCardinality == Cardinality.One) ||
                     (i.Object == sType && i.ObjectID == id && i.ObjectCardinality == Cardinality.One)
                 ).ToList();
 
                 var fieldFromRelRelationships = allRelationships.Where(i =>
-                    (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
-                    (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                    (!i.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(i.PredicateType.Value)) &&
+                    (
+                        (i.Subject == sType && i.SubjectID == id && i.ObjectCardinality == Cardinality.One) ||
+                        (i.Object == sType && i.ObjectID == id && i.SubjectCardinality == Cardinality.One)
+                    )
                 ).ToList();
 
                 IEnumerable<int> LookupObjectIDs = await Company.QueryAsync<int>(@"select distinct LookupObjectID from [FieldType] ft 
@@ -548,7 +553,8 @@ namespace d360.web.Controllers.V2
                                                                                   and   ft2.LookupObjectID is not null)", new { objectType = sType, objectid = id, ffieldtypeid = fieldtypeid });
 
                 var Field_Relationships = allRelationships
-                    .Where(x => x.PredicateType != PredicateType.InterTypeHierarchy
+                    .Where(x => (!x.PredicateType.HasValue || !excludedFieldRelationshipPredicates.Contains(x.PredicateType.Value))
+                                && x.PredicateType != PredicateType.InterTypeHierarchy
                                 && x.Object != SystemObjects.IntersectType.ToString()
                                 && x.Subject != SystemObjects.IntersectType.ToString()
                                )

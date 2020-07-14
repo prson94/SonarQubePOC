@@ -279,11 +279,7 @@ namespace d360.model.validators
 
                 #endregion
 
-                if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
-                }
-
+                
                 if (assetTypeIdentifierInfoModel != null && field?.Type?.Json != null)
                 {
                     if (field.Type.Json.Validation != null)
@@ -298,10 +294,7 @@ namespace d360.model.validators
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
-
-                    if (field.Type.ComputedFusionLookup != null)
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedFusionLookup fields are not allowed for current Asset Type!");
-
+                    
                     if (field.Type.ComputedOwnershipLookup != null)
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
 

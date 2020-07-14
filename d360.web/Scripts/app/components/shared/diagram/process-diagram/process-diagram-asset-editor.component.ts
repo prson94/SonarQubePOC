@@ -11,7 +11,7 @@ import { EditorField } from '../../../../models/editor-field.model';
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent implements OnChanges {
+export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
     @Output() nodeDataChange = new EventEmitter();
 
@@ -56,7 +56,6 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
                 data[f.FieldName] = '';
             }
         });
-
         this.nodeDataChange.emit(data);
     }
 

@@ -634,24 +634,7 @@ for json path, WITHOUT_ARRAY_WRAPPER";
                         newFieldType.DisplayDescription = f.Type.Score.Description.Display;
                     }
 
-                }
-                else if (f.Type.ComputedFusionLookup != null)
-                {
-                    if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
-                    {
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field type error", $"You may not use a Fusion Lookup type on an action type or relationship type for field {f.Name}.");
-                    }
-
-                    newFieldType.ColumnOrder = f.Type.ComputedFusionLookup.ColumnOrder.HasValue ? f.Type.ComputedFusionLookup.ColumnOrder.Value : ++maxColumnIndex;
-                    if (f.Type.ComputedFusionLookup.Description != null) newFieldType.DisplayDescription = f.Type.ComputedFusionLookup.Description.Display;
-                    newFieldType.IsDisplayable = f.Type.ComputedFusionLookup.IsDisplayable;
-                    newFieldType.IsEditable = false;
-                    newFieldType.IsListable = false;
-                    newFieldType.IsPartOfKey = false;
-                    newFieldType.IsPrimaryFilter = false;
-                    newFieldType.ShowIfEmpty = false;
-                    newFieldType.SortOrder = 99;
-                }
+                }                
                 else if (f.Type.ComputedOwnershipLookup != null)
                 {
                     if (model.ActionTypeUid.HasValue || model.RelationshipTypeUid.HasValue)
@@ -722,7 +705,7 @@ from	IntersectType I
                     newFieldType.IsEditable = false;
                     newFieldType.IsListable = f.Type.ComputedRelationshipField.IsListable;
                     newFieldType.IsPartOfKey = false;
-                    newFieldType.IsPrimaryFilter = false;
+		    newFieldType.IsPrimaryFilter = false;
                     newFieldType.ShowIfEmpty = f.Type.ComputedRelationshipField.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.ComputedRelationshipField.SortOrder;
                 }
@@ -1330,6 +1313,7 @@ from	IntersectType I
                     newFieldType.IsListable = f.Type.Relationship.IsListable;
                     newFieldType.ShowIfEmpty = f.Type.Relationship.ShowIfEmpty;
                     newFieldType.SortOrder = f.Type.Relationship.SortOrder;
+                    newFieldType.IsPrimaryFilter = f.Type.Relationship.IsPrimaryFilter;
                 }
                 else if (f.Type.Text != null)
                 {
