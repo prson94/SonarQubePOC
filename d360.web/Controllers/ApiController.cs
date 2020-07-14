@@ -3128,6 +3128,7 @@ order by    Name
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
                             },
+                                Category = Resources.FieldInfo.SystemFieldCategory
                             });
 
                             if (asset.UpdatedOn.HasValue)
@@ -3140,7 +3141,8 @@ order by    Name
                                 },
                                     SecondColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
-                                }
+                                },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
                                 });
                             }
                             else
@@ -3150,7 +3152,8 @@ order by    Name
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
-                                }
+                                },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
                                 });
                             }
                         }
@@ -3811,7 +3814,8 @@ order by    Name
                                 SecondColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = "Level Number", Value = policyLevel.ToString() }
-                                }
+                                },
+                                Category = Resources.FieldInfo.SystemNoCategory
                             });
                         }
 
@@ -3821,7 +3825,8 @@ order by    Name
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name =Fields.Path_Name, FieldName = "PolicyTextPath", FieldDescription =Fields.Path_Description, Value = policy.TextPath }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemNoCategory
                         });
 
 
@@ -3841,7 +3846,8 @@ order by    Name
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
-                            }
+                            },
+                                Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
 
@@ -3850,7 +3856,8 @@ order by    Name
                             columns = 1,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = "ID", FieldName = "PolicyID", FieldDescription = Fields.Type_Description, Value = $"{policy.ObjectID}" }
-                                }
+                                },
+                            Category = Resources.FieldInfo.SystemFieldCategory
                         });
                     }
                     policy = null;
@@ -3868,7 +3875,8 @@ order by    Name
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleType_Name, FieldName = "RuleRuleType", FieldDescription = Resources.FieldInfo.RuleType_Description, Value = rule.RuleType.Name }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemFieldCategory
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -3896,7 +3904,8 @@ order by    Name
                                 SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
-                            }
+                            },
+                                Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
 
@@ -3910,7 +3919,8 @@ order by    Name
                                 },
                                 SecondColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "RuleUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = rule.UpdatedOn.GetValueOrDefault().ToString("o"), DataType = "date" }
-                                }
+                                },
+                                Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
                         else
@@ -3920,7 +3930,8 @@ order by    Name
                                 columns = 1,
                                 FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "RuleCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = rule.CreatedOn.Value.ToString("o"), DataType = "date" }
-                                }
+                                },
+                                Category = Resources.FieldInfo.SystemFieldCategory
                             });
                         }
 
@@ -3929,7 +3940,8 @@ order by    Name
                             columns = 2,
                             FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = rule.GetName(i => i.ID), FieldName = "RuleID", FieldDescription = rule.GetDescription(i => i.ID), Value = $"{rule.ID}" }
-                                }
+                                },
+                            Category = Resources.FieldInfo.SystemFieldCategory
                         });
                     }
                     rule = null;
@@ -4435,7 +4447,8 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = d360.core.resources.Fields.Path_Name, FieldName = "TaxonomyTextPath", FieldDescription = d360.core.resources.Fields.Path_Description, Value = taxonomy.TextPath }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemNoCategory
                         });
 
                         var assetTypeID = (int)taxonomy.TypeID;
@@ -4454,7 +4467,8 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                                 SecondColumnFields = new List<ReadOnlyField>
                                 {
                                     new ReadOnlyField { Name = "Level Number", Value = taxonomy.Level.ToString() }
-                                }
+                                },
+                                Category = Resources.FieldInfo.SystemNoCategory
                             });
                         }
 
@@ -4469,7 +4483,8 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             SecondColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = taxonomy.UID.ToString(), DataType = "string" }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemFieldCategory
                         });
 
                         model.rows.Add(new DetailReadOnlyRowModel
@@ -4478,6 +4493,7 @@ where	A.Object = 'Taxonomy' and A.ObjectID = @id
                             FirstColumnFields = new List<ReadOnlyField> {
                                 new ReadOnlyField { Name = "ID", FieldName = "TaxonomyID", Value = $"{taxonomy.ID}" }
                             },
+                            Category = Resources.FieldInfo.SystemNoCategory
                         });
                     }
                     taxonomy = null;

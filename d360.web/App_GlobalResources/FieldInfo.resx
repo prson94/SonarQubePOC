@@ -321,6 +321,12 @@
   <data name="RuleType_Name" xml:space="preserve">
     <value>Type</value>
   </data>
+  <data name="SystemFieldCategory" xml:space="preserve">
+    <value>System Properties</value>
+  </data>
+  <data name="SystemNoCategory" xml:space="preserve">
+    <value>None</value>
+  </data>
   <data name="TaxonomyType_Description" xml:space="preserve">
     <value>The subject area that owns the artifact.  All people and sourcing responsibilities will flow from this subject area, with the option to override where required.</value>
   </data>
