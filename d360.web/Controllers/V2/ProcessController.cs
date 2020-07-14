@@ -126,7 +126,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetProcessDiagram(Guid assetUid)
+        public IHttpActionResult GetProcessDiagram(Guid assetUid)
         {
             if (assetUid == null)
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
@@ -141,10 +141,12 @@ namespace d360.web.Controllers.V2
 
         }
 
+        /// <returns></returns>
         /// <summary>
         /// Updates a process diagram for specific asset
         /// </summary>
         /// <param name="assetUid">The asset uid</param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [
             HttpPut,
