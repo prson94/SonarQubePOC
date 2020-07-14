@@ -55,7 +55,11 @@
             <div *ngSwitchCase="'Lookup'">
                 <ng-container *ngIf="!field.DelayedLoadType else delayedLoadType">
                     <div *ngIf="field?.MultiSelect; else singleSelect" class="d3s-color-picker multi">
-                        <p-multiSelect *ngIf="field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items" ngDefaultControl [defaultLabel]="multiselectLabel()">
+                        <p-multiSelect *ngIf="field.UseColorControl"
+                                       [formControlName]="field.FieldName"
+                                       [options]="field.Items"
+                                       ngDefaultControl
+                                       [defaultLabel]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
                                 <div class="d3s-color-multiSelect">
                                     <div *ngFor="let item of items" class="ig-colorfield-item-selected">
@@ -71,7 +75,12 @@
                                 </div>
                             </ng-template>
                         </p-multiSelect>
-                        <p-multiSelect *ngIf="!field.UseColorControl" [formControlName]="field.FieldName" [options]="field.Items | dropdownItemToSelectItemPipe" [style]="{width:'100%'}" ngDefaultControl [defaultLabel]="multiselectLabel()"></p-multiSelect>
+                        <p-multiSelect *ngIf="!field.UseColorControl"
+                                       [formControlName]="field.FieldName"
+                                       [options]="field.Items | dropdownItemToSelectItemPipe"
+                                       [style]="{width:'100%'}"
+                                       ngDefaultControl
+                                       [defaultLabel]="multiselectLabel()"></p-multiSelect>
                     </div>
                     <ng-template #singleSelect>
                         <ng-container *ngIf="field.UseNativeLookupControl">

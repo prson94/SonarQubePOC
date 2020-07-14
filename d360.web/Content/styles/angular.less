@@ -1361,6 +1361,10 @@ a.breadcrumb {
 
 
 /* header search */
+.spacer {
+    padding-right: 5px;
+}
+
 .header-action {
     margin-left: auto;
 
@@ -1372,10 +1376,6 @@ a.breadcrumb {
 
             &.mini-menu {
                 padding-right: 10px;
-            }
-
-            .spacer {
-                padding-right: 5px;
             }
 
             .header-actions-li {
@@ -2326,6 +2326,12 @@ div.home-image-title-text {
 
     button.button:not(:disabled):active, button.button.active {
         background: #cecece;
+    }
+
+    button:focus {
+        outline: 0 none;
+        outline-offset: 0;
+        box-shadow: 0 0 0 2px #8abddf;
     }
 
     button.button.primary {
@@ -4761,7 +4767,6 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
                 display: inline-block;
             }
         }
-
     }
 
     .d3s-score-badge-inline {
@@ -4785,6 +4790,7 @@ d3s-status-badge + button.button:not(.icon):not(.bar):first-of-type {
         }
     }
 }
+
 .d3s-score-container {
     display: flex;
 }
@@ -6931,22 +6937,23 @@ d3s-process-diagram {
         display: none;
     }
 
-    .process-item-event {
-        &:hover {
-            .tooltip-content {
-                display: block;
-                margin-left: 0px;
-                transform: translateY(-100%);
-                width: unset;
-                max-width: 400px;
 
-                p {
-                    padding: 0px;
-                    margin: 0px;
-                }
-            }
+    .tooltip-content {
+        position: absolute;
+        background: white;
+        z-index: 1000;
+        display: none;
+        margin-left: 0px;
+        transform: translateY(-100%);
+        width: unset;
+        max-width: 400px;
+
+        p {
+            padding: 0px;
+            margin: 0px;
         }
     }
+
 
     .loader {
         width: 200px;
@@ -7264,6 +7271,7 @@ d3s-icon-picker {
         }
     }
 }
+
 .measures {
     display: flex;
     flex-direction: column;
@@ -7310,10 +7318,8 @@ d3s-icon-picker {
 
                 .condition-items {
                     padding-right: 4px;
-                    flex-direction:column;
-
+                    flex-direction: column;
                 }
-
             }
 
             .details-header {
@@ -7330,6 +7336,7 @@ d3s-icon-picker {
         }
     }
 }
+
 .rowtool-button-top {
     top: -4px;
     background: transparent;
@@ -7347,22 +7354,6 @@ d3s-icon-picker {
     }
 
     .field-wrapper {
-
-
-        &.empty-field {
-            &.required-field {
-                select, input, textarea {
-                    background-color: #e3f5f7;
-                }
-            }
-        }
-
-        &.invalid {
-            select, input, textarea {
-                background-color: #fbe8ec;
-            }
-        }
-
         .error-message {
             background: #b21a3e;
             padding: 4px 7px;
@@ -7380,7 +7371,6 @@ d3s-icon-picker {
 
 .gov-accordion {
     .gov-accordion-item {
-
         .title {
             padding: 6px 12px;
             border-bottom: 2px solid #eff2f6;

@@ -1,6 +1,10 @@
 ﻿import * as go from 'gojs';
 import { ProcessDiagramComponent } from './process-diagram.component';
 
+//Note: If any change to templates causes node overall box to be bigger or smaller, 
+//    for all nodes locationSpot propery should be updated for event and gateway nodes so nodes can snap correctly.
+//    As node content can change nodes height we cannot use go.Spo.Center
+
 export class ProcessDiagramTemplates {
     private static fontColor: string = '#202020';
     private static textFont: string = `14px 'Source Sans Pro',sans-serif`;
@@ -12,93 +16,7 @@ export class ProcessDiagramTemplates {
     //gateway
     private static sideLength = 42;
 
-    public static eventTemplate(component: ProcessDiagramComponent) {
-        var $ = go.GraphObject.make;
-        function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
-                return;
-            }
-            node.ports.each(function (port) {
-                if (port.portId !== "") {  // don't change the default port, which is the big shape
-                    port.fill = show ? 'white' : null;
-                    port.stroke = show ? 'black' : null;
-                }
-            });
-        }
-        return $(go.Node, "Spot",
-            {
-                locationSpot: go.Spot.Center,
-                selectable: true,
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
-            },
-            {
-                mouseEnter: function (e, node) { showSmallPorts(node, true); },
-                mouseLeave: function (e, node) { showSmallPorts(node, false); }
-            },
-            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-            $(go.Panel, "Vertical",
-                $(go.Panel, "Auto",
-                    $(go.Shape,
-                        {
-                            fill: "transparent",
-                            stroke: "black",
-                            strokeWidth: 2,
-                            geometryString: 'M 230 230 A 45 45, 0, 1, 1, 230,229',
-                            width: this.eventNodeRadius + 6,
-                            height: this.eventNodeRadius + 6
 
-                        },
-                        new go.Binding('visible', 'isSelected').ofObject(),
-                    ),
-                    $(go.Panel, 'Auto',
-                        $(go.Shape, "Circle",
-                            {
-                                portId: "",
-                                fromLinkable: true,
-                                toLinkable: true,
-                                cursor: "pointer",
-                                fill: 'transparent',
-                                strokeWidth: 2,
-                                width: this.eventNodeRadius,
-                                height: this.eventNodeRadius,
-                                margin: new go.Margin(2, 2, 2, 2)
-                            },
-                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
-                        ),
-                        $(go.TextBlock,
-                            {
-                                alignment: go.Spot.Center,
-                                stroke: '#708EA6',
-                                textAlign: "center",
-                                font: '32px FontAwesome',
-                                margin: new go.Margin(4, 0, 0, 0)
-                            },
-                            new go.Binding("text", "icon").makeTwoWay(),
-                            new go.Binding("stroke", "refItemColor").makeTwoWay())
-                    ),
-                    this.makePort("T", go.Spot.Top, false, true),
-                    this.makePort("L", go.Spot.Left, true, true),
-                    this.makePort("R", go.Spot.Right, true, true),
-                    this.makePort("B", go.Spot.Bottom, true, false),
-                )
-                ,
-                $(go.TextBlock,
-                    {
-                        font: this.textFont,
-                        margin: 4,
-                        textAlign: "center",
-                        spacingBelow: 3,
-                        maxSize: new go.Size(120, NaN),
-                        wrap: go.TextBlock.WrapDesiredSize,
-                        editable: true,
-                        stroke: 'black'
-                    }
-                    , new go.Binding("text", "Name").makeTwoWay())
-            ),
-            this.getRelBadge('event', component)
-        );
-
-    }
 
     static get activity_BodyPanel() {
         var $ = go.GraphObject.make;
@@ -182,7 +100,7 @@ export class ProcessDiagramTemplates {
             var margin = new go.Margin(28, 28, 0, 0);
         }
         if (type == 'event') {
-            var margin = new go.Margin(24, 28, 0, 0);
+            var margin = new go.Margin(24, 38, 0, 0);
         }
 
         return $(go.Panel, 'Spot',
@@ -225,6 +143,94 @@ export class ProcessDiagramTemplates {
         );
     }
 
+    public static eventTemplate(component: ProcessDiagramComponent) {
+        var $ = go.GraphObject.make;
+        function showSmallPorts(node, show) {
+            if (!(node as go.Node).isEnabled) {
+                return;
+            }
+            node.ports.each(function (port) {
+                if (port.portId !== "") {  // don't change the default port, which is the big shape
+                    port.fill = show ? 'white' : null;
+                    port.stroke = show ? 'black' : null;
+                }
+            });
+        }
+        return $(go.Node, "Spot",
+            {
+                locationSpot: new go.Spot(0, 0, 0, 32),
+                selectable: true,
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                width: 112.2
+            },
+            {
+                mouseEnter: function (e, node) { showSmallPorts(node, true); },
+                mouseLeave: function (e, node) { showSmallPorts(node, false); }
+            },
+            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+            $(go.Panel, "Vertical",
+                $(go.Panel, "Auto",
+                    $(go.Shape,
+                        {
+                            fill: "transparent",
+                            stroke: "black",
+                            strokeWidth: 2,
+                            geometryString: 'M 230 230 A 45 45, 0, 1, 1, 230,229',
+                            width: this.eventNodeRadius + 6,
+                            height: this.eventNodeRadius + 6
+
+                        },
+                        new go.Binding('visible', 'isSelected').ofObject(),
+                    ),
+                    $(go.Panel, 'Auto',
+                        $(go.Shape, "Circle",
+                            {
+                                portId: "",
+                                fromLinkable: true,
+                                toLinkable: true,
+                                cursor: "pointer",
+                                fill: 'transparent',
+                                strokeWidth: 2,
+                                width: this.eventNodeRadius,
+                                height: this.eventNodeRadius,
+                                margin: new go.Margin(2, 2, 2, 2)
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.Center,
+                                stroke: '#708EA6',
+                                textAlign: "center",
+                                font: '32px FontAwesome',
+                                margin: new go.Margin(4, 0, 0, 0)
+                            },
+                            new go.Binding("text", "icon").makeTwoWay(),
+                            new go.Binding("stroke", "refItemColor").makeTwoWay())
+                    ),
+                    this.makePort("T", go.Spot.Top),
+                    this.makePort("L", go.Spot.Left),
+                    this.makePort("R", go.Spot.Right),
+                    this.makePort("B", go.Spot.Bottom),
+                )
+                ,
+                $(go.TextBlock,
+                    {
+                        font: this.textFont,
+                        margin: 4,
+                        textAlign: "center",
+                        spacingBelow: 3,
+                        maxSize: new go.Size(120, NaN),
+                        wrap: go.TextBlock.WrapDesiredSize,
+                        editable: true,
+                        stroke: 'black'
+                    }
+                    , new go.Binding("text", "Name").makeTwoWay())
+            ),
+            this.getRelBadge('event', component)
+        );
+
+    }
     public static activityTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
@@ -244,7 +250,7 @@ export class ProcessDiagramTemplates {
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
                 selectable: true,
-                locationSpot: go.Spot.Center,
+                locationSpot: new go.Spot(0, 0, 0, 24),
                 selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle")
             },
             $(go.Panel, 'Auto',
@@ -265,10 +271,10 @@ export class ProcessDiagramTemplates {
                     $(go.Panel, this.activity_BodyPanel)
                 )
             ),
-            this.makePort("T", go.Spot.Top, true, true),
-            this.makePort("L", go.Spot.Left, true, true),
-            this.makePort("R", go.Spot.Right, true, true),
-            this.makePort("B", go.Spot.Bottom, true, true),
+            this.makePort("T", go.Spot.Top),
+            this.makePort("L", go.Spot.Left),
+            this.makePort("R", go.Spot.Right),
+            this.makePort("B", go.Spot.Bottom),
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
                 mouseLeave: function (e, node) { showSmallPorts(node, false); }
@@ -290,7 +296,9 @@ export class ProcessDiagramTemplates {
             });
         }
         return $(go.Node, "Spot",
-            { locationSpot: go.Spot.Center },
+            {
+                locationSpot: new go.Spot(0, 0, 8.5, 38.5),
+            },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
                 selectable: true, selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
@@ -338,10 +346,11 @@ export class ProcessDiagramTemplates {
                         },
                         new go.Binding("text", "icon").makeTwoWay(),
                         new go.Binding("stroke", "refItemColor").makeTwoWay()),
-                    this.makePort("T", go.Spot.Top, false, true),
-                    this.makePort("L", go.Spot.Left, true, true),
-                    this.makePort("R", go.Spot.Right, true, true),
-                    this.makePort("B", go.Spot.Bottom, true, false),
+                    this.makePort("T", go.Spot.Top),
+                    this.makePort("L", go.Spot.Left),
+                    this.makePort("R", go.Spot.Right),
+                    this.makePort("B", go.Spot.BottomCenter),
+
                 ),
                 $(go.TextBlock,
                     {
@@ -355,8 +364,8 @@ export class ProcessDiagramTemplates {
                         stroke: 'black'
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
-            )
-            ,
+
+            ),
             this.getRelBadge('gateway', component)
             ,
             {
@@ -371,40 +380,23 @@ export class ProcessDiagramTemplates {
         var linkSelectionAdornmentTemplate =
             $(go.Adornment, "Link",
                 $(go.Shape,
-                    // isPanelMain declares that this Shape shares the Link.geometry
-                    { isPanelMain: true, fill: null, stroke: "deepskyblue", strokeWidth: 0 })  // use selection object's strokeWidth
+                    {
+                        isPanelMain: true,
+                        fill: null,
+                        stroke: "#0b6ca9",
+                        strokeWidth: 3,
+
+                    })
             );
 
-        return $(go.Link,  // the whole link panel
-            { selectable: true, selectionAdornmentTemplate: linkSelectionAdornmentTemplate },
-            { relinkableFrom: true, relinkableTo: true, reshapable: true },
-            {
-                routing: go.Link.AvoidsNodes,
-                curve: go.Link.JumpOver,
-                corner: 5,
-                toShortLength: 4
-            },
-            new go.Binding("points").makeTwoWay(),
-            $(go.Shape,  // the link path shape
-                { isPanelMain: true, strokeWidth: 1 }),
-            $(go.Shape,  // the arrowhead
-                { toArrow: "Standard", stroke: null }),
-            $(go.Panel, "Auto",
-                new go.Binding("visible", "isSelected").ofObject(),
-                $(go.Shape, "RoundedRectangle",  // the link shape
-                    { fill: "#F8F8F8", stroke: null }),
-                $(go.TextBlock,
-                    {
-                        textAlign: "center",
-                        font: "10pt helvetica, arial, sans-serif",
-                        stroke: "#919191",
-                        margin: 2,
-                        minSize: new go.Size(10, NaN),
-                        editable: true,
-
-                    },
-                    new go.Binding("name").makeTwoWay())
-            )
+        return $(go.Link, {
+            routing: go.Link.AvoidsNodes,
+            curve: go.Link.JumpOver,
+            corner: 0
+        },
+            $(go.Shape),  // the link shape
+            $(go.Shape,   // the arrowhead
+                { toArrow: "Triangle", fill: 'black' })
         );
     }
 
@@ -427,7 +419,7 @@ export class ProcessDiagramTemplates {
     }
 
 
-    private static makePort(name, spot: go.Spot, output, input, node = null) {
+    private static makePort(name, spot: go.Spot) {
         var $ = go.GraphObject.make;
         // the port is basically just a small transparent square
         return $(go.Shape, "Circle",
@@ -444,7 +436,8 @@ export class ProcessDiagramTemplates {
                 fromLinkable: true,
                 toLinkable: true,  // declare whether the user may draw links to/from here
                 cursor: "pointer"  // show a different cursor to indicate potential link point
-            });
+            }
+        );
     }
 
 
@@ -454,7 +447,9 @@ export class ProcessDiagramTemplates {
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -463,7 +458,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -510,13 +506,15 @@ export class ProcessDiagramTemplates {
         );
 
     }
-
+   
     public static activityTemplate_pallete() {
         var $ = go.GraphObject.make;
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -525,7 +523,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -572,7 +571,10 @@ export class ProcessDiagramTemplates {
 
         return $(go.Node, "Spot",
             {
-                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate()
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                cursor: 'pointer',
+                toolTip: this.GetTooltip(),
+
             },
             $(go.Panel, "Vertical",
                 $(go.Panel, "Auto",
@@ -581,7 +583,8 @@ export class ProcessDiagramTemplates {
                             fill: "#eff2f6",
                             strokeWidth: 0,
                             width: 100,
-                            height: 100
+                            height: 100,
+                            cursor: 'pointer'
                         }
                     ),
                     $(go.Panel, 'Auto',
@@ -623,5 +626,45 @@ export class ProcessDiagramTemplates {
             )
         );
 
+    }
+    private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
+        var category = obj['data'].category;
+        var toolTipDIV = document.getElementById('toolTipDIV-' + category);
+        var pt = diagram.lastInput.viewPoint;
+
+        var scroll = +document.getElementById('myPaletteDiv').scrollTop;
+
+        toolTipDIV.style.marginLeft = (obj.part.location.x + 10) + "px";
+        toolTipDIV.style.marginTop = (obj.part.location.y + 48 - scroll) + "px";
+        document.getElementById('toolTipParagraph-' + category).innerHTML = obj['data'].Description;
+        console.log(obj['data'].Description);
+        if (obj['data'].Description)
+            toolTipDIV.style.display = "block";
+    }
+
+    private static hideToolTip(diagram, tool) {
+        var toolTipDIV = document.getElementById('toolTipDIV-activity');
+        var toolTipDIV2 = document.getElementById('toolTipDIV-gateway');
+        var toolTipDIV3 = document.getElementById('toolTipDIV-event');
+        toolTipDIV.style.display = "none";
+        toolTipDIV2.style.display = "none";
+        toolTipDIV3.style.display = "none";
+    }
+
+    private static GetTooltip() {
+        var $ = go.GraphObject.make;
+
+        return $(go.HTMLInfo, {
+            show: this.showToolTip,
+            hide: this.hideToolTip
+        });
+    }
+
+    private static newGuid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+            var r = Math.random() * 16 | 0,
+                v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 }

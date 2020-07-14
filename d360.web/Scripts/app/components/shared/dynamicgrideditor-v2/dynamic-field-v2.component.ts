@@ -248,7 +248,6 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
                                 }
 
                                 this.hasCascadeLoaded = true;
-
                                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
                                 this.ref.markForCheck();
                             }
@@ -360,11 +359,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             if (this.field.Value == null && this.field.Items.some(x => x.Selected == true)) {
                 this.field.Value = this.field.Items.filter(x => x.Selected == true).map(x => x.Value)
             }
-
+            this.form.controls[this.field.FieldName].setValue(this.field.Value);
             window.setTimeout(() => {
-
                 this.listItemChange.emit({ field: this.field, value: this.field.Value });
-                this.ref.detectChanges();
+                this.ref.markForCheck();
             }, 250);
         }
 
