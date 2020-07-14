@@ -105,11 +105,6 @@
                         </d3s-process-diagram-asset-editor>
                     </div>
                 </div>
-                <div class="{{(selectedLinkData ? 'display' : 'hide')}}">
-                    <d3s-process-diagram-label-editor [linkData]="selectedLinkData"
-                                                      (linkDataChange)="console.log($event)">
-                    </d3s-process-diagram-label-editor>
-                </div>
             </div>
         </div>
         <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="isErrorModalOpened=false" [isVisible]="isErrorModalOpened">
@@ -126,7 +121,7 @@
                 </div>
             </div>
             <div class="action-bar">
-                <button class="button" (click)="isErrorModalOpened=false">Close</button>
+                <button igButton label="Close" (click)="isErrorModalOpened=false"></button>
 
             </div>
         </d3s-modal>
@@ -138,10 +133,11 @@
                 </div>
             </div>
             <div class="action-bar">
-                <button tabindex="2001" class="button" (click)="isSavingChangesModalOpened=false;actionAfterSaved=null;">Cancel</button>
-                <button tabindex="2002" *ngIf="showDiscardChanges" class="button" (click)="discardChanged()">Discard Changes</button>
+                <button igButton label="Cancel" tabindex="2001"(click)="isSavingChangesModalOpened=false;actionAfterSaved=null;"></button>
+                <span class="spacer"></span>
+                <button igButton label="Discard Changes" tabindex="2002" *ngIf="showDiscardChanges" (click)="discardChanged()"></button>
                 <div class="grow"></div>
-                <button #saveChangesButton tabindex="2000" class="button primary" (click)="isSavingChangesModalOpened=false;save(true);">Save Changes</button>
+                <button igButton class="ig-button-primary" label="Save Changes" #saveChangesButton tabindex="2000"(click)="isSavingChangesModalOpened=false;save(true);"></button>
 
             </div>
         </d3s-modal>
@@ -172,9 +168,9 @@
                 </div>
             </div>
             <div class="action-bar">
-                <button #deleteCancelButton tabindex="1000" class="button" (click)="promptDeleteOpened=false">Cancel</button>
+                <button igButton label="Cancel" #deleteCancelButton tabindex="1000" (click)="promptDeleteOpened=false"></button>
                 <div class="grow"></div>
-                <button class="button primary" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();">Delete</button>
+                <button igButton class="ig-button-primary" label="Delete" tabindex="1001" (click)="promptDeleteOpened=false;deleteSelectedNode();"></button>
 
             </div>
         </d3s-modal>

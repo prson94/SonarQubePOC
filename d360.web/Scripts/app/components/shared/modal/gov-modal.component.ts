@@ -80,22 +80,5 @@ export class D3SModal implements OnChanges {
         this.onConfirm.emit('confirm');
         this.closePopUp();
     }
-
-    onBlur($event) {
-        if (!this.isDescendant(this.modalDiv.nativeElement, $event.relatedTarget)) {
-            setTimeout(() => this.modalDiv.nativeElement.focus(), 100);
-        }
-    }
-    private isDescendant(parent, child) {
-        if (!node || !child) return false;
-        var node = child.parentNode;
-        while (node != null) {
-            if (node == parent) {
-                return true;
-            }
-            node = node.parentNode;
-        }
-        return false;
-    }
 }
 
