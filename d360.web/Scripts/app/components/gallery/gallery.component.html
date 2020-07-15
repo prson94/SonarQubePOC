@@ -4,12 +4,13 @@
 <div class="row">
     <div class="col s2">         
         <div class="collection">
-            <a (click)="activeControl='boolean';" [class]="(activeControl=='boolean'?'collection-item active':'collection-item')">Boolean Input</a>
-            <a (click)="activeControl='button';" [class]="(activeControl=='button'?'collection-item active':'collection-item')">Button Directive</a>
+            <a *ngFor="let control of controls" (click)="activeControl = control.key;" [class]="(activeControl == control.key ? 'collection-item active' : 'collection-item')">{{control.label}}</a>
         </div>        
     </div>
-    <div class="col s10">        
+    <div class="col s10">
         <gallery-boolean *ngIf="(activeControl=='boolean')"></gallery-boolean>
         <gallery-button *ngIf="(activeControl=='button')"></gallery-button>
+        <gallery-icon-picker *ngIf="(activeControl=='icon-picker')"></gallery-icon-picker>
+
     </div>
 </div>
