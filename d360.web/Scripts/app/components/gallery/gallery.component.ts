@@ -9,6 +9,11 @@
 
 export class GalleryComponent implements OnInit {
     protected activeControl: string = "switch";
+    protected controls = [
+        { label: 'Switch Input', key: 'switch' },
+        { label: 'Button Directive', key: 'button' },
+        { label: 'Icon Picker', key: 'icon-picker' },
+    ];
 
     ngOnInit(): void {        
     }

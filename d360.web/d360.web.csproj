@@ -720,6 +720,7 @@
     <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.icon-picker.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-item.component.html" />
     <Content Include="Scripts\app\components\hierarchy\hierarchy-list.component.html" />
@@ -853,6 +854,7 @@
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.button.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.routes.ts" />
     <TypeScriptCompile Include="Scripts\app\components\hierarchy\hierarchy-item-structure.component.ts" />

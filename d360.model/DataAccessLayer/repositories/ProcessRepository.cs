@@ -527,11 +527,14 @@ new
                 SELECT  
                     JSON_VALUE(nda.value, '$.key') AS [AssetUid]
                 FROM OPENJSON(@diagram, '$.nodeDataArray') as nda)
-                select a.uid as AssetUid, count(*) as RelationshipCount from links
+                select a.uid as AssetUid, sum(rels.cnt) as RelationshipCount from links
                 inner join Asset A on a.uid = links.AssetUid
-				inner join [Intersect] I on (A.Object = I.Object and A.ObjectID = I.ObjectID )
-					or (A.ObjectID = I.SubjectID AND a.Object = i.Subject)
-					group by a.uid";
+				cross apply(
+				select count(*) from [Intersect] I where A.Object = I.Object and A.ObjectID = I.ObjectID
+				union 
+				select count(*) from [Intersect] I where A.ObjectID = I.SubjectID AND a.Object = i.Subject
+				)Rels(cnt)
+            group by a.uid";
 
             var response = Company.Query<ProcessDiagramBadge>(badgesSql, new { assetUid });
             return response;

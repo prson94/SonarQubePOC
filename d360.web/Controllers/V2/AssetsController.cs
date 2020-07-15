@@ -2411,5 +2411,48 @@ namespace d360.web.Controllers.V2
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
             }
         }
+
+
+        /// <summary>
+        /// Retreives the details for the specified asset
+        /// </summary>
+        /// <param name="assetUid">The uid of the asset</param>
+        /// <returns>Details for the specified asset</returns>
+        [
+    HttpGet,
+    Route("asset/{assetUid}"),
+    SwaggerConsumes("application/json", "application/xml"),
+    SwaggerResponse(HttpStatusCode.OK, "Details of the asset.", typeof(AssetPathResults)),
+    SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+]
+        public async Task<IHttpActionResult> GetAsset(Guid assetUid)
+        {
+            var prefix = "Assets.GetAsset => ";
+
+            try
+            {
+                var res = await AssetRepository.GetAssetSingle(assetUid);
+
+                if (res == null)
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset for this uid not found")));
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+
+
+        }
     }
 }

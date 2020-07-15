@@ -5,6 +5,7 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
+import { IconPickerModule } from '../shared/icon-picker.component';
 import { SwitchModule } from '../shared/controls/switch/switch'
 import { CoreModule } from '../shared/core.module';
 
@@ -12,8 +13,9 @@ import { CoreModule } from '../shared/core.module';
 import { GalleryComponent } from './gallery.component';
 import { GalleryRoutingModule } from './gallery.routes';
 
-import { GalleryBooleanComponent } from './gallery.switch.component';
+import { GallerySwitchComponent } from './gallery.switch.component';
 import { GalleryButtonComponent } from './gallery.button.component';
+import { GalleryIconPickerComponent } from './gallery.icon-picker.component';
 import { GalleryGuard } from '../../guards/gallery.guard';
 
 import { TableModule } from 'primeng/table';
@@ -29,7 +31,8 @@ import { TableModule } from 'primeng/table';
 
         GalleryRoutingModule,
 
-        SwitchModule,  
+        SwitchModule,
+        IconPickerModule,
 
         TableModule,
 
@@ -38,6 +41,7 @@ import { TableModule } from 'primeng/table';
         GalleryComponent,
         GalleryBooleanComponent,
         GalleryButtonComponent,
+        GalleryIconPickerComponent,
     ],
     providers: [
         GalleryGuard,

@@ -74,8 +74,8 @@ namespace d360.web.Controllers.V2
                     from assettype at
 	                inner join asset a on a.AssetTypeID = at.ID
                     inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
-                    cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
-                where at.uid = @governanceRoleUid and a.Color is not null", new { governanceRoleUid });
+                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                where at.uid = @governanceRoleUid", new { governanceRoleUid });
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
