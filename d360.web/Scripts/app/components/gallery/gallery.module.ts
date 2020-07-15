@@ -39,7 +39,7 @@ import { TableModule } from 'primeng/table';
     ],
     declarations: [
         GalleryComponent,
-        GalleryBooleanComponent,
+        GallerySwitchComponent,
         GalleryButtonComponent,
         GalleryIconPickerComponent,
     ],

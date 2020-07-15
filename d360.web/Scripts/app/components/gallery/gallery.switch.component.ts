@@ -18,7 +18,7 @@
     `],
 })
 
-export class GalleryBooleanComponent implements OnInit {
+export class GallerySwitchComponent implements OnInit {
     protected properties: Array<any>;    
     protected events: Array<any>;
     protected sampleUsage: string = '<igx-switch></igx-switch>';
