@@ -901,11 +901,20 @@ end
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
 
-;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+;with cte_fieldvalues_multi as (select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
 	cross apply string_split(T.FieldValue, ',') MV
-    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
+    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 1 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(MV.value) = FLV.Text
+	where executionid = @executionid)
+insert into #LookupValues
+select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
+group by fieldvalue, Id
+
+;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+	from {fieldTable}  T
+    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
+	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
 	where executionid = @executionid)
 insert into #LookupValues
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues

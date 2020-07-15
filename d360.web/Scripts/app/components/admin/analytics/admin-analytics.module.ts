@@ -44,6 +44,7 @@ import { AdminAllocationEditorComponent } from './admin-allocation-editor.compon
 import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
+import { MenuModule } from 'primeng/menu';
 
 @NgModule({
     imports: [
@@ -70,6 +71,7 @@ import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
         TableModule,
         AutoCompleteModule,
         SliderModule,
+        MenuModule,
 
         //d3s        
         CoreModule,

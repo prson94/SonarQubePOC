@@ -24,6 +24,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_ASSETS_ROOT, loadChildren: () => import('./components/assets/assets.module').then(m => m.AssetsModule), data: { preload: false } },
     { path: SiteUrlHelpers.SITE_URL_ARTIFACT_ROOT, loadChildren: () => import('./components/artifact/artifact.module').then(m => m.ArtifactModule), data: { preload: false } },
     { path: SiteUrlHelpers.SITE_URL_HOME_ROOT, loadChildren: () => import('./components/home/home.module').then(m => m.HomeModule) },
+    { path: SiteUrlHelpers.SITE_URL_GALLERY_ROOT, loadChildren: () => import('./components/gallery/gallery.module').then(m => m.GalleryModule) },
     { path: SiteUrlHelpers.SITE_URL_SEARCH_ROOT, loadChildren: () => import('./components/search/search.module').then(m => m.SearchModule) },
     { path: SiteUrlHelpers.SITE_URL_WORKFLOW_ROOT, loadChildren: () => import('./components/workflow/workflow.module').then(m => m.WorkflowModule) },
     { path: SiteUrlHelpers.SITE_URL_MAPPING_ROOT, loadChildren: () => import('./components/mapping/mapping.module').then(m => m.MappingModule) },
@@ -47,7 +48,7 @@ const routes: Routes = [
     { path: SiteUrlHelpers.SITE_URL_ACTIONS_ROOT, loadChildren: () => import('./components/sidebar/actions/actions.module').then(m => m.ActionsModule) },
     { path: SiteUrlHelpers.SITE_URL_RULERESULT_ROOT, loadChildren: () => import('./components/sidebar/ruleresults/rule-results.module').then(m => m.RuleResultsModule) },
     { path: SiteUrlHelpers.SITE_URL_GOVERNANCE_ROLES_ROOT, loadChildren: () => import('./components/sidebar/governance-roles/governance-roles-sidebar.module').then(m => m.GovernanceRolesModule) },
-    { path: SiteUrlHelpers.SITE_URL_CONNECTOR_LABELS_ROOT, loadChildren: () => import('./components/sidebar/connector-labels/connector-labels-sidebar.module').then(m => m.ConnectorLabelsModule) },
+    { path: SiteUrlHelpers.SITE_URL_CONNECTOR_LABELS_ROOT, loadChildren: () => import('./components/sidebar/connector-labels/connector-labels-sidebar.module').then(m => m.ConnectorLabelsModule) },    
     {
         path: '**',
         redirectTo: SiteUrlHelpers.getDefaultRoute()

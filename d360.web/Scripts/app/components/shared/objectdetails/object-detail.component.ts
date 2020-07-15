@@ -16,6 +16,9 @@ export class ObjectDetailComponent implements OnChanges {
     private assetUID: string;
     private isLoading = false;
     DetailFieldType = DetailFieldType;
+    
+    readonly systemProperties: string = "System Properties";
+    readonly noCategory: string  = "None";
         
     private categories: Category[] = new Array<Category>();
 
@@ -50,7 +53,7 @@ export class ObjectDetailComponent implements OnChanges {
                     }
 
                     this.rows.forEach(r => {
-                        if (r.Category && this.categories.find(c => c.name == r.Category) == null)
+                        if (r.Category && r.Category.toUpperCase() != this.noCategory.toUpperCase() && this.categories.find(c => c.name == r.Category) == null)
                             this.categories.push(new Category(r.Category));
 
                         r.FirstColumnFields.forEach(f => {
@@ -94,8 +97,10 @@ export class ObjectDetailComponent implements OnChanges {
                         r.SecondColumnFields = r.SecondColumnFields.filter(f => f.Type != DetailFieldType.None);
                     });
                                        
-                    let displayRows = this.rows.filter(r => r.Category == null && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
-                                       
+                    let displayRows = this.rows.filter(r => (r.Category == null || r.Category.toUpperCase() == this.noCategory.toUpperCase()) && ((r.FirstColumnFields && r.FirstColumnFields.length > 0) || (r.SecondColumnFields && r.SecondColumnFields.length > 0)));
+                    if (this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()) >= 0) {
+                        this.categories.push(this.categories.splice(this.categories.findIndex(x => x.name.toUpperCase() == this.systemProperties.toUpperCase()), 1)[0]);
+                    }
                     for (let i = 0; i < this.categories.length; i++) {
                         let items = this.rows.filter(r => r.Category == this.categories[i].name);
                         this.categories[i].rows = [];
@@ -105,7 +110,7 @@ export class ObjectDetailComponent implements OnChanges {
                             }
                         }
                     }
-                    this.rows = displayRows;
+                    this.rows = displayRows;                                      
                     this.loadCategory();
                     this.isLoading = false;
                 });
@@ -158,6 +163,13 @@ export class ObjectDetailComponent implements OnChanges {
                 });
             });
         });
+
+        // if there are no fields (non-system) without a category then expand the first category unless it's system properties
+        if ((this.rows.length == 0 || ((this.objectType == "Taxonomy" || this.objectType == "Policy") && this.rows.filter(x => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0))
+                && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {            
+            this.categories[0].active = true;
+        }        
+
     }
 }
 
@@ -168,5 +180,6 @@ class Category {
     loaded = false;
     hasData = false;
     name: string;
-    rows = [];
+    rows = [];    
+    active = false;
 }
