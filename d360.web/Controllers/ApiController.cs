@@ -1337,7 +1337,7 @@ where   h.ID <> @t order by h.[Level] desc;
                 case SystemObjects.TaxonomyType:
                     #region TaxonomyType
                     {
-                        var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.SortOrder).ToList();
+                        var taxonomyFields = Company.Filter<FieldType>(i => i.Object == "TaxonomyType" && i.ObjectID == id && i.IsListable).OrderBy(i => i.ColumnOrder).ThenBy(i => i.FriendlyName).ToList();
 
                         foreach (var field in taxonomyFields)
                         {
