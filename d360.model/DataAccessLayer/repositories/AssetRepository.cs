@@ -311,9 +311,11 @@ namespace d360.model.DataAccessLayer
 
                 var predicateUID = queryParams.ToList().FirstOrDefault(q => q.Key.ToLower() == "_predicateuid").Value;
                 var intersectJoin = "";
+                var IntersectTypeIDField = "";
                 var reverseIntersectJoin = "";
                 var relatedAssetSql = " 1=1 ";
                 bool includeBoth = false;
+                var addtop1hint = "";
 
 
                 if (queryParams.ToList().Any(q => q.Key.ToLower() == "_objectuid"))
@@ -324,7 +326,7 @@ namespace d360.model.DataAccessLayer
                         dbArgs.Add("@relatedAssetUid", relatedAssetUID);
                         relatedAssetSql = $"{objectAlias}.[UID] = @relatedAssetUid";
                     }
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and abs(I.SubjectID) = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
 
                 }
                 else if (queryParams.ToList().Any(q => q.Key.ToLower() == "_subjectuid"))
@@ -341,26 +343,36 @@ namespace d360.model.DataAccessLayer
                 {
                     //subject and object not specified
                     includeBoth = true;
-                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and I.ObjectID = {subjectAlias}.ObjectID";
-                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and I.SubjectID = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
+                    IntersectTypeIDField = ", I.IntersectTypeID ";
+                    intersectJoin = $"I.[Subject] = {objectAlias}.[Object] and I.SubjectID = {objectAlias}.ObjectID and I.[Object] = {subjectAlias}.[Object] and abs(I.ObjectID) = {subjectAlias}.ObjectID";
+                    reverseIntersectJoin = $"I.[Subject] = {subjectAlias}.[Object] and abs(I.SubjectID) = {subjectAlias}.ObjectID and I.[Object] = {objectAlias}.[Object] and I.ObjectID = {objectAlias}.ObjectID";
                 }
 
                 var innerSql = $@"
                             select 
-                                B.[UID] as AssetUid, 
-                                BD.DisplayValue,
-                                TB.[Name] as TypeName,
-                                P.[UID] as PredicateUid
+                                B.[UID] as AssetUid 
+                                ,BD.DisplayValue
+                                ,TB.[Name] as TypeName
+                                ,@predicateUid as PredicateUid
+                                {IntersectTypeIDField}
                             from Asset B
                             inner join AssetType TB on TB.ID = B.AssetTypeID
                             cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-                            inner join [Intersect] I on {intersectJoin}
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
-                            where {relatedAssetSql}";
+                            inner join [Intersect] I on {intersectJoin}";
 
-                var innerCountSql = $@"
-						select B.ID as Relationships  from Asset B
+                if (includeBoth == false)
+                {
+                    addtop1hint = " top 1 ";
+
+                    innerSql = innerSql + $@"
+                    where { relatedAssetSql }
+                    and exists (select 1 from IntersectType IT 
+	                inner join [Predicate] P on P.ID = IT.PredicateID 
+	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
+                }
+
+    var innerCountSql = $@"
+						select {addtop1hint} B.ID as Relationships  from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
 						and exists (select 1 from [Intersect] I
@@ -373,16 +385,15 @@ namespace d360.model.DataAccessLayer
                 {
                     var reverseInnerSql = $@"
                             select 
-                                B.[UID] as AssetUid, 
-                                BD.DisplayValue,
-                                TB.[Name] as TypeName,
-                                P.[UID] as PredicateUid
+                                B.[UID] as AssetUid 
+                                ,BD.DisplayValue
+                                ,TB.[Name] as TypeName
+                                ,@predicateUid as PredicateUid
+                                {IntersectTypeIDField}
                             from Asset B
                             inner join AssetType TB on TB.ID = B.AssetTypeID
                             cross apply dbo.GetAssetDisplayValueById(B.ID) BD
-                            inner join [Intersect] I on {reverseIntersectJoin}
-                            inner join IntersectType IT on IT.ID = I.IntersectTypeID
-                            inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid";
+                            inner join [Intersect] I on {reverseIntersectJoin}";
 
                     var reverseInnerCountSql = $@"
 						select B.ID as Relationships from Asset B
@@ -393,13 +404,21 @@ namespace d360.model.DataAccessLayer
                             inner join [Predicate] P on P.ID = IT.PredicateID and P.[UID] = @predicateUid
 							where {reverseIntersectJoin})";
 
-                    innerSql = $@"select * from (
+                    innerSql = $@"select AssetUid
+                            ,DisplayValue 
+                            ,TypeName 
+                            ,PredicateUid
+                    from (
                         {innerSql}
                         union all
-                        {reverseInnerSql}) RI";
+                        {reverseInnerSql}
+                        ) RI
+                        where exists (select 1 from IntersectType IT 
+						inner join [Predicate] P on P.ID = IT.PredicateID 
+						where IT.ID = RI.IntersectTypeID and P.[UID] = @predicateUid)";
 
                     innerCountSql = $@"
-                        select * from (
+                        select top 1 * from (
                         {innerCountSql}
                         union all
                         {reverseInnerCountSql}) RI
@@ -430,7 +449,7 @@ namespace d360.model.DataAccessLayer
 
 
             //Add read permission check for admin and non-admin users as in GetAssets procedure
-           
+
             var restrictions = CompanyContext.Query<UserGetAPIRestrictionModel>(@"select
                     case when exists(
                     select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID) where ((PermissionsBitMask & 1)) = 0)
@@ -856,7 +875,7 @@ namespace d360.model.DataAccessLayer
             dbArgs.Add("@assetTypeUid", assetType.uid);
             dbArgs.Add("@pageNum", pageNum);
             dbArgs.Add("@pageSize", pageSize);
-            
+
             var countSql = $@"select count(*) 
                 from	graph.AssetNodeKeyPath P
 		                inner join Asset A on A.ID = P.ID
@@ -998,8 +1017,8 @@ namespace d360.model.DataAccessLayer
 
                     if (rowValues.ContainsKey(field.Name))
                     {
-                       
-                        if(field.Name == "Color")
+
+                        if (field.Name == "Color")
                         {
                             string val = extractColorNameFromJSON((string)rowValues[field.Name]);
                             setCellValueFromField(document, rowNumber, index, field, val);
@@ -2242,6 +2261,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
             return errors;
         }
 
+
         public async Task<dynamic> GetAssetSingle(Guid assetUid)
         {
 
@@ -2296,6 +2316,87 @@ where   A.[uid] = @assetUid";
             return (await CompanyContext.QueryAsync<dynamic>(sql, new  { assetUid })).FirstOrDefault();
         }
 
+        public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
+        {
+            var fields = new List<FieldType>();
 
+            var qp = new List<KeyValuePair<string, string>>();
+            qp.Add(new KeyValuePair<string, string>("_assetUid", string.Join(",", assetUids.Select(x => x.ToString()))));
+            qp.Add(new KeyValuePair<string, string>("includeParent", "true"));
+            var results = await GetAssets(assetType.uid, qp);
+
+            var hierarchy = CompanyContext.IntersectTypes
+                .FirstOrDefault(x => x.Object == assetType.Object && x.ObjectID == assetType.ObjectID && x.Predicate.Type == PredicateType.InterTypeHierarchy);
+
+            bool includeParent = true;
+            if (hierarchy == null)
+            {
+                includeParent = false;
+            }
+            var typesToAvoid = new List<string>() {
+                DataType.ComplexRelationLookup.ToString(),
+                DataType.DataTableSelect.ToString(),
+                DataType.OwnershipLookup.ToString()
+            };
+
+
+
+            if (includeParent)
+            {
+                fields.Add(new FieldType { Type = "string", Name = "ParentDisplayName", FriendlyName = "Parent" });
+            }
+
+            fields.AddRange(CompanyContext.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+
+            fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
+
+
+            int index = 1;
+
+            foreach (var field in fields)
+            {
+                if (typesToAvoid.Contains(field.Type))
+                    continue;
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+
+            document.SetCellValue(1, index++, "Url");
+            var rowData = results.items.ToList();
+
+            int rowNumber = 1;
+            foreach (var row in rowData)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (typesToAvoid.Contains(field.Type))
+                        continue;
+
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+
+                        if (field.Name == "Color")
+                        {
+                            string val = extractColorNameFromJSON((string)rowValues[field.Name]);
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+                        else
+                        {
+                            var val = rowValues[field.Name];
+                            setCellValueFromField(document, rowNumber, index, field, val);
+                        }
+
+                    }
+
+                    index++;
+                }
+                document.SetCellValue(rowNumber, index, $"asset/{rowValues["AssetUid"]}");
+            }
+            SetExcelColumnWidths(document, fields);
+        }
     }
 }
