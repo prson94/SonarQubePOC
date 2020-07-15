@@ -42,11 +42,15 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
 
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
+    //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
         for (var prop in data) {
             if (data[prop] == undefined) {
+                delete data[prop];
+            }
+            if (prop == 'Uid' || prop == 'AssetTypeUid') {
                 delete data[prop];
             }
         }

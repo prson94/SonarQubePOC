@@ -172,6 +172,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (part) {
                 this.myDiagram.clearSelection();
                 this.myDiagram.select(part);
+                delete part.data['PopupDescription'];
             }
         }
         this.cdRef.detectChanges();
@@ -206,7 +207,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private discardChanged() {
-        this.load();
+        this.myDiagram.model = go.Model.fromJson(this.savedState.toJson());
         if (this.actionAfterSaved) {
             this.actionAfterSaved();
             this.isSavingChangesModalOpened = false;
@@ -217,7 +218,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private isDeleteEnabled() {
         if (this.myDiagram && this.myDiagram.selection.count > 0) {
-            return this.myDiagram.selection.any(x => x.data.Name);
+            return true;
         }
         else return false;
     }
@@ -226,8 +227,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.selectedNodeData)
             return false;
 
-        if (this.selectedNodeData.isNew)
-            return false;
         return true;
     }
 
@@ -242,7 +241,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram)
             return 0;
 
-        return this.myDiagram.selection.filter(x => x.data.Name).count;
+        return this.myDiagram.selection.filter(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
     }
 
     private get deleteModelTitle(): string {
@@ -417,7 +416,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isCurrentStateSaved() {
         if (!this.savedState)
             return false;
-
         return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
     }
 
@@ -425,6 +423,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!model)
             return '';
         var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
+        if (m && m.nodeDataArray) {
+            m.nodeDataArray.forEach(d => {
+                delete d['relCount'];
+            });
+        }
         return JSON.stringify(m);
     }
 
@@ -521,7 +524,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
-                    if (propertyName != 'key') {
+                    var currentPropValue = data[propertyName];
+                    var updatedPropValue = formData[propertyName];
+
+                    var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
+
+                    if (propertyName != 'key' && !bothEmpty) {
                         m.set(data, propertyName, formData[propertyName].toString());
                     }
                 }
@@ -531,6 +539,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private isObjectEmpty(obj: any): boolean {
+        if (obj == null || obj == undefined || obj.toString() == '') return true;
+        return false;
     }
 
     private newGuid() {
@@ -650,12 +663,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -685,12 +698,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -721,12 +734,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -822,7 +835,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                         badges.forEach(asset => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
-                            m.set(data, 'relCount', asset.RelationshipCount);
+                            m.set(data, 'relCount', asset.RelationshipCount.toString());
                         })
                     }, 'update_model_badge_data');
                 } catch (e) {
