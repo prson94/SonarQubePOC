@@ -3982,7 +3982,7 @@ button.tab-scroller {
 ///////////////////////////////////////////////////////////////////////////////////
 // Switch
 ///////////////////////////////////////////////////////
-.switch {
+/*.switch {
     display: inline-flex;
     position: relative;
     flex-direction: row;
@@ -4033,7 +4033,18 @@ button.tab-scroller {
     &.checked::before {
         left: 2px;
     }
-}
+
+    &.unset::before {
+        background: initial;
+        color: @ig-black;
+        cursor: pointer;
+    }
+
+    &.unset button {
+        color: @ig-black !important;
+        cursor: pointer !important;
+    }
+}*/
 
 
 .tile-detail {

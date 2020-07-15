@@ -8,7 +8,7 @@
 })
 
 export class GalleryComponent implements OnInit {
-    protected activeControl: string = "boolean";
+    protected activeControl: string = "switch";
 
     ngOnInit(): void {        
     }

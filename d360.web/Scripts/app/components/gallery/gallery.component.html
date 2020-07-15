@@ -4,12 +4,12 @@
 <div class="row">
     <div class="col s2">         
         <div class="collection">
-            <a (click)="activeControl='boolean';" [class]="(activeControl=='boolean'?'collection-item active':'collection-item')">Boolean Input</a>
+            <a (click)="activeControl='switch';" [class]="(activeControl=='switch'?'collection-item active':'collection-item')">Switch Input Control</a>
             <a (click)="activeControl='button';" [class]="(activeControl=='button'?'collection-item active':'collection-item')">Button Directive</a>
         </div>        
     </div>
     <div class="col s10">        
-        <gallery-boolean *ngIf="(activeControl=='boolean')"></gallery-boolean>
+        <gallery-switch *ngIf="(activeControl=='switch')"></gallery-switch>
         <gallery-button *ngIf="(activeControl=='button')"></gallery-button>
     </div>
 </div>
