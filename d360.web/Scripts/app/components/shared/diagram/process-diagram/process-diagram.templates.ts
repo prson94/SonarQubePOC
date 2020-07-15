@@ -630,15 +630,13 @@ export class ProcessDiagramTemplates {
     private static showToolTip(obj: go.GraphObject, diagram: go.Diagram, tool: go.Tool) {
         var category = obj['data'].category;
         var toolTipDIV = document.getElementById('toolTipDIV-' + category);
-        var pt = diagram.lastInput.viewPoint;
 
         var scroll = +document.getElementById('myPaletteDiv').scrollTop;
 
         toolTipDIV.style.marginLeft = (obj.part.location.x + 10) + "px";
         toolTipDIV.style.marginTop = (obj.part.location.y + 48 - scroll) + "px";
-        document.getElementById('toolTipParagraph-' + category).innerHTML = obj['data'].Description;
-        console.log(obj['data'].Description);
-        if (obj['data'].Description)
+        document.getElementById('toolTipParagraph-' + category).innerHTML = obj['data'].PopupDescription;
+        if (obj['data'].PopupDescription)
             toolTipDIV.style.display = "block";
     }
 
