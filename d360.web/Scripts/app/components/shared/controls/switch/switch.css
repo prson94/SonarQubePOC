@@ -24,8 +24,6 @@
     border-radius: 2px;
     transition: left 150ms ease;
 }
-
-
 .switch button {
     position: relative;
     background: none;
@@ -33,9 +31,9 @@
     height: 26px;
     width: 50px;
     text-align: center;
-    color: black;
+    color: #202020;
     cursor: pointer;
-    transition: color 150ms ease;    
+    transition: color 150ms ease;
 }
 
 .switch :focus {
