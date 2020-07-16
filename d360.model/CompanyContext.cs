@@ -555,13 +555,13 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             {
                 if (isSubject)
                     hasCardinalityOne = true;
-                cardinalityCheckSQL += " and I.Id not in (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
+                cardinalityCheckSQL += " and I.Id not exists (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.SubjectCardinality = 1 and Object = {0} and ObjectID = {1} and I.Id is null)";
             }
             if (intersectType.ObjectCardinality == Cardinality.One)
             {
                 if (!isSubject)
                     hasCardinalityOne = true;
-                cardinalityCheckSQL += " and I.Id not in  (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
+                cardinalityCheckSQL += " and I.Id not exists  (select ID from [Intersect] where IntersectTypeID = @intersectTypeID and IT.ObjectCardinality = 1 and Subject = {0} and SubjectID = {1} and I.Id is null)";
             }
 
             string intersectJoin = @"((I.[Subject] = {0} and I.SubjectID = {1} and I.[Object] = @fieldObject and I.ObjectID = @fieldObjectID) or
