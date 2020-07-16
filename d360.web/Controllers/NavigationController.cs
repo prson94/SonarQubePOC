@@ -991,7 +991,7 @@ namespace d360.web.Controllers
                     }
                 }
             }
-            if (!Company.CurrentResourceIsAdmin)
+            if (responseModel != null && !Company.CurrentResourceIsAdmin)
             {
                 if (model.AssetUid != null)
                 {

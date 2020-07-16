@@ -15,7 +15,8 @@ namespace d360.core.entities.Process
             "key","assetTypeName", "assetTypeUid","category",
             "icon","key","loc","refItemColor",
             "isNew","Uid","AssetTypeUid",
-            "hasError","objectId","governanceDisplayValue"
+            "hasError","objectId","governanceDisplayValue",
+            "relCount"
         };
         public string GetHash()
         {
@@ -79,5 +80,11 @@ namespace d360.core.entities.Process
         public Guid AssetTypeUid { get; set; }
         public Guid AssetUid { get; set; }
         public string Error { get; set; }
+    }
+
+    public class ProcessDiagramBadge
+    {
+        public Guid AssetUid { get; set; }
+        public int RelationshipCount { get; set; }
     }
 }

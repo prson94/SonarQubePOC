@@ -11,7 +11,7 @@ import { EditorField } from '../../../../models/editor-field.model';
     providers: [AssetTypeService],
     changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent implements OnChanges {
+export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
     @Output() nodeDataChange = new EventEmitter();
 
@@ -42,11 +42,15 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
 
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
+    //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
         for (var prop in data) {
             if (data[prop] == undefined) {
+                delete data[prop];
+            }
+            if (prop == 'Uid' || prop == 'AssetTypeUid') {
                 delete data[prop];
             }
         }
@@ -56,7 +60,6 @@ export class ProcessDiagramAssedEditorComponent extends DiagramBaseComponent imp
                 data[f.FieldName] = '';
             }
         });
-
         this.nodeDataChange.emit(data);
     }
 
