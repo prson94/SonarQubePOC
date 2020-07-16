@@ -5,6 +5,7 @@ import { GovernRequestInterceptor } from '../../http-interceptors/govern-request
 import { RouterModule } from '@angular/router';
 
 import { D3SCheckboxModule } from '../shared/controls/gov-checkbox'
+import { IconPickerModule } from '../shared/icon-picker.component';
 import { CoreModule } from '../shared/core.module';
 
 
@@ -13,6 +14,7 @@ import { GalleryRoutingModule } from './gallery.routes';
 
 import { GalleryBooleanComponent } from './gallery.boolean.component';
 import { GalleryButtonComponent } from './gallery.button.component';
+import { GalleryIconPickerComponent } from './gallery.icon-picker.component';
 import { GalleryGuard } from '../../guards/gallery.guard';
 
 import { TableModule } from 'primeng/table';
@@ -27,7 +29,8 @@ import { TableModule } from 'primeng/table';
 
         GalleryRoutingModule,
 
-        D3SCheckboxModule,  
+        D3SCheckboxModule,
+        IconPickerModule,
 
         TableModule,
 
@@ -36,6 +39,7 @@ import { TableModule } from 'primeng/table';
         GalleryComponent,
         GalleryBooleanComponent,
         GalleryButtonComponent,
+        GalleryIconPickerComponent,
     ],
     providers: [
         GalleryGuard,
