@@ -13,6 +13,7 @@ import { EditorField } from '../../../../models/editor-field.model';
 })
 export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
+    @Input() isReadOnly: boolean = true;
     @Output() nodeDataChange = new EventEmitter();
 
     constructor(
