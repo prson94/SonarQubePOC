@@ -2029,6 +2029,10 @@ where	I.ID is null";
                 i.MapLeftKey("MapID").MapRightKey("MapItemID").ToTable("MapItemMap");
             });
 
+            modelBuilder.Entity<Score>().HasMany<ScoreItem>(i => i.Items).WithMany(i => i.Scores).Map(i =>
+            {
+                i.MapLeftKey("ScoreUid").MapRightKey("ScoreItemUid").ToTable("ScoreItemLink", "metrics");
+            });
 
             base.OnModelCreating(modelBuilder);
         }

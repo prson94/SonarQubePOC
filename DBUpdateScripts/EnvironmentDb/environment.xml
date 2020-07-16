@@ -210,6 +210,7 @@
 	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
+	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>

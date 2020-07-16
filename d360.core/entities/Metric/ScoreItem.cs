@@ -1,7 +1,4 @@
-﻿using d360.core.enums;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,36 +7,47 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Metric
 {
     [DataContract(Namespace = NAMESPACE), Table("ScoreItem", Schema = "metrics")]
-    public class ScoreItem : BaseObject
+    public class ScoreItem : BaseUidObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember]
         public Guid AssetUid { get; set; }
 
-        [DataMember, Key, Column(Order = 2)]
+        [DataMember]
         public Guid MetricAssetUid { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember]
         public DateTime EffectiveDate { get; set; }
 
-        [NotMapped, DataMember]
+        [DataMember]
         public Guid? AssetVersionUid { get; set; }
 
-        [NotMapped, DataMember]
-        public bool? BooleanResult { get; set; }
+        [DataMember]
+        public Guid? ConditionUid { get; set; }
 
         [DataMember]
-        public decimal Value { get; set; }
+        public string Evidence { get; set; }
+
+        [DataMember]
+        public bool Value { get; set; }
 
         [DataMember]
         public DateTime UpdatedOn { get; set; }
 
         [DataMember]
-        public float? AdjustedWeight { get; set; }
+        public decimal? AdjustedWeight { get; set; }
+
+        [DataMember]
+        public decimal? AdjustedMaxWeight { get; set; }
 
         [DataMember]
         public DateTime? RunDate { get; set; }
 
         [DataMember]
         public DateTime? EndDate { get; set; }
+
+        public ICollection<Score> Scores { get; set; }
+
+        [IgnoreDataMember, NotMapped]
+        public decimal? RawMeasureWeight { get; set; }
     }
 }

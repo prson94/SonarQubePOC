@@ -309,16 +309,7 @@ when not matched by target then
                             Result = r.Result 
                         }).ToList();
 
-                        var info = new ScoreQueueInfo
-                        {
-                            CompanyID = CurrentCompanyID,
-                            ChangeType = ScoreQueueChangeType.ExternalMeasureResultsCreated,
-                            ExecutionUid = execution.ExecutionID,
-                            Location = ScoreQueueExecutionDataLocation.File
-                        };
-                        Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(queueResults));
-                        QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
-
+                        SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalMeasureResultsCreated, queueResults);
                     }
                 }
                 catch (Exception ex)
@@ -620,6 +611,8 @@ where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
                     {
                         try
                         {
+                            Connection.Execute("create table #scoreUids (Uid uniqueidentifier)", transaction: trans);
+
                             #region Load valid items into table
 
                             Connection.Execute($@"
@@ -642,7 +635,8 @@ where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
                                         T.RunDate = S.RunDate
                             when not matched by target then
                                 insert  (AssetUid, EffectiveDate, RunDate, Value, EndDate, ScoreType)
-                                values  (S.AssetUid, S.EffectiveDate, S.RunDate, S.Value, null, @scoreType);"
+                                values  (S.AssetUid, S.EffectiveDate, S.RunDate, S.Value, null, @scoreType) 
+                            output inserted.Uid into #scoreUids;"
                                 , new { execution.ExecutionID, scoreType = (int)scoreType }
                                 , transaction: trans
                                 , commandTimeout: timeout);
@@ -730,10 +724,14 @@ where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
                             });
 
                             results.AddRange(batchResults);
-                            
+
                             #endregion
 
+                            var scoreUids = Connection.Query<Guid>("select Uid from #scoreUids", transaction: trans).ToList();
+
                             trans.Commit();
+
+                            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.ExternalScoresCreated, scoreUids);
 
                             runCompleted = true;
                         }
@@ -767,12 +765,8 @@ where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
                 Update(execution);
 
                 // Cleanup
-                Connection.Execute($"delete api.ExecutionMetricMeasure where ExecutionID = @ExecutionID"
-                    , new { execution.ExecutionID }
-                    , commandTimeout: timeout);
-                Connection.Execute($"delete api.ExecutionMetric where ExecutionID = @ExecutionID"
-                    , new { execution.ExecutionID }
-                    , commandTimeout: timeout);
+                Connection.Execute($"delete api.ExecutionMetricMeasure where ExecutionID = @ExecutionID", new { execution.ExecutionID }, commandTimeout: timeout);
+                Connection.Execute($"delete api.ExecutionMetric where ExecutionID = @ExecutionID", new { execution.ExecutionID }, commandTimeout: timeout);
             }
             catch (Exception ex)
             {
@@ -829,6 +823,18 @@ where   T.ExecutionID = @executionID and coalesce(T.IsValidAsset, 0) <> 1"
             return model;
         }
 
+        public void SendScoreEventWithPayload<T>(Guid executionUid, ScoreQueueChangeType changeType, T item)
+        {
+            var info = new ScoreQueueInfo
+            {
+                CompanyID = CurrentCompanyID,
+                ChangeType = changeType,
+                ExecutionUid = executionUid,
+                Location = ScoreQueueExecutionDataLocation.File
+            };
+            Storage.CreateFile(info.StorageFolder, info.StorageFile, JsonConvert.SerializeObject(item));
+            QueueSource.CreateMessage(Config.GetValue<string>("ScoringQueue"), info);
+        }
         #endregion
     }
 

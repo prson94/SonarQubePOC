@@ -5,6 +5,7 @@ using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.ServiceBus.Messaging;
@@ -61,8 +62,9 @@ namespace igx.jobs.workflowsubscriber
                 companyId = info.CompanyID;
                 var cache = new DummyCachingProvider();
                 var queue = new AzureQueueSource();
+                var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
-                var company = new CompanyContext(community, cache, queue, sec, true);
+                var company = new CompanyContext(community, cache, queue, sec, storage, true);
 
                 #endregion
 

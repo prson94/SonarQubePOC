@@ -19,15 +19,16 @@ namespace igx.jobs.scoreprocessor
         const string functionName = "Scoring_QueueProcessor";
 
 #if DEBUG
-        public async static Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, System.Threading.CancellationToken token, TextWriter log)
+        //public async static Task Run([TimerTrigger("0 */5 * * * *", RunOnStartup = true)]TimerInfo myTimer, System.Threading.CancellationToken token, TextWriter log)
+        public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
 #else
         public async static Task Run([QueueTrigger("%ScoringQueue%"), StorageAccount("QueueStorageAccount")] string myQueueItem, TextWriter log)
 #endif
 
         {
 #if DEBUG
-            var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.ExternalMeasureResultsCreated, CompanyID = 2, ExecutionUid = Guid.Parse("526c115c-b66b-49bf-abca-192e24c9c1b4") };
-
+            //var scoreInfo = new ScoreQueueInfo { ChangeType = ScoreQueueChangeType.ExternalMeasureResultsCreated, CompanyID = 2, ExecutionUid = Guid.Parse("526c115c-b66b-49bf-abca-192e24c9c1b4") };
+            var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #else
             var scoreInfo = JsonConvert.DeserializeObject<ScoreQueueInfo>(myQueueItem);
 #endif
@@ -85,6 +86,7 @@ namespace igx.jobs.scoreprocessor
                 {
                     log.WriteLine($"Company [{scoreInfo.CompanyID}]: [{ex.GetFullExceptionData()}]");
                 }
+                throw ex;
             }
         }
     }

@@ -1078,7 +1078,6 @@ where T.ExecutionId = @executionid;
                 Type = AssetEventType.Execution
             };
 
-
             QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
@@ -6826,6 +6825,9 @@ insert into #Keys
 
                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsChanged, import);
+
             return results;
         }
 
@@ -7298,10 +7300,10 @@ insert into #Keys
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
                     }
-
-
-                }
+                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsRemoved, import);
 
             return results;
         }

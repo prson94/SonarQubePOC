@@ -1,4 +1,5 @@
 ﻿using d360.core.queue;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,12 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public async Task Run()
         {
-            throw new NotImplementedException();
+            var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
+            var scoreUids = JsonConvert.DeserializeObject<List<Guid>>(json);
+
+            //var Db = GetCompanyContext();
+
+            // More work to do here. Sprint 9.
         }
     }
 }
