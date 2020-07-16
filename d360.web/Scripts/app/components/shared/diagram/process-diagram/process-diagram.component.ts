@@ -119,7 +119,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 140) + 'px';
         else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
@@ -251,7 +251,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     onDeleteClick() {
         this.promptDeleteOpened = true;
         setTimeout(() => this.deleteCancelButton.nativeElement.focus(), 100);
-
+        this.cdRef.detectChanges();
     }
 
     switchModes() {
@@ -303,8 +303,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             try {
                 if (this.isEditMode) {
                     if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
-                        this.promptDeleteOpened = true;
-                        this.cdRef.detectChanges();
+                        this.onDeleteClick();
                         return false;
                     }
                 }
@@ -320,7 +319,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addModelChangedListener(() => {
             this.diagramStateChanged();
-        })
+        });
+
+        var model = this.myDiagram.model as go.GraphLinksModel;
+
+        model.linkFromPortIdProperty = "fromPort";
+        model.linkToPortIdProperty = "toPort";
 
         var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate(this);
         var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
@@ -340,7 +344,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var linkTemplate = ProcessDiagramTemplates.linkTemplate;
         linkTemplate.category = 'link';
         this.myDiagram.linkTemplate = linkTemplate;
-
+        
         var self = this;
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
@@ -495,7 +499,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
                 this.savedState = go.Model.fromJson(JSON.stringify(res));
-
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
