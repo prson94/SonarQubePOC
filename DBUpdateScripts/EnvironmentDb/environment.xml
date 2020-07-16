@@ -470,6 +470,7 @@
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetFieldTypeLookupList.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
+	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
 	<!-- Data Changes -->
