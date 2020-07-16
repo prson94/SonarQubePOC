@@ -119,7 +119,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 140) + 'px';
         else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
@@ -251,7 +251,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     onDeleteClick() {
         this.promptDeleteOpened = true;
         setTimeout(() => this.deleteCancelButton.nativeElement.focus(), 100);
-
+        this.cdRef.detectChanges();
     }
 
     switchModes() {
@@ -303,8 +303,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             try {
                 if (this.isEditMode) {
                     if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
-                        this.promptDeleteOpened = true;
-                        this.cdRef.detectChanges();
+                        this.onDeleteClick();
                         return false;
                     }
                 }
@@ -345,7 +344,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var linkTemplate = ProcessDiagramTemplates.linkTemplate;
         linkTemplate.category = 'link';
         this.myDiagram.linkTemplate = linkTemplate;
-
+        
         var self = this;
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
