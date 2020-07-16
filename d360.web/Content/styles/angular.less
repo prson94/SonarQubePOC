@@ -6974,6 +6974,7 @@ d3s-process-diagram {
         display: flex;
         justify-content: space-between;
         height: 88%;
+        background-color: #eff2f6;
     }
 
     .top-menu-hider {
@@ -7409,6 +7410,41 @@ d3s-icon-picker {
             .fa-chevron-right {
                 display: none;
             }
+        }
+    }
+}
+
+.process-item-object-detail {
+    padding: 0px 7px;
+
+    .row {
+        .col {
+            width: 100%;
+        }
+    }
+
+    .ui-accordion-header {
+        font-size: 12px;
+        border-bottom: 1px solid #dde0e3;
+
+        span {
+            float: left;
+
+            .fa {
+                position: absolute;
+                left: 5px;
+                font-size: 12px;
+                margin-top: -5px;
+            }
+        }
+
+        a {
+            float: none !important;
+            text-decoration: none !important;
+            padding: 4px 22px !important;
+            text-transform: none !important;
+            color: black !important;
+            font-size: 14px !important;
         }
     }
 }

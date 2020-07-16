@@ -26,7 +26,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
-    myDiagram: go.Diagram;
+    public myDiagram: go.Diagram;
 
     isPalleteLoaded: boolean = false;
 
@@ -55,7 +55,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
 
-    private selectedNodeData: any;
+    public selectedNodeData: any;
     private loadedEditors: any[] = [];
 
     private isErrorModalOpened: boolean = false;
@@ -65,7 +65,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private newInstancesMap: any[] = [];
 
-    private isInfoPanelOpened: boolean = false;
+    public isInfoPanelOpened: boolean = false;
 
     private selectedLinkData: any;
 
@@ -76,7 +76,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
-        private cdRef: ChangeDetectorRef,
+        public cdRef: ChangeDetectorRef,
         private router: Router,
         private renderer: Renderer2
     ) {
@@ -582,7 +582,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private onSelectionChanged(node) {
-        if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
 
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
@@ -771,9 +770,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private actionMessage: string = '';
     private showDiscardChanges: boolean = false;
     public doControlledAction(actionName: string) {
-        if (!this.isEditMode) {
-            return;
-        }
         if (this.isEditMode && !this.isCurrentStateSaved()) {
             this.isSavingChangesModalOpened = true;
             switch (actionName) {
@@ -817,6 +813,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     break;
                 case 'open-related-assets':
                     this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                    this.cdRef.detectChanges();
+                    console.log(this.isRelatedAssetsVisible);
                     break;
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
