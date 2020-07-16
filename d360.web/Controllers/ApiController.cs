@@ -3113,7 +3113,8 @@ order by    Name
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
-                                }
+                                },
+                                    Category = Resources.FieldInfo.SystemNoCategory
                                 });
                             }
 
@@ -3885,7 +3886,8 @@ order by    Name
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemNoCategory
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
