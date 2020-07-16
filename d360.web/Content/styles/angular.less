@@ -7395,10 +7395,64 @@ d3s-icon-picker {
             border-color: #212121;
         }
 
-        &.ng-dirty.ng-invalid {
+        &.invalid {
             background: @ig-red-t3;
         }
+    }
 
+    .ig-accordion {
+        .ui-accordion-header {
+            border-top: 1px solid #999;
+            border-bottom: 0 none;
+            border-left: 0 none;
+            border-right: 0 none;
+            background: #fff;
+            margin-top: 16px;
+
+            &.ui-state-active {
+                background: #fff;
+                border-left: 0 none;
+                border-right: 0 none;
+                border-radius: 0;
+                border-top: 1px solid #999;
+                border-bottom: none;
+                margin-top: 16px;
+            }
+
+            .fa {
+                position: absolute;
+                left: 0.5em;
+                top: 50%;
+                margin-top: -10px;
+                font-size: 10px;
+                width: 14px;
+                background: black;
+                border-radius: 50%;
+                padding: 2px;
+                height: 14px;
+                color: white;
+                line-height: 8px;
+            }
+
+            a {
+                display: inline-flex;
+                padding: 0.5em 0.5em 0.5em 2em;
+                font-weight: normal;
+                text-transform: none;
+                color: #5c5e60;
+                font-size: 1em;
+            }
+        }
+    }
+
+    .feedback {
+        background: #b21a3e;
+        padding: 2px 7px;
+        font-size: 12px;
+        color: white;
+        border-bottom-left-radius: 3px;
+        border-bottom-right-radius: 3px;
+        width: auto;
     }
 }
 

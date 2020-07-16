@@ -35,6 +35,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
     private displayWeight: number = 0;
+    invalidWeightMessage: string;
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -51,7 +52,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     load() {
         if (!this.model)
             this.model = new MetricAssetViewModel();
-        this.displayWeight = 0;
+        this.displayWeight = 1;
+        this.invalidWeightMessage = "";
         this.child = "";
         this.model.ParentUid = null;
         if (this.uid) {
@@ -63,6 +65,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
+            this.model.Weight = .01;
             this.verb = "Add";
             if (this.parentUid) {
                 this.child = "Child";
@@ -73,8 +76,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.isLoading = false;
         }
         if (this.model.Weight) {
-            this.displayWeight = this.model.Weight * 100;
+            this.displayWeight = Math.round(this.model.Weight * 100);
         }
+
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
@@ -85,7 +89,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     valid() {
         let valid = true;
-
+        this.invalidWeightMessage = "";
         if (this.model === null) {
             valid = false;
         } else {
@@ -104,6 +108,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             if (!this.isExternallyCalculated) {
                 if (this.model.Weight === null || !this.model.Weight) {
                     valid = false; 
+                    this.invalidWeightMessage = "Please enter a value between 1 and 100";
+                    
                 }
                 else {
                     if (parseFloat(this.model.Weight.toFixed(2)) === 0) { 
@@ -169,6 +175,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     cancel() {
+        this.model = new MetricAssetViewModel();
         this.onCancel.emit();
     }
 
@@ -182,6 +189,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     private clamp(val: any, min: number, max: number, precision: number) {
+        if (!val) {
+            this.model.Weight = null;
+            this.valid()
+        }
         val = val / 100;
         const newVal = FormHelpers.clamp(val, min, max, precision);
 

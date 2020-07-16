@@ -1,5 +1,6 @@
 ﻿import { Input, Component, Output, SimpleChange, EventEmitter, OnInit, NgModule, OnChanges, ViewChild, ElementRef } from '@angular/core';
 import { SiteModalModule } from '../modal/gov-modal.module';
+import { CommonModule } from '@angular/common';
 
 
 @Component({
@@ -81,7 +82,8 @@ export class D3SCheckbox  {
         D3SCheckbox
     ],
     imports: [
-        SiteModalModule
+        SiteModalModule,
+        CommonModule
     ]
 
 })
