@@ -150,6 +150,9 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            model.linkToPortIdProperty = "toPort";
+            model.linkFromPortIdProperty = "fromPort";
+
             return model;
         }
 
@@ -463,6 +466,8 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
                     var simpleModel = new ProcessDiagramModel();
                     simpleModel.@class = "ProcessDiagram";
                     simpleModel.linkDataArray = model.linkDataArray;
+                    simpleModel.linkFromPortIdProperty = model.linkFromPortIdProperty;
+                    simpleModel.linkToPortIdProperty = model.linkToPortIdProperty;
 
                     simpleModel.nodeDataArray = new List<NodeData>();
                     foreach (var node in model.nodeDataArray)

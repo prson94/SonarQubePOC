@@ -321,7 +321,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addModelChangedListener(() => {
             this.diagramStateChanged();
-        })
+        });
+
+        var model = this.myDiagram.model as go.GraphLinksModel;
+
+        model.linkFromPortIdProperty = "fromPort";
+        model.linkToPortIdProperty = "toPort";
 
         var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate(this);
         var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
