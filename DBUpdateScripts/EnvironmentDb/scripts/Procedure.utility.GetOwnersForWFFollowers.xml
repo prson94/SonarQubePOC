@@ -6,6 +6,7 @@
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
   <changeSet author="Puneet Gupta" id="Procedure.utility.GetOwnersForWFFollowers-v1">
+	<comment>GOV-4601</comment>
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -71,7 +72,7 @@ end
     </sql>
 	<rollback>
 		<![CDATA[	
-
+DROP PROCEDURE IF EXISTS [utility].[GetOwnersForWFFollowers];  
 		]]>
 	</rollback>
   </changeSet>
