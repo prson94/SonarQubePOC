@@ -13,6 +13,7 @@ import { EditorField } from '../../../../models/editor-field.model';
 })
 export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
+    @Input() isReadOnly: boolean = true;
     @Output() nodeDataChange = new EventEmitter();
 
     constructor(
@@ -42,6 +43,7 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
 
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
+    //ignore system fields (Uid/AssetTypeUid)
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
@@ -49,11 +51,21 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
             if (data[prop] == undefined) {
                 delete data[prop];
             }
+            if (prop == 'Uid' || prop == 'AssetTypeUid') {
+                delete data[prop];
+            }
         }
         var fields = $event['fields'] as EditorField[];
         fields.filter(x => x.FieldTypeID).forEach(f => {
             if (data[f.FieldName] == undefined) {
                 data[f.FieldName] = '';
+            }
+            else {
+                if (f.FieldType == 'DateTime') {
+                    var dateTime = new Date(data[f.FieldName]);
+                    dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
+                    data[f.FieldName] = dateTime.toISOString();
+                }
             }
         });
         this.nodeDataChange.emit(data);

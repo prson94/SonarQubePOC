@@ -104,6 +104,7 @@ import { ProcessDiagramLabelEditorComponent } from './process-diagram/process-di
         SharedDynamicGridEditorModuleV2,
         SiteModalModule,
         SharedRelationshipModule,
+        SharedObjectDetailsModule,
         //prime        
         CheckboxModule,
         ContextMenuModule,

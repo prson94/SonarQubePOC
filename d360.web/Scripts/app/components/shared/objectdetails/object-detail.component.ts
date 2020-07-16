@@ -1,4 +1,4 @@
-import { Input, Component, OnChanges, SimpleChange } from '@angular/core';
+import { Input, Component, OnChanges, SimpleChange, ChangeDetectorRef } from '@angular/core';
 import { DetailRow, DetailField, DetailFieldType } from '../../../models/object-detail.model';
 import { ObjectDetailService } from '../../../services/object-detail.service';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
@@ -23,7 +23,7 @@ export class ObjectDetailComponent implements OnChanges {
     private categories: Category[] = new Array<Category>();
 
     rows = new Array<DetailRow>();
-    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService) { }
+    constructor(private objectDetailService: ObjectDetailService, protected messagesService: MessagesObservableService, private cdRef: ChangeDetectorRef) { }
 
     ngOnChanges(changes: { [propName: string]: SimpleChange }) {
         for (let p in changes) {
@@ -45,7 +45,6 @@ export class ObjectDetailComponent implements OnChanges {
                 .subscribe(data => {
                     this.rows = data.rows;
                     this.categories = [];
-
                     for (var i = 0; i < this.rows.length; i++) {
                         if (this.rows[i].Category != null && this.rows[i].Category == '') {
                             this.rows[i].Category = null;
@@ -113,6 +112,7 @@ export class ObjectDetailComponent implements OnChanges {
                     this.rows = displayRows;                                      
                     this.loadCategory();
                     this.isLoading = false;
+                    this.cdRef.markForCheck();
                 });
         }
     }
@@ -165,8 +165,9 @@ export class ObjectDetailComponent implements OnChanges {
         });
 
         // if there are no fields (non-system) without a category then expand the first category unless it's system properties
-        if ((this.rows.length == 0 || ((this.objectType == "Taxonomy" || this.objectType == "Policy") && this.rows.filter(x => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0))
-                && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {            
+        if (this.categories && this.categories.length > 0
+            && this.rows.filter(x => !x.Category || x.Category.toUpperCase() != this.noCategory.toUpperCase()).length == 0
+            && this.categories[0].name.toUpperCase() != this.systemProperties.toUpperCase()) {            
             this.categories[0].active = true;
         }        
 

@@ -911,14 +911,12 @@ insert into #LookupValues
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
 group by fieldvalue, Id
 
-;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+;insert into #LookupValues
+select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
-	where executionid = @executionid)
-insert into #LookupValues
-select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues
-group by fieldvalue, Id
+	where T.FieldValue is not null and executionid = @executionid;
 
 update	T
 set		T.[Value] = '0'

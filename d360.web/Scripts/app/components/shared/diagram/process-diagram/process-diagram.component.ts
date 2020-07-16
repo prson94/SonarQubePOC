@@ -26,7 +26,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
-    myDiagram: go.Diagram;
+    public myDiagram: go.Diagram;
 
     isPalleteLoaded: boolean = false;
 
@@ -55,7 +55,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isExporting: boolean = false;
     private defaultStrokeColor: string = '#708EA6';
 
-    private selectedNodeData: any;
+    public selectedNodeData: any;
     private loadedEditors: any[] = [];
 
     private isErrorModalOpened: boolean = false;
@@ -65,7 +65,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private newInstancesMap: any[] = [];
 
-    private isInfoPanelOpened: boolean = false;
+    public isInfoPanelOpened: boolean = false;
 
     private selectedLinkData: any;
 
@@ -76,7 +76,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         secondaryNavService: SecondaryNavService,
         breadcrumbService: HeaderBreadcrumbService,
         private processService: ProcessService,
-        private cdRef: ChangeDetectorRef,
+        public cdRef: ChangeDetectorRef,
         private router: Router,
         private renderer: Renderer2
     ) {
@@ -119,7 +119,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
-            this.diagramRef.nativeElement.style.height = (height - 120) + 'px';
+            this.diagramRef.nativeElement.style.height = (height - 140) + 'px';
         else if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
@@ -172,6 +172,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             if (part) {
                 this.myDiagram.clearSelection();
                 this.myDiagram.select(part);
+                delete part.data['PopupDescription'];
             }
         }
         this.cdRef.detectChanges();
@@ -206,7 +207,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private discardChanged() {
-        this.load();
+        this.myDiagram.model = go.Model.fromJson(this.savedState.toJson());
         if (this.actionAfterSaved) {
             this.actionAfterSaved();
             this.isSavingChangesModalOpened = false;
@@ -217,7 +218,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     private isDeleteEnabled() {
         if (this.myDiagram && this.myDiagram.selection.count > 0) {
-            return this.myDiagram.selection.any(x => x.data.Name);
+            return true;
         }
         else return false;
     }
@@ -226,8 +227,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.selectedNodeData)
             return false;
 
-        if (this.selectedNodeData.isNew)
-            return false;
         return true;
     }
 
@@ -242,7 +241,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram)
             return 0;
 
-        return this.myDiagram.selection.filter(x => x.data.Name).count;
+        return this.myDiagram.selection.filter(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway').count;
     }
 
     private get deleteModelTitle(): string {
@@ -252,7 +251,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     onDeleteClick() {
         this.promptDeleteOpened = true;
         setTimeout(() => this.deleteCancelButton.nativeElement.focus(), 100);
-
+        this.cdRef.detectChanges();
     }
 
     switchModes() {
@@ -304,8 +303,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             try {
                 if (this.isEditMode) {
                     if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
-                        this.promptDeleteOpened = true;
-                        this.cdRef.detectChanges();
+                        this.onDeleteClick();
                         return false;
                     }
                 }
@@ -321,7 +319,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
         this.myDiagram.addModelChangedListener(() => {
             this.diagramStateChanged();
-        })
+        });
+
+        var model = this.myDiagram.model as go.GraphLinksModel;
+
+        model.linkFromPortIdProperty = "fromPort";
+        model.linkToPortIdProperty = "toPort";
 
         var activityNodeTemplate = ProcessDiagramTemplates.activityTemplate(this);
         var eventNodeTemplate = ProcessDiagramTemplates.eventTemplate(this);
@@ -341,7 +344,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var linkTemplate = ProcessDiagramTemplates.linkTemplate;
         linkTemplate.category = 'link';
         this.myDiagram.linkTemplate = linkTemplate;
-
+        
         var self = this;
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
@@ -417,7 +420,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private isCurrentStateSaved() {
         if (!this.savedState)
             return false;
-
         return this.getSignature(this.myDiagram.model) == this.getSignature(this.savedState);
     }
 
@@ -425,6 +427,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!model)
             return '';
         var m = JSON.parse(model.toJson().replace(`\"isReadOnly\": true,`, ''));
+        if (m && m.nodeDataArray) {
+            m.nodeDataArray.forEach(d => {
+                delete d['relCount'];
+            });
+        }
         return JSON.stringify(m);
     }
 
@@ -492,7 +499,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 }
                 this.myDiagram.model = go.Model.fromJson(JSON.stringify(res));
                 this.savedState = go.Model.fromJson(JSON.stringify(res));
-
                 this.diagramStateChanged();
                 this.applyEditMode(this.isEditMode);
                 this.loadedEditors = [];
@@ -521,7 +527,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.myDiagram.model.commit(function (m) {
                 var data = m.findNodeDataForKey(formData.key);
                 for (var propertyName in formData) {
-                    if (propertyName != 'key') {
+                    var currentPropValue = data[propertyName];
+                    var updatedPropValue = formData[propertyName];
+
+                    var bothEmpty = self.isObjectEmpty(currentPropValue) && self.isObjectEmpty(updatedPropValue);
+
+                    if (propertyName != 'key' && !bothEmpty) {
                         m.set(data, propertyName, formData[propertyName].toString());
                     }
                 }
@@ -531,6 +542,11 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         } catch (e) {
             console.log(e);
         }
+    }
+
+    private isObjectEmpty(obj: any): boolean {
+        if (obj == null || obj == undefined || obj.toString() == '') return true;
+        return false;
     }
 
     private newGuid() {
@@ -566,7 +582,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private onSelectionChanged(node) {
-        if (!this.isEditMode) return;
         this.selectedNodeData = JSON.parse(JSON.stringify(node.data));
 
         if (!this.loadedEditors.some(x => x.key == this.selectedNodeData.key)) {
@@ -650,12 +665,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -685,12 +700,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -721,12 +736,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 refItemColor: this.defaultStrokeColor,
                 icon: FontAwesomeHelper.GetHtmlCode(ev.Icon),
                 Name: ev.Name,
-                Description: ev.Description,
+                PopupDescription: ev.Description,
                 key: 'new_instance_' + this.newGuid(),
                 assetTypeName: ev.Name,
                 assetTypeUid: ev.uid,
                 isNew: true,
-                relCount: 0
+                relCount: "0"
             });
         })
 
@@ -755,9 +770,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private actionMessage: string = '';
     private showDiscardChanges: boolean = false;
     public doControlledAction(actionName: string) {
-        if (!this.isEditMode) {
-            return;
-        }
         if (this.isEditMode && !this.isCurrentStateSaved()) {
             this.isSavingChangesModalOpened = true;
             switch (actionName) {
@@ -801,6 +813,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     break;
                 case 'open-related-assets':
                     this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
+                    this.cdRef.detectChanges();
+                    console.log(this.isRelatedAssetsVisible);
                     break;
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
@@ -822,7 +836,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
                         badges.forEach(asset => {
                             var data = m.findNodeDataForKey(asset.AssetUid);
-                            m.set(data, 'relCount', asset.RelationshipCount);
+                            m.set(data, 'relCount', asset.RelationshipCount.toString());
                         })
                     }, 'update_model_badge_data');
                 } catch (e) {
