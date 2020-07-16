@@ -17,7 +17,7 @@
     <AssemblyName>d360.web</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <MvcBuildViews>false</MvcBuildViews>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -1050,6 +1050,7 @@
     <Content Include="Content\styles\infogix-ui\IgUiVariables.less" />
     <Content Include="Content\styles\infogix-ui\IgButton.less" />
     <Content Include="Content\styles\infogix-ui\infogix-ui.less" />
+    <Content Include="Content\styles\infogix-ui\IgInput.less" />
     <None Include="Content\styles\Tooltip.less" />
     <Content Include="Scripts\app\components\admin\fusion\admin-fusion.component.html" />
     <Content Include="Scripts\app\components\admin\load\admin-load.component.html" />
@@ -1560,6 +1561,7 @@
     <TypeScriptCompile Include="Scripts\app\directives\click-outside-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\copy-clipboard-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\directives.module.ts" />
+    <TypeScriptCompile Include="Scripts\app\directives\ig-input-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\ig-button-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\directives\text-highlight-directive.ts" />
     <TypeScriptCompile Include="Scripts\app\guards\api-key-users.gurard.ts" />

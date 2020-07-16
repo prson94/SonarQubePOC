@@ -271,10 +271,14 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     } 
 
     private hasConditions(item: MetricAssetViewModel) {
+        
         if (item && item.ConditionGroups && item.ConditionGroups.length > 0) {
             this.conditions = item.ConditionGroups[0].ConditionItems;
-            this.formatConditions();
-            return true;
+            if (this.conditions.length > 0) {
+                this.formatConditions();
+                return true;
+            } else
+                return false;
         } else {
             this.conditions = [];
             return false;

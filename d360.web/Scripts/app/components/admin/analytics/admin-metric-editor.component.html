@@ -1,85 +1,105 @@
-﻿<header>{{verb}} {{child}} Measure</header>
-<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<form (ngSubmit)="onSubmit()" #metricForm="ngForm">
-    <div class="row" *ngIf="!isLoading && model != null">
-        <div class="col l6 m12 s12">
-            <div class="row">
-                <div class="col l6 m12 s12">
-                    <div class="FieldNameRequired">Name</div>
-                    <input type="text" [(ngModel)]="model.Name" style="width: 100%" #name="ngModel" name="name" maxlength="250" required />
-                    <div [hidden]="name.valid || name.pristine" class="validation-text">Name is required</div>
+﻿<div class="modal-measure-editor">
+    <d3s-loading [isLoading]="isLoading"></d3s-loading>
+    <form (ngSubmit)="onSubmit()" #metricForm="ngForm">
+        <div class="row" *ngIf="!isLoading && model != null">
+            <simple-accordion header="Details" active="true" class="ig-accordion">
+                <div class="row two-thirds">
+                    <input igInput class="required" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
                 </div>
-                <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated">
-                    <ng-container *ngIf="!parentUid && !model.ParentUid">
-                        <p-checkbox [(ngModel)]="model.IsGroup" binary="true" label="Grouping?" name="IsGroup"></p-checkbox>
-                    </ng-container>
-                </div>
-            </div>
-            <div class="section">
                 <div class="row">
-                    <div class="col l6 m12 s12">
-                        <div class="FieldNameRequired">
-                            Effective Date
-                        </div>
-                        <div class="directions">Provide a date that this measure becomes effective.</div>
-                        <div *ngIf="model.EffectiveDate">
-                            <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" name="effectiveDate"></p-calendar>
-                        </div>
-                    </div>
-                    <div class="col l6 m12 s12" *ngIf="!isExternallyCalculated"> 
-                        <div class="FieldNameRequired">
-                            Weight
-                        </div>
-                        <div class="directions">Weight must be a value between 0 and 1</div>
-                        <div>
-                            <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="model.Weight" (ngModelChange)="clamp($event, 0, 1, 2)" [min]="0" [max]="1" [step]="0.05" name="weight"></p-spinner> 
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col l6 m12 s12">
-            <div class="row">
-                <div class="col s12">
-                    <div class="FieldName">Description</div>
                     <div>
-                        <textarea pInputTextarea [(ngModel)]="model.Description" autoResize="autoResize" [style]="{'width' : '100%'}" name="description"></textarea>
+                        <textarea igInput istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" autoResize="autoResize" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-    <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
-        <div class="col s12">
-            <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
-                <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <div class="col l3 m12 s12">
-                        <div class="FieldName">
-                            Condition Type
-                        </div>
-                        <div class="directions">
-                            Choose which type of operator you want to use between each condition. The AND operator will ensure that all conditions are met. The OR operator ensures that at least one of the conditions applies.
-                        </div>
-                        <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
-                        <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
+                <div class="row">
+                    <div class="ig-input-label">
+                        Effective From
                     </div>
-                    <div class="col l9 m12 s12">
-                        <d3s-admin-metric-condition-list [(conditions)]="g.ConditionItems"
-                                                         [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
-                                                         [conditionUid]="g?.Uid"
-                                                         [position]="g?.Position"
-                                                         [assetTypeUid]="model?.AssetTypeUid"
-                                                         (formModeChange)="conditionFormMode = $event">
-                        </d3s-admin-metric-condition-list>
+                    <div class="ig-input calendar">
+                        <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                        <i class="fa fa-calendar"></i>
+                    </div>
+                </div>
+                <div class="row bottom-space" *ngIf="!isExternallyCalculated">
+                    <div class="ig-input-label">
+                        Weight(%)
+                        <div class="info-tip">
+                            <i class="fa fa-question-circle"></i>
+                            <div class="tip-container">
+                                <div class="tooltip-content">
+                                    Weight determines the contributions of this measure to the overall score calculated for an asset.
+                                    For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
+                                    The sum of all measures used to calculate the score should sum to 100% (at the top-level with and within each group of measures.
+                                    Where they do not, they will be adjusted when used to calculate the score.
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-spinner">
+                        <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div *ngIf="!isExternallyCalculated">
+                        <ng-container *ngIf="!parentUid && !model.ParentUid">
+                            <div class="ig-input-label">
+                                Grouping Measure
+                                <div class="info-tip">
+                                    <i class="fa fa-question-circle"></i>
+                                    <div class="tip-container">
+                                        <div class="tooltip-content">
+                                            Grouping measures can be used to organize your measures, collecting to0gether a group of a
+                                            similar nature (E.g. responsibility assignments, required field checks).
+                                            Grouping measures do not have asset conditions, as they are not applied directly to the assets.
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <span *ngIf="somebool.invalid && (somebool.dirty || somebool.touched)" class="requiredMessage">
+                                <span *ngIf="somebool.errors.required">
+                                    Value required
+                                </span>
+                            </span>
+                        </ng-container>
                     </div>
                 </div>
             </simple-accordion>
         </div>
-    </div>
-    <div class="row" *ngIf="!isLoading">
-        <div class="col s12" style="padding-top: 15px">
-            <button pButton type="button" label="Save" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
-            <button pButton type="button" label="Cancel" (click)="cancel()" [disabled]="conditionFormMode != FormMode.Default"></button>
+        <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
+            <div class="col s12">
+                <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup">
+                    <div class="row" *ngFor="let g of model.ConditionGroups">
+                        <div class="col l3 m12 s12">
+                            <div class="FieldName">
+                                Condition Type
+                            </div>
+                            <div class="directions">
+                                Choose which type of operator you want to use between each condition. The AND operator will ensure that all conditions are met. The OR operator ensures that at least one of the conditions applies.
+                            </div>
+                            <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
+                            <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
+                        </div>
+                        <div class="col l9 m12 s12">
+                            <d3s-admin-metric-condition-list [(conditions)]="g.ConditionItems"
+                                                             [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
+                                                             [conditionUid]="g?.Uid"
+                                                             [position]="g?.Position"
+                                                             [assetTypeUid]="model?.AssetTypeUid"
+                                                             (formModeChange)="conditionFormMode = $event">
+                            </d3s-admin-metric-condition-list>
+                        </div>
+                    </div>
+                </simple-accordion>
+            </div>
         </div>
-    </div>
+        <div class="row" *ngIf="!isLoading">
+            <div class="col s12" style="padding-top: 15px">
+                <button pButton type="button" label="Save" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
+                <button pButton type="button" label="Cancel" (click)="cancel()" [disabled]="conditionFormMode != FormMode.Default"></button>
+            </div>
+        </div>
 </form>
+</div>

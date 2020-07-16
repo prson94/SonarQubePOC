@@ -48,8 +48,9 @@ import { AllocationService } from '../../../services/allocations.service';
                                </tr>
                            </ng-template>
                        </p-treeTable>
+                       <div *ngIf="metricTree.length == 0" class="no-measure-message">No measures defined</div>
                    </div>
-                   <d3s-modal [title]="'Add Measure'" additionalClasses="medium-dialog" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Adding">
+                   <d3s-modal [title]="'Create Measure'" additionalClasses="medium-dialog" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Adding">
                        <d3s-admin-metric-editor [isExternallyCalculated]="isExternallyCalculated" [allocationUid]="allocationUid" [metricEditorFieldTypes]="metricListFieldTypes" [parentUid]="selection?.Uid" (onCancel)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); "></d3s-admin-metric-editor>
                    </d3s-modal>
                    <d3s-modal [title]="'Edit Measure'" additionalClasses="medium-dialog" (onClose)="formMode = FormMode.Default;" (onSave)="formMode = FormMode.Default; load(); " [isVisible]="formMode == FormMode.Editing">

@@ -34,7 +34,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     metricItem: any = null;
     conditionFormMode = FormMode.Default;
     FormMode = FormMode;
-
+    private displayWeight: number = 0;
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -51,6 +51,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     load() {
         if (!this.model)
             this.model = new MetricAssetViewModel();
+        this.displayWeight = 0;
         this.child = "";
         this.model.ParentUid = null;
         if (this.uid) {
@@ -71,7 +72,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.model.AllocationUid = this.allocationUid;
             this.isLoading = false;
         }
-
+        if (this.model.Weight) {
+            this.displayWeight = this.model.Weight * 100;
+        }
         if (!this.model.ConditionGroups || this.model.ConditionGroups.length === 0) { 
             const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
             dummyConditionGroup.Position = 1;
@@ -179,9 +182,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     private clamp(val: any, min: number, max: number, precision: number) {
+        val = val / 100;
         const newVal = FormHelpers.clamp(val, min, max, precision);
 
-        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined) 
+        if (this.weightInput !== null && this.weightInput.nativeElement !== null && this.weightInput.nativeElement !== undefined)
             this.weightInput.nativeElement.value = newVal;
 
         this.model.Weight = newVal;

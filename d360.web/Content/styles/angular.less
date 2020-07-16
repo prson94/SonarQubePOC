@@ -7386,6 +7386,10 @@ d3s-icon-picker {
                 margin-right: 8px;
             }
         }
+        .no-measure-message{
+            color: @ig-grey-t3;
+            padding: 8px;
+        }
 
         .measure-details-item {
             margin-bottom: 8px;
@@ -7413,6 +7417,57 @@ d3s-icon-picker {
         }
     }
 }
+
+.modal-measure-editor {
+    padding: 0px 16px 16px 16px;
+    margin-top: -32px;
+
+    .bottom-space {
+        margin-bottom: 16px;
+    }
+
+    .input-spinner {
+        margin-top: 0px;
+        border: 1px solid #bdbfc6;
+        width: 220px;
+        border-radius: 4px;
+        padding: 4px;
+        height: 32px;
+
+        .ui-spinner {
+            margin-top: -4px;
+            width: 210px;
+            height: 30px;
+
+            .ui-spinner-input {
+                border: none;
+                width: 204px;
+                margin-top: 2px;
+            }
+
+            .ui-spinner-button {
+                background: @ig-grey-t3;
+            }
+        }
+
+        &:enabled:focus:not(.ui-state-error) {
+            outline: 0 none;
+            outline-offset: 0;
+            box-shadow: 0 0 0 2px #8abddf;
+            border-color: #006fba;
+        }
+
+        &:hover:not(.ui-state-error) {
+            border-color: #212121;
+        }
+
+        &.ng-dirty.ng-invalid {
+            background: @ig-red-t3;
+        }
+
+    }
+}
+
 .rowtool-button-top {
     top: -4px;
     background: transparent;
@@ -7420,4 +7475,9 @@ d3s-icon-picker {
     &:hover {
         background: rgba(0, 0, 0, .05) !important;
     }
+}
+.ig-accordion {
+    border: none;
+    border-top: 1px solid @ig-grey-t4;
+    margin: 10px;
 }
