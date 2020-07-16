@@ -158,7 +158,7 @@ export class ProcessDiagramTemplates {
         }
         return $(go.Node, "Spot",
             {
-                locationSpot: new go.Spot(0, 0, 0, 32),
+                locationSpot: new go.Spot(0.5, 0, 0, 56),
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
                 width: 112.2
@@ -250,7 +250,7 @@ export class ProcessDiagramTemplates {
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
                 selectable: true,
-                locationSpot: new go.Spot(0, 0, 0, 24),
+                locationSpot: new go.Spot(0.5, 0, 0, 24),
                 selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle")
             },
             $(go.Panel, 'Auto',
@@ -297,7 +297,7 @@ export class ProcessDiagramTemplates {
         }
         return $(go.Node, "Spot",
             {
-                locationSpot: new go.Spot(0, 0, 8.5, 38.5),
+                locationSpot: new go.Spot(0.5, 0, -15.5, 62.5),
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
@@ -506,7 +506,7 @@ export class ProcessDiagramTemplates {
         );
 
     }
-   
+
     public static activityTemplate_pallete() {
         var $ = go.GraphObject.make;
 

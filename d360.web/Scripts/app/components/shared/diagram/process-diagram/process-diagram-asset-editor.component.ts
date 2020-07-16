@@ -55,6 +55,13 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
             if (data[f.FieldName] == undefined) {
                 data[f.FieldName] = '';
             }
+            else {
+                if (f.FieldType == 'DateTime') {
+                    var dateTime = new Date(data[f.FieldName]);
+                    dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
+                    data[f.FieldName] = dateTime.toISOString();
+                }
+            }
         });
         this.nodeDataChange.emit(data);
     }

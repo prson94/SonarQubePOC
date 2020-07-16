@@ -139,7 +139,10 @@ namespace d360.model.DataAccessLayer
 
                 if (dictionary["fields"] != null)
                 {
-                    var arr = JsonConvert.DeserializeObject<JArray>(dictionary["fields"]);
+                    var arr = JsonConvert.DeserializeObject<JArray>(dictionary["fields"], new JsonSerializerSettings()
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    });
                     foreach (JObject field in arr)
                     {
                         node[field["Name"].ToString()] = field["Value"].ToString();
