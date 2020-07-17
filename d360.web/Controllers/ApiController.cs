@@ -301,7 +301,7 @@ namespace d360.web.Controllers
                     else if (ft.Type == DataType.Score.ToString())
                     {
                         var assetScore = Company.Query<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
-                            , new { id = details.AssetID, ft.ScoreType }).SingleOrDefault() + "";
+                            , new { id = details.AssetID, ft.ScoreType }).FirstOrDefault() + "";
 
                         var ro = new ReadOnlyField
                         {
