@@ -150,6 +150,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         { value: 'gte', label: '>=' },
     ];
 
+    private maxHeight: number
+
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
 
     constructor(

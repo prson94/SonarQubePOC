@@ -1,6 +1,6 @@
 ﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <form #metricForm="ngForm">
+    <form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height': maxHeight }">
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
@@ -15,8 +15,8 @@
                     <div class="ig-input-label">
                         Effective From
                     </div>
-                    <div class="ig-input calendar">
-                        <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                    <div class="ig-input calendar required">
+                        <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                         <i class="fa fa-calendar"></i>
                     </div>
                 </div>
@@ -36,8 +36,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="input-spinner">
-                        <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
+                    <div class="input-spinner required">
+                        <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
                         <span *ngIf="model?.Weight == null || model?.Weight == 0" class="feedback">
                             {{invalidWeightMessage}}
                         </span>
@@ -69,17 +69,7 @@
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <div class="col l3 m12 s12">
-                        <div class="FieldName">
-                            Condition Type
-                        </div>
-                        <div class="directions">
-                            Choose which type of operator you want to use between each condition. The AND operator will ensure that all conditions are met. The OR operator ensures that at least one of the conditions applies.
-                        </div>
-                        <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
-                        <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
-                    </div>
-                    <div class="col l9 m12 s12">
+                    <div class="row">
                         <d3s-admin-metric-condition-list [(conditions)]="g.ConditionItems"
                                                          [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
                                                          [conditionUid]="g?.Uid"
@@ -87,6 +77,10 @@
                                                          [assetTypeUid]="model?.AssetTypeUid"
                                                          (formModeChange)="conditionFormMode = $event">
                         </d3s-admin-metric-condition-list>
+                    </div>
+                    <div class="row" *ngIf="g.ConditionItems.length > 1">
+                        <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
+                        <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
                     </div>
                 </div>
             </simple-accordion>

@@ -36,6 +36,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     FormMode = FormMode;
     private displayWeight: number = 0;
     invalidWeightMessage: string;
+    maxHeight: number = 800;
+
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
@@ -55,6 +57,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.displayWeight = 1;
         this.invalidWeightMessage = "";
         this.child = "";
+        this.isExternallyCalculated = false;
         this.model.ParentUid = null;
         if (this.uid) {
             this.verb = "Edit"
@@ -176,6 +179,10 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     cancel() {
         this.model = new MetricAssetViewModel();
+        this.displayWeight = 1;
+        this.invalidWeightMessage = "";
+        this.child = "";
+        this.isExternallyCalculated = false;
         this.onCancel.emit();
     }
 
@@ -200,5 +207,9 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             this.weightInput.nativeElement.value = newVal;
 
         this.model.Weight = newVal;
+    }
+
+    setMaxHeight() {
+        window.innerHeight - 200;
     }
 };

@@ -7356,6 +7356,10 @@ d3s-icon-picker {
     padding: 0px 16px 16px 16px;
     margin-top: -32px;
 
+    .metric-form {
+        overflow: auto;
+    }
+
     .bottom-space {
         margin-bottom: 16px;
     }
@@ -7372,10 +7376,12 @@ d3s-icon-picker {
             margin-top: -4px;
             width: 210px;
             height: 30px;
+            background: inherit;
 
             .ui-spinner-input {
                 border: none;
                 width: 204px;
+                background: inherit;
                 margin-top: 2px;
             }
 
@@ -7384,7 +7390,11 @@ d3s-icon-picker {
             }
         }
 
-        &:enabled:focus:not(.ui-state-error) {
+        &.required {
+            background: #f5fbfd;
+        }
+
+        &:focus:not(.ui-state-error) {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 2px #8abddf;

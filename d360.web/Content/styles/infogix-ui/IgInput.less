@@ -24,25 +24,34 @@
         padding: 0px 0px 0px 8px;
         display: inline-flex;
 
-        .ui-inputtext {
-            border: none !important;
+        .ui-calendar {
+            background: inherit;
+
+            .ui-inputtext {
+                border: none !important;
+                background: inherit;
+            }
+
+            .fa {
+                background-color: #f1f1f3;
+                width: 24px;
+                height: 24px;
+                line-height: 24px;
+                text-align: center;
+                color: #202020;
+                margin-top: 3px;
+                margin-right: 3px;
+                border-radius: 2px;
+                font-size: 14px;
+                margin-left: auto;
+            }
         }
 
-        .fa {
-            background-color: #f1f1f3;
-            width: 24px;
-            height: 24px;
-            line-height: 24px;
-            text-align: center;
-            color: #202020;
-            margin-top: 3px;
-            margin-right: 3px;
-            border-radius: 2px;
-            font-size: 14px;
-            margin-left: auto;
+        &.required {
+            background: #f5fbfd;
         }
 
-        &:enabled:focus:not(.ui-state-error) {
+        &:focus:not(.ui-state-error) {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 2px #8abddf;
@@ -105,17 +114,17 @@
         &:hover {
             .tip-container {
                 .tooltip-content {
-                    display: inline-flex;
-                    top: -65px;
-                    left: -200px;
+                    display: block;
+                    top: -75px;
+                    left: -110px;
                     position: absolute;
-                    height: 125px;
-                    width: 600px;
+                    height: 150px;
+                    width: 490px;
                     white-space: normal;
 
                     &.group {
-                        top: -40px;
-                        height: 85px;
+                        top: -50px;
+                        height: 105px;
                     }
                 }
             }
