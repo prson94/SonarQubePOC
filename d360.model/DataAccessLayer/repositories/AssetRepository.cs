@@ -23,6 +23,7 @@ using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
 using d360.core.entities.Process;
+using DocumentFormat.OpenXml.Spreadsheet;
 
 namespace d360.model.DataAccessLayer
 {
@@ -2362,8 +2363,8 @@ where   A.[uid] = @assetUid";
             }
 
             document.SetCellValue(1, index++, "Url");
-            var rowData = results.items.ToList();
-
+            var rowData = results.items.ToList().OrderBy(x=> x.StepNo).ThenBy(x=> x.Name).ToList();
+            
             int rowNumber = 1;
             foreach (var row in rowData)
             {

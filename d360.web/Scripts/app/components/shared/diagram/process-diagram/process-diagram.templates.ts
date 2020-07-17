@@ -161,7 +161,8 @@ export class ProcessDiagramTemplates {
                 locationSpot: new go.Spot(0.5, 0, 0, 56),
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
-                width: 112.2
+                width: 112.2,
+                cursor: 'move'
             },
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
@@ -251,7 +252,8 @@ export class ProcessDiagramTemplates {
             {
                 selectable: true,
                 locationSpot: new go.Spot(0.5, 0, 0, 24),
-                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle")
+                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
+                cursor: 'move'
             },
             $(go.Panel, 'Auto',
                 $(go.Shape, "RoundedRectangle",
@@ -298,6 +300,7 @@ export class ProcessDiagramTemplates {
         return $(go.Node, "Spot",
             {
                 locationSpot: new go.Spot(0.5, 0, -15.5, 62.5),
+                cursor: 'move'
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
