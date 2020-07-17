@@ -87,7 +87,7 @@
             <div id="diagram"></div>
         </div>
 
-        <div class="editors {{(isInfoPanelOpened && isEditMode  ? 'display' : 'hide')}}">
+        <div class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
                 <div *ngIf="!selectedNodeData">
@@ -102,7 +102,8 @@
                 </div>
                 <div *ngFor="let item of loadedEditors">
                     <div class="{{(selectedNodeData && item.key == selectedNodeData.key ? 'display' : 'hide')}}">
-                        <d3s-process-diagram-asset-editor [nodeData]="item"
+                        <d3s-process-diagram-asset-editor [isReadOnly]="!isEditMode"
+                                                          [nodeData]="item"
                                                           (nodeDataChange)="updateNodeFromForm($event)">
                         </d3s-process-diagram-asset-editor>
                     </div>
