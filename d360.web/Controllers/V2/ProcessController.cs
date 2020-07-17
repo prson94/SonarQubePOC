@@ -136,8 +136,10 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+            var assetDetail = Company.GetAssetDetail(asset.ID);
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+            var result = new { model, assetDetail };
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
         }
 
@@ -318,9 +320,10 @@ namespace d360.web.Controllers.V2
 
             byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
 
+            var detail = Company.GetAssetDetail(asset.ID);
 
 
-            var response = createFileResponseMessage(HttpStatusCode.OK, $"Filename {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+            var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
 
         }

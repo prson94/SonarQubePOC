@@ -565,7 +565,6 @@ new
 
             var picture = new SLPicture(image, DocumentFormat.OpenXml.Packaging.ImagePartType.Png);
             document.InsertPicture(picture);
-
             var stream = new MemoryStream();
             document.SaveAs(stream);
             byte[] bytes = stream.ToArray();
@@ -621,13 +620,14 @@ new
                 inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
                 inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
                 inner join AssetType AT on AT.Id = O.AssetTypeID
+                order by FD.FormattedValue,FD2.FormattedValue
                 ", new { assetUid = asset.uid });
 
             foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
             {
                 var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeGroup.Key);
-                var relatedSheetName = assetTypeGroup.First().AssetTypeName;
-                relatedSheetName = "Related " + relatedSheetName;
+                string relatedSheetName = ("Related " + assetType.Name).GetSafeSheetName();
+
                 document.AddWorksheet(relatedSheetName);
                 document.SelectWorksheet(relatedSheetName);
 
@@ -764,7 +764,7 @@ new
                 var assetTypeUid = Guid.Parse(rowValues["AssetTypeUid"].ToString());
                 var assets = rowValues["assets"];
 
-                string detailSheetName = name + " Details";
+                string detailSheetName = (name + " Details").GetSafeSheetName();
                 document.AddWorksheet(detailSheetName);
                 document.SelectWorksheet(detailSheetName);
                 var at = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
