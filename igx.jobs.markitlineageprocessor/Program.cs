@@ -3,6 +3,7 @@ using d360.core.enums.Workflow;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using System;
@@ -68,7 +69,8 @@ namespace igx.jobs.markitlineageprocessor
                         var cache = new DummyCachingProvider();
                         var queue = new AzureQueueSource();
                         var community = new CommunityContext(cache, queue, sec);
-                        var company = new CompanyContext(community, cache, queue, sec, true);
+                        var storage = new AzureStorageProvider();
+                        var company = new CompanyContext(community, cache, queue, sec, storage, true);
 
                         #endregion
 
