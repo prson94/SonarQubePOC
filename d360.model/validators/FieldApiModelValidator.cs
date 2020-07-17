@@ -263,7 +263,7 @@ namespace d360.model.validators
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, String.Format(FieldErrors.WholeNumberError, "MinimumValue"));
                     }
 
-                    if (!FieldLengthValue(field.Type.Number.Validation, out string validationErrorMsg))
+                    if (!FieldLengthValue(field.Type.Number.Validation, out string validationErrorMsg, field.Type.Number.DefaultValue))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
@@ -271,7 +271,7 @@ namespace d360.model.validators
 
                 if (field?.Type?.Decimal != null)
                 {
-                    if (!FieldLengthValue(field.Type.Decimal.Validation, out string validationErrorMsg))
+                    if (!FieldLengthValue(field.Type.Decimal.Validation, out string validationErrorMsg, field.Type.Decimal.DefaultValue))
                     {
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, FieldErrors.FieldTypeError, $"{validationErrorMsg}");
                     }
@@ -279,11 +279,7 @@ namespace d360.model.validators
 
                 #endregion
 
-                if (!areFusionFieldsAllowed && field.Type.ComputedFusionLookup != null)
-                {
-                    return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"Fusion field types are not allowed!");
-                }
-
+                
                 if (assetTypeIdentifierInfoModel != null && field?.Type?.Json != null)
                 {
                     if (field.Type.Json.Validation != null)
@@ -298,10 +294,7 @@ namespace d360.model.validators
                 //Diagram asset type validators
                 if (assetTypeIdentifierInfoModel != null && assetTypeIdentifierInfoModel.Object == SystemObjects.TaskType.ToString())
                 {
-
-                    if (field.Type.ComputedFusionLookup != null)
-                        return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedFusionLookup fields are not allowed for current Asset Type!");
-
+                    
                     if (field.Type.ComputedOwnershipLookup != null)
                         return new WorkHttpStatus(HttpStatusCode.BadRequest, "Field property error", $"ComputedOwnershipLookup fields are not allowed for current Asset Type!");
 
@@ -585,7 +578,7 @@ namespace d360.model.validators
             }
             return true;
         }
-        private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg)
+        private static bool FieldLengthValue(FieldTypeDescriptionApiViewModel_ValidationMinMaxValue validation, out string errMsg, decimal? defaultValue)
         {
             decimal maxDecimalFieldValue = decimal.Parse(FieldErrors.MaxDecimalFieldValue);
             errMsg = "";
@@ -622,6 +615,14 @@ namespace d360.model.validators
             {
                 errMsg = String.Format(FieldErrors.LessThanError, "MinimumValue", "MaximumValue");
                 return false;
+            }
+            if (defaultValue.HasValue)
+            {
+                if(defaultValue > validation?.MaximumValue || defaultValue < validation?.MinimumValue)
+                {
+                    errMsg = string.Format(FieldErrors.DefaultValueError, validation?.MaximumValue, validation?.MinimumValue);
+                    return false;
+                }
             }
             return true;
         }

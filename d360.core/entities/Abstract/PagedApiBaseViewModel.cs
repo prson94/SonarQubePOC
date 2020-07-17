@@ -16,6 +16,6 @@ namespace d360.core.entities
         [DataMember]
         public int pageNum { get; set; } = 1;
         [DataMember]
-        public int total { get; set; } = 0;
+        public int? total { get; set; } = 0;
     }
 }

@@ -57,10 +57,16 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
 
         this.refreshSelectedFieldTypeIds();
 
-        this.conditions.forEach(c => {
-            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
+        this.formatConditions();
+        this.isLoading = false;
 
+        return Promise.resolve();
+    }
+    formatConditions() {
+        this.conditions.forEach(c => {
             const field = this.metricConditionListFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
+            c.OperatorText = this.parseOperator(field, c.OperatorText);
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -86,7 +92,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                     default:
                         if (c.Values) {
                             if (c.Values[0].Value) {
-                                c.SingleValue = c.Values[0].Value; 
+                                c.SingleValue = c.Values[0].Value;
                                 c.ValuesText = c.Values[0].Value;
                             }
                         }
@@ -94,9 +100,64 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
                 }
             }
         });
-        this.isLoading = false;
+    }
 
-        return Promise.resolve();
+    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
+        switch (field.Type) {
+            case 'Date':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Text':
+            case 'Lookup':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    default:
+                        return OperatorText;
+                }
+            case 'Decimal':
+            case'Number':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Boolean':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    default:
+                        return OperatorText;
+                }
+        }
+        return '';
     }
 
     add() {

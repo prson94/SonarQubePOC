@@ -1420,6 +1420,24 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Whether or not this group should be managed automatically through SAML Group claims.
+        /// </summary>
+        public static string GroupIsActiveDirectory_Description {
+            get {
+                return ResourceManager.GetString("GroupIsActiveDirectory_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Is Active Directory.
+        /// </summary>
+        public static string GroupIsActiveDirectory_Name {
+            get {
+                return ResourceManager.GetString("GroupIsActiveDirectory_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The primary owner of the group.  This person is responsible for the day to day management of the group, including assigning any tasks to members..
         /// </summary>
         public static string GroupPrimaryOwner_Description {

@@ -41,7 +41,7 @@ var webpackConfig = {
         // Workaround for https://github.com/angular/angular/issues/11580
         new webpack.ContextReplacementPlugin(
             // The (\\|\/) piece accounts for path separators in *nix and Windows
-            /@angular(\\|\/)core(\\|\/)fesm5/,
+            /@angular(\\|\/)core(\\|\/)fesm2015/,
             path.resolve(__dirname, '../src')
         ),
                
@@ -54,7 +54,19 @@ var webpackConfig = {
     module: {
         rules: [
           // .ts files for TypeScript
-          { test: /\.ts$/, loaders: ['awesome-typescript-loader?configFileName=scripts/app/tsconfig.json', 'angular2-template-loader', 'angular2-router-loader'], exclude: [/\.(spec|e2e)\.ts$/] },
+            {
+                test: /\.ts$/,
+                use: [
+                    {
+                        loader: 'ts-loader', options: {
+                            configFile: "scripts/app/tsconfig.json"
+                        }
+                    },
+                    { loader: 'angular2-template-loader' },
+                    { loader: 'angular2-router-loader' }
+                ],
+                exclude: [/\.(spec|e2e)\.ts$/],
+            },
           { test: /\.css$/, loaders: ['to-string-loader', 'css-loader'] },
           { test: /\.html$/, loader: 'raw-loader' }
         ]

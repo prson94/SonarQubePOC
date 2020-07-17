@@ -45,6 +45,7 @@ import { SecondaryNavService } from '../../../../services/right-sidebar.service'
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
+import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 import { Predicate, PredicateType } from '../../../../models/predicate.model';
 
 declare var window: any;
@@ -67,6 +68,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('ownerDetailPanel', { static: false }) ownerDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
+    @ViewChild('processDiagram', { static: false }) processDiagramRef: ProcessDiagramComponent;
 
     private diagramData: AssetBrowserResponseModel;
 
@@ -1721,6 +1723,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private helper_ResizeDiagram() {
+        if (this.displayConfiguration.DiagramType == 3)
+            return;
+
         let height = window.innerHeight;
         if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
@@ -3213,5 +3218,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else this.saveStateChanged.emit(null);
     }
 
+    private openProcessDiagramInfo() {
+        if (this.processDiagramRef) {
+            this.processDiagramRef.isInfoPanelOpened = !this.processDiagramRef.isInfoPanelOpened
+            this.processDiagramRef.myDiagram.requestUpdate();
+        }
+
+    }
 
 } 

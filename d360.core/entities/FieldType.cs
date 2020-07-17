@@ -241,16 +241,6 @@ namespace d360.core.entities
         public FieldTypeDescriptionApiViewModel_Validation Validation { get; set; }
     }
 
-    public class FieldTypeDataTypeComputedFusionLookupApiViewModel
-    {
-        [DataMember]
-        public int? ColumnOrder { get; set; }
-        [DataMember]
-        public FieldTypeDescriptionApiViewModel_Display Description { get; set; }
-        [DataMember]
-        public bool IsDisplayable { get; set; }
-    }
-
     public class FieldTypeDataTypeComputedOwnershipLookupApiViewModel
     {
         [DataMember]
@@ -292,6 +282,8 @@ namespace d360.core.entities
         public bool IsListable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
     }
 
     public class FieldTypeDataTypeComputedRelationshipLookupApiViewModel
@@ -548,6 +540,8 @@ namespace d360.core.entities
         public bool IsListable { get; set; }
         [DataMember]
         public bool ShowIfEmpty { get; set; }
+        [DataMember]
+        public bool IsPrimaryFilter { get; set; }
     }
 
     public class FieldTypeDataTypeTextApiViewModel : FieldTypeEditableApiViewModel
@@ -579,9 +573,7 @@ namespace d360.core.entities
     {
         [DataMember]
         public FieldTypeDataTypeBooleanApiViewModel Boolean { get; set; }
-        [DataMember]
-        public FieldTypeDataTypeComputedFusionLookupApiViewModel ComputedFusionLookup { get; set; }
-        [DataMember]
+        [DataMember]                
         public FieldTypeDataTypeComputedOwnershipLookupApiViewModel ComputedOwnershipLookup { get; set; }
         [DataMember]
         public FieldTypeDataTypeComputedRelationshipFieldApiViewModel ComputedRelationshipField { get; set; }
@@ -622,8 +614,7 @@ namespace d360.core.entities
         {
             int childPopulatedCount = 0;
 
-            childPopulatedCount += (Boolean != null) ? 1 : 0;
-            childPopulatedCount += (ComputedFusionLookup != null) ? 1 : 0;
+            childPopulatedCount += (Boolean != null) ? 1 : 0;            
             childPopulatedCount += (ComputedOwnershipLookup != null) ? 1 : 0;
             childPopulatedCount += (ComputedRelationshipField != null) ? 1 : 0;
             childPopulatedCount += (ComputedRelationshipLookup != null) ? 1 : 0;

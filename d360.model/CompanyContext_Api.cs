@@ -901,15 +901,22 @@ end
 drop table if exists #LookupValues
 create table #LookupValues (FieldValue nvarchar(max) not null, FieldTypeID int not null, [Value] nvarchar(max) null)
 
-;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+;with cte_fieldvalues_multi as (select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
 	cross apply string_split(T.FieldValue, ',') MV
-    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and T.ExecutionID = @executionID
+    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 1 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(MV.value) = FLV.Text
 	where executionid = @executionid)
 insert into #LookupValues
-select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues
+select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
 group by fieldvalue, Id
+
+;insert into #LookupValues
+select distinct T.fieldvalue, F.Id, FLV.Value
+	from {fieldTable}  T
+    inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
+	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
+	where T.FieldValue is not null and executionid = @executionid;
 
 update	T
 set		T.[Value] = '0'
@@ -8020,6 +8027,7 @@ WHEN MATCHED
                     table.Columns.Add("Description", typeof(string));
                     table.Columns.Add("PrimaryOwnerUid", typeof(Guid));
                     table.Columns.Add("SecondaryOwnerUid", typeof(Guid));
+                    table.Columns.Add("IsActiveDirectoryGroup", typeof(bool));
                     table.Columns.Add("ExecutionItemUid", typeof(Guid));
 
                     #region Generate data sets
@@ -8042,6 +8050,7 @@ WHEN MATCHED
                         if (item.SecondaryOwnerUid != null)
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
+                        row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
                         row["ExecutionItemUid"] = Guid.NewGuid(); 
 
                         table.Rows.Add(row);
@@ -8070,6 +8079,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("Description", "Description");
                     bulkCopy.ColumnMappings.Add("PrimaryOwnerUid", "PrimaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
+                    bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
                     
 
@@ -8159,7 +8169,13 @@ WHEN MATCHED
                 create table #mergeResultTable (GroupName varchar(250), ExecutionItemUid uniqueidentifier) 
                                             
                 merge into [Group] G
-                using ( select A.ObjectID as GroupID ,EG.Name,EG.Description, EG.ExecutionItemUid, PO.ObjectID as PrimaryID,SO.ObjectID as SecondaryID
+                using ( 
+select A.ObjectID as GroupID ,
+EG.Name,EG.Description,
+EG.ExecutionItemUid,
+EG.IsActiveDirectoryGroup,
+PO.ObjectID as PrimaryID,
+SO.ObjectID as SecondaryID
 	                    from api.ExecutionGroup EG
 						left join Asset A on A.uid = EG.GroupUid and A.Object = 'Group'
 						left join Asset PO on PO.uid = EG.PrimaryOwnerUid and PO.Object = 'Resource'
@@ -8174,10 +8190,11 @@ WHEN MATCHED
 						set G.Name = TRIM(S.Name),
 						G.Description = S.Description,
 						G.PrimaryOwnerResourceID = PrimaryID,
-						G.SecondaryOwnerResourceID = SecondaryID
+						G.SecondaryOwnerResourceID = SecondaryID,
+                        G.IsActiveDirectoryGroup = S.IsActiveDirectoryGroup
                     when not matched then
-	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,UpdatedOn,UpdatedBy)
-	                    values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,GETDATE(),@currentUser)
+	                    insert (Name, Description, PrimaryOwnerResourceID, SecondaryOwnerResourceID,IsActiveDirectoryGroup,UpdatedOn,UpdatedBy)
+	                    values (TRIM(S.Name),S.Description, S.PrimaryID, S.SecondaryID,S.IsActiveDirectoryGroup,GETDATE(),@currentUser)
 	                output TRIM(S.Name), S.ExecutionItemUid into #mergeResultTable;
 
 

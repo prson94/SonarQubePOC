@@ -8,9 +8,7 @@ import {
     FieldTypeRelationItemEditorModel,
     ComplexLookupRelationType,
     FieldTypeItemDisplayFieldEditorModel,
-    Direction,
-    FieldDefinition,
-    LookupItem,
+    Direction    
 } from '../../../../models/fields.model';
 
 import { FieldsObservableService } from '../../../../services/fieldsObservable.service';
@@ -408,7 +406,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     let r = new FieldTypeRelationItemEditorModel();
 
                     r.DisplayFields = [];
-                    r.ReferenceType = ComplexLookupRelationType.StandardRelationhip;
+                    r.ReferenceType = ComplexLookupRelationType.StandardRelationship;
                     r.AssetTypeUid = this.GetCurrentUid()
 
                     this.model.RelationItems = [];
@@ -843,7 +841,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                     .pipe(map(
                         x => { item.relationItems = x; }
                     ), map(() => item.relationsLoading = false));
-            case ComplexLookupRelationType.StandardRelationhip.toString():
+            case ComplexLookupRelationType.StandardRelationship.toString():
                 return this.fieldsService.getStandardRelations(uid)
                     .pipe(map(
                         x => {
@@ -1336,7 +1334,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
                         && this.model.FieldType.Type[this.currentType].List.AllowMultipleValues)
                     || this.objectType == 'ReferenceItemType');
             case 'IsPrimaryFilter':
-                return (!this.supportsPrimaryFilterOption || ['Relationship', 'FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
+                return (!this.supportsPrimaryFilterOption || ['FieldFromRelationship', 'ComplexRelationLookup', 'OwnershipLookup', 'Json', 'JSON', 'JsonElement', 'Path', 'RefListRelationship'].indexOf(this.currentType) > -1);
             case 'AllowMultipleValues':
                 return (['Lookup'].indexOf(this.currentType) == -1);
             case 'ShowIfEmpty':

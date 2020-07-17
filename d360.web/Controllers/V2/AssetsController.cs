@@ -215,7 +215,9 @@ namespace d360.web.Controllers.V2
             SwaggerParameter("useTypeLevelDefaultSorts", "If the value is False and the _order parameter is not specified the results will be ordered by Asset ID by default. If True, results are sorted by sort field defined in Asset Type field definition.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_loadPermissionDetails", "If the value is set to True, the results will include permission details for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
             SwaggerParameter("_includeParent", "If the value is True, the results will include parent UID and parent display name for each asset. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
-            SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false)
+            SwaggerParameter("_onlyListableFields", "If the value is True, the results will include only listable fields. If False, all fields will be returned. The default value is False.", DataType = "boolean", ParameterType = "query", Required = false),
+            SwaggerParameter("_includeTotal", "Allows you to disable including the count of the total number of results across pages in the response.  The default is true meaning the total count is included and if leave out this parameter.", DataType = "boolean", ParameterType = "query", Required = false),
+
         ]
         public async Task<IHttpActionResult> GetAssetsAsync(Guid assetTypeUid)
         {
@@ -257,6 +259,10 @@ namespace d360.web.Controllers.V2
                 if (!validator.IsValidRelationFilter(queryParams))
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Filtering using _relationFilter cannot be used with _predicateUid parameter"));
 
+                if (!validator.IsValidIncludeTotalFlag(queryParams))
+                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Invalid _includeTotal value passed in the request"));
+
+
                 if (queryParams.Any(x => x.Key.ToLower() == "exporttemplateuid") && !isStreamResponse)
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Export Template UID parameter must be used with 'Accept' header set to 'application/octet-stream'."));
@@ -293,7 +299,7 @@ namespace d360.web.Controllers.V2
                             paramList.Add(new KeyValuePair<string, string>("_includeparent", "true"));
                             queryParams = paramList;
                         }
-
+                        queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
                         var results = await AssetRepository.GetAssets(assetTypeUid, queryParams);
 
                         SLDocument document = GetCustomExportSheet(assetType, template, fieldsForCustomExport, results);
@@ -311,6 +317,7 @@ namespace d360.web.Controllers.V2
                     }
                     else
                     {
+                        queryParams = queryParams.Where(x => x.Key.ToLower() != "_listcolorsasjson");
                         var results = await AssetRepository.GetAssetsExcel(assetTypeUid, queryParams);
 
                         var stream = new MemoryStream();
@@ -1967,7 +1974,7 @@ namespace d360.web.Controllers.V2
                     )
                 );
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.NotFound, "Not found", "Execution unique identifier not found."));
             }
@@ -2403,6 +2410,49 @@ namespace d360.web.Controllers.V2
 
                 return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
             }
+        }
+
+
+        /// <summary>
+        /// Retreives the details for the specified asset
+        /// </summary>
+        /// <param name="assetUid">The uid of the asset</param>
+        /// <returns>Details for the specified asset</returns>
+        [
+    HttpGet,
+    Route("asset/{assetUid}"),
+    SwaggerConsumes("application/json", "application/xml"),
+    SwaggerResponse(HttpStatusCode.OK, "Details of the asset.", typeof(AssetPathResults)),
+    SwaggerResponse(HttpStatusCode.Forbidden, "An error indicating the user does not have permission to perform this action.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.NotFound, "An error indicating the asset for the given uid was not found.", typeof(ErrorResponse)),
+    SwaggerResponse(HttpStatusCode.InternalServerError, "An unknown error occurred while processing this request.", typeof(ErrorResponse))
+]
+        public async Task<IHttpActionResult> GetAsset(Guid assetUid)
+        {
+            var prefix = "Assets.GetAsset => ";
+
+            try
+            {
+                var res = await AssetRepository.GetAssetSingle(assetUid);
+
+                if (res == null)
+                {
+                    return await Task.FromResult(ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.NotFound, $"Asset for this uid not found")));
+                }
+
+                return await Task.FromResult<IHttpActionResult>(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, res as object)));
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = ex.Message + (ex.InnerException != null ? ex.InnerException.Message : "");
+                SendException(ex, new Dictionary<string, string>() {
+                    { "Endpoint Method", prefix }
+                });
+
+                return await Task.FromResult(errorMessageResponse(HttpStatusCode.InternalServerError, "Internal Server Error", errorMessage));
+            }
+
+
         }
     }
 }

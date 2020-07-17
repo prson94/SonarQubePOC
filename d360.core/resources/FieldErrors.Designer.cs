@@ -61,6 +61,15 @@ namespace d360.core.resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Default value must be between {1} and {2}.
+        /// </summary>
+        public static string DefaultValueError {
+            get {
+                return ResourceManager.GetString("DefaultValueError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Field type error.
         /// </summary>
         public static string FieldTypeError {

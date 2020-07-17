@@ -26,6 +26,8 @@ using System.Data;
 using Dapper;
 using Newtonsoft.Json.Linq;
 using d360.core.entities.Process;
+using SpreadsheetLight;
+using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -68,12 +70,12 @@ namespace d360.web.Controllers.V2
         {
             var governanceRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
             var results = await Company.QueryAsync<dynamic>($@"
-                select a.ObjectID, a.Object, c.Value, ad.DisplayValue 
+                select a.ObjectID, a.Object, JSON_VALUE(ACJ.ColorJson, '$.Value') as Value, adv.DisplayValue 
                     from assettype at
 	                inner join asset a on a.AssetTypeID = at.ID
-					inner join assetdetail ad on ad.uid = a.uid
-	                inner join Color c on c.ID = a.Color
-                where at.uid = @governanceRoleUid and a.Color is not null", new { governanceRoleUid });
+                    inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
+                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                where at.uid = @governanceRoleUid", new { governanceRoleUid });
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
@@ -124,7 +126,7 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetProcessDiagram(Guid assetUid)
+        public IHttpActionResult GetProcessDiagram(Guid assetUid)
         {
             if (assetUid == null)
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
@@ -134,15 +136,19 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+            var assetDetail = Company.GetAssetDetail(asset.ID);
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+            var result = new { model, assetDetail };
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
         }
 
+        /// <returns></returns>
         /// <summary>
         /// Updates a process diagram for specific asset
         /// </summary>
         /// <param name="assetUid">The asset uid</param>
+        /// <param name="model"></param>
         /// <returns></returns>
         [
             HttpPut,
@@ -157,26 +163,35 @@ namespace d360.web.Controllers.V2
         ]
         public async Task<IHttpActionResult> UpdateProcessDiagram(Guid assetUid, ProcessDiagramModel model)
         {
-            var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
-            ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 
-
-            foreach (var item in model.linkDataArray)
-            {
-                if (item.from == Guid.Empty || item.to == Guid.Empty)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Link without from and to node detected."));
-                }
-            }
-
-
-            if (model.nodeDataArray.GroupBy(x => x.AssetTypeUid.ToString().ToLower() + x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
-            {
-                return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", "Nodes withing same Task Type cannot have same name."));
-            }
             try
             {
+                var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
+                ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
 
+
+
+
+                foreach (var item in model.linkDataArray)
+                {
+                    if (item.from == Guid.Empty || item.to == Guid.Empty)
+                    {
+                        throw new Exception("Link without from and to node detected.");
+                    }
+                }
+
+                foreach (var node in model.nodeDataArray)
+                {
+                    if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
+                    {
+                        throw new Exception("All nodes must be linked.");
+                    }
+                }
+
+                if (model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                {
+                    throw new Exception("Nodes withing same Task Type cannot have same name.");
+                }
                 List<NodeData> toAdd = new List<NodeData>();
                 List<NodeData> toUpdate = new List<NodeData>();
                 List<NodeData> toDelete = new List<NodeData>();
@@ -246,7 +261,7 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = validationRes })));
                 }
-                
+
                 var totalCount = toAdd.Count + toDelete.Count + toUpdate.Count;
                 var execution = getApiExecution(totalCount);
 
@@ -258,8 +273,7 @@ namespace d360.web.Controllers.V2
                 }
 
 
-
-                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count, updatedModel = model };
+                var result = new { updated = toUpdate.Count, added = toAdd.Count, deleted = toDelete.Count };
                 return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result)));
 
             }
@@ -267,10 +281,84 @@ namespace d360.web.Controllers.V2
             {
                 var err = new List<ValidationError>();
                 err.Add(new ValidationError() { Error = ex.Message });
-                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
+                return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+                {
+                    hasError = true,
+                    errors = err
+                })));
             }
 
         }
+        /// <summary>
+        /// Retrieves an excel export of diagram for specific asset
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpPost,
+            Route("export/{assetUid:Guid}"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramExport(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+            string result = await Request.Content.ReadAsStringAsync();
+
+            result = result.Replace("data:image/png;base64,", "");
+            byte[] image = Convert.FromBase64String(result);
+
+            byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
+
+            var detail = Company.GetAssetDetail(asset.ID);
+
+
+            var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+            return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
+
+        }
+
+        /// <summary>
+        /// Retrieves an badges for process diagram
+        /// </summary>
+        /// <param name="assetUid">The asset uid</param>
+        /// <returns></returns>
+        [
+            HttpGet,
+            Route("{assetUid:Guid}/badges"),
+            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
+            SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
+            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
+            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
+            ApiExplorerSettings(IgnoreApi = true)
+        ]
+        public async Task<IHttpActionResult> GetProcessDiagramBadges(Guid assetUid)
+        {
+            if (assetUid == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
+
+            var asset = AssetRepository.GetAssetByUID(assetUid);
+            if (asset == null)
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
+
+            IEnumerable<dynamic> response = ProcessRepository.GetDiagramAssetBadges(assetUid);
+
+            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
+
+        }
+
 
     }
 }
