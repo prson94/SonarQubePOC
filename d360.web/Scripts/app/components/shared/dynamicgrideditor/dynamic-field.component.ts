@@ -653,6 +653,8 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
     private lazyLoad(e: any) {
         this.relationItemsLoading = true;
+        this.ref.markForCheck();
+
         var object = this.object;
         var objectId = this.objectID;
 
