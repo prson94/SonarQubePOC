@@ -13,6 +13,7 @@
                                [useModelBinding]="true"
                                [hasHeader]="false"
                                [dataModel]="nodeData"
+                               [disallowedNames]="disallowedNames"
                                (modelChanged)="onModelChange($event)"></d3s-dynamic-editor-v2>
     </div>
     <div class="process-item-object-detail" *ngIf="isReadOnly">

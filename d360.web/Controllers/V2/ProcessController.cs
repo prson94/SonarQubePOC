@@ -168,10 +168,6 @@ namespace d360.web.Controllers.V2
             {
                 var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-
-
-
-
                 foreach (var item in model.linkDataArray)
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)
@@ -188,9 +184,18 @@ namespace d360.web.Controllers.V2
                     }
                 }
 
-                if (model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                var duplicates = model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Items = x }).Where(x => x.Items.Count() > 1).ToList();
+
+                if (duplicates.Count > 0)
                 {
-                    throw new Exception("Nodes withing same Task Type cannot have same name.");
+                    List<ValidationError> err = new List<ValidationError>();
+                    foreach (var item in duplicates)
+                    {
+                        var data = item.Items.FirstOrDefault();
+                        err.Add(new ValidationError() { AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = "Name must be unique" });
+                    }
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
+
                 }
                 List<NodeData> toAdd = new List<NodeData>();
                 List<NodeData> toUpdate = new List<NodeData>();

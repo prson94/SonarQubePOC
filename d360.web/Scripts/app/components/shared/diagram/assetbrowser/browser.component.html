@@ -16,14 +16,14 @@
                             <div class="button-spacer"></div>
                             <button igButton icon="fa-download" tooltip="Export to Excel" (click)="processDiagramRef.doControlledAction('export')"></button>
                             <div class="button-spacer"></div>
-                            <button *ngIf="canEditProcessDiagram()" igButton class="ig-button-primary" icon="fa-pencil" label="Edit" tooltip="Export to Excel" (click)="editProcess()"></button>
+                            <button *ngIf="canEditProcessDiagram()" igButton class="ig-button-primary" icon="fa-pencil" label="Edit" tooltip="Edit Process Diagram" (click)="editProcess()"></button>
                         </ng-container>
                     </div>
 
                 </div>
                 <div class="controls-right">
                     <div class="asset-browser-button-group">
-                        <button *ngIf="displayConfiguration.DiagramType == 3" type="button" title="Information Panel" aria-label="Information Panel" (click)="openProcessDiagramInfo()" [class]="'icon mr8' + (processDiagramRef && processDiagramRef.isInfoPanelOpened ? ' selected' : '') + (processDiagramRef && processDiagramRef.selectedNodeData ? '' : ' disabled')" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData"><i class="fa fa-info-circle"></i></button>
+                        <button *ngIf="displayConfiguration.DiagramType == 3" type="button" title="Information Panel" aria-label="Information Panel" (click)="openProcessDiagramInfo()" [class]="'icon mr8' + (processDiagramRef && processDiagramRef.isInfoPanelOpened ? ' selected' : '')"><i class="fa fa-info-circle"></i></button>
 
                         <d3s-assetbrowser-panels (click)="panels_Click($event)"
                                                  [diagramType]="displayConfiguration.DiagramType"
