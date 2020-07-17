@@ -1908,11 +1908,6 @@ namespace d360.web.Controllers.V2
                 {
                     return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Asset Type with UID {assetType.Uid} does not exist."));
                 }
-                if (type.Class != AssetTypeClass.Diagram)
-                {
-                    return await Task.FromResult(errorMessageResponse(HttpStatusCode.BadRequest, "Invalid request", $"Only Diagram Asset Types are allowed here."));
-
-                }
 
                 var execution = getApiExecution(1, new ApiExecutionFields_DeleteAssetTypes { });
                 var deletes = new AssetTypeDeletes();
