@@ -69,6 +69,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     public isInfoPanelOpened: boolean = false;
 
     private selectedLinkData: any;
+    private nodeNames: string[] = [];
 
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
@@ -90,7 +91,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
-        
+
         this.processService.getProcessDiagramColors()
             .subscribe(colors => {
                 this.colors = colors;
@@ -117,6 +118,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
     }
     @ViewChild('diagram', { static: false }) diagramRef;
+    @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         if (!this.diagramRef) return;
@@ -127,6 +129,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
             this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+
+        if (this.editorRef) {
+            this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
+        }
     }
 
     @HostListener('click', ['$event.target'])
@@ -192,7 +198,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram) return;
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
-                n.isEnabled = state;
                 n.movable = state;
             }
         });
@@ -204,6 +209,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             }
         });
         this.myDiagram.isModelReadOnly = !state;
+        this.myDiagram.isReadOnly = !state;
         if (this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
@@ -265,6 +271,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.isEditMode) {
             this.editModeClosed.emit();
         }
+
         this.cdRef.detectChanges();
     }
 
@@ -305,10 +312,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         this.myDiagram.commandHandler.canDeleteSelection = () => {
             try {
                 if (this.isEditMode) {
-                    if (this.myDiagram.selection.any(x => x.category == 'activity' || x.category == 'event' || x.category == 'gateway')) {
-                        this.onDeleteClick();
-                        return false;
-                    }
+                    this.onDeleteClick();
+                    return false;
                 }
                 return this.isEditMode;
             }
@@ -347,7 +352,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var linkTemplate = ProcessDiagramTemplates.linkTemplate;
         linkTemplate.category = 'link';
         this.myDiagram.linkTemplate = linkTemplate;
-        
+
         var self = this;
 
         this.myDiagram.addDiagramListener("ExternalObjectsDropped", function (e) {
@@ -550,6 +555,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         } catch (e) {
             console.log(e);
         }
+        if (this.myDiagram && this.myDiagram.nodes) {
+            this.nodeNames = [];
+            this.myDiagram.nodes.each(node => {
+                this.nodeNames.push(node.data['Name']);
+            })
+        }
     }
 
     private isObjectEmpty(obj: any): boolean {
@@ -625,8 +636,15 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isInfoPanelOpened = true;
                 this.myDiagram.clearSelection();
                 this.myDiagram.select(this.myDiagram.findPartForKey(selectedKey));
+                this.selectFirstInvalidField();
             }
         }
+    }
+
+    private selectFirstInvalidField() {
+        setTimeout(() => {
+            (document.querySelectorAll('.asset-editor .display .field-wrapper.invalid input')[0] as HTMLElement).focus();
+        }, 200);
     }
 
     private toggleClass(event: any, cs: string) {
@@ -822,7 +840,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 case 'open-related-assets':
                     this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
                     this.cdRef.detectChanges();
-                    console.log(this.isRelatedAssetsVisible);
                     break;
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
@@ -853,4 +870,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             })
     }
 
+    closeErrorModal() {
+        this.isErrorModalOpened = false;
+        if (this.validationErrors) {
+            this.selectFirstInvalidField();
+        }
+    }
 }

@@ -16,9 +16,7 @@
 
         </div>
         <div class="controls-right">
-            <div class="asset-browser-button-group">
-                <button igButton icon="fa-info-circle" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
-            </div>
+            <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
         </div>
     </div>
 
@@ -87,7 +85,7 @@
             <div id="diagram"></div>
         </div>
 
-        <div class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
+        <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
                 <div *ngIf="!selectedNodeData">
@@ -104,13 +102,14 @@
                     <div class="{{(selectedNodeData && item.key == selectedNodeData.key ? 'display' : 'hide')}}">
                         <d3s-process-diagram-asset-editor [isReadOnly]="!isEditMode"
                                                           [nodeData]="item"
-                                                          (nodeDataChange)="updateNodeFromForm($event)">
+                                                          (nodeDataChange)="updateNodeFromForm($event)"
+                                                          [disallowedNames]="nodeNames">
                         </d3s-process-diagram-asset-editor>
                     </div>
                 </div>
             </div>
         </div>
-        <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="isErrorModalOpened=false" [isVisible]="isErrorModalOpened">
+        <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">
             <div class="content">
                 <div class="row">
                     Sorry, we cannot save your changes to the diagram until the following issues are resolved:

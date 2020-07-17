@@ -550,7 +550,6 @@ namespace d360.web.Controllers.V2
                 if (model == null || model.Count < 1)
                     return ResponseMessage(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "You have submitted an invalid or empty data set. Please check your request and submit again."));
 
-
                 var execution = getApiExecution(model.Count);
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, ScoringRepository.PostScoreResults(scoreTypeEnum, execution, model)));
             }
