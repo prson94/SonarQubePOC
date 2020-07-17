@@ -14,7 +14,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
         {
             var json = Storage.GetFileContentsAsString(Info.StorageFolder, Info.StorageFile);
             var scoreUids = JsonConvert.DeserializeObject<List<Guid>>(json);
-
+            await Task.Delay(100);
             //var Db = GetCompanyContext();
 
             // More work to do here. Sprint 9.

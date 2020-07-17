@@ -19,7 +19,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
             var Db = GetCompanyContext();
 
             // More work to do here. Sprint 9.
-            
+            await Task.Delay(10);
             Db.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.WorkflowCheck, scoreUids);
         }
     }

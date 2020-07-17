@@ -11,7 +11,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public async Task Run()
         {
-
+            await Task.Delay(100);
         }
     }
 }

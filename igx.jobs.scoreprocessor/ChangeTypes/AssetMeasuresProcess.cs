@@ -11,6 +11,7 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
     {
         public async Task Run()
         {
+            await Task.Delay(100);
             //using (var company = CompanyConnectionUtils.GetCompanyConnection(c.CompanyID, c.Server, c.Username, c.Password))
             //{
             //    company.Open();

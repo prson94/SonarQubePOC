@@ -51,6 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "igx.jobs.fusiondeploymentpr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{250BEFFF-E46A-41D1-8421-587E325EAA34}"
 	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
 		codeanalysis.ruleset = codeanalysis.ruleset
 		deadcode.ruleset = deadcode.ruleset
 		Local.testsettings = Local.testsettings
@@ -262,7 +263,7 @@ Global
 		{779B4B57-42B9-4478-9464-2A4880ABF27B} = {5C79A81D-F293-4A0E-8F9F-EE633A9FB1C8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 		EnterpriseLibraryConfigurationToolBinariesPathV6 = packages\EnterpriseLibrary.TransientFaultHandling.6.0.1304.0\lib\portable-net45+win+wp8;packages\EnterpriseLibrary.TransientFaultHandling.Data.6.0.1304.1\lib\NET45
+		SolutionGuid = {DA470272-2404-43CC-B3A7-997246EDACA8}
 	EndGlobalSection
 EndGlobal
