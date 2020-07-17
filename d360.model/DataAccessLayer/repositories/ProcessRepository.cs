@@ -663,13 +663,13 @@ new
 
                 fields.AddRange(Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
-                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
                 fields.Add(new FieldType { Type = "string", Name = guid + "UID", FriendlyName = "Diagram Asset UID" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "ID", FriendlyName = "Diagram Asset ID" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "URL", FriendlyName = "Diagram URL" });
 
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
                 int index = 1;
 
                 foreach (var field in fields)
@@ -785,11 +785,34 @@ select apd.Diagram  as json from asset a
 	inner join AssetProcessDiagram apd on apd.AssetID = a.ID
 where a.uid = @assetUid)
 
-;with links as (
+drop table if exists #nodes
+create table #nodes(
+	AssetUid uniqueidentifier
+)
+
+drop table if exists #links
+create table #links(
+	FromUid uniqueidentifier,
+	ToUid uniqueidentifier
+)
+
+insert into #nodes
+SELECT  
+    JSON_VALUE(nda.value, '$.key') AS [FromUid]
+FROM OPENJSON(@diagram, '$.nodeDataArray') nda
+
+insert into #links
 SELECT  
     JSON_VALUE(nda.value, '$.from') AS [FromUid],
     JSON_VALUE(nda.value, '$.to') AS [ToUid]
-FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
+FROM OPENJSON(@diagram, '$.linkDataArray') as nda
+
+;with cte_links as (select 
+n.AssetUid as FromUid,
+l.ToUid
+from #nodes n
+left join #links l on l.FromUid = n.AssetUid 	
+)
 select 
 f1_step.FormattedValue as 'Step No',
 f1_name.FormattedValue as 'Name',
@@ -809,7 +832,7 @@ a1.id as 'Asset ID',
 lower(a2.uid) as 'Next Asset UID',
 a2.id as 'Next Asset ID',
  'asset/'+ cast(lower(a2.uid) as nvarchar(36)) as 'Next Asset URL'
-from links l
+from cte_links l
 left join Asset a1 on a1.uid = l.fromuid
 left join AssetType at1 on at1.ID = a1.AssetTypeID
 left join FieldDetail f1_name on f1_name.Name = 'Name' and f1_name.AssetId = a1.id 
@@ -818,7 +841,7 @@ left join FieldDetail f1_gov on f1_gov.Name = 'GovernanceRole' and f1_gov.AssetI
 left join Asset a2 on a2.uid = l.ToUid
 left join FieldDetail f2_name on f2_name.Name = 'Name' and f2_name.AssetId = a2.id 
 left join FieldDetail f2_step on f2_step.Name = 'StepNo' and f2_step.AssetId = a2.id 
-order by cast (f1_step.FormattedValue as int) asc
+order by cast (f1_step.FormattedValue as int) asc, f1_name.FormattedValue
 ";
 
             List<string> diagramFields = new List<string>() {
@@ -828,7 +851,7 @@ order by cast (f1_step.FormattedValue as int) asc
             "Next Asset UID","Next Asset ID","Next Asset URL"
             };
             var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid });
-            int index = 0;
+            int index = 1;
 
             foreach (var field in diagramFields)
             {
