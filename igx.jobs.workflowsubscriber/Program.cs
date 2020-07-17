@@ -64,7 +64,7 @@ namespace igx.jobs.workflowsubscriber
                 var queue = new AzureQueueSource();
                 var storage = new AzureStorageProvider();
                 var community = new CommunityContext(cache, queue, sec);
-                var company = new CompanyContext(community, cache, queue, sec, storage, true);
+                var company = new CompanyContext(community, cache, queue, sec, storage, true); 
 
                 #endregion
 
