@@ -27,6 +27,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @Output() editModeClosed: EventEmitter<any> = new EventEmitter<any>();
     @Output() saveState: EventEmitter<any> = new EventEmitter<any>();
     public myDiagram: go.Diagram;
+    private assetDetail: any;
 
     isPalleteLoaded: boolean = false;
 
@@ -89,6 +90,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
 
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
+
+        
         this.processService.getProcessDiagramColors()
             .subscribe(colors => {
                 this.colors = colors;
@@ -438,7 +441,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
         this.processDiagramBase64 = this.myDiagram.makeImageData({
-            scale: 1
+            scale: 1,
+            maxSize: new go.Size(Infinity, Infinity)
         }).toString();
         this.processService.putProcessDiagram(this.assetUid, JSON.parse(this.myDiagram.model.toJson()))
             .subscribe(res => {
@@ -483,7 +487,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var selectedItem = this.selectedNodeData;
 
         this.processService.getProcessDiagram(this.assetUid)
-            .subscribe(res => {
+            .subscribe(response => {
+
+                var res = response.model;
+                this.assetDetail = response.assetDetail;
                 if (!this.myDiagram) {
                     console.warn("Diagram placeholder not loaded.");
                     return;
@@ -505,7 +512,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.isSaving = false;
                 this.saveState.emit(this.isCurrentStateSaved());
                 this.processDiagramBase64 = this.myDiagram.makeImageData({
-                    scale: 1
+                    scale: 1,
+                    maxSize: new go.Size(Infinity, Infinity)
                 }).toString();
 
                 if (selectedItem) {
@@ -767,7 +775,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private downloadProcessDiagram() {
-        var fileName = 'Filename';
+        var fileName = this.assetDetail?.DisplayValue;
         this.isExporting = true;
         this.cdRef.detectChanges();
         this.processService.downloadProcessExcel(this.assetUid, this.processDiagramBase64)
