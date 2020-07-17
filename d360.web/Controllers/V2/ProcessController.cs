@@ -166,10 +166,6 @@ namespace d360.web.Controllers.V2
             {
                 var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-
-
-
-
                 foreach (var item in model.linkDataArray)
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)

@@ -16,9 +16,7 @@
 
         </div>
         <div class="controls-right">
-            <div class="asset-browser-button-group">
-                <button igButton icon="fa-info-circle" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
-            </div>
+            <button igButton icon="fa-info-circle" class="{{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
         </div>
     </div>
 
