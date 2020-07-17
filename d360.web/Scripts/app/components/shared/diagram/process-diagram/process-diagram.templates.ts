@@ -163,7 +163,8 @@ export class ProcessDiagramTemplates {
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
                 width: 112.2,
                 cursor: 'move'
-            },
+            }
+            ,
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
                 mouseLeave: function (e, node) { showSmallPorts(node, false); }
@@ -236,7 +237,7 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {

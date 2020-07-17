@@ -16,7 +16,7 @@
 
         </div>
         <div class="controls-right">
-            <button igButton icon="fa-info-circle" class="{{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
+            <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
         </div>
     </div>
 
@@ -85,7 +85,7 @@
             <div id="diagram"></div>
         </div>
 
-        <div class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
+        <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
                 <div *ngIf="!selectedNodeData">

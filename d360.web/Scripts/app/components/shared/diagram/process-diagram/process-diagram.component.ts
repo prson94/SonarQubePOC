@@ -91,7 +91,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     ngOnInit() {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
-        
+
         this.processService.getProcessDiagramColors()
             .subscribe(colors => {
                 this.colors = colors;
@@ -118,6 +118,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             });
     }
     @ViewChild('diagram', { static: false }) diagramRef;
+    @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
     private onResize(event) {
         if (!this.diagramRef) return;
@@ -128,6 +129,10 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.diagramRef.nativeElement.style.height = (height - 40) + 'px';
         else
             this.diagramRef.nativeElement.style.height = (height - 240) + 'px';
+
+        if (this.editorRef) {
+            this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
+        }
     }
 
     @HostListener('click', ['$event.target'])
@@ -193,7 +198,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.myDiagram) return;
         this.myDiagram.nodes.each(function (n) {
             if (n instanceof go.Node) {
-                n.isEnabled = state;
                 n.movable = state;
             }
         });
@@ -205,6 +209,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             }
         });
         this.myDiagram.isModelReadOnly = !state;
+        this.myDiagram.isReadOnly = !state;
         if (this.isEditMode && !this.isPalleteLoaded) {
             this.loadPallete();
         }
@@ -266,6 +271,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (!this.isEditMode) {
             this.editModeClosed.emit();
         }
+
         this.cdRef.detectChanges();
     }
 
@@ -834,7 +840,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 case 'open-related-assets':
                     this.isRelatedAssetsVisible = !this.isRelatedAssetsVisible;
                     this.cdRef.detectChanges();
-                    console.log(this.isRelatedAssetsVisible);
                     break;
                 case 'export':
                     this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
