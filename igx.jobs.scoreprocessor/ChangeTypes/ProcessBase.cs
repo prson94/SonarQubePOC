@@ -34,18 +34,8 @@ namespace igx.jobs.scoreprocessor.ChangeTypes
 
         internal ICompanyContext GetCompanyContext()
         {
-            var sec = new UriSecurityContextProvider()
-            {
-                CompanyID = this.Info.CompanyID,
-                ResourceID = 0,
-                CompanyPrefix = "",
-                IsAdministrator = true
-            };
-            var cache = new DummyCachingProvider();
-            var queue = new AzureQueueSource();
-            var storage = new AzureStorageProvider();
-            var community = new CommunityContext(cache, queue, sec);
-            return new CompanyContext(community, cache, queue, sec, storage, true);
+            // Create EF connection
+            return JobDbContextCreator.CreateWebjobCompanyContext(this.Info.CompanyID, 0, "", true);
         }
 
         internal MetConditionsModel CheckMeasureConditions(

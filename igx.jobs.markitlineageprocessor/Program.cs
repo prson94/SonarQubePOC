@@ -57,22 +57,9 @@ namespace igx.jobs.markitlineageprocessor
                         if (c.CompanyID != 1183)
                             continue;
 #endif
-                        #region Create EF connection
 
-                        var sec = new UriSecurityContextProvider()
-                        {
-                            CompanyID = c.CompanyID,
-                            ResourceID = 0,
-                            CompanyPrefix = c.UrlPrefix,
-                            IsAdministrator = true
-                        };
-                        var cache = new DummyCachingProvider();
-                        var queue = new AzureQueueSource();
-                        var community = new CommunityContext(cache, queue, sec);
-                        var storage = new AzureStorageProvider();
-                        var company = new CompanyContext(community, cache, queue, sec, storage, true);
-
-                        #endregion
+                        // Create EF connection
+                        var company = JobDbContextCreator.CreateWebjobCompanyContext(c.CompanyID, 0, c.UrlPrefix, true);
 
                         await company.GenerateMarkitBusinessLineage();
                     }
