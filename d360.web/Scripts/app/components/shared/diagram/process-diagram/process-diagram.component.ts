@@ -72,6 +72,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private nodeNames: string[] = [];
 
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
+    @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
 
     constructor(
@@ -444,6 +445,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private validationErrors: any = {};
+    private areNamesUnique: boolean = true;
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
         this.processDiagramBase64 = this.myDiagram.makeImageData({
@@ -455,8 +457,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 if (res.hasError) {
                     this.isSaving = false;
                     this.validationErrors = res;
+                    this.areNamesUnique = this.validationErrors.errors.some(x => x.ErrorType == 'CustomUniqueName');
+
                     this.updateValidationData();
                     this.isErrorModalOpened = true;
+                    setTimeout(() => this.closeSaveButton.nativeElement.focus(), 250);
+
                     this.cdRef.detectChanges();
                 }
                 else {
@@ -491,7 +497,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
-
+        this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
 
@@ -809,7 +815,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':
-                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
+                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets.';
                     this.showDiscardChanges = false;
                     setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
@@ -818,7 +824,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
 
                     this.actionAfterSaved = () => {
                         this.downloadProcessDiagram();
@@ -842,7 +848,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
                     this.downloadProcessDiagram();
                     break;
             }

@@ -180,7 +180,19 @@ namespace d360.web.Controllers.V2
                 {
                     if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
                     {
-                        throw new Exception("All nodes must be linked.");
+                        return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+                        {
+                            hasError = true,
+                            errors = new List<ValidationError>()
+                            {
+                                new ValidationError(){
+                                AssetTypeUid = Guid.Empty,
+                                AssetUid = Guid.Empty,
+                                ErrorType = "Custom",
+                                Error = "All nodes within diagram must be linked."
+                                }
+                            }
+                        })));
                     }
                 }
 
@@ -192,7 +204,7 @@ namespace d360.web.Controllers.V2
                     foreach (var item in duplicates)
                     {
                         var data = item.Items.FirstOrDefault();
-                        err.Add(new ValidationError() { AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = "Name must be unique" });
+                        err.Add(new ValidationError() { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
                     }
                     return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
 

@@ -372,7 +372,7 @@ namespace d360.model.DataAccessLayer
 	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
                 }
 
-    var innerCountSql = $@"
+                var innerCountSql = $@"
 						select {addtop1hint} B.ID as Relationships  from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
@@ -685,7 +685,7 @@ namespace d360.model.DataAccessLayer
                     }
 
                     if (assetType.Class == AssetTypeClass.Reference)
-                    {   
+                    {
                         simpleFilters.Add($"A.Code like @simpleFilter");
                         simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.ID)), '$.Name') like @simpleFilter");
                     }
@@ -2251,10 +2251,11 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                         Guid.Empty, 0,
                         null,
                         out success,
-                        out error
+                        out error,
+                        true
                         );
                     if (!success)
-                        errors.Add(new ValidationError() { Error = error, AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
+                        errors.Add(new ValidationError() { AssetName = asset.Fields["Name"], Error = error.Trim().Trim('.'), AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
 
                 }
 
@@ -2272,14 +2273,14 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
             if (!canRead)
                 return null;
 
-            
+
             var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
             var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
             var fieldJoins = new List<string>();
             var fieldColumns = new List<string>();
             DynamicParameters dbArgs = new DynamicParameters();
             dbArgs.Add("@assetUid", assetUid);
-            
+
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
 
@@ -2314,7 +2315,7 @@ from    AssetDetail A
 where   A.[uid] = @assetUid";
 
 
-            return (await CompanyContext.QueryAsync<dynamic>(sql, new  { assetUid })).FirstOrDefault();
+            return (await CompanyContext.QueryAsync<dynamic>(sql, new { assetUid })).FirstOrDefault();
         }
 
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
@@ -2363,8 +2364,8 @@ where   A.[uid] = @assetUid";
             }
 
             document.SetCellValue(1, index++, "Url");
-            var rowData = results.items.ToList().OrderBy(x=> x.StepNo).ThenBy(x=> x.Name).ToList();
-            
+            var rowData = results.items.ToList().OrderBy(x => x.StepNo).ThenBy(x => x.Name).ToList();
+
             int rowNumber = 1;
             foreach (var row in rowData)
             {
