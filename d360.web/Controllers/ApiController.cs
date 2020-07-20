@@ -3025,7 +3025,7 @@ order by    Name
                 status = fieldType.DefaultFormattedValue;
 
             if (LookupFieldHasColorItem(fieldType)) {
-                string colorAndStatusSql = $@"(SELECT COALESCE(ADV.DisplayValue, F.FormattedValue) as name,
+                string colorAndStatusSql = $@"(SELECT F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
