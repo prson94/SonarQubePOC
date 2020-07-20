@@ -2288,7 +2288,7 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 select  A.ID as AssetId,
         A.[uid] as AssetUid,
         A.AssetTypeId,
-        A.AssetTypeUid,
+        T.[uid] as AssetTypeUid,
         P.[uid] as ParentAssetUid,
         P.DisplayValue as ParentDisplayName,
         A.CreatedOn,
@@ -2297,7 +2297,8 @@ select  A.ID as AssetId,
         {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
         KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
         {string.Join(",\n", fieldColumns)}
-from    AssetDetail A
+from    Asset A
+        inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
         cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
@@ -2315,7 +2316,7 @@ from    AssetDetail A
 where   A.[uid] = @assetUid";
 
 
-            return (await CompanyContext.QueryAsync<dynamic>(sql, new { assetUid })).FirstOrDefault();
+            return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs)).FirstOrDefault();
         }
 
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
