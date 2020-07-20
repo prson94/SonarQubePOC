@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.enums;
@@ -13,12 +11,10 @@ using d360.core;
 using d360.core.queue;
 using d360.extensions;
 using System.Net;
-using System.Text.RegularExpressions;
 using d360.core.helpers;
 using d360.core.resources;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -997,9 +993,7 @@ namespace d360.model.DataAccessLayer
 
 
             if (rowData == null || rowData.Count == 0)
-            {
-                var s = new MemoryStream();
-                document.SaveAs(s);
+            {                
                 return document;
             }
 
@@ -1121,7 +1115,6 @@ namespace d360.model.DataAccessLayer
                 i++;
             }
 
-            //dbArgs.Add("@phrase", model.searchPhrase.ToSqlFullTextSearchPhrase());
             dbArgs.Add("@phrase", "%" + model.searchPhrase.CleanForSql() + "%");
 
             if (!string.IsNullOrEmpty(prefilterSql))
