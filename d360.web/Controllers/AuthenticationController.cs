@@ -498,7 +498,12 @@ namespace d360.web.Controllers
                                     }
                                     catch (Exception e)
                                     {
-                                        trans.Rollback();
+                                        try { 
+                                            if (trans != null) 
+                                            { 
+                                                trans.Rollback(); 
+                                            } 
+                                        } catch { }
 
                                         var properties = new Dictionary<string, string>
                                         {
