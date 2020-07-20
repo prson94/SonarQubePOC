@@ -84,6 +84,8 @@ namespace d360.core.entities.Process
         public Guid AssetTypeUid { get; set; }
         public Guid AssetUid { get; set; }
         public string Error { get; set; }
+        public string ErrorType { get; set; }
+        public string AssetName { get; set; }
     }
 
     public class ProcessDiagramBadge

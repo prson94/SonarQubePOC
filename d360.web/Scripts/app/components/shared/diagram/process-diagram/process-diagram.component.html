@@ -117,13 +117,35 @@
                     <br />
                     <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
                         <div class="validation-error" *ngFor="let item of validationErrors.errors">
-                            {{item.Error}}
+                            <div *ngIf="item.ErrorType && item.ErrorType.indexOf('Custom') != -1; then thenBlock else elseBlock"></div>
+                            <ng-template #thenBlock>
+                                <ul>
+                                    <li>
+                                        <i class="fa fa-exclamation-circle"></i> {{item.Error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
+                            <ng-template #elseBlock>
+                                <span class="error-title">
+                                    Asset <strong>{{item.AssetName}}</strong> has following issues:
+                                </span>
+                                <ul>
+                                    <li *ngFor="let error of item.Error.split('.')">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-exclamation-circle"></i> {{error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
                         </div>
+                        <span *ngIf="areNamesUnique">
+                            <br />
+                            Please rename your flow objects to ensure that each has a unique name.
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="action-bar">
-                <button igButton label="Close" (click)="isErrorModalOpened=false"></button>
+                <div class="grow"></div>
+                <button #closeSaveButton igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
 
             </div>
         </d3s-modal>
