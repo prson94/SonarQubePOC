@@ -1,77 +1,48 @@
-﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
-<div *ngIf="!isLoading">
-    <div class="row">
-        <div class="col l5 m4 s12">
-            <div class="FieldName">
-                Field
+﻿<div class="row" *ngIf="conditionItems">
+    <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
+        <p-dropdown [class]="'condition-dropdown'" [options]="metricConditionEditorFieldTypes | metricConditionDisabledFilter" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="item">
+                <div class="ig-colorfield-item">
+                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                </div>
+            </ng-template>
+        </p-dropdown>
+        <p-dropdown [class]="'condition-dropdown'" [options]="operators" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="item">
+                <div class="ig-colorfield-item">
+                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                </div>
+            </ng-template>
+        </p-dropdown>
+        <div class="input-container">
+            <div *ngIf="condition?.FieldType?.Type == 'Text'">
+                <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
-            <div>
-                <select [ngModel]="condition.ConditionFieldTypeID" (ngModelChange)="changeFieldType($event)" style="width: 95%">
-                    <option></option>
-                    <option *ngFor="let i of metricConditionEditorFieldTypes | metricConditionDisabledFilter" [value]="i.ID">{{i.Name}}</option>
-                </select>
-            </div>
-        </div>
-        <div class="col l2 m4 s12" *ngIf="condition.FieldType">
-            <div class="FieldName">
-                Operator
-            </div>
-            <div *ngIf="condition.FieldType.Type == 'Boolean'">
-                <select [(ngModel)]="condition.Operator" style="width: 95%"> 
-                    <option value="eq">=</option>
-                </select>
-            </div>
-            <div *ngIf="condition.FieldType.Type == 'Decimal' || condition.FieldType.Type == 'Number' || condition.FieldType.Type == 'Date' || condition.FieldType.Type == 'DateTime'">
-                <select [(ngModel)]="condition.Operator" style="width: 95%">
-                    <option value="eq">=</option>
-                    <option value="neq">!=</option>
-                    <option value="lt"><</option>
-                    <option value="lte"><=</option>
-                    <option value="gt">></option>
-                    <option value="gte">>=</option>
-                </select>
-            </div>
-            <div *ngIf="condition.FieldType.Type == 'Lookup' || condition.FieldType.Type == 'Text'">
-                <select [(ngModel)]="condition.Operator" style="width: 95%">
-                    <option value="eq">=</option>
-                    <option value="neq">!=</option>
-                </select>
-            </div>
-        </div>
-        <div class="col l5 m4 s12" *ngIf="condition.FieldType && condition.Operator">
-            <div class="FieldName">
-                Value
-            </div>
-            <!--div *ngFor="let cv of condition.Values"-->
-            <div *ngIf="condition.FieldType.Type == 'Text'">
-                <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" />
-            </div>
-            <div *ngIf="condition.FieldType.Type == 'Lookup'">
+            <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
                 <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.SingleValue">
                     <option></option>
                     <option *ngFor="let l of getLookupValues()" [value]="l.Value">{{l.Text}}</option>
                 </select>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Date'">
-                <p-calendar [(ngModel)]="condition.SingleValue"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+            <div *ngIf="condition?.FieldType?.Type == 'Date'">
+                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'DateTime'">
-                <p-calendar [(ngModel)]="condition.SingleValue"  [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+            <div *ngIf="condition?.FieldType?.Type == 'DateTime'">
+                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Number'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" />
+            <div *ngIf="condition?.FieldType?.Type == 'Number'">
+                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Decimal'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [step]="0.25" />
+            <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
+                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
             </div>
-            <div *ngIf="condition.FieldType.Type == 'Boolean'">
-                <p-toggleButton [(ngModel)]="condition.SingleValue" onLabel="True" offLabel="False"></p-toggleButton>
+            <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
+                <p-toggleButton [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" onLabel="True" offLabel="False"></p-toggleButton>
             </div>
-            <!--/div-->
-        </div>
-        <div class="col s12" style="padding-top: 15px;">
-            <button pButton type="button" label="Cancel" (click)="cancel()" style="float: right"></button>
-            <button pButton type="button" label="Add" [disabled]="!valid()" (click)="save()" style="float: right"></button>
         </div>
     </div>
+</div>
+<div class="row" *ngIf="conditionItems && conditionItems.length > 1">
+    <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="matchType"></p-radioButton></div>
+    <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="matchType"></p-radioButton></div>
 </div>

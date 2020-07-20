@@ -7373,9 +7373,9 @@ d3s-icon-picker {
         height: 32px;
 
         .ui-spinner {
-            margin-top: -4px;
-            width: 210px;
-            height: 30px;
+            margin-top: -3px;
+            width: 212px;
+            height: 28px;
             background: inherit;
 
             .ui-spinner-input {
@@ -7387,6 +7387,7 @@ d3s-icon-picker {
 
             .ui-spinner-button {
                 background: @ig-grey-t3;
+                border-radius: 2px;
             }
         }
 
@@ -7394,7 +7395,7 @@ d3s-icon-picker {
             background: #f5fbfd;
         }
 
-        &:focus:not(.ui-state-error) {
+        &:focus-within:not(.ui-state-error) {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 2px #8abddf;
@@ -7463,6 +7464,26 @@ d3s-icon-picker {
         border-bottom-left-radius: 3px;
         border-bottom-right-radius: 3px;
         width: auto;
+    }
+
+    .condition-row {
+        &.d3s-color-picker {
+            width: 100%;
+        }
+    }
+
+    .input-container {
+        width: 30%;
+        padding: 8px;
+    }
+
+    .condition-dropdown {
+        padding: 8px;
+        width: 30%;
+
+        .ui-dropdown {
+            min-width: 150px;
+        }
     }
 }
 

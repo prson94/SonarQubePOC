@@ -4,7 +4,7 @@
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
-                    <input igInput class="required" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
+                    <input igInput class="required big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
                 </div>
                 <div class="row">
                     <div>
@@ -69,25 +69,14 @@
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
-                    <div class="row">
-                        <d3s-admin-metric-condition-list [(conditions)]="g.ConditionItems"
-                                                         [(metricConditionListFieldTypes)]="metricEditorFieldTypes"
-                                                         [conditionUid]="g?.Uid"
-                                                         [position]="g?.Position"
-                                                         [assetTypeUid]="model?.AssetTypeUid"
-                                                         (formModeChange)="conditionFormMode = $event">
-                        </d3s-admin-metric-condition-list>
-                    </div>
-                    <div class="row" *ngIf="g.ConditionItems.length > 1">
-                        <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="g.MatchType"></p-radioButton></div>
-                        <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="g.MatchType"></p-radioButton></div>
-                    </div>
+                    new component?? {{g.ConditionItems.length}}
+                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
                 </div>
             </simple-accordion>
         </div>
         <div class="row" *ngIf="!isLoading">
             <div class="action-bar" style="padding-top: 15px">
-                <button igButton class="left" type="button" label="Cancel" (click)="cancel()" [disabled]="conditionFormMode != FormMode.Default"></button>
+                <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
                 <span class="grow"></span>
                 <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
             </div>

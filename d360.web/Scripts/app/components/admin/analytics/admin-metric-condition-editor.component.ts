@@ -1,6 +1,6 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
@@ -12,13 +12,25 @@ import { FormHelpers } from '../../../static/form-helpers';
 })
 
 export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit {
-    @Input() condition: MetricAssetVersionConditionItemViewModel = null;
+    @Input() conditionItems: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
     @Input() usedFieldTypes: number[] = [];
     @Input() assetTypeUid: string;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
+    @Output() matchTypeChange = new EventEmitter();
+    private matchType: number;
+    private operators = [
+        { value: 'eq', label: '=' },
+        { value: 'neq', label: '!=' },
+        { value: 'lt', label: '<' },
+        { value: 'lte', label: '<=' },
+        { value: 'gt', label: '>' },
+        { value: 'gte', label: '>=' },
+    ];
+
+    private condition: MetricAssetVersionConditionItemViewModel;
 
     verb = "Add";
 
@@ -27,7 +39,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     }
 
     ngOnInit() {
-
         //Set defaults;
         this.metricConditionEditorFieldTypes.forEach(ft => {
             ft.Disabled = false;
@@ -138,4 +149,104 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     getLocaleDateString(): string {
         return FormHelpers.getLocaleDateString();
     }
+
+    formatConditions() {
+        this.conditionItems.forEach(c => {
+            const field = this.metricConditionEditorFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
+            c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
+            c.OperatorText = this.parseOperator(field, c.OperatorText);
+
+            if (field) {
+                c.FieldTypeName = field.Name;
+                c.FieldType = field;
+
+                switch (field.Type) {
+                    case 'Lookup':
+                        if (field.Values) {
+                            if (field.Values.length > 0) {
+                                if (c.Values) {
+                                    if (c.Values[0].Value) {
+                                        let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                        valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
+                                        if (valueModel) {
+                                            c.SingleValue = c.Values[0].Value;
+                                            c.ValuesText = valueModel.Text;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    default:
+                        if (c.Values) {
+                            if (c.Values[0].Value) {
+                                c.SingleValue = c.Values[0].Value;
+                                c.ValuesText = c.Values[0].Value;
+                            }
+                        }
+                        break;
+                }
+            }
+        });
+    }
+
+    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
+        switch (field.Type) {
+            case 'Date':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Text':
+            case 'Lookup':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    default:
+                        return OperatorText;
+                }
+            case 'Decimal':
+            case 'Number':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    case '!=':
+                        return 'is not'
+                    case '<':
+                        return 'is before'
+                    case '>':
+                        return 'is after'
+                    case '<=':
+                        return 'is on or before'
+                    case '>=':
+                        return 'is on or after'
+                    default:
+                        return OperatorText;
+                }
+            case 'Boolean':
+                switch (OperatorText) {
+                    case '=':
+                        return 'is'
+                    default:
+                        return OperatorText;
+                }
+        }
+        return '';
+    }
+
+
 };

@@ -20,6 +20,10 @@
         width: 560px;
     }
 
+    &.big {
+        width: 60%;
+    }
+
     &.calendar {
         padding: 0px 0px 0px 8px;
         display: inline-flex;
@@ -31,27 +35,27 @@
                 border: none !important;
                 background: inherit;
             }
+        }
 
-            .fa {
-                background-color: #f1f1f3;
-                width: 24px;
-                height: 24px;
-                line-height: 24px;
-                text-align: center;
-                color: #202020;
-                margin-top: 3px;
-                margin-right: 3px;
-                border-radius: 2px;
-                font-size: 14px;
-                margin-left: auto;
-            }
+        .fa {
+            background-color: #f1f1f3;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            color: #202020;
+            margin-top: 3px;
+            margin-right: 3px;
+            border-radius: 2px;
+            font-size: 14px;
+            margin-left: auto;
         }
 
         &.required {
             background: #f5fbfd;
         }
 
-        &:focus:not(.ui-state-error) {
+        &:focus-within:not(.ui-state-error) {
             outline: 0 none;
             outline-offset: 0;
             box-shadow: 0 0 0 2px #8abddf;
