@@ -8,7 +8,7 @@
             </div>
             <div *ngSwitchCase="'Text'" style="width:100%;">
                 <input [formControlName]="field.FieldName" (blur)="OnBlurTrim()" style="width: 100%;" type="text">
-            </div>            
+            </div>
             <d3s-similar-items *ngIf="field.SimilarItemsUri != null" [uri]="field.SimilarItemsUri" [query]="field.Value"></d3s-similar-items>
             <p-editor *ngSwitchCase="'Html'" [formControlName]="field.FieldName" [style]="{'height':'150px'}" ngDefaultControl #ed>
                 <header style="padding-bottom:0px !important">
@@ -206,9 +206,23 @@
             </div>
             <div *ngSwitchCase="'Relationship'">
                 <input type="text" [hidden]="!showSimpleFilter" pInputText size="100" (input)="dt.filterGlobal($event.target.value, 'contains')" placeholder="Search..." class="grid-simple-filter">
-                <p-table #dt [value]="field.Items" [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'" [selection]="relationItems" (selectionChange)="selectRelationItems($event)"
-                         [globalFilterFields]="['Text']" [pageLinks]="3" [paginator]="true" [rows]="defaultInitialItemsPerPage" [rowsPerPageOptions]="defaultPagingOptions"
-                         [lazy]="true" (onLazyLoad)="lazyLoad($event)" [totalRecords]="field?.RecordCount" [formControlName]="field.FieldName" ngDefaultControl>
+                <p-table #dt
+                         [value]="field.Items"
+                         [selectionMode]="field?.MultiSelect ? 'multiple' : 'single'"
+                         [selection]="relationItems"
+                         (selectionChange)="selectRelationItems($event)"
+                         [globalFilterFields]="['Text']"
+                         [pageLinks]="3"
+                         [paginator]="true"
+                         [rows]="defaultInitialItemsPerPage"
+                         [rowsPerPageOptions]="defaultPagingOptions"
+                         [lazy]="true"
+                         (onLazyLoad)="lazyLoad($event)"
+                         [totalRecords]="field?.RecordCount"
+                         [formControlName]="field.FieldName"
+                         [loading]="relationItemsLoading"
+                         [loadingIcon]="'fa fa-spinner fa-spin'"
+                         ngDefaultControl>
                     <ng-template pTemplate="header">
                         <tr>
                             <th style="width: 30px">
@@ -240,10 +254,10 @@
             <input *ngSwitchCase="'Password'" type="password" [formControlName]="field.FieldName" style="width: 100%;" />
             <input *ngSwitchCase="'Boolean'" type="checkbox" [formControlName]="field.FieldName" />
             <div *ngSwitchCase="'Date'">
-                <p-calendar [formControlName]="field.FieldName"  [dateFormat]="getLocaleDateString()"></p-calendar>
+                <p-calendar [formControlName]="field.FieldName" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
             <div *ngSwitchCase="'DateTime'">
-                <p-calendar [formControlName]="field.FieldName"  [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
+                <p-calendar [formControlName]="field.FieldName" [showTime]="true" [dateFormat]="getLocaleDateString()"></p-calendar>
             </div>
             <div *ngSwitchCase="'Link'">
                 <input [formControlName]="field.FieldName + '_Name'" style="width: 100%;" type="text">
