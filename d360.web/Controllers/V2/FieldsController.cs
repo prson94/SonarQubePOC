@@ -125,9 +125,7 @@ namespace d360.web.Controllers.V2
         /// 
         /// There are some general rules about the various field types:
         /// - `Boolean` *(True/False)*
-        ///     1. Supports adding values through the Govern Application UI and REST API.
-        /// - `ComputedFusionLookup` *(Fusion Lookup)*
-        ///     1. This is a computed field and does not support directly editing values.
+        ///     1. Supports adding values through the Govern Application UI and REST API.        
         /// - `ComputedOwnershipLookup` *(Ownership Lookup)*
         ///     1. This is a computed field and does not support directly editing values.
         /// - `ComputedRelationshipField` *(Field from Relationship)*
@@ -614,12 +612,7 @@ namespace d360.web.Controllers.V2
                             value = i.Name
                         })
                         .OrderBy(i => i.title).ToList();
-
-                if (!Community.IsFusionEnabled())
-                {
-                    dataTypeOptions = dataTypeOptions.Where(x => x.value != "FusionLookup").ToList();
-                }
-
+                
                 if (ActionTypeUid != null || RelationshipTypeUid != null)
                 {
                     dataTypeOptions = dataTypeOptions.Where(x => x.value != "Path" && x.value != "Score").ToList();
