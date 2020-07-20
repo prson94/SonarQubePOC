@@ -248,7 +248,9 @@ namespace d360.model.DataAccessLayer
             var includeSegments = false;
             var includePermissionDetails = false;
             bool includeOnlyListableFields = false;
-            string populateRestrictedAssetTableSQL = "";
+            string populatePremissionAssetTableSQL = " ";
+            string permissionDetailSQL = " ";
+            string includePermissionFields = " ";
             bool listColorsAsJSON = false;
             var includeTotal = true;
 
@@ -461,20 +463,36 @@ namespace d360.model.DataAccessLayer
                     select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = @assetTypeID)
                      then 1
                      else 0
-                    end as HasAssetTypeRestriction
+                    end as HasAssetTypeRestriction,
+                    case when exists(
+                    select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeID))
+                     then 1
+                     else 0
+                    end as HasAssetPermission
                     ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
 
 
-            if (restrictions.HasAssetRestriction)
+            if (restrictions.HasAssetRestriction || restrictions.HasAssetPermission)
             {
-                whereStatements.Add($"not exists (select AssetID from #restrictedAssets where AssetID = A.ID)");
-                populateRestrictedAssetTableSQL = @"drop table if exists #restrictedAssets;
-                            create table #restrictedAssets(
-                             AssetId int
-                            )
-                            insert into #restrictedAssets
-                            select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeId) where ((PermissionsBitMask & 1)) = 0";
+                populatePremissionAssetTableSQL = @"
+                                            drop table if exists #PermissiondAssets;
+                                            create table #PermissiondAssets(
+	                                            AssetId int,
+	                                            AssetTypeID bigint,
+	                                            PermissionsBitMask int
+                                            )
+
+                                            create index cix_permissionAssetId on #PermissiondAssets(Assetid);
+
+                                            insert into #PermissiondAssets
+                                            select AssetID,AssetTypeID,PermissionsBitMask from dbo.UserAssetPermissions(@userId,@assetTypeId); ";
+
+                if (restrictions.HasAssetRestriction)
+                {
+                    whereStatements.Add($"not exists (select AssetID from #PermissiondAssets where AssetID = A.ID and ((PermissionsBitMask & 1)) = 0)");
+                }
             }
+
 
             if (!CompanyContext.CurrentResourceIsAdmin)
             {
@@ -607,16 +625,18 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
-            string permissionDetailSQL = @"	outer apply (
+            if (restrictions.HasAssetPermission)
+            {
+                permissionDetailSQL = @"	outer apply (
                  select top 1 * from
-				 (select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
-					where AssetID = A.ID
+				 (select PermissionsBitMask from #PermissiondAssets 
+					where AssetID = A.ID 
 				union all 	
-					select PermissionsBitMask from UserAssetPermissions(@userId,A.AssetTypeID) 
+					select PermissionsBitMask from #PermissiondAssets
 					where AssetID = 0 and AssetTypeID = A.AssetTypeID)t
 				   )Permission(mask)";
 
-            string includePermissionFields = @",(SELECT case 
+                includePermissionFields = @",(SELECT case 
 					   when permission.mask is null then 1
 					   when permission.mask is not null and permission.mask & 1 = 1 then 1
 					 else 0
@@ -633,6 +653,16 @@ namespace d360.model.DataAccessLayer
 					 end as 'DeleteAsset'
 					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
 					 ) as Permissions";
+            }
+            else
+            {
+                includePermissionFields = @",(SELECT 1 'ReadAsset',
+					                                 @isAdmin as 'ModifyAsset', 
+					                                 @isAdmin as 'DeleteAsset'
+					 FOR JSON PATH, WITHOUT_ARRAY_WRAPPER
+					 ) as Permissions";
+            }
+
 
             if (queryParams.ToList().Any(x => x.Key.ToLower() == "_loadpermissiondetails"))
             {
@@ -724,7 +754,7 @@ namespace d360.model.DataAccessLayer
 
 
             var countSql = $@"
-                {populateRestrictedAssetTableSQL}
+                {populatePremissionAssetTableSQL}
                 select  count(*)
                 from    Asset A 
                         left join graph.AssetNodeDisplayPath Node on Node.Uid = a.uid 
@@ -738,7 +768,7 @@ namespace d360.model.DataAccessLayer
 
 
             var sql = $@"
-                {populateRestrictedAssetTableSQL}
+                {populatePremissionAssetTableSQL}
                 select
                     A.ID as AssetId,
                     A.[UID] as [AssetUid],
