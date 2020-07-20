@@ -143,9 +143,7 @@ export class FieldDefinitionComponent extends BaseComponent implements OnChanges
             case "ComputedRelationshipField":
                 return "Field from Relationship";
             case "ComputedRelationshipReferenceList":
-                return "Reference Item List from Relationship";
-            case "ComputedFusionLookup":
-                return "Fusion Lookup";
+                return "Reference Item List from Relationship";            
             case "DateTime":
                 return "Date Time";
             case "ComputedOwnershipLookup":

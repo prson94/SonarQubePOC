@@ -438,7 +438,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
 		from	FieldType
 		where	Object = @SourceType
 				and ObjectID = @SourceTypeID
-				and Type not in ('DataTableSelect', 'FusionLookup', 'ComplexRelationLookup', 'RelationLookup') --these are calculated fields, and should not be selectable.
+				and Type not in ('DataTableSelect', 'ComplexRelationLookup', 'RelationLookup') --these are calculated fields, and should not be selectable.
 		union
 		select	1 as SortOrder,
 				'Field' as [Group], 'Name' as Object, 0 as ObjectID, 'Name' as Label, 'Text' as Type

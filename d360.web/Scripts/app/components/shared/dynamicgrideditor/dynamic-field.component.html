@@ -264,12 +264,7 @@
                 <div>(Link Name)</div>
                 <input [formControlName]="field.FieldName + '_Url'" style="width: 100%;" type="text">
                 <div>(Link Url: Your Url should start with a protocol prefix.  For example 'http://' or 'https://')</div>
-            </div>
-            <div *ngSwitchCase="'FusionLookup'">
-                <select [formControlName]="field.FieldName" style="height:auto;width:100%;">
-                    <option *ngFor="let opt of field.Items" [value]="opt.Value">{{opt.Text}}</option>
-                </select>
-            </div>
+            </div>            
             <d3s-multiselect-grid *ngSwitchCase="'DataTableSelect'" [multiple]="field.MultiSelect" [formControlName]="field.FieldName" ngDefaultControl [field]="field"></d3s-multiselect-grid>
             <div class="errorMessage" *ngIf="!isValid">* {{errorMessage}}</div>
         </div>
