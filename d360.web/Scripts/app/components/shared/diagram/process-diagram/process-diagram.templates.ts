@@ -103,7 +103,7 @@ export class ProcessDiagramTemplates {
             var margin = new go.Margin(24, 38, 0, 0);
         }
 
-        return $(go.Panel, 'Spot',
+        var badge = $(go.Panel, 'Spot',
             {
                 alignment: go.Spot.TopRight,
                 cursor: 'pointer',
@@ -141,6 +141,15 @@ export class ProcessDiagramTemplates {
                 })
             )
         );
+
+        badge.toolTip = $("ToolTip",
+            $(go.TextBlock, {
+                margin: 4,
+                text: "View and edit related assets"
+            })
+        );
+
+        return badge;
     }
 
     public static eventTemplate(component: ProcessDiagramComponent) {

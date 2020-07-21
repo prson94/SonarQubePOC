@@ -12,7 +12,7 @@
                         <d3s-assetbrowser-search *ngIf="displayConfiguration.DiagramType != 3" (next)="search_GoToResult($event)" [numberOfResults]="searchResults.length" (previous)="search_GoToResult($event)" (search)="search_Execute($event)"></d3s-assetbrowser-search>
 
                         <ng-container *ngIf="displayConfiguration.DiagramType == 3">
-                            <button igButton icon="fa-sitemap" [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
+                            <button igButton icon="igx-related-asset-icon" class="top-spacer-4"  [disabled]="!processDiagramRef || !processDiagramRef.selectedNodeData" tooltip="View and edit related assets for the selected item" (click)="processDiagramRef.doControlledAction('open-related-assets')"></button>
                             <div class="button-spacer"></div>
                             <button igButton icon="fa-download" tooltip="Export to Excel" (click)="processDiagramRef.doControlledAction('export')"></button>
                             <div class="button-spacer"></div>
