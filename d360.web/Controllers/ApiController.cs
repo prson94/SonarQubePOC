@@ -4802,6 +4802,9 @@ where v.id = {0}", id)).FirstOrDefault();
             var predicateTypeInfo = new PredicateType().GetAsList();
             var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
             if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
+            //Only allow editing when diagram
+            if (obj != SystemObjects.Task) disallowEditIds.Add((int)PredicateType.DiagramUse);
+
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
             var excludedPredicateTypes = new[] { (int)PredicateType.Diagram, (int)PredicateType.DiagramReference };
