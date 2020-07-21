@@ -1713,6 +1713,28 @@ namespace d360.model
                     }
                 }
             }
+            else if (settings.RecipientType == EmailTaskRecipientType.Followers)
+            {
+                var users = GetWorkflowUsersBasedOnFollowers(item.Step.Version.TypeID, item.Step.ID, item.ItemID);
+
+                foreach (var user in users)
+                {
+                    Console.WriteLine($"DEBUG : EMAIL STEP IS EMAILING [{user.Email}].");
+
+                    emailedUsers.Add(user.Email);
+
+                    try
+                    {
+                        await extensions.mail.SimpleMessage.SendMessage(settings.SubjectTemplate, (string)user.Email, (string)user.FirstName + " " + (string)user.LastName, settings.BodyTemplate, true, fromEmail, fromName);
+                    }
+                    catch (Exception e)
+                    {
+                        //error sending email
+                        TelemetryClient client = new TelemetryClient();
+                        client.TrackException(e, new Dictionary<string, string> { { "CompanyID", CurrentCompanyID.ToString() } });
+                    }
+                }
+            }
             else if (settings.RecipientType == EmailTaskRecipientType.SpecificUser)
             {
                 if (string.IsNullOrEmpty(settings.SpecificUser))
@@ -1890,6 +1912,12 @@ namespace d360.model
             return users;
         }
 
+        public IEnumerable<core.entities.GlobalReportingResource> GetWorkflowUsersBasedOnFollowers(int typeID, int stepID, long itemID)
+        {
+            var users = Query<core.entities.GlobalReportingResource>("[utility].[GetOwnersForWFFollowers] @id, @stepId, @itemId", new { id = typeID, @stepId = stepID, @itemId = itemID });
+
+            return users;
+        }
         private void SaveItemStepEmailedUsers(WorkflowItemStep item, List<string> emailedUsers)
         {
 

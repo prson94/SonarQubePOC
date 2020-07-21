@@ -480,7 +480,8 @@ export enum EmailTaskRecipientType {
     None = 0,
     Initiator,
     Responsibility,
-    SpecificUser
+    SpecificUser,
+    Followers
 }
 
 //#endregion
