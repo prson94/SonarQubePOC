@@ -61,5 +61,4 @@
   <include file="scripts/GOV-11173.xml"/>  <!-- Change Setting Type on settings 68 to not locked-->  
   <include file="scripts/Table.dbo.CompanyRebuildJobStatus.xml"/>
   <include file="scripts/GOV-11295.xml"/>  <!-- Rename table CompanyFeature-->  
-  <include file="scripts/GOV-11554.xml"/>  <!-- Remove unused settings for GovernanceRole (Label and Description)-->  
 </databaseChangeLog>
