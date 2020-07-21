@@ -1,14 +1,16 @@
-﻿import { Input, Component, EventEmitter, Output, OnInit } from '@angular/core';
+﻿import { Input, Component, EventEmitter, Output, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { MetricsService } from '../../../services/metrics.service';
 import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
 import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
+import { SelectItem } from 'primeng/api';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
     templateUrl: './admin-metric-condition-editor.component.html',
-    providers: [MetricsService]
+    providers: [MetricsService],
+    changeDetection: ChangeDetectionStrategy.OnPush,
 })
 
 export class AdminMetricConditionEditorComponent extends BaseComponent implements OnInit {
@@ -20,7 +22,10 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
     @Output() matchTypeChange = new EventEmitter();
-    private matchType: number;
+    @Input() matchType: number;
+    private fieldTypeDropdownOptions: SelectItem[] = []
+    private newCondition: MetricAssetVersionConditionItemViewModel = new MetricAssetVersionConditionItemViewModel;
+
     private operators = [
         { value: 'eq', label: '=' },
         { value: 'neq', label: '!=' },
@@ -34,7 +39,9 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
 
     verb = "Add";
 
-    constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
+    constructor(private metricsService: MetricsService,
+        protected messagesService: MessagesObservableService,
+        private ref: ChangeDetectorRef) {
         super();
     }
 
@@ -60,6 +67,9 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             }
         });
 
+        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.filter(x => this.usedFieldTypes.indexOf(x.ID) == -1).map((x) => { return { value: x.ID, label: x.Name } });
+        
+
         this.load();
     }
 
@@ -74,6 +84,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             }
         }
         this.isLoading = false;
+        this.ref.markForCheck();
     }
 
     valid() {
@@ -248,5 +259,15 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         return '';
     }
 
+    addNewCondition() {
+        if (this.newCondition && this.newCondition.ConditionFieldTypeID) {
+            this.conditionItems.push({ ...this.newCondition });
+            this.newCondition = new MetricAssetVersionConditionItemViewModel();
+            this.ref.markForCheck();
+        }
+    }
 
+    matchTypeChangeEvt() {
+        this.matchTypeChange.emit(this.matchType);
+    }
 };

@@ -69,8 +69,7 @@
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
             <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
-                    new component?? {{g.ConditionItems.length}}
-                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
+                    <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
                 </div>
             </simple-accordion>
         </div>

@@ -1,6 +1,6 @@
 ﻿<div class="row" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
-        <p-dropdown [class]="'condition-dropdown'" [options]="metricConditionEditorFieldTypes | metricConditionDisabledFilter" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
@@ -41,8 +41,17 @@
             </div>
         </div>
     </div>
+    <div class="condition-row d3s-color-picker">
+        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions" (onChange)="addNewCondition()" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="item">
+                <div class="ig-colorfield-item">
+                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                </div>
+            </ng-template>
+        </p-dropdown>
+    </div>
 </div>
 <div class="row" *ngIf="conditionItems && conditionItems.length > 1">
-    <div><p-radioButton name="grpConditionAndOr" value="1" label="And" [(ngModel)]="matchType"></p-radioButton></div>
-    <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" [(ngModel)]="matchType"></p-radioButton></div>
+    <div><p-radioButton name="grpConditionAndOr" value="1" label="And" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
+    <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
 </div>
