@@ -10,7 +10,7 @@
             <button igButton icon="fa-save" tooltip="Save changes" [disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
             <button igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button igButton icon="fa-sitemap" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <button igButton icon="igx-related-asset-icon" class="top-spacer-4" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!isExportEnabled()" (click)="doControlledAction('export')"></button>
 
