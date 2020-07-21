@@ -361,9 +361,11 @@ namespace d360.model.DataAccessLayer.repositories
                 }
                 else if(f.Type =="Lookup" && listColorsAsJSON && hasColor)
                 {
+                    string displayName = (f.Name.ToLower() == "status" && !f.AllowMultipleValues) ?
+                        $@"{tableAlias}.formattedValue" : $@"ADV{tableAlias}.DisplayValue";
                     string sql = $@"outer apply(
                                 select FormattedValue = 
-                                (SELECT COALESCE(ADV{tableAlias}.DisplayValue, AC{tableAlias}.Code) as name,
+                                (SELECT COALESCE({displayName}, AC{tableAlias}.Code) as name,
                                 COALESCE(JSON_VALUE(ACJ{tableAlias}.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field {tableAlias}
 								inner join FieldType FT{tableAlias} on FT{tableAlias}.ID = {tableAlias}.FieldTypeID
