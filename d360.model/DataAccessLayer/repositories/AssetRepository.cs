@@ -2292,12 +2292,14 @@ select  A.ID as AssetId,
         A.UpdatedOn,
         ACJ.ColorJson as Color,
         {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+        {(assetType.Class == AssetTypeClass.Rule ? "R.Threshold," : "")}
         KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
         {string.Join(",\n", fieldColumns)}
 from    Asset A
         inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+        {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
         cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
         outer apply (
             select  T.[uid]
