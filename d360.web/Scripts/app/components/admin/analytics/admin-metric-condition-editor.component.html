@@ -1,48 +1,56 @@
 ﻿<div class="row" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
-        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown [class]="'condition-dropdown'" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
             </ng-template>
         </p-dropdown>
-        <p-dropdown [class]="'condition-dropdown'" [options]="operators" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
-            <ng-template let-item pTemplate="item">
+        <p-dropdown [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+            <ng-template let-item pTemplate="selectedItem">
+                <div>
+                    <span>{{parseOperator(condition,item.label)}}</span>
+                </div>
+            </ng-template>
+            <ng-template let-oper pTemplate="item">
                 <div class="ig-colorfield-item">
-                    <span class="ig-colorfield-item-label">{{item.label}}</span>
+                    <span class="ig-colorfield-item-label">{{parseOperator(condition,oper.label)}}</span>
                 </div>
             </ng-template>
         </p-dropdown>
         <div class="input-container">
             <div *ngIf="condition?.FieldType?.Type == 'Text'">
-                <input type="text" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+                <input type="text" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                <select style="width:95%;" placeholder="Choose a value" [(ngModel)]="condition.SingleValue">
-                    <option></option>
-                    <option *ngFor="let l of getLookupValues()" [value]="l.Value">{{l.Text}}</option>
-                </select>
+                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
-                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}"></p-calendar>
+                <div class="ig-input calendar required" >
+                    <p-calendar [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                    <i class="fa fa-calendar"></i>
+                </div>
             </div>
-            <div *ngIf="condition?.FieldType?.Type == 'DateTime'">
-                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+            <div *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar required">
+                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Number'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
+                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Decimal'">
-                <input type="number" style="width: 95%" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
+                <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
-                <p-toggleButton [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" onLabel="True" offLabel="False"></p-toggleButton>
+                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
         </div>
+        <div class="actions-btn">
+            <button igButton icon="fa-trash" (click)="removeCondition(condition)" tooltip="Edit score definition"></button>
+        </div>
     </div>
-    <div class="condition-row d3s-color-picker">
-        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions" (onChange)="addNewCondition()" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+    <div class="condition-row d3s-color-picker" *ngIf="fieldTypeDropdownOptions.length > 0">
+        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
@@ -51,7 +59,7 @@
         </p-dropdown>
     </div>
 </div>
-<div class="row" *ngIf="conditionItems && conditionItems.length > 1">
-    <div><p-radioButton name="grpConditionAndOr" value="1" label="And" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
-    <div><p-radioButton name="grpConditionAndOr" value="2" label="Or" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
+<div class="matchtype-container" *ngIf="conditionItems && conditionItems.length > 1">
+    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="1" label="Match all conditions" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
+    <div class="matchtype-option"><p-radioButton name="grpConditionAndOr" value="2" label="Match any condition" (click)="matchTypeChangeEvt()" [(ngModel)]="matchType"></p-radioButton></div>
 </div>

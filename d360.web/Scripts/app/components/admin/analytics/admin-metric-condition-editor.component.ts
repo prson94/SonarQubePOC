@@ -5,6 +5,7 @@ import { BaseComponent } from '../../shared/base.component';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 import { FormHelpers } from '../../../static/form-helpers';
 import { SelectItem } from 'primeng/api';
+import { forEach } from 'core-js/fn/dict';
 
 @Component({
     selector: 'd3s-admin-metric-condition-editor',
@@ -17,15 +18,18 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     @Input() conditionItems: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() uid: string;
     @Input() metricConditionEditorFieldTypes: MetricFieldTypeViewModel[] = [];
-    @Input() usedFieldTypes: number[] = [];
     @Input() assetTypeUid: string;
     @Output() onCancel = new EventEmitter();
     @Output() onSave = new EventEmitter();
     @Output() matchTypeChange = new EventEmitter();
     @Input() matchType: number;
     private fieldTypeDropdownOptions: SelectItem[] = []
-    private newCondition: MetricAssetVersionConditionItemViewModel = new MetricAssetVersionConditionItemViewModel;
+    private usedFieldTypes: number[] = [];
 
+    private booleanOptions = [
+        { value: true, label: 'True' },
+        { value: false, label: 'False' }
+    ];
     private operators = [
         { value: 'eq', label: '=' },
         { value: 'neq', label: '!=' },
@@ -35,7 +39,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         { value: 'gte', label: '>=' },
     ];
 
-    private condition: MetricAssetVersionConditionItemViewModel;
+    private newCondition: MetricAssetVersionConditionItemViewModel = new MetricAssetVersionConditionItemViewModel;
 
     verb = "Add";
 
@@ -50,14 +54,14 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.metricConditionEditorFieldTypes.forEach(ft => {
             ft.Disabled = false;
         });
-
+        this.usedFieldTypes = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
 
         this.usedFieldTypes.forEach(i => {
             const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
             if (ft) {
-                if (this.condition) {
-                    if (this.condition.ConditionFieldTypeID !== +i) {
+                if (this.newCondition) {
+                    if (this.newCondition.ConditionFieldTypeID !== +i) {
                         ft.Disabled = true; 
                     }
                 }
@@ -67,22 +71,16 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             }
         });
 
-        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.filter(x => this.usedFieldTypes.indexOf(x.ID) == -1).map((x) => { return { value: x.ID, label: x.Name } });
-        
-
+        this.fieldTypeDropdownOptions = this.metricConditionEditorFieldTypes.map((x) => { return { value: x.ID, label: x.Name, disabled: x.Disabled } });
         this.load();
     }
 
-    getLookupValues() {
-        return this.metricConditionEditorFieldTypes.find(i => i.ID === +this.condition.ConditionFieldTypeID).Values;
+    getLookupValues(condition: MetricAssetVersionConditionItemViewModel) {
+        return this.metricConditionEditorFieldTypes.find(i => i.ID === +condition.ConditionFieldTypeID).Values.map(x => { return { label: x.Text, value: x.Value } });
     }
 
     load() {
-        if (this.condition) {
-            if (this.condition.ConditionFieldTypeID) {
-                this.selectFieldType();
-            }
-        }
+        this.formatConditions();
         this.isLoading = false;
         this.ref.markForCheck();
     }
@@ -90,70 +88,99 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     valid() {
         let valid = true;
 
-        if (this.condition === null) {
+        if (this.newCondition === null) {
             valid = false;
         }
-
-        return valid;
+         return valid;
     }
 
+    removeCondition(condition: MetricAssetVersionConditionItemViewModel) {
+        const index = this.conditionItems.indexOf(condition);
+        if (index > -1) {
+            this.conditionItems.splice(index, 1);
+        }
+    }
+
+    conditionFieldIsInvalid(condition: MetricAssetVersionConditionItemViewModel) {
+        if (condition.ConditionFieldTypeID) {
+            let other = this.conditionItems.filter(x => { return x.ConditionFieldTypeID == condition.ConditionFieldTypeID })
+            return other.length > 1;
+        }
+        return false;
+    }
     save() {
 
-        if (this.condition.FieldType) {
-            switch (this.condition.FieldType.Type) {
+        if (this.newCondition.FieldType) {
+            switch (this.newCondition.FieldType.Type) {
                 case "Boolean":
-                    this.condition.ValuesText = this.condition.SingleValue;
+                    this.newCondition.ValuesText = this.newCondition.SingleValue;
                     break;
                 case "Lookup":
-                    this.condition.ValuesText = this.condition.FieldType.Values.find(v => v.Value === +this.condition.SingleValue).Text; 
+                    this.newCondition.ValuesText = this.newCondition.FieldType.Values.find(v => v.Value === +this.newCondition.SingleValue).Text; 
                     break;
                 default:
-                    this.condition.ValuesText = this.condition.SingleValue;
+                    this.newCondition.ValuesText = this.newCondition.SingleValue;
                     break;
             }
         }
-        this.onSave.emit(this.condition);
+        this.onSave.emit(this.newCondition);
     }
 
-    cancel() {
-        this.onCancel.emit();
-    }
-
-    changeFieldType(e: number) {
-        this.condition.ConditionFieldTypeID = e;
-        this.selectFieldType();
-    }
-
-    selectFieldType() {
-        if (this.condition.ConditionFieldTypeID) {
-            const field = this.metricConditionEditorFieldTypes.find(f => f.ID === +this.condition.ConditionFieldTypeID); 
+    selectFieldType(condition: MetricAssetVersionConditionItemViewModel) {
+       
+        if (condition.ConditionFieldTypeID) {
+            let field = this.metricConditionEditorFieldTypes.find(f => f.ID === +condition.ConditionFieldTypeID); 
             if (field) {
-                this.condition.FieldTypeName = field.Name;
-                this.condition.FieldType = field;
-                if (!this.condition.Values) {
-                    this.condition.Values = [];
+                condition.FieldTypeName = field.Name;
+                condition.FieldType = field;
+                if (!condition.Values) {
+                    condition.Values = [];
                 }
 
-                if (this.condition.Values.length > 0) {
+                if (condition.Values.length > 0) {
                     switch (field.Type) {
                         case "Boolean":
-                            this.condition.SingleValue = (this.condition.Values[0].Value === 'true');
+                            condition.SingleValue = (condition.Values[0].Value === 'true');
                             break;
                         case "Lookup":
-                            this.condition.SingleValue = (this.condition.Values[0].Value);
+                            condition.SingleValue = (condition.Values[0].Value);
                             break;
                         case "Date":
                         case "DateTime":
-                            if (this.condition.Values) {
-                                this.condition.SingleValue = new Date(this.condition.Values[0].Value as string);
+                            if (condition.Values) {
+                                condition.SingleValue = new Date(condition.Values[0].Value as string);
                             }
                             break;
                         default:
-                            this.condition.SingleValue = this.condition.Values[0].Value;
+                            condition.SingleValue = condition.Values[0].Value;
                             break;
                     }
-                }
+                }                
             }
+            let options = [];
+            switch (field.Type) {
+                case 'Text':
+                case 'Lookup':
+                    options = [{ value: 'neq', label: '!=' }, { value: 'eq', label: '=' }];
+                    break;
+                case 'Decimal':
+                case 'Number':
+                case 'Date':
+                    options = [
+                        { value: 'eq', label: '=' },
+                        { value: 'neq', label: '!=' },
+                        { value: 'lt', label: '<' },
+                        { value: 'lte', label: '<=' },
+                        { value: 'gt', label: '>' },
+                        { value: 'gte', label: '>=' },
+                    ];
+                    break;
+                case 'Boolean':
+                    options = [{ value: 'eq', label: '=' }];
+                    break;
+            }
+            condition.operatorOptions = options;
+            this.ref.markForCheck();
         }
     }
 
@@ -165,7 +192,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         this.conditionItems.forEach(c => {
             const field = this.metricConditionEditorFieldTypes.find(f => f.ID === +c.ConditionFieldTypeID);
             c.OperatorText = this.operators.find(o => o.value === c.Operator).label;
-            c.OperatorText = this.parseOperator(field, c.OperatorText);
+            c.OperatorText = this.parseOperator(c, c.OperatorText);
 
             if (field) {
                 c.FieldTypeName = field.Name;
@@ -197,72 +224,81 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         }
                         break;
                 }
+                this.ref.markForCheck();
             }
         });
     }
 
-    parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        switch (field.Type) {
-            case 'Date':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Text':
-            case 'Lookup':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    default:
-                        return OperatorText;
-                }
-            case 'Decimal':
-            case 'Number':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Boolean':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    default:
-                        return OperatorText;
-                }
+    parseOperator(condition: MetricAssetVersionConditionItemViewModel, OperatorText: string): string {
+        let field = this.metricConditionEditorFieldTypes.find(ft => ft.ID === condition.ConditionFieldTypeID);
+        if (field) {
+            switch (field.Type) {
+                case 'Date':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is before'
+                        case '>':
+                            return 'is after'
+                        case '<=':
+                            return 'is on or before'
+                        case '>=':
+                            return 'is on or after'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Text':
+                case 'Lookup':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Decimal':
+                case 'Number':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is less than'
+                        case '>':
+                            return 'is greater than'
+                        case '<=':
+                            return 'is no greater than'
+                        case '>=':
+                            return 'is no less than'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Boolean':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        default:
+                            return OperatorText;
+                    }
+            }
         }
-        return '';
+        return OperatorText;
     }
 
     addNewCondition() {
         if (this.newCondition && this.newCondition.ConditionFieldTypeID) {
+            this.newCondition.Operator = "eq";
+            this.selectFieldType(this.newCondition);
             this.conditionItems.push({ ...this.newCondition });
+            this.usedFieldTypes = [...this.usedFieldTypes, this.newCondition.ConditionFieldTypeID];
+            
             this.newCondition = new MetricAssetVersionConditionItemViewModel();
+            
             this.ref.markForCheck();
         }
     }

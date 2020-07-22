@@ -319,59 +319,61 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
         return s;
     }
     parseOperator(field: MetricFieldTypeViewModel, OperatorText: string): string {
-        switch (field.Type) {
-            case 'Date':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Text':
-            case 'Lookup':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    default:
-                        return OperatorText;
-                }
-            case 'Decimal':
-            case 'Number':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    case '!=':
-                        return 'is not'
-                    case '<':
-                        return 'is before'
-                    case '>':
-                        return 'is after'
-                    case '<=':
-                        return 'is on or before'
-                    case '>=':
-                        return 'is on or after'
-                    default:
-                        return OperatorText;
-                }
-            case 'Boolean':
-                switch (OperatorText) {
-                    case '=':
-                        return 'is'
-                    default:
-                        return OperatorText;
-                }
+        if (field) {
+            switch (field.Type) {
+                case 'Date':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is before'
+                        case '>':
+                            return 'is after'
+                        case '<=':
+                            return 'is on or before'
+                        case '>=':
+                            return 'is on or after'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Text':
+                case 'Lookup':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Decimal':
+                case 'Number':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        case '!=':
+                            return 'is not'
+                        case '<':
+                            return 'is before'
+                        case '>':
+                            return 'is after'
+                        case '<=':
+                            return 'is on or before'
+                        case '>=':
+                            return 'is on or after'
+                        default:
+                            return OperatorText;
+                    }
+                case 'Boolean':
+                    switch (OperatorText) {
+                        case '=':
+                            return 'is'
+                        default:
+                            return OperatorText;
+                    }
+            }
         }
         return '';
     }

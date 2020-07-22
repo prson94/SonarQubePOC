@@ -1,6 +1,6 @@
 ﻿<div class="modal-measure-editor">
     <d3s-loading [isLoading]="isLoading"></d3s-loading>
-    <form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height': maxHeight }">
+    <form #metricForm="ngForm" class="metric-form" [ngStyle]="{'max-height.px': maxHeight }">
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
@@ -31,7 +31,6 @@
                                     For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
                                     The sum of all measures used to calculate the score should sum to 100% (at the top-level with and within each group of measures.
                                     Where they do not, they will be adjusted when used to calculate the score.
-
                                 </div>
                             </div>
                         </div>
@@ -73,12 +72,12 @@
                 </div>
             </simple-accordion>
         </div>
-        <div class="row" *ngIf="!isLoading">
-            <div class="action-bar" style="padding-top: 15px">
-                <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
-                <span class="grow"></span>
-                <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
-            </div>
-        </div>
     </form>
+    <div class="row" *ngIf="!isLoading">
+        <div class="action-bar" style="padding-top: 15px">
+            <button igButton class="left" type="button" label="Cancel" (click)="cancel()"></button>
+            <span class="grow"></span>
+            <button igButton class="ig-button-primary" type="button" label="Done" [disabled]="!metricForm.form.valid || !valid() || conditionFormMode != FormMode.Default" (click)="save()"></button>
+        </div>
+    </div>
 </div>

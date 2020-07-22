@@ -36,7 +36,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     FormMode = FormMode;
     private displayWeight: number = 0;
     invalidWeightMessage: string;
-    maxHeight: number = 800;
+    maxHeight: number = window.innerHeight - 250;
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
@@ -119,6 +119,19 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                         valid = false;
                     }
                 }
+
+                if (this.model.ConditionGroups.length) {
+                    let conditions = this.model.ConditionGroups[0].ConditionItems;
+                    if (conditions.length == 0) {
+                        valid = false;
+                    } else {
+                        conditions.forEach(x => {
+                            if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
+                                valid = false;
+                            }
+                        });
+                    }
+                }
             }
         }
 
@@ -179,6 +192,11 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
 
     cancel() {
         this.model = new MetricAssetViewModel();
+        this.model.Weight = 1;
+        const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
+        dummyConditionGroup.Position = 1;
+        dummyConditionGroup.MatchType = MetricMatchType.Any;
+        this.model.ConditionGroups.push(dummyConditionGroup);
         this.displayWeight = 1;
         this.invalidWeightMessage = "";
         this.child = "";
