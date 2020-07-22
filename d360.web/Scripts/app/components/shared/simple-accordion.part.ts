@@ -9,7 +9,12 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
             <div class="ui-accordion-header ui-state-default" (click)="toggleActive();" [ngClass]="{'ui-state-active': active,'ui-state-hover':hover}" (mouseenter)="hover=true" (mouseleave)="hover=false">
                 <span *ngIf="active" style="float:right;"><i class="fa fa-chevron-up"></i></span>
                 <span *ngIf="!active" style="float:right;"><i class="fa fa-chevron-down"></i></span>                
-                <a  (click)="null" style="text-decoration:none;">{{header}}</a>
+                <a  (click)="null" style="text-decoration:none;">
+                    <span class="elide-popup">
+                        <span class="popup">{{header}}</span>
+                        <span class="text">{{header}}</span>
+                    </span>
+            </a>
             </div>
             <div [style.display]="active ? 'block' : 'none'" style="margin:5px;">
                 <ng-content></ng-content>
@@ -18,12 +23,12 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     `,
     animations: [
         trigger('state', [
-            state('default', style({opacity: '1' })),
+            state('default', style({ opacity: '1' })),
             transition('* => void', [
                 animate('500ms ease', style({ opacity: '0' }))
             ])
         ])
-       ]
+    ]
 })
 
 export class SimpleAccordion {
@@ -33,7 +38,7 @@ export class SimpleAccordion {
 
     state = 'default';
     public hover: boolean = false;
-        
+
     toggleActive() {
         this.active = !this.active;
         this.activeChange.emit(this.active);
@@ -48,7 +53,7 @@ export class SimpleAccordion {
         SimpleAccordion,
     ]
     , imports: [
-        CommonModule,        
+        CommonModule,
     ]
 })
 
