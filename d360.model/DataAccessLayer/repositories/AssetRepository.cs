@@ -2261,6 +2261,10 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         {
 
             var asset = GetAssetByUID(assetUid);
+
+            if (asset == null)
+                return null;
+
             var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
 
             if (!canRead)
