@@ -1354,7 +1354,7 @@ export class FieldTypeForm extends BaseComponent implements OnInit, OnChanges {
             let definition = {
                 IntersectTypeUid: x.IntersectTypeUid,
                 AssetTypeUid: x.AssetTypeUid,
-                RelationType: ComplexLookupRelationType[x.ReferenceType],
+                RelationType: ComplexLookupRelationType[x.ReferenceType], 
                 Direction: Direction[x.Direction]
             };
 
