@@ -36,7 +36,8 @@ namespace d360.core.entities
     public enum FieldTypeComplexLookupRelationDirection
     {
         Back = 1,
-        Forward = 2
+        Forward = 2,
+        Both = 3
     }
     public class FieldTypeComplexLookupDefinitionField
     {
