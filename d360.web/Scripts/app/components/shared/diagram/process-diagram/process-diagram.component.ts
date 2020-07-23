@@ -9,9 +9,7 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { CanDeactivate, Router } from '@angular/router';
-import { map } from 'rxjs/operators';
-import { forEach } from 'core-js/fn/array';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -121,7 +119,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
-    private onResize(event) {
+    public onResize(event) {
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
@@ -134,6 +132,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.editorRef) {
             this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
         }
+        if (this.myDiagram) {
+            var diagramPlaceholderWidth = document.getElementById('process-diagram-placeholder').getBoundingClientRect().width;
+            this.diagramRef.nativeElement.style.width = diagramPlaceholderWidth + 'px';
+            setTimeout(() => {
+                this.myDiagram.redraw();
+            }, 100);
+        }
+        this.cdRef.detectChanges();
     }
 
     @HostListener('click', ['$event.target'])
@@ -143,7 +149,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.selectedNodeData = null;
             }
         }
-        this.myDiagram.requestUpdate();
         this.cdRef.detectChanges();
 
     }
@@ -193,6 +198,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.cdRef.detach();
         if (this.myDiagram)
             this.myDiagram = null;
+    }
+
+    public changeInfoPanelMode() {
+        this.isInfoPanelOpened = !this.isInfoPanelOpened;
+
+        setTimeout(() => {
+            this.onResize(null);
+        }, 200)
     }
 
     private applyEditMode(state: boolean) {
