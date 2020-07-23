@@ -405,9 +405,7 @@ export class AssetBrowserTranslationChildLink {
 
 export class AssetBrowserTranslationLink {
     from: string;
-    //fromPort: string;
     to: string;
-    //toPort: string;
     text: string;
     back: string;
     predicateIds: number[];
@@ -437,6 +435,7 @@ export class AssetBrowserTranslationNode {
     isGroup: boolean;
     text: string;
     template: string;
+    nonHiddenTemplate: string;
     fore: string;
     foreAmount: number;
     back: string;
@@ -453,6 +452,8 @@ export class AssetBrowserTranslationNode {
 
     leaf: boolean;
     focal: boolean;
+
+    hideMode: AssetBrowserApiHopDirection = null;
 }
 
 export class AssetBrowserTranslation {
@@ -538,9 +539,6 @@ export class AssetBrowserOwnerRelationModel {
 }
 
 export class AssetBrowserOwnersModel {
-    responsibilityType: string;
-    responsibilityTypeId: number;
-    fromKey: string;
     owners: AssetBrowserOwnerModel[] = new Array<AssetBrowserOwnerModel>();
     ownerRelations: AssetBrowserOwnerRelationModel[] = new Array<AssetBrowserOwnerRelationModel>();
 }
