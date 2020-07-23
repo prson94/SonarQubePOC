@@ -25,6 +25,8 @@ export const ICON_VALUE_ACCESSOR: any = {
 
 export class IconPickerComponent extends BaseComponent implements ControlValueAccessor {
     @Input() ngModel: string;
+    @Input() tabindex: string;
+    @Input() disabled: boolean = false;
     @Output() ngModelChange = new EventEmitter();
 
     private categories: any = [];

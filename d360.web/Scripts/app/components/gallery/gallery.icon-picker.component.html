@@ -10,11 +10,30 @@
 
 <div class="tile tile-detail">
     <header>Examples</header>
-    <d3s-icon-picker [(ngModel)]="value"></d3s-icon-picker>
-    <br />
-    <br />
-    <strong>Selected Value:</strong> {{value}}
-    <br /><br />
+    <div class="gallery-section">
+        <h4>Basic</h4>
+        <div>
+            <d3s-icon-picker></d3s-icon-picker>
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Binding</h4>
+        <div>
+            <d3s-icon-picker [(ngModel)]="value"></d3s-icon-picker>
+        </div>
+        <div>
+            <strong>Selected Value:</strong> {{value}}
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Disabled</h4>
+        <p>
+            As with all form controls this input can be disabled
+        </p>
+        <div>
+            <d3s-icon-picker [disabled]="true"></d3s-icon-picker>
+        </div>
+    </div>
 </div>
 
 <div class="tile tile-detail">
