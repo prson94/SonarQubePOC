@@ -329,7 +329,7 @@ namespace d360.model.DataAccessLayer.repositories
                 else if (f.Type == "RefListRelationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select string_agg([Name],'|') as FormattedValue
+                        select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
                         from (
                         select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
                         union all
