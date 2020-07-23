@@ -27,7 +27,15 @@ export class ProcessService extends BaseObservableService {
                 catchError(err => this.handleError(err, true))
             );
     }
-
+    public getAvailableLabels(uid: string): Observable<string[]> {
+        return this
+            .http
+            .get(`/api/v2/process/${uid}/labels`)
+            .pipe(
+                map(response => <string[]>response),
+                catchError(err => this.handleError(err, true))
+            );
+    }
     public getProcessDiagram(uid: string): Observable<any> {
         return this
             .http

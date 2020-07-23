@@ -1,10 +1,9 @@
 
-import { Component, Input, OnInit, ChangeDetectionStrategy, AfterViewChecked, OnChanges, SimpleChange, SimpleChanges, ChangeDetectorRef, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, AfterViewChecked, OnChanges, SimpleChange, SimpleChanges, ChangeDetectorRef, EventEmitter, Output, HostListener } from '@angular/core';
 import { DiagramBaseComponent } from '../diagram-base.component';
 import { SecondaryNavService } from '../../../../services/right-sidebar.service';
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
-import { AssetTypeService } from '../../../../services/asset-type.service';
-import { EditorField } from '../../../../models/editor-field.model';
+
 import { ProcessService } from '../../../../services/process.service';
 @Component({
     selector: 'd3s-process-diagram-label-editor',
@@ -14,9 +13,10 @@ import { ProcessService } from '../../../../services/process.service';
 })
 export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() linkData: any;
+    @Input() assetUid: any;
     @Output() linkDataChange = new EventEmitter();
 
-    private labels: any[] = [];
+    private labels: any[] = ['tests', 'make one new'];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -42,10 +42,19 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
         this.cdRef.markForCheck();
     }
     search(event) {
-        this.labels = [];
-        this.labels.push(event.query);
+
+        this.processService.getAvailableLabels(this.assetUid)
+            .subscribe(res => {
+                this.labels = [];
+                this.labels.push(event.query);
+                res.forEach(x => {
+                    this.labels.push(x);
+                })
+            });
+
     }
 
-    select(event) {
+    selected($event) {
+        this.linkDataChange.emit({ label: $event, data: this.linkData });
     }
 }

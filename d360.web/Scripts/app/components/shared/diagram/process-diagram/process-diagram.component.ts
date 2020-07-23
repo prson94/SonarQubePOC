@@ -12,6 +12,7 @@ import { DiagramNodeBase } from '../../../../models/process.model';
 import { CanDeactivate, Router } from '@angular/router';
 import { map } from 'rxjs/operators';
 import { forEach } from 'core-js/fn/array';
+import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -308,6 +309,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     allowCopy: false,
                     allowUndo: false
                 });
+        this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
         this.myDiagram.commandHandler.canDeleteSelection = () => {
@@ -538,6 +540,17 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.cdRef.detectChanges();
 
             });
+    }
+
+    private updateLinkFromForm(formData) {
+        var link = this.myDiagram.findLinkForData(formData.data);
+        try {
+            this.myDiagram.model.commit(function (m) {
+                m.setDataProperty(link.data, 'label', formData.label);
+            }, 'update_link_data');
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     private updateNodeFromForm(formData) {

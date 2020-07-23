@@ -88,7 +88,7 @@
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
-                <div *ngIf="!selectedNodeData">
+                <div *ngIf="!selectedNodeData && !selectedLinkData">
                     <div class="empty-overlay">
                         <div class="content">
                             <div class="icon-holder">
@@ -106,6 +106,9 @@
                                                           [disallowedNames]="nodeNames">
                         </d3s-process-diagram-asset-editor>
                     </div>
+                </div>
+                <div *ngIf="selectedLinkData">
+                    <d3s-process-diagram-label-editor (linkDataChange)="updateLinkFromForm($event)" [linkData]="selectedLinkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
                 </div>
             </div>
         </div>
