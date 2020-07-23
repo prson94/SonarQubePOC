@@ -367,10 +367,12 @@ namespace d360.model.DataAccessLayer.repositories
                     string lookupValueJoinCriteria;
 
                     if (f.AllowMultipleValues)
+                    {
                         lookupValueJoinCriteria = $" cross apply STRING_SPLIT({tableAlias}.Value, ',') SPF{tableAlias} inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = SPF{tableAlias}.value ";
+                    }
                     else
                     {
-                        lookupValueJoinCriteria = $" inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = {tableAlias}.Value "; 
+                        lookupValueJoinCriteria = $" inner join Asset AC{tableAlias} on AC{tableAlias}.Object = FT{tableAlias}.LookupObjectType and AC{tableAlias}.ObjectID = {tableAlias}.Value ";
                     }
                     
 
