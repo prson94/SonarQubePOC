@@ -150,6 +150,39 @@ namespace d360.model.DataAccessLayer
                 }
             }
 
+            var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
+                select apd.Diagram  as json from asset a 
+	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+                where a.uid = @assetUid)
+
+                ;with links as (
+                SELECT  
+                    JSON_VALUE(nda.value, '$.from') AS FromUid,
+					JSON_VALUE(nda.value, '$.to') AS ToUid,
+					JSON_VALUE(nda.value, '$.labelUid') AS LabelUid
+                FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
+                select links.*, CL.Value from links
+				 inner join ConnectorLabel CL on CL.uid = links.labeluid
+				where labeluid is not null", new { assetUid }).ToList();
+
+            foreach (var item in linksExpandedData)
+            {
+                var json = JsonConvert.SerializeObject(item);
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+                Guid fromUid = Guid.Parse(dict["FromUid"]);
+                Guid toUid = Guid.Parse(dict["ToUid"]);
+                Guid labelUid = Guid.Parse(dict["LabelUid"]);
+                string labelValue = dict["Value"];
+
+                var link = model.linkDataArray.FirstOrDefault(x => x.from == fromUid && x.to == toUid && x.labelUid == labelUid);
+                if (link != null)
+                {
+                    link.label = labelValue;
+                }
+
+            }
+
             model.linkToPortIdProperty = "toPort";
             model.linkFromPortIdProperty = "fromPort";
 
@@ -775,7 +808,7 @@ new
 
         private async Task GetDiagramWorkflowSheet(Asset asset, SLDocument document)
         {
-            string detailSheetName = "Asset Item Details & Workflow";
+            string detailSheetName = "Asset Item Details";
             document.AddWorksheet(detailSheetName);
             document.SelectWorksheet(detailSheetName);
 
@@ -793,7 +826,8 @@ create table #nodes(
 drop table if exists #links
 create table #links(
 	FromUid uniqueidentifier,
-	ToUid uniqueidentifier
+	ToUid uniqueidentifier,
+	LabelUid uniqueidentifier
 )
 
 insert into #nodes
@@ -804,17 +838,19 @@ FROM OPENJSON(@diagram, '$.nodeDataArray') nda
 insert into #links
 SELECT  
     JSON_VALUE(nda.value, '$.from') AS [FromUid],
-    JSON_VALUE(nda.value, '$.to') AS [ToUid]
+    JSON_VALUE(nda.value, '$.to') AS [ToUid],
+	JSON_VALUE(nda.value, '$.labelUid') as [LabelUid]
 FROM OPENJSON(@diagram, '$.linkDataArray') as nda
 
 ;with cte_links as (select 
 n.AssetUid as FromUid,
-l.ToUid
+l.ToUid,
+l.LabelUid
 from #nodes n
 left join #links l on l.FromUid = n.AssetUid 	
 )
 select 
-f1_step.FormattedValue as 'Step No',
+cast(f1_step.FormattedValue as int) as 'Step No',
 f1_name.FormattedValue as 'Name',
 f1_gov.FormattedValue as 'Governance Role',
 case at1.FlowObjectType
@@ -823,8 +859,8 @@ case at1.FlowObjectType
 	                    when 3 then 'Gateway'
                     end as 'Flow Object Type',
 at1.Name as 'Diagram Asset Type',
-'' as 'Next Asset Connector Label',
-f2_step.FormattedValue as 'Next Asset Step No',
+CL.Value as 'Next Asset Connector Label',
+cast(f2_step.FormattedValue as int) as 'Next Asset Step No',
 f2_name.FormattedValue as 'Next Asset Name',
 lower(a1.uid) as 'Asset UID',
 a1.id as 'Asset ID',
@@ -841,6 +877,7 @@ left join FieldDetail f1_gov on f1_gov.Name = 'GovernanceRole' and f1_gov.AssetI
 left join Asset a2 on a2.uid = l.ToUid
 left join FieldDetail f2_name on f2_name.Name = 'Name' and f2_name.AssetId = a2.id 
 left join FieldDetail f2_step on f2_step.Name = 'StepNo' and f2_step.AssetId = a2.id 
+left join ConnectorLabel CL on CL.uid = l.labeluid
 order by cast (f1_step.FormattedValue as int) asc, f1_name.FormattedValue
 ";
 
@@ -868,8 +905,13 @@ order by cast (f1_step.FormattedValue as int) asc, f1_name.FormattedValue
                 {
                     if (rowValues.ContainsKey(field))
                     {
+                        var fieldType = new FieldType();
                         var val = rowValues[field];
-                        setCellValueFromField(document, rowNumber, index, new FieldType(), val);
+                        if (field == "Step No" || field == "Next Asset Step No" || field == "Asset ID" || field == "Next Asset ID")
+                        {
+                            fieldType.Type = "Number";
+                        }
+                        setCellValueFromField(document, rowNumber, index, fieldType, val);
                     }
 
                     index++;

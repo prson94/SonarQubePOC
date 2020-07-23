@@ -1,0 +1,49 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="TDuric" id="Table.dbo.ConnectorLabel-v1">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'dbo' AND TABLE_NAME = 'ConnectorLabel')
+BEGIN
+	CREATE TABLE [dbo].[ConnectorLabel](
+	[ID] [int] IDENTITY(1,1) NOT NULL,
+	[uid] [uniqueidentifier] NOT NULL,
+	[Value] [nvarchar](250) NOT NULL,
+	[CreatedOn] [datetime] NOT NULL,
+	[CreatedBy] [int] NOT NULL,
+	[UpdatedOn] [datetime] NOT NULL,
+	[UpdatedBy] [int] NOT NULL,
+	[State] [int] NOT NULL,
+     CONSTRAINT [PK_ConnectorLabel] PRIMARY KEY CLUSTERED 
+    (
+	    [ID] ASC
+    )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF) ON [PRIMARY]
+    ) ON [PRIMARY]
+
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_uid]  DEFAULT (newid()) FOR [uid]
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_createdOn]  DEFAULT (getutcdate()) FOR [CreatedOn]
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_createdBy]  DEFAULT ((0)) FOR [CreatedBy]
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_updatedOn]  DEFAULT (getutcdate()) FOR [UpdatedOn]
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_updatedBy]  DEFAULT ((0)) FOR [UpdatedBy]
+    ALTER TABLE [dbo].[ConnectorLabel] ADD  CONSTRAINT [DF_ConnectorLabel_State]  DEFAULT ((1)) FOR [State]
+
+END
+
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+DROP TABLE IF EXISTS [dbo].[ConnectorLabel]
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

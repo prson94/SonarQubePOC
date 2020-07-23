@@ -175,6 +175,12 @@ namespace d360.web.Controllers.V2
                         throw new Exception("Link without from and to node detected.");
                     }
                 }
+                
+                //clear label values, we need to save only uids
+                foreach(var link in model.linkDataArray)
+                {
+                    link.label = null;
+                }
 
                 foreach (var node in model.nodeDataArray)
                 {
@@ -375,7 +381,5 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
-
-
     }
 }

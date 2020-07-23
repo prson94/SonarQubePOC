@@ -197,6 +197,7 @@ namespace d360.model
         public DbSet<AssetTypeLevel> AssetTypeLevels { get; set; }
 
         public DbSet<Tag> Tags { get; set; }
+        public DbSet<ConnectorLabel> ConnectorLabels { get; set; }
         public DbSet<AssetTag> AssetTags { get; set; }
 
         public DbSet<AuditField> AuditFields { get; set; }
@@ -526,7 +527,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
             {
                 throw new Exception("Invalid Relationship field encountered no relationship type to lookup found in definition.");
             }
-            
+
             var sql = @"select
                                             [ID],
                                             [Subject],
@@ -675,7 +676,7 @@ select utility.GetFormattedFieldLookupValue(@type, @format, @lo, @loid, @fieldVa
                         inner join [IntersectType] IT on IT.Id = @intersectTypeID
  left join [Intersect] I on I.IntersectTypeID = @intersectTypeID and {formattedIntersectJoin}
                         where A.[Type] = @obj and A.TypeID = @objID and not (A.Object = @fieldObject and A.ObjectID = @fieldObjectID)
-                        {(string.IsNullOrEmpty(query) ? "" : " and (P.TextPath like '%' + @query + '%')" )}
+                        {(string.IsNullOrEmpty(query) ? "" : " and (P.TextPath like '%' + @query + '%')")}
                         {formattedCardinalityCheck}";
                     sql = $@"select distinct A.ObjectID as Value, P.TextPath as Text, case when I.ID is not null then 1 else 0 end as Selected 
                             from AssetWithType A with (nolock)
@@ -2958,7 +2959,7 @@ left join FieldJsonProperty {name}_P on {name}_P.FieldID = {name}_T.ID and {name
                     joins += $@" inner join FieldType {name}_TT on {name}_TT.ID = {f.ID} and {name}_TT.Object = '{fieldTypeRelationType}' and {name}_TT.ObjectID = {typeID} 
 left join Field {name}_T on {name}_T.ObjectType = '{type}' and {name}_T.ObjectID = {idColumn} and {name}_T.FieldTypeID = {name}_TT.ID ";
                 }
-                else if (f.Type == DataType.Lookup.ToString()  && LookupFieldHasColorItem(f))
+                else if (f.Type == DataType.Lookup.ToString() && LookupFieldHasColorItem(f))
                 {
                     columns += $"{name}_T.value as [{name}],";
                     joins += $@" outer apply(
