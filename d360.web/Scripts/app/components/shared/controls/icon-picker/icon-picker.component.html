@@ -1,0 +1,38 @@
+﻿<ng-container *ngIf="!isLoading">
+    <p-dropdown styleClass="icon-picker"
+                panelStyleClass="icon-panel"
+                [options]="categories"
+                [group]="true"
+                [ngModel]="ngModel"
+                (ngModelChange)="ngModelChange.emit($event)"
+                [filter]="true"
+                [showClear]="true"
+                appendTo="body"
+                scrollHeight="320px"
+                placeholder="Optional"
+                filterPlaceholder="Type to filter">
+        <ng-template let-group pTemplate="group">
+            <span>{{group.label}}</span>
+        </ng-template>
+        <ng-template let-item pTemplate="selectedItem">
+            <div class="iconfield-item-selected">
+                <span class="iconfield-swatch">
+                    <i [class]="'fa ' + item.value"></i>
+                </span>
+                <span class="iconfield-item-label">
+                    {{item.label}}
+                </span>
+            </div>
+        </ng-template>
+        <ng-template let-item pTemplate="item">
+            <div class="iconfield-item">
+                <span class="iconfield-swatch">
+                    <i [class]="'fa ' + item.value"></i>
+                </span>
+                <span class="iconfield-item-label">
+                    {{item.label}}
+                </span>
+            </div>
+        </ng-template>
+    </p-dropdown>
+</ng-container>
