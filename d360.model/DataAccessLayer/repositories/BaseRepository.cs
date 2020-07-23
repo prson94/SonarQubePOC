@@ -329,12 +329,12 @@ namespace d360.model.DataAccessLayer.repositories
                 else if (f.Type == "RefListRelationship")
                 {
                     fieldJoins.Add($@"outer apply (
-                        select
-                           STRING_AGG(ISNULL(R1.SubjectName,R2.ObjectName),'{RELATIONSHIP_DELIMITER}') as FormattedValue
-                        from [Intersect] I
-                        left join [IntersectDetail] R1 on R1.[Object] = I.[Subject] and R1.ObjectID = I.SubjectId and I.[Object] = A.Object and I.ObjectID = A.ObjectID
-						left join [IntersectDetail] R2 on R2.[Object] = I.[Object] and R2.ObjectID = I.ObjectId and I.[Subject] = A.Object and I.SubjectID = A.ObjectID
-                        where I.IntersectTypeID = {f.LookupObjectID} and ISNULL(R1.SubjectName,R2.ObjectName) is not null
+                        select string_agg([Name],'{RELATIONSHIP_DELIMITER}') as FormattedValue
+                        from (
+                        select SubjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Object] = A.[Object] and I.ObjectID = A.ObjectID
+                        union all
+                        select ObjectName as [Name] from IntersectDetail I where I.IntersectTypeID = {f.LookupObjectID} and I.[Subject] = A.[Object] and I.SubjectID = A.ObjectID
+                        ) Names
                     ) {tableAlias}");
                 }
                 else if (f.Type == "JsonElement")
