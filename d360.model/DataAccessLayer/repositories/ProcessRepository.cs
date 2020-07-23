@@ -808,7 +808,7 @@ new
 
         private async Task GetDiagramWorkflowSheet(Asset asset, SLDocument document)
         {
-            string detailSheetName = "Asset Item Details & Workflow";
+            string detailSheetName = "Asset Item Details";
             document.AddWorksheet(detailSheetName);
             document.SelectWorksheet(detailSheetName);
 
@@ -905,16 +905,13 @@ order by cast (f1_step.FormattedValue as int) asc, f1_name.FormattedValue
                 {
                     if (rowValues.ContainsKey(field))
                     {
+                        var fieldType = new FieldType();
                         var val = rowValues[field];
-                        if (field == "Step No")
+                        if (field == "Step No" || field == "Next Asset Step No" || field == "Asset ID" || field == "Next Asset ID")
                         {
-                            var intValue = 0;
-                            if (int.TryParse(val.ToString(), out intValue))
-                            {
-                                val = intValue;
-                            }
+                            fieldType.Type = "Number";
                         }
-                        setCellValueFromField(document, rowNumber, index, new FieldType(), val);
+                        setCellValueFromField(document, rowNumber, index, fieldType, val);
                     }
 
                     index++;
