@@ -390,35 +390,41 @@ export class ProcessDiagramTemplates {
 
     public static get linkTemplate() {
         var $ = go.GraphObject.make;
-        var linkSelectionAdornmentTemplate =
-            $(go.Adornment, "Link",
-                $(go.Shape,
-                    // isPanelMain declares that this Shape shares the Link.geometry
-                    {
-                        isPanelMain: true,
-                        stroke: "#166aa8",
-                        fill: "#166aa8",
-                        strokeWidth: 3
-                    })  // use selection object's strokeWidth
-            );
 
         return $(go.Link,  // the whole link panel
             {
                 selectable: true,
-                selectionAdornmentTemplate: linkSelectionAdornmentTemplate,
-                curviness: 50
-
-            },
-            { relinkableFrom: true, relinkableTo: true, reshapable: true, resegmentable: true },
-            {
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                curviness: 50,
+                relinkableFrom: true,
+                relinkableTo: true,
+                reshapable: true,
                 routing: go.Link.AvoidsNodes,
                 curve: go.Link.JumpOver,
                 corner: 5,
-                toShortLength: 4
+                toShortLength: 4,
+                fromEndSegmentLength: 60,
+                toEndSegmentLength: 20,
+                cursor: 'pointer'
             },
             new go.Binding("points").makeTwoWay(),
-            $(go.Shape,  // the link path shape
-                { isPanelMain: true, strokeWidth: 1 }),
+            new go.Binding("layerName", "isSelected", function (selected) {
+                return selected ? 'Foreground' : '';
+            }).ofObject(),
+            $(go.Shape,
+                {
+                    isPanelMain: true,
+                    strokeWidth: 1
+                },
+                new go.Binding("stroke", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("fill", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("strokeWidth", "isSelected", function (data) {
+                    return data ? 3 : 1;
+                }).ofObject()),
             $(go.Shape,  // the arrowhead
                 {
                     toArrow: "Standard",
@@ -434,15 +440,17 @@ export class ProcessDiagramTemplates {
             ),
             $(go.Panel, "Auto", {
                 segmentIndex: 0,
-                segmentOffset: new go.Point(40, 0)
+                segmentOffset: new go.Point(50, 0),
             },
-                $(go.Shape, "Rectangle",  // the link shape
+                new go.Binding("visible", "", function (data) {
+                    return data.data.label ? true : false;
+                }).ofObject(),
+                $(go.Shape, "RoundedRectangle",  // the link shape
                     {
                         fill: "#166aa8",
                         stroke: "#166aa8",
                         strokeWidth: 4
-                    }
-                    ,
+                    },
                     new go.Binding("stroke", "isSelected", function (data) {
                         return data ? '#166aa8' : '#000000';
                     }).ofObject(),
@@ -456,8 +464,8 @@ export class ProcessDiagramTemplates {
                         background: "#166aa8",
                         stroke: "white",
                         minSize: new go.Size(20, NaN),
-                        maxSize: new go.Size(72, NaN),
-                        margin: new go.Margin(2, 4, 2, 4)
+                        maxSize: new go.Size(60, NaN),
+                        margin: new go.Margin(2, 2, 2, 2)
                     },
                     new go.Binding("text", "label").makeTwoWay(),
                     new go.Binding("background", "isSelected", function (data) {

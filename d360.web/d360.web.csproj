@@ -379,6 +379,7 @@
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\V2\SurveysController.cs" />
+    <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
@@ -1615,6 +1616,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\connectorLabel.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />

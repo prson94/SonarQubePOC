@@ -546,7 +546,8 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var link = this.myDiagram.findLinkForData(formData.data);
         try {
             this.myDiagram.model.commit(function (m) {
-                m.setDataProperty(link.data, 'label', formData.label);
+                m.setDataProperty(link.data, 'label', formData.label.Value);
+                m.setDataProperty(link.data, 'labelUid', formData.label.uid);
             }, 'update_link_data');
         } catch (e) {
             console.log(e);

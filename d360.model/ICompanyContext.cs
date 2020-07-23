@@ -145,6 +145,7 @@ namespace d360.model
         DbSet<Survey> Surveys { get; set; }
         DbSet<SurveyType> SurveyTypes { get; set; }
         DbSet<Tag> Tags { get; set; }
+        DbSet<ConnectorLabel> ConnectorLabels { get; set; }
         DbSet<AssetTag> AssetTags { get; set; }
         DbSet<WorkflowEventRegistration> WorkflowEventRegistrations { get; set; }
         DbSet<WorkflowItemAssignment> WorkflowItemAssignments { get; set; }

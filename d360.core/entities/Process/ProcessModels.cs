@@ -69,6 +69,7 @@ namespace d360.core.entities.Process
         public string fromPort { get; set; }
         public string toPort { get; set; }
         public string label { get; set; }
+        public Guid? labelUid { get; set; }
         public IList<double> points { get; set; }
     }
 

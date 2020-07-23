@@ -2,11 +2,14 @@
         <div class="header">
             <span class="asset-name">Connector</span>
         </div>
-        <div class="gov-editor-v2">
+        <div class="gov-editor-v2 connector-label-form">
             <div class="row">
-                <div class="col s12 d3s-color-picker">
-                    <p-autoComplete (onSelect)="selected($event)" [suggestions]="labels" (completeMethod)="search($event)"
-                                    [dropdown]="true"></p-autoComplete>                
+                <span class="FieldName">Label</span>
+                <div class="col s12 label-selector">
+                    <p-autoComplete placeholder="Optional" [(ngModel)]="linkLabel" (onBlur)="onBlur($event)" (onSelect)="selected($event)" [suggestions]="labels" (completeMethod)="search($event)"
+                                    [dropdown]="true" (onKeyUp)="onKeyUp($event)">
+                    </p-autoComplete>
+                    <button *ngIf="linkLabel" (click)="clearLabel()" igButton class="clear-label" icon="fa-times" tooltip="Clear Label"></button>
                 </div>
             </div>
         </div>

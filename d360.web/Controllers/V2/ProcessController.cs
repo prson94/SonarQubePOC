@@ -175,6 +175,12 @@ namespace d360.web.Controllers.V2
                         throw new Exception("Link without from and to node detected.");
                     }
                 }
+                
+                //clear label values, we need to save only uids
+                foreach(var link in model.linkDataArray)
+                {
+                    link.label = null;
+                }
 
                 foreach (var node in model.nodeDataArray)
                 {
@@ -375,38 +381,5 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
-
-        /// <summary>
-        /// Retrieves a list of available labels for current diagram
-        /// </summary>
-        /// <param name="assetUid">The asset uid</param>
-        /// <returns></returns>
-        [
-            HttpGet,
-            Route("{assetUid:Guid}/labels"),
-            SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
-            SwaggerResponse(HttpStatusCode.OK, "The list of update model.", typeof(ProcessDiagramModel)),
-            SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.Unauthorized, "An error to indicate that you are not authorized to perform this action.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.BadRequest, "An error to indicate that the request was not valid.", typeof(ErrorResponse)),
-            SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
-            ApiExplorerSettings(IgnoreApi = true)
-        ]
-        public async Task<IHttpActionResult> GetLabels(Guid assetUid)
-        {
-            if (assetUid == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset uid must be specified."));
-
-            var asset = AssetRepository.GetAssetByUID(assetUid);
-            if (asset == null)
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
-
-            var response = new List<string>() { };
-
-            return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
-
-        }
-
-
     }
 }
