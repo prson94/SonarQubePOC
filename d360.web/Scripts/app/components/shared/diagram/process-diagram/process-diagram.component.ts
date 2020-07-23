@@ -9,11 +9,8 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { CanDeactivate, Router } from '@angular/router';
-import { map } from 'rxjs/operators';
-import { forEach } from 'core-js/fn/array';
-import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 import { Router } from '@angular/router';
+import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 
 @Component({
     selector: 'd3s-process-diagram',
