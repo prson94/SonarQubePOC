@@ -2703,6 +2703,170 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             return policies;
         }
 
+        [Route("policytypes/{id:int}/policiesExcel")]
+        public async Task<IHttpActionResult> GetPoliciesExcel(int id, bool stripHtml = false)
+        {
+            var policies = GetPoliciesByType(id, stripHtml);
+
+            var document = new SLDocument();
+            const string assetSheetName = "Assets";
+            const string apiSheetName = "Api Info";
+
+            var assetType = this.Company.AssetTypes.FirstOrDefault(t => t.ObjectID == id && t.Object == "PolicyType");
+
+            var fields = new List<FieldType>();
+            fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
+            fields.Add(new FieldType { Type = "string", Name = "Uid", FriendlyName = "Asset UID" });
+            fields.Add(new FieldType { Type = "number", Name = "AssetID", FriendlyName = "Asset ID" });
+            
+
+            #region Populate Excel Document
+
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, assetSheetName);
+
+            document.AddWorksheet(apiSheetName);
+            document.SelectWorksheet(apiSheetName);
+
+            document.SetCellValue(1, 1, "pageSize");
+            document.SetCellValue(1, 2, 1);
+            document.SetCellValue(2, 1, "pageNum");
+            document.SetCellValue(2, 2, 1);
+            document.SetCellValue(3, 1, "total");
+            document.SetCellValue(3, 2, 1);
+
+
+            document.SelectWorksheet(assetSheetName);
+
+            //document.SetCellValue(1, 1, "Level 1 Name");
+            //document.SetCellValue(1, 2, "Level 1 Description");
+            //document.SetCellValue(1, 3, "Level 2 Name");
+            //document.SetCellValue(1, 4, "Level 2 Description");
+            //document.SetCellValue(1, 5, "Level 3 Name");
+            //document.SetCellValue(1, 6, "Level 3 Description");
+            //document.SetCellValue(1, 7, "Level 4 Name");
+            //document.SetCellValue(1, 8, "Level 4 Description");
+            int index = 1;
+            foreach (var field in fields)
+            {
+                document.SetCellValue(1, index++, (string)field.FriendlyName);
+            }
+            //document.SetCellValue(1, index + 1, "Level 1 Uid");
+            //document.SetCellValue(1, index + 2, "Level 2 Uid");
+            //document.SetCellValue(1, index + 3, "Level 3 Uid");
+            //document.SetCellValue(1, index + 4, "Level 4 Uid");
+            //document.SetCellValue(1, index + 5, "URL");
+
+            int rowNumber = 1;
+            foreach (var row in policies)
+            {
+                index = 1;
+                rowNumber++;
+                var rowValues = (row as IDictionary<string, object>);
+
+                foreach (var field in fields)
+                {
+                    if (rowValues.ContainsKey(field.Name))
+                    {
+                        var val = rowValues[field.Name];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+                    else if(rowValues.ContainsKey("Field" + field.ID))
+                    {
+                        var val = rowValues["Field" + field.ID];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+
+                    index++;
+                }
+            }
+
+                #endregion
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return ResponseMessage(result);
+        }
+
+        protected void setCellValueFromField(SLDocument document, int rowIndex, int colIndex, FieldType field, object value)
+        {
+            var valueString = value?.ToString() ?? "";
+            switch ((field.Type ?? "").ToUpper())
+            {
+                case "DECIMAL":
+                    double dVal = 0;
+                    if (double.TryParse(valueString, out dVal))
+                        document.SetCellValue(rowIndex, colIndex, dVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "NUMBER":
+                    int intVal = 0;
+                    if (int.TryParse(valueString, out intVal))
+                        document.SetCellValue(rowIndex, colIndex, intVal);
+                    else
+                        document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+                case "DATE":
+                    if (DateTime.TryParse(valueString, out DateTime dateVal))
+                    {
+                        document.SetCellValue(rowIndex, colIndex, dateVal);
+
+                        SLStyle style = document.CreateStyle();
+                        style.FormatCode = "m/d/yyyy";
+                        document.SetCellStyle(rowIndex, colIndex, style);
+                    }
+                    break;
+                case "HTML":
+                    var doc = new HtmlAgilityPack.HtmlDocument();
+                    doc.LoadHtml(value + "");
+                    var txt = HtmlAgilityPack.HtmlEntity.DeEntitize(doc.DocumentNode.InnerText);
+                    if (txt.StartsWith("="))
+                        txt = "'" + txt;
+                    document.SetCellValue(rowIndex, colIndex, txt);
+                    break;
+                default:
+                    if (valueString.StartsWith("="))
+                        valueString = "'" + valueString;
+                    document.SetCellValue(rowIndex, colIndex, valueString);
+                    break;
+            }
+        }
+
+        [Route("models/{id:int}/exportExcel")]
+        public HttpResponseMessage ModelHierarchyExcel(int id)
+        {
+            //var models = ModelHierarchyDetailed(id, true);
+
+            var document = new SLDocument();
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "testing");
+
+            var stream = new System.IO.MemoryStream();
+            document.SaveAs(stream);
+
+            var result = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(stream.GetBuffer())
+            };
+            result.Content.Headers.ContentLength = stream.Length;
+            result.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment")
+            {
+                FileName = $"Relationship Type Items.xlsx"
+            };
+            result.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/vnd.ms-excel");
+
+            return result;
+
+            //return models;
+        }
+
 
         [Route("PolicyType/{id:int}/levels")]
         public IQueryable<dynamic> GetPolicyTypeLevels(int id)

@@ -48,6 +48,29 @@ export class ModelsService extends BaseObservableService {
                 catchError(err => this.handleError(err))
             );
     }
+    getModelHierarchyExcel(
+        id: number,
+        details?: boolean,
+        stripHtml: boolean = false
+    ) {
+        this.http.get(`internal/taxonomy/ModelHierarchyExcel?id=${id}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, 'Models'));
+    }
+
+    downloadFile(data: Blob, name: string) {
+        var filename = `${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
 
     saveModelHierarchy(hierarchy: ModelHierarchy): Observable<JsonResult> {
         if (hierarchy.ID == undefined || !hierarchy.ID) {

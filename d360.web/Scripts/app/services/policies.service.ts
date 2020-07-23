@@ -30,6 +30,30 @@ export class PoliciesService extends BaseObservableService {
             );
     }
 
+    getPoliciesExcel(
+        policyTypeId: number,
+        policyName: string,
+        stripHtml: boolean = false
+    ) {
+        this.http.get(`api/policytypes/${policyTypeId}/policiesExcel?stripHtml=${stripHtml}`, { responseType: 'blob' }).subscribe(data => this.downloadFile(data, policyName));
+    }
+
+    downloadFile(data: Blob, name: string) {
+        var filename = `Filtered ${name} ${new Date().toDateString()}.xlsx`;
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob(data, filename);
+        }
+        else {
+            var url = window.URL.createObjectURL(data);
+            var anchor = document.createElement("a");
+            anchor.setAttribute("style", "display:none;");
+            document.body.appendChild(anchor);
+            anchor.setAttribute("download", filename);
+            anchor.href = url;
+            anchor.click();
+        }
+    }
+
     getPolicyType(id: number): Observable<PolicyType> {
         return this.http.get(`api/policytypes/${id}`)
             .pipe(

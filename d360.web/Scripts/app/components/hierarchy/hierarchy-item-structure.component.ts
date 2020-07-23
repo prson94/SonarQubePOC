@@ -333,6 +333,18 @@ export class HierarchyItemStructureComponent extends BaseComponent implements On
         this.showEditor = false;
     }
 
+    private exportExcel(level: number) {
+        switch (this.assetTypeClass) {
+            case AssetTypeClass.Model:
+                this.modelsService.getModelHierarchyExcel(this.objectTypeId, true, true);
+                console.log("models");
+                break;
+            case AssetTypeClass.Policy:
+                this.policiesService.getPoliciesExcel(this.objectTypeId, this.assetType.Name, true);
+                break;
+        }
+    }
+
     private showAdd(level: number) {
         this.showEditor = true;
         this.selectedParentId = level == 0 ? undefined : this.selected ? this.selected.data.ID : undefined;
