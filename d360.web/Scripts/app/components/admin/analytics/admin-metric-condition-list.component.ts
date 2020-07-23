@@ -1,7 +1,7 @@
 ﻿import { Input, Component, EventEmitter, Output, OnInit, OnChanges } from '@angular/core';
 import { BaseComponent } from '../../shared/base.component';
 import { MetricsService } from '../../../services/metrics.service';
-import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel } from '../../../models/metrics.model';
+import { MetricFieldTypeViewModel, MetricAssetVersionConditionItemViewModel, MetricAssetVersionConditionItemFieldValueViewModel, ScoreTypeAllocation } from '../../../models/metrics.model';
 import { FormMode } from '../../../models/form.model';
 import { MessagesObservableService } from '../../../services/messages-observable.service';
 
@@ -15,7 +15,7 @@ export class AdminMetricConditionListComponent extends BaseComponent implements 
     @Input() assetTypeUid: string;
     @Input() conditions: MetricAssetVersionConditionItemViewModel[] = [];
     @Input() metricConditionListFieldTypes: MetricFieldTypeViewModel[] = [];
-
+   
     @Output() editClick = new EventEmitter();
     @Output() deleteClick = new EventEmitter();
     @Output() addClick = new EventEmitter();

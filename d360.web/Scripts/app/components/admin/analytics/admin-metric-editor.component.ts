@@ -19,6 +19,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     @Input() uid: string;
     @Input() parentUid: string;
     @Input() isExternallyCalculated: boolean;
+    @Input() scoreData: any;
 
     @Input() metricEditorFieldTypes: MetricFieldTypeViewModel[] = [];
 
@@ -37,14 +38,24 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     private displayWeight: number = 0;
     invalidWeightMessage: string;
     maxHeight: number = window.innerHeight - 250;
+    maxScoreEffectiveDate: Date;
 
     constructor(private metricsService: MetricsService, protected messagesService: MessagesObservableService) {
         super();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        this.isLoading = true;
-        this.load();
+        if (changes['uid'] && (changes['uid'].currentValue != changes['uid'].previousValue)) {
+            this.isLoading = true;
+            this.load();
+        }
+        if (changes['parentUid'] && (changes['parentUid'].currentValue != changes['parentUid'].previousValue)) {
+            this.isLoading = true;
+            this.load();
+        }
+        if (changes['scoreData'] && (changes['scoreData'].currentValue != changes['scoreData'].previousValue)) {
+            this.getMaxScoreDate();
+        }
     }
 
     ngOnInit() {
@@ -65,6 +76,12 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                 this.model.EffectiveDate = new Date(this.model.EffectiveDate as string);
                 this.model.EffectiveDate.setMinutes(this.model.EffectiveDate.getMinutes() + this.model.EffectiveDate.getTimezoneOffset());
             }
+
+            //get the scoring data
+            //check if there is anything there 
+            //if there is then show message saying gotta update effective date 
+            //if not show message saying edit is fine and update EF will crete new version.
+
             this.isLoading = false;
         } else {
             this.model = new MetricAssetViewModel();
@@ -87,6 +104,27 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
             dummyConditionGroup.Position = 1;
             dummyConditionGroup.MatchType = MetricMatchType.Any; 
             this.model.ConditionGroups.push(dummyConditionGroup);
+        }
+
+        this.getMaxScoreDate();
+    }
+
+    private getMaxScoreDate() {
+        if (this.scoreData && this.scoreData.length) {
+            let maxDates: any[] = [];
+            this.scoreData.forEach(x => {
+                console.log(x);
+                let scores = x.Scores.sort((x, y) => {
+                    let datex = new Date(x.EffectiveDate);
+                    let datey = new Date(y.EffectiveDate);
+                    return datey.getTime() - datex.getTime();
+                });
+                maxDates.push(new Date(scores[0].EffectiveDate));
+            });
+            maxDates.sort((x, y) => {
+                return y.getTime() - x.getTime();
+            });
+            this.maxScoreEffectiveDate = maxDates[0];
         }
     }
 

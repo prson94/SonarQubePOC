@@ -7320,9 +7320,18 @@ d3s-icon-picker {
                 margin-right: 8px;
             }
         }
-        .no-measure-message{
+
+        .no-measure-message {
             color: @ig-grey-t3;
             padding: 8px;
+        }
+
+        .measure-list {
+            padding-left: 16px;
+
+            li {
+                list-style-type: disc;
+            }
         }
 
         .measure-details-item {
@@ -7493,6 +7502,10 @@ d3s-icon-picker {
 
             &.no-pad {
                 padding: 0px;
+
+                .ui-dropdown {
+                    width: 220px;
+                }
             }
 
             .ui-dropdown {
@@ -7505,12 +7518,40 @@ d3s-icon-picker {
             padding-left: 8px;
         }
 
+        .measure-two-col {
+            display: inline-flex;
+            flex-direction: row;
+            flex-grow: 1;
+            width: 100%;
+
+            .mesure-info {
+                margin: 24px;
+                padding: 8px;
+                border-radius: 4px;
+                background: @ig-grey-t5;
+                flex-grow: 1;
+                display: inline-flex;
+                height: inherit;
+                .fa {
+                    height: 16px;
+                    padding: 4px;
+                    margin-right: 4px;
+                }
+            }
+        }
+
         .matchtype-container {
             display: inline-flex;
 
             .matchtype-option {
                 padding: 4px;
                 margin-left: 4px;
+
+                .ui-radiobutton-box {
+                    border: 1px solid black;
+                    background: #fff;
+                    color: black;
+                }
             }
         }
     }

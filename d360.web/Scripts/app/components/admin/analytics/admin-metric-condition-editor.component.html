@@ -24,7 +24,7 @@
                 <input type="text" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
+                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
                 <div class="ig-input calendar required" >

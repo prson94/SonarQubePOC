@@ -11,34 +11,49 @@
                         <textarea igInput istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" autoResize="autoResize" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="ig-input-label">
-                        Effective From
-                    </div>
-                    <div class="ig-input calendar required">
-                        <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
-                        <i class="fa fa-calendar"></i>
-                    </div>
-                </div>
-                <div class="row bottom-space" *ngIf="!isExternallyCalculated">
-                    <div class="ig-input-label">
-                        Weight(%)
-                        <div class="info-tip">
-                            <i class="fa fa-question-circle"></i>
-                            <div class="tip-container">
-                                <div class="tooltip-content">
-                                    Weight determines the contributions of this measure to the overall score calculated for an asset.
-                                    For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
-                                    The sum of all measures used to calculate the score should sum to 100% (at the top-level with and within each group of measures.
-                                    Where they do not, they will be adjusted when used to calculate the score.
+                <div class="measure-two-col">
+                    <div class="left">
+                        <div class="row">
+                            <div class="ig-input-label">
+                                Effective From
+                            </div>
+                            <div class="ig-input calendar required">
+                                <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                                <i class="fa fa-calendar"></i>
+                            </div>
+                        </div>
+                        <div class="row bottom-space" *ngIf="!isExternallyCalculated">
+                            <div class="ig-input-label">
+                                Weight(%)
+                                <div class="info-tip">
+                                    <i class="fa fa-question-circle"></i>
+                                    <div class="tip-container">
+                                        <div class="tooltip-content">
+                                            Weight determines the contributions of this measure to the overall score calculated for an asset.
+                                            For example, a measure with a weight of 50% will contribute twice as much as a measure with a weight of 25%.
+                                            The sum of all measures used to calculate the score should sum to 100% (at the top-level with and within each group of measures.
+                                            Where they do not, they will be adjusted when used to calculate the score.
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+                            <div class="input-spinner required">
+                                <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
+                                <span *ngIf="model?.Weight == null || model?.Weight == 0" class="feedback">
+                                    {{invalidWeightMessage}}
+                                </span>
                             </div>
                         </div>
                     </div>
-                    <div class="input-spinner required">
-                        <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
-                        <span *ngIf="model?.Weight == null || model?.Weight == 0" class="feedback">
-                            {{invalidWeightMessage}}
+                    <div *ngIf="verb == 'Edit'" class="mesure-info">
+                        <i class="fa fa-info-circle"></i>
+                        <span *ngIf="scoreData" class="measure-message">
+                            As scoring data has been collected against this measure(effective from {{maxScoreEffectiveDate | utcDate | date:'shortDate' }}),
+                            any changes you make to this measiure will result in a  new version being created, with a new effective date.
+                        </span>
+                        <span *ngIf="!scoreData" class="measure-message">
+                            Keep an effective date of {{model.EffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
+                            choose a later date to create a new version of the measure, which will be used in future calculations
                         </span>
                     </div>
                 </div>

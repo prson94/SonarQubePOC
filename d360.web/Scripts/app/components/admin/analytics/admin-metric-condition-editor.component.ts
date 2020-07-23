@@ -27,8 +27,8 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     private usedFieldTypes: number[] = [];
 
     private booleanOptions = [
-        { value: true, label: 'True' },
-        { value: false, label: 'False' }
+        { value: "true", label: 'True' },
+        { value: "false", label: 'False' }
     ];
     private operators = [
         { value: 'eq', label: '=' },
@@ -107,23 +107,6 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
             return other.length > 1;
         }
         return false;
-    }
-    save() {
-
-        if (this.newCondition.FieldType) {
-            switch (this.newCondition.FieldType.Type) {
-                case "Boolean":
-                    this.newCondition.ValuesText = this.newCondition.SingleValue;
-                    break;
-                case "Lookup":
-                    this.newCondition.ValuesText = this.newCondition.FieldType.Values.find(v => v.Value === +this.newCondition.SingleValue).Text; 
-                    break;
-                default:
-                    this.newCondition.ValuesText = this.newCondition.SingleValue;
-                    break;
-            }
-        }
-        this.onSave.emit(this.newCondition);
     }
 
     selectFieldType(condition: MetricAssetVersionConditionItemViewModel) {
@@ -207,7 +190,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                                         let valueModel: MetricAssetVersionConditionItemFieldValueViewModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         valueModel = field.Values.find(o => o.Value === +c.Values[0].Value);
                                         if (valueModel) {
-                                            c.SingleValue = c.Values[0].Value;
+                                            c.SingleValue = +c.Values[0].Value;
                                             c.ValuesText = valueModel.Text;
                                         }
                                     }
@@ -224,6 +207,30 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                         }
                         break;
                 }
+                let options = [];
+                switch (field.Type) {
+                    case 'Text':
+                    case 'Lookup':
+                        options = [{ value: 'neq', label: '!=' }, { value: 'eq', label: '=' }];
+                        break;
+                    case 'Decimal':
+                    case 'Number':
+                    case 'Date':
+                        options = [
+                            { value: 'eq', label: '=' },
+                            { value: 'neq', label: '!=' },
+                            { value: 'lt', label: '<' },
+                            { value: 'lte', label: '<=' },
+                            { value: 'gt', label: '>' },
+                            { value: 'gte', label: '>=' },
+                        ];
+                        break;
+                    case 'Boolean':
+                        options = [{ value: 'eq', label: '=' }];
+                        break;
+                }
+                c.operatorOptions = options;
+
                 this.ref.markForCheck();
             }
         });

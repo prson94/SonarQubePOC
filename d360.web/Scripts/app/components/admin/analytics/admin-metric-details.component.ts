@@ -78,7 +78,9 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                             [metricListFieldTypes]="metricListFieldTypes"
                                             [assetType]="selectedAssetType"
                                             [allocationUid]="allocationUid" 
-                                            (selectionChange)="selectedMetric = $event"></d3s-admin-metric-list>
+                                            [scoreType]="data"
+                                            [scoreData]="scoreData"
+                                            (selectionChange)="selectionChanged($event)"></d3s-admin-metric-list>
                             </div>
                             <div class="col s5 measure-details-panel">
                                 <d3s-loading [isLoading]="isLoading"></d3s-loading>
@@ -102,7 +104,7 @@ import { AdminMetricListComponent } from './admin-metric-list.component';
                                           <div class="details-header">Grouping Measure</div>
                                           <div class="details-content">{{selectedMetric?.IsGroup ? 'Yes':'No'}}</div>
                                       </div>
-                                      <div *ngIf="hasConditions(selectedMetric)" class="measure-details-item">
+                                      <div *ngIf="showConditions" class="measure-details-item">
                                           <div class="details-header">Asset Conditions</div>
                                           <div class="details-condition" *ngFor="let conditionGroup of selectedMetric?.ConditionGroups">
                                               <div class="condition-content">
@@ -153,6 +155,8 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
     private maxHeight: number
 
     @ViewChild('metricList', { static: false }) metricList: AdminMetricListComponent;
+    showConditions: boolean;
+    scoreData: any[];
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -220,6 +224,12 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
                     if (items.length > 0) {
                         this.data = items[0];
                         this.formatScoreCalc();
+                        this.metricsService.getMetricsScores(this.assetTypeUid, this.data.scoreType)
+                            .subscribe(f => {
+                                if (f && f.items && f.items.length > 0) {
+                                    this.scoreData = f.items;
+                                }
+                            });
                         this.isLoading = false;
                     }
                 });
@@ -286,6 +296,7 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             return false;
         }
     }
+
     add() {
         if (this.metricList) {
             this.metricList.add(false);
@@ -376,5 +387,15 @@ export class AdminAnalyticsDetailsComponent extends AdminBaseComponent implement
             }
         }
         return '';
+    }
+
+    selectionChanged(event) {
+        this.selectedMetric = event;
+        if (this.hasConditions(this.selectedMetric)) {
+            this.showConditions = true;
+        }
+        else {
+            this.showConditions = false;
+        }
     }
 }
