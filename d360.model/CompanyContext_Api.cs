@@ -1484,7 +1484,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var graphResults = new List<DatabaseBulkAssetResult>();
@@ -2220,7 +2220,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendAssetGraphEvents(graphResults);
+                        if (sendGraphEvents)
+                        {
+                            SendAssetGraphEvents(graphResults);
+                        }
 
                         if (sendWorkflowEvents)
                         {

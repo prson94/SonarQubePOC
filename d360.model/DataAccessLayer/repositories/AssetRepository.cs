@@ -1728,13 +1728,21 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents, sendGraphEvents: false);
 
                 // Close execution record.
                 execution.Processed = results.Count;
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
+
+                CompanyContext.SendApiGraphEvent(new ApiExecutionInfo
+                {
+                    ExecutionID = execution.ExecutionID,
+                    Action = ApiExecutionAction.DeleteAssets,
+                    CompanyID = CompanyContext.CurrentCompanyID
+                });
+
             }
             catch (Exception ex)
             {
