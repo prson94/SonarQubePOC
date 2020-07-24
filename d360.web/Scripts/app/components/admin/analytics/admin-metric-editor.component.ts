@@ -231,16 +231,8 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
     }
 
     cancel() {
-        this.model = new MetricAssetViewModel();
-        this.model.Weight = 1;
-        const dummyConditionGroup = new MetricAssetVersionConditionViewModel();
-        dummyConditionGroup.Position = 1;
-        dummyConditionGroup.MatchType = MetricMatchType.Any;
-        this.model.ConditionGroups.push(dummyConditionGroup);
-        this.displayWeight = 1;
-        this.invalidWeightMessage = "";
-        this.child = "";
-        this.isExternallyCalculated = false;
+        this.model = null;
+        this.load();
         this.onCancel.emit();
     }
 
