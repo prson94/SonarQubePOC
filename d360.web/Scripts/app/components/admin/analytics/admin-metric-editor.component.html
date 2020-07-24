@@ -73,7 +73,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <d3s-checkbox [value]="model.IsGroup" (onchange)="model.IsGroup = $event"></d3s-checkbox>
+                            <igx-switch [(ngModel)]="model.IsGroup" [ngModelOptions]="{standalone: true}"></igx-switch> 
                         </ng-container>
                     </div>
                 </div>

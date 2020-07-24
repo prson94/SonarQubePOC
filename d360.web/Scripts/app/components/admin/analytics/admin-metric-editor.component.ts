@@ -88,6 +88,7 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         } else {
             this.model = new MetricAssetViewModel();
             this.model.Weight = .01;
+            this.model.IsGroup = false;
             this.verb = "Add";
             if (this.parentUid) {
                 this.child = "Child";

@@ -45,7 +45,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { AdminAnalyticsDetailsComponent } from './admin-metric-details.component';
 import { InfoTooltipModule } from '../../shared/tooltip/info-tooltip.component';
 import { MenuModule } from 'primeng/menu';
-import { D3SCheckboxModule } from '../../shared/controls/gov-checkbox';
+import { SwitchModule } from '../../shared/controls/switch/switch';
 
 @NgModule({
     imports: [
@@ -87,7 +87,7 @@ import { D3SCheckboxModule } from '../../shared/controls/gov-checkbox';
         DirectivesModule,
         SiteModalModule,
         InfoTooltipModule,
-        D3SCheckboxModule
+        SwitchModule,
 
     ],
     declarations: [
