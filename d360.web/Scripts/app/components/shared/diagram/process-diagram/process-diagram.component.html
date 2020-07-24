@@ -22,6 +22,9 @@
 
 
     <div class="diagram-content">
+        <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
+            <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
+        </div>
         <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
             <div class="gov-accordion">
                 <div id="toolTipDIV-event" class="tooltip-content">

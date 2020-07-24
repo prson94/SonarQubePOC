@@ -3,31 +3,17 @@ using d360.model;
 using Microsoft.Web.Http;
 using System;
 using System.Web.Http;
-using d360.core;
 using System.Linq;
-using System.Data.SqlClient;
-using d360.core.enums;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
 using d360.web.Filters;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Models;
 using System.Web.Http.Description;
-using System.Security.Cryptography;
-using System.Text;
-using d360.core.entities.Views;
 using d360.model.DataAccessLayer;
-using d360.core.entities.Graph;
-using System.Data;
-using Dapper;
-using Newtonsoft.Json.Linq;
 using d360.core.entities.Process;
-using SpreadsheetLight;
-using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -240,7 +226,7 @@ namespace d360.web.Controllers.V2
 
                 foreach (var exNode in existingProcess.nodeDataArray)
                 {
-                    if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid))
+                    if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid) && exNode.IsNodeValid)
                     {
                         toDelete.Add(exNode);
                     }

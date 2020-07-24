@@ -405,7 +405,94 @@ export class ProcessDiagramTemplates {
             },
         );
     }
+    public static deletedNodeTemplate(component: ProcessDiagramComponent) {
+        var $ = go.GraphObject.make;  // for conciseness in defining templates
 
+
+        return $(go.Node, "Spot",
+            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: new go.Spot(0.5, 0, 0, 24),
+                cursor: 'default',
+                movable: false
+            },
+            $(go.Panel, 'Auto',
+                $(go.Shape, "RoundedRectangle",
+                    {
+                        portId: "",
+                        strokeWidth: 1,
+                        fromLinkable: true,
+                        toLinkable: true,
+                        margin: new go.Margin(2, 2, 2, 2),
+                        cursor: "pointer",
+                    },
+                    new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                    new go.Binding('fill', 'refItemColor').makeTwoWay()
+                ),
+                $(go.Panel, 'Vertical',
+                    $(go.Panel, 'Auto',
+                        {
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        $(go.Shape,
+                            {
+                                strokeWidth: 1,
+                                minSize: new go.Size(200, NaN),
+                                maxSize: new go.Size(200, 32)
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                            new go.Binding('fill', 'refItemColor').makeTwoWay()
+
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.LeftCenter,
+                                stroke: "#b21a3e",
+                                textAlign: "center",
+                                font: '14px FontAwesome',
+                                margin: new go.Margin(6, 0, 0, 6),
+                                minSize: new go.Size(NaN, 24)
+                            }
+                            , new go.Binding("text", "icon").makeTwoWay()
+                        ),
+                    ),
+                    $(go.Panel, 'Auto',
+                        {
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        $(go.Shape,
+                            {
+                                fill: "white",
+                                minSize: new go.Size(200, 36),
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                            new go.Binding('fill', 'refItemColor').makeTwoWay()),
+                        $(go.TextBlock,
+                            {
+                                background: 'white',
+                                alignment: go.Spot.LeftCenter,
+                                stroke: 'white',
+                                textAlign: "center",
+                                font: this.textFont,
+                                editable: true,
+                                margin: new go.Margin(0, 0, 0, 10),
+                                isMultiline: true,
+                                spacingBelow: 3,
+                                maxSize: new go.Size(180, NaN),
+                                wrap: go.TextBlock.WrapDesiredSize,
+                            },
+                            new go.Binding("text", "Name").makeTwoWay(),
+                            new go.Binding('background', 'refItemColor').makeTwoWay()
+                        )
+                    )
+                )
+            ),
+            this.makePort("T", go.Spot.Top),
+            this.makePort("L", go.Spot.Left),
+            this.makePort("R", go.Spot.Right),
+            this.makePort("B", go.Spot.Bottom)
+        );
+    }
     public static get linkTemplate() {
         var $ = go.GraphObject.make;
 
