@@ -17,7 +17,7 @@
     &.text-area {
         height: 64px;
         max-width: 720px;
-        width: 560px;
+        width: 720px;
     }
 
     &.no-margin-btm {
@@ -93,49 +93,5 @@
 
     &.invalid {
         border-bottom: 1px solid @ig-red-s3;
-    }
-}
-
-.ig-input-label {
-    display: block;
-    font-weight: bold;
-    white-space: nowrap;
-
-    .fa {
-        color: @ig-midblue-t2;
-        line-height: 20px;
-    }
-
-    .info-tip {
-        display: inline-flex;
-        padding-left: 4px;
-        height: 16px;
-
-        .tip-container {
-            position: relative;
-        }
-
-        .tooltip-content {
-            display: none;
-        }
-
-        &:hover {
-            .tip-container {
-                .tooltip-content {
-                    display: block;
-                    top: -75px;
-                    left: -110px;
-                    position: absolute;
-                    height: 150px;
-                    width: 490px;
-                    white-space: normal;
-
-                    &.group {
-                        top: -50px;
-                        height: 105px;
-                    }
-                }
-            }
-        }
     }
 }

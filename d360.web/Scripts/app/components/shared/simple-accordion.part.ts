@@ -9,7 +9,19 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
             <div class="ui-accordion-header ui-state-default" (click)="toggleActive();" [ngClass]="{'ui-state-active': active,'ui-state-hover':hover}" (mouseenter)="hover=true" (mouseleave)="hover=false">
                 <span *ngIf="active" style="float:right;"><i class="fa fa-chevron-up"></i></span>
                 <span *ngIf="!active" style="float:right;"><i class="fa fa-chevron-down"></i></span>                
-                <a  (click)="null" style="text-decoration:none;">{{header}}</a>
+                <div class="ui-accordion-header-info">
+                    <a  (click)="null" style="text-decoration:none;">{{header}}</a>
+                    <div *ngIf="tooltip" class="ig-input-label">
+                        <div class="info-tip">
+                            <i class="fa fa-question-circle"></i>
+                            <div class="tip-container">
+                                <div class="tooltip-content group">
+                                    {{tooltip}}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div [style.display]="active ? 'block' : 'none'" style="margin:5px;">
                 <ng-content></ng-content>
@@ -20,7 +32,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
         trigger('state', [
             state('default', style({opacity: '1' })),
             transition('* => void', [
-                animate('500ms ease', style({ opacity: '0' }))
+                animate('500ms ease', style({ opacity: '0' })) 
             ])
         ])
        ]
@@ -29,6 +41,8 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 export class SimpleAccordion {
     @Input() header: string = "";
     @Input() active: boolean = false;
+    @Input() tooltip: string = "";
+
     @Output() activeChange = new EventEmitter();
 
     state = 'default';

@@ -1,4 +1,4 @@
-﻿<div class="row" *ngIf="conditionItems">
+﻿<div class="row condtions" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
         <p-dropdown [class]="'condition-dropdown'" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">

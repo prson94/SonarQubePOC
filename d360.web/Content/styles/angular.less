@@ -7369,6 +7369,10 @@ d3s-icon-picker {
             overflow: auto;
         }
 
+        .conditions {
+            padding: 0px 16px;
+        }
+
         .bottom-space {
             margin-bottom: 16px;
         }
@@ -7454,6 +7458,27 @@ d3s-icon-picker {
                     line-height: 8px;
                 }
 
+                .ui-accordion-header-info {
+                    display: inline-flex;
+
+                    .ig-input-label {
+                        .info-tip {
+                            .fa {
+                                position: relative;
+                                top: 0px;
+                                margin: 0px;
+                                left: -16px;
+                                font-size: 14px;
+                                width: initial;
+                                color: #5ca3d3;
+                                line-height: 11px;
+                                background: none;
+                                padding: 12px;
+                            }
+                        }
+                    }
+                }
+
                 a {
                     display: inline-flex;
                     padding: 0.5em 0.5em 0.5em 2em;
@@ -7532,6 +7557,7 @@ d3s-icon-picker {
                 flex-grow: 1;
                 display: inline-flex;
                 height: inherit;
+
                 .fa {
                     height: 16px;
                     padding: 4px;
@@ -7557,8 +7583,53 @@ d3s-icon-picker {
     }
 
     .action-bar {
-        padding: 0px 0px 24px 0px;
+        padding: 0px 0px 24px 0px !important;
         margin-top: 16px;
+    }
+}
+
+
+.ig-input-label {
+    display: block;
+    font-weight: bold;
+    white-space: nowrap;
+
+    .fa {
+        color: @ig-midblue-t2;
+        line-height: 20px;
+    }
+
+    .info-tip {
+        display: inline-flex;
+        padding-left: 4px;
+        height: 16px;
+
+        .tip-container {
+            position: relative;
+        }
+
+        .tooltip-content {
+            display: none;
+        }
+
+        &:hover {
+            .tip-container {
+                .tooltip-content {
+                    display: block;
+                    top: -75px;
+                    left: -110px;
+                    position: absolute;
+                    height: 150px;
+                    width: 490px;
+                    white-space: normal;
+
+                    &.group {
+                        top: -50px;
+                        height: 105px;
+                    }
+                }
+            }
+        }
     }
 }
 

@@ -48,12 +48,12 @@
                     <div *ngIf="verb == 'Edit'" class="mesure-info">
                         <i class="fa fa-info-circle"></i>
                         <span *ngIf="scoreData" class="measure-message">
-                            As scoring data has been collected against this measure(effective from {{maxScoreEffectiveDate | utcDate | date:'shortDate' }}),
+                            As scoring data has been collected against this measure (effective from {{maxScoreEffectiveDate | utcDate | date:'shortDate' }}),
                             any changes you make to this measiure will result in a  new version being created, with a new effective date.
                         </span>
                         <span *ngIf="!scoreData" class="measure-message">
                             Keep an effective date of {{model.EffectiveDate | utcDate | date:'shortDate' }} to update the current version of the measure.
-                            choose a later date to create a new version of the measure, which will be used in future calculations
+                            Choose a later date to create a new version of the measure, which will be used in future calculations
                         </span>
                     </div>
                 </div>
@@ -69,7 +69,6 @@
                                             Grouping measures can be used to organize your measures, collecting to0gether a group of a
                                             similar nature (E.g. responsibility assignments, required field checks).
                                             Grouping measures do not have asset conditions, as they are not applied directly to the assets.
-
                                         </div>
                                     </div>
                                 </div>
@@ -81,7 +80,7 @@
             </simple-accordion>
         </div>
         <div class="row" *ngIf="!isLoading && !isExternallyCalculated && model != null">
-            <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" class="ig-accordion">
+            <simple-accordion header="Conditions" active="true" *ngIf="!model?.IsGroup" [tooltip]="measurestooltip" class="ig-accordion">
                 <div class="row" *ngFor="let g of model.ConditionGroups">
                     <d3s-admin-metric-condition-editor [conditionItems]="g.ConditionItems" (matchTypeChange)="g.MatchType = $event" [matchType]="g.MatchType" [metricConditionEditorFieldTypes]="metricEditorFieldTypes"></d3s-admin-metric-condition-editor>
                 </div>
