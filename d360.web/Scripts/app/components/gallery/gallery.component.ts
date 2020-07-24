@@ -8,9 +8,9 @@
 })
 
 export class GalleryComponent implements OnInit {
-    protected activeControl: string = "boolean";
+    protected activeControl: string = "switch";
     protected controls = [
-        { label: 'Boolean Input', key: 'boolean' },
+        { label: 'Switch Input', key: 'switch' },
         { label: 'Button Directive', key: 'button' },
         { label: 'Icon Picker', key: 'icon-picker' },
     ];

@@ -301,7 +301,7 @@ namespace d360.web.Controllers
                     else if (ft.Type == DataType.Score.ToString())
                     {
                         var assetScore = Company.Query<string>("select FormattedValue from dbo.GetAssetScoreById(@id, @scoreType)"
-                            , new { id = details.AssetID, ft.ScoreType }).SingleOrDefault() + "";
+                            , new { id = details.AssetID, ft.ScoreType }).FirstOrDefault() + "";
 
                         var ro = new ReadOnlyField
                         {
@@ -963,7 +963,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         column.filteritems = new List<string>();
                     }
 
-                    var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
 
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
@@ -1109,7 +1109,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         column.filteritems = new List<string>();
                     }
 
-                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
 
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
@@ -3025,7 +3025,7 @@ order by    Name
                 status = fieldType.DefaultFormattedValue;
 
             if (LookupFieldHasColorItem(fieldType)) {
-                string colorAndStatusSql = $@"(SELECT COALESCE(ADV.DisplayValue, F.FormattedValue) as name,
+                string colorAndStatusSql = $@"(SELECT F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
@@ -3113,9 +3113,63 @@ order by    Name
                                     columns = 1,
                                     FirstColumnFields = new List<ReadOnlyField> {
                                     new ReadOnlyField { Name = Resources.FieldInfo.Parent_Name , FieldName = "ArtifactParentName", FieldDescription = Resources.FieldInfo.Parent_Description, Value = parentAsset.DisplayValue, TooltipUrl = parentUrl, TooltipType="Artifact", TooltipContext="Preview", TooltipID = parent.ObjectID}
-                                }
+                                },
+                                    Category = Resources.FieldInfo.SystemNoCategory
                                 });
                             }
+
+                            model.rows.Add(new DetailReadOnlyRowModel
+                            {
+                                columns = 2,
+                                FirstColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.AssetId_Name, FieldName = "AssetId", FieldDescription = Resources.FieldInfo.AssetId_Description, Value = asset.ID.ToString(), DataType = "string" }
+                            },
+                                SecondColumnFields = new List<ReadOnlyField>
+                            {
+                                new ReadOnlyField { Name = Resources.FieldInfo.UID_Name, FieldName = "uid", FieldDescription = Resources.FieldInfo.UID_Description, Value = asset.uid.ToString(), DataType = "string" }
+                            },
+                                Category = Resources.FieldInfo.SystemFieldCategory
+                            });
+
+                            if (asset.UpdatedOn.HasValue)
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 2,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                                    SecondColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.UpdatedOn_Name, FieldName = "ArtifactUpdatedOn", FieldDescription = Resources.FieldInfo.UpdatedOn_Description, Value = asset.UpdatedOn.GetValueOrDefault().ToString("yyyy-MM-ddTHH:mm:ssZ"), DataType = "date" }
+                                },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
+                                });
+                            }
+                            else
+                            {
+                                model.rows.Add(new DetailReadOnlyRowModel
+                                {
+                                    columns = 1,
+                                    FirstColumnFields = new List<ReadOnlyField> {
+                                    new ReadOnlyField { Name = Resources.FieldInfo.CreatedOn_Name, FieldName = "ArtifactCreatedOn", FieldDescription = Resources.FieldInfo.CreatedOn_Description, Value = asset.CreatedOn.HasValue ? asset.CreatedOn.Value.ToString("yyyy-MM-ddTHH:mm:ssZ") : "", DataType = "date" }
+                                },
+                                    Category = Resources.FieldInfo.SystemFieldCategory
+                                });
+                            }
+                        }
+                    }
+                    break;
+
+                #endregion
+                case SystemObjects.Task:
+                    #region Fields
+                    {
+                        var asset = Company.Assets.FirstOrDefault(x => x.ObjectID == id && x.Object == SystemObjects.Task.ToString());
+
+                        if (asset != null)
+                        {
+                            model.rows.AddRange(loadDynamicDisplayFields(type, id));
 
                             model.rows.Add(new DetailReadOnlyRowModel
                             {
@@ -3885,7 +3939,8 @@ order by    Name
                             FirstColumnFields = new List<ReadOnlyField>
                             {
                                 new ReadOnlyField { Name = Resources.FieldInfo.RuleThreshold_Name, FieldName = "RuleThreshold", FieldDescription = Resources.FieldInfo.RuleThreshold_Description, Value = rule.Threshold.ToString() }
-                            }
+                            },
+                            Category = Resources.FieldInfo.SystemNoCategory
                         });
 
                         model.rows.AddRange(loadDynamicDisplayFields(type, id));
@@ -4747,6 +4802,9 @@ where v.id = {0}", id)).FirstOrDefault();
             var predicateTypeInfo = new PredicateType().GetAsList();
             var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
             if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
+            //Only allow editing when diagram
+            if (obj != SystemObjects.Task) disallowEditIds.Add((int)PredicateType.DiagramUse);
+
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
             var excludedPredicateTypes = new[] { (int)PredicateType.Diagram, (int)PredicateType.DiagramReference };

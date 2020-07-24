@@ -139,13 +139,52 @@ namespace d360.model.DataAccessLayer
 
                 if (dictionary["fields"] != null)
                 {
-                    var arr = JsonConvert.DeserializeObject<JArray>(dictionary["fields"]);
+                    var arr = JsonConvert.DeserializeObject<JArray>(dictionary["fields"], new JsonSerializerSettings()
+                    {
+                        DateParseHandling = DateParseHandling.None
+                    });
                     foreach (JObject field in arr)
                     {
                         node[field["Name"].ToString()] = field["Value"].ToString();
                     }
                 }
             }
+
+            var linksExpandedData = Company.Query<dynamic>(@"declare @diagram nvarchar(max) = (
+                select apd.Diagram  as json from asset a 
+	                inner join AssetProcessDiagram apd on apd.AssetID = a.ID
+                where a.uid = @assetUid)
+
+                ;with links as (
+                SELECT  
+                    JSON_VALUE(nda.value, '$.from') AS FromUid,
+					JSON_VALUE(nda.value, '$.to') AS ToUid,
+					JSON_VALUE(nda.value, '$.labelUid') AS LabelUid
+                FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
+                select links.*, CL.Value from links
+				 inner join ConnectorLabel CL on CL.uid = links.labeluid
+				where labeluid is not null", new { assetUid }).ToList();
+
+            foreach (var item in linksExpandedData)
+            {
+                var json = JsonConvert.SerializeObject(item);
+                var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+
+                Guid fromUid = Guid.Parse(dict["FromUid"]);
+                Guid toUid = Guid.Parse(dict["ToUid"]);
+                Guid labelUid = Guid.Parse(dict["LabelUid"]);
+                string labelValue = dict["Value"];
+
+                var link = model.linkDataArray.FirstOrDefault(x => x.from == fromUid && x.to == toUid && x.labelUid == labelUid);
+                if (link != null)
+                {
+                    link.label = labelValue;
+                }
+
+            }
+
+            model.linkToPortIdProperty = "toPort";
+            model.linkFromPortIdProperty = "fromPort";
 
             return model;
         }
@@ -460,6 +499,8 @@ values		(S.ID, S.DisplayValue, S.DisplayValueHash, S.DisplayValuePrefix, getutcd
                     var simpleModel = new ProcessDiagramModel();
                     simpleModel.@class = "ProcessDiagram";
                     simpleModel.linkDataArray = model.linkDataArray;
+                    simpleModel.linkFromPortIdProperty = model.linkFromPortIdProperty;
+                    simpleModel.linkToPortIdProperty = model.linkToPortIdProperty;
 
                     simpleModel.nodeDataArray = new List<NodeData>();
                     foreach (var node in model.nodeDataArray)
@@ -557,7 +598,6 @@ new
 
             var picture = new SLPicture(image, DocumentFormat.OpenXml.Packaging.ImagePartType.Png);
             document.InsertPicture(picture);
-
             var stream = new MemoryStream();
             document.SaveAs(stream);
             byte[] bytes = stream.ToArray();
@@ -613,13 +653,14 @@ new
                 inner join [Predicate] P on P.ID = IT.PredicateID and P.Type = 16
                 inner join Asset O on O.Object = I.Object and O.ObjectID = I.objectid
                 inner join AssetType AT on AT.Id = O.AssetTypeID
+                order by FD.FormattedValue,FD2.FormattedValue
                 ", new { assetUid = asset.uid });
 
             foreach (var assetTypeGroup in relModels.GroupBy(x => x.AssetTypeUid))
             {
                 var assetType = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeGroup.Key);
-                var relatedSheetName = assetTypeGroup.First().AssetTypeName;
-                relatedSheetName = "Related " + relatedSheetName;
+                string relatedSheetName = ("Related " + assetType.Name).GetSafeSheetName();
+
                 document.AddWorksheet(relatedSheetName);
                 document.SelectWorksheet(relatedSheetName);
 
@@ -655,13 +696,13 @@ new
 
                 fields.AddRange(Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
 
-                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
-                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
 
                 fields.Add(new FieldType { Type = "string", Name = guid + "UID", FriendlyName = "Diagram Asset UID" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "ID", FriendlyName = "Diagram Asset ID" });
                 fields.Add(new FieldType { Type = "string", Name = guid + "URL", FriendlyName = "Diagram URL" });
 
+                fields.Add(new FieldType { Type = "string", Name = "AssetUid", FriendlyName = "Asset UID" });
+                fields.Add(new FieldType { Type = "number", Name = "AssetId", FriendlyName = "Asset ID" });
                 int index = 1;
 
                 foreach (var field in fields)
@@ -756,7 +797,7 @@ new
                 var assetTypeUid = Guid.Parse(rowValues["AssetTypeUid"].ToString());
                 var assets = rowValues["assets"];
 
-                string detailSheetName = name + " Details";
+                string detailSheetName = (name + " Details").GetSafeSheetName();
                 document.AddWorksheet(detailSheetName);
                 document.SelectWorksheet(detailSheetName);
                 var at = Company.AssetTypes.FirstOrDefault(x => x.uid == assetTypeUid);
@@ -767,7 +808,7 @@ new
 
         private async Task GetDiagramWorkflowSheet(Asset asset, SLDocument document)
         {
-            string detailSheetName = "Asset Item Details & Workflow";
+            string detailSheetName = "Asset Item Details";
             document.AddWorksheet(detailSheetName);
             document.SelectWorksheet(detailSheetName);
 
@@ -777,13 +818,39 @@ select apd.Diagram  as json from asset a
 	inner join AssetProcessDiagram apd on apd.AssetID = a.ID
 where a.uid = @assetUid)
 
-;with links as (
+drop table if exists #nodes
+create table #nodes(
+	AssetUid uniqueidentifier
+)
+
+drop table if exists #links
+create table #links(
+	FromUid uniqueidentifier,
+	ToUid uniqueidentifier,
+	LabelUid uniqueidentifier
+)
+
+insert into #nodes
+SELECT  
+    JSON_VALUE(nda.value, '$.key') AS [FromUid]
+FROM OPENJSON(@diagram, '$.nodeDataArray') nda
+
+insert into #links
 SELECT  
     JSON_VALUE(nda.value, '$.from') AS [FromUid],
-    JSON_VALUE(nda.value, '$.to') AS [ToUid]
-FROM OPENJSON(@diagram, '$.linkDataArray') as nda)
+    JSON_VALUE(nda.value, '$.to') AS [ToUid],
+	JSON_VALUE(nda.value, '$.labelUid') as [LabelUid]
+FROM OPENJSON(@diagram, '$.linkDataArray') as nda
+
+;with cte_links as (select 
+n.AssetUid as FromUid,
+l.ToUid,
+l.LabelUid
+from #nodes n
+left join #links l on l.FromUid = n.AssetUid 	
+)
 select 
-f1_step.FormattedValue as 'Step No',
+cast(f1_step.FormattedValue as int) as 'Step No',
 f1_name.FormattedValue as 'Name',
 f1_gov.FormattedValue as 'Governance Role',
 case at1.FlowObjectType
@@ -792,8 +859,8 @@ case at1.FlowObjectType
 	                    when 3 then 'Gateway'
                     end as 'Flow Object Type',
 at1.Name as 'Diagram Asset Type',
-'' as 'Next Asset Connector Label',
-f2_step.FormattedValue as 'Next Asset Step No',
+CL.Value as 'Next Asset Connector Label',
+cast(f2_step.FormattedValue as int) as 'Next Asset Step No',
 f2_name.FormattedValue as 'Next Asset Name',
 lower(a1.uid) as 'Asset UID',
 a1.id as 'Asset ID',
@@ -801,7 +868,7 @@ a1.id as 'Asset ID',
 lower(a2.uid) as 'Next Asset UID',
 a2.id as 'Next Asset ID',
  'asset/'+ cast(lower(a2.uid) as nvarchar(36)) as 'Next Asset URL'
-from links l
+from cte_links l
 left join Asset a1 on a1.uid = l.fromuid
 left join AssetType at1 on at1.ID = a1.AssetTypeID
 left join FieldDetail f1_name on f1_name.Name = 'Name' and f1_name.AssetId = a1.id 
@@ -810,7 +877,8 @@ left join FieldDetail f1_gov on f1_gov.Name = 'GovernanceRole' and f1_gov.AssetI
 left join Asset a2 on a2.uid = l.ToUid
 left join FieldDetail f2_name on f2_name.Name = 'Name' and f2_name.AssetId = a2.id 
 left join FieldDetail f2_step on f2_step.Name = 'StepNo' and f2_step.AssetId = a2.id 
-order by cast (f1_step.FormattedValue as int) asc
+left join ConnectorLabel CL on CL.uid = l.labeluid
+order by cast (f1_step.FormattedValue as int) asc, f1_name.FormattedValue
 ";
 
             List<string> diagramFields = new List<string>() {
@@ -820,7 +888,7 @@ order by cast (f1_step.FormattedValue as int) asc
             "Next Asset UID","Next Asset ID","Next Asset URL"
             };
             var diagram = await Company.QueryAsync<dynamic>(diagramSql, new { assetUid = asset.uid });
-            int index = 0;
+            int index = 1;
 
             foreach (var field in diagramFields)
             {
@@ -837,8 +905,13 @@ order by cast (f1_step.FormattedValue as int) asc
                 {
                     if (rowValues.ContainsKey(field))
                     {
+                        var fieldType = new FieldType();
                         var val = rowValues[field];
-                        setCellValueFromField(document, rowNumber, index, new FieldType(), val);
+                        if (field == "Step No" || field == "Next Asset Step No" || field == "Asset ID" || field == "Next Asset ID")
+                        {
+                            fieldType.Type = "Number";
+                        }
+                        setCellValueFromField(document, rowNumber, index, fieldType, val);
                     }
 
                     index++;

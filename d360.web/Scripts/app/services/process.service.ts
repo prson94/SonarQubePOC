@@ -27,7 +27,6 @@ export class ProcessService extends BaseObservableService {
                 catchError(err => this.handleError(err, true))
             );
     }
-
     public getProcessDiagram(uid: string): Observable<any> {
         return this
             .http

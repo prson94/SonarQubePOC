@@ -210,6 +210,7 @@
 	<include file="scripts/Table.metrics.Rule.xml"/>
 	<include file="scripts/Table.metrics.Score.xml"/>
 	<include file="scripts/Table.metrics.ScoreItem.xml"/>
+	<include file="scripts/Table.metrics.ScoreItemLink.xml"/>
 	<include file="scripts/Table.metrics.StagingScoreItem.xml"/>
 	<include file="scripts/Table.queue.Task.xml"/>
 	<include file="scripts/Table.reporting.Dates.xml"/>
@@ -260,6 +261,7 @@
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
+	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	
 
   
@@ -470,6 +472,7 @@
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetFieldTypeLookupList.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
+	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
 	<!-- Data Changes -->

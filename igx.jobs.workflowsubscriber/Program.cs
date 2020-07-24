@@ -5,6 +5,7 @@ using d360.core.queue;
 using d360.extensions.caching;
 using d360.extensions.info;
 using d360.extensions.queue;
+using d360.extensions.storage;
 using d360.model;
 using Microsoft.Azure.WebJobs;
 using Microsoft.ServiceBus.Messaging;
@@ -49,22 +50,10 @@ namespace igx.jobs.workflowsubscriber
 
                 var info = brokeredMessage.GetBody<EventInfo>();
 
-                #region Create EF connection
-
-                var sec = new UriSecurityContextProvider()
-                {
-                    CompanyID = info.CompanyID,
-                    ResourceID = info.ResourceID,
-                    CompanyPrefix = info.DomainPrefix,
-                    IsAdministrator = true
-                };
+                // Create EF connection
                 companyId = info.CompanyID;
-                var cache = new DummyCachingProvider();
-                var queue = new AzureQueueSource();
-                var community = new CommunityContext(cache, queue, sec);
-                var company = new CompanyContext(community, cache, queue, sec, true);
+                var company = JobDbContextCreator.CreateWebjobCompanyContext(companyId, info.ResourceID, info.DomainPrefix, true);
 
-                #endregion
 
                 //check if this event already has a open workflow instance
                 if (info.WorkflowItemID <= 0)

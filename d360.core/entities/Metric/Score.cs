@@ -10,12 +10,15 @@ using System.Runtime.Serialization;
 namespace d360.core.entities.Metric
 {
     [DataContract(Namespace = NAMESPACE), Table("Score", Schema = "metrics")]
-    public class Score : BaseObject
+    public class Score : BaseUidObject
     {
-        [DataMember, Key, Column(Order = 1)]
+        [DataMember]
         public Guid AssetUid { get; set; }
 
-        [DataMember, Key, Column(Order = 3)]
+        [DataMember]
+        public Guid? AllocationUid { get; set; }
+
+        [DataMember]
         public DateTime EffectiveDate { get; set; }
 
         [DataMember]
@@ -27,8 +30,10 @@ namespace d360.core.entities.Metric
         [DataMember]
         public DateTime? EndDate { get; set; }
 
-        [DataMember, Key, Column(Order = 2), JsonConverter(typeof(StringEnumConverter))]
+        [DataMember, JsonConverter(typeof(StringEnumConverter))]
         public ScoreType ScoreType { get; set; } = ScoreType.Governance;
+
+        public ICollection<ScoreItem> Items { get; set; }
     }
 
     #region API Models

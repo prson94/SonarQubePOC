@@ -43,6 +43,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() selectedObject: string;
     @Input() selectedObjectID: number;
     @Input() editorChange: Observable<any>;
+    @Input() disallowedNames: string[] = [];
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -461,6 +462,15 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
         }
 
+        if (this.selectedObject == 'TaskType' && this.field.Name == 'Name' && this.field.Value) {
+
+            if (this.disallowedNames.filter(x => x.toLowerCase().trim() == this.field.Value.toString().toLowerCase().trim()).length > 1) {
+                this.form.controls[this.field.FieldName].setErrors({ alreadyExistsProcess: true });
+                return false;
+            }
+
+        }
+
         if (this.field.FieldType == "Link") {
             if (this.form.controls[this.field.FieldName + '_Name'] == undefined
                 || this.form.controls[this.field.FieldName + '_Name'].disabled
@@ -586,6 +596,10 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
 
         if (errors["hasPipe"]) {
             message += `Tag name should not have pipe symbol '|' in name!`;
+        }
+
+        if (errors["alreadyExistsProcess"]) {
+            message += `Please enter a unique name.`;
         }
 
         return message;

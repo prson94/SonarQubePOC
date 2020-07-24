@@ -98,6 +98,8 @@ export class WorkflowStepFormEditorComponent extends BaseComponent implements On
                         r.forEach(e => {
                             if (e.ID < 1)
                                 return;
+                            else if (e.ID == EmailTaskRecipientType.Followers)
+                                return;
                             this.destination.push({
                                 value: EmailTaskRecipientType[e.ID],
                                 label: e.Name

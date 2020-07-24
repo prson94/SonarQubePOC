@@ -911,14 +911,12 @@ insert into #LookupValues
 select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues_multi
 group by fieldvalue, Id
 
-;with cte_fieldvalues as (select distinct T.fieldvalue, F.Id, FLV.Value
+;insert into #LookupValues
+select distinct T.fieldvalue, F.Id, FLV.Value
 	from {fieldTable}  T
     inner join FieldType F on F.ID = T.FieldTypeID and F.[Type] = 'Lookup' and F.[AllowMultipleValues] = 0 and T.ExecutionID = @executionID
 	left join #RelevantLookupValues FLV on FLV.FieldTypeID = T.FieldTypeID and TRIM(T.FieldValue) = FLV.Text
-	where executionid = @executionid)
-insert into #LookupValues
-select FieldValue, Id, STRING_AGG(Value, ',') from cte_fieldvalues
-group by fieldvalue, Id
+	where T.FieldValue is not null and executionid = @executionid;
 
 update	T
 set		T.[Value] = '0'
@@ -1078,7 +1076,6 @@ where T.ExecutionId = @executionid;
                 Type = AssetEventType.Execution
             };
 
-
             QueueSource.CreateTopicMessage<AssetEventInfo>(Config.GetValue<string>("AssetBusTopicName"), e);
         }
 
@@ -1088,7 +1085,9 @@ where T.ExecutionId = @executionid;
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
-            DataTable fieldTable, out bool success, out string errorMessage)
+            DataTable fieldTable, out bool success, out string errorMessage,
+            bool useFriendlyNames = false
+            )
         {
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
@@ -1120,6 +1119,10 @@ where T.ExecutionId = @executionid;
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
+                if (useFriendlyNames)
+                {
+                    fieldName = fieldType.FriendlyName;
+                }
                 if (fieldType == null)
                 {
                     if (fieldName.ToLower() == "color")
@@ -6826,6 +6829,9 @@ insert into #Keys
 
                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsChanged, import);
+
             return results;
         }
 
@@ -7298,10 +7304,10 @@ insert into #Keys
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
                     }
-
-
                 }
             }
+
+            SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsRemoved, import);
 
             return results;
         }
@@ -8053,7 +8059,7 @@ WHEN MATCHED
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
                         row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
-                        row["ExecutionItemUid"] = Guid.NewGuid(); 
+                        row["ExecutionItemUid"] = Guid.NewGuid();
 
                         table.Rows.Add(row);
 
@@ -8083,7 +8089,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    
+
 
                     bulkCopy.WriteToServer(table);
 
@@ -8400,7 +8406,7 @@ SO.ObjectID as SecondaryID
                 results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
             }
 
-            
+
 
             itemNumber = 1;
             if (generalChecksCompleted)

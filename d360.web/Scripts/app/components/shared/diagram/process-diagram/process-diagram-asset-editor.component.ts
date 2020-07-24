@@ -13,7 +13,10 @@ import { EditorField } from '../../../../models/editor-field.model';
 })
 export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent implements OnChanges {
     @Input() nodeData: any;
+    @Input() isReadOnly: boolean = true;
+    @Input() disallowedNames: string[] = [];
     @Output() nodeDataChange = new EventEmitter();
+    private assetName: string = '';
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -29,16 +32,11 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.nodeData && changes.nodeData.currentValue != changes.nodeData.previousValue) {
-            if (this.nodeData)
-                this.load();
+            if (this.nodeData) {
+                this.assetName = this.nodeData['Name'];
+            }
         }
     }
-
-    load() {
-        this.cdRef.detectChanges();
-        this.cdRef.markForCheck();
-    }
-
 
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
@@ -46,6 +44,11 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
+
+        if (data && data['Name']) {
+            this.assetName = data['Name'];
+        }
+
         for (var prop in data) {
             if (data[prop] == undefined) {
                 delete data[prop];
@@ -58,6 +61,13 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
         fields.filter(x => x.FieldTypeID).forEach(f => {
             if (data[f.FieldName] == undefined) {
                 data[f.FieldName] = '';
+            }
+            else {
+                if (f.FieldType == 'DateTime') {
+                    var dateTime = new Date(data[f.FieldName]);
+                    dateTime.setMinutes(dateTime.getMinutes() - dateTime.getTimezoneOffset());
+                    data[f.FieldName] = dateTime.toISOString();
+                }
             }
         });
         this.nodeDataChange.emit(data);

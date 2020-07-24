@@ -852,8 +852,16 @@ inner join FieldType F on
     </sql>
 	</changeSet>
 
-  
-  
-
+	<changeSet author="Pappas" id="Data.Corrections.GOV-10878">
+		<sql dbms="mssql" splitStatements="false" stripComments="false">
+<![CDATA[
+update	V
+set		V.Definition = '{ "Check": "External" }'
+from	metrics.AssetVersion V 
+		inner join metrics.Asset A on A.Uid= V.AssetUid
+		inner join metrics.Allocation Al on Al.Uid = A.AllocationUid and Al.IsExternallyCalculated = 0 and Al.ScoreType = 1
+]]>
+		</sql>
+	</changeSet>
 
  </databaseChangeLog>

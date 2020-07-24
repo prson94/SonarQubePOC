@@ -103,7 +103,7 @@ export class ProcessDiagramTemplates {
             var margin = new go.Margin(24, 38, 0, 0);
         }
 
-        return $(go.Panel, 'Spot',
+        var badge = $(go.Panel, 'Spot',
             {
                 alignment: go.Spot.TopRight,
                 cursor: 'pointer',
@@ -141,6 +141,15 @@ export class ProcessDiagramTemplates {
                 })
             )
         );
+
+        badge.toolTip = $("ToolTip",
+            $(go.TextBlock, {
+                margin: 4,
+                text: "View and edit related assets"
+            })
+        );
+
+        return badge;
     }
 
     public static eventTemplate(component: ProcessDiagramComponent) {
@@ -158,11 +167,13 @@ export class ProcessDiagramTemplates {
         }
         return $(go.Node, "Spot",
             {
-                locationSpot: new go.Spot(0, 0, 0, 32),
+                locationSpot: new go.Spot(0.5, 0, 0, 56),
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
-                width: 112.2
-            },
+                width: 112.2,
+                cursor: 'move'
+            }
+            ,
             {
                 mouseEnter: function (e, node) { showSmallPorts(node, true); },
                 mouseLeave: function (e, node) { showSmallPorts(node, false); }
@@ -235,7 +246,7 @@ export class ProcessDiagramTemplates {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
         function showSmallPorts(node, show) {
-            if (!(node as go.Node).isEnabled) {
+            if ((node as go.Node).diagram.isReadOnly) {
                 return;
             }
             node.ports.each(function (port) {
@@ -250,8 +261,9 @@ export class ProcessDiagramTemplates {
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
                 selectable: true,
-                locationSpot: new go.Spot(0, 0, 0, 24),
-                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle")
+                locationSpot: new go.Spot(0.5, 0, 0, 24),
+                selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
+                cursor: 'move'
             },
             $(go.Panel, 'Auto',
                 $(go.Shape, "RoundedRectangle",
@@ -297,7 +309,8 @@ export class ProcessDiagramTemplates {
         }
         return $(go.Node, "Spot",
             {
-                locationSpot: new go.Spot(0, 0, 8.5, 38.5),
+                locationSpot: new go.Spot(0.5, 0, -15.5, 62.5),
+                cursor: 'move'
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
@@ -377,28 +390,91 @@ export class ProcessDiagramTemplates {
 
     public static get linkTemplate() {
         var $ = go.GraphObject.make;
-        var linkSelectionAdornmentTemplate =
-            $(go.Adornment, "Link",
-                $(go.Shape,
+
+        return $(go.Link,  // the whole link panel
+            {
+                selectable: true,
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                curviness: 50,
+                relinkableFrom: true,
+                relinkableTo: true,
+                reshapable: true,
+                routing: go.Link.AvoidsNodes,
+                curve: go.Link.JumpOver,
+                corner: 5,
+                toShortLength: 4,
+                fromEndSegmentLength: 60,
+                toEndSegmentLength: 20,
+                cursor: 'pointer'
+            },
+            new go.Binding("points").makeTwoWay(),
+            new go.Binding("layerName", "isSelected", function (selected) {
+                return selected ? 'Foreground' : '';
+            }).ofObject(),
+            $(go.Shape,
+                {
+                    isPanelMain: true,
+                    strokeWidth: 1
+                },
+                new go.Binding("stroke", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("fill", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("strokeWidth", "isSelected", function (data) {
+                    return data ? 3 : 1;
+                }).ofObject()),
+            $(go.Shape,  // the arrowhead
+                {
+                    toArrow: "Standard",
+                    stroke: null,
+                    fill: null
+                },
+                new go.Binding("stroke", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("fill", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject()
+            ),
+            $(go.Panel, "Auto", {
+                segmentIndex: 0,
+                segmentOffset: new go.Point(50, 0),
+            },
+                new go.Binding("visible", "", function (data) {
+                    return data.data.label ? true : false;
+                }).ofObject(),
+                $(go.Shape, "RoundedRectangle",  // the link shape
                     {
-                        isPanelMain: true,
-                        fill: null,
-                        stroke: "#0b6ca9",
-                        strokeWidth: 3,
-
-                    })
-            );
-
-        return $(go.Link, {
-            routing: go.Link.AvoidsNodes,
-            curve: go.Link.JumpOver,
-            corner: 0
-        },
-            $(go.Shape),  // the link shape
-            $(go.Shape,   // the arrowhead
-                { toArrow: "Triangle", fill: 'black' })
+                        fill: "#166aa8",
+                        stroke: "#166aa8",
+                        strokeWidth: 4
+                    },
+                    new go.Binding("stroke", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject(),
+                    new go.Binding("fill", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject()),
+                $(go.TextBlock,
+                    {
+                        textAlign: "center",
+                        font: this.textFont12,
+                        background: "#166aa8",
+                        stroke: "white",
+                        minSize: new go.Size(20, NaN),
+                        maxSize: new go.Size(60, NaN),
+                        margin: new go.Margin(2, 2, 2, 2)
+                    },
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("background", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject())
+            )
         );
     }
+
 
     private static nodeSelectionAdornmentTemplate(shape: string) {
         var $ = go.GraphObject.make;  // for conciseness in defining templates
@@ -506,7 +582,7 @@ export class ProcessDiagramTemplates {
         );
 
     }
-   
+
     public static activityTemplate_pallete() {
         var $ = go.GraphObject.make;
 

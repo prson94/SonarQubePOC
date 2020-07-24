@@ -1891,6 +1891,11 @@ body .ui-toast .ui-toast-message.ui-toast-message-error .ui-toast-close-icon {
 	right: 24px;
 }
 
+.modal-overlay .modal-dialog .modal-content .modal-child-component {	
+	overflow-y: auto;
+	height: calc(100% - 40px);
+}
+
 .treetable .pi-sort-alt:before {
 	content: "\e915"
 }

@@ -43,6 +43,7 @@ import { SecondaryNavService } from '../../../../services/right-sidebar.service'
 import { HeaderBreadcrumbService } from '../../../../services/header-breadcrumb.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { SiteUrlHelpers } from '../../../../static/site-url-helpers';
+import { ProcessDiagramComponent } from '../process-diagram/process-diagram.component';
 
 declare var window: any;
 
@@ -64,6 +65,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     @ViewChild('ownerDetailPanel', { static: false }) ownerDetailPanelRef;
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('filterDetailPanel', { static: false }) filterDetailPanelRef;
+    @ViewChild('processDiagram', { static: false }) processDiagramRef: ProcessDiagramComponent;
 
     private requestModel: AssetBrowserApiHopRequestModel;
     private responseModel: AssetBrowserModel = new AssetBrowserModel();
@@ -1836,6 +1838,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
     * @returns Nothing
     */
     private helper_ResizeDiagram() {
+        if (this.displayConfiguration.DiagramType == 3)
+            return;
+
         let height = window.innerHeight;
         if (this.isFullScreen)
             this.diagramRef.nativeElement.style.height = (height - 55) + 'px';
@@ -2166,6 +2171,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
                 this.isFullScreen = !this.isFullScreen;
                 this.helper_ResizeDiagram();
+                if (this.processDiagramRef) {
+                    this.processDiagramRef.onResize(null);
+                }
                 break;
             case AssetBrowserPanelCommand.Information:
                 this.helper_SetVisiblePanel(e);
@@ -2571,6 +2579,8 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         let layout: go.Layout;
 
+        this.helper_ResizeDiagram();
+
         if (this.helper_LineageDiagramApplies()) {
             layout = this.g(go.LayeredDigraphLayout, { layerSpacing: 150, columnSpacing: 50, setsPortSpots: false });
         }
@@ -2584,10 +2594,10 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
         let dg = this.g(go.Diagram, 'LineageDiagram', {
             initialContentAlignment: go.Spot.Center,
+            initialDocumentSpot: go.Spot.Center,
             allowDrop: true,
             initialAutoScale: go.Diagram.UniformToFill,
             scrollMode: go.Diagram.DocumentScroll,
-            initialPosition: new go.Point(125, 125),
             layout: layout,
             "undoManager.isEnabled": true,
             "commandHandler.archetypeGroupData": { isGroup: true, category: "Normal" }
@@ -3342,5 +3352,12 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
         else this.saveStateChanged.emit(null);
     }
 
+    private openProcessDiagramInfo() {
+        if (this.processDiagramRef) {
+            this.processDiagramRef.changeInfoPanelMode();
+            this.processDiagramRef.myDiagram.requestUpdate();
+        }
+
+    }
 
 } 

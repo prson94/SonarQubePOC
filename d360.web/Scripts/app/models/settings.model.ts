@@ -98,9 +98,7 @@ export class CompanyRebuildJobStatusApiModel {
 }
 
 export enum CompanySettingEnum {
-    GovernanceRoleReferenceListUid = 73,
-    GovernanceRoleLabel = 74,
-    GovernanceRoleDescription = 75
+    GovernanceRoleReferenceListUid = 73
 }
 export class StringSetting {
     Value: string;

@@ -136,8 +136,10 @@ namespace d360.web.Controllers.V2
                 return ResponseMessage(Request.CreateResponse(HttpStatusCode.BadRequest, "The asset with uid specified does not exist."));
 
             ProcessDiagramModel model = ProcessRepository.GetAssetsProcessDiagram(assetUid);
+            var assetDetail = Company.GetAssetDetail(asset.ID);
 
-            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, model));
+            var result = new { model, assetDetail };
+            return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, result));
 
         }
 
@@ -166,10 +168,6 @@ namespace d360.web.Controllers.V2
             {
                 var targetAsset = Company.Assets.FirstOrDefault(x => x.uid == assetUid);
                 ProcessDiagramModel existingProcess = ProcessRepository.GetAssetsProcessDiagram(assetUid);
-
-
-
-
                 foreach (var item in model.linkDataArray)
                 {
                     if (item.from == Guid.Empty || item.to == Guid.Empty)
@@ -177,18 +175,45 @@ namespace d360.web.Controllers.V2
                         throw new Exception("Link without from and to node detected.");
                     }
                 }
+                
+                //clear label values, we need to save only uids
+                foreach(var link in model.linkDataArray)
+                {
+                    link.label = null;
+                }
 
                 foreach (var node in model.nodeDataArray)
                 {
                     if (!model.linkDataArray.Any(x => x.from == node.AssetUid || x.to == node.AssetUid))
                     {
-                        throw new Exception("All nodes must be linked.");
+                        return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new
+                        {
+                            hasError = true,
+                            errors = new List<ValidationError>()
+                            {
+                                new ValidationError(){
+                                AssetTypeUid = Guid.Empty,
+                                AssetUid = Guid.Empty,
+                                ErrorType = "Custom",
+                                Error = "All nodes within diagram must be linked."
+                                }
+                            }
+                        })));
                     }
                 }
 
-                if (model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Count = x.Count() }).Any(x => x.Count > 1))
+                var duplicates = model.nodeDataArray.GroupBy(x => x["Name"].ToLower()).Select(x => new { x.Key, Items = x }).Where(x => x.Items.Count() > 1).ToList();
+
+                if (duplicates.Count > 0)
                 {
-                    throw new Exception("Nodes withing same Task Type cannot have same name.");
+                    List<ValidationError> err = new List<ValidationError>();
+                    foreach (var item in duplicates)
+                    {
+                        var data = item.Items.FirstOrDefault();
+                        err.Add(new ValidationError() { ErrorType = "CustomUniqueName", AssetTypeUid = data.AssetTypeUid, AssetUid = data.AssetUid, Error = item.Items.Count() + " items have the same name '" + data["Name"] + "'" });
+                    }
+                    return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new { hasError = true, errors = err })));
+
                 }
                 List<NodeData> toAdd = new List<NodeData>();
                 List<NodeData> toUpdate = new List<NodeData>();
@@ -318,9 +343,10 @@ namespace d360.web.Controllers.V2
 
             byte[] bytes = await ProcessRepository.GetDiagramExcel(asset, image);
 
+            var detail = Company.GetAssetDetail(asset.ID);
 
 
-            var response = createFileResponseMessage(HttpStatusCode.OK, $"Filename {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
+            var response = createFileResponseMessage(HttpStatusCode.OK, $"{detail.DisplayValue} {DateTime.Now.ToString("MMM dd yyyy")}.xlsx", bytes);
             return await Task.FromResult<IHttpActionResult>(ResponseMessage(response));
 
         }
@@ -355,7 +381,5 @@ namespace d360.web.Controllers.V2
             return await Task.FromResult(ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, response)));
 
         }
-
-
     }
 }

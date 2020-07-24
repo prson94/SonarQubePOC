@@ -104,8 +104,8 @@ namespace igx.jobs.apiexecutionprocessor
             queue = new AzureQueueSource();
 
             community = new CommunityContext(cache, queue, sec);
-            company = new CompanyContext(community, cache, queue, sec, true);
             storage = new AzureStorageProvider();
+            company = new CompanyContext(community, cache, queue, sec, storage, true);
 
             company.AssetsPartiallyProcessed += Company_AssetsPartiallyProcessed;
             company.RelationshipsPartiallyProcessed += Company_RelationshipsPartiallyProcessed;
@@ -395,6 +395,8 @@ namespace igx.jobs.apiexecutionprocessor
                                 await SaveResultsJsonToAzure(postDataQualityResultsResponse, log, "DataQualityResults", HttpMethod.Post);
 
                                 company.SendApiGraphEvent(Info);
+                                company.SendScoreEventWithPayload(dbExecutionItem.ExecutionID, ScoreQueueChangeType.RuleResultsCreated, postDataQualityResultsRequest);
+
                                 #endregion
                                 break;
                         }

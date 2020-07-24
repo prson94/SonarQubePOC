@@ -34,7 +34,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <TypeScriptToolsVersion>Latest</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>3.9</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -379,6 +379,7 @@
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\V2\SurveysController.cs" />
+    <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
@@ -471,6 +472,7 @@
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
+    <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.min.css">
@@ -718,7 +720,7 @@
     <Content Include="Scripts\app\components\fusion\fusion-item.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-manual-load.component.html" />
     <Content Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.html" />
-    <Content Include="Scripts\app\components\gallery\gallery.boolean.component.html" />
+    <Content Include="Scripts\app\components\gallery\gallery.switch.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.button.component.html" />
     <Content Include="Scripts\app\components\gallery\gallery.icon-picker.component.html" />
@@ -743,6 +745,7 @@
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
+    <Content Include="Scripts\app\components\shared\controls\switch\switch.css" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.html" />
@@ -851,7 +854,7 @@
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid-top-level-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.model.ts" />
     <TypeScriptCompile Include="Scripts\app\components\assets-grid\asset-grid.module.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.boolean.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.switch.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.button.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\gallery\gallery.icon-picker.component.ts" />
@@ -1237,7 +1240,7 @@
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\fusion\fusion-attribute-tabs.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\monitor\monitor-workflow-version.component.ts" />
-    <Content Include="Scripts\app\components\shared\controls\gov-checkbox.html" />
+    <Content Include="Scripts\app\components\shared\controls\switch\switch.html" />
     <TypeScriptCompile Include="Scripts\app\components\reference\reference-item-list.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\search\explain-widget\explain-widget.module.ts" />
@@ -1248,7 +1251,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.module.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\assettypeeditor\asset-type-editor-use-as-transformation.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\controls\gov-checkbox.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\switch\switch.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\assetbrowser\tools\panels.component.ts" />
@@ -1616,6 +1619,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\connectorLabel.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />

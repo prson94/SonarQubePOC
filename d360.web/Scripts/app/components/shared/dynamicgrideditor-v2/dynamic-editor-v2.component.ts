@@ -78,6 +78,8 @@ export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges
     @Input() modalTitle: string = '';
     @Input() isModalVisible: boolean = false;
     @Input() useNonLegacyData: boolean = false;
+
+    @Input() disallowedNames: string[] = [];
     private savingInProgress: boolean = false;
     private consolidateToTag: any;
     private isInError: boolean = false;

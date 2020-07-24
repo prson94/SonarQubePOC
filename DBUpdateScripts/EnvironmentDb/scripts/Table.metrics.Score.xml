@@ -32,4 +32,59 @@ END
 	</rollback>
   </changeSet>
 
+  <changeSet author="Core" id="Table.metrics.Score-v2.2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Uid')
+BEGIN
+	ALTER TABLE [metrics].[Score] ADD [Uid] uniqueidentifier constraint DF_MetricScore_Uid default(newid()) not null
+END
+
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'AllocationUid')
+BEGIN
+	ALTER TABLE [metrics].[Score] ADD [AllocationUid] uniqueidentifier null
+END
+
+if exists (select * from sys.key_constraints where  name = 'PK_MetricScore')
+begin
+	alter table [metrics].[Score] drop constraint [PK_MetricScore]
+	alter table [metrics].[Score] add constraint [PK_MetricScore] primary key nonclustered ( [Uid] asc )
+end
+
+if not exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScore')
+begin
+	alter table [metrics].[Score] add constraint UQ_MetricScore unique clustered ( [AssetUid], [ScoreType], [EffectiveDate] ); 
+end
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'Uid')
+BEGIN
+	ALTER TABLE [metrics].[Score] DROP CONSTRAINT [DF_MetricScore_Uid]
+	ALTER TABLE [metrics].[Score] DROP COLUMN [Uid]
+END
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'metrics' AND TABLE_NAME = 'Score' AND COLUMN_NAME = 'AllocationUid')
+BEGIN
+	ALTER TABLE [metrics].[Score] DROP COLUMN [AllocationUid]
+END
+
+if exists (select * from [INFORMATION_SCHEMA].[TABLE_CONSTRAINTS] where CONSTRAINT_TYPE = 'UNIQUE' and CONSTRAINT_NAME = 'UQ_MetricScore')
+begin
+	alter table [metrics].[Score] drop constraint UQ_MetricScore 
+end
+
+if exists (select * from sys.key_constraints where  name = 'PK_MetricScore')
+begin
+	alter table [metrics].[Score] drop constraint [PK_MetricScore]
+	alter table [metrics].[Score] add constraint [PK_MetricScore] primary key clustered ( [AssetUid] ASC, [ScoreType] ASC, [EffectiveDate] DESC )
+end
+		]]>
+	</rollback>
+  </changeSet>
+
 </databaseChangeLog>

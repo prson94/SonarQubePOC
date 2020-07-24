@@ -66,6 +66,10 @@ namespace d360.core.entities.Process
     {
         public Guid from { get; set; }
         public Guid to { get; set; }
+        public string fromPort { get; set; }
+        public string toPort { get; set; }
+        public string label { get; set; }
+        public Guid? labelUid { get; set; }
         public IList<double> points { get; set; }
     }
 
@@ -74,12 +78,16 @@ namespace d360.core.entities.Process
         public string @class { get; set; }
         public IList<NodeData> nodeDataArray { get; set; }
         public IList<LinkData> linkDataArray { get; set; }
+        public string linkFromPortIdProperty { get; set; }
+        public string linkToPortIdProperty { get; set; }
     }
     public class ValidationError
     {
         public Guid AssetTypeUid { get; set; }
         public Guid AssetUid { get; set; }
         public string Error { get; set; }
+        public string ErrorType { get; set; }
+        public string AssetName { get; set; }
     }
 
     public class ProcessDiagramBadge

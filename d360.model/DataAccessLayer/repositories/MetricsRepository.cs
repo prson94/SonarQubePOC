@@ -343,7 +343,8 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
                     Threshold = model.Threshold,
                     Weight = model.Weight,
                     State = metricAsset.State,
-                    EffectiveEndDate = null
+                    EffectiveEndDate = null,
+                    Definition = model.ScoreType == ScoreType.Governance ? "{ \"Check\": \"External\"}" : "{}"
                 };
 
                 // End-date the now previous version, if any.
@@ -552,6 +553,14 @@ from metrics.Asset A inner join metrics.AssetVersion V on V.AssetUid = A.Uid and
             #endregion
 
             Company.Update(metricAssetVersion);
+
+            if (isNew)
+            {
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureCreated, metricAsset);
+            }
+            {
+                Company.SendScoreEventWithPayload(Guid.NewGuid(), ScoreQueueChangeType.MeasureChanged, metricAsset);
+            }
 
             return new WorkHttpStatus(HttpStatusCode.OK, "", "");
         }
