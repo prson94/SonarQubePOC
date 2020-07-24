@@ -152,6 +152,21 @@ export class ProcessDiagramTemplates {
         return badge;
     }
 
+
+    private static linkValidation(fromnode: go.Node, fromport, tonode: go.Node, toport) {
+        var doesLinkExist: boolean = false;
+        try {
+            var links = fromnode.diagram.links;
+            doesLinkExist = links.any(x => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
+                || (x.data.from == tonode.data.key && x.data.to == fromnode.data.key));
+        }
+        catch (ex) {
+            console.warn(ex);
+            doesLinkExist = false;
+        }
+        return !doesLinkExist;
+    }
+
     public static eventTemplate(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
         function showSmallPorts(node, show) {
@@ -171,7 +186,8 @@ export class ProcessDiagramTemplates {
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
                 width: 112.2,
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             }
             ,
             {
@@ -263,7 +279,8 @@ export class ProcessDiagramTemplates {
                 selectable: true,
                 locationSpot: new go.Spot(0.5, 0, 0, 24),
                 selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             },
             $(go.Panel, 'Auto',
                 $(go.Shape, "RoundedRectangle",
@@ -310,7 +327,8 @@ export class ProcessDiagramTemplates {
         return $(go.Node, "Spot",
             {
                 locationSpot: new go.Spot(0.5, 0, -15.5, 62.5),
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {

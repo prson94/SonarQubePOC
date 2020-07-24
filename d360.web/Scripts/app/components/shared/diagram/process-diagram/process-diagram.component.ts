@@ -92,7 +92,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
-        this.processService.getProcessDiagramColors()
+        this.processService.getProcessDiagramColors(this.assetUid)
             .subscribe(colors => {
                 this.colors = colors;
             });

@@ -12,7 +12,8 @@ import {
     SimpleChange,
 
     ViewChild,
-    ElementRef
+    ElementRef,
+    ViewEncapsulation
 } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 
@@ -36,6 +37,14 @@ import { Subject } from 'rxjs';
     templateUrl: './dynamic-editor-v2.component.html',
     providers: [EditorDefinitionService, UriBasedService, CascadeService, AssetService],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    encapsulation: ViewEncapsulation.None,
+    styles: [
+        `
+            .ui-multiselect-panel,.ui-dropdown-panel {
+                z-index: 10000 !important;
+            }
+        `
+    ],
 })
 
 export class DynamicEditorComponentV2 extends BaseComponent implements OnChanges, OnInit {
