@@ -42,6 +42,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
     private newCondition: MetricAssetVersionConditionItemViewModel = new MetricAssetVersionConditionItemViewModel;
 
     verb = "Add";
+    conditionsValid: boolean = true;
 
     constructor(private metricsService: MetricsService,
         protected messagesService: MessagesObservableService,
@@ -56,7 +57,7 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
         });
         this.usedFieldTypes = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
         this.metricConditionEditorFieldTypes.sort((a, b) => a.Name.localeCompare(b.Name))
-
+        this.conditionsValid = true;
         this.usedFieldTypes.forEach(i => {
             const ft = this.metricConditionEditorFieldTypes.find(ft => ft.ID === +i);
             if (ft) {
@@ -163,6 +164,13 @@ export class AdminMetricConditionEditorComponent extends BaseComponent implement
                     break;
             }
             condition.operatorOptions = options;
+
+            //check duplicate fieldTypeIDs
+            if (this.conditionItems.length > 1) {
+                let fieldIds = this.conditionItems.map(x => { return x.ConditionFieldTypeID });
+                this.conditionsValid = !fieldIds.some((item, inx) => { return fieldIds.indexOf(item) != inx });
+            }
+
             this.ref.markForCheck();
         }
     }

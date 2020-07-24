@@ -46,9 +46,10 @@
             </div>
         </div>
         <div class="actions-btn">
-            <button igButton icon="fa-trash" (click)="removeCondition(condition)" tooltip="Edit score definition"></button>
+            <button igButton icon="fa-trash" (click)="removeCondition(condition)" tooltip="Remove Condition"></button>
         </div>
     </div>
+    <div class="feedback" *ngIf="!conditionsValid">Condition fields must be unique*</div>
     <div class="condition-row d3s-color-picker" *ngIf="fieldTypeDropdownOptions.length > 0">
         <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">

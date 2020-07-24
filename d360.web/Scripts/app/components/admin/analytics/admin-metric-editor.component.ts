@@ -68,7 +68,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         this.displayWeight = 1;
         this.invalidWeightMessage = "";
         this.child = "";
-        this.isExternallyCalculated = false;
         this.model.ParentUid = null;
         if (this.uid) {
             this.verb = "Edit"
@@ -113,7 +112,6 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
         if (this.scoreData && this.scoreData.length) {
             let maxDates: any[] = [];
             this.scoreData.forEach(x => {
-                console.log(x);
                 let scores = x.Scores.sort((x, y) => {
                     let datex = new Date(x.EffectiveDate);
                     let datey = new Date(y.EffectiveDate);
@@ -158,16 +156,20 @@ export class AdminMetricEditorComponent extends BaseComponent implements OnInit,
                     }
                 }
 
-                if (this.model.ConditionGroups.length) {
+                if (this.model.ConditionGroups.length && !this.model.IsGroup) {
                     let conditions = this.model.ConditionGroups[0].ConditionItems;
                     if (conditions.length == 0) {
                         valid = false;
                     } else {
+                        let fieldIds = conditions.map(x => { return x.ConditionFieldTypeID });
                         conditions.forEach(x => {
                             if (!x.ConditionFieldTypeID || !x.Operator || !x.SingleValue) {
                                 valid = false;
                             }
                         });
+                        if (fieldIds.some((item, inx) => { return fieldIds.indexOf(item) != inx })) {
+                            valid = false;
+                        }
                     }
                 }
             }
