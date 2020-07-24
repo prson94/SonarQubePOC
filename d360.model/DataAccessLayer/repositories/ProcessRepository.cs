@@ -186,6 +186,15 @@ namespace d360.model.DataAccessLayer
             model.linkToPortIdProperty = "toPort";
             model.linkFromPortIdProperty = "fromPort";
 
+            //handle invalid data
+            foreach (var item in model.nodeDataArray.Where(x => !x.ContainsKey("assetTypeUid")))
+            {
+                item.Add("isInvalid", "true");
+                item.Add("Name", "An administrator removed this diagram asset type.");
+                item.Add("icon", "fa-exclamation-triangle");
+                item.Add("category", "deleted-node");
+            }
+
             return model;
         }
 

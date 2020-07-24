@@ -16,7 +16,7 @@ namespace d360.core.entities.Process
             "icon","key","loc","refItemColor",
             "isNew","Uid","AssetTypeUid",
             "hasError","objectId","governanceDisplayValue",
-            "relCount"
+            "relCount","isInvalid"
         };
         public string GetHash()
         {
@@ -58,6 +58,16 @@ namespace d360.core.entities.Process
             get
             {
                 return Guid.Parse(this["assetTypeUid"]);
+            }
+        }
+
+        public bool IsNodeValid
+        {
+            get
+            {
+                if (this.ContainsKey("isInvalid"))
+                    return false;
+                return true;
             }
         }
     }

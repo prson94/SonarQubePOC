@@ -58,6 +58,7 @@
                         <p-multiSelect *ngIf="field.UseColorControl"
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items"
+                                       [appendTo]="'body'"
                                        ngDefaultControl
                                        [defaultLabel]="multiselectLabel()">
                             <ng-template let-items pTemplate="selectedItems">
@@ -79,6 +80,7 @@
                                        [formControlName]="field.FieldName"
                                        [options]="field.Items | dropdownItemToSelectItemPipe"
                                        [style]="{width:'100%'}"
+                                        [appendTo]="'body'"
                                        ngDefaultControl
                                        [defaultLabel]="multiselectLabel()"></p-multiSelect>
                     </div>

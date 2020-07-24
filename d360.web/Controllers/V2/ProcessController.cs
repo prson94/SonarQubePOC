@@ -3,31 +3,17 @@ using d360.model;
 using Microsoft.Web.Http;
 using System;
 using System.Web.Http;
-using d360.core;
 using System.Linq;
-using System.Data.SqlClient;
-using d360.core.enums;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using System.Runtime.Serialization;
 using d360.web.Filters;
 using Swashbuckle.Swagger.Annotations;
 using d360.web.Models;
 using System.Web.Http.Description;
-using System.Security.Cryptography;
-using System.Text;
-using d360.core.entities.Views;
 using d360.model.DataAccessLayer;
-using d360.core.entities.Graph;
-using System.Data;
-using Dapper;
-using Newtonsoft.Json.Linq;
 using d360.core.entities.Process;
-using SpreadsheetLight;
-using System.IO;
 
 namespace d360.web.Controllers.V2
 {
@@ -54,10 +40,11 @@ namespace d360.web.Controllers.V2
         /// <summary>
         /// Returns a list of available colors for Governance Roles
         /// </summary>
+        /// <param name="assetUid">The asset uid</param>
         /// <returns></returns>
         [
             HttpGet,
-            Route("governanceRoleColors"),
+            Route("{assetUid:Guid}/governanceRoleColors"),
             SwaggerConsumes("application/json"), SwaggerProduces("application/json"), //, "application/xml"
             SwaggerResponse(HttpStatusCode.OK, "The list of available diagram types.", typeof(ApiStatusResponse)),
             SwaggerResponse(HttpStatusCode.NotFound, "An error to indicate that the asset was not found.", typeof(ErrorResponse)),
@@ -66,16 +53,34 @@ namespace d360.web.Controllers.V2
             SwaggerResponse(HttpStatusCode.InternalServerError, "An error to indicate an internal server error.", typeof(ErrorResponse)),
             ApiExplorerSettings(IgnoreApi = true)
         ]
-        public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes()
+        public async Task<IHttpActionResult> GetAvailableColorsForDiagramNodes(Guid assetUid)
         {
             var governanceRoleUid = Community.GetCompanySettingByKey<Guid>("GovernanceRoleReferenceListUid");
             var results = await Company.QueryAsync<dynamic>($@"
-                select a.ObjectID, a.Object, JSON_VALUE(ACJ.ColorJson, '$.Value') as Value, adv.DisplayValue 
-                    from assettype at
-	                inner join asset a on a.AssetTypeID = at.ID
-                    inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
-                    outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
-                where at.uid = @governanceRoleUid", new { governanceRoleUid });
+                    drop table if exists #govRoles
+                    create table #govRoles(
+	                    GovRoleUid uniqueidentifier
+                    )
+                    insert into #govRoles 
+                    select @governanceRoleUid
+
+                    insert into #govRoles
+                    select distinct GOV.uid from asset a
+	                    inner join AssetType AT on At.id = a.AssetTypeID
+	                    inner join IntersectType It on it.Subject = at.Object and it.SubjectID = at.ObjectID
+	                    inner join Predicate P on it.PredicateID = p.ID and p.Type = 15
+	                    inner join AssetType Task on Task.Object = it.Object and task.ObjectID = it.ObjectID
+	                    inner join FieldType FT on FT.Object = task.object and ft.objectid = task.objectid and ft.Name ='GovernanceRole'
+	                    inner join AssetType GOV on GOV.ObjectId = FT.LookupObjectId and gov.Object ='ReferenceItemType'
+	                    where a.uid = @assetuid
+
+                     select a.ObjectID, a.Object, JSON_VALUE(ACJ.ColorJson, '$.Value') as Value, adv.DisplayValue 
+                                        from #govRoles gov
+					                    inner join AssetType at on at.uid = gov.GovRoleUid
+	                                    inner join asset a on a.AssetTypeID = at.ID
+                                        inner join dbo.GetAssetDisplayValue() adv on adv.id = a.id
+                                        outer apply dbo.GetAssetColorJsonById(A.Id) ACJ
+                    ", new { governanceRoleUid, assetUid });
 
             return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, results));
         }
@@ -175,9 +180,9 @@ namespace d360.web.Controllers.V2
                         throw new Exception("Link without from and to node detected.");
                     }
                 }
-                
+
                 //clear label values, we need to save only uids
-                foreach(var link in model.linkDataArray)
+                foreach (var link in model.linkDataArray)
                 {
                     link.label = null;
                 }
@@ -221,7 +226,7 @@ namespace d360.web.Controllers.V2
 
                 foreach (var exNode in existingProcess.nodeDataArray)
                 {
-                    if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid))
+                    if (!model.nodeDataArray.Any(x => x.AssetUid == exNode.AssetUid) && exNode.IsNodeValid)
                     {
                         toDelete.Add(exNode);
                     }

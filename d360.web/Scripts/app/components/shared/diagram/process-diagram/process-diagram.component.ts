@@ -48,7 +48,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private colors: any[] = [];
 
     private isLoaded = false;
-    private isDiagramLoaded = false;
+    public isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
@@ -92,7 +92,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
-        this.processService.getProcessDiagramColors()
+        this.processService.getProcessDiagramColors(this.assetUid)
             .subscribe(colors => {
                 this.colors = colors;
             });
@@ -362,6 +362,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         templmap.add("activity", activityNodeTemplate);
         templmap.add("event", eventNodeTemplate);
         templmap.add("gateway", gatewayNodeTemplate);
+        templmap.add("deleted-node", ProcessDiagramTemplates.deletedNodeTemplate(this));
         templmap.add("", activityNodeTemplate);
         this.myDiagram.nodeTemplateMap = templmap;
 
