@@ -2718,7 +2718,8 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
             fields.AddRange(this.Company.FieldTypes.Where(f => f.AssetTypeID == assetType.ID).OrderBy(x => x.ColumnOrder).ThenBy(x => x.FriendlyName).ToList());
             fields.Add(new FieldType { Type = "string", Name = "Uid", FriendlyName = "Asset UID" });
             fields.Add(new FieldType { Type = "number", Name = "AssetID", FriendlyName = "Asset ID" });
-            
+            fields.Add(new FieldType { Type = "string", Name = "Url", FriendlyName = "URL" });
+
 
             #region Populate Excel Document
 
@@ -2773,6 +2774,11 @@ where   A.ID not in ({Company.GetNoReadSqlStatement()})
                     else if(rowValues.ContainsKey("Field" + field.ID))
                     {
                         var val = rowValues["Field" + field.ID];
+                        setCellValueFromField(document, rowNumber, index, field, val);
+                    }
+                    else if(field.Name == "Url")
+                    {
+                        var val = "asset/" + row.Uid;
                         setCellValueFromField(document, rowNumber, index, field, val);
                     }
 
