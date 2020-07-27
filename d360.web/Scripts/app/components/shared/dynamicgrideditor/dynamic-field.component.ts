@@ -233,7 +233,10 @@ export class DynamicFieldComponent extends BaseComponent implements OnInit, OnDe
 
                         return this.fieldsService.getCascadingListFieldValues(casc.fieldTypeId, casc.parentListItemId).subscribe(
                             res => {
-                                this.field.Items = res;
+                                if (this.field.UseColorControl)
+                                    this.field.Items = this.getColorItemsAsSelectItem(res);
+                                else 
+                                    this.field.Items = res;
 
                                 if (((this.field.Items == null || this.field.Items.length == 0) && this.field.Value != null) || this.hasCascadeLoaded) {
                                     this.field.Value = null;
