@@ -7006,6 +7006,65 @@ d3s-process-diagram {
         .FieldName {
             color: black;
         }
+
+        .ui-multiselect-label-container {
+            max-width: 250px;
+        }
+
+        .ui-editor-toolbar {
+            padding: 4px;
+            background: #f1f2f3;
+
+            .kebab-tools {
+            }
+
+            .ql-formats {
+                margin-right: 0px;
+
+                &.with-border {
+                    border-right: 1px solid #dde0e3;
+                }
+
+                .custom-tools {
+                    position: absolute;
+                    background-color: white;
+                    border: 1px solid #cccccc;
+                    padding: 6px;
+                    margin-top: 28px;
+                    right: 16px;
+                    background: #f1f2f3;
+                    font-size: 14px;
+                    font-weight: normal;
+                    z-index: 10;
+
+                    .menu-item {
+                        color: black;
+                        position: relative;
+                        cursor: pointer;
+
+                        &:hover {
+                            ul {
+                                display: block;
+                            }
+                        }
+
+                        ul {
+                            display: none;
+                            position: absolute;
+                            top: -7px;
+                            transform: translateX(-100%);
+                            left: -6px;
+                            background: #f1f2f3;
+                            border: 1px solid #cccccc;
+
+                            li {
+                                list-style-type: none;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     .empty-overlay {
@@ -7453,6 +7512,7 @@ d3s-icon-picker {
         }
     }
 }
+
 .process-item-object-detail, .asset-editor {
 
     .ui-accordion-header {
