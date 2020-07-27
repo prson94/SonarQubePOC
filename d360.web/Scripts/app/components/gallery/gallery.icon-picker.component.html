@@ -34,6 +34,56 @@
             <d3s-icon-picker [disabled]="true"></d3s-icon-picker>
         </div>
     </div>
+    <div class="gallery-section">
+        <h4>Tab Index</h4>
+        <p>
+            Click on the first input then tab using your tab keys.
+        </p>
+        <div class="row">
+            <input type="text" tabindex="1" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="2" />
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <d3s-icon-picker tabindex="3" [style]="{'width' : '150px'}"></d3s-icon-picker>
+        </div>
+        <div class="row">&nbsp;</div>
+        <div class="row">
+            <input type="text" tabindex="4" />
+        </div>
+    </div>
+    <div class="gallery-section">
+        <h4>Reactive Forms</h4>
+        <p>
+            The component can be used with reactive forms as well.
+        </p>
+        <div>
+            <form #form="ngForm">
+                <div class="row">
+                    <d3s-icon-picker #myIcon="ngModel"
+                                     name="myIcon"
+                                     [(ngModel)]="formValue"
+                                     [style]="{'border' : myIcon?.errors?.required ? '2px solid #900' : ''}"
+                                     required></d3s-icon-picker>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <span *ngIf="myIcon.invalid && (myIcon.dirty || myIcon.touched)" class="requiredMessage">
+                        <span *ngIf="myIcon.errors.required">
+                            * Value required
+                        </span>
+                    </span>
+                </div>
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <button igButton type="submit" [disabled]="!form.valid" label="Save"></button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <div class="tile tile-detail">

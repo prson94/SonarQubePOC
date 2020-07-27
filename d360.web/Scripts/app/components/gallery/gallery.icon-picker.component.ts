@@ -13,6 +13,12 @@
         .gallery-section h4 {
             padding-bottom: 8px;
         }
+
+        .requiredMessage{
+            padding: 5px;
+            color: #900;
+            font-weight: bold;
+        }
         `
     ],
     changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,6 +30,7 @@ export class GalleryIconPickerComponent implements OnInit {
     protected sampleUsage: string = '<d3s-icon-picker [(ngModel)]="model.Icon"></d3s-icon-picker>';
 
     private value;
+    private formValue;
 
     constructor(private ref: ChangeDetectorRef) { }
 
@@ -32,7 +39,8 @@ export class GalleryIconPickerComponent implements OnInit {
         this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the icon picker control", Default: "null" });
         this.properties.push({ Name: "tabindex", Type: "string", Description: "Index of the element in tabbing order.", Default: "null" });
         this.properties.push({ Name: "disabled", Type: "boolean", Description: "Used to set the control to disabled state where the user cannot interact with it", Default: "false" });
-        this.properties.push({ Name: "ngModel", Type: "string", Description: "Model representing the value of the icon picker control", Default: "null" });
+        this.properties.push({ Name: "required", Type: "boolean", Description: "When this attribute is present the control must have a selected value to be valid", Default: "" });
+        this.properties.push({ Name: "style", Type: "string", Description: "Inline style of the component.", Default: "" });
 
         this.events = new Array();
         this.events.push({ Name: "ngModelChange", Description: "Fired when the selection changes" });

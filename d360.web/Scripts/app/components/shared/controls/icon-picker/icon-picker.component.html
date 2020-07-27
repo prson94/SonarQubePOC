@@ -1,6 +1,7 @@
 ﻿<ng-container *ngIf="!isLoading">
     <p-dropdown styleClass="icon-picker"
                 panelStyleClass="icon-panel"
+                [style]="style"
                 [options]="categories"
                 [disabled]="disabled"
                 [group]="true"
@@ -11,7 +12,8 @@
                 [tabindex]="tabindex"
                 appendTo="body"
                 scrollHeight="320px"
-                placeholder="Optional"
+                [attr.required]="isRequired"
+                [placeholder]="(isRequired ? 'Required' : 'Optional')"
                 filterPlaceholder="Type to filter">
         <ng-template let-group pTemplate="group">
             <span>{{group.label}}</span>

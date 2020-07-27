@@ -2,7 +2,7 @@
 import { BaseComponent } from '../../base.component';
 
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IconService } from '../../../../services/icon.service';
 import { DropdownModule } from 'primeng/dropdown';
 
@@ -20,6 +20,7 @@ export const ICON_VALUE_ACCESSOR: any = {
 @Component({
     selector: 'd3s-icon-picker',
     templateUrl: 'icon-picker.component.html',
+    providers: [ICON_VALUE_ACCESSOR],
     styleUrls: ['icon-picker.component.css']
 })
 
@@ -27,7 +28,13 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     @Input() ngModel: string;
     @Input() tabindex: string;
     @Input() disabled: boolean = false;
+    @Input() required;
+    @Input() style: any;
+    private isRequired = false;
     @Output() ngModelChange = new EventEmitter();
+
+    onModelChange: Function = () => { };
+    onModelTouched: Function = () => { };
 
     private categories: any = [];
 
@@ -37,6 +44,8 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     }
 
     ngOnInit() {
+        this.isRequired = this.required !== undefined;
+
         this.iconService.getIconProperties().subscribe(result => {
             result.forEach(i => {
                 let index = this.categories.findIndex(x => x.label == i.categories[0]);
@@ -63,17 +72,17 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
         return (a.label < b.label) ? -1 : (a.label > b.label) ? 1 : 0;
     }
 
-    writeValue(obj: any): void {
-        throw new Error("Method not implemented.");
+    writeValue(obj: string): void {
+        this.onModelChange(obj);
     }
     registerOnChange(fn: any): void {
-        throw new Error("Method not implemented.");
+        this.onModelChange = fn;
     }
     registerOnTouched(fn: any): void {
-        throw new Error("Method not implemented.");
+        this.onModelTouched = fn;
     }
     setDisabledState?(isDisabled: boolean): void {
-        throw new Error("Method not implemented.");
+        this.disabled = isDisabled;
     }
 }
 
@@ -87,6 +96,7 @@ export class IconPickerComponent extends BaseComponent implements ControlValueAc
     , imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         DropdownModule,
     ],
     providers: [IconService]
