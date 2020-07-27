@@ -940,6 +940,33 @@ export class WorkflowDiagramComponent extends DiagramBaseComponent implements On
                         if (n.settings.ResponsibilityTypeID == null || n.settings.ResponsibilityTypeID < 0)
                             return false;
                         break;
+                    case "Followers":
+                        let obj = this.model.Event.Object;
+                        if (obj == 'IntersectType' || this.model.Event.ChangeType == WorkflowChangeType.Loaded) 
+                            return false;
+
+                        if (!(this.model.Event.ChangeType == WorkflowChangeType.Add ||
+                            this.model.Event.ChangeType == WorkflowChangeType.Update ||
+                            this.model.Event.ChangeType == WorkflowChangeType.Schedule ||
+                            this.model.Event.ChangeType == WorkflowChangeType.RequestCertification))
+                            return false;
+
+                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && !(obj == 'IssueType'))
+                            return false
+
+                        if ((this.model.Event.ChangeType == WorkflowChangeType.Add) && (obj == 'IssueType')) {
+                            let objArr = this.model.Event.IssueObject.split("|", 1);
+                            let Issobj = "";
+                            if (objArr.length <= 0)
+                                Issobj = " ";
+                            else
+                                Issobj = objArr[0];
+
+                            if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                return;
+                        }
+                        break;
+
                 }
 
                 n.errors = n.errors.concat(this.validateTextFields(n.settings.MessageBodyTemplate));

@@ -16,7 +16,9 @@ namespace d360.core.enums.Workflow
         [Name("Responsibility")]
         Responsibility,
         [Name("Specific User")]
-        SpecificUser
+        SpecificUser,
+        [Name("Followers")]
+        Followers
     }
 
 

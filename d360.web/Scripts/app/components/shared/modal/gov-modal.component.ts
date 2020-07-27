@@ -1,4 +1,5 @@
 ﻿import { Component, Input, Output, HostListener, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
+import { FocusTrapModule } from 'primeng/focustrap';
 
 
 @Component({
@@ -55,8 +56,8 @@ export class D3SModal implements OnChanges {
     }
 
     showPopUp() {
-        this.display = true;
-        if (this.modalDiv) {
+        this.display = true;        
+        if (this.modalDiv) {            
             this.modalDiv.nativeElement.className = "modal-overlay";
             this.modalDiv.nativeElement.className = this.modalDiv.nativeElement.className + " show";
             this.modalDiv.nativeElement.focus();
@@ -79,6 +80,6 @@ export class D3SModal implements OnChanges {
     confirm() {
         this.onConfirm.emit('confirm');
         this.closePopUp();
-    }
+    }   
 }
 

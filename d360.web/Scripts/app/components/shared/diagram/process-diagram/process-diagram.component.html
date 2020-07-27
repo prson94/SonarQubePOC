@@ -10,18 +10,21 @@
             <button igButton icon="fa-save" tooltip="Save changes" [disabled]="isSaveDisabled" (click)="save()"></button>
             <div class="button-spacer"></div>
             <button igButton icon="fa-trash" tooltip="Delete selected item" [disabled]="!isDeleteEnabled()" (click)="onDeleteClick()"></button>
-            <button igButton icon="fa-sitemap" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
+            <button igButton icon="igx-related-asset-icon" class="top-spacer-4" tooltip="View and edit related assets for the selected item" [disabled]="!isRelatedAssetsEnabled()" (click)="doControlledAction('open-related-assets')"></button>
             <div class="button-spacer"></div>
             <button igButton icon="fa-download" tooltip="Export to Excel" [disabled]="!isExportEnabled()" (click)="doControlledAction('export')"></button>
 
         </div>
         <div class="controls-right">
-            <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="isInfoPanelOpened = !isInfoPanelOpened"></button>
+            <button igButton icon="fa-info-circle" class="ig-button ig-button-icon-only {{isInfoPanelOpened ? 'ig-state-active' : ''}}" tooltip="Information Panel" (click)="changeInfoPanelMode()"></button>
         </div>
     </div>
 
 
     <div class="diagram-content">
+        <div *ngIf="!isDiagramLoaded" class="col s12" style="position: absolute;z-index: 1;">
+            <d3s-loading isLoading="true">Loading Process Diagram</d3s-loading>
+        </div>
         <div id="myPaletteDiv" class="{{(isLoaded && isEditMode) ? '' : 'hide'}}">
             <div class="gov-accordion">
                 <div id="toolTipDIV-event" class="tooltip-content">
@@ -88,7 +91,7 @@
         <div #editors class="editors {{(isInfoPanelOpened ? 'display' : 'hide')}}">
             <div class="asset-editor">
 
-                <div *ngIf="!selectedNodeData">
+                <div *ngIf="!selectedNodeData && (!selectedLinkData || !isEditMode)">
                     <div class="empty-overlay">
                         <div class="content">
                             <div class="icon-holder">
@@ -107,6 +110,9 @@
                         </d3s-process-diagram-asset-editor>
                     </div>
                 </div>
+                <div *ngIf="selectedLinkData && isEditMode">
+                    <d3s-process-diagram-label-editor (linkDataChange)="updateLinkFromForm($event)" [linkData]="selectedLinkData" [assetUid]="assetUid"></d3s-process-diagram-label-editor>
+                </div>
             </div>
         </div>
         <d3s-modal [title]="'Cannot Save Changes'" additionalClasses="medium-dialog" (onClose)="closeErrorModal()" [isVisible]="isErrorModalOpened">
@@ -117,13 +123,35 @@
                     <br />
                     <div *ngIf="validationErrors && validationErrors.errors && validationErrors.errors.length > 0">
                         <div class="validation-error" *ngFor="let item of validationErrors.errors">
-                            {{item.Error}}
+                            <div *ngIf="item.ErrorType && item.ErrorType.indexOf('Custom') != -1; then thenBlock else elseBlock"></div>
+                            <ng-template #thenBlock>
+                                <ul>
+                                    <li>
+                                        <i class="fa fa-exclamation-circle"></i> {{item.Error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
+                            <ng-template #elseBlock>
+                                <span class="error-title">
+                                    Asset <strong>{{item.AssetName}}</strong> has following issues:
+                                </span>
+                                <ul>
+                                    <li *ngFor="let error of item.Error.split('.')">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<i class="fa fa-exclamation-circle"></i> {{error}}
+                                    </li>
+                                </ul>
+                            </ng-template>
                         </div>
+                        <span *ngIf="areNamesUnique">
+                            <br />
+                            Please rename your flow objects to ensure that each has a unique name.
+                        </span>
                     </div>
                 </div>
             </div>
             <div class="action-bar">
-                <button igButton label="Close" (click)="isErrorModalOpened=false"></button>
+                <div class="grow"></div>
+                <button #closeSaveButton igButton class="ig-button-primary" label="Close" (click)="isErrorModalOpened=false"></button>
 
             </div>
         </d3s-modal>

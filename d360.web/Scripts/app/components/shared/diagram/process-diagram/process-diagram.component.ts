@@ -9,9 +9,8 @@ import { FontAwesomeHelper } from '../../../../static/font-awesome-helper';
 import { ProcessDiagramTemplates } from './process-diagram.templates';
 import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
-import { CanDeactivate, Router } from '@angular/router';
-import { map } from 'rxjs/operators';
-import { forEach } from 'core-js/fn/array';
+import { Router } from '@angular/router';
+import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -49,7 +48,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private colors: any[] = [];
 
     private isLoaded = false;
-    private isDiagramLoaded = false;
+    public isDiagramLoaded = false;
     private isSaveDisabled: boolean = true;
     private isCanvasEmpty: boolean = true;
     private isSaving: boolean = false;
@@ -72,6 +71,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private nodeNames: string[] = [];
 
     @ViewChild('deleteCancelButton', { static: true }) deleteCancelButton: ElementRef;
+    @ViewChild('closeSaveButton', { static: true }) closeSaveButton: ElementRef;
     @ViewChild('saveChangesButton', { static: true }) saveChangesButton: ElementRef;
 
     constructor(
@@ -92,7 +92,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         var $ = go.GraphObject.make;  // for conciseness in defining templates
 
 
-        this.processService.getProcessDiagramColors()
+        this.processService.getProcessDiagramColors(this.assetUid)
             .subscribe(colors => {
                 this.colors = colors;
             });
@@ -120,7 +120,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     @ViewChild('diagram', { static: false }) diagramRef;
     @ViewChild('editors', { static: false }) editorRef;
     @HostListener('window:resize', ['$event'])
-    private onResize(event) {
+    public onResize(event) {
         if (!this.diagramRef) return;
         let height = window.innerHeight;
         if (this.isEditMode)
@@ -133,6 +133,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         if (this.editorRef) {
             this.editorRef.nativeElement.style.height = this.diagramRef.nativeElement.style.height;
         }
+        if (this.myDiagram) {
+            var diagramPlaceholderWidth = document.getElementById('process-diagram-placeholder').getBoundingClientRect().width;
+            this.diagramRef.nativeElement.style.width = diagramPlaceholderWidth + 'px';
+            setTimeout(() => {
+                this.myDiagram.redraw();
+            }, 100);
+        }
+        this.cdRef.detectChanges();
     }
 
     @HostListener('click', ['$event.target'])
@@ -142,7 +150,6 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.selectedNodeData = null;
             }
         }
-        this.myDiagram.requestUpdate();
         this.cdRef.detectChanges();
 
     }
@@ -192,6 +199,14 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
             this.cdRef.detach();
         if (this.myDiagram)
             this.myDiagram = null;
+    }
+
+    public changeInfoPanelMode() {
+        this.isInfoPanelOpened = !this.isInfoPanelOpened;
+
+        setTimeout(() => {
+            this.onResize(null);
+        }, 200)
     }
 
     private applyEditMode(state: boolean) {
@@ -307,6 +322,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     allowCopy: false,
                     allowUndo: false
                 });
+        this.myDiagram.toolManager.mouseMoveTools.insertAt(0, new LinkLabelOnPathDraggingTool());
 
         this.myDiagram.commandHandler.editTextBlock = () => { return false; };
         this.myDiagram.commandHandler.canDeleteSelection = () => {
@@ -346,6 +362,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
         templmap.add("activity", activityNodeTemplate);
         templmap.add("event", eventNodeTemplate);
         templmap.add("gateway", gatewayNodeTemplate);
+        templmap.add("deleted-node", ProcessDiagramTemplates.deletedNodeTemplate(this));
         templmap.add("", activityNodeTemplate);
         this.myDiagram.nodeTemplateMap = templmap;
 
@@ -444,6 +461,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     }
 
     private validationErrors: any = {};
+    private areNamesUnique: boolean = true;
     private save(closeEditorAfterSave: boolean = false) {
         this.isSaving = true;
         this.processDiagramBase64 = this.myDiagram.makeImageData({
@@ -455,8 +473,12 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 if (res.hasError) {
                     this.isSaving = false;
                     this.validationErrors = res;
+                    this.areNamesUnique = this.validationErrors.errors.some(x => x.ErrorType == 'CustomUniqueName');
+
                     this.updateValidationData();
                     this.isErrorModalOpened = true;
+                    setTimeout(() => this.closeSaveButton.nativeElement.focus(), 250);
+
                     this.cdRef.detectChanges();
                 }
                 else {
@@ -491,7 +513,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private load(isFromSave: boolean = false) {
 
         var selectedItem = this.selectedNodeData;
-
+        this.isSaveDisabled = true;
         this.processService.getProcessDiagram(this.assetUid)
             .subscribe(response => {
 
@@ -532,6 +554,18 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                 this.cdRef.detectChanges();
 
             });
+    }
+
+    private updateLinkFromForm(formData) {
+        var link = this.myDiagram.findLinkForData(formData.data);
+        try {
+            this.myDiagram.model.commit(function (m) {
+                m.setDataProperty(link.data, 'label', formData.label.Value);
+                m.setDataProperty(link.data, 'labelUid', formData.label.uid);
+            }, 'update_link_data');
+        } catch (e) {
+            console.log(e);
+        }
     }
 
     private updateNodeFromForm(formData) {
@@ -809,7 +843,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.showDiscardChanges = true;
                     break;
                 case 'open-related-assets':
-                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets?';
+                    this.actionMessage = 'Please save your changes to the diagram before opening Related Assets.';
                     this.showDiscardChanges = false;
                     setTimeout(() => this.saveChangesButton.nativeElement.focus(), 100);
                     this.actionAfterSaved = () => {
@@ -818,7 +852,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     }
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
 
                     this.actionAfterSaved = () => {
                         this.downloadProcessDiagram();
@@ -842,7 +876,7 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
                     this.cdRef.detectChanges();
                     break;
                 case 'export':
-                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram?';
+                    this.actionMessage = 'Please save your changes to the diagram before exporting process diagram.';
                     this.downloadProcessDiagram();
                     break;
             }

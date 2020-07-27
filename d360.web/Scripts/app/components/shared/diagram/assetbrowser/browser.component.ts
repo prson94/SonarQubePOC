@@ -1592,6 +1592,9 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
                 this.helper_SetVisiblePanel(AssetBrowserPanelCommand.None);
                 this.isFullScreen = !this.isFullScreen;
                 this.helper_ResizeDiagram();
+                if (this.processDiagramRef) {
+                    this.processDiagramRef.onResize(null);
+                }
                 break;
             case AssetBrowserPanelCommand.Information:
                 this.helper_SetVisiblePanel(e);
@@ -2849,7 +2852,7 @@ export class AssetBrowserComponent extends DiagramBaseComponent implements OnIni
 
     private openProcessDiagramInfo() {
         if (this.processDiagramRef) {
-            this.processDiagramRef.isInfoPanelOpened = !this.processDiagramRef.isInfoPanelOpened
+            this.processDiagramRef.changeInfoPanelMode();
             this.processDiagramRef.myDiagram.requestUpdate();
         }
 

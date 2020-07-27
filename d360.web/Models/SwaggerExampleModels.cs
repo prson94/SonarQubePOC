@@ -112,7 +112,7 @@ namespace d360.web.Models
         public object GetExamples()
         {
             return
-                new UpdateGroup
+                new AddGroup
                 {
                     Name = "Name",
                     Description = "Description",

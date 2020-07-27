@@ -963,7 +963,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         column.filteritems = new List<string>();
                     }
 
-                    var hiddenItems = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    var hiddenItems = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItems, filterColumns, 0, true);
 
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
@@ -1109,7 +1109,7 @@ select @fieldValue", new { fieldTypeID, obj, objID }).SingleOrDefault();
                         column.filteritems = new List<string>();
                     }
 
-                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "FusionLookup" && i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
+                    var hiddenItemsRuleType = totalItems.Where(i => i.Type != "RelationLookup" && !i.IsListable).OrderBy(i => i.SortOrder).ThenBy(i => i.FriendlyName).ToList();
                     parseDynamicFilterFields(hiddenItemsRuleType, filterColumns, 0, true);
 
                     filterColumns = filterColumns.OrderBy(x => x.text).ToList();
@@ -3025,7 +3025,7 @@ order by    Name
                 status = fieldType.DefaultFormattedValue;
 
             if (LookupFieldHasColorItem(fieldType)) {
-                string colorAndStatusSql = $@"(SELECT COALESCE(ADV.DisplayValue, F.FormattedValue) as name,
+                string colorAndStatusSql = $@"(SELECT F.FormattedValue as name,
 								COALESCE(JSON_VALUE(ACJ.ColorJSON,'$.Value'), 'transparent') as color
                                 from Field F 
 								inner join FieldType ft on ft.ID = f.FieldTypeID
@@ -4802,6 +4802,9 @@ where v.id = {0}", id)).FirstOrDefault();
             var predicateTypeInfo = new PredicateType().GetAsList();
             var disallowEditIds = predicateTypeInfo.Where(p => p.AllowEditFromRelationshipEditor == false).Select(p => (int)p.ID).ToList();
             if (disallowEditIds.Count == 0) disallowEditIds.Add(0); //catch-all, just in case list is empty.
+            //Only allow editing when diagram
+            if (obj != SystemObjects.Task) disallowEditIds.Add((int)PredicateType.DiagramUse);
+
             string disallowEditFilter = string.Join(", ", disallowEditIds);
 
             var excludedPredicateTypes = new[] { (int)PredicateType.Diagram, (int)PredicateType.DiagramReference };

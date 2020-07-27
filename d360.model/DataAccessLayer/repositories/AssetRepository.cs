@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using d360.core.entities;
 using d360.core.enums;
@@ -13,12 +11,10 @@ using d360.core;
 using d360.core.queue;
 using d360.extensions;
 using System.Net;
-using System.Text.RegularExpressions;
 using d360.core.helpers;
 using d360.core.resources;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using SpreadsheetLight;
 using d360.model.DataAccessLayer.repositories;
 using d360.model.helpers;
@@ -240,7 +236,9 @@ namespace d360.model.DataAccessLayer
 
             return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
         }
-        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+
+        //UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
+        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
         {
             var assetTypeID = 0;
             var includeRelationships = false;
@@ -255,6 +253,11 @@ namespace d360.model.DataAccessLayer
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
                 throw new Exception("not found");
+
+            if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
+            {
+                throw new ArgumentException("UseAsAdmin parameter can be used only with _assetUid specified!");
+            }
 
             assetTypeID = assetType.ID;
 
@@ -372,7 +375,7 @@ namespace d360.model.DataAccessLayer
 	                where IT.ID = I.IntersectTypeID and P.[UID] = @predicateUid)";
                 }
 
-    var innerCountSql = $@"
+                var innerCountSql = $@"
 						select {addtop1hint} B.ID as Relationships  from Asset B
 						inner join AssetType TB on TB.ID = B.AssetTypeID
 						where {relatedAssetSql}
@@ -465,7 +468,7 @@ namespace d360.model.DataAccessLayer
                     ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
 
 
-            if (restrictions.HasAssetRestriction)
+            if (restrictions.HasAssetRestriction && !useAsAdmin)
             {
                 whereStatements.Add($"not exists (select AssetID from #restrictedAssets where AssetID = A.ID)");
                 populateRestrictedAssetTableSQL = @"drop table if exists #restrictedAssets;
@@ -476,7 +479,7 @@ namespace d360.model.DataAccessLayer
                             select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeId) where ((PermissionsBitMask & 1)) = 0";
             }
 
-            if (!CompanyContext.CurrentResourceIsAdmin)
+            if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
             {
                 if (restrictions.HasAssetTypeRestriction)
                     whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
@@ -666,10 +669,10 @@ namespace d360.model.DataAccessLayer
                         }
                         else if (ft.Type == DataType.Lookup.ToString() && ft.AllowAllValue)
                         {
-                            string ftformatted = CompanyContext.LookupFieldHasColorItem(ft) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
+                            string ftformatted = (listColorsAsJSON && CompanyContext.LookupFieldHasColorItem(ft)) ? $@"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name')" : $@"F{ft.ID}.FormattedValue";
                             simpleFilters.Add($"(select case when F{ft.ID}.[Value] = '0' then @F{ft.ID}_AllValue else {ftformatted} end as value) like @simpleFilter");
                         }
-                        else if (ft.Type == DataType.Lookup.ToString() && CompanyContext.LookupFieldHasColorItem(ft))
+                        else if (ft.Type == DataType.Lookup.ToString() && listColorsAsJSON && CompanyContext.LookupFieldHasColorItem(ft))
                         {
                             simpleFilters.Add($"JSON_VALUE(F{ft.ID}.FormattedValue, '$[0].name') like @simpleFilter");
                         }
@@ -685,7 +688,7 @@ namespace d360.model.DataAccessLayer
                     }
 
                     if (assetType.Class == AssetTypeClass.Reference)
-                    {   
+                    {
                         simpleFilters.Add($"A.Code like @simpleFilter");
                         simpleFilters.Add($"JSON_VALUE((select top 1 * from dbo.GetAssetColorJsonById(A.ID)), '$.Name') like @simpleFilter");
                     }
@@ -998,8 +1001,6 @@ namespace d360.model.DataAccessLayer
 
             if (rowData == null || rowData.Count == 0)
             {
-                var s = new MemoryStream();
-                document.SaveAs(s);
                 return document;
             }
 
@@ -1121,7 +1122,6 @@ namespace d360.model.DataAccessLayer
                 i++;
             }
 
-            //dbArgs.Add("@phrase", model.searchPhrase.ToSqlFullTextSearchPhrase());
             dbArgs.Add("@phrase", "%" + model.searchPhrase.CleanForSql() + "%");
 
             if (!string.IsNullOrEmpty(prefilterSql))
@@ -1735,13 +1735,21 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             List<DatabaseBulkAssetResult> results = null;
             try
             {
-                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents);
+                results = CompanyContext.RemoveAssets(execution, assetType, assets, sendWorkflowEvents: sendWorkflowEvents, sendGraphEvents: false);
 
                 // Close execution record.
                 execution.Processed = results.Count;
                 execution.Error = results.Count(i => !i.Success);
                 execution.CompletedOn = DateTime.UtcNow;
                 CompanyContext.Update(execution);
+
+                CompanyContext.SendApiGraphEvent(new ApiExecutionInfo
+                {
+                    ExecutionID = execution.ExecutionID,
+                    Action = ApiExecutionAction.DeleteAssets,
+                    CompanyID = CompanyContext.CurrentCompanyID
+                });
+
             }
             catch (Exception ex)
             {
@@ -2039,6 +2047,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@assetUid", asset.uid.ToString());
             dbArgs.Add("@id", asset.ID);
 
+
+
             var sql = $@"
                 select
 	                A.[UID] as [uid],
@@ -2050,14 +2060,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
-                cross apply STRING_SPLIT(F.Value, ',') SPFF
-                inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPFF.value   
-                cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
-                cross apply GetAssetDisplayValueByID(ACF.ID) ADV
 				outer apply(
                                 select FormattedValue = 
                                 (SELECT F.FormattedValue as name,
                                 COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
+								FROM Asset ACF    
+								cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
+								WHERE ACF.Object = ft.LookupObjectType and ACF.ObjectID = TRY_PARSE(F.Value as int)
                             )StatusColor(FormattedValue)
                 WHERE A.ID = @id
             ";
@@ -2251,10 +2260,11 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
                         Guid.Empty, 0,
                         null,
                         out success,
-                        out error
+                        out error,
+                        true
                         );
                     if (!success)
-                        errors.Add(new ValidationError() { Error = error, AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
+                        errors.Add(new ValidationError() { AssetName = asset.Fields["Name"], Error = error.Trim().Trim('.'), AssetTypeUid = item.AssetTypeUid, AssetUid = asset.ExternalKey ?? Guid.Empty });
 
                 }
 
@@ -2267,19 +2277,23 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
         {
 
             var asset = GetAssetByUID(assetUid);
+
+            if (asset == null)
+                return null;
+
             var canRead = CompanyContext.HasAssetPermission(asset.ID, Permission.ReadAsset);
 
             if (!canRead)
                 return null;
 
-            
+
             var assetType = CompanyContext.Filter<AssetType>(a => a.ID == asset.AssetTypeID).FirstOrDefault();
             var fieldTypes = CompanyContext.Filter<FieldType>(f => f.AssetTypeID == asset.AssetTypeID).ToList();
             var fieldJoins = new List<string>();
             var fieldColumns = new List<string>();
             DynamicParameters dbArgs = new DynamicParameters();
             dbArgs.Add("@assetUid", assetUid);
-            
+
             getFieldSql(fieldTypes, dbArgs, fieldJoins, fieldColumns);
 
 
@@ -2287,18 +2301,21 @@ where S.AssetUid = @assetUid and EndDate is null and EffectiveDate < @date";
 select  A.ID as AssetId,
         A.[uid] as AssetUid,
         A.AssetTypeId,
-        A.AssetTypeUid,
+        T.[uid] as AssetTypeUid,
         P.[uid] as ParentAssetUid,
         P.DisplayValue as ParentDisplayName,
         A.CreatedOn,
         A.UpdatedOn,
         ACJ.ColorJson as Color,
         {(assetType.Class == AssetTypeClass.Reference ? "A.Code, A.Icon," : "")}
+        {(assetType.Class == AssetTypeClass.Rule ? "R.Threshold," : "")}
         KP.KeyPath as [Path] {(fieldColumns.Any() ? "," : "")}
         {string.Join(",\n", fieldColumns)}
-from    AssetDetail A
+from    Asset A
+        inner join AssetType T on T.ID = A.AssetTypeID
         left join graph.AssetNodeDisplayPath Node on Node.ID = a.ID 
         left join graph.AssetNodeKeyPath KP on KP.ID = a.ID 
+        {(assetType.Class == AssetTypeClass.Rule ? "inner join [Rule] R on R.ID = A.ObjectID" : "")}
         cross apply dbo.GetAssetColorJsonById(A.Id) ACJ
         outer apply (
             select  T.[uid]
@@ -2314,7 +2331,7 @@ from    AssetDetail A
 where   A.[uid] = @assetUid";
 
 
-            return (await CompanyContext.QueryAsync<dynamic>(sql, new  { assetUid })).FirstOrDefault();
+            return (await CompanyContext.QueryAsync<dynamic>(sql, dbArgs)).FirstOrDefault();
         }
 
         public async Task PopulateSheetForAssetTypeAndAssets(SLDocument document, AssetType assetType, List<Guid> assetUids)
@@ -2363,8 +2380,8 @@ where   A.[uid] = @assetUid";
             }
 
             document.SetCellValue(1, index++, "Url");
-            var rowData = results.items.ToList().OrderBy(x=> x.StepNo).ThenBy(x=> x.Name).ToList();
-            
+            var rowData = results.items.ToList().OrderBy(x => x.StepNo).ThenBy(x => x.Name).ToList();
+
             int rowNumber = 1;
             foreach (var row in rowData)
             {

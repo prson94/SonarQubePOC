@@ -954,7 +954,13 @@ order by Name";
                 });
             }
 
-            if (assetType.Class == AssetTypeClass.BusinessAsset || assetType.Class == AssetTypeClass.Model || assetType.Class == AssetTypeClass.Policy)
+            var diagramTypes = new List<AssetTypeClass>();
+            diagramTypes.Add(AssetTypeClass.BusinessAsset);
+            diagramTypes.Add(AssetTypeClass.Model);
+            diagramTypes.Add(AssetTypeClass.Policy);
+            diagramTypes.Add(AssetTypeClass.Rule);
+
+            if (diagramTypes.Contains(assetType.Class))
             {
                 if (anyDiagramRelationTypes && (anyProcessDiagram || canEdit))
                 {

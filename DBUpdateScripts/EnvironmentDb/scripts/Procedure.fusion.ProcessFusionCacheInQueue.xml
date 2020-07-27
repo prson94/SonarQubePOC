@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
     http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
 
-  <changeSet author="Pappas" id="Procedure.fusion.ProcessFusionCacheInQueue-v2">
+  <changeSet author="Pappas" id="Procedure.fusion.ProcessFusionCacheInQueue-v3">
     <sql dbms="mssql"
             endDelimiter="\nGO"
             splitStatements="true"
@@ -70,6 +70,7 @@ begin
 				from	[api].[ExecutionAsset] EA
 						inner join Asset A on A.ID = EA.AssetID
 						inner join AssetType T on T.ID = A.AssetTypeID
+				where	EA.ExecutionID = @executionUid
 			) S
 	on		(T.ID = S.ID)
 	when	matched

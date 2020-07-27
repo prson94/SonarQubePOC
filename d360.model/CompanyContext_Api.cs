@@ -1085,7 +1085,9 @@ where T.ExecutionId = @executionid;
             string ot, int otid, bool isInsert,
             List<FieldType> fieldTypes, List<string> requiredFieldTypeNames,
             Dictionary<string, string> fields, Guid executionID, int itemNumber,
-            DataTable fieldTable, out bool success, out string errorMessage)
+            DataTable fieldTable, out bool success, out string errorMessage,
+            bool useFriendlyNames = false
+            )
         {
             List<DataRow> fieldRows = new List<DataRow>();
             List<string> errorMessages = new List<string>();
@@ -1117,6 +1119,10 @@ where T.ExecutionId = @executionid;
 
                 // Validation of field and value;
                 fieldType = fieldTypes.SingleOrDefault(f => f.Name == fieldName);
+                if (useFriendlyNames)
+                {
+                    fieldName = fieldType.FriendlyName;
+                }
                 if (fieldType == null)
                 {
                     if (fieldName.ToLower() == "color")
@@ -1478,7 +1484,7 @@ from	IntersectType I
             return models;
         }
 
-        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true)
+        public List<DatabaseBulkAssetResult> RemoveAssets(ApiExecution execution, AssetType at, AssetDeletes import, int timeout = 3600, bool sendWorkflowEvents = true, bool sendGraphEvents = true)
         {
             var results = new List<DatabaseBulkAssetResult>();
             var graphResults = new List<DatabaseBulkAssetResult>();
@@ -2214,7 +2220,10 @@ from	IntersectType I
 
                         Connection.Close();
 
-                        SendAssetGraphEvents(graphResults);
+                        if (sendGraphEvents)
+                        {
+                            SendAssetGraphEvents(graphResults);
+                        }
 
                         if (sendWorkflowEvents)
                         {
@@ -7298,7 +7307,7 @@ insert into #Keys
                         beginItemNumber += loopSize;
                         endItemNumber += loopSize;
                     }
-                 }
+                }
             }
 
             SendScoreEventWithPayload(execution.ExecutionID, ScoreQueueChangeType.RuleResultsRemoved, import);
@@ -8053,7 +8062,7 @@ WHEN MATCHED
                             row["SecondaryOwnerUid"] = item.SecondaryOwnerUid;
 
                         row["IsActiveDirectoryGroup"] = item.IsActiveDirectoryGroup;
-                        row["ExecutionItemUid"] = Guid.NewGuid(); 
+                        row["ExecutionItemUid"] = Guid.NewGuid();
 
                         table.Rows.Add(row);
 
@@ -8083,7 +8092,7 @@ WHEN MATCHED
                     bulkCopy.ColumnMappings.Add("SecondaryOwnerUid", "SecondaryOwnerUid");
                     bulkCopy.ColumnMappings.Add("IsActiveDirectoryGroup", "IsActiveDirectoryGroup");
                     bulkCopy.ColumnMappings.Add("ExecutionItemUid", "ExecutionItemUid");
-                    
+
 
                     bulkCopy.WriteToServer(table);
 
@@ -8400,7 +8409,7 @@ SO.ObjectID as SecondaryID
                 results.AddRange(groups.Select(i => new GroupResponseResult { ExecutionItemUid = execution.ExecutionID, Message = msg, Success = false }));
             }
 
-            
+
 
             itemNumber = 1;
             if (generalChecksCompleted)
