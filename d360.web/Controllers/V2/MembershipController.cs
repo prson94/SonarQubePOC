@@ -1105,7 +1105,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
 
             var document = new SLDocument();
-            document.AddWorksheet("Users");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Users");
 
             int colIndex = 1;
             int rowIndex = 1;
