@@ -1,29 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from "@angular/common/http";
-import {
-    catchError,
-    distinctUntilChanged,
-    map,
-    switchMap
-} from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-    AssetBrowserTranslation,
     AssetBrowserTranslationNode,
     AssetBrowserTranslationLink,
     AssetBrowserDiagramAsset,
-    AssetBrowserTranslationRelationCount,
-    AssetBrowserApiHopDirection,    AssetBrowserApiHopType,
+    AssetBrowserApiHopDirection,
     FilterAncestryMode,
-    FilterSelectionsModel,
-    AssetBrowserApiHopRequestModel,
-    AssetBrowserTranslationOwnerCount,
-    AssetBrowserApiOwnerHopRequestModel,    StoredAssetBrowserFilterModel,
-    AssetBrowserAssetsModel,
-    AssetBrowserAssetModel,
+    FilterSelectionsModel,    StoredAssetBrowserFilterModel,
     AssetBrowserOwnersModel,
-    AssetBrowserAssetRelationModel,
     AssetBrowserAlert,
     AssetBrowserAlertRequest,
     DiagramTypesModel,

@@ -1,0 +1,1337 @@
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd
+    http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+
+  <changeSet author="Pappas" id="Procedure.graph.GetHop-v11">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[GetHop]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[GetHop]
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@initial bit,
+	@hopCount int,
+	@diagramType int, --Lineage = 1, Impact = 2
+	@hopType int,
+
+	@resourceId int,
+	@isAdmin bit,
+	
+	-- Only relevant below if NOT initial
+	@ignoredRelations dbo.UidTable readonly,
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@leafOnly bit = 1
+as
+begin
+	set nocount on;
+	
+	if @initial = 1
+	begin
+		set @direction = null
+		set @predicateUid = null
+	end
+
+	drop table if exists #relationsToIgnore
+	create table #relationsToIgnore ([Uid] uniqueidentifier)
+	create index ix_TempRelationsToIgnore on #relationsToIgnore (Uid asc)
+	
+	insert into #relationsToIgnore
+		select * from @ignoredRelations;
+
+	-- Temporary Table Creation
+	drop table if exists #assetIds
+	create table #assetIds ([Uid] uniqueidentifier, ID bigint, Class int, [Key] varchar(50), [Parsed] bit)
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	drop table if exists #hopAssets
+	create table #hopAssets (ID bigint, [Key] varchar(50), Direction char(1), HopNumber int)
+	create index ix_TempHopAssets on #hopAssets (ID asc)
+	create clustered index cix_TempHopAssets on #hopAssets ([Key] asc, HopNumber desc)
+
+	drop table if exists #links;
+	create table #links (
+		RowID int identity not null,
+		[Uid] uniqueidentifier,
+		Direction char(1),
+		HopNumber int,
+		ProvidedKey varchar(50), 
+		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, 
+		PredicateId int, PredicateUid uniqueidentifier, [Predicate] nvarchar(250), PredicateType int, 
+		IsFocal bit default(0)
+		PRIMARY KEY CLUSTERED ( [RowID] ASC )
+	);
+	CREATE NONCLUSTERED INDEX IX_TempLinks_Uid on #links (Uid);
+
+	drop table if exists #nodes
+	create table #nodes (
+		RowID int identity not null,
+		[Level] int, [Position] int default(1),
+		AssetUid uniqueidentifier, 
+		AssetID bigint, [Key] varchar(50), 
+		ParentID bigint null, ParentKey varchar(50), 
+		Back varchar(25), Fore varchar(25), Icon varchar(50), 
+		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
+		DisplayValue nvarchar(500), 
+		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		IsLeaf bit, 
+		IsSubjectInTransformation bit null,
+		HasAssetReadAccess bit null,
+		[Parsed] tinyint,
+		IsFocal bit default(0),
+		PRIMARY KEY CLUSTERED ( [RowID] ASC )
+	);
+	create index ix_Temp_Nodes_AssetID on #nodes ([AssetID] asc);
+	create index ix_Temp_Nodes_AssetID_IsLeaf on #nodes ([AssetID] asc, IsLeaf asc);
+	create index ix_Temp_Nodes_AssetTypeID_IsLeaf on #nodes ([AssetTypeID] asc, IsLeaf asc);
+
+	declare @hopSalt varchar(25) = graph.Hop_GenerateSalt();
+
+	-- Load incoming assets into temporary table.
+	insert into #assetIds
+		select	distinct 
+				A.Uid,
+				A.ID, 
+				T.[Class],
+				O.[Key],
+				0 as [Parsed]
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID;
+
+	update #assetIds set [Key] = utility.GetHash(@hopSalt + '|' + cast(ID as varchar(50))) where [Key] is null or [Key] = '';
+
+	declare @currentHopCount int = 0,
+			@expanded bit,
+			@revealCheckNeeded bit;
+
+	while @currentHopCount <= @hopCount
+	begin
+		set @expanded = case when @currentHopCount < @hopCount then 1 else 0 end
+		set @revealCheckNeeded = case when @currentHopCount < @hopCount then 0 else 1 end
+		set @hopSalt = graph.Hop_GenerateSalt();	-- Reset the salt.
+
+		if @currentHopCount = 0
+		begin
+			if @initial = 1
+			begin
+				exec graph.Hop_GetSelf @diagramType, @hopSalt, @leafOnly
+			end
+			else
+			begin
+				insert into #hopAssets
+					select	ID, [Key], @direction, 0 from #assetIds;
+			end
+		end
+		else
+		begin
+			if @hopType = 2
+			begin	-- IMPACT
+				if @initial = 1
+				begin
+					exec graph.Hop_GetImpact @hopSalt, @diagramType, 'B', @predicateUid, @currentHopCount, 0, @leafOnly;
+					set @hopSalt = graph.Hop_GenerateSalt();
+					exec graph.Hop_GetImpact @hopSalt, @diagramType, 'F', @predicateUid, @currentHopCount, 0, @leafOnly;
+				end
+				else
+				begin
+					exec graph.Hop_GetImpact @hopSalt, @diagramType, @direction, @predicateUid, @currentHopCount, 1, @leafOnly;
+				end
+			end
+			else
+			begin	-- LINEAGE
+				if @initial = 1
+				begin
+					exec graph.Hop_GetLineage @hopSalt, 'B', @currentHopCount, @revealCheckNeeded, @leafOnly;
+					set @hopSalt = graph.Hop_GenerateSalt();
+					exec graph.Hop_GetLineage @hopSalt, 'F', @currentHopCount, @revealCheckNeeded, @leafOnly;
+				end
+				else
+				begin
+					exec graph.Hop_GetLineage @hopSalt, @direction, @currentHopCount, @revealCheckNeeded, @leafOnly;
+				end
+			end
+		end
+		
+		exec graph.Hop_GetBadgeCounts @diagramType, @expanded, @currentHopCount;		-- Get count values on badges that should be attached to assets.
+
+		-- Prepare for the next loop by resetting the assets we are interested in.
+		if @currentHopCount > 0
+		begin
+			insert into #relationsToIgnore
+				select distinct Uid from #links where Uid not in (select Uid from #relationsToIgnore) and Uid is not null
+		end
+
+		update	#assetIds set Parsed = 1 where parsed = 0;
+		update	#nodes set Parsed = 1 where parsed = 0;
+
+		set @currentHopCount = @currentHopCount + 1
+	end
+
+
+	--Now set read access permissions on assets.
+	update #nodes set HasAssetReadAccess = 1;
+
+	update	N
+	set		HasAssetReadAccess = 0
+	from	#nodes N
+			cross apply dbo.UserAssetPermissions(@resourceId,N.AssetTypeID) P 
+	where	P.AssetID = N.AssetID and P.PermissionsBitMask & 1 = 0;
+
+	exec graph.Hop_GetResults @diagramType;				-- Return to caller.
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetBadgeCounts-v6">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_GetBadgeCounts]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_GetBadgeCounts]
+	@diagramType int,
+	@expanded bit,
+	@hopNumber int
+as
+begin
+
+	drop table if exists #predicatesToSkip
+	create table #predicatesToSkip (ID int)
+	create index ix_PredicatesToSkip on #predicatesToSkip (ID asc)
+
+	if @diagramType = 1
+	begin
+		insert into #predicatesToSkip values (1),(3),(4),(12),(13)
+
+		-- Determine UseAsTransformation
+		update	T
+		set		T.UseAsTransformation = S.UseAsTransformation,
+				T.IsSubjectInTransformation = CASE 
+												WHEN ATO.Cnt = 0 THEN 0 
+												ELSE 1
+											END
+		from	#nodes T 
+				inner join #hopAssets H on H.[Key] = T.[Key] and H.HopNumber = @hopNumber
+				inner join AssetType S on S.ID = T.AssetTypeID
+				cross apply (
+							select	count(*) 
+							from	IntersectType IT
+									left join AssetType ATO on ATO.Object = IT.Object and ATO.ObjectID = IT.ObjectID and ATO.UseAsTransformation = 1
+							where	IT.Subject = S.Object and IT.SubjectID = S.ObjectID
+							) ATO(Cnt)
+		where	T.Parsed = 0;
+	end
+
+	-- Get action counts
+	update	R
+	set		R.ActionCount =	coalesce(
+								(
+								select	count(1) as ActionCount
+								from	Issue I
+										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+								where	I.CompletedOn is null
+										and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+										and A.ID = R.AssetID
+								group by A.Uid
+								), 0)
+	from	#nodes R
+			inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+	where	R.Parsed = 0;
+
+	-- Get impact badges
+	update	R
+	set		R.RelationCounts =	coalesce(
+									(
+									select	[Predicate], 
+											ID as PredicateID, 
+											Uid as PredicateUid, 
+											Direction, 
+											count(1) as [Count], 
+											case when @expanded = 1 and @diagramType = 2 then 1 else 0 end as Expanded
+									from	(
+											select	(select top 1 Name from Predicate where ID = E.PredicateID) as [Predicate],		-- Improves performance 10x
+													E.PredicateID as ID, 
+													E.PredicateUid as Uid, 
+													1 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T
+											where	MATCH(S-(E)->T)
+													and S.ID = R.AssetID
+													and T.ID not in (select ID from #hopAssets)
+													and E.PredicateType not in (select ID from #predicatesToSkip)
+													and E.Uid not in (select Uid from #relationsToIgnore)
+											union all
+											select	(select top 1 Inverse from Predicate where ID = E.PredicateID) as [Predicate],  -- Improves performance 10x
+													E.PredicateID as ID, 
+													E.PredicateUid as Uid, 
+													2 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T
+											where	MATCH(S-(E)->T)
+													and T.ID = R.AssetID
+													and S.ID not in (select ID from #hopAssets)
+													and E.PredicateType not in (select ID from #predicatesToSkip)
+													and E.Uid not in (select Uid from #relationsToIgnore)
+											) O
+									group by [Predicate], ID, Uid, Direction
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R
+			inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+	where	R.Parsed = 0;
+    
+	-- Get owner badges
+	update	R
+	set		R.OwnerCounts =	coalesce(
+									(
+									select	ResponsibilityTypeName as ResponsibilityType, 
+											ResponsibilityTypeID, 
+											'[' + string_Agg(ResourceID, ',') + ']' as UsersList, 
+											count(1) as [Count], 
+											0 as Expanded
+									from	(
+											select		ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											from		ResponsibilityDetail
+											where		(
+															AssetID = R.AssetID 
+															OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+														) 
+														and IsVisible = 1
+											group by	ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											) O
+									group by ResponsibilityTypeName, ResponsibilityTypeID
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R
+			inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+	where	R.Parsed = 0;
+
+	update	R
+	set		R.OwnerCounts =	'[]',
+			R.IsLeaf = 0
+	from	#nodes R
+			inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber
+	where	R.IsLeaf is null
+			and R.Parsed = 0;
+end
+		]]>
+	</rollback>
+  </changeSet>
+  
+    <changeSet author="Pappas" id="Procedure.graph.Hop_GetImpact-v5">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_GetImpact]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_GetImpact]
+	@hopSalt varchar(25),
+	@diagramType int,
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@hopNumber int,
+	@checkDirection bit,
+	@leafOnly bit
+as
+begin
+	set nocount on;
+
+	declare @maxRowId int = 0;
+
+	if @direction = 'B'
+	begin
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+					
+					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+					S.ID,
+					S.Uid,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Inverse
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateUid = P.[Uid]
+					and (@predicateUid is null OR (@predicateUid is not null AND P.[Uid] = @predicateUid)) 
+					and T.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and ( (@checkDirection = 1 and A.Direction = 'B') or (@checkDirection = 0) )
+					and E.Uid not in (select Uid from #relationsToIgnore);
+	end
+		
+	if @direction = 'F'
+	begin 
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+					
+					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+					T.ID,
+					T.Uid,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Name
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateUid = P.[Uid]
+					and (@predicateUid is null OR (@predicateUid is not null AND P.[Uid] = @predicateUid))
+					and S.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and ( (@checkDirection = 1 and A.Direction = 'F') or (@checkDirection = 0) )
+					and E.Uid not in (select Uid from #relationsToIgnore);
+	end
+
+	select @maxRowId = max(RowID) from #nodes;
+
+	if @maxRowId is null 
+	begin 
+		set @maxRowId = -1 
+	end
+
+	if @diagramType = 2
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed)
+			select	distinct
+					2
+					,A.Uid as AssetUid
+					,A.ID as AssetID
+					,L.[Key]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,V.DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,1 as IsLeaf
+					,0
+			from	#links L
+					inner join AssetWithType A on A.ID = L.ID and L.Direction = @direction and L.HopNumber = @hopNumber
+					left join AssetDisplayValue V on V.AssetID = L.ID;
+	end
+	else
+	begin
+		exec graph.Hop_LoadHopHierarchies @hopSalt, @direction, @hopNumber;
+	end
+		
+	exec graph.Hop_LoadSingleParentHeirarchies @hopSalt, @direction, @hopNumber;
+
+	-- This indicates which assets will be used for subsequent hops, as well as which direction.
+	exec graph.Hop_LoadNextHopAssets @direction, @hopNumber, @maxRowId, @leafOnly
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.GetImpactHop-v3">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+drop procedure if exists [graph].[GetImpactHop]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[GetImpactHop]
+	@assets dbo.AssetBrowserImpactTable readonly,
+	@self bit,
+	@hopSalt varchar(25),
+	@direction char(1), -- (F)orward, (B)ackward
+	@predicateUid uniqueidentifier,
+	@resourceId int,
+	@isAdmin bit
+as
+begin
+	set nocount on;
+
+	drop table if exists #assetIds
+	create table #assetIds ([Uid] uniqueidentifier, ID bigint, Class int, [Key] varchar(50))
+	create index ix_TempAssetIds on #assetIds (ID asc)
+
+	drop table if exists #links;
+	create table #links (
+		[Uid] uniqueidentifier,
+		Direction char(1),
+		ProvidedKey varchar(50), 
+		[Key] varchar(50), ID bigint, [AssetUid] uniqueidentifier, [Path] nvarchar(2500), [Segment] xml, 
+		PredicateId int, PredicateUid uniqueidentifier, [Predicate] nvarchar(250), PredicateType int);
+
+	drop table if exists #nodes
+	create table #nodes (
+		[Level] int,
+		AssetUid uniqueidentifier, 
+		AssetID bigint, [Key] varchar(50), 
+		ParentID bigint null, ParentKey varchar(50), 
+		Back varchar(25), Fore varchar(25), Icon varchar(50), 
+		AssetTypeID int, AssetTypeUid uniqueidentifier, Class int, 
+		DisplayValue nvarchar(500), 
+		Reveal int, ActionCount int, RelationCounts varchar(max), OwnerCounts varchar(max), UseAsTransformation bit null, 
+		IsLeaf bit, 
+		IsSubjectInTransformation bit null,
+		HasAssetReadAccess bit null);
+	create index ix_Temp_Nodes_AssetID on #nodes ([AssetID] asc);
+	create index ix_Temp_Nodes_AssetID_IsLeaf on #nodes ([AssetID] asc, IsLeaf asc);
+	create index ix_Temp_Nodes_AssetTypeID_IsLeaf on #nodes ([AssetTypeID] asc, IsLeaf asc);
+
+	insert into #assetIds
+		select	distinct 
+				A.Uid,
+				A.ID, 
+				T.[Class],
+				O.[Key]
+		from	Asset A 
+				inner join @assets O on O.Uid = A.Uid
+				inner join AssetType T on T.ID = A.AssetTypeID
+
+	if @self = 1	-- SELF
+	begin
+		insert into #links (Direction, [Key], ID, AssetUid, [Path], [Segment])
+			select	@direction,
+					A.[Key],
+					
+					N.ID as ToID,
+					N.Uid as ToUid, 
+					N.[Path] as ToPath,
+					N.Segments as ToSegment
+					
+			from	graph.AssetNode N,
+					#assetIds A
+			where	N.ID = A.ID;
+	end
+	else			-- IMPACT
+	begin
+		if @direction = 'B'
+		begin
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+						S.ID,
+						S.Uid, 
+						S.[Path],
+						S.Segments,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Inverse
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and T.ID = A.ID;		
+		end
+		else 
+		begin 
+			insert into #links ([Uid], Direction, ProvidedKey, [Key], ID, AssetUid, [Path], [Segment], PredicateId, PredicateUid, PredicateType, [Predicate])
+				select	E.[Uid],
+						@direction,
+						A.[Key],
+					
+						utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+						T.ID,
+						T.Uid, 
+						T.[Path],
+						T.Segments,
+					
+						E.PredicateID,
+						E.PredicateUid,
+						E.PredicateType,
+						P.Name
+				from	graph.AssetNode S,
+						graph.AssetEdge E,
+						graph.AssetNode T,
+						[Predicate] P,
+						#assetIds A
+				where	MATCH(S-(E)->T)
+						and E.PredicateUid = P.[Uid]
+						and P.[Uid] = @predicateUid
+						and S.ID = A.ID;		
+		end
+	end;
+
+	insert into #nodes (AssetUid, AssetID, [Key], Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, HasAssetReadAccess)
+		select	distinct
+				A.Uid as AssetUid
+				,A.ID as AssetID
+				,L.[Key]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,A.AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,V.DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,1 as IsLeaf
+				,case 
+					when exists(select * from dbo.AssetTypesUserCantRead(@resourceId) where assettypeid = A.AssetTypeId) then 0
+					when exists(select * from dbo.AssetsByTypeUserCantRead(@resourceId, A.AssetTypeId) where A.id = assetid) then 0
+				else @isAdmin
+				end as HasReadAccess
+		from	#links L
+				inner join AssetWithType A on A.ID = L.ID
+				left join AssetDisplayValue V on V.AssetID = L.ID;
+
+	-- Get type-based parent for single-level asset hierarchies above.
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess)
+		select	1 as [Level],
+				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+				0 as AssetID,
+				utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+				null as ParentID,
+				null as ParentKey,
+				n.Back,
+				n.Fore,
+				n.Icon,
+				n.AssetTypeID,
+				n.AssetTypeUid,
+				n.Class,
+				t.Name as DisplayValue,
+				n.Reveal,
+				0 as ActionCount,
+				n.RelationCounts,
+				t.UseAsTransformation,
+				0 as HasAssetReadAccess -- 0 as this is AssetType
+		from	#nodes n
+				inner join #links l on l.[Key] = n.[Key] and n.[ParentKey] is null
+				inner join AssetType t on t.ID = n.AssetTypeID
+				left join #nodes c on c.ParentID = n.AssetID
+		where	c.AssetID is null;
+
+	update	t
+	set		t.ParentID = t.AssetTypeID,
+			t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+			t.[Level] = 2
+	from	#nodes t
+			inner join #links l on l.[Key] = t.[Key] and t.[ParentKey] is null
+			left join #nodes c on c.ParentID = t.AssetID
+	where	c.AssetID is null;
+
+	-- Get action counts
+	update	R
+	set		R.ActionCount =	coalesce(
+								(
+								select	count(1) as ActionCount
+								from	Issue I
+										inner join Asset A on A.Object = I.Object and A.ObjectID = I.ObjectID
+								where	I.CompletedOn is null
+										and exists (select 1 from workflow.Item where Object = 'Issue' and ObjectID = I.ID)
+										and A.ID = R.AssetID
+								group by A.Uid
+								), 0)
+	from	#nodes R;
+
+	-- Get impact badges
+	update	R
+	set		R.RelationCounts =	coalesce(
+									(
+									select	[Predicate], ID as PredicateID, Uid as PredicateUid, Direction, count(1) as [Count]
+									from	(
+											select	P.Name as [Predicate], P.ID, P.Uid, 1 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and S.ID = R.AssetID
+													and P.ID = E.PredicateID
+													--and E.PredicateType in (6,7,9,14)
+											union all
+											select	P.Inverse as [Predicate], P.ID, P.Uid, 2 as Direction
+											from	graph.AssetNode S,
+													graph.AssetEdge E,
+													graph.AssetNode T,
+													[Predicate] P
+											where	MATCH(S-(E)->T)
+													and T.ID = R.AssetID
+													and P.ID = E.PredicateID
+													--and E.PredicateType in (6,7,9,14)
+											) O
+									group by [Predicate], ID, Uid, Direction
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+    
+	-- Get owner badges
+	update	R
+	set		R.OwnerCounts =	coalesce(
+									(
+									select	ResponsibilityTypeName as ResponsibilityType, ResponsibilityTypeID, '[' + string_Agg(ResourceID, ',') + ']' as UsersList, count(1) as [Count]
+									from	(
+											select		ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											from		ResponsibilityDetail
+											where		(
+															AssetID = R.AssetID 
+															OR (AssetID = 0 and AssetTypeID = R.AssetTypeID)
+														) 
+														and IsVisible = 1
+											group by	ResponsibilityTypeName, ResponsibilityTypeID, ResourceID
+											) O
+									group by ResponsibilityTypeName, ResponsibilityTypeID
+									for json path
+									),
+									'[]'
+								)
+	from	#nodes R;
+
+	update	#nodes
+	set		OwnerCounts =	'[]',
+			IsLeaf = 0
+	where	IsLeaf is null;
+
+
+	-- Return to caller
+	select		distinct
+				assetUid,
+				assetId,
+				[key],
+				parentId,
+				parentKey,
+				back,
+				fore,
+				icon,
+				assetTypeId,
+				assetTypeUid,
+				class,
+				displayValue,
+				reveal,
+				actionCount,
+				relationCounts,
+				ownerCounts,
+				useAsTransformation,
+				isSubjectInTransformation,
+				isLeaf,
+				hasAssetReadAccess,
+				[level]
+	from		#nodes 
+	order by	[Level];
+
+	select	[uid] 
+			,case Direction when 'F' then ProvidedKey else [Key] end as subjectKey
+			,case Direction when 'F' then [Key] else ProvidedKey end as objectKey
+			,predicateId
+			,predicateUid
+			,[predicate]
+			,predicateType
+	from	#links
+	where	[Key] is not null 
+			and ProvidedKey is not null;
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetLineage-v6">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_GetLineage]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_GetLineage]
+	@hopSalt varchar(25),
+	@direction char(1), -- (F)orward, (B)ackward
+	@hopNumber int,
+	@revealCheckNeeded bit,
+	@leafOnly bit
+as
+begin
+	set nocount on;
+
+	declare @maxRowId int = 0;
+
+	-- Backward-facing hop
+	if @direction = 'B'
+	begin
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+						
+					utility.GetHash(@hopSalt + '|' + cast(S.ID as varchar(50))),
+					S.ID as ToID,
+					S.Uid as ToUid,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Name
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (1,12,13)
+					and P.[Uid] = E.PredicateUid
+					and T.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and A.Direction = 'B'
+					and E.Uid not in (select Uid from #relationsToIgnore);	
+	end
+	else if @direction = 'F' -- Forward-facing hop
+	begin
+		insert into #links ([Uid], Direction, HopNumber, ProvidedKey, [Key], ID, AssetUid, PredicateId, PredicateUid, PredicateType, [Predicate])
+			select	E.[Uid],
+					@direction,
+					@hopNumber,
+					A.[Key],
+					
+					utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar(50))),
+					T.ID as ToID,
+					T.Uid as ToUid,
+					
+					E.PredicateID,
+					E.PredicateUid,
+					E.PredicateType,
+					P.Name
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					[Predicate] P,
+					#hopAssets A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (1,12,13)
+					and P.[Uid] = E.PredicateUid
+					and S.ID = A.ID
+					and A.HopNumber = @hopNumber-1
+					and A.Direction = 'F'
+					and E.Uid not in (select Uid from #relationsToIgnore);	
+	end;
+
+	select @maxRowId = max(RowID) from #nodes;
+
+	if @maxRowId is null 
+	begin 
+		set @maxRowId = -1 
+	end
+
+	exec graph.Hop_LoadHopHierarchies @hopSalt, @direction, @hopNumber;
+	exec graph.Hop_LoadSingleParentHeirarchies @hopSalt, @direction, @hopNumber;
+
+	-- This indicates which assets will be used for subsequent hops, as well as which direction.
+	exec graph.Hop_LoadNextHopAssets @direction, @hopNumber, @maxRowId, @leafOnly
+
+	-- Calculate reveal.
+	if @revealCheckNeeded = 1
+	begin
+		if @direction = 'B'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 2 else 0 end 
+			from	#nodes R
+					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber and H.Direction = @direction
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (1,12,13)
+										and E.Uid not in (select Uid from #relationsToIgnore)
+										and T.ID = R.AssetID
+								) S
+			where	R.Parsed = 0;
+		end
+
+		if @direction = 'F'
+		begin
+			update	R
+			set		R.Reveal = case when S.[Count] > 0 then 1 else 0 end 
+			from	#nodes R
+					inner join #hopAssets H on H.[Key] = R.[Key] and H.HopNumber = @hopNumber and H.Direction = @direction
+					cross apply (
+								select	count(1) as [Count]
+								from	graph.AssetNode S,
+										graph.AssetEdge E,
+										graph.AssetNode T
+								where	MATCH(S-(E)->T)
+										and E.PredicateType in (1,12,13)
+										and E.Uid not in (select Uid from #relationsToIgnore)
+										and S.ID = R.AssetID
+								) S
+			where	R.Parsed = 0 and R.Reveal = 0;
+		end
+	end
+	else
+	begin
+		update	#nodes set Reveal = 0 where Parsed = 0;
+	end
+end
+		]]>
+	</rollback>
+  </changeSet>
+  
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetResults-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_GetResults]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_GetResults]
+	@diagramType int
+as
+begin
+	-- Return to caller
+	select		distinct
+				assetUid,
+				assetId,
+				[key],
+				parentId,
+				parentKey,
+				back,
+				fore,
+				icon,
+				assetTypeId,
+				assetTypeUid,
+				class,
+				displayValue,
+				reveal,
+				actionCount,
+				relationCounts,
+				ownerCounts,
+				useAsTransformation,
+				isSubjectInTransformation,
+				isLeaf,
+				isFocal,
+				hasAssetReadAccess,
+				[level]
+	from		#nodes 
+	order by	[Level];
+
+	if @diagramType = 1
+	begin
+		select	distinct
+				[uid] 
+				,case Direction when 'F' then ProvidedKey else [Key] end as subjectKey
+				,case Direction when 'F' then [Key] else ProvidedKey end as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+	else
+	begin
+		select	distinct
+				[uid] 
+				,ProvidedKey as subjectKey--,case Direction when 'F' then ProvidedKey else [Key] end as subjectKey
+				,[Key] as objectKey--,case Direction when 'F' then [Key] else ProvidedKey end as objectKey
+				,predicateId
+				,predicateUid
+				,[predicate]
+				,predicateType
+		from	#links
+		where	[Key] is not null 
+				and ProvidedKey is not null;
+	end
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_GetSelf-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_GetSelf]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_GetSelf]
+	@diagramType int,
+	@hopSalt varchar(25),
+	@leafOnly bit
+as
+begin
+	set nocount on;
+
+	insert into #links (Direction, HopNumber, [Key], ID, AssetUid, IsFocal)
+		select	'-',
+				0 as HopNumber,
+				A.[Key],
+					
+				N.ID as ToID,
+				N.Uid as ToUid,
+				1 as IsFocal
+		from	graph.AssetNode N,
+				#assetIds A
+		where	N.ID = A.ID;
+
+	if @diagramType = 2
+	begin
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
+			select	distinct
+					2
+					,A.Uid as AssetUid
+					,A.ID as AssetID
+					,L.[Key]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,V.DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,1 as IsLeaf
+					,0 as Parsed
+					,L.IsFocal
+			from	#links L
+					inner join AssetWithType A on A.ID = L.ID
+					left join AssetDisplayValue V on V.AssetID = L.ID;
+	end
+	else
+	begin
+		exec graph.Hop_LoadHopHierarchies @hopSalt, '-', 0;
+
+		with d as (
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey,
+					cast(1 as bit) as IsFocal
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					#nodes p,
+					#assetIds A
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+					and A.ID = p.AssetID
+			union all
+			select	p.[Level] + 1 as [Level],
+					T.Uid as AssetUid,
+					T.ID as AssetID,
+					cast(utility.GetHash(@hopSalt + '|' + cast(T.ID as varchar)) as varchar(50)) [Key],
+					p.AssetID as ParentID,
+					p.[Key] as ParentKey,
+					cast(0 as bit) as IsFocal
+			from	graph.AssetNode S,
+					graph.AssetEdge E,
+					graph.AssetNode T,
+					d p
+			where	MATCH(S-(E)->T)
+					and E.PredicateType in (3, 4)
+					and S.ID = p.AssetID
+		)
+
+		insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
+			select	distinct
+					d.[Level]
+					,d.AssetUid
+					,d.AssetID
+					,d.[Key]
+					,d.ParentID
+					,d.[ParentKey]
+					,A.BackColor as Back
+					,A.ForeColor as Fore
+					,A.Icon
+					,A.AssetTypeID
+					,A.AssetTypeUid
+					,A.AssetTypeClass as Class
+					,coalesce(V.DisplayValue, '{Unknown}') as DisplayValue
+					,0 as Reveal
+					,0 as ActionCount
+					,'[]' as RelationCounts
+					,0 as UseAsTransformation
+					,cast(0 as bit) as IsLeaf
+					,0
+					,d.IsFocal
+			from	d
+					inner join AssetWithType A on A.ID = d.AssetID
+					left join AssetDisplayValue V on V.AssetID = d.AssetID;
+
+		declare @maxLevel int = 1
+		select @maxLevel = max([Level]) from #nodes
+		update	#nodes set isLeaf = case [level] when @maxLevel then 1 else 0 end;
+	end;
+
+	exec graph.Hop_LoadSingleParentHeirarchies @hopSalt, '-', 0;
+
+	-- This indicates which assets will be used for subsequent hops, as well as which direction.
+	exec graph.Hop_LoadNextHopAssets 'B', 0, 0, @leafOnly 
+	exec graph.Hop_LoadNextHopAssets 'F', 0, 0, @leafOnly
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadHopHierarchies-v4">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_LoadHopHierarchies]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_LoadHopHierarchies]
+	@hopSalt varchar(25),
+	@direction char(1),
+	@hopNumber int
+as
+begin
+	with h as (
+		select	L.RowID,
+				A.ID,
+				A.Uid,
+				I.Object,
+				I.ObjectID,
+				P.ID ParentID,
+				I.Subject as ParentObject,
+				I.SubjectID as ParentObjectID
+		from	Asset A
+				inner join #links L on L.ID = A.ID and L.Direction = @direction and L.HopNumber = @hopNumber
+				left join PredicateIntersect I on I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+				left join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+		union all
+		select	h.RowID,
+				A.ID,
+				A.Uid,
+				A.Object,
+				A.ObjectID,
+				I.ParentID,
+				I.Subject as ParentObject,
+				I.SubjectID as ParentObjectID
+		from	h
+				inner join Asset A on h.ParentObject = A.Object and h.ParentObjectID = A.ObjectID
+				outer apply (
+					select	P.ID as ParentID,
+							I.Subject,
+							I.SubjectID
+					from	PredicateIntersect I 
+							inner join Asset P on P.Object = I.Subject and P.ObjectID = I.SubjectID
+					where	I.PredicateType in (3,4) and I.Object = A.Object and I.ObjectID = A.ObjectID
+				) I
+	)
+	insert into #nodes ([Level], [Position], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, IsLeaf, Parsed, IsFocal)
+		select	1 as [Level]
+				,1 as [Position]
+				,A.Uid as AssetUid
+				,h.ID AssetID
+				,case 
+					when L.[Key] is not null and A.Uid = L.AssetUid then L.[Key]
+					else utility.GetHash(@hopSalt + '|' + cast(A.ID as varchar(50)) )
+				 end as [Key]
+				,h.ParentID
+				,iif(
+					h.ParentID is null, 
+					null, 
+					utility.GetHash(@hopSalt + '|' + cast(h.ParentID as varchar) )
+					) as [ParentKey]
+				,A.BackColor as Back
+				,A.ForeColor as Fore
+				,A.Icon
+				,A.AssetTypeID
+				,A.AssetTypeUid
+				,A.AssetTypeClass as Class
+				,D.DisplayValue
+				,0 as Reveal
+				,0 as ActionCount
+				,'[]' as RelationCounts
+				,0 as UseAsTransformation
+				,cast(0 as bit) as IsLeaf
+				,0 as Parsed
+				,L.IsFocal
+		from	#links L
+				inner join h on h.RowID = L.RowID
+				inner join AssetWithType A on A.ID = h.ID
+				inner join AssetDisplayValue D on D.AssetID = A.ID
+		where	L.Direction = @direction and L.HopNumber = @hopNumber;
+
+	update	#nodes
+	set		IsLeaf = 1
+	where	AssetID not in (select ParentID from #nodes);
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadNextHopAssets-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_LoadNextHopAssets]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_LoadNextHopAssets]
+	@direction char(1),
+	@hopNumber int,
+	@maxNodeTableRowId int,
+	@leafOnly bit
+as
+begin
+	insert into #hopAssets
+		select	AssetID, [Key], @direction, @hopNumber
+		from	(
+				select	*,
+						ROW_NUMBER() OVER ( PARTITION BY AssetID, [Level] ORDER BY [Position] DESC ) AS Row_Num
+				from	(
+						select	distinct
+								L.AssetID
+								,L.[Key]
+								,L.[Level]
+								,L.[Position]
+								,A.AssetTypeClass
+								,L.IsLeaf
+						from	#nodes L
+								inner join AssetWithType A on A.ID = L.AssetID and L.RowId > @maxNodeTableRowId
+				) I
+				) O where Row_Num = 1 and ( 
+											(@leafOnly = 1 and IsLeaf = 1)
+											or (@leafOnly = 0 and 1 = 1)
+										  );
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+  <changeSet author="Pappas" id="Procedure.graph.Hop_LoadSingleParentHeirarchies-v2">
+    <sql dbms="mssql"
+            endDelimiter="\nGO"
+            splitStatements="true"
+            stripComments="false">
+		<![CDATA[
+DROP PROCEDURE IF EXISTS [graph].[Hop_LoadSingleParentHeirarchies]
+		]]>
+    </sql>
+	<rollback>
+		<![CDATA[	
+create or alter procedure [graph].[Hop_LoadSingleParentHeirarchies]
+	@hopSalt varchar(25),
+	@direction char(1),
+	@hopNumber int
+as
+begin
+	-- Get type-based parent for single-level asset hierarchies above.
+	insert into #nodes ([Level], AssetUid, AssetID, [Key], ParentID, ParentKey, Back, Fore, Icon, AssetTypeID, AssetTypeUid, Class, DisplayValue, Reveal, ActionCount, RelationCounts, UseAsTransformation, HasAssetReadAccess, Parsed, IsFocal)
+		select	1 as [Level],
+				CAST(0x0 AS UNIQUEIDENTIFIER) as AssetUid,
+				0 as AssetID,
+				utility.GetHash(@hopSalt + '|' + cast(n.AssetTypeUid as varchar(50))) as [Key],
+				null as ParentID,
+				null as ParentKey,
+				n.Back,
+				n.Fore,
+				n.Icon,
+				n.AssetTypeID,
+				n.AssetTypeUid,
+				n.Class,
+				t.Name as DisplayValue,
+				n.Reveal,
+				0 as ActionCount,
+				n.RelationCounts,
+				t.UseAsTransformation,
+				0 as HasAssetReadAccess, -- 0 as this is AssetType
+				0 as Parsed,
+				l.IsFocal
+		from	#nodes n
+				inner join #links l on l.[Key] = n.[Key] and n.[ParentKey] is null and l.Direction = @direction and l.HopNumber = @hopNumber
+				inner join AssetType t on t.ID = n.AssetTypeID
+				left join #nodes c on c.ParentID = n.AssetID
+		where	c.AssetID is null;
+
+	update	t
+	set		t.ParentID = t.AssetTypeID,
+			t.ParentKey = utility.GetHash(@hopSalt + '|' + cast(t.AssetTypeUid as varchar(50))),
+			t.[Level] = 2
+	from	#nodes t
+			inner join #links l on l.[Key] = t.[Key] and t.[ParentKey] is null  and l.Direction = @direction and l.HopNumber = @hopNumber
+			left join #nodes c on c.ParentID = t.AssetID
+	where	c.AssetID is null;
+end
+		]]>
+	</rollback>
+  </changeSet>
+
+</databaseChangeLog>

@@ -105,10 +105,11 @@ namespace d360.web.Controllers.V2
             public string group { get; set; }
             public Guid? assetUid { get; set; }
             public int assetTypeId { get; set; }
+            public Guid assetTypeUid { get; set; }
             public decimal backAmount { get; set; }
             public string back { get; set; }
             public string icon { get; set; }
-            public int @class { get; set; }
+            public AssetTypeClass @class { get; set; }
             public string text { get; set; }
             
             public int actionCount { get; set; }

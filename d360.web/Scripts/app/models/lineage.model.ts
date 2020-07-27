@@ -330,21 +330,27 @@ export class SourceRuleSource {
 
 // #region ASSET/IMPACT BROWSER
 
+export enum AssetBrowserApiHopDirection {
+    None = 0,
+    Forward = 1,
+    Backward = 2,
+    Both = 3
+}
+
+export class AssetBrowserApiHopAssetRequestModel {
+    Uid: string;
+    Key: string;
+}
+
+export class AssetBrowserGenericRelationModel {
+    from: string;
+    to: string;
+}
+
 export enum DiagramType {
     Lineage = 1,
     Impact = 2,
     Process = 3
-}
-
-export class AssetBrowserModel {
-    focalAssetUid: string;
-    assets: AssetBrowserAssetsModel;
-    owners: AssetBrowserOwnersModel;
-
-    clear() {
-        this.assets = new AssetBrowserAssetsModel();
-        this.owners = new AssetBrowserOwnersModel();
-    }
 }
 
 export class DiagramTypesModel {
@@ -352,7 +358,9 @@ export class DiagramTypesModel {
     items: any[] = [];
 }
 
-// #region Asset Browser : Translation
+// #region Asset Browser : Responses
+
+// Relationship Models
 
 export class AssetBrowserResponseModel {
     nodes: AssetBrowserTranslationNode[];
@@ -360,7 +368,6 @@ export class AssetBrowserResponseModel {
     hierarchy: AssetBrowserTranslationHierarchy[];
     reveals: AssetBrowserRevealNode[];
 }
-
 
 export class AssetBrowserRevealNode {
     hierarchyKey: string;
@@ -428,6 +435,7 @@ export class AssetBrowserTranslationNode {
     hierarchyKey: string;
     hop: number;
     assetUid: string;
+    assetTypeUid: string;
     assetTypeId: number;
     responsibilityTypeId: number;
     key: string;
@@ -442,13 +450,14 @@ export class AssetBrowserTranslationNode {
     backAmount: number;
     icon: string;
     class: AssetTypeClass;
-    subgraph: any;
     hasAssetReadAccess: boolean;
     showIcon: boolean;
     showReveal: AssetBrowserApiHopDirection;
     actionCount: number;
     owners: AssetBrowserTranslationOwnerCount[] = [];
     relations: AssetBrowserTranslationRelationCount[] = [];
+    useAsTransformation: boolean;
+    isSubjectInTransformation: boolean;
 
     leaf: boolean;
     focal: boolean;
@@ -456,78 +465,7 @@ export class AssetBrowserTranslationNode {
     hideMode: AssetBrowserApiHopDirection = null;
 }
 
-export class AssetBrowserTranslation {
-    links: AssetBrowserTranslationLink[] = new Array<AssetBrowserTranslationLink>();
-    nodes: AssetBrowserTranslationNode[] = new Array<AssetBrowserTranslationNode>();
-
-    clear() {
-        this.links = new Array<AssetBrowserTranslationLink>();
-        this.nodes = new Array<AssetBrowserTranslationNode>();
-    }
-}
-
-// #endregion Translation
-
-// #region Asset Browser : Request
-
-export enum AssetBrowserApiHopDirection {
-    None = 0,
-    Forward = 1,
-    Backward = 2,
-    Both = 3
-}
-
-export enum AssetBrowserApiHopType {
-    Lineage = 1,
-    Impact = 2
-}
-
-export class AssetBrowserApiOwnerHopRequestModel {
-    Assets: AssetBrowserApiHopAssetRequestModel[];
-    ResponsibilityTypeId: number;
-}
-
-export class AssetBrowserApiHopRequestModel {
-    Assets: AssetBrowserApiHopAssetRequestModel[];
-    RelationsToIgnore: AssetBrowserApiHopIgnoreRequestModel[];
-    Initial: boolean;
-    Hops: number;
-    DiagramType: DiagramType;
-    HopType: AssetBrowserApiHopType;
-    Direction: AssetBrowserApiHopDirection;
-    PredicateUid: string;
-    LeafOnly: boolean;
-}
-
-export class AssetBrowserApiHopAssetRequestModel {
-    Uid: string;
-    Key: string;
-}
-
-export class AssetBrowserApiHopIgnoreRequestModel {
-    Uid: string;
-}
-
-// #endregion Request
-
-// #region Asset Browser : Response
-
-// Core View Model
-
-export class AssetBrowserGenericRelationModel {
-    from: string;
-    to: string;
-}
-
 // Ownership Models
-
-export class AssetBrowserOwnerCountModel {
-    ResponsibilityType: string;
-    ResponsibilityTypeID: number;
-    Users: number[];
-    Count: number;
-    Expanded: boolean;
-}
 
 export class AssetBrowserOwnerRelationModel {
     assetUid: string;
@@ -552,67 +490,7 @@ export class AssetBrowserOwnerModel {
     foreColor: string;
 }
 
-// Item Models
-
-export class AssetBrowserAssetsModel {
-    focalAssetUid: string;
-    assets: AssetBrowserAssetModel[] = new Array<AssetBrowserAssetModel>();
-    assetRelations: AssetBrowserAssetRelationModel[] = new Array<AssetBrowserAssetRelationModel>();
-}
-
-export class AssetBrowserAssetModel {
-    focal: boolean = false;
-    assetUid: string;
-    assetTypeId: number;
-    assetTypeUid: string;
-    useAsTransformation: boolean;
-    isSubjectInTransformation: boolean;
-    key: string;
-    parentKey: string;
-    salt: string;
-    displayValue: string;
-    backColor: string;
-    backAmount: number;
-    foreColor: string;
-    foreAmount: number;
-    hasAssetReadAccess: boolean;
-    icon: string;
-    class: AssetTypeClass;
-    reveal: AssetBrowserApiHopDirection;
-    items: AssetBrowserAssetModel[];
-    actionCount: number;
-    ownerCounts: AssetBrowserOwnerCountModel[];
-    relationCounts: AssetBrowserAssetRelationCountModel[];
-}
-
-// Relationship Models
-
-export class AssetBrowserAssetRelationCountModel {
-    Predicate: string;
-    PredicateID: number;
-    PredicateUid: string;
-    Direction: AssetBrowserApiHopDirection;
-    Count: number;
-    Expanded: boolean;
-    Key: string;
-}
-
-export class AssetBrowserAssetRelationModel {
-    intersectUid: string;
-    subjectUid: string;
-    subjectKey: string;
-    objectUid: string;
-    objectKey: string;
-    predicate: string;
-    predicateId: number;
-    predicateUid: string;
-    predicateType: number;
-    backColor: string;
-    foreColor: string;
-    icon: string;
-}
-
-// #endregion Response
+// #endregion Responses
 
 //#region Asset Browser : AlertPanel Data
 
