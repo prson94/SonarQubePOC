@@ -1,6 +1,6 @@
 ﻿<d3s-loading [isLoading]="isLoading"></d3s-loading>
 <div *ngIf="!isLoading">
-    <div *ngIf="metricTree.length == 0" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
+    <div *ngIf="metricTree.length == 0 && !isExternallyCalculated" class="empty-metric-message"><i class="fa fa-info-circle"></i> Create one or more measures to complete your score definition</div>
     <div>
         <p-treeTable [value]="metricTree" [style]="{'width': '95', 'line-height' : '25px' }" selectionMode="single" [selection]="selectedNode" (selectionChange)="selectNode($event)">
             <ng-template pTemplate="header">

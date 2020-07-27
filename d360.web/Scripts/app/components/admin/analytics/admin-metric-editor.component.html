@@ -4,11 +4,11 @@
         <div class="row" *ngIf="!isLoading && model != null">
             <simple-accordion header="Details" active="true" class="ig-accordion">
                 <div class="row two-thirds">
-                    <input igInput class="required big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
+                    <input igInput tabindex="1" class="required big" label="Name" type="text" placeholder="Value required" [(ngModel)]="model.Name" ngClass="{'invalid': (!name.valid || !name.pristine)}" #name="ngModel" name="name" maxlength="250" required />
                 </div>
                 <div class="row">
                     <div>
-                        <textarea igInput istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" autoResize="autoResize" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
+                        <textarea igInput tabindex="2" istextarea="true" label="Description" [(ngModel)]="model.Description" placeholder="Optional" autoResize="autoResize" rows="3" [style]="{'width' : '100%'}" name="description"></textarea>
                     </div>
                 </div>
                 <div class="measure-two-col">
@@ -18,7 +18,7 @@
                                 Effective From
                             </div>
                             <div class="ig-input calendar required">
-                                <p-calendar [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
+                                <p-calendar tabindex="3" [(ngModel)]="model.EffectiveDate" [showTime]="false" placeholder="Value Required" [dateFormat]="getLocaleDateString()" name="effectiveDate"></p-calendar>
                                 <i class="fa fa-calendar"></i>
                             </div>
                         </div>
@@ -38,7 +38,7 @@
                                 </div>
                             </div>
                             <div class="input-spinner required">
-                                <p-spinner #weight [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
+                                <p-spinner #weight tabindex="4" [style]="{'width':'100%'}" [inputStyle]="{'width':'100%'}" [(ngModel)]="displayWeight" [required]="true" (ngModelChange)="clamp($event, 0, 1, 2)" placeholder="Value Required" [min]="1" [max]="100" [step]="1" name="weight"></p-spinner>
                                 <span *ngIf="model?.Weight == null || model?.Weight == 0" class="feedback">
                                     {{invalidWeightMessage}}
                                 </span>
@@ -73,7 +73,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <igx-switch [(ngModel)]="model.IsGroup" [ngModelOptions]="{standalone: true}"></igx-switch> 
+                            <igx-switch tabindex="5" [(ngModel)]="model.IsGroup" [ngModelOptions]="{standalone: true}"></igx-switch> 
                         </ng-container>
                     </div>
                 </div>

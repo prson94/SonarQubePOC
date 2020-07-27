@@ -1,13 +1,13 @@
 ﻿<div class="row condtions" *ngIf="conditionItems">
     <div class="condition-row d3s-color-picker" *ngFor="let condition of conditionItems">
-        <p-dropdown [class]="'condition-dropdown'" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'"tabindex="6" [ngClass]="{'invalid': conditionFieldIsInvalid(condition)}" [options]="fieldTypeDropdownOptions" (ngModelChange)="condition.ConditionFieldTypeID=$event;selectFieldType(condition)" [ngModel]="condition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>
                 </div>
             </ng-template>
         </p-dropdown>
-        <p-dropdown [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="condition.operatorOptions" [ngModel]="condition.Operator" [ngModelOptions]="{standalone: true}" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="selectedItem">
                 <div>
                     <span>{{parseOperator(condition,item.label)}}</span>
@@ -24,16 +24,16 @@
                 <input type="text" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Lookup'">
-                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
+                <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown no-pad'" [options]="getLookupValues(condition)" (ngModelChange)="condition.SingleValue=$event;" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Date'">
                 <div class="ig-input calendar required" >
-                    <p-calendar [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
+                    <p-calendar appendTo="body" [(ngModel)]="condition.SingleValue" placeholder="Value Required" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()"></p-calendar>
                     <i class="fa fa-calendar"></i>
                 </div>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'DateTime'" class="ig-input calendar required">
-                <p-calendar [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
+                <p-calendar appendTo="body" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [dateFormat]="getLocaleDateString()" [style]="{'width':'200px'}" [inputStyle]="{'width':'100%'}" showTime="true"></p-calendar>
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Number'">
                 <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" />
@@ -42,7 +42,7 @@
                 <input type="number" class="ig-input no-margin-btm" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" [step]="0.25" />
             </div>
             <div *ngIf="condition?.FieldType?.Type == 'Boolean'">
-                <p-dropdown [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
+                <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown no-pad'" [options]="booleanOptions" [(ngModel)]="condition.SingleValue" [ngModelOptions]="{standalone: true}" placeholder="Value Required" scrollHeight="320px"></p-dropdown>
             </div>
         </div>
         <div class="actions-btn">
@@ -51,7 +51,7 @@
     </div>
     <div class="feedback" *ngIf="!conditionsValid">Condition fields must be unique*</div>
     <div class="condition-row d3s-color-picker" *ngIf="fieldTypeDropdownOptions.length > 0">
-        <p-dropdown [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
+        <p-dropdown appendTo="body" [panelStyleClass]="'igx-blue'" [class]="'condition-dropdown'" [options]="fieldTypeDropdownOptions | metricConditionDisabledFilter : usedFieldTypes" (ngModelChange)="newCondition.ConditionFieldTypeID=$event;addNewCondition();" [ngModel]="newCondition.ConditionFieldTypeID" [ngModelOptions]="{standalone: true}" [filter]="true" placeholder="Choose Field" scrollHeight="320px">
             <ng-template let-item pTemplate="item">
                 <div class="ig-colorfield-item">
                     <span class="ig-colorfield-item-label">{{item.label}}</span>

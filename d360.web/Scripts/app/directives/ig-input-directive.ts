@@ -1,10 +1,4 @@
-﻿/*
-    Infogix UI Component Library Button component as defined http://prototype.infogix.com/primeng/buttondemo
-    Sourced from https://github.com/Infogix/styleguide-primeng/blob/master/src/app/components/button/button.ts
-    DomUtils replaced by DomHandler for primefaces 7.1.3 compatability
-*/
-
-import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
+﻿import { NgModule, Directive, ElementRef, AfterViewInit, OnDestroy, Input } from '@angular/core';
 import { DomHandler } from 'primeng/dom';
 import { CommonModule } from '@angular/common';
 
@@ -17,7 +11,6 @@ export class InputDirective implements AfterViewInit, OnDestroy {
 
     public _label: string;
     public _icon: string;
-    public _helptext: string;
     public _istextarea: boolean;
     public _loading: boolean;
 
@@ -116,16 +109,6 @@ export class InputDirective implements AfterViewInit, OnDestroy {
         }
     }
 
-    @Input() get helptext(): string {
-        return this.helptext;
-    }
-
-    set helptext(val: string) {
-        this._helptext = val;
-        if (this.helptext) {
-            //create a popup help text element
-        }
-    }
     @Input() get istextarea(): boolean {
         return this._istextarea;
     }
