@@ -11,6 +11,7 @@ import { ProcessService } from '../../../../services/process.service';
 import { DiagramNodeBase } from '../../../../models/process.model';
 import { Router } from '@angular/router';
 import { LinkLabelOnPathDraggingTool } from 'gojs/extensionsTS/LinkLabelOnPathDraggingTool';
+import { Breadcrumb } from '../../../../models/breadcrumb.model';
 
 @Component({
     selector: 'd3s-process-diagram',
@@ -436,6 +437,16 @@ export class ProcessDiagramComponent extends DiagramBaseComponent implements OnI
     private diagramStateChanged() {
         this.isSaveDisabled = this.isCurrentStateSaved();
         this.isCanvasEmpty = this.isEmpty();
+
+        if (this.isDiagramLoaded) {
+            if (!this.isSaveDisabled) {
+                this.breadcrumbsService.setCurrentObjectState('modified');
+            }
+            else {
+                this.breadcrumbsService.setCurrentObjectState('');
+            }
+        }
+
         this.cdRef.detectChanges();
     }
     private isEmpty() {
