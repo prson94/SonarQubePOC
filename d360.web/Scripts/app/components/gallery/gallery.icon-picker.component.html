@@ -13,13 +13,13 @@
     <div class="gallery-section">
         <h4>Basic</h4>
         <div>
-            <d3s-icon-picker></d3s-icon-picker>
+            <ig-icon-picker></ig-icon-picker>
         </div>
     </div>
     <div class="gallery-section">
         <h4>Binding</h4>
         <div>
-            <d3s-icon-picker [(ngModel)]="value"></d3s-icon-picker>
+            <ig-icon-picker [(ngModel)]="value"></ig-icon-picker>
         </div>
         <div>
             <strong>Selected Value:</strong> {{value}}
@@ -31,7 +31,7 @@
             As with all form controls this input can be disabled
         </p>
         <div>
-            <d3s-icon-picker [disabled]="true"></d3s-icon-picker>
+            <ig-icon-picker [disabled]="true"></ig-icon-picker>
         </div>
     </div>
     <div class="gallery-section">
@@ -48,7 +48,7 @@
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
-            <d3s-icon-picker tabindex="3" [style]="{'width' : '150px'}"></d3s-icon-picker>
+            <ig-icon-picker tabindex="3" [style]="{'width' : '150px'}"></ig-icon-picker>
         </div>
         <div class="row">&nbsp;</div>
         <div class="row">
@@ -63,11 +63,11 @@
         <div>
             <form #form="ngForm">
                 <div class="row">
-                    <d3s-icon-picker #myIcon="ngModel"
+                    <ig-icon-picker #myIcon="ngModel"
                                      name="myIcon"
                                      [(ngModel)]="formValue"
                                      [style]="{'border' : myIcon?.errors?.required ? '2px solid #900' : ''}"
-                                     required></d3s-icon-picker>
+                                     required></ig-icon-picker>
                 </div>
                 <div class="row">&nbsp;</div>
                 <div class="row">
