@@ -9,7 +9,8 @@ import {
     OnDestroy,
     OnInit,
     Output,
-    ViewChild
+    ViewChild,
+    HostListener
 } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { Editor } from 'primeng/editor';
@@ -79,6 +80,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     private fieldChangeSub;
     private editorChangeSub;
 
+    private isMenuVisible: boolean = false;
     private hasCascadeLoaded: boolean = false;
 
     //For a drop down search option
@@ -811,4 +813,15 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         else return 'Optional';
     }
 
+    @HostListener('click', ['$event.target'])
+    onClick(el) {
+        var htmlElement = el as HTMLElement;
+        if (htmlElement.classList.contains('open-editor-menu')
+            || htmlElement.parentElement.classList.contains('open-editor-menu')) {
+            this.isMenuVisible = !this.isMenuVisible;
+        }
+        else {
+            this.isMenuVisible = false;
+        }
+    }
 }

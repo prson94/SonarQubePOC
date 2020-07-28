@@ -18,7 +18,7 @@ export class ProcessDiagramTemplates {
 
 
 
-    static get activity_BodyPanel() {
+    static activity_BodyPanel(component: ProcessDiagramComponent) {
         var $ = go.GraphObject.make;
 
         return $(go.Panel, 'Auto',
@@ -45,6 +45,10 @@ export class ProcessDiagramTemplates {
                     spacingBelow: 3,
                     maxSize: new go.Size(180, NaN),
                     wrap: go.TextBlock.WrapDesiredSize,
+                    textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                        component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
+                        return true;
+                    }
                 },
                 new go.Binding("text", "Name").makeTwoWay()
             )
@@ -301,7 +305,7 @@ export class ProcessDiagramTemplates {
                 ),
                 $(go.Panel, 'Vertical',
                     $(go.Panel, this.activity_HeaderPanel(component)),
-                    $(go.Panel, this.activity_BodyPanel)
+                    $(go.Panel, this.activity_BodyPanel(component))
                 )
             ),
             this.makePort("T", go.Spot.Top),
@@ -396,7 +400,11 @@ export class ProcessDiagramTemplates {
                         maxSize: new go.Size(120, NaN),
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
-                        stroke: 'black'
+                        stroke: 'black',
+                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                            component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
+                            return true;
+                        }
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
 

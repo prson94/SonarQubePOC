@@ -28,7 +28,7 @@
                         <button class="ql-link"></button>
                     </span>
                     <div class="ql-formats">
-                        <button igButton icon="fa-ellipsis-v" class="{{isMenuVisible ? 'ig-state-active' : ''}}" (click)="isMenuVisible = !isMenuVisible" tooltip="More..."></button>
+                        <button igButton icon="fa-ellipsis-v" class="open-editor-menu {{isMenuVisible ? 'ig-state-active' : ''}}" tooltip="More..."></button>
                         <div *ngIf="isMenuVisible" class="custom-tools">
                             <div class="menu-item">Alignment
                                 <ul>
@@ -39,8 +39,9 @@
                             </div>                           
                             <div class="menu-item">Insert
                                 <ul>
-                                    <li class="menu-item">Image</li>
-                                    <li class="menu-item">Code</li>
+                                    <li class="menu-item" (click)="qlImage.click()">Image</li>
+                                    <li class="menu-item" (click)="qlCode.click()">Code</li>
+                                    <li class="menu-item">Clean</li>
                                 </ul>
                             </div>
                         </div>
@@ -50,28 +51,9 @@
                         <button class="ql-align" value="center" #qlCenter></button> 
                         <button class="ql-align" value="right" #qlRight></button> 
                         <button class="ql-align" value="justify" #qlJustify></button> 
+                        <button class="ql-image" value="image" #qlImage></button> 
+                        <button class="ql-code-block" value="code-block" #qlCode></button> 
                     </div>
-                    <!--<span class="ql-formats">
-                        <select class="ql-color"></select>
-                        <select class="ql-background"></select>
-                    </span>
-                    <span class="ql-formats">
-                        <button class="ql-list" value="ordered"></button>
-                        <button class="ql-list" value="bullet"></button>
-                        <select class="ql-align">
-                            <option selected></option>
-                            <option value="center"></option>
-                            <option value="right"></option>
-                            <option value="justify"></option>
-                        </select>
-                    </span>
-                    <span class="ql-formats">
-                        <button class="ql-link"></button>
-                        <button class="ql-code-block"></button>
-                    </span>
-                    <span class="ql-formats">
-                        <button class="ql-clean"></button>
-                    </span>-->
                 </p-header>
             </p-editor>
             <div *ngSwitchCase="'Lookup'">
