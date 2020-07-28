@@ -76,6 +76,9 @@ export class ProcessDiagramLabelEditorComponent extends DiagramBaseComponent imp
     }
 
     updateConnectorLabelToLink() {
+        if (!this.linkLabel)
+            return;
+
         if (this.createLabelSub)
             this.createLabelSub.unsubscribe();
         var currentLinkData = this.linkData;
