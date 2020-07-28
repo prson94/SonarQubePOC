@@ -100,6 +100,7 @@ namespace d360.core.entities
         public string action { get; set; }
         public Guid? actionAssetUid { get; set; }
         public Guid? actionAssetTypeUid { get; set; }
+        public string actionObject { get; set; }
         public string actionObjectTypeName { get; set; }
         public string actionObjectName { get; set; }
         public string actionDescription { get; set; }
