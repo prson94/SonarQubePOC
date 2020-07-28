@@ -236,7 +236,9 @@ namespace d360.model.DataAccessLayer
 
             return await CompanyContext.QueryAsync<AssetTypeApiViewModel, IconStyleInsert, AssetTypeApiViewModel>(sql, param: dbArgs, map: (a, i) => { a.IconStyle = i; return a; }, splitOn: "Path,BackColor");
         }
-        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams)
+
+        //UseAsAdmin is used to override permissions from reading an access. It is used by Process Designer Export
+        public async Task<AssetsApiViewModel> GetAssets(Guid uid, IEnumerable<KeyValuePair<string, string>> queryParams, bool useAsAdmin = false)
         {
             var assetTypeID = 0;
             var includeRelationships = false;
@@ -251,6 +253,11 @@ namespace d360.model.DataAccessLayer
             var assetType = CompanyContext.AssetTypes.FirstOrDefault(t => t.uid == uid);
             if (assetType == null)
                 throw new Exception("not found");
+
+            if (useAsAdmin && !queryParams.ToList().Any(k => k.Key.ToLower() == "_assetuid"))
+            {
+                throw new ArgumentException("UseAsAdmin parameter can be used only with _assetUid specified!");
+            }
 
             assetTypeID = assetType.ID;
 
@@ -461,7 +468,7 @@ namespace d360.model.DataAccessLayer
                     ", new { userId = CompanyContext.CurrentResourceID, assetTypeID }).FirstOrDefault();
 
 
-            if (restrictions.HasAssetRestriction)
+            if (restrictions.HasAssetRestriction && !useAsAdmin)
             {
                 whereStatements.Add($"not exists (select AssetID from #restrictedAssets where AssetID = A.ID)");
                 populateRestrictedAssetTableSQL = @"drop table if exists #restrictedAssets;
@@ -472,7 +479,7 @@ namespace d360.model.DataAccessLayer
                             select AssetID from dbo.UserAssetPermissions(@userId,@assetTypeId) where ((PermissionsBitMask & 1)) = 0";
             }
 
-            if (!CompanyContext.CurrentResourceIsAdmin)
+            if (!CompanyContext.CurrentResourceIsAdmin && !useAsAdmin)
             {
                 if (restrictions.HasAssetTypeRestriction)
                     whereStatements.Add($"not exists (select 1 from AssetTypesUserCantRead(@userId) u where u.AssetTypeID = A.AssetTypeID)");
@@ -993,7 +1000,7 @@ namespace d360.model.DataAccessLayer
 
 
             if (rowData == null || rowData.Count == 0)
-            {                
+            {
                 return document;
             }
 
@@ -2040,6 +2047,8 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
             dbArgs.Add("@assetUid", asset.uid.ToString());
             dbArgs.Add("@id", asset.ID);
 
+
+
             var sql = $@"
                 select
 	                A.[UID] as [uid],
@@ -2051,14 +2060,13 @@ OFFSET(@pageNum*@pageSize) ROWS FETCH NEXT (@pageSize) ROWS ONLY
                 left Join Field f on f.FieldTypeID = ft.ID and f.AssetID = A.ID
                 left join graph.AssetNode Node on Node.Uid = a.uid and Node.AssetTypeUid = AT.[UID]
                 left join graph.AssetNodeKeyPath KP on KP.ID = Node.ID
-                cross apply STRING_SPLIT(F.Value, ',') SPFF
-                inner join Asset ACF on ACF.Object = ft.LookupObjectType and ACF.ObjectID = SPFF.value   
-                cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
-                cross apply GetAssetDisplayValueByID(ACF.ID) ADV
 				outer apply(
                                 select FormattedValue = 
                                 (SELECT F.FormattedValue as name,
                                 COALESCE(JSON_VALUE(ACJF.ColorJSON,'$.Value'), 'transparent') as color FOR JSON PATH) 
+								FROM Asset ACF    
+								cross apply dbo.GetAssetColorJsonById(ACF.Id) ACJF
+								WHERE ACF.Object = ft.LookupObjectType and ACF.ObjectID = TRY_PARSE(F.Value as int)
                             )StatusColor(FormattedValue)
                 WHERE A.ID = @id
             ";
