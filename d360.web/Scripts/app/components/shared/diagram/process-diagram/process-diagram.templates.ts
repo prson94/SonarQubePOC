@@ -250,7 +250,11 @@ export class ProcessDiagramTemplates {
                         maxSize: new go.Size(120, NaN),
                         wrap: go.TextBlock.WrapDesiredSize,
                         editable: true,
-                        stroke: 'black'
+                        stroke: 'black',
+                        textValidation: function (tb: go.TextBlock, oldVal, newVal) {
+                            component.dynEditorService.updateForm({ assetUid: tb.part.data.key, fieldName: 'Name', fieldValue: newVal });
+                            return true;
+                        }
                     }
                     , new go.Binding("text", "Name").makeTwoWay())
             ),

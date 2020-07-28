@@ -27,6 +27,7 @@ import { TagService } from '../../../services/tag.service';
 import { SelectItem } from 'primeng/api/selectitem';
 import { filter } from 'rxjs/operators';
 import { clearLine } from 'readline';
+import { DynEditorService } from '../../../services/dyn-editor.service';
 
 @Component({
     selector: 'd3s-dynamic-field-v2',
@@ -44,6 +45,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
     @Input() selectedObjectID: number;
     @Input() editorChange: Observable<any>;
     @Input() disallowedNames: string[] = [];
+    @Input() assetUid: string;
 
     @Input() useNewUI: boolean = false;
     private isDirty: boolean = false;
@@ -94,10 +96,18 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
         private cascadeService: CascadeService,
         private fieldsService: FieldsObservableService,
         private ref: ChangeDetectorRef,
-        private tagService: TagService
+        private tagService: TagService,
+        public dynEditorService: DynEditorService
     ) {
         super();
         this.component_uid = Math.random().toString(36).substring(2);
+        this.dynEditorService.formUpdate.subscribe(res => {
+            if (this.assetUid && this.assetUid == res.assetUid) {
+                if (this.field.FieldName == res.fieldName) {
+                    this.form.controls[res.fieldName].patchValue(res.fieldValue);
+                }
+            }
+        });
     }
 
     searchTags(q: any) {
