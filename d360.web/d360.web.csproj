@@ -379,6 +379,7 @@
     <Compile Include="Controllers\V2\SearchController.cs" />
     <Compile Include="Controllers\V2\SocialController.cs" />
     <Compile Include="Controllers\V2\SurveysController.cs" />
+    <Compile Include="Controllers\V2\ConnectorLabelsController.cs" />
     <Compile Include="Controllers\V2\TagsController.cs" />
     <Compile Include="Controllers\V2\WorkflowController.cs" />
     <Compile Include="Controllers\WebAnalyticsController.cs" />
@@ -471,6 +472,7 @@
     <Content Include="Content\images\home.background.png" />
     <Content Include="Content\images\logo.new.png" />
     <Content Include="Content\images\logo.old.png" />
+    <Content Include="Content\images\related-assets-icon.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\fonts\primeicons.svg" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.css" />
     <Content Include="Content\primeicons\1.0.0-beta.10\primeicons.min.css">
@@ -742,6 +744,8 @@
     <Content Include="Scripts\app\components\search\search.component.html" />
     <Content Include="Scripts\app\components\shared\asseteditors\asset-delete-editor.component.html" />
     <Content Include="Scripts\app\components\shared\assetmodaleditor\asset-type-modal-editor.html" />
+    <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.css" />
+    <Content Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.html" />
     <Content Include="Scripts\app\components\shared\controls\switch\switch.css" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\panels\settingspanel.component.html" />
     <Content Include="Scripts\app\components\shared\diagram\assetbrowser\tools\savedfilter.component.html" />
@@ -1335,7 +1339,7 @@
     <TypeScriptCompile Include="Scripts\app\components\shared\diagram\workflow\workflow-transition-summary.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-help.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\header\header-profile.component.ts" />
-    <TypeScriptCompile Include="Scripts\app\components\shared\icon-picker.component.ts" />
+    <TypeScriptCompile Include="Scripts\app\components\shared\controls\icon-picker\icon-picker.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\lookup-tooltip.component.ts" />
     <TypeScriptCompile Include="Scripts\app\components\shared\resource-multiselect-grid.component.ts" />
     <Content Include="Scripts\app\components\shared\rightsidebar\right-sidebar.component.html" />
@@ -1614,6 +1618,7 @@
     <TypeScriptCompile Include="Scripts\app\pipes\safe-html.pipe.ts" />
     <TypeScriptCompile Include="Scripts\app\services\application-insights.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset-type.service.ts" />
+    <TypeScriptCompile Include="Scripts\app\services\connectorLabel.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\process.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\asset.service.ts" />
     <TypeScriptCompile Include="Scripts\app\services\baseObservable.service.ts" />

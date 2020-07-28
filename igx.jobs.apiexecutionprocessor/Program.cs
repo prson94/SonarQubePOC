@@ -284,12 +284,14 @@ namespace igx.jobs.apiexecutionprocessor
                                     var deleteAssets = await storage.DeserializeJsonObjectFromBlobAsync<AssetDeletes>(Info.StorageFolder, Info.RequestFileName);
 
                                     log.WriteLine($"DELETE Assets (DB Start): Total raw assets: {deleteAssets.Count}. Asset Type Uid: {deleteAssetsFields.AssetTypeUid}.");
-                                    var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents);
+                                    var deleteAssetsResults = company.RemoveAssets(dbExecutionItem, assetType, deleteAssets, dbExecutionTimeout, Info.SendWorkflowEvents, false);
                                     dbExecutionItem.Processed = deleteAssetsResults.Count(i => i.Success);
                                     dbExecutionItem.Error = deleteAssetsResults.Count(i => !i.Success);
                                     log.WriteLine($"DELETE Assets (DB Complete): Total results: {deleteAssetsResults.Count}.");
 
                                     await SaveResultsJsonToAzure(deleteAssetsResults, log, "Assets", HttpMethod.Delete);
+
+                                    company.SendApiGraphEvent(Info);
                                 }
                                 else
                                 {

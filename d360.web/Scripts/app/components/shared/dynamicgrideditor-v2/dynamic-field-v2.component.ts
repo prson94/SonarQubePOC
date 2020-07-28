@@ -462,7 +462,7 @@ export class DynamicFieldComponentV2 extends BaseComponent implements OnInit, On
             }
         }
 
-        if (this.selectedObject == 'TaskType' && this.field.Name == 'Name') {
+        if (this.selectedObject == 'TaskType' && this.field.Name == 'Name' && this.field.Value) {
 
             if (this.disallowedNames.filter(x => x.toLowerCase().trim() == this.field.Value.toString().toLowerCase().trim()).length > 1) {
                 this.form.controls[this.field.FieldName].setErrors({ alreadyExistsProcess: true });

@@ -37,7 +37,7 @@ namespace d360.web.Controllers
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
             ViewData.Add("ResourceID", Company.CurrentResourceID);
             ViewData.Add("ResourceHomePage", Company.GetUserHomePage());
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", new Dictionary<string, string>(Community.GetCompanySettings()));
             ViewData.Add("EnvironmentSettings", new Dictionary<string, string> { { "HelpBaseUri", System.Configuration.ConfigurationManager.AppSettings["HelpBaseUri"].ToString() } });
             ViewData.Add("SingleSignOn", IsSingleSignOn());
 
@@ -61,7 +61,7 @@ namespace d360.web.Controllers
         public ActionResult Terms(string redirectUri = null)
         {
             ViewData.Add("VersionNumber", typeof(HomeController).Assembly.GetName().Version);
-            ViewData.Add("Settings", Community.GetCompanySettings());
+            ViewData.Add("Settings", new Dictionary<string, string>(Community.GetCompanySettings()));
 
             var validations = Company.Query<ContractValidation>(@"select * from dbo.GetContractValidations(@ResourceID)", new { ResourceID = Company.CurrentResourceID });
 

@@ -1054,15 +1054,34 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
         ]
         public async Task<IHttpActionResult> AddGroup(List<AddGroupModel> groups)
         {
+            List<UpdateGroupModel> models = new List<UpdateGroupModel>();
+
             if (!Company.CurrentResourceIsAdmin)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.Forbidden, "Access Denied"));
 
             if (groups.Count < 1)
                 throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "There are no groups in this request."));
 
+            foreach (var i in groups)
+            {
+                if (i.Name == null)
+                {
+                    throw new HttpResponseException(Request.CreateErrorResponse(HttpStatusCode.BadRequest, "Name is missing in one or more of the groups in the payload. Name must be provided."));
+                }
+
+                models.Add(new UpdateGroupModel
+                {
+                    Description = i.Description,
+                    Name = i.Name,
+                    PrimaryOwnerUid = i.PrimaryOwnerUid,
+                    SecondaryOwnerUid = i.SecondaryOwnerUid,
+                    IsActiveDirectoryGroup = i.IsActiveDirectoryGroup
+                });
+            }
+
             var execution = getApiExecution(groups.Count);
 
-            var result = membershipRepository.AddGroups(execution, groups);
+            var result = membershipRepository.AddGroups(execution, models);
 
             Company.CreateOrUpdateTypeDisplayValuesAsync(1, core.SystemObjects.GroupType.ToString());
 
@@ -1086,7 +1105,7 @@ where a.uid = @groupUid", new { groupUid })).FirstOrDefault();
 
 
             var document = new SLDocument();
-            document.AddWorksheet("Users");
+            document.RenameWorksheet(SLDocument.DefaultFirstSheetName, "Users");
 
             int colIndex = 1;
             int rowIndex = 1;

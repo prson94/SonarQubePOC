@@ -27,7 +27,6 @@ export class ProcessService extends BaseObservableService {
                 catchError(err => this.handleError(err, true))
             );
     }
-
     public getProcessDiagram(uid: string): Observable<any> {
         return this
             .http
@@ -38,10 +37,10 @@ export class ProcessService extends BaseObservableService {
             );
     }
 
-    public getProcessDiagramColors(): Observable<any> {
+    public getProcessDiagramColors(uid: string): Observable<any> {
         return this
             .http
-            .get(`/api/v2/process/governanceRoleColors`)
+            .get(`/api/v2/process/${uid}/governanceRoleColors`)
             .pipe(
                 map(response => response),
                 catchError(err => this.handleError(err, true))

@@ -19,7 +19,7 @@ import { TilesModule } from '../tiles/tiles.module';
 import { AssetTypeEditorComponent } from './asset-type-editor.component';
 import { SimpleAccordionModule } from '../simple-accordion.part';
 import { AssetTypeEditorUseAsTransformationComponent } from './asset-type-editor-use-as-transformation.component';
-import { IconPickerModule } from '../icon-picker.component';
+import { IconPickerModule } from '../controls/icon-picker/icon-picker.component';
 import { SharedDynamicGridEditorModule } from '../dynamicgrideditor/shared-dynamic-grid-editor.module';
 import { InfoTooltipModule } from '../tooltip/info-tooltip.component';
 

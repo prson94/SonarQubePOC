@@ -33,6 +33,7 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
     @Input() objectId: number;
     @Input() objectType: string;
     @Input() issueObject: string;
+    @Input() ChangeType: WorkflowChangeType; 
     @Input() step: NodeModel;
     @Input() diagram: go.Diagram;
     @Output() stepChange = new EventEmitter();
@@ -54,7 +55,9 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
         { value: '2', label: 'Pending Delete' },
         { value: '3', label: 'Deleted' },
     ];
-    
+
+    WorkflowChangeType = WorkflowChangeType;
+
     private quill;
     private destination = [];
 
@@ -84,6 +87,36 @@ export class WorkflowStepEditorComponent extends BaseComponent implements OnInit
                 r.forEach(e => {
                     if (e.ID < 1)
                         return;
+                    else if (e.ID == EmailTaskRecipientType.Followers) {
+                        if (this.objectType == 'IntersectType' || this.ChangeType == WorkflowChangeType.Loaded)
+                            return false;
+
+                        if (!(this.ChangeType == WorkflowChangeType.Add ||
+                            this.ChangeType == WorkflowChangeType.Update ||
+                            this.ChangeType == WorkflowChangeType.Schedule ||
+                            this.ChangeType == WorkflowChangeType.RequestCertification))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Update) &&
+                            !(this.objectType == 'ArtifactType' || this.objectType == 'PolicyType' || this.objectType == 'RuleType' || this.objectType == 'TaxonomyType'))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Add) && !(this.objectType == 'IssueType'))
+                            return;
+
+                        if ((this.ChangeType == WorkflowChangeType.Add) && (this.objectType == 'IssueType'))
+                        {
+                            let objArr = this.issueObject.split("|", 1);
+                            let Issobj = "";
+                            if (objArr.length <= 0)
+                                Issobj = " ";
+                            else
+                                Issobj = objArr[0];
+
+                            if (!(Issobj == 'ArtifactType' || Issobj == 'PolicyType' || Issobj == 'RuleType' || Issobj == 'TaxonomyType'))
+                                return;
+                            }
+                    }
                     this.destination.push({
                         value: EmailTaskRecipientType[e.ID],
                         label: e.Name

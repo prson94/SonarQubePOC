@@ -19,6 +19,6 @@ namespace d360.model.DataAccessLayer
         Task<FavoriteApiViewModel> GetHomePage(int resourceID);
         List<GroupResponseResult> DeleteGroups(ApiExecution execution, List<DeleteGroupModel> groups);
         List<GroupResponseResult> UpdateGroups(ApiExecution execution, List<UpdateGroupModel> groups);
-        List<GroupResponseResult> AddGroups(ApiExecution execution, List<AddGroupModel> groups);
+        List<GroupResponseResult> AddGroups(ApiExecution execution, List<UpdateGroupModel> groups);
     }
 }

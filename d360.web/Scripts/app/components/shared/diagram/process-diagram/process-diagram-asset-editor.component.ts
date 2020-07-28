@@ -16,6 +16,7 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
     @Input() isReadOnly: boolean = true;
     @Input() disallowedNames: string[] = [];
     @Output() nodeDataChange = new EventEmitter();
+    private assetName: string = '';
 
     constructor(
         secondaryNavService: SecondaryNavService,
@@ -31,16 +32,11 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
 
     ngOnChanges(changes: SimpleChanges) {
         if (changes.nodeData && changes.nodeData.currentValue != changes.nodeData.previousValue) {
-            if (this.nodeData)
-                this.load();
+            if (this.nodeData) {
+                this.assetName = this.nodeData['Name'];
+            }
         }
     }
-
-    load() {
-        this.cdRef.detectChanges();
-        this.cdRef.markForCheck();
-    }
-
 
     //process dynamiceditor onSubmit() form data
     //check for missing fields and set value to ''
@@ -48,6 +44,11 @@ export class ProcessDiagramAssetEditorComponent extends DiagramBaseComponent imp
     private onModelChange($event) {
         var data = $event['values'];
         data.key = this.nodeData.key;
+
+        if (data && data['Name']) {
+            this.assetName = data['Name'];
+        }
+
         for (var prop in data) {
             if (data[prop] == undefined) {
                 delete data[prop];

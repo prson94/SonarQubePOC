@@ -314,7 +314,7 @@ namespace d360.web.Controllers.V2
 
                 ScoringRepository.DeleteAllocation(alloc);
 
-                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse() { message = "Allocation succesfully deleted!" }));
+                return ResponseMessage(Request.CreateResponse(HttpStatusCode.OK, new ConfirmResponse() { message = "Allocation successfully deleted!" }));
             }
             catch
             {

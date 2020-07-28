@@ -16,7 +16,7 @@ namespace d360.core.entities.Process
             "icon","key","loc","refItemColor",
             "isNew","Uid","AssetTypeUid",
             "hasError","objectId","governanceDisplayValue",
-            "relCount"
+            "relCount","isInvalid"
         };
         public string GetHash()
         {
@@ -60,6 +60,16 @@ namespace d360.core.entities.Process
                 return Guid.Parse(this["assetTypeUid"]);
             }
         }
+
+        public bool IsNodeValid
+        {
+            get
+            {
+                if (this.ContainsKey("isInvalid"))
+                    return false;
+                return true;
+            }
+        }
     }
 
     public class LinkData
@@ -68,6 +78,8 @@ namespace d360.core.entities.Process
         public Guid to { get; set; }
         public string fromPort { get; set; }
         public string toPort { get; set; }
+        public string label { get; set; }
+        public Guid? labelUid { get; set; }
         public IList<double> points { get; set; }
     }
 
@@ -84,6 +96,8 @@ namespace d360.core.entities.Process
         public Guid AssetTypeUid { get; set; }
         public Guid AssetUid { get; set; }
         public string Error { get; set; }
+        public string ErrorType { get; set; }
+        public string AssetName { get; set; }
     }
 
     public class ProcessDiagramBadge

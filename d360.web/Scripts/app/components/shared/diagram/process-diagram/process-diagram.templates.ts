@@ -103,7 +103,7 @@ export class ProcessDiagramTemplates {
             var margin = new go.Margin(24, 38, 0, 0);
         }
 
-        return $(go.Panel, 'Spot',
+        var badge = $(go.Panel, 'Spot',
             {
                 alignment: go.Spot.TopRight,
                 cursor: 'pointer',
@@ -141,6 +141,30 @@ export class ProcessDiagramTemplates {
                 })
             )
         );
+
+        badge.toolTip = $("ToolTip",
+            $(go.TextBlock, {
+                margin: 4,
+                text: "View and edit related assets"
+            })
+        );
+
+        return badge;
+    }
+
+
+    private static linkValidation(fromnode: go.Node, fromport, tonode: go.Node, toport) {
+        var doesLinkExist: boolean = false;
+        try {
+            var links = fromnode.diagram.links;
+            doesLinkExist = links.any(x => (x.data.from == fromnode.data.key && x.data.to == tonode.data.key)
+                || (x.data.from == tonode.data.key && x.data.to == fromnode.data.key));
+        }
+        catch (ex) {
+            console.warn(ex);
+            doesLinkExist = false;
+        }
+        return !doesLinkExist;
     }
 
     public static eventTemplate(component: ProcessDiagramComponent) {
@@ -162,7 +186,8 @@ export class ProcessDiagramTemplates {
                 selectable: true,
                 selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
                 width: 112.2,
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             }
             ,
             {
@@ -254,7 +279,8 @@ export class ProcessDiagramTemplates {
                 selectable: true,
                 locationSpot: new go.Spot(0.5, 0, 0, 24),
                 selectionAdornmentTemplate: this.nodeSelectionAdornmentTemplate("RoundedRectangle"),
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             },
             $(go.Panel, 'Auto',
                 $(go.Shape, "RoundedRectangle",
@@ -301,7 +327,8 @@ export class ProcessDiagramTemplates {
         return $(go.Node, "Spot",
             {
                 locationSpot: new go.Spot(0.5, 0, -15.5, 62.5),
-                cursor: 'move'
+                cursor: 'move',
+                linkValidation: this.linkValidation
             },
             new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
             {
@@ -378,45 +405,177 @@ export class ProcessDiagramTemplates {
             },
         );
     }
+    public static deletedNodeTemplate(component: ProcessDiagramComponent) {
+        var $ = go.GraphObject.make;  // for conciseness in defining templates
 
+
+        return $(go.Node, "Spot",
+            new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
+            {
+                locationSpot: new go.Spot(0.5, 0, 0, 24),
+                cursor: 'default',
+                movable: false
+            },
+            $(go.Panel, 'Auto',
+                $(go.Shape, "RoundedRectangle",
+                    {
+                        portId: "",
+                        strokeWidth: 1,
+                        fromLinkable: true,
+                        toLinkable: true,
+                        margin: new go.Margin(2, 2, 2, 2),
+                        cursor: "pointer",
+                    },
+                    new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                    new go.Binding('fill', 'refItemColor').makeTwoWay()
+                ),
+                $(go.Panel, 'Vertical',
+                    $(go.Panel, 'Auto',
+                        {
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        $(go.Shape,
+                            {
+                                strokeWidth: 1,
+                                minSize: new go.Size(200, NaN),
+                                maxSize: new go.Size(200, 32)
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                            new go.Binding('fill', 'refItemColor').makeTwoWay()
+
+                        ),
+                        $(go.TextBlock,
+                            {
+                                alignment: go.Spot.LeftCenter,
+                                stroke: "#b21a3e",
+                                textAlign: "center",
+                                font: '14px FontAwesome',
+                                margin: new go.Margin(6, 0, 0, 6),
+                                minSize: new go.Size(NaN, 24)
+                            }
+                            , new go.Binding("text", "icon").makeTwoWay()
+                        ),
+                    ),
+                    $(go.Panel, 'Auto',
+                        {
+                            stretch: go.GraphObject.Horizontal
+                        },
+                        $(go.Shape,
+                            {
+                                fill: "white",
+                                minSize: new go.Size(200, 36),
+                            },
+                            new go.Binding('stroke', 'refItemColor').makeTwoWay(),
+                            new go.Binding('fill', 'refItemColor').makeTwoWay()),
+                        $(go.TextBlock,
+                            {
+                                background: 'white',
+                                alignment: go.Spot.LeftCenter,
+                                stroke: 'white',
+                                textAlign: "center",
+                                font: this.textFont,
+                                editable: true,
+                                margin: new go.Margin(0, 0, 0, 10),
+                                isMultiline: true,
+                                spacingBelow: 3,
+                                maxSize: new go.Size(180, NaN),
+                                wrap: go.TextBlock.WrapDesiredSize,
+                            },
+                            new go.Binding("text", "Name").makeTwoWay(),
+                            new go.Binding('background', 'refItemColor').makeTwoWay()
+                        )
+                    )
+                )
+            ),
+            this.makePort("T", go.Spot.Top),
+            this.makePort("L", go.Spot.Left),
+            this.makePort("R", go.Spot.Right),
+            this.makePort("B", go.Spot.Bottom)
+        );
+    }
     public static get linkTemplate() {
         var $ = go.GraphObject.make;
-        var linkSelectionAdornmentTemplate =
-            $(go.Adornment, "Link",
-                $(go.Shape,
-                    // isPanelMain declares that this Shape shares the Link.geometry
-                    { isPanelMain: true, fill: null, stroke: "deepskyblue", strokeWidth: 0 })  // use selection object's strokeWidth
-            );
 
         return $(go.Link,  // the whole link panel
-            { selectable: true, selectionAdornmentTemplate: linkSelectionAdornmentTemplate },
-            { relinkableFrom: true, relinkableTo: true, reshapable: true },
             {
+                selectable: true,
+                selectionAdornmentTemplate: this.nodeSelectionEmptyTemplate(),
+                curviness: 50,
+                relinkableFrom: true,
+                relinkableTo: true,
+                reshapable: true,
                 routing: go.Link.AvoidsNodes,
                 curve: go.Link.JumpOver,
                 corner: 5,
-                toShortLength: 4
+                toShortLength: 4,
+                fromEndSegmentLength: 60,
+                toEndSegmentLength: 20,
+                cursor: 'pointer'
             },
             new go.Binding("points").makeTwoWay(),
-            $(go.Shape,  // the link path shape
-                { isPanelMain: true, strokeWidth: 1 }),
+            new go.Binding("layerName", "isSelected", function (selected) {
+                return selected ? 'Foreground' : '';
+            }).ofObject(),
+            $(go.Shape,
+                {
+                    isPanelMain: true,
+                    strokeWidth: 1
+                },
+                new go.Binding("stroke", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("fill", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("strokeWidth", "isSelected", function (data) {
+                    return data ? 3 : 1;
+                }).ofObject()),
             $(go.Shape,  // the arrowhead
-                { toArrow: "Standard", stroke: null }),
-            $(go.Panel, "Auto",
-                new go.Binding("visible", "isSelected").ofObject(),
+                {
+                    toArrow: "Standard",
+                    stroke: null,
+                    fill: null
+                },
+                new go.Binding("stroke", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject(),
+                new go.Binding("fill", "isSelected", function (data) {
+                    return data ? '#166aa8' : '#000000';
+                }).ofObject()
+            ),
+            $(go.Panel, "Auto", {
+                segmentIndex: 0,
+                segmentOffset: new go.Point(50, 0),
+            },
+                new go.Binding("visible", "", function (data) {
+                    return data.data.label ? true : false;
+                }).ofObject(),
                 $(go.Shape, "RoundedRectangle",  // the link shape
-                    { fill: "#F8F8F8", stroke: null }),
+                    {
+                        fill: "#166aa8",
+                        stroke: "#166aa8",
+                        strokeWidth: 4
+                    },
+                    new go.Binding("stroke", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject(),
+                    new go.Binding("fill", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject()),
                 $(go.TextBlock,
                     {
                         textAlign: "center",
-                        font: "10pt helvetica, arial, sans-serif",
-                        stroke: "#919191",
-                        margin: 2,
-                        minSize: new go.Size(10, NaN),
-                        editable: true,
-
+                        font: this.textFont12,
+                        background: "#166aa8",
+                        stroke: "white",
+                        minSize: new go.Size(20, NaN),
+                        maxSize: new go.Size(60, NaN),
+                        margin: new go.Margin(2, 2, 2, 2)
                     },
-                    new go.Binding("name").makeTwoWay())
+                    new go.Binding("text", "label").makeTwoWay(),
+                    new go.Binding("background", "isSelected", function (data) {
+                        return data ? '#166aa8' : '#000000';
+                    }).ofObject())
             )
         );
     }

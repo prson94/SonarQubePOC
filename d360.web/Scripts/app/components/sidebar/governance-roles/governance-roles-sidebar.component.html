@@ -5,19 +5,6 @@
             <d3s-loading [isLoading]="isLoading"></d3s-loading>
             <form #form="ngForm" *ngIf="!isLoading" class="gov-form-v2">
                 <div class="row">
-                    <div class="col l6 m6 s12">
-                        <div class="FieldNameRequired no-margin">Property Display Name</div>
-                        <input maxlength="250" pInputText name="name" #name="ngModel" style="height:25px;width:100%;display:block;" type="text" [(ngModel)]="model.Name" required />
-                        <div [hidden]="name.valid || name.pristine" class="validation-text">Property Display Name is required field.</div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col s12">
-                        <div class="FieldName">Property Description</div>
-                        <p-editor name="Description" [(ngModel)]="model.Description" [style]="{'height':'150px'}"></p-editor>
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col s12">
                         <div class="FieldName">Governance Role Reference List</div>
                         <p-dropdown name="refListDDL" [(ngModel)]="model.RefListUid" [options]="refListDDL" [style]="{'width':'100%'}"></p-dropdown>

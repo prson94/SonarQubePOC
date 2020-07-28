@@ -12,11 +12,14 @@ using d360.model;
 using d360.web.Filters;
 using d360.web.Models;
 using d360.web.Models.Attributes;
+using Dapper;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
 using System.Reflection;
@@ -237,6 +240,7 @@ namespace d360.web.Controllers
                 string userName = null;
                 string firstName = null;
                 string lastName = null;
+                List<string> groups = null;
 
                 var customClaims = new Dictionary<string, string>();
 
@@ -266,6 +270,9 @@ namespace d360.web.Controllers
                         case "lastname":
                         case "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname":
                             lastName = attValue;
+                            break;
+                        case "http://schemas.microsoft.com/ws/2008/06/identity/claims/groups":
+                            groups = a.Values?.Select(v => v.Data.ToString())?.ToList();
                             break;
                         default:
                             customClaims.Add(attName, attValue);
@@ -430,6 +437,84 @@ namespace d360.web.Controllers
                                 sessionLengthMinutes = FormsAuthentication.Timeout.TotalMinutes;
                         }
                         // Create a login context for the asserted identity.
+
+                        #region Process Group claims
+                        if (groups?.Any() == true)
+                        {
+                            var governHasGroups = Company.Groups.Any(g => g.IsActiveDirectoryGroup);
+                            if (governHasGroups)
+                            {
+                                if (Company.Connection.State != ConnectionState.Open)
+                                    Company.Connection.Open();
+                                using (var trans = Company.Connection.BeginTransaction())
+                                {
+                                    try
+                                    {
+                                        SqlBulkCopy sqlBulkCopy = new SqlBulkCopy(Company.Connection,SqlBulkCopyOptions.Default, trans);
+                                        var dt = new System.Data.DataTable();
+                                        dt.Columns.Add("Name", typeof(string));
+
+                                        groups.ForEach(g =>
+                                        {
+                                            var row = dt.NewRow();
+                                            row["Name"] = g.Trim();
+                                            dt.Rows.Add(row);
+                                        });
+
+
+                                        sqlBulkCopy.ColumnMappings.Add("Name", "Name");
+                                        sqlBulkCopy.DestinationTableName = "#ADGroups";
+                                        sqlBulkCopy.BulkCopyTimeout = 60;
+
+                                        Company.Connection.Execute(
+                                            @"drop table if exists #ADGroups;
+                                            create table #ADGroups ([Name] nvarchar(max), GroupID int, HasResourceGroup bit);"
+                                        , transaction: trans);
+
+                                        sqlBulkCopy.WriteToServer(dt);
+
+                                        Company.Connection.Execute(
+                                            @"update A
+                                            set A.GroupID = G.ID,
+                                            HasResourceGroup = case when RG.ResourceID is not null then 1 else null end
+                                            from    #ADGroups A
+                                                    inner join [Group] G on G.IsActiveDirectoryGroup = 1 and G.[Name] = A.[name]
+                                                    left join ResourceGroup RG on RG.GroupID = G.ID and RG.ResourceID = @resourceId
+
+                                            insert into ResourceGroup (ResourceID, GroupID)
+                                            select  @resourceId, GroupID
+                                            from    #ADGroups 
+                                            where   GroupID is not null and coalesce(HasResourceGroup, 0) = 0
+
+                                            delete  R
+                                            from    ResourceGroup R
+                                                    inner join [Group] G on G.ID = R.GroupID and G.IsActiveDirectoryGroup = 1
+                                            where   R.ResourceID = @resourceId and not exists (select 1 from #ADGroups where GroupID = R.GroupID)"
+                                        , new { resourceID = resource.ID }
+                                        , transaction: trans);
+
+                                        trans.Commit();
+
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        try { 
+                                            if (trans != null) 
+                                            { 
+                                                trans.Rollback(); 
+                                            } 
+                                        } catch { }
+
+                                        var properties = new Dictionary<string, string>
+                                        {
+                                            {"ResourceID",resource.ID.ToString() }
+                                        };
+                                        Telemetry.TrackException(e, properties);
+                                    }
+                                }
+                            }
+                        }
+                        #endregion
 
                         #region Process custom claims
 

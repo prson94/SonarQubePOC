@@ -261,6 +261,7 @@
 	<include file="scripts/Table.api.ExecutionResponsibilityRule.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAsset.xml"/>
 	<include file="scripts/Table.api.ExecutionDiagramAssetField.xml"/>
+	<include file="scripts/Table.dbo.ConnectorLabel.xml"/>
 	
 
   
@@ -399,6 +400,7 @@
 	<!-- Procedures (object-based naming) -->
 	<include file="scripts/Procedure.analytics.AddStatistic.xml"/>
 	<include file="scripts/Procedure.api.DeleteAssetType.xml"/>
+  <include file="scripts/Procedure.api.DeleteExecutionRecords.xml"/>
 	<include file="scripts/Procedure.bulkload.BusinessLineage.xml"/>
 	<include file="scripts/Procedure.bulkload.GetLoadColumns.xml"/>
 	<include file="scripts/Procedure.bulkload.UpdateDynamicLookupFieldColumns.xml"/>
@@ -471,6 +473,7 @@
 	<include file="scripts/Procedure.utility.GetAssignedResponsibilityNameForWorkflow.xml"/>
 	<include file="scripts/Procedure.utility.GetFieldTypeLookupList.xml"/>
 	<include file="scripts/Procedure.utility.GetOwnersForWorkflow.xml"/>
+	<include file="scripts/Procedure.utility.GetOwnersForWFFollowers.xml"/>
 	<include file="scripts/Procedure.workflow.changeItemState.xml"/>
     
 	<!-- Data Changes -->
